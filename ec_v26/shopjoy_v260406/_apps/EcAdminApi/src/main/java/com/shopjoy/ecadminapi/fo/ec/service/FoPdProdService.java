@@ -37,47 +37,48 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoPdProdService {
 
-    private final PdProdMapper mapper;
-    private final PdProdImgService     imgService;
-    private final PdProdOptService     optService;
-    private final PdProdOptItemService optItemService;
-    private final PdProdSkuService     skuService;
-    private final PdProdContentService contentService;
-    private final PdProdRelService     relService;
-    private final PdReviewService      reviewService;
-    private final PdProdQnaService     qnaService;
-    private final PmCouponService      couponService;
-    private final PmDiscntService      discntService;
-    private final PmGiftService        giftService;
-    private final PmEventService       eventService;
+    private final PdProdMapper          pdProdMapper;
+    private final PdProdImgService      pdProdImgService;
+    private final PdProdOptService      pdProdOptService;
+    private final PdProdOptItemService  pdProdOptItemService;
+    private final PdProdSkuService      pdProdSkuService;
+    private final PdProdContentService  pdProdContentService;
+    private final PdProdRelService      pdProdRelService;
+    private final PdReviewService       pdReviewService;
+    private final PdReviewAttachService pdReviewAttachService;
+    private final PdProdQnaService      pdProdQnaService;
+    private final PmCouponService       pmCouponService;
+    private final PmDiscntService       pmDiscntService;
+    private final PmGiftService         pmGiftService;
+    private final PmEventService        pmEventService;
 
     /* ── 목록 ────────────────────────────────────────────────── */
 
     @Transactional(readOnly = true)
     public List<PdProdDto> getList(Map<String, Object> p) {
-        return mapper.selectList(p);
+        return pdProdMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PdProdDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdProdMapper.selectPageList(p), pdProdMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
 
     @Transactional(readOnly = true)
     public Map<String, Object> getDetail(String prodId) {
-        PdProdDto prod = mapper.selectById(prodId);
+        PdProdDto prod = pdProdMapper.selectById(prodId);
         if (prod == null) throw new CmBizException("존재하지 않는 상품입니다: " + prodId);
 
         Map<String, Object> p = new HashMap<>();
         p.put("prodId", prodId);
 
-        List<PdProdImgDto>     images = imgService.getList(p);
-        List<PdProdOptDto>     groups = optService.getList(new HashMap<>(p));
-        List<PdProdOptItemDto> items  = optItemService.getList(new HashMap<>(p));
-        List<PdProdSkuDto>     skus   = skuService.getList(new HashMap<>(p));
+        List<PdProdImgDto>     images = pdProdImgService.getList(p);
+        List<PdProdOptDto>     groups = pdProdOptService.getList(new HashMap<>(p));
+        List<PdProdOptItemDto> items  = pdProdOptItemService.getList(new HashMap<>(p));
+        List<PdProdSkuDto>     skus   = pdProdSkuService.getList(new HashMap<>(p));
 
         Map<String, Object> opts = new LinkedHashMap<>();
         opts.put("groups", groups);
@@ -97,49 +98,55 @@ public class FoPdProdService {
     public List<PdProdContentDto> getContents(String prodId) {
         Map<String, Object> p = new HashMap<>();
         p.put("prodId", prodId);
-        return contentService.getList(p);
+        return pdProdContentService.getList(p);
     }
 
     @Transactional(readOnly = true)
     public List<PdProdRelDto> getRels(String prodId) {
         Map<String, Object> p = new HashMap<>();
         p.put("prodId", prodId);
-        return relService.getList(p);
+        return pdProdRelService.getList(p);
     }
 
     /* ── Tier 2 — 리뷰 / Q&A ─────────────────────────────────── */
 
     /**
-     * 상품별 리뷰 목록 + 평점 집계 요약.
-     * 응답: { summary: { total, avgRating, rate1~5 }, items, total }
+     * 상품별 리뷰 목록 + 평점 집계 요약 + 상단 이미지 모음.
+     * 응답: { summary, attachImages, reviewPage: PageResult }
      */
     @Transactional(readOnly = true)
     public Map<String, Object> getReviews(String prodId, Map<String, Object> p) {
         Map<String, Object> param = (p != null) ? new HashMap<>(p) : new HashMap<>();
         param.put("prodId", prodId);
-        // 노출 가능한 리뷰만 (사용자 화면)
         if (!param.containsKey("status")) param.put("status", "ACTIVE");
 
         Map<String, Object> result = new LinkedHashMap<>();
-        Map<String, Object> summary = reviewService.getRatingSummary(prodId);
+
+        Map<String, Object> summary = pdReviewService.getRatingSummary(prodId);
         result.put("summary", summary != null ? summary : new LinkedHashMap<>());
 
-        if (param.containsKey("pageSize")) {
-            // 페이징 요청
-            PageResult<PdReviewDto> page = reviewService.getPageData(param);
-            result.put("items", page.getPageList());
-            result.put("total", page.getPageTotalCount());
-        } else {
-            List<PdReviewDto> items = reviewService.getList(param);
-            result.put("items", items);
-            result.put("total", items != null ? items.size() : 0);
-        }
+        Map<String, Object> attachParam = new HashMap<>();
+        attachParam.put("prodId", prodId);
+        result.put("attachImages", pdReviewAttachService.getList(attachParam));
+
+        PageResult<PdReviewDto> page = pdReviewService.getPageData(param);
+        result.put("reviewPage", page);
         return result;
     }
 
     /**
+     * 상품별 리뷰 첨부이미지 전체 — 모아보기 팝업용.
+     */
+    @Transactional(readOnly = true)
+    public List<PdReviewAttachDto> getReviewImages(String prodId) {
+        Map<String, Object> p = new HashMap<>();
+        p.put("prodId", prodId);
+        return pdReviewAttachService.getList(p);
+    }
+
+    /**
      * 상품별 Q&A 목록.
-     * 응답: { items, total }
+     * 응답: { qnaPage: PageResult }
      */
     @Transactional(readOnly = true)
     public Map<String, Object> getQna(String prodId, Map<String, Object> p) {
@@ -147,15 +154,8 @@ public class FoPdProdService {
         param.put("prodId", prodId);
 
         Map<String, Object> result = new LinkedHashMap<>();
-        if (param.containsKey("pageSize")) {
-            PageResult<PdProdQnaDto> page = qnaService.getPageData(param);
-            result.put("items", page.getPageList());
-            result.put("total", page.getPageTotalCount());
-        } else {
-            List<PdProdQnaDto> items = qnaService.getList(param);
-            result.put("items", items);
-            result.put("total", items != null ? items.size() : 0);
-        }
+        PageResult<PdProdQnaDto> page = pdProdQnaService.getPageData(param);
+        result.put("qnaPage", page);
         return result;
     }
 
@@ -173,33 +173,18 @@ public class FoPdProdService {
      */
     @Transactional(readOnly = true)
     public Map<String, Object> getPromotions(String prodId) {
-        // 상품의 사이트 컨텍스트 — 자기 사이트 프로모션만 노출
-        PdProdDto prod = mapper.selectById(prodId);
+        PdProdDto prod = pdProdMapper.selectById(prodId);
         Map<String, Object> p = new HashMap<>();
         if (prod != null && prod.getSiteId() != null) {
             p.put("siteId", prod.getSiteId());
         }
-        // 활성만
         p.put("useYn", "Y");
 
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("coupons", safeList(() -> couponService.getList(new HashMap<>(p))));
-        result.put("discnts", safeList(() -> discntService.getList(new HashMap<>(p))));
-        result.put("gifts",   safeList(() -> giftService.getList(new HashMap<>(p))));
-        result.put("events",  safeList(() -> eventService.getList(new HashMap<>(p))));
+        result.put("coupons", pmCouponService.getList(new HashMap<>(p)));
+        result.put("discnts", pmDiscntService.getList(new HashMap<>(p)));
+        result.put("gifts",   pmGiftService.getList(new HashMap<>(p)));
+        result.put("events",  pmEventService.getList(new HashMap<>(p)));
         return result;
-    }
-
-    /**
-     * 프로모션 도메인 service 호출 시 예외/null 안전 fallback.
-     * 일부 프로모션 타입 데이터 미설정 상태에서 전체 응답이 깨지지 않게 보호.
-     */
-    private static List<?> safeList(java.util.function.Supplier<List<?>> supplier) {
-        try {
-            List<?> r = supplier.get();
-            return r != null ? r : List.of();
-        } catch (Exception e) {
-            return List.of();
-        }
     }
 }

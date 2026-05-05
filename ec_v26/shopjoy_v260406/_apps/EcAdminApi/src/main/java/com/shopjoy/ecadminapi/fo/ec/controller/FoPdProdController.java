@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.fo.ec.controller;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdContentDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdRelDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.fo.ec.service.FoPdProdService;
@@ -84,6 +85,12 @@ public class FoPdProdController {
             @PathVariable("id") String id,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getReviews(id, p)));
+    }
+
+    @GetMapping("/{id}/review-images")
+    public ResponseEntity<ApiResponse<List<PdReviewAttachDto>>> getReviewImages(
+            @PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getReviewImages(id)));
     }
 
     @GetMapping("/{id}/qna")

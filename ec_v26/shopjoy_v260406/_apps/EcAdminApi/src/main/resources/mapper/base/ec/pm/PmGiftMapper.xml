@@ -8,6 +8,7 @@
     <sql id="pmGiftCond">
         <where>
             <if test="siteId != null and siteId != ''">AND g.site_id = #{siteId}</if>
+            <if test="useYn != null and useYn != ''">AND g.use_yn = #{useYn}</if>
             <if test="status != null and status != ''">AND g.gift_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND g.gift_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">

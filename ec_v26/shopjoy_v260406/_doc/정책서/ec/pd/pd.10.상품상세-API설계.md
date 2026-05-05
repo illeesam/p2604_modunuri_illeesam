@@ -181,12 +181,14 @@ GET /api/fo/ec/pd/prod/{prodId}
 |---|---|---|
 | `GET /api/fo/ec/pd/prod/{prodId}/contents` | 상품설명 영역 스크롤 도달 | `[ { prodContentId, contentTypeCd, contentHtml, sortOrd } ]` |
 | `GET /api/fo/ec/pd/prod/{prodId}/rels` | 연관상품 영역 도달 | `[ { prodRelId, relProdId, relProdNm, relProdImgUrl, salePrice, ... } ]` |
-| `GET /api/fo/ec/pd/prod/{prodId}/reviews` | 상품평 탭 클릭 (있다면) | `{ summary, items, total }` |
-| `GET /api/fo/ec/pd/prod/{prodId}/qna` | Q&A 탭 클릭 (있다면) | `{ items, total }` |
+| `GET /api/fo/ec/pd/prod/{prodId}/reviews` | 상품평 탭 클릭 (있다면) | `{ summary, items, total, pageNo, pageSize }` |
+| `GET /api/fo/ec/pd/prod/{prodId}/qna` | Q&A 탭 클릭 (있다면) | `{ items, total, pageNo, pageSize }` |
 
 - 첫 화면 로드 후 IntersectionObserver 또는 탭 클릭 이벤트로 호출
 - 캐시 가능 (상품 데이터는 안정적, 변경 빈도 낮음)
 - 한 번 호출 후 재호출 없이 화면 보존
+- **`reviews` / `qna` 는 항상 페이징** (정책: [base.기술-api.md §7.3](../../base/base.기술-api.md))
+  `pageNo/pageSize` 미지정 시 PageHelper 기본값 `pageNo=1, pageSize=20` 자동 적용
 
 ### Tier 3 — 사용자별 동적 (프로모션 통합)
 

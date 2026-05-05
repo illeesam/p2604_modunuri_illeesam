@@ -8,8 +8,9 @@
 
     <!-- 쿠폰 조회 조건 -->
     <sql id="pmCouponCond">
-<where>
+        <where>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="useYn != null and useYn != ''">AND c.use_yn = #{useYn}</if>
             <if test="status != null and status != ''">AND c.coupon_status_cd = #{status}</if>
             <if test="couponType != null and couponType != ''">AND c.coupon_type_cd = #{couponType}</if>
             <if test="kw != null and kw != ''">

@@ -7,8 +7,10 @@
     <!-- 리뷰 첨부파일 조회 조건 -->
     <sql id="pdReviewAttachCond">
         <where>
-            <if test="siteId != null and siteId != ''">AND a.site_id = #{siteId}</if>
-            <if test="typeCd != null and typeCd != ''">AND a.media_type_cd = #{typeCd}</if>
+            <if test="siteId   != null and siteId   != ''">AND a.site_id        = #{siteId}</if>
+            <if test="reviewId != null and reviewId != ''">AND a.review_id      = #{reviewId}</if>
+            <if test="prodId   != null and prodId   != ''">AND r.prod_id        = #{prodId}</if>
+            <if test="typeCd   != null and typeCd   != ''">AND a.media_type_cd  = #{typeCd}</if>
             <if test="dateStart != null and dateStart != ''">AND a.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
@@ -36,16 +38,17 @@
             , ste.site_nm AS site_nm
             , cd_mt.code_label AS media_type_cd_nm
         FROM pd_review_attach a
-            LEFT JOIN sy_attach att ON att.attach_id = a.attach_id
-            LEFT JOIN sy_site ste ON ste.site_id = a.site_id
-            LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MEDIA_TYPE' AND cd_mt.code_value = a.media_type_cd
-            <include refid="pdReviewAttachCond"/>
+            LEFT JOIN pd_review  r   ON r.review_id   = a.review_id
+            LEFT JOIN sy_attach att ON att.attach_id  = a.attach_id
+            LEFT JOIN sy_site   ste ON ste.site_id    = a.site_id
+            LEFT JOIN sy_code  cd_mt ON cd_mt.code_grp = 'MEDIA_TYPE' AND cd_mt.code_value = a.media_type_cd
+        <include refid="pdReviewAttachCond"/>
         <choose>
             <when test="sort == 'id_asc'">ORDER BY a.review_attach_id ASC</when>
             <when test="sort == 'id_desc'">ORDER BY a.review_attach_id DESC</when>
             <when test="sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
             <when test="sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
-            <otherwise>ORDER BY a.reg_date DESC</otherwise>
+            <otherwise>ORDER BY a.sort_ord ASC, a.reg_date DESC</otherwise>
         </choose>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
@@ -58,10 +61,11 @@
             , ste.site_nm AS site_nm
             , cd_mt.code_label AS media_type_cd_nm
         FROM pd_review_attach a
-            LEFT JOIN sy_attach att ON att.attach_id = a.attach_id
-            LEFT JOIN sy_site ste ON ste.site_id = a.site_id
-            LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MEDIA_TYPE' AND cd_mt.code_value = a.media_type_cd
-            <include refid="pdReviewAttachCond"/>
+            LEFT JOIN pd_review  r   ON r.review_id   = a.review_id
+            LEFT JOIN sy_attach att ON att.attach_id  = a.attach_id
+            LEFT JOIN sy_site   ste ON ste.site_id    = a.site_id
+            LEFT JOIN sy_code  cd_mt ON cd_mt.code_grp = 'MEDIA_TYPE' AND cd_mt.code_value = a.media_type_cd
+        <include refid="pdReviewAttachCond"/>
         <choose>
             <when test="sort == 'id_asc'">ORDER BY a.review_attach_id ASC</when>
             <when test="sort == 'id_desc'">ORDER BY a.review_attach_id DESC</when>
@@ -76,7 +80,8 @@
     <select id="selectPageCount" resultType="long">
         SELECT COUNT(a.*)  /* base.ec.pd :: PdReviewAttach :: selectPageCount */
         FROM pd_review_attach a
-            <include refid="pdReviewAttachCond"/>
+            LEFT JOIN pd_review r ON r.review_id = a.review_id
+        <include refid="pdReviewAttachCond"/>
     </select>
 
     <!-- 리뷰 첨부파일 선택 필드 수정 -->

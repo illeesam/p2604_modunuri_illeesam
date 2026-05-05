@@ -206,6 +206,60 @@ const totalPage = d.pageTotalPage  || 1;    // 전체 페이지 수
 > **주의**: 필드명을 `list`, `totalCount`, `total`로 잘못 읽으면 항상 빈 배열·0이 반환되어
 > "조회 결과 없음"처럼 보이지만 실제 API는 정상 응답한다.
 
+### 7.3 목록 조회는 항상 페이징 ⭐
+
+**원칙**: 모든 목록 조회는 `getPageData()` 로 페이징 응답을 반환한다. `getList()` 는 내부 호출 또는
+"전체 한 번에 받아 메모리에서 처리하는" 특수 목적(예: 코드그룹 캐시) 외에는 외부 노출 금지.
+
+**근거**:
+- 데이터가 적으면 페이징 의미 없어 보이지만, 누적되면 페이지네이션 없이는 화면 무거워짐
+- 응답 구조 일관 — 화면이 항상 `pageList / pageTotalCount` 형태로 처리
+- 백엔드도 `PageHelper` 한 곳에서 ThreadLocal 페이징 컨텍스트를 관리하여 표준화
+
+**기본값** (`PageHelper.DEFAULT_PAGE_NO/SIZE`):
+- `pageNo`   = `1`
+- `pageSize` = `20`
+
+호출 측에서 `pageNo/pageSize` 가 없거나 NULL 이어도 자동으로 기본값이 적용되므로, **클라이언트가
+페이징 파라미터를 보내지 않아도 페이징 응답이 나온다**.
+
+```java
+// ✅ FO/BO Service 표준 패턴
+@Transactional(readOnly = true)
+public Map<String, Object> getReviews(String prodId, Map<String, Object> p) {
+    Map<String, Object> param = (p != null) ? new HashMap<>(p) : new HashMap<>();
+    param.put("prodId", prodId);
+
+    PageResult<PdReviewDto> page = reviewService.getPageData(param);
+
+    Map<String, Object> result = new LinkedHashMap<>();
+    result.put("items",    page.getPageList());
+    result.put("total",    page.getPageTotalCount());
+    result.put("pageNo",   page.getPageNo());
+    result.put("pageSize", page.getPageSize());
+    return result;
+}
+```
+
+```java
+// ❌ 분기 금지 — pageSize 유무로 getList() / getPageData() 갈리지 않게
+if (param.containsKey("pageSize")) {
+    page = service.getPageData(param);
+} else {
+    list = service.getList(param);   // ← 이런 분기 금지
+}
+```
+
+**예외 — `getList()` 외부 노출 허용 케이스**:
+
+| 상황 | 사유 |
+|---|---|
+| 공통 코드 / 사이트 / 카테고리 트리 | 전체 캐싱 전제, 페이징 무의미 |
+| 단일 상품의 이미지 / 옵션 / SKU | 한 상품의 모든 항목을 반드시 같이 표시 |
+| 통계용 전체 스캔 (`COUNT(*)` 등) | 조회 대상이 본질적으로 리스트가 아님 |
+
+위 외에는 항상 `getPageData()` 를 사용한다.
+
 ---
 
 ## 관련 정책

@@ -8,6 +8,7 @@
     <sql id="pmEventCond">
         <where>
             <if test="siteId != null and siteId != ''">AND e.site_id = #{siteId}</if>
+            <if test="useYn != null and useYn != ''">AND e.use_yn = #{useYn}</if>
             <if test="status != null and status != ''">AND e.event_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND e.event_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
