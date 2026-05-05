@@ -191,9 +191,9 @@
 
     /* URL 해시 파라미터 → instantOrder 재구성 */
     const _instantOrderFromParams = (params) => {
-      const prodId = Number(params.get('prodId'));
+      const prodId = params.get('prodId') || '';
       if (!prodId || !Array.isArray(prods)) return null;
-      const prod = prods.find(p => Number(p.prodId) === prodId);
+      const prod = prods.find(p => String(p.prodId) === prodId);
       if (!prod) return null;
       const opt1Nm = params.get('opt1Nm') || '';
       const color  = Array.isArray(prod.opt1s) ? prod.opt1s.find(c => c.name === opt1Nm) || null : null;
@@ -417,10 +417,9 @@
       try {
         const rawHash = String(window.location.hash || '').replace(/^#/, '');
         if (rawHash.includes('page=')) {
-          const hpid = new URLSearchParams(rawHash).get('prodid');
-          const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
-          if (!Number.isNaN(pid)) {
-            const f = prods.find(x => Number(x.prodId) === pid);
+          const hpid = new URLSearchParams(rawHash).get('prodid') || '';
+          if (hpid) {
+            const f = prods.find(x => String(x.prodId) === hpid);
             if (f) selectedProd.value = f;
           }
         }
@@ -560,10 +559,9 @@
           instantOrder.value = null;
           cartIds.splice(0, cartIds.length);
         }
-        const hpid = params.get('prodid');
-        const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
-        if (!Number.isNaN(pid)) {
-          const f = prods.find(x => Number(x.prodId) === pid);
+        const hpid = params.get('prodid') || '';
+        if (hpid) {
+          const f = prods.find(x => String(x.prodId) === hpid);
           if (f) selectedProd.value = f;
         }
         const hEventId = params.get('eventId');

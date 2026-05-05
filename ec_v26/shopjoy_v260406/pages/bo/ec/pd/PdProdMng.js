@@ -146,8 +146,8 @@ window.PdProdMng = {
       }
     };
 
-    const previewProduct = (pid) => {
-      window.open(`${window.pageUrl('index.html')}#page=prodView&pid=${pid}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+    const previewProduct = (prodId) => {
+      window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
     const exportExcel = () => boUtil.exportCsv(products, [{label:'ID',key:'prodId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'cateNm'},{label:'가격',key:'listPrice'},{label:'재고',key:'prodStock'},{label:'브랜드',key:'brandNm'},{label:'상태',key:'prodStatusCdNm'},{label:'등록일',key:'regDate'}], '상품목록.csv');

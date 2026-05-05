@@ -19,21 +19,27 @@ window.Prod03View = {
 
     const svProduct = ref(prod || null);
 
+    /* URL 해시에서 prodid 직접 추출 — 목록 진입/직접 URL 모두 동일하게 동작 */
+    const fnGetProdIdFromHash = () => {
+      try {
+        const rawHash = String(window.location.hash || '').replace(/^#/, '');
+        return new URLSearchParams(rawHash).get('prodid') || '';
+      } catch (e) { return ''; }
+    };
+
     const handleSearchList = async (searchType = 'DEFAULT') => {
-      const prodId = svProduct.value?.prodId;
+      const prodId = fnGetProdIdFromHash() || svProduct.value?.prodId;
       if (!prodId) return;
       try {
         const res = await foApiSvc.pdProd.getById(prodId, '상품상세', '상세조회');
-        // Tier 1 응답 구조: { prod, images, opts, skus } — 현재는 prod 기본정보만 머지
-        // (opt1s/opt2s 등 화면 전용 필드는 mock 유지. 디자인 모델 확정 시 어댑터 추가)
         const data = res.data?.data || {};
         const prod = data.prod || data;
-        if (prod && (prod.prodId || prod.prodId)) {
-          svProduct.value = { ...svProduct.value, ...prod };
+        if (prod && prod.prodId) {
+          /* 단건 조회 결과로 svProduct 교체 — 목록 데이터에 의존하지 않음 */
+          svProduct.value = { ...prod };
         }
       } catch (e) {
         console.error('[handleSearchList]', e);
-        // 실패 시 기존 svProduct(목록에서 받은 값) 유지 — null 대입 금지로 화면 보호
       }
     };
 
@@ -312,6 +318,7 @@ window.Prod03View = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
+      const main = getScrollEl();
       main.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('keydown', onKeydown);
       window.addEventListener('popstate', onPopState);
