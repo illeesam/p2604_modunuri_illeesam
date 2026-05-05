@@ -45,6 +45,25 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
         .map(c => ({ codeValue: c.codeVal, codeLabel: (c.codeNm || c.codeVal) + ' (' + grpVal + ':' + c.codeVal + ')' }));
       return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }, ...codes] : codes;
     },
+    // 트리형 코드 그룹: 레벨/부모 필터 ({ codeValue, codeLabel, codeLevel, parentCodeValue, codeRemark } 반환)
+    //   grpVal           : 코드그룹 (예: 'PROD_OPT_CATEGORY')
+    //   level            : code_level 값 (1/2/3 ...) — null/undefined 면 전체
+    //   parentCodeValue  : 부모 code_value 로 필터 — null/undefined 면 전체
+    sgGetGrpCodesByLevel: (s) => (grpVal, level, parentCodeValue) => {
+      if (!Array.isArray(s.svCodes)) return [];
+      return s.svCodes
+        .filter(c => c.codeGrp === grpVal && c.useYn !== 'N')
+        .filter(c => level == null || Number(c.codeLevel || 1) === Number(level))
+        .filter(c => parentCodeValue == null || c.parentCodeValue === parentCodeValue)
+        .sort((a, b) => (Number(a.codeSortOrd || 0) - Number(b.codeSortOrd || 0)))
+        .map(c => ({
+          codeValue: c.codeVal,
+          codeLabel: (c.codeNm || c.codeVal),
+          codeLevel: Number(c.codeLevel || 1),
+          parentCodeValue: c.parentCodeValue || null,
+          codeRemark: c.codeRemark || '',
+        }));
+    },
   },
 
   actions: {
@@ -107,6 +126,7 @@ const _boCodeStoreFallback = {
   svCodes: [], svIsLoading: false, sgIsEmpty: true,
   sgGetGrpCodes: () => [],
   sgGetGrpCodesFirstOpt: (g, iv, il) => iv && il ? [{ codeValue: iv, codeLabel: il }] : [],
+  sgGetGrpCodesByLevel: () => [],
 };
 window.sfGetBoCodeStore = () => {
   try {

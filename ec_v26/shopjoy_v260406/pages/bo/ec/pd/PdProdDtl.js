@@ -197,72 +197,90 @@ window.PdProdDtl = {
         let _optSeq = 1, _itemSeq = 100;
     const optGroups = reactive([]); // [{_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptItemId, sortOrd, useYn}]}]
     const skus = reactive([]);      // [{_id, _optKey, _nm1, _nm2, skuCode, addPrice, stock, useYn}]
-    // -- 옵션 공통코드 (DB: OPT_TYPE 단층 구조 — parentCodeValue 없음)
-    // 카테고리별 기본 옵션 유형 정적 매핑
-    const OPT_CATEGORY_MAP = {
-      'CLOTHING':   [{ typeCd: 'COLOR', grpNm: '색상' }, { typeCd: 'SIZE', grpNm: '사이즈' }],
-      'SHOES':      [{ typeCd: 'SIZE',  grpNm: '사이즈' }, { typeCd: 'COLOR', grpNm: '색상' }],
-      'BAG':        [{ typeCd: 'COLOR', grpNm: '색상' }, { typeCd: 'MATERIAL', grpNm: '소재' }],
-      'CUSTOM_GRP': [{ typeCd: 'COLOR', grpNm: '색상' }, { typeCd: 'CUSTOM', grpNm: '옵션2' }],
-      'COLOR':      [{ typeCd: 'COLOR', grpNm: '색상' }],
-      'SIZE':       [{ typeCd: 'SIZE',  grpNm: '사이즈' }],
-      'MATERIAL':   [{ typeCd: 'MATERIAL', grpNm: '소재' }],
-      'CUSTOM':     [{ typeCd: 'CUSTOM', grpNm: '옵션' }],
-    };
-    // svCodes 필드: codeGrp, codeId, codeNm, codeVal, codeSortOrd, useYn
-    // 편의 정규화: codeVal→codeValue, codeNm→codeLabel, codeSortOrd→sortOrd로 alias하여 사용
-    const cfOptTypeAllCodes  = computed(() =>
+    // -- 옵션 공통코드 (DB: PROD_OPT_CATEGORY 3단 트리 — sy_code.code_level + parent_code_value)
+    //    level=1 : 옵션 카테고리        (parent=NULL)            — 옵션 카테고리 select
+    //    level=2 : 옵션 유형(1·2단)     (parent=level1.code_value)— N단 유형 select
+    //    level=3 : 값 프리셋            (parent=level2.code_value)— 공통코드ID select
+    const PROD_OPT_GRP = 'PROD_OPT_CATEGORY';
+    const fnSortByOrd = (a,b) => Number(a.sortOrd||0) - Number(b.sortOrd||0);
+
+    // 1레벨 — 옵션 카테고리 선택용
+    const cfOptTypeLevel1Codes = computed(() =>
       (codes||[])
-        .filter(c => c.codeGrp === 'OPT_TYPE' && c.useYn === 'Y')
-        .map(c => ({ ...c, codeValue: c.codeVal, codeLabel: c.codeNm, sortOrd: Number(c.codeSortOrd||0) }))
+        .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y' && Number(c.codeLevel||1) === 1)
+        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .sort(fnSortByOrd)
     );
-    // 1레벨 = 카테고리 선택용 — OPT_CATEGORY_MAP 키 기반 정적 목록
-    const OPT_CATEGORY_LABELS = [
-      { codeValue: 'CLOTHING',   codeLabel: '의류 (색상+사이즈)' },
-      { codeValue: 'SHOES',      codeLabel: '신발 (사이즈+색상)' },
-      { codeValue: 'BAG',        codeLabel: '가방 (색상+소재)' },
-      { codeValue: 'CUSTOM_GRP', codeLabel: '색상+커스텀' },
-      { codeValue: 'COLOR',      codeLabel: '색상 단독' },
-      { codeValue: 'SIZE',       codeLabel: '사이즈 단독' },
-      { codeValue: 'MATERIAL',   codeLabel: '소재 단독' },
-      { codeValue: 'CUSTOM',     codeLabel: '직접입력 단독' },
-    ];
-    const cfOptTypeLevel1Codes = OPT_CATEGORY_LABELS;
-    // 2레벨 = 각 차원에서 고를 수 있는 단일 옵션 유형 목록
-    const cfOptTypeCodes = computed(() =>
-      cfOptTypeAllCodes.value
-        .filter(c => ['COLOR', 'SIZE', 'MATERIAL', 'CUSTOM'].includes(c.codeValue))
-        .sort((a,b) => a.sortOrd - b.sortOrd)
+    // 2레벨 — 선택된 카테고리 하위의 옵션 유형 목록 (1단·2단 유형 select 공용)
+    const getOptTypeCodes = (categoryCd) => {
+      if (!categoryCd) return [];
+      return (codes||[])
+        .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y'
+                  && Number(c.codeLevel||0) === 2
+                  && c.parentCodeValue === categoryCd)
+        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .sort(fnSortByOrd);
+    };
+    // 현재 화면에서 자주 쓰는 형태 — 선택된 카테고리 하위 2레벨 (computed)
+    const cfOptTypeCodes = computed(() => getOptTypeCodes(uiState.prodOptCategoryTypeCd));
+    // 3레벨 — 공통코드ID(opt_val_code_id) 드롭다운: 선택된 N단 유형(typeCd)의 자식
+    const getOptValCodes = (typeCd) => {
+      if (!typeCd) return [];
+      return (codes||[])
+        .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y'
+                  && Number(c.codeLevel||0) === 3
+                  && c.parentCodeValue === typeCd)
+        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .sort(fnSortByOrd);
+    };
+    // (호환용) typeCd 라벨 lookup — 기존 cfOptTypeAllCodes 자리를 대체. 모든 카테고리 하위 2레벨 합집합.
+    const cfOptTypeAllCodes = computed(() =>
+      (codes||[])
+        .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y' && Number(c.codeLevel||0) === 2)
+        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .sort(fnSortByOrd)
     );
+
     const cfOptInputTypeCodes = computed(() =>
       (codes||[])
         .filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y')
-        .map(c => ({ ...c, codeValue: c.codeVal, codeLabel: c.codeNm, sortOrd: Number(c.codeSortOrd||0) }))
-        .sort((a,b) => a.sortOrd - b.sortOrd)
+        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .sort(fnSortByOrd)
     );
-    const getOptValCodes = (typeCd) =>
-      (codes||[])
-        .filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y')
-        .map(c => ({ ...c, codeValue: c.codeVal, codeLabel: c.codeNm, sortOrd: Number(c.codeSortOrd||0) }))
-        .sort((a,b) => a.sortOrd - b.sortOrd);
 
     const clearOpt = () => { optGroups.length = 0; skus.length = 0; uiState.prodOptCategoryTypeCd = ''; };
 
+    // 카테고리 선택 시: DB의 2레벨 자식을 그대로 1·2단으로 자동 세팅 (최대 2개)
     const onCategoryChange = () => {
       optGroups.length = 0;
       skus.length = 0;
-      const defaults = OPT_CATEGORY_MAP[uiState.prodOptCategoryTypeCd] || [];
-      defaults.slice(0, 2).forEach((d, i) => {
-        optGroups.push({ _id: _optSeq++, grpNm: d.grpNm, typeCd: d.typeCd, inputTypeCd: 'SELECT', level: i + 1, items: [] });
+      const types = getOptTypeCodes(uiState.prodOptCategoryTypeCd);
+      types.slice(0, 2).forEach((t, i) => {
+        optGroups.push({
+          _id: _optSeq++,
+          grpNm: t.codeLabel || t.codeValue,
+          typeCd: t.codeValue,
+          inputTypeCd: 'SELECT',
+          level: i + 1,
+          items: []
+        });
       });
     };
 
     const addOptGroup = () => {
       if (!uiState.prodOptCategoryTypeCd) { showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
       if (optGroups.length >= 2) { showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
-      const defaults = OPT_CATEGORY_MAP[uiState.prodOptCategoryTypeCd] || [];
-      const d = defaults[optGroups.length] || { typeCd: 'CUSTOM', grpNm: '옵션' };
-      optGroups.push({ _id: _optSeq++, grpNm: d.grpNm, typeCd: d.typeCd, inputTypeCd: 'SELECT', level: optGroups.length + 1, items: [] });
+      const types = getOptTypeCodes(uiState.prodOptCategoryTypeCd);
+      const used = new Set(optGroups.map(g => g.typeCd).filter(Boolean));
+      const next = types.find(t => !used.has(t.codeValue)) || types[optGroups.length] || null;
+      optGroups.push({
+        _id: _optSeq++,
+        grpNm: next ? (next.codeLabel || next.codeValue) : '옵션',
+        typeCd: next ? next.codeValue : '',
+        inputTypeCd: 'SELECT',
+        level: optGroups.length + 1,
+        items: []
+      });
     };
     const removeOptGroup = (idx) => {
       optGroups.splice(idx, 1);
@@ -609,23 +627,16 @@ window.PdProdDtl = {
           if (p.useOptYn !== undefined) uiState.useOpt = p.useOptYn === 'Y';
           else uiState.useOpt = true;
 
-          // 옵션 카테고리 복원 — optGroups의 typeCd 조합으로 카테고리 역추적
+          // 옵션 카테고리 복원 — optGroups의 typeCd(=2레벨 code_value)의 parent_code_value로 역추적
           if (optGroups.length && !uiState.prodOptCategoryTypeCd) {
             const typeCds = optGroups.map(g => g.optTypeCd || g.typeCd || '').filter(Boolean);
-            const hasColor = typeCds.includes('COLOR');
-            const hasSize  = typeCds.includes('SIZE');
-            const hasMaterial = typeCds.includes('MATERIAL');
-            const hasCustom = typeCds.includes('CUSTOM');
-            // 카테고리 역추적: 조합으로 판단
-            if (hasColor && hasSize) uiState.prodOptCategoryTypeCd = 'CLOTHING';
-            else if (hasSize && !hasColor) uiState.prodOptCategoryTypeCd = 'SHOES';
-            else if (hasColor && hasMaterial) uiState.prodOptCategoryTypeCd = 'BAG';
-            else if (hasColor && hasCustom) uiState.prodOptCategoryTypeCd = 'CUSTOM_GRP';
-            else if (hasColor) uiState.prodOptCategoryTypeCd = 'COLOR';
-            else if (hasSize) uiState.prodOptCategoryTypeCd = 'SIZE';
-            else if (hasMaterial) uiState.prodOptCategoryTypeCd = 'MATERIAL';
-            else if (hasCustom) uiState.prodOptCategoryTypeCd = 'CUSTOM';
-            else if (typeCds[0]) uiState.prodOptCategoryTypeCd = typeCds[0];
+            const lvl2 = (codes||[]).filter(c => c.codeGrp === PROD_OPT_GRP && Number(c.codeLevel||0) === 2);
+            const parentSet = new Set(typeCds.map(tc => {
+              const found = lvl2.find(c => c.codeValue === tc);
+              return found ? found.parentCodeValue : null;
+            }).filter(Boolean));
+            // 모든 typeCd 가 동일한 부모(카테고리)에 속할 때만 자동 복원
+            if (parentSet.size === 1) uiState.prodOptCategoryTypeCd = [...parentSet][0];
           }
 
           if (p.salePlans?.length) salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false })));
@@ -1066,7 +1077,7 @@ window.PdProdDtl = {
   <div class="card" v-show="showTab('option')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⚙ 옵션설정</div>
 
-    <!-- -- 옵션 사용 토글 + OPT_TYPE 2레벨 트리 선택 -------------------------------- -->
+    <!-- -- 옵션 사용 토글 + PROD_OPT_CATEGORY 3단 트리 선택 -------------------------- -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;padding:12px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
 
       <!-- -- 옵션 사용 체크박스 (disabled — 옵션 카테고리 선택 시 자동 체크) --- -->
@@ -1080,7 +1091,7 @@ window.PdProdDtl = {
         title="옵션설정 도움말">?</span>
       <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
 
-      <!-- -- STEP 1: OPT_TYPE 1레벨 (카테고리) 선택 — pd_prod_opt.opt_type_cd 레벨 1 ---- -->
+      <!-- -- STEP 1: PROD_OPT_CATEGORY level=1 (옵션 카테고리) 선택 -------------------- -->
       <div style="display:flex;align-items:flex-start;gap:6px;">
           <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start;flex-shrink:0;margin-top:6px;">
             <span style="font-size:12px;color:#555;font-weight:600;">옵션 카테고리</span>

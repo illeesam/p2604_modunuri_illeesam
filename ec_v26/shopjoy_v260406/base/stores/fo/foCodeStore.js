@@ -41,6 +41,33 @@ window.useFoCodeStore = Pinia.defineStore('foCode', {
         .map(c => ({ codeValue: c.code_value, codeLabel: `${c.code_label} (${c.codeGrp}:${c.code_value})` })) || [];
       return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }, ...codes] : codes;
     },
+    // 트리형 코드 그룹: 레벨/부모 필터
+    //   grpVal           : 코드그룹 (예: 'PROD_OPT_CATEGORY')
+    //   level            : code_level 값 — null/undefined 면 전체
+    //   parentCodeValue  : 부모 code_value — null/undefined 면 전체
+    // BO 와 달리 FO 는 응답 키가 snake_case 일 수 있어 양쪽을 모두 허용
+    sgGetGrpCodesByLevel: (s) => (grpVal, level, parentCodeValue) => {
+      if (!Array.isArray(s.svCodes)) return [];
+      const lv = (c) => Number(c.codeLevel ?? c.code_level ?? 1);
+      const pv = (c) => c.parentCodeValue ?? c.parent_code_value ?? null;
+      const cv = (c) => c.codeVal ?? c.code_value;
+      const cl = (c) => c.codeNm ?? c.code_label;
+      const cs = (c) => Number(c.codeSortOrd ?? c.sort_ord ?? 0);
+      const cu = (c) => c.useYn ?? c.use_yn;
+      const cr = (c) => c.codeRemark ?? c.code_remark ?? '';
+      return s.svCodes
+        .filter(c => c.codeGrp === grpVal && cu(c) !== 'N')
+        .filter(c => level == null || lv(c) === Number(level))
+        .filter(c => parentCodeValue == null || pv(c) === parentCodeValue)
+        .sort((a, b) => cs(a) - cs(b))
+        .map(c => ({
+          codeValue: cv(c),
+          codeLabel: cl(c) || cv(c),
+          codeLevel: lv(c),
+          parentCodeValue: pv(c),
+          codeRemark: cr(c),
+        }));
+    },
   },
 
   actions: {

@@ -27,12 +27,14 @@ public class StoreCode {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CodeInfo {
-        private String codeGrp;       // 코드 그룹
-        private String codeId;        // 코드 ID
-        private String codeNm;        // 코드명
-        private String codeVal;       // 코드값
-        private String codeSortOrd;   // 정렬 순서
-        private String codeRemark;    // 비고
-        private String useYn;         // 사용여부
+        private String  codeGrp;          // 코드 그룹
+        private String  codeId;           // 코드 ID
+        private String  codeNm;           // 코드명
+        private String  codeVal;          // 코드값
+        private String  codeSortOrd;      // 정렬 순서
+        private String  codeRemark;       // 비고
+        private String  useYn;            // 사용여부
+        private String  parentCodeValue;  // 부모 코드값 (트리)
+        private Integer codeLevel;        // 트리 레벨 (1=루트)
     }
 }
