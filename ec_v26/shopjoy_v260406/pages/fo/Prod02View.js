@@ -199,17 +199,34 @@ window.Prod02View = {
       if (!p) return [];
       const real = Array.isArray(p.images) ? p.images : [];
       if (real.length) {
-        const colorItemId = uiState.selectedColor?.optItemId || '';
-        const opt1ById = new Map((p.opt1s || []).map(c => [c.optItemId, c]));
-        const opt2ById = new Map((p.opt2sAll || []).map(c => [c.optItemId, c]));
-        let filtered = colorItemId ? real.filter(im => im.optItemId1 === colorItemId) : real;
-        if (!filtered.length) filtered = real;
+        const sel = uiState.selectedColor || null;
+        const colorKeys = new Set();
+        if (sel) {
+          if (sel.optItemId) colorKeys.add(String(sel.optItemId));
+          if (sel.val)       colorKeys.add(String(sel.val));
+          if (sel.name)      colorKeys.add(String(sel.name));
+        }
+        const opt1ById = new Map();
+        (p.opt1s || []).forEach(c => {
+          if (c.optItemId) opt1ById.set(String(c.optItemId), c);
+          if (c.val)       opt1ById.set(String(c.val), c);
+          if (c.name)      opt1ById.set(String(c.name), c);
+        });
+        const opt2ById = new Map();
+        (p.opt2sAll || []).forEach(c => {
+          if (c.optItemId) opt2ById.set(String(c.optItemId), c);
+          if (c.val)       opt2ById.set(String(c.val), c);
+          if (c.name)      opt2ById.set(String(c.name), c);
+        });
+        const filtered = colorKeys.size
+          ? real.filter(im => im.optItemId1 && colorKeys.has(String(im.optItemId1)))
+          : real;
         const list = filtered.slice().sort((a,b) =>
           ((b.isThumb === 'Y') - (a.isThumb === 'Y')) || ((a.sortOrd||0) - (b.sortOrd||0))
         );
         return list.map((im, i) => {
-          const c1 = opt1ById.get(im.optItemId1);
-          const c2 = opt2ById.get(im.optItemId2);
+          const c1 = im.optItemId1 != null ? opt1ById.get(String(im.optItemId1)) : null;
+          const c2 = im.optItemId2 != null ? opt2ById.get(String(im.optItemId2)) : null;
           const parts = [];
           if (c1) parts.push((p.opt1Nm || '색상') + ': ' + c1.name);
           if (c2) parts.push((p.opt2Nm || '사이즈') + ': ' + c2.name);
