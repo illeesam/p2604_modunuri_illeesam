@@ -252,23 +252,42 @@ window.Prod01View = {
       const p = svProduct;
       if (!p) return [];
       // 1) 실제 등록된 이미지(prod.images) 우선
-      //    - 색상이 선택되었으면 그 색상에 매핑된 이미지(optItemId1=색상itemId)만 표시
-      //    - 매핑 0건이면 빈 상태 (fallback 안 함 — 다른 색상 이미지가 노출되면 안 됨)
+      //    - 색상이 선택되었으면 그 색상에 매핑된 이미지만 표시
+      //    - 매칭 키는 (a) opt_item_id (b) codeValue(val) 둘 다 허용 — BO 이미지 select 가 val 또는 _id 를 저장하므로
+      //    - 매핑 0건이면 빈 상태 (fallback 안 함)
       //    - 색상 미선택 시: 등록된 이미지 전체 표시
       const real = Array.isArray(p.images) ? p.images : [];
       if (real.length) {
-        const colorItemId = uiState.selectedColor?.optItemId || '';
-        const opt1ById = new Map((p.opt1s || []).map(c => [c.optItemId, c]));
-        const opt2ById = new Map((p.opt2sAll || []).map(c => [c.optItemId, c]));
-        const filtered = colorItemId
-          ? real.filter(im => im.optItemId1 === colorItemId)
+        const sel = uiState.selectedColor || null;
+        // 색상 매칭 후보 키들 (Set) — itemId, val, name 모두 포함
+        const colorKeys = new Set();
+        if (sel) {
+          if (sel.optItemId) colorKeys.add(String(sel.optItemId));
+          if (sel.val)       colorKeys.add(String(sel.val));
+          if (sel.name)      colorKeys.add(String(sel.name));
+        }
+        // 옵션값 → 표시명 매핑 (image.optItemId1 가 무엇이든 라벨 만들 수 있도록)
+        const opt1ById = new Map();
+        (p.opt1s || []).forEach(c => {
+          if (c.optItemId) opt1ById.set(String(c.optItemId), c);
+          if (c.val)       opt1ById.set(String(c.val), c);
+          if (c.name)      opt1ById.set(String(c.name), c);
+        });
+        const opt2ById = new Map();
+        (p.opt2sAll || []).forEach(c => {
+          if (c.optItemId) opt2ById.set(String(c.optItemId), c);
+          if (c.val)       opt2ById.set(String(c.val), c);
+          if (c.name)      opt2ById.set(String(c.name), c);
+        });
+        const filtered = colorKeys.size
+          ? real.filter(im => im.optItemId1 && colorKeys.has(String(im.optItemId1)))
           : real;
         const list = filtered.slice().sort((a,b) =>
           ((b.isThumb === 'Y') - (a.isThumb === 'Y')) || ((a.sortOrd||0) - (b.sortOrd||0))
         );
         return list.map((im, i) => {
-          const c1 = opt1ById.get(im.optItemId1);
-          const c2 = opt2ById.get(im.optItemId2);
+          const c1 = im.optItemId1 != null ? opt1ById.get(String(im.optItemId1)) : null;
+          const c2 = im.optItemId2 != null ? opt2ById.get(String(im.optItemId2)) : null;
           // hover 시 표시할 옵션 라벨 — "색상: 블랙 / 사이즈: M" 형태
           const parts = [];
           if (c1) parts.push((p.opt1Nm || '색상') + ': ' + c1.name);
