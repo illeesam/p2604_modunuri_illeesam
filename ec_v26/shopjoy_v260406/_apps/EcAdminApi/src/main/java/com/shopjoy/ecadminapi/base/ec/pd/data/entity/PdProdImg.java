@@ -38,10 +38,10 @@ public class PdProdImg extends BaseEntity {
     @Column(name = "cdn_host", length = 100)
     private String cdnHost;
 
-    @Column(name = "cdn_img_url", length = 500)
+    @Column(name = "cdn_img_url", columnDefinition = "TEXT")
     private String cdnImgUrl;
 
-    @Column(name = "cdn_thumb_url", length = 500)
+    @Column(name = "cdn_thumb_url", columnDefinition = "TEXT")
     private String cdnThumbUrl;
 
     @Column(name = "img_alt_text", length = 200)

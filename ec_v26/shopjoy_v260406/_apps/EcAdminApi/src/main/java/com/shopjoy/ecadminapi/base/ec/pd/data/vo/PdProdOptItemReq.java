@@ -22,6 +22,7 @@ public class PdProdOptItemReq {
     private String optVal;
     private String optValCodeId;
     private String parentOptItemId;
+    private String optStyle;
     private Integer sortOrd;
     private String useYn;
     private String regBy;
@@ -39,6 +40,7 @@ public class PdProdOptItemReq {
                 .optVal(optVal)
                 .optValCodeId(optValCodeId)
                 .parentOptItemId(parentOptItemId)
+                .optStyle(optStyle)
                 .sortOrd(sortOrd)
                 .useYn(useYn)
                 .regBy(regBy)

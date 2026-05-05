@@ -15,6 +15,8 @@ CREATE TABLE shopjoy_2604.pd_prod (
     sale_price            BIGINT        DEFAULT 0,
     purchase_price        BIGINT       ,
     margin_rate           NUMERIC(5,2) ,
+    platform_fee_rate     NUMERIC(5,2) ,
+    platform_fee_amount   BIGINT       ,
     prod_stock            INTEGER       DEFAULT 0,
     prod_status_cd        VARCHAR(20)   DEFAULT 'ACTIVE',
     prod_status_cd_before VARCHAR(20)  ,
@@ -62,6 +64,8 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.list_price IS '정가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.sale_price IS '판매가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.purchase_price IS '매입가(원가) — 내부 관리용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.margin_rate IS '마진율 (%) — 내부 관리용';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_rate   IS '플랫폼수수료 율 (%) — 내부 관리용';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_amount IS '플랫폼수수료 금액 (원) — 내부 관리용. rate 와 amount 중 입력된 값을 우선 사용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_stock IS '재고수량';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_status_cd IS '상태 (코드: PRODUCT_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_status_cd_before IS '변경 전 상품상태 (코드: PRODUCT_STATUS)';

@@ -58,6 +58,12 @@ public class PdProd extends BaseEntity {
     @Column(name = "margin_rate")
     private BigDecimal marginRate;
 
+    @Column(name = "platform_fee_rate")
+    private BigDecimal platformFeeRate;
+
+    @Column(name = "platform_fee_amount")
+    private Long platformFeeAmount;
+
     @Column(name = "prod_stock")
     private Integer prodStock;
 

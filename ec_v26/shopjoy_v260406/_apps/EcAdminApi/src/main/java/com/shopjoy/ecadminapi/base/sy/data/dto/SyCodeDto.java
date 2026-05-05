@@ -21,6 +21,7 @@ public class SyCodeDto {
     private String childCodeValues;
     private String codeRemark;
     private Integer codeLevel;
+    private String codeOpt1;
     private String regBy;
     private LocalDateTime regDate;
     private String updBy;

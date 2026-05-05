@@ -28,6 +28,8 @@ public class PdProdReq {
     private Long salePrice;
     private Long purchasePrice;
     private BigDecimal marginRate;
+    private BigDecimal platformFeeRate;
+    private Long       platformFeeAmount;
     private Integer prodStock;
     private String prodStatusCd;
     private String prodStatusCdBefore;
@@ -75,6 +77,8 @@ public class PdProdReq {
                 .salePrice(salePrice)
                 .purchasePrice(purchasePrice)
                 .marginRate(marginRate)
+                .platformFeeRate(platformFeeRate)
+                .platformFeeAmount(platformFeeAmount)
                 .prodStock(prodStock)
                 .prodStatusCd(prodStatusCd)
                 .prodStatusCdBefore(prodStatusCdBefore)

@@ -36,5 +36,6 @@ public class StoreCode {
         private String  useYn;            // 사용여부
         private String  parentCodeValue;  // 부모 코드값 (트리)
         private Integer codeLevel;        // 트리 레벨 (1=루트)
+        private String  codeOpt1;         // 부가 옵션1 (스타일 색상/아이콘 등)
     }
 }

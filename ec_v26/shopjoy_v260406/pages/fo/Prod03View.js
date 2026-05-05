@@ -23,6 +23,38 @@ window.Prod03View = {
       Object.keys(svProduct).forEach(k => delete svProduct[k]);
       if (newProd) Object.assign(svProduct, newProd);
     };
+    /* 백엔드 응답 (prod + opts + skus + images) → 화면이 기대하는 단일 prod 형태로 머지 (Prod01View와 동일) */
+    const fnMergeProdOpts = (prod, optsObj, skusList, imgList) => {
+      const groups = (optsObj?.groups || []).slice().sort((a,b) => (a.optLevel||a.level||0) - (b.optLevel||b.level||0));
+      const items  = optsObj?.items  || [];
+      const lv1    = groups.find(g => Number(g.optLevel||g.level||0) === 1);
+      const lv2    = groups.find(g => Number(g.optLevel||g.level||0) === 2);
+      const itemsOf = (g) => g ? items.filter(i => i.optId === g.optId) : [];
+      const lv1Items = itemsOf(lv1).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
+      const lv2Items = itemsOf(lv2).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
+      const opt1s = lv1Items.map(it => {
+        const optImgs = imgList.filter(im => im.optItemId1 === it.optItemId);
+        return {
+          optItemId:  it.optItemId,
+          name:       it.optNm || it.optVal || '',
+          val:        it.optVal || '',
+          priceDelta: 0,
+          imgUrl:     optImgs[0]?.cdnImgUrl || optImgs[0]?.cdnThumbUrl || '',
+        };
+      });
+      const opt2s = lv2Items.map(it => it.optNm || it.optVal || '').filter(Boolean);
+      const opt2Prices = {};
+      lv2Items.forEach(it => {
+        const matchedSkus = skusList.filter(s => (s.optItemId2 === it.optItemId) || (s.optItemNm2 === it.optNm));
+        if (!matchedSkus.length) return;
+        const avg = Math.round(matchedSkus.reduce((a,s) => a + (Number(s.addPrice)||0), 0) / matchedSkus.length);
+        if (avg) opt2Prices[it.optNm || it.optVal] = avg;
+      });
+      const main = imgList.find(im => im.isThumb === 'Y') || imgList[0];
+      const mainImage = main?.cdnImgUrl || main?.cdnThumbUrl || '';
+      const priceVal = prod.salePrice || prod.listPrice || prod.price || 0;
+      return { ...prod, price: priceVal, mainImage, images: imgList, opt1s, opt2s, opt2Prices, skus: skusList };
+    };
     if (prod) fnApplySvProduct(prod);
     /* Tier 2/3 lazy 데이터 — 배열/객체는 reactive (정책: base.데이터흐름-상태관리.md §2-1) */
     const svContents     = reactive([]);
@@ -55,7 +87,10 @@ window.Prod03View = {
         const res = await foApiSvc.pdProd.getById(prodId, '상품상세', '상세조회');
         const data = fnPickData(res) || {};
         const prod = data.prod || data;
-        if (prod && prod.prodId) fnApplySvProduct(prod);
+        if (prod && prod.prodId) {
+          const merged = fnMergeProdOpts(prod, data.opts || { groups: [], items: [] }, data.skus || [], data.images || []);
+          fnApplySvProduct(merged);
+        }
       } catch (e) { console.error('[handleSearchList:getById]', e); }
 
       /* Tier 2: lazy 호출 — 병렬 처리 */

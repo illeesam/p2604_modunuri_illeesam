@@ -465,6 +465,7 @@ public class CmAppStoreDataService {
                     .useYn(CmUtil.nvl(code.getUseYn()))
                     .parentCodeValue(CmUtil.nvl(code.getParentCodeValue()))
                     .codeLevel(code.getCodeLevel() != null ? code.getCodeLevel() : 1)
+                    .codeOpt1(CmUtil.nvl(code.getCodeOpt1()))
                     .build();
 
             codes.add(codeInfo);

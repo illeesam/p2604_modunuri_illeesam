@@ -24,6 +24,8 @@ public class SyCodeReq {
     private String parentCodeValue;
     private String childCodeValues;
     private String codeRemark;
+    private Integer codeLevel;
+    private String codeOpt1;
     private String regBy;
     private LocalDateTime regDate;
     private String updBy;
@@ -41,6 +43,8 @@ public class SyCodeReq {
                 .parentCodeValue(parentCodeValue)
                 .childCodeValues(childCodeValues)
                 .codeRemark(codeRemark)
+                .codeLevel(codeLevel)
+                .codeOpt1(codeOpt1)
                 .regBy(regBy)
                 .regDate(regDate)
                 .updBy(updBy)

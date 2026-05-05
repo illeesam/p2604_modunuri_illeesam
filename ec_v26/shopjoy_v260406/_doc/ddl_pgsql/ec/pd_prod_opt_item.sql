@@ -10,6 +10,7 @@ CREATE TABLE shopjoy_2604.pd_prod_opt_item (
     opt_val            VARCHAR(50) ,
     opt_val_code_id    VARCHAR(50) ,
     parent_opt_item_id VARCHAR(21) ,
+    opt_style          VARCHAR(200),
     sort_ord           INTEGER      DEFAULT 0,
     use_yn             VARCHAR(1)   DEFAULT 'Y',
     reg_by             VARCHAR(30) ,
@@ -27,6 +28,7 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.opt_nm IS '옵션값 표시명 (
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.opt_val IS '실제 저장값 — opt_val_code_id 선택 시 codeValue 자동 채움, 직접입력도 허용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.opt_val_code_id IS 'OPT_VAL 공통코드 참조ID (sy_code.code_id) — NULL이면 opt_val 직접입력';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.parent_opt_item_id IS '상위 옵션값ID — 2단 옵션에서 상위 1단 옵션값 참조 (pd_prod_opt_item.opt_item_id), NULL이면 독립값(전체 공통)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.opt_style IS '옵션 스타일 (컬러 hex 값, 아이콘 클래스 등 자유 문자열). 비어 있으면 표시명 텍스트만 사용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.sort_ord IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.use_yn IS '사용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';

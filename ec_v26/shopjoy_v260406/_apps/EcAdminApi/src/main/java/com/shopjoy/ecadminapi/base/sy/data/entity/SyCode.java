@@ -48,4 +48,7 @@ public class SyCode extends BaseEntity {
     @Column(name = "code_level")
     private Integer codeLevel;
 
+    @Column(name = "code_opt1", length = 200)
+    private String codeOpt1;
+
 }

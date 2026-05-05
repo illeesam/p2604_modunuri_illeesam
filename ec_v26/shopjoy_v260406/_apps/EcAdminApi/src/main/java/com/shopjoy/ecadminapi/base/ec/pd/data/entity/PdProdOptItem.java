@@ -41,6 +41,9 @@ public class PdProdOptItem extends BaseEntity {
     @Column(name = "parent_opt_item_id", length = 21)
     private String parentOptItemId;
 
+    @Column(name = "opt_style", length = 200)
+    private String optStyle;
+
     @Column(name = "sort_ord")
     private Integer sortOrd;
 

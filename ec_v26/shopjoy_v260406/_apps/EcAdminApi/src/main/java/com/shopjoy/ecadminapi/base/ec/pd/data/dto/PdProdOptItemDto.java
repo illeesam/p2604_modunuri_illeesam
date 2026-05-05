@@ -18,6 +18,7 @@ public class PdProdOptItemDto {
     private String optVal;
     private String optValCodeId;
     private String parentOptItemId;
+    private String optStyle;
     private Integer sortOrd;
     private String useYn;
     private String regBy;

@@ -113,20 +113,67 @@ window.PdProdDtl = {
           if (p) products.splice(0, products.length, p);
 
           // 이미지 [3]
+          //   pd_prod_img: cdn_img_url / cdn_thumb_url / opt_item_id_1 / opt_item_id_2 / is_thumb / sort_ord
+          //   화면용:      previewUrl / isMain (=is_thumb=Y)
           const imgList = r[3].data?.data || [];
-          tabData.images.splice(0, tabData.images.length, ...imgList.map(img => ({ ...img, id: imgIdSeq++, previewUrl: img.cdnImgUrl || img.cdnThumbUrl || '' })));
+          tabData.images.splice(0, tabData.images.length, ...imgList.map(img => ({
+            ...img,
+            id:          imgIdSeq++,
+            previewUrl:  img.cdnImgUrl || img.cdnThumbUrl || '',
+            isMain:      img.isThumb === 'Y',
+            optItemId1:  img.optItemId1 || '',
+            optItemId2:  img.optItemId2 || '',
+          })));
 
           // 옵션그룹+아이템 [4]
+          //   백엔드 키:  pd_prod_opt        → optId / optGrpNm / optTypeCd / optInputTypeCd / optLevel / sortOrd
+          //              pd_prod_opt_item   → optItemId / optId / optNm / optVal / optValCodeId / parentOptItemId / sortOrd / useYn
+          //   화면 키:    {_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptItemId, sortOrd, useYn}]}
           const optD = r[4].data?.data || {};
           const optGroups_ = optD.groups || [];
           const optItems_  = optD.items  || [];
           tabData.opts.groups.splice(0, tabData.opts.groups.length, ...optGroups_);
           tabData.opts.items.splice(0,  tabData.opts.items.length,  ...optItems_);
           if (optGroups_.length) {
-            const built = optGroups_.map(g => ({
-              ...g, _id: _optSeq++,
-              items: optItems_.filter(i => i.optId === g.optId).map(i => ({ ...i, _id: _itemSeq++, nm: i.optNm, val: i.optVal || '' }))
-            }));
+            // 1) 그룹: optId → 임시 _id 매핑 (parentOptItemId 변환에 사용)
+            const groupClientId = {};
+            const built = optGroups_.map(g => {
+              const _id = _optSeq++;
+              groupClientId[g.optId] = _id;
+              return {
+                _id,
+                _origOptId: g.optId,
+                grpNm:       g.optGrpNm || g.grpNm || '',
+                typeCd:      g.optTypeCd || g.typeCd || '',
+                inputTypeCd: g.optInputTypeCd || g.inputTypeCd || 'SELECT',
+                level:       g.optLevel != null ? Number(g.optLevel) : (g.level || 1),
+                sortOrd:     Number(g.sortOrd || 0),
+                items:       [],
+              };
+            });
+            // 2) 아이템: opt_item_id → 임시 _id 매핑 (자기 자신용)
+            const itemClientId = {};
+            optItems_.forEach(i => { itemClientId[i.optItemId] = _itemSeq++; });
+            // 3) 그룹별 아이템 채움 + parentOptItemId 를 화면용 _id 로 변환
+            built.forEach(grp => {
+              const groupItems = optItems_.filter(i => i.optId === grp._origOptId).map(i => {
+                const parentClient = i.parentOptItemId ? itemClientId[i.parentOptItemId] : '';
+                return {
+                  _id: itemClientId[i.optItemId],
+                  nm:        i.optNm || '',
+                  val:       i.optVal || '',
+                  valCodeId: i.optValCodeId || '',
+                  optStyle:  i.optStyle || '',
+                  parentOptItemId: parentClient ? String(parentClient) : '',
+                  sortOrd:   Number(i.sortOrd || 0),
+                  useYn:     i.useYn || 'Y',
+                };
+              });
+              groupItems.sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
+              grp.items = groupItems;
+              delete grp._origOptId;
+            });
+            built.sort((a,b) => (a.level||0) - (b.level||0) || (a.sortOrd||0) - (b.sortOrd||0));
             optGroups.splice(0, optGroups.length, ...built);
           }
 
@@ -176,6 +223,7 @@ window.PdProdDtl = {
       prodTypeCd: 'SINGLE', prodStatusCd: 'DRAFT', unsaleMsg: '',
       dlvTmpltId: '',
       listPrice: 0, salePrice: 0, purchasePrice: null, marginRate: null,
+      platformFeeRate: null, platformFeeAmount: null,
       prodStock: 0,
       saleStartDate: '', saleEndDate: '',
       minBuyQty: 1, maxBuyQty: null, dayMaxBuyQty: null, idMaxBuyQty: null,
@@ -217,6 +265,7 @@ window.PdProdDtl = {
       parentCodeValue: c.parentCodeValue ?? null,
       sortOrd:         Number(c.codeSortOrd ?? c.sortOrd ?? 0),
       codeRemark:      c.codeRemark ?? '',
+      codeOpt1:        c.codeOpt1 ?? '',
       useYn:           c.useYn ?? 'Y',
     });
     const fnSortByOrd = (a,b) => (a.sortOrd||0) - (b.sortOrd||0);
@@ -267,45 +316,105 @@ window.PdProdDtl = {
 
     const clearOpt = () => { optGroups.length = 0; skus.length = 0; uiState.prodOptCategoryTypeCd = ''; };
 
-    // 차원별 기본 아이템 수: 1단=5개, 2단=15개 (3레벨 프리셋 앞 N개로 채움. 부족하면 빈 행으로 패딩)
-    const DEFAULT_ITEMS_BY_LEVEL = { 1: 5, 2: 15 };
-    const fnBuildDefaultItems = (typeCd, level) => {
-      const want = DEFAULT_ITEMS_BY_LEVEL[level] || 0;
+    // 단일 프리셋 → 옵션 행 객체
+    //   valCodeId 는 sy_code.code_id (예: CD000963) — select v-model 매칭용
+    //   preset.codeId 가 비어있으면 codeValue 로 fallback
+    const fnPresetToItem = (preset, sortOrd, parentOptItemId) => {
+      const codeId = preset ? (preset.codeId || preset.codeValue || '') : '';
+      return {
+        _id: _itemSeq++,
+        nm:        preset ? (preset.codeLabel || preset.codeValue || '') : '',
+        val:       preset ? (preset.codeValue || '') : '',
+        valCodeId: codeId,
+        optStyle:  preset ? (preset.codeOpt1 || '') : '',
+        parentOptItemId: parentOptItemId || '',
+        sortOrd:   sortOrd,
+        useYn:     'Y',
+      };
+    };
+
+    // 1단 옵션 행: 해당 typeCd 프리셋 전체를 정렬 순서대로 행으로 만듦
+    const fnBuildLevel1Items = (typeCd) => {
+      const presets = typeCd ? getOptValCodes(typeCd) : [];
+      if (presets.length && !presets[0].codeId) {
+        console.warn('[PdProdDtl] 프리셋에 codeId 가 없습니다 — 백엔드 재기동/재로그인 필요', presets[0]);
+      }
+      // getOptValCodes 는 이미 sortOrd 오름차순 정렬됨
+      return presets.map((p, i) => fnPresetToItem(p, i + 1, ''));
+    };
+
+    // 2단 옵션 행: 1단 행 N × 2단 프리셋 M 카르테시안 곱 — 각 행의 상위옵션값은 1단 행의 _id 로 연결
+    const fnBuildLevel2Items = (typeCd, level1Items) => {
       const presets = typeCd ? getOptValCodes(typeCd) : [];
       const items = [];
-      for (let i = 0; i < want; i++) {
-        const p = presets[i];
-        items.push({
-          _id: _itemSeq++,
-          nm:        p ? p.codeLabel : '',
-          val:       p ? p.codeValue : '',
-          valCodeId: p ? p.codeId    : '',
-          parentOptItemId: '',
-          sortOrd:   i + 1,
-          useYn:     'Y',
+      let ord = 1;
+      const parents = (level1Items && level1Items.length) ? level1Items : [null];
+      // parents: 1단 행 (정렬 보존), presets: 2단 프리셋 (정렬 보존)
+      parents.forEach(parent => {
+        presets.forEach(p => {
+          items.push(fnPresetToItem(p, ord++, parent ? String(parent._id) : ''));
         });
-      }
+      });
       return items;
     };
 
     // 카테고리 선택 시: DB의 2레벨 자식을 그대로 1·2단으로 자동 세팅 (최대 2개)
-    //                  + 각 차원의 옵션 값 행을 1단=5개, 2단=15개 자동 생성
-    const onCategoryChange = () => {
-      optGroups.length = 0;
-      skus.length = 0;
+    //                  1단 = 1단 프리셋 N개
+    //                  2단 = 1단 N × 2단 M 행 (상위옵션값 자동 매핑)
+    //   기존에 옵션 항목/SKU 가 있는 상태에서 카테고리를 바꾸면 모두 초기화되므로 confirm 받음.
+    let _prevCategoryCd = uiState.prodOptCategoryTypeCd || '';
+    const fnLabelOfCategory = (cv) => {
+      if (!cv) return '(미선택)';
+      const found = cfOptTypeLevel1Codes.value.find(c => c.codeValue === cv);
+      return found ? `${found.codeLabel} (${cv})` : cv;
+    };
+    const fnApplyCategory = () => {
       const types = getOptTypeCodes(uiState.prodOptCategoryTypeCd);
-      types.slice(0, 2).forEach((t, i) => {
+      const slots = types.slice(0, 2);
+      let level1Items = [];
+      slots.forEach((t, i) => {
         const level = i + 1;
+        const items = level === 1
+          ? fnBuildLevel1Items(t.codeValue)
+          : fnBuildLevel2Items(t.codeValue, level1Items);
+        if (level === 1) level1Items = items;
         optGroups.push({
           _id: _optSeq++,
           grpNm: t.codeLabel || t.codeValue,
           typeCd: t.codeValue,
           inputTypeCd: 'SELECT',
           level,
-          items: fnBuildDefaultItems(t.codeValue, level),
+          items,
         });
       });
-      generateSkus();
+      // SKU 는 자동 생성하지 않음. 사용자가 옵션(가격/재고) 탭에서 [🔄 SKU 재생성] 으로 직접 만들도록 빈 상태 유지.
+      _prevCategoryCd = uiState.prodOptCategoryTypeCd;
+    };
+    const onCategoryChange = async () => {
+      const newCd = uiState.prodOptCategoryTypeCd;
+      const oldCd = _prevCategoryCd;
+      // 변경 전에 항목/SKU/이미지가 있으면 사용자에게 확인
+      const hasItems = optGroups.some(g => (g.items || []).length > 0);
+      const hasSkus  = skus.length > 0;
+      const hasImgs  = images.length > 0;
+      if (oldCd && oldCd !== newCd && (hasItems || hasSkus || hasImgs)) {
+        const ok = await showConfirm(
+          '옵션 카테고리 변경',
+          `옵션 카테고리가 ${fnLabelOfCategory(oldCd)} 에서 ${fnLabelOfCategory(newCd)} 으로 변경되었습니다.\n` +
+          `값이 변경되면 옵션항목 / 옵션(가격·재고) / 이미지 가 모두 삭제됩니다.\n` +
+          `그래도 변경하시겠습니까?`
+        );
+        if (!ok) {
+          // 사용자 취소 → 원래 값 복구
+          uiState.prodOptCategoryTypeCd = oldCd;
+          return;
+        }
+      }
+      // 옵션 항목 / SKU / 이미지 모두 비움 (이미지는 행 자체 제거)
+      optGroups.length = 0;
+      skus.length      = 0;
+      images.length    = 0;
+      fnApplyCategory();
     };
 
     const addOptGroup = () => {
@@ -315,13 +424,16 @@ window.PdProdDtl = {
       const used = new Set(optGroups.map(g => g.typeCd).filter(Boolean));
       const next = types.find(t => !used.has(t.codeValue)) || types[optGroups.length] || null;
       const level = optGroups.length + 1;
+      const items = level === 1
+        ? fnBuildLevel1Items(next ? next.codeValue : '')
+        : fnBuildLevel2Items(next ? next.codeValue : '', optGroups[0]?.items || []);
       optGroups.push({
         _id: _optSeq++,
         grpNm: next ? (next.codeLabel || next.codeValue) : '옵션',
         typeCd: next ? next.codeValue : '',
         inputTypeCd: 'SELECT',
         level,
-        items: fnBuildDefaultItems(next ? next.codeValue : '', level),
+        items,
       });
       generateSkus();
     };
@@ -331,7 +443,7 @@ window.PdProdDtl = {
       generateSkus();
     };
     const addOptItem = (grp) => {
-      grp.items.push({ _id: _itemSeq++, nm: '', val: '', valCodeId: '', parentOptItemId: '', sortOrd: grp.items.length + 1, useYn: 'Y' });
+      grp.items.push({ _id: _itemSeq++, nm: '', val: '', valCodeId: '', optStyle: '', parentOptItemId: '', sortOrd: grp.items.length + 1, useYn: 'Y' });
     };
     const removeOptItem = (grp, idx) => { grp.items.splice(idx, 1); generateSkus(); };
 
@@ -374,6 +486,16 @@ window.PdProdDtl = {
     };
     const cfTotalStock = computed(() => safeFilter(skus, s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
 
+    // -- SKU 행 이동 (위/아래 한 칸) — 원본 skus 배열 인덱스 기준 swap
+    const moveSku = (sku, dir) => {
+      const idx = skus.findIndex(s => s._id === sku._id);
+      if (idx === -1) return;
+      const target = idx + (dir === 'up' ? -1 : 1);
+      if (target < 0 || target >= skus.length) return;
+      const [moved] = skus.splice(idx, 1);
+      skus.splice(target, 0, moved);
+    };
+
     // -- SKU 필터 (1단/2단/재고) - uiState 참조
     const cfSkuFilter1Options = computed(() => [...new Set(skus.map(s => s._nm1).filter(Boolean))]);
     const cfSkuFilter2Options = computed(() => {
@@ -406,6 +528,18 @@ window.PdProdDtl = {
     const removeImage = (id) => {
       const idx = images.findIndex(img => img.id === id);
       if (idx !== -1) { const wasMain = images[idx].isMain; images.splice(idx, 1); if (wasMain && images.length) safeFirst(images).isMain = true; }
+    };
+    // 2단 옵션 라벨 — 상위옵션값(parent_opt_item)이 있으면 "상위 > 본인" 형식으로 표시
+    const fnOptItem2Label = (item) => {
+      if (!item) return '';
+      const baseLabel = (item.nm || '') + (item.val ? ' (' + item.val + ')' : '');
+      const parentKey = item.parentOptItemId;
+      if (!parentKey) return baseLabel;
+      const parents = optGroups[0]?.items || [];
+      const p = parents.find(pi => String(pi._id) === String(parentKey) || pi.val === parentKey);
+      if (!p) return baseLabel;
+      const parentLabel = (p.nm || '') + (p.val ? ' (' + p.val + ')' : '');
+      return parentLabel + ' > ' + baseLabel;
     };
 
     // -- 이미지 드래그 정렬
@@ -492,6 +626,33 @@ window.PdProdDtl = {
     const cfDiscountRate = computed(() => {
       if (!form.listPrice || form.listPrice <= 0) return 0;
       return Math.round((1 - form.salePrice / form.listPrice) * 100);
+    });
+    // 플랫폼수수료: amount 우선 — amount 가 비어 있으면 rate × salePrice 로 환산
+    const cfPlatformFee = computed(() => {
+      const sale = Number(form.salePrice || 0);
+      if (form.platformFeeAmount != null && form.platformFeeAmount !== '') {
+        return Math.round(Number(form.platformFeeAmount) || 0);
+      }
+      if (form.platformFeeRate != null && form.platformFeeRate !== '') {
+        return Math.round(sale * (Number(form.platformFeeRate) || 0) / 100);
+      }
+      return 0;
+    });
+    const cfPlatformFeeDisp = computed(() => {
+      const fee = cfPlatformFee.value;
+      if (!fee) return '-';
+      if (form.platformFeeAmount != null && form.platformFeeAmount !== '') return fee.toLocaleString() + '원';
+      if (form.platformFeeRate   != null && form.platformFeeRate   !== '') return fee.toLocaleString() + '원 (' + form.platformFeeRate + '%)';
+      return '-';
+    });
+    // 예상 순수익 = 판매가 - 매입가 - 플랫폼수수료
+    const cfNetRevenueDisp = computed(() => {
+      const sale = Number(form.salePrice || 0);
+      if (!sale) return '-';
+      const cost = Number(form.purchasePrice || 0);
+      const fee  = cfPlatformFee.value;
+      const net  = sale - cost - fee;
+      return net.toLocaleString() + '원';
     });
 
     // -- 연관상품 / 코드상품
@@ -614,6 +775,8 @@ window.PdProdDtl = {
           form.listPrice      = p.listPrice || 0;
           form.salePrice      = p.salePrice || 0;
           form.purchasePrice  = p.purchasePrice || null;
+          form.platformFeeRate   = p.platformFeeRate   != null ? p.platformFeeRate   : null;
+          form.platformFeeAmount = p.platformFeeAmount != null ? p.platformFeeAmount : null;
           form.prodStock      = p.prodStock || 0;
           form.saleStartDate  = p.saleStartDate || '';
           form.saleEndDate    = p.saleEndDate || '';
@@ -636,7 +799,11 @@ window.PdProdDtl = {
           form.isBest         = p.isBest || 'N';
           form.contentHtml    = p.contentHtml || p.description || '';
           // 이미지 — tabData에서 채움 (handleLoadData에서 이미 로드)
-          if (tabData.images.length) images.splice(0, images.length, ...tabData.images);
+          if (tabData.images.length) {
+            images.splice(0, images.length, ...tabData.images);
+            // 대표가 하나도 없으면 첫 번째 자동 지정
+            if (!images.some(i => i.isMain)) safeFirst(images).isMain = true;
+          }
           else if (p.mainImage) images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, optItemId1: '', optItemId2: '' });
 
           // 상품설명 — tabData.content에서 채움
@@ -670,17 +837,20 @@ window.PdProdDtl = {
           if (p.useOptYn !== undefined) uiState.useOpt = p.useOptYn === 'Y';
           else uiState.useOpt = true;
 
-          // 옵션 카테고리 복원 — optGroups의 typeCd(=2레벨 code_value)의 parent_code_value로 역추적
+          // 옵션 카테고리 복원 — optGroups 의 typeCd(=2레벨 code_value)의 parent_code_value 로 역추적
+          //   svCodes row 원본 키(codeVal / codeLevel / parentCodeValue) 기준으로 비교
           if (optGroups.length && !uiState.prodOptCategoryTypeCd) {
-            const typeCds = optGroups.map(g => g.optTypeCd || g.typeCd || '').filter(Boolean);
+            const typeCds = optGroups.map(g => g.typeCd || g.optTypeCd || '').filter(Boolean);
             const lvl2 = (codes||[]).filter(c => c.codeGrp === PROD_OPT_GRP && Number(c.codeLevel||0) === 2);
             const parentSet = new Set(typeCds.map(tc => {
-              const found = lvl2.find(c => c.codeValue === tc);
+              const found = lvl2.find(c => (c.codeVal || c.codeValue) === tc);
               return found ? found.parentCodeValue : null;
             }).filter(Boolean));
             // 모든 typeCd 가 동일한 부모(카테고리)에 속할 때만 자동 복원
             if (parentSet.size === 1) uiState.prodOptCategoryTypeCd = [...parentSet][0];
           }
+          // 변경 confirm 비교용 — 현재 카테고리를 baseline 으로 기록
+          _prevCategoryCd = uiState.prodOptCategoryTypeCd || '';
 
           if (p.salePlans?.length) salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false })));
           // 카테고리 N개 로드 (pd_category_prod)
@@ -793,10 +963,17 @@ window.PdProdDtl = {
         default:         payload = {}; break;
       }
       try {
-        /* content 탭은 전용 엔드포인트(PUT /contents) 로 분리 호출 — 백엔드에서 일괄 저장 처리 */
-        const res = (tabId === 'content')
-          ? await boApiSvc.pdProd.saveContents(cfCurProdId.value, payload, '상품관리', '상품설명저장')
-          : await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', `${TAB_LABEL[tabId] || tabId}저장`);
+        /* content / option / image 탭은 전용 엔드포인트로 분리 호출 — 백엔드에서 일괄 저장 처리 */
+        let res;
+        if (tabId === 'content') {
+          res = await boApiSvc.pdProd.saveContents(cfCurProdId.value, payload, '상품관리', '상품설명저장');
+        } else if (tabId === 'option') {
+          res = await boApiSvc.pdProd.saveOpts(cfCurProdId.value, payload, '상품관리', '옵션설정저장');
+        } else if (tabId === 'image') {
+          res = await boApiSvc.pdProd.saveImages(cfCurProdId.value, payload, '상품관리', '이미지저장');
+        } else {
+          res = await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', `${TAB_LABEL[tabId] || tabId}저장`);
+        }
         /* UX-admin §18: 저장한 탭의 데이터를 다시 가져와 화면 동기화 */
         await handleLoadData();
         _afterApiOk(res, `${TAB_LABEL[tabId] || ''} 저장되었습니다.`);
@@ -850,12 +1027,12 @@ window.PdProdDtl = {
     return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
-      clearOpt, optGroups, skus, cfTotalStock, generateSkus,
+      clearOpt, optGroups, skus, cfTotalStock, generateSkus, moveSku,
       cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
       cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
       onCategoryChange, addOptGroup, removeOptGroup, addOptItem, removeOptItem,
       onOptItemDragStart, onOptItemDragOver, onOptItemDrop,
-      images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput,
+      images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput, fnOptItem2Label,
       onImgDragStart, onImgDragOver, onImgDrop,
       prodCategories, cfCatExcludeSet, catPickerOpen, addCategory, removeCategory,
       onCatDragStart, onCatDragOver, onCatDrop,
@@ -864,7 +1041,7 @@ window.PdProdDtl = {
       onRelDragStart, onRelDragOver, onRelDrop,
       onCodeDragStart, onCodeDragOver, onCodeDrop,
       salePlans, cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked, planRowStyle,
-      cfMarginRateCalc, cfDiscountRate,
+      cfMarginRateCalc, cfDiscountRate, cfPlatformFee, cfPlatformFeeDisp, cfNetRevenueDisp,
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange, fnMountQuills,
       onBlockDragStart, onBlockDragOver, onBlockDrop,
       contentSplitRef, onDividerMousedown,
@@ -1163,7 +1340,7 @@ window.PdProdDtl = {
             <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;margin-top:4px;">{{ gi+1 }}단 유형</span>
             <div style="display:flex;flex-direction:column;gap:2px;">
               <select class="form-control" v-model="grp.typeCd" style="width:140px;font-size:12px;"
-                @change="grp.items.forEach(i=>{i.val='';i.valCodeId='';})"
+                @change="grp.items.forEach(i=>{i.val='';i.valCodeId='';i.optStyle='';})"
                 >
                 <option value="">-- 유형선택 --</option>
                 <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -1222,15 +1399,18 @@ window.PdProdDtl = {
           </div>
           <button class="btn btn-xs btn-secondary" @click="addOptItem(grp)" style="flex-shrink:0;">+ 값 추가</button>
         </div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px;">
-          <thead>
+        <!-- 옵션 값 스크롤 컨테이너 — 1단=5행, 2단=10행 정도 보이고 그 이상은 세로 스크롤 -->
+        <div :style="'max-height:'+(grp.level===1?'200px':'340px')+';overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;margin-bottom:6px;background:#fff;'">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead style="position:sticky;top:0;background:#f5f5f5;z-index:1;">
             <tr style="background:#f5f5f5;border-bottom:1px solid #e0e0e0;">
               <th style="width:18px;padding:4px 2px;"></th>
               <th style="width:24px;padding:4px 4px;text-align:center;font-weight:600;color:#888;font-size:11px;">#</th>
               <th v-if="grp.level===2 && safeFirst(optGroups)?.items.length>0" style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">상위옵션값</th>
               <th style="padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">표시명 (opt_nm)</th>
-              <th style="width:170px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">공통코드ID (opt_val_code_id)</th>
-              <th style="width:120px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">저장값 (opt_val)</th>
+              <th style="width:234px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">저장값 (opt_val)</th>
+              <th style="width:170px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">스타일 (opt_style)</th>
+              <th style="width:221px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">공통코드ID (opt_val_code_id)</th>
               <th style="width:36px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">사용</th>
               <th style="width:30px;padding:4px 4px;text-align:center;"></th>
             </tr>
@@ -1267,22 +1447,33 @@ window.PdProdDtl = {
                   @blur="generateSkus" />
               </td>
 
-              <!-- -- 공통코드ID --------------------------------------------- -->
-              <td style="padding:2px 4px;">
-                <select v-model="item.valCodeId"
-                  style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;"
-                  @change="() => { const found = getOptValCodes(grp.typeCd).find(c => c.codeValue === item.valCodeId); if (found) { item.val = found.codeValue; if (!item.nm) item.nm = found.codeLabel; generateSkus(); } else { item.val = ''; } }">
-                  <option value="">-- 직접입력 --</option>
-                  <option v-for="c in getOptValCodes(grp.typeCd)" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
-                </select>
-              </td>
-
               <!-- -- 저장값 ------------------------------------------------ -->
               <td style="padding:2px 4px;">
                 <input v-model="item.val"
                   :placeholder="item.valCodeId ? '자동입력' : 'MY_VAL'"
                   style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;"
                   @blur="generateSkus" />
+              </td>
+
+              <!-- -- 스타일 (opt_style = 컬러 hex / 아이콘 클래스 등) ---------- -->
+              <td style="padding:2px 4px;">
+                <div style="display:flex;gap:4px;align-items:center;">
+                  <span v-if="item.optStyle && item.optStyle.startsWith('#')"
+                    :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+item.optStyle+';'"></span>
+                  <input v-model="item.optStyle"
+                    placeholder="#000000 / fa-icon"
+                    style="flex:1;min-width:0;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;font-family:monospace;" />
+                </div>
+              </td>
+
+              <!-- -- 공통코드ID (opt_val_code_id = sy_code.code_id) ----------- -->
+              <td style="padding:2px 4px;">
+                <select v-model="item.valCodeId"
+                  style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;"
+                  @change="() => { const found = getOptValCodes(grp.typeCd).find(c => c.codeId === item.valCodeId); if (found) { item.val = found.codeValue; if (!item.nm) item.nm = found.codeLabel; if (found.codeOpt1) item.optStyle = found.codeOpt1; generateSkus(); } else { item.val = ''; } }">
+                  <option value="">-- 직접입력 --</option>
+                  <option v-for="c in getOptValCodes(grp.typeCd)" :key="c?.codeId" :value="c.codeId">{{ c.codeLabel }} ({{ c.codeValue }})</option>
+                </select>
               </td>
 
               <td style="padding:2px 4px;text-align:center;">
@@ -1296,11 +1487,12 @@ window.PdProdDtl = {
               </td>
             </tr>
             <tr v-if="grp.items.length===0">
-              <td :colspan="grp.level===2&&safeFirst(optGroups)?.items.length>0?8:7"
+              <td :colspan="grp.level===2&&safeFirst(optGroups)?.items.length>0?9:8"
                 style="text-align:center;color:#bbb;padding:10px;font-size:12px;border-bottom:1px solid #f0f0f0;">값을 추가해주세요.</td>
             </tr>
           </tbody>
         </table>
+        </div><!-- /옵션 값 스크롤 컨테이너 -->
       </div>
 
     </template>
@@ -1524,7 +1716,9 @@ window.PdProdDtl = {
     <div v-if="images.length===0"
       style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px;text-align:center;color:#bbb;font-size:13px;cursor:pointer;"
       @click="triggerFileInput">클릭하거나 파일을 끌어다 놓으세요</div>
-    <div v-for="(img, idx) in cfTabPageList.images" :key="img?.id"
+    <!-- 이미지 5행 보이는 스크롤 컨테이너 (행 ≈ 116px × 5 + 여유 → 620px) -->
+    <div v-if="images.length>0" style="max-height:620px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:10px;padding:8px;background:#fafafa;">
+    <div v-for="(img, idx) in images" :key="img?.id"
       draggable="true"
       @dragstart="onImgDragStart(idx)"
       @dragover.prevent="onImgDragOver(idx)"
@@ -1565,7 +1759,7 @@ window.PdProdDtl = {
             <select class="form-control" v-model="img.optItemId2" style="font-size:12px;" :disabled="!img.optItemId1&&optGroups.length<2">
               <option value="">-- 공통 (NULL) --</option>
               <option v-if="!optGroups[1]||optGroups[1].items.length===0" disabled value="">2단 옵션 없음</option>
-              <option v-for="item in (optGroups[1]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
+              <option v-for="item in (optGroups[1]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ fnOptItem2Label(item) }}</option>
             </select>
           </div>
         </div>
@@ -1576,18 +1770,10 @@ window.PdProdDtl = {
         <button v-if="!img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
         <span v-else style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">★ 대표</span>
         <button class="btn btn-sm btn-danger" @click="removeImage(img.id)" style="font-size:11px;">삭제</button>
-        <span style="font-size:11px;color:#bbb;">{{ (tabPage.images.pageNo-1)*tabPage.images.pageSize+idx+1 }}/{{ images.length }}</span>
+        <span style="font-size:11px;color:#bbb;">{{ idx+1 }}/{{ images.length }}</span>
       </div>
     </div>
-    <!-- 이미지 페이저 -->
-    <div v-if="images.length > tabPage.images.pageSize" class="pagination" style="margin:12px 0;">
-      <button class="pager" @click="onTabPageChange('images',1)" :disabled="tabPage.images.pageNo===1">«</button>
-      <button class="pager" @click="onTabPageChange('images',tabPage.images.pageNo-1)" :disabled="tabPage.images.pageNo===1">‹</button>
-      <button v-for="n in fnTabPageNos('images')" :key="n" class="pager" :class="{active:tabPage.images.pageNo===n}" @click="onTabPageChange('images',n)">{{ n }}</button>
-      <button class="pager" @click="onTabPageChange('images',tabPage.images.pageNo+1)" :disabled="tabPage.images.pageNo===cfTabTotalPages('images')">›</button>
-      <button class="pager" @click="onTabPageChange('images',cfTabTotalPages('images'))" :disabled="tabPage.images.pageNo===cfTabTotalPages('images')">»</button>
-      <span class="pager-right">{{ images.length }}개 / {{ tabPage.images.pageSize }}개씩</span>
-    </div>
+    </div><!-- /이미지 스크롤 컨테이너 -->
     <div class="form-actions" v-if="!cfDtlMode">
       <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
@@ -1764,185 +1950,7 @@ window.PdProdDtl = {
   <div class="card" v-show="showTab('price')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
 
-    <!-- --- 섹션1: SKU별 가격·재고 (옵션 카테고리 설정 시) --- -->
-    <template v-if="prodOptCategoryTypeCd">
-      <!-- -- 헤더 행 ------------------------------------------------------- -->
-      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;flex-shrink:0;">
-          SKU별 가격·재고 <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_sku)</span>
-          <span class="badge badge-blue" style="margin-left:6px;">{{ safeFilter(cfSkusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
-          <span v-if="cfSkusFiltered.length < skus.length" class="badge badge-orange" style="margin-left:4px;font-size:10px;">필터 {{ cfSkusFiltered.length }}/{{ skus.length }}</span>
-        </div>
-        <!-- -- 필터 영역 ---------------------------------------------------- -->
-        <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap;">
-          <!-- -- 1단 필터 -------------------------------------------------- -->
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ optGroups[0]?.grpNm||'1단' }}</span>
-            <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
-              @change="skuFilter2=''">
-              <option value="">전체</option>
-              <option v-for="v in cfSkuFilter1Options" :key="Math.random()" :value="v">{{ v }}</option>
-            </select>
-          </div>
-          <!-- -- 2단 필터 (2단 옵션 있을 때만) ------------------------------------ -->
-          <div v-if="optGroups.length>1" style="display:flex;align-items:center;gap:4px;">
-            <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ optGroups[1]?.grpNm||'2단' }}</span>
-            <select v-model="skuFilter2" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
-              <option value="">전체</option>
-              <option v-for="v in cfSkuFilter2Options" :key="Math.random()" :value="v">{{ v }}</option>
-            </select>
-          </div>
-          <!-- -- 재고 필터 -------------------------------------------------- -->
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span style="font-size:11px;color:#555;flex-shrink:0;">재고</span>
-            <select v-model="skuFilterStock" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
-              <option value="">전체</option>
-              <option v-for="o in grpCodes.stock_filter_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-            </select>
-          </div>
-          <!-- -- 필터 초기화 ------------------------------------------------- -->
-          <button v-if="skuFilter1||skuFilter2||skuFilterStock" class="btn btn-xs btn-secondary"
-            @click="skuFilter1='';skuFilter2='';skuFilterStock=''">✕ 초기화</button>
-          <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong>{{ cfTotalStock }}</strong>개</span>
-          <button class="btn btn-sm btn-secondary" @click="generateSkus">🔄 SKU 재생성</button>
-        </div>
-      </div>
-      <div style="overflow-x:auto;margin-bottom:20px;">
-        <table class="bo-table" style="font-size:12px;">
-          <thead>
-            <tr>
-              <th>1단<span v-if="safeFirst(optGroups)?.grpNm" style="color:#aaa;font-weight:400;">({{ safeFirst(optGroups).grpNm }})</span></th>
-              <th v-if="optGroups.length>1">2단<span v-if="optGroups[1]?.grpNm" style="color:#aaa;font-weight:400;">({{ optGroups[1].grpNm }})</span></th>
-              <th style="width:130px;">SKU코드</th>
-              <th style="width:100px;">기본가</th>
-              <th style="width:90px;">추가금액</th>
-              <th style="width:70px;">재고</th>
-              <th style="width:110px;">판매상태</th>
-              <th style="width:68px;">판매수량</th>
-              <th style="width:42px;">사용</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="sku in cfSkusFiltered.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)" :key="sku?._id"
-              :style="sku.useYn==='N' ? 'opacity:0.45;background:#f5f5f5;' : (sku.statusCd==='SOLD_OUT'||sku.stock===0 ? 'background:#fffbe6;' : sku.statusCd==='SUSPENDED'?'background:#fff1f0;':'')">
-              <td><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span></td>
-              <td v-if="optGroups.length>1">
-                <span class="badge badge-blue" style="font-size:11px;">{{ sku._nm2 }}</span>
-              </td>
-              <td><input class="form-control" v-model="sku.skuCode" placeholder="SKU-XXX" style="font-size:11px;" /></td>
-              <td>
-                <div class="form-control" style="font-size:11px;background:#f5f5f5;color:#555;text-align:right;">
-                  {{ ((form.salePrice||0) + (sku.addPrice||0)).toLocaleString() }}원
-                </div>
-              </td>
-              <td>
-                <input class="form-control" type="number" v-model.number="sku.addPrice" placeholder="0"
-                  style="font-size:11px;text-align:right;" />
-              </td>
-              <td>
-                <input class="form-control" type="number" v-model.number="sku.stock" placeholder="0" min="0"
-                  style="font-size:11px;text-align:right;"
-                  :style="(sku.stock||0)===0 ? 'color:#f5222d;font-weight:700;' : ''" />
-              </td>
-              <td>
-                <select v-model="sku.statusCd"
-                  style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:28px;"
-                  :style="sku.statusCd==='ON_SALE'?'color:#389e0d;':sku.statusCd==='SOLD_OUT'?'color:#f5a623;':sku.statusCd==='SUSPENDED'?'color:#cf1322;':'color:#555;'">
-                  <option v-for="c in grpCodes.opt_stock_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-                </select>
-              </td>
-              <td style="text-align:right;padding-right:8px;font-size:12px;color:#555;">
-                {{ (sku.saleCnt||0).toLocaleString() }}
-              </td>
-              <td style="text-align:center;">
-                <input type="checkbox" :checked="sku.useYn==='Y'" @change="sku.useYn=$event.target.checked?'Y':'N'" />
-              </td>
-            </tr>
-            <tr v-if="skus.length===0">
-              <td :colspan="optGroups.length>1?9:8" style="text-align:center;color:#bbb;padding:16px;font-size:12px;">
-                옵션설정 탭에서 옵션 값 입력 후 [🔄 SKU 재생성]을 눌러주세요.
-              </td>
-            </tr>
-            <tr v-else-if="cfSkusFiltered.length===0">
-              <td :colspan="optGroups.length>1?9:8" style="text-align:center;color:#f5a623;padding:12px;font-size:12px;">
-                필터 조건에 맞는 SKU가 없습니다. <button class="btn btn-xs btn-secondary" @click="skuFilter1='';skuFilter2='';skuFilterStock=''">필터 초기화</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <!-- SKU 페이저 -->
-      <div v-if="cfSkusFiltered.length > tabPage.skus.pageSize" class="pagination" style="margin:8px 0 16px;">
-        <button class="pager" @click="onTabPageChange('skus',1)" :disabled="tabPage.skus.pageNo===1">«</button>
-        <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo-1)" :disabled="tabPage.skus.pageNo===1">‹</button>
-        <button v-for="n in fnTabPageNos('skus')" :key="n" class="pager" :class="{active:tabPage.skus.pageNo===n}" @click="onTabPageChange('skus',n)">{{ n }}</button>
-        <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo+1)" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">›</button>
-        <button class="pager" @click="onTabPageChange('skus',cfTabTotalPages('skus'))" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">»</button>
-        <span class="pager-right">{{ cfSkusFiltered.length }}개 / {{ tabPage.skus.pageSize }}개씩</span>
-      </div>
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;" />
-    </template>
-
-    <!-- --- 섹션2: 단일 재고 (옵션 카테고리 미설정 시) --- -->
-    <template v-if="!prodOptCategoryTypeCd">
-      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
-        단일 재고 <span style="font-weight:400;font-size:11px;color:#888;">(옵션 미사용 — pd_prod.prod_stock)</span>
-      </div>
-      <div class="form-row" style="margin-bottom:20px;">
-        <div class="form-group">
-          <label class="form-label">재고수량 (prod_stock)</label>
-          <input class="form-control" type="number" v-model.number="form.prodStock" placeholder="0" min="0" style="width:160px;" />
-        </div>
-        <div class="form-group"></div>
-      </div>
-      <!-- 옵션 미사용이지만 기존 SKU 데이터가 남아있는 경우 읽기 전용 목록 표시 -->
-      <template v-if="tabData.skus.length">
-        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
-          잔존 SKU 데이터 <span class="badge badge-orange" style="margin-left:4px;">{{ tabData.skus.length }}건</span>
-          <span style="font-weight:400;font-size:11px;margin-left:6px;">옵션 미사용 전환 후 남아있는 SKU 이력 (읽기 전용)</span>
-        </div>
-        <div style="overflow-x:auto;margin-bottom:16px;">
-          <table class="bo-table" style="font-size:12px;">
-            <thead>
-              <tr>
-                <th>1단 옵션</th>
-                <th>2단 옵션</th>
-                <th>SKU코드</th>
-                <th style="width:100px;">추가금액</th>
-                <th style="width:80px;">재고</th>
-                <th style="width:110px;">판매상태</th>
-                <th style="width:68px;">판매수량</th>
-                <th style="width:42px;">사용</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="sku in tabData.skus.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)" :key="sku.skuId"
-                style="opacity:0.6;background:#f9f9f9;">
-                <td><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 || '-' }}</span></td>
-                <td><span class="badge badge-blue" style="font-size:11px;">{{ sku._nm2 || '-' }}</span></td>
-                <td style="color:#888;">{{ sku.skuCode }}</td>
-                <td style="text-align:right;color:#888;">{{ (sku.addPrice||0).toLocaleString() }}원</td>
-                <td style="text-align:right;" :style="(sku.stock||0)===0?'color:#f5222d;font-weight:700;':''">{{ sku.stock||0 }}</td>
-                <td><span class="badge badge-gray" style="font-size:11px;">{{ sku.statusCd }}</span></td>
-                <td style="text-align:right;color:#888;">{{ (sku.saleCnt||0).toLocaleString() }}</td>
-                <td style="text-align:center;"><span :class="sku.useYn==='Y'?'badge badge-green':'badge badge-gray'" style="font-size:10px;">{{ sku.useYn }}</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-if="tabData.skus.length > tabPage.skus.pageSize" class="pagination" style="margin:8px 0 16px;">
-          <button class="pager" @click="onTabPageChange('skus',1)" :disabled="tabPage.skus.pageNo===1">«</button>
-          <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo-1)" :disabled="tabPage.skus.pageNo===1">‹</button>
-          <button v-for="n in fnTabPageNos('skus')" :key="n" class="pager" :class="{active:tabPage.skus.pageNo===n}" @click="onTabPageChange('skus',n)">{{ n }}</button>
-          <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo+1)" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">›</button>
-          <button class="pager" @click="onTabPageChange('skus',cfTabTotalPages('skus'))" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">»</button>
-          <span class="pager-right">{{ tabData.skus.length }}건 / {{ tabPage.skus.pageSize }}개씩</span>
-        </div>
-      </template>
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;" />
-    </template>
-
-    <!-- --- 섹션3: 기본 가격 --- -->
+    <!-- --- 섹션1: 기본 가격 --- -->
     <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
       기본 가격 <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
     </div>
@@ -1970,36 +1978,48 @@ window.PdProdDtl = {
         </div>
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">플랫폼수수료 율 (platform_fee_rate) <span style="color:#aaa;font-size:11px;">% — 내부관리용</span></label>
+        <input class="form-control" type="number" step="0.01" min="0" max="100" v-model.number="form.platformFeeRate" placeholder="(예: 5.5)" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">플랫폼수수료 금액 (platform_fee_amount) <span style="color:#aaa;font-size:11px;">원 — 내부관리용</span></label>
+        <input class="form-control" type="number" min="0" v-model.number="form.platformFeeAmount" placeholder="(요율과 둘 중 하나만 입력)" />
+      </div>
+    </div>
 
-    <!-- -- 가격 요약 카드 ----------------------------------------------------- -->
-    <div style="padding:16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;margin-bottom:16px;">
-      <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:12px;">가격 요약</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;">
+    <!-- -- 가격 요약 카드 (컴팩트) -------------------------------------------- -->
+    <div style="padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e8e8e8;margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;align-items:center;">
         <div>
-          <div style="font-size:18px;font-weight:700;">{{ (form.listPrice||0).toLocaleString() }}원</div>
-          <div style="font-size:11px;color:#888;margin-top:2px;">정가</div>
+          <div style="font-size:14px;font-weight:700;">{{ (form.listPrice||0).toLocaleString() }}원</div>
+          <div style="font-size:10px;color:#888;">정가</div>
         </div>
         <div>
-          <div style="font-size:18px;font-weight:700;color:#e8587a;">{{ (form.salePrice||0).toLocaleString() }}원</div>
-          <div style="font-size:11px;color:#888;margin-top:2px;">판매가</div>
+          <div style="font-size:14px;font-weight:700;color:#e8587a;">{{ (form.salePrice||0).toLocaleString() }}원</div>
+          <div style="font-size:10px;color:#888;">판매가</div>
         </div>
         <div>
-          <div style="font-size:18px;font-weight:700;color:#f5222d;">{{ cfDiscountRate }}%</div>
-          <div style="font-size:11px;color:#888;margin-top:2px;">할인율</div>
+          <div style="font-size:14px;font-weight:700;color:#f5222d;">{{ cfDiscountRate }}%</div>
+          <div style="font-size:10px;color:#888;">할인율</div>
         </div>
         <div>
-          <div style="font-size:18px;font-weight:700;color:#52c41a;">{{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}</div>
-          <div style="font-size:11px;color:#888;margin-top:2px;">마진율</div>
+          <div style="font-size:14px;font-weight:700;color:#52c41a;">{{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}</div>
+          <div style="font-size:10px;color:#888;">마진율</div>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#722ed1;">{{ cfPlatformFeeDisp }}</div>
+          <div style="font-size:10px;color:#888;">플랫폼수수료</div>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#1677ff;">{{ cfNetRevenueDisp }}</div>
+          <div style="font-size:10px;color:#888;">예상 순수익</div>
         </div>
       </div>
     </div>
 
-    <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
-    </div>
-
-    <!-- -- 판매계획 --------------------------------------------------------- -->
+    <!-- -- 섹션2: 판매계획 --------------------------------------------------------- -->
     <div style="margin-top:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">판매계획 <span style="font-size:12px;font-weight:400;color:#888;">{{ cfPlanVisible.length }}건</span></div>
@@ -2056,6 +2076,189 @@ window.PdProdDtl = {
         <span style="background:#fffbe6;border:1px solid #ffe58f;border-radius:3px;padding:1px 6px;color:#d46b08;">U 수정</span>
         <span style="background:#fff1f0;border:1px solid #ffa39e;border-radius:3px;padding:1px 6px;color:#cf1322;">D 삭제예정</span>
       </div>
+    </div>
+
+    <!-- -- 섹션3: SKU별 가격·재고 (옵션 카테고리 설정 시) ----------------------- -->
+    <template v-if="prodOptCategoryTypeCd">
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0 20px;" />
+      <!-- -- 헤더 행 ------------------------------------------------------- -->
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;flex-shrink:0;">
+          SKU별 가격·재고 <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_sku)</span>
+          <span class="badge badge-blue" style="margin-left:6px;">{{ safeFilter(cfSkusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
+          <span v-if="cfSkusFiltered.length < skus.length" class="badge badge-orange" style="margin-left:4px;font-size:10px;">필터 {{ cfSkusFiltered.length }}/{{ skus.length }}</span>
+        </div>
+        <!-- -- 필터 영역 ---------------------------------------------------- -->
+        <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ optGroups[0]?.grpNm||'1단' }}</span>
+            <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
+              @change="skuFilter2=''">
+              <option value="">전체</option>
+              <option v-for="v in cfSkuFilter1Options" :key="Math.random()" :value="v">{{ v }}</option>
+            </select>
+          </div>
+          <div v-if="optGroups.length>1" style="display:flex;align-items:center;gap:4px;">
+            <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ optGroups[1]?.grpNm||'2단' }}</span>
+            <select v-model="skuFilter2" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
+              <option value="">전체</option>
+              <option v-for="v in cfSkuFilter2Options" :key="Math.random()" :value="v">{{ v }}</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:11px;color:#555;flex-shrink:0;">재고</span>
+            <select v-model="skuFilterStock" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
+              <option value="">전체</option>
+              <option v-for="o in grpCodes.stock_filter_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
+            </select>
+          </div>
+          <button v-if="skuFilter1||skuFilter2||skuFilterStock" class="btn btn-xs btn-secondary"
+            @click="skuFilter1='';skuFilter2='';skuFilterStock=''">✕ 초기화</button>
+          <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong>{{ cfTotalStock }}</strong>개</span>
+          <button class="btn btn-sm btn-secondary" @click="generateSkus">🔄 SKU 재생성</button>
+        </div>
+      </div>
+      <!-- 컴팩트 SKU 테이블 — 페이지 없이 약 10행 보이는 스크롤 컨테이너 (행 높이 24px × 10 + 헤더 ≈ 280px) -->
+      <div style="overflow:auto;max-height:300px;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead style="position:sticky;top:0;background:#f5f5f5;z-index:1;">
+            <tr style="background:#f5f5f5;border-bottom:1px solid #e0e0e0;">
+              <th style="width:24px;padding:4px 4px;text-align:center;font-weight:600;color:#888;font-size:11px;">#</th>
+              <th style="width:42px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">이동</th>
+              <th style="width:90px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">1단<span v-if="safeFirst(optGroups)?.grpNm" style="color:#aaa;font-weight:400;">({{ safeFirst(optGroups).grpNm }})</span></th>
+              <th v-if="optGroups.length>1" style="width:90px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">2단<span v-if="optGroups[1]?.grpNm" style="color:#aaa;font-weight:400;">({{ optGroups[1].grpNm }})</span></th>
+              <th style="width:195px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">SKU코드</th>
+              <th style="width:150px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">기본가</th>
+              <th style="width:135px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">추가금액</th>
+              <th style="width:105px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">재고</th>
+              <th style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">판매상태</th>
+              <th style="width:68px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">판매수량</th>
+              <th style="width:42px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">사용</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(sku, ii) in cfSkusFiltered" :key="sku?._id"
+              :style="(sku.useYn==='N' ? 'opacity:0.45;background:#f5f5f5;' : (sku.statusCd==='SOLD_OUT'||sku.stock===0 ? 'background:#fffbe6;' : sku.statusCd==='SUSPENDED'?'background:#fff1f0;':(ii%2===1?'background:#fafafa;':'')))+'border-bottom:1px solid #f0f0f0;transition:background 0.1s;'">
+              <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
+              <td style="padding:2px 2px;text-align:center;white-space:nowrap;">
+                <button type="button" @click="moveSku(sku,'up')"   :disabled="ii===0"
+                  style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;color:#666;margin-right:1px;"
+                  title="위로">▲</button>
+                <button type="button" @click="moveSku(sku,'down')" :disabled="ii===cfSkusFiltered.length-1"
+                  style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;color:#666;"
+                  title="아래로">▼</button>
+              </td>
+              <td style="padding:2px 6px;"><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span></td>
+              <td v-if="optGroups.length>1" style="padding:2px 6px;"><span class="badge badge-blue" style="font-size:11px;">{{ sku._nm2 }}</span></td>
+              <td style="padding:2px 4px;">
+                <input v-model="sku.skuCode" placeholder="SKU-XXX"
+                  style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;" />
+              </td>
+              <td style="padding:2px 4px;">
+                <div style="width:100%;font-size:12px;background:#f5f5f5;color:#555;border:1px solid #eee;border-radius:4px;padding:2px 6px;height:24px;line-height:20px;text-align:right;">
+                  {{ ((form.salePrice||0) + (sku.addPrice||0)).toLocaleString() }}원
+                </div>
+              </td>
+              <td style="padding:2px 4px;">
+                <input type="number" v-model.number="sku.addPrice" placeholder="0"
+                  style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;text-align:right;" />
+              </td>
+              <td style="padding:2px 4px;">
+                <input type="number" v-model.number="sku.stock" placeholder="0" min="0"
+                  :style="'width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;text-align:right;'+((sku.stock||0)===0?'color:#f5222d;font-weight:700;':'')" />
+              </td>
+              <td style="padding:2px 4px;">
+                <select v-model="sku.statusCd"
+                  :style="'width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;'+(sku.statusCd==='ON_SALE'?'color:#389e0d;':sku.statusCd==='SOLD_OUT'?'color:#f5a623;':sku.statusCd==='SUSPENDED'?'color:#cf1322;':'color:#555;')">
+                  <option v-for="c in grpCodes.opt_stock_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+                </select>
+              </td>
+              <td style="padding:2px 6px;text-align:right;font-size:12px;color:#555;">{{ (sku.saleCnt||0).toLocaleString() }}</td>
+              <td style="padding:2px 4px;text-align:center;">
+                <input type="checkbox" :checked="sku.useYn==='Y'" @change="sku.useYn=$event.target.checked?'Y':'N'" style="width:14px;height:14px;" />
+              </td>
+            </tr>
+            <tr v-if="skus.length===0">
+              <td :colspan="optGroups.length>1?11:10" style="text-align:center;color:#bbb;padding:16px;font-size:12px;">
+                옵션설정 탭에서 옵션 값 입력 후 [🔄 SKU 재생성]을 눌러주세요.
+              </td>
+            </tr>
+            <tr v-else-if="cfSkusFiltered.length===0">
+              <td :colspan="optGroups.length>1?11:10" style="text-align:center;color:#f5a623;padding:12px;font-size:12px;">
+                필터 조건에 맞는 SKU가 없습니다. <button class="btn btn-xs btn-secondary" @click="skuFilter1='';skuFilter2='';skuFilterStock=''">필터 초기화</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#888;margin-bottom:16px;">
+        <span>총 <strong style="color:#333;">{{ cfSkusFiltered.length }}</strong>건<span v-if="cfSkusFiltered.length<skus.length"> / 전체 {{ skus.length }}건</span></span>
+        <span>활성 <strong style="color:#1677ff;">{{ safeFilter(skus, s=>s.useYn==='Y').length }}</strong>건 · 총 재고 <strong style="color:#52c41a;">{{ cfTotalStock }}</strong>개</span>
+      </div>
+    </template>
+
+    <!-- -- 섹션4: 단일 재고 (옵션 카테고리 미설정 시) -------------------------- -->
+    <template v-if="!prodOptCategoryTypeCd">
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0 20px;" />
+      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
+        단일 재고 <span style="font-weight:400;font-size:11px;color:#888;">(옵션 미사용 — pd_prod.prod_stock)</span>
+      </div>
+      <div class="form-row" style="margin-bottom:20px;">
+        <div class="form-group">
+          <label class="form-label">재고수량 (prod_stock)</label>
+          <input class="form-control" type="number" v-model.number="form.prodStock" placeholder="0" min="0" style="width:160px;" />
+        </div>
+        <div class="form-group"></div>
+      </div>
+      <template v-if="tabData.skus.length">
+        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
+          잔존 SKU 데이터 <span class="badge badge-orange" style="margin-left:4px;">{{ tabData.skus.length }}건</span>
+          <span style="font-weight:400;font-size:11px;margin-left:6px;">옵션 미사용 전환 후 남아있는 SKU 이력 (읽기 전용)</span>
+        </div>
+        <div style="overflow-x:auto;margin-bottom:16px;">
+          <table class="bo-table" style="font-size:12px;">
+            <thead>
+              <tr>
+                <th>1단 옵션</th>
+                <th>2단 옵션</th>
+                <th>SKU코드</th>
+                <th style="width:100px;">추가금액</th>
+                <th style="width:80px;">재고</th>
+                <th style="width:110px;">판매상태</th>
+                <th style="width:68px;">판매수량</th>
+                <th style="width:42px;">사용</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="sku in tabData.skus.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)" :key="sku.skuId"
+                style="opacity:0.6;background:#f9f9f9;">
+                <td><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 || '-' }}</span></td>
+                <td><span class="badge badge-blue" style="font-size:11px;">{{ sku._nm2 || '-' }}</span></td>
+                <td style="color:#888;">{{ sku.skuCode }}</td>
+                <td style="text-align:right;color:#888;">{{ (sku.addPrice||0).toLocaleString() }}원</td>
+                <td style="text-align:right;" :style="(sku.stock||0)===0?'color:#f5222d;font-weight:700;':''">{{ sku.stock||0 }}</td>
+                <td><span class="badge badge-gray" style="font-size:11px;">{{ sku.statusCd }}</span></td>
+                <td style="text-align:right;color:#888;">{{ (sku.saleCnt||0).toLocaleString() }}</td>
+                <td style="text-align:center;"><span :class="sku.useYn==='Y'?'badge badge-green':'badge badge-gray'" style="font-size:10px;">{{ sku.useYn }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-if="tabData.skus.length > tabPage.skus.pageSize" class="pagination" style="margin:8px 0 16px;">
+          <button class="pager" @click="onTabPageChange('skus',1)" :disabled="tabPage.skus.pageNo===1">«</button>
+          <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo-1)" :disabled="tabPage.skus.pageNo===1">‹</button>
+          <button v-for="n in fnTabPageNos('skus')" :key="n" class="pager" :class="{active:tabPage.skus.pageNo===n}" @click="onTabPageChange('skus',n)">{{ n }}</button>
+          <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo+1)" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">›</button>
+          <button class="pager" @click="onTabPageChange('skus',cfTabTotalPages('skus'))" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">»</button>
+          <span class="pager-right">{{ tabData.skus.length }}건 / {{ tabPage.skus.pageSize }}개씩</span>
+        </div>
+      </template>
+    </template>
+
+    <!-- -- 저장/취소 버튼 (맨 아래) ------------------------------------------- -->
+    <div class="form-actions" v-if="!cfDtlMode" style="margin-top:24px;">
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
+      <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
 

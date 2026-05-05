@@ -25,6 +25,8 @@ public class PdProdDto {
     private Long   salePrice;
     private Long   purchasePrice;
     private BigDecimal marginRate;
+    private BigDecimal platformFeeRate;
+    private Long       platformFeeAmount;
     private Integer prodStock;
     private String prodStatusCd;
     private String prodStatusCdBefore;

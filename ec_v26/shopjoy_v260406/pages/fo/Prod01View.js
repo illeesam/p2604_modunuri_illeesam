@@ -23,6 +23,74 @@ window.Prod01View = {
       Object.keys(svProduct).forEach(k => delete svProduct[k]);
       if (newProd) Object.assign(svProduct, newProd);
     };
+    /* 백엔드 응답 (prod + opts + skus + images) → 화면이 기대하는 단일 prod 형태로 머지
+       - opts.groups[level=1].items → opt1s        = [{ optItemId, name, priceDelta, imgUrl }]
+       - opts.groups[level=2].items → opt2sAll     = [{ optItemId, name, parentOptItemId }]
+       - opt1 → opt2 의 종속 트리: 색상별 가능한 사이즈 매핑
+       - skus 의 1단별 addPrice 평균 → opt2Prices = { 'S': delta, ... }
+    */
+    const fnMergeProdOpts = (prod, optsObj, skusList, imgList) => {
+      const groups = (optsObj?.groups || []).slice().sort((a,b) => (a.optLevel||a.level||0) - (b.optLevel||b.level||0));
+      const items  = optsObj?.items  || [];
+      const lv1    = groups.find(g => Number(g.optLevel||g.level||0) === 1);
+      const lv2    = groups.find(g => Number(g.optLevel||g.level||0) === 2);
+      const itemsOf = (g) => g ? items.filter(i => i.optId === g.optId) : [];
+
+      const lv1Items = itemsOf(lv1).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
+      const lv2Items = itemsOf(lv2).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
+
+      // opt1s: 색상/1단 옵션 — name/priceDelta/imgUrl
+      const opt1s = lv1Items.map(it => {
+        const optImgs = imgList.filter(im => im.optItemId1 === it.optItemId);
+        return {
+          optItemId:  it.optItemId,
+          name:       it.optNm || it.optVal || '',
+          val:        it.optVal || '',
+          priceDelta: 0,
+          imgUrl:     optImgs[0]?.cdnImgUrl || optImgs[0]?.cdnThumbUrl || '',
+        };
+      });
+
+      // opt2sAll: 2단 옵션 전체 (parent 종속 정보 포함)
+      const opt2sAll = lv2Items.map(it => ({
+        optItemId:       it.optItemId,
+        name:            it.optNm || it.optVal || '',
+        val:             it.optVal || '',
+        parentOptItemId: it.parentOptItemId || '',
+      }));
+
+      // opt1 의 첫 번째 자식 그룹을 기준으로 한 사이즈 표시 목록 (호환용 opt2s — 이름 배열, 중복 제거 + 정렬)
+      const seenNm = new Set();
+      const opt2s = [];
+      opt2sAll.forEach(it => { if (it.name && !seenNm.has(it.name)) { seenNm.add(it.name); opt2s.push(it.name); } });
+
+      // opt2Prices: 사이즈별 추가금액 (parent 묶음 없이 평균치)
+      const opt2Prices = {};
+      lv2Items.forEach(it => {
+        const matchedSkus = skusList.filter(s => (s.optItemId2 === it.optItemId) || (s.optItemNm2 === it.optNm));
+        if (!matchedSkus.length) return;
+        const avg = Math.round(matchedSkus.reduce((a,s) => a + (Number(s.addPrice)||0), 0) / matchedSkus.length);
+        if (avg) opt2Prices[it.optNm || it.optVal] = avg;
+      });
+
+      // 대표 이미지 / 추가 이미지
+      const main = imgList.find(im => im.isThumb === 'Y') || imgList[0];
+      const mainImage = main?.cdnImgUrl || main?.cdnThumbUrl || '';
+
+      const priceVal = prod.salePrice || prod.listPrice || prod.price || 0;
+
+      return {
+        ...prod,
+        price:      priceVal,
+        mainImage,
+        images:     imgList,
+        opt1s,
+        opt2s,        // 호환용: 사이즈 이름 unique 배열
+        opt2sAll,     // 신규: 종속 정보 포함 전체 2단 항목
+        opt2Prices,
+        skus:       skusList,
+      };
+    };
     if (prod) fnApplySvProduct(prod);
     /* Tier 2/3 lazy 데이터 — 배열/객체는 reactive (정책: base.데이터흐름-상태관리.md §2-1) */
     const svContents     = reactive([]);  // 상품 상세 HTML
@@ -57,7 +125,16 @@ window.Prod01View = {
         const data = fnPickData(res) || {};
         const prod = data.prod || data;
         if (prod && prod.prodId) {
-          fnApplySvProduct(prod);
+          /* opts/skus/images 를 화면이 기대하는 형태(opt1s/opt2s/opt2Prices)로 변환 후 prod 에 합쳐 주입 */
+          const optsObj  = data.opts   || { groups: [], items: [] };
+          const skusList = data.skus   || [];
+          const imgList  = data.images || [];
+          const merged   = fnMergeProdOpts(prod, optsObj, skusList, imgList);
+          fnApplySvProduct(merged);
+          /* 첫 색상 자동 선택 (이미 선택된 상태가 아닐 때만) */
+          if (!uiState.selectedColor) {
+            uiState.selectedColor = (merged.opt1s || []).find(c => colorStatus(c) === 'ok') || merged.opt1s?.[0] || null;
+          }
         }
       } catch (e) {
         console.error('[handleSearchList:getById]', e);
@@ -425,7 +502,29 @@ window.Prod01View = {
       });
       return map;
     });
-    const sizeStatus = (s) => cfSizeStockMap.value[s] || 'ok';
+    /* 선택된 색상의 자식 사이즈 이름 Set — 옵션 트리(parent_opt_item_id) 기반 */
+    const cfAllowedSizeNms = computed(() => {
+      const all = svProduct.opt2sAll || [];
+      if (!all.length) return null; // 종속 정보 없으면 전체 허용
+      const parent = uiState.selectedColor?.optItemId;
+      if (!parent) return new Set(); // 색상 미선택 시 빈 Set
+      const set = new Set();
+      all.forEach(it => { if (it.parentOptItemId === parent && it.name) set.add(it.name); });
+      return set;
+    });
+    /* 사이즈 상태 — 1) 색상 종속 트리에 없으면 'stop'(비활성), 2) 그 외에는 목업 재고 시뮬 그대로 */
+    const sizeStatus = (s) => {
+      const allowed = cfAllowedSizeNms.value;
+      if (allowed && !allowed.has(s)) return 'stop';
+      return cfSizeStockMap.value[s] || 'ok';
+    };
+    /* 선택된 색상에 종속된 사이즈만 노출 (없으면 전체 노출) */
+    const cfVisibleSizes = computed(() => {
+      const sizes = svProduct.opt2s || [];
+      const allowed = cfAllowedSizeNms.value;
+      if (!allowed) return sizes; // 종속 정보 없을 때 그대로
+      return sizes.filter(s => allowed.has(s));
+    });
 
     /* -- 옵션별 가격 -- */
     const cfBasePrice = computed(() => {
@@ -503,6 +602,11 @@ window.Prod01View = {
       const st = colorStatus(c);
       if (st === 'stop' || st === 'soldout') return;
       uiState.selectedColor = c; uiState.colorError = ''; uiState.selectedImg = 0;
+      // 색상 변경 시 — 새 색상의 자식이 아니라면 사이즈 선택 해제
+      const allowed = cfAllowedSizeNms.value;
+      if (allowed && uiState.selectedSize && !allowed.has(uiState.selectedSize)) {
+        uiState.selectedSize = null;
+      }
     };
     const selectSize  = s => {
       const st = sizeStatus(s);
@@ -620,6 +724,7 @@ window.Prod01View = {
       cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
       TABS, tabBarRef, sizeSecRef, reviewSecRef, styleSecRef,
       scrollToTab, fnCategoryLabel, stars, colorStatus, sizeStatus,
+      cfVisibleSizes,
       buyBtnRef,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
       codes
@@ -762,8 +867,8 @@ window.Prod01View = {
               <div v-if="uiState.colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ uiState.colorError }}</div>
             </div>
 
-            <!-- -- 사이즈 선택 (FREE 또는 미설정이면 숨김) ---------------------------- -->
-            <div v-if="prod.opt2s && prod.opt2s.length && !(prod.opt2s.length===1 && prod.opt2s[0]==='FREE')" style="margin-bottom:20px;">
+            <!-- -- 사이즈 선택 (FREE 또는 미설정이면 숨김) — 선택된 색상 종속 사이즈만 표시 -- -->
+            <div v-if="cfVisibleSizes.length && !(cfVisibleSizes.length===1 && cfVisibleSizes[0]==='FREE')" style="margin-bottom:20px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
                 <button @click="uiState.showSizeGuide=true"
@@ -772,7 +877,7 @@ window.Prod01View = {
                 </button>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                <button v-for="s in prod.opt2s" :key="s" @click="selectSize(s)"
+                <button v-for="s in cfVisibleSizes" :key="s" @click="selectSize(s)"
                   :style="{
                     padding:'7px 14px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                     cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
@@ -1292,8 +1397,8 @@ window.Prod01View = {
           <div v-if="uiState.colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ uiState.colorError }}</div>
         </div>
 
-        <!-- -- 사이즈 (FREE면 숨김) ------------------------------------------- -->
-        <div v-if="prod.opt2s && prod.opt2s.length && !(prod.opt2s.length===1 && prod.opt2s[0]==='FREE')" style="margin-bottom:20px;">
+        <!-- -- 사이즈 (FREE면 숨김) — 선택된 색상 종속 사이즈만 표시 -------------- -->
+        <div v-if="cfVisibleSizes.length && !(cfVisibleSizes.length===1 && cfVisibleSizes[0]==='FREE')" style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div style="display:flex;align-items:center;gap:6px;">
               <span :style="{ fontSize:'0.82rem', fontWeight:'600', color: sizeError ? '#ef4444' : 'var(--text-secondary)' }">사이즈<span style="margin-left:2px;">*</span></span>
@@ -1306,7 +1411,7 @@ window.Prod01View = {
             border: uiState.sizeError ? '1px solid #ef4444' : '1px solid transparent',
             borderRadius:'6px', transition:'border-color .2s',
           }">
-            <button v-for="s in prod.opt2s" :key="s" @click="selectSize(s)"
+            <button v-for="s in cfVisibleSizes" :key="s" @click="selectSize(s)"
               :style="{
                 padding:'7px 16px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                 cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
