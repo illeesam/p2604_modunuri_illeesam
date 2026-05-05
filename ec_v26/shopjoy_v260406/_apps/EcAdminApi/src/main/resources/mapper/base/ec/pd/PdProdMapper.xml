@@ -76,6 +76,14 @@
             , u.user_nm              AS md_user_nm
             , cd_ps.code_label       AS prod_status_cd_nm
             , cd_pt.code_label       AS prod_type_cd_nm
+            , COALESCE(p.thumbnail_url,
+                (SELECT pi.cdn_img_url FROM pd_prod_img pi
+                 WHERE pi.prod_id = p.prod_id AND pi.is_thumb = 'Y'
+                 ORDER BY pi.sort_ord ASC LIMIT 1),
+                (SELECT pi.cdn_img_url FROM pd_prod_img pi
+                 WHERE pi.prod_id = p.prod_id
+                 ORDER BY pi.sort_ord ASC LIMIT 1)
+              )                      AS thumbnail_url
         FROM pd_prod p
             LEFT JOIN pd_category cat ON cat.category_id = p.category_id
             LEFT JOIN sy_brand     b   ON b.brand_id     = p.brand_id
@@ -98,6 +106,14 @@
             , u.user_nm              AS md_user_nm
             , cd_ps.code_label       AS prod_status_cd_nm
             , cd_pt.code_label       AS prod_type_cd_nm
+            , COALESCE(p.thumbnail_url,
+                (SELECT pi.cdn_img_url FROM pd_prod_img pi
+                 WHERE pi.prod_id = p.prod_id AND pi.is_thumb = 'Y'
+                 ORDER BY pi.sort_ord ASC LIMIT 1),
+                (SELECT pi.cdn_img_url FROM pd_prod_img pi
+                 WHERE pi.prod_id = p.prod_id
+                 ORDER BY pi.sort_ord ASC LIMIT 1)
+              )                      AS thumbnail_url
         FROM pd_prod p
             LEFT JOIN pd_category cat ON cat.category_id = p.category_id
             LEFT JOIN sy_brand     b   ON b.brand_id     = p.brand_id

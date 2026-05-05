@@ -33,7 +33,9 @@ window.Prod03List = {
       /* colors→opt1s, sizes→opt2s 호환 */
       if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
       if (p.sizes  && !p.opt2s) { p.opt2s = p.sizes; }
-      /* 이미지 자동 할당 */
+      /* API 대표이미지 → image 매핑 */
+      if (!p.image && p.thumbnailUrl) p.image = p.thumbnailUrl;
+      /* 이미지 자동 할당 (실제 이미지 없을 때만) */
       if (!p.image) {
         const id = p.prodId || 1;
         if (id <= 12) {

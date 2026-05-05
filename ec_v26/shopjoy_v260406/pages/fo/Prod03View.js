@@ -14,7 +14,7 @@ window.Prod03View = {
     const toggleLike           = (id) => window.foApp.toggleLike(id);
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, quickBuyOpen: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, quickBuyOpen: false, prodApiLoaded: false });
     const codes = reactive({});
 
     const svProduct = reactive({});
@@ -96,7 +96,8 @@ window.Prod03View = {
           const merged = fnMergeProdOpts(prod, data.opts || { groups: [], items: [] }, data.skus || [], data.images || []);
           fnApplySvProduct(merged);
         }
-      } catch (e) { console.error('[handleSearchList:getById]', e); }
+        uiState.prodApiLoaded = true;
+      } catch (e) { console.error('[handleSearchList:getById]', e); uiState.prodApiLoaded = true; }
 
       /* Tier 2: lazy 호출 — 병렬 처리 */
       const tier2 = await Promise.allSettled([
@@ -239,6 +240,7 @@ window.Prod03View = {
           };
         }).filter(it => it.src);
       }
+      if (!uiState.prodApiLoaded) return [];
       const opt1s = p.opt1s || [];
       const colorIdx = opt1s.findIndex(c => c.name === uiState.selectedColor?.name);
       return _buildColorImages(p, Math.max(0, colorIdx));

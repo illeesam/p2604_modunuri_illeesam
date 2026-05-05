@@ -631,6 +631,13 @@
     const foProdListComp = window['Prod' + _N + 'List'];
     const foProdViewComp = window['Prod' + _N + 'View'];
 
+    const SIDEBAR_HIDDEN_PAGES = new Set([
+      'home', 'prodList', 'prodView', 'cart', 'order',
+      'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt',
+      'event', 'eventView', 'blog', 'blogView', 'blogEdit',
+    ]);
+    const cfShowSidebar = computed(() => !SIDEBAR_HIDDEN_PAGES.has(page.value));
+
 
     /* ── 전역 노출: 페이지 컴포넌트에서 props 없이 직접 접근 가능 ── */
     window.foApp = {
@@ -670,6 +677,7 @@
       foHomeComp, foProdListComp, foProdViewComp,
       foApiLogs, showApiLog, showSettings, apiLogLockedDetail, apiLogHoverDetail,
       clearFoApiLogs, foApiLogStatusClass, foApiLogMethodStyle,
+      cfShowSidebar,
       onToggleApiLog: () => { showApiLog.value = !showApiLog.value; showSettings.value = false; },
       notFoundPageId: computed(() => {
         try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
@@ -714,6 +722,7 @@
 
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
     <fo-app-sidebar
+      v-show="cfShowSidebar"
       :page="page" :app-sidebar-open="sidebarOpen" :app-mobile-open="uiState.mobileOpen"
       :config="config" :navigate="navigate" :app-cart-count="cfCartCount" :app-auth="auth"
       @app-toggle-sidebar="sidebarOpen=!sidebarOpen" @app-close-mobile="closeMobileMenu"

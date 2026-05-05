@@ -137,9 +137,11 @@ window.Order = {
     };
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
-      await Promise.all([handleLoadCoupons(), handleLoadCash()]);
       const u = window.foAuth?.state?.user;
-      if (u) { form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
+      if (u) {
+        await Promise.all([handleLoadCoupons(), handleLoadCash()]);
+        form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || '';
+      }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -205,7 +207,8 @@ window.Order = {
       allCoupons, productCoupons, cfShippingCoupons, discountLabel, calcCouponDiscount,
       couponPopup, selectedCoupons, openCouponPopup, closeCouponPopup, applyCoupon, removeCoupon,
       applyShipCoupon, removeShipCoupon,
-      uiState, codes };
+      uiState, codes,
+      config: window.SITE_CONFIG || {} };
   },
 
   template: /* html */ `
@@ -257,8 +260,8 @@ window.Order = {
       <div class="card" style="padding:18px;text-align:left;margin-bottom:28px;background:var(--blue-dim);">
         <div style="font-size:0.85rem;font-weight:700;color:var(--blue);margin-bottom:10px;">💳 입금 안내</div>
         <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.8;">
-          {{ config.bank.name }} {{ config.bank.account }}<br>
-          예금주: {{ config.bank.holder }}<br>
+          {{ config.bank && config.bank.name }} {{ config.bank && config.bank.account }}<br>
+          예금주: {{ config.bank && config.bank.holder }}<br>
           <strong style="color:var(--blue);">입금액: {{ fmt(uiState.resultData.finalPrice) }}</strong><br>
           입금자명: {{ uiState.resultData.form.name }}
         </div>

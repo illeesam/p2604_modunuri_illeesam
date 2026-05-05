@@ -14,7 +14,7 @@ window.Prod01View = {
     const toggleLike           = (id) => window.foApp.toggleLike(id);
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, prodApiLoaded: false });
     const codes = reactive({});
 
     const svProduct = reactive({});
@@ -141,6 +141,7 @@ window.Prod01View = {
           const imgList  = data.images || [];
           const merged   = fnMergeProdOpts(prod, optsObj, skusList, imgList);
           fnApplySvProduct(merged);
+          uiState.prodApiLoaded = true;
           /* 첫 색상 자동 선택 (이미 선택된 상태가 아닐 때만) */
           if (!uiState.selectedColor) {
             uiState.selectedColor = (merged.opt1s || []).find(c => colorStatus(c) === 'ok') || merged.opt1s?.[0] || null;
@@ -148,6 +149,7 @@ window.Prod01View = {
         }
       } catch (e) {
         console.error('[handleSearchList:getById]', e);
+        uiState.prodApiLoaded = true;
       }
 
       /* Tier 2: lazy 호출 — 병렬 처리, 실패해도 화면 보호 */
@@ -303,7 +305,8 @@ window.Prod01View = {
           };
         }).filter(it => it.src);
       }
-      // 2) 실제 이미지 없을 때만 목업 fallback
+      // 2) API 응답 완료 후에만 목업 fallback — 응답 전 플리커 방지
+      if (!uiState.prodApiLoaded) return [];
       const opt1s = p.opt1s || [];
       const colorIdx = opt1s.findIndex(c => c.name === uiState.selectedColor?.name);
       return _buildColorImages(p, Math.max(0, colorIdx));
