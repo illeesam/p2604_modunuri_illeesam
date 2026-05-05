@@ -202,13 +202,30 @@ window.PdProdDtl = {
     //    level=2 : 옵션 유형(1·2단)     (parent=level1.code_value)— N단 유형 select
     //    level=3 : 값 프리셋            (parent=level2.code_value)— 공통코드ID select
     const PROD_OPT_GRP = 'PROD_OPT_CATEGORY';
-    const fnSortByOrd = (a,b) => Number(a.sortOrd||0) - Number(b.sortOrd||0);
+    // svCodes row 원본 키(codeVal/codeNm/codeSortOrd/codeLevel/parentCodeValue) → 화면용 정규화
+    //   codeId       : sy_code.code_id (예: CD000900)         — opt_val_code_id 저장용
+    //   codeValue    : sy_code.code_value (예: CAT_CLOTHING)  — select :value
+    //   codeLabel    : sy_code.code_label (예: 의류)          — select 표시
+    //   codeLevel    : 1/2/3
+    //   parentCodeValue
+    //   sortOrd
+    const fnNorm = (c) => ({
+      codeId:          c.codeId,
+      codeValue:       c.codeVal ?? c.codeValue ?? '',
+      codeLabel:       c.codeNm  ?? c.codeLabel ?? c.codeVal ?? '',
+      codeLevel:       Number(c.codeLevel ?? 1),
+      parentCodeValue: c.parentCodeValue ?? null,
+      sortOrd:         Number(c.codeSortOrd ?? c.sortOrd ?? 0),
+      codeRemark:      c.codeRemark ?? '',
+      useYn:           c.useYn ?? 'Y',
+    });
+    const fnSortByOrd = (a,b) => (a.sortOrd||0) - (b.sortOrd||0);
 
     // 1레벨 — 옵션 카테고리 선택용
     const cfOptTypeLevel1Codes = computed(() =>
       (codes||[])
         .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y' && Number(c.codeLevel||1) === 1)
-        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .map(fnNorm)
         .sort(fnSortByOrd)
     );
     // 2레벨 — 선택된 카테고리 하위의 옵션 유형 목록 (1단·2단 유형 select 공용)
@@ -218,7 +235,7 @@ window.PdProdDtl = {
         .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y'
                   && Number(c.codeLevel||0) === 2
                   && c.parentCodeValue === categoryCd)
-        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .map(fnNorm)
         .sort(fnSortByOrd);
     };
     // 현재 화면에서 자주 쓰는 형태 — 선택된 카테고리 하위 2레벨 (computed)
@@ -230,41 +247,65 @@ window.PdProdDtl = {
         .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y'
                   && Number(c.codeLevel||0) === 3
                   && c.parentCodeValue === typeCd)
-        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .map(fnNorm)
         .sort(fnSortByOrd);
     };
-    // (호환용) typeCd 라벨 lookup — 기존 cfOptTypeAllCodes 자리를 대체. 모든 카테고리 하위 2레벨 합집합.
+    // (호환용) typeCd 라벨 lookup — 모든 카테고리 하위 2레벨 합집합
     const cfOptTypeAllCodes = computed(() =>
       (codes||[])
         .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y' && Number(c.codeLevel||0) === 2)
-        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .map(fnNorm)
         .sort(fnSortByOrd)
     );
 
     const cfOptInputTypeCodes = computed(() =>
       (codes||[])
         .filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y')
-        .map(c => ({ ...c, sortOrd: Number(c.sortOrd||0) }))
+        .map(fnNorm)
         .sort(fnSortByOrd)
     );
 
     const clearOpt = () => { optGroups.length = 0; skus.length = 0; uiState.prodOptCategoryTypeCd = ''; };
 
+    // 차원별 기본 아이템 수: 1단=5개, 2단=15개 (3레벨 프리셋 앞 N개로 채움. 부족하면 빈 행으로 패딩)
+    const DEFAULT_ITEMS_BY_LEVEL = { 1: 5, 2: 15 };
+    const fnBuildDefaultItems = (typeCd, level) => {
+      const want = DEFAULT_ITEMS_BY_LEVEL[level] || 0;
+      const presets = typeCd ? getOptValCodes(typeCd) : [];
+      const items = [];
+      for (let i = 0; i < want; i++) {
+        const p = presets[i];
+        items.push({
+          _id: _itemSeq++,
+          nm:        p ? p.codeLabel : '',
+          val:       p ? p.codeValue : '',
+          valCodeId: p ? p.codeId    : '',
+          parentOptItemId: '',
+          sortOrd:   i + 1,
+          useYn:     'Y',
+        });
+      }
+      return items;
+    };
+
     // 카테고리 선택 시: DB의 2레벨 자식을 그대로 1·2단으로 자동 세팅 (최대 2개)
+    //                  + 각 차원의 옵션 값 행을 1단=5개, 2단=15개 자동 생성
     const onCategoryChange = () => {
       optGroups.length = 0;
       skus.length = 0;
       const types = getOptTypeCodes(uiState.prodOptCategoryTypeCd);
       types.slice(0, 2).forEach((t, i) => {
+        const level = i + 1;
         optGroups.push({
           _id: _optSeq++,
           grpNm: t.codeLabel || t.codeValue,
           typeCd: t.codeValue,
           inputTypeCd: 'SELECT',
-          level: i + 1,
-          items: []
+          level,
+          items: fnBuildDefaultItems(t.codeValue, level),
         });
       });
+      generateSkus();
     };
 
     const addOptGroup = () => {
@@ -273,14 +314,16 @@ window.PdProdDtl = {
       const types = getOptTypeCodes(uiState.prodOptCategoryTypeCd);
       const used = new Set(optGroups.map(g => g.typeCd).filter(Boolean));
       const next = types.find(t => !used.has(t.codeValue)) || types[optGroups.length] || null;
+      const level = optGroups.length + 1;
       optGroups.push({
         _id: _optSeq++,
         grpNm: next ? (next.codeLabel || next.codeValue) : '옵션',
         typeCd: next ? next.codeValue : '',
         inputTypeCd: 'SELECT',
-        level: optGroups.length + 1,
-        items: []
+        level,
+        items: fnBuildDefaultItems(next ? next.codeValue : '', level),
       });
+      generateSkus();
     };
     const removeOptGroup = (idx) => {
       optGroups.splice(idx, 1);

@@ -46,24 +46,25 @@ VALUES
 -- 1레벨 — 옵션 카테고리 (9개)   code_level=1, parent_code_value=NULL
 -- ════════════════════════════════════════════════════════════
 
+-- code_label 형식: "이름 (자식1-자식2-...)" — 자식(level=2) 라벨을 sort_ord 순으로 조합
 INSERT INTO shopjoy_2604.sy_code (code_id, site_id, code_grp, code_value, code_label, sort_ord, use_yn, parent_code_value, child_code_values, code_remark, code_level, reg_by, reg_date, upd_by, upd_date)
-VALUES ('CD000900', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_CLOTHING',  '의류',       1, 'Y', NULL, NULL, '상의/하의 공통',    1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
+VALUES ('CD000900', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_CLOTHING',  '의류 (색상-사이즈-소재)',   1, 'Y', NULL, NULL, '상의/하의 공통',    1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
 INSERT INTO shopjoy_2604.sy_code (code_id, site_id, code_grp, code_value, code_label, sort_ord, use_yn, parent_code_value, child_code_values, code_remark, code_level, reg_by, reg_date, upd_by, upd_date)
-VALUES ('CD000901', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_OUTER',     '아우터',     2, 'Y', NULL, NULL, '자켓/코트',         1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
+VALUES ('CD000901', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_OUTER',     '아우터 (색상-사이즈)',      2, 'Y', NULL, NULL, '자켓/코트',         1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
 INSERT INTO shopjoy_2604.sy_code (code_id, site_id, code_grp, code_value, code_label, sort_ord, use_yn, parent_code_value, child_code_values, code_remark, code_level, reg_by, reg_date, upd_by, upd_date)
-VALUES ('CD000902', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_PANTS',     '바지',       3, 'Y', NULL, NULL, '청바지/슬랙스',     1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
+VALUES ('CD000902', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_PANTS',     '바지 (색상-허리사이즈)',    3, 'Y', NULL, NULL, '청바지/슬랙스',     1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
 INSERT INTO shopjoy_2604.sy_code (code_id, site_id, code_grp, code_value, code_label, sort_ord, use_yn, parent_code_value, child_code_values, code_remark, code_level, reg_by, reg_date, upd_by, upd_date)
-VALUES ('CD000903', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_SHOES',     '신발',       4, 'Y', NULL, NULL, NULL,               1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
+VALUES ('CD000903', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_SHOES',     '신발 (신발사이즈-색상)',    4, 'Y', NULL, NULL, NULL,               1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
 INSERT INTO shopjoy_2604.sy_code (code_id, site_id, code_grp, code_value, code_label, sort_ord, use_yn, parent_code_value, child_code_values, code_remark, code_level, reg_by, reg_date, upd_by, upd_date)
-VALUES ('CD000904', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_BAG',       '가방',       5, 'Y', NULL, NULL, NULL,               1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
+VALUES ('CD000904', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_BAG',       '가방 (색상-소재)',          5, 'Y', NULL, NULL, NULL,               1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
 INSERT INTO shopjoy_2604.sy_code (code_id, site_id, code_grp, code_value, code_label, sort_ord, use_yn, parent_code_value, child_code_values, code_remark, code_level, reg_by, reg_date, upd_by, upd_date)
-VALUES ('CD000905', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_COSMETIC',  '화장품',     6, 'Y', NULL, NULL, '립/파운데이션 등',  1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
+VALUES ('CD000905', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_COSMETIC',  '화장품 (색상/쉐이드-용량)', 6, 'Y', NULL, NULL, '립/파운데이션 등',  1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
 INSERT INTO shopjoy_2604.sy_code (code_id, site_id, code_grp, code_value, code_label, sort_ord, use_yn, parent_code_value, child_code_values, code_remark, code_level, reg_by, reg_date, upd_by, upd_date)
-VALUES ('CD000906', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_PERFUME',   '향수',       7, 'Y', NULL, NULL, '디퓨저/캔들 포함',  1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
+VALUES ('CD000906', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_PERFUME',   '향수 (향-용량)',            7, 'Y', NULL, NULL, '디퓨저/캔들 포함',  1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
 INSERT INTO shopjoy_2604.sy_code (code_id, site_id, code_grp, code_value, code_label, sort_ord, use_yn, parent_code_value, child_code_values, code_remark, code_level, reg_by, reg_date, upd_by, upd_date)
-VALUES ('CD000907', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_FOOD',      '식품/음료',  8, 'Y', NULL, NULL, NULL,               1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
+VALUES ('CD000907', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_FOOD',      '식품/음료 (맛-용량)',       8, 'Y', NULL, NULL, NULL,               1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
 INSERT INTO shopjoy_2604.sy_code (code_id, site_id, code_grp, code_value, code_label, sort_ord, use_yn, parent_code_value, child_code_values, code_remark, code_level, reg_by, reg_date, upd_by, upd_date)
-VALUES ('CD000908', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_CUSTOM',    '기타/커스텀',9, 'Y', NULL, NULL, '직접입력 전용',     1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
+VALUES ('CD000908', 'SITE000001', 'PROD_OPT_CATEGORY', 'CAT_CUSTOM',    '기타/커스텀 (직접입력)',    9, 'Y', NULL, NULL, '직접입력 전용',     1, 'SYSTEM', '2026-05-05 00:00:00', NULL, NULL);
 
 -- ════════════════════════════════════════════════════════════
 -- 2레벨 — 옵션 유형 (15개)   code_level=2, parent=1레벨 code_value

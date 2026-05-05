@@ -2242,6 +2242,7 @@
   /* ── pages/bo/ (공통) ── */
   .component('BoRefModal',  window.BoRefModal)
   .component('BoCodeGrpModal',  window.BoCodeGrpModal)
+  .component('BoCodeGrpTreeNode',  window.BoCodeGrpTreeNode)
   /* ── pages/bo/ec/ — 회원 ── */
   .component('MbMemberMng',  window.MbMemberMng)
   .component('MbMemberDtl',  window.MbMemberDtl)

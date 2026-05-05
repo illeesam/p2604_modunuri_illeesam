@@ -190,10 +190,23 @@ window.BoCodeGrpModal = {
   },
   emits: ['close', 'select'],
   setup(props, { emit }) {
-    const { ref, watch } = Vue;
+    const { ref, computed, watch } = Vue;
     const codes = ref([]);
     const loading = ref(false);
     const error = ref('');
+    const tab = ref('list'); // 'list' | 'tree'
+
+    /* 원본 row 키(codeVal/codeNm/codeSortOrd/codeLevel/parentCodeValue) → 화면용 정규화 */
+    const fnNorm = (c) => ({
+      codeId:          c.codeId,
+      codeValue:       c.codeVal ?? c.codeValue ?? '',
+      codeLabel:       c.codeNm  ?? c.codeLabel ?? c.codeVal ?? '',
+      codeLevel:       Number(c.codeLevel ?? 1),
+      parentCodeValue: c.parentCodeValue ?? null,
+      sortOrd:         Number(c.codeSortOrd ?? c.sortOrd ?? 0),
+      useYn:           c.useYn ?? 'Y',
+      codeRemark:      c.codeRemark ?? '',
+    });
 
     const fnLoad = async () => {
       if (!props.codeGrp) { codes.value = []; return; }
@@ -204,13 +217,13 @@ window.BoCodeGrpModal = {
         const store = window.sfGetBoCodeStore?.();
         const local = store?.sgGetCodesByGroup?.(props.codeGrp);
         if (Array.isArray(local) && local.length) {
-          codes.value = local.slice().sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+          codes.value = local.map(fnNorm).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           return;
         }
         /* 2차: API 직접 조회 */
         const res = await window.coApiSvc.syCode.getGrpCodes(props.codeGrp, '공통코드', '코드그룹조회');
         const list = res?.data?.data?.pageList || res?.data?.data || [];
-        codes.value = (Array.isArray(list) ? list : []).slice().sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+        codes.value = (Array.isArray(list) ? list : []).map(fnNorm).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       } catch (err) {
         console.error('[BoCodeGrpModal:fnLoad]', err);
         error.value = err.message || '코드 조회 실패';
@@ -221,19 +234,47 @@ window.BoCodeGrpModal = {
 
     /* show=true 또는 codeGrp 변경 시 자동 로드 */
     watch(() => [props.show, props.codeGrp], ([show]) => {
-      if (show) fnLoad();
+      if (show) { tab.value = 'list'; fnLoad(); }
     }, { immediate: true });
+
+    /* 트리 빌드: parentCodeValue 로 부모-자식 연결 */
+    const cfTree = computed(() => {
+      const all = codes.value || [];
+      if (!all.length) return [];
+      const byParent = new Map();
+      all.forEach(c => {
+        const p = c.parentCodeValue || '';
+        if (!byParent.has(p)) byParent.set(p, []);
+        byParent.get(p).push(c);
+      });
+      const known = new Set(all.map(c => c.codeValue));
+      const buildChildren = (parentVal) => {
+        const list = byParent.get(parentVal) || [];
+        return list
+          .slice()
+          .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+          .map(c => ({ ...c, children: buildChildren(c.codeValue) }));
+      };
+      // 루트: parentCodeValue 가 없거나, 부모가 같은 그룹 안에 존재하지 않는 항목
+      const roots = all.filter(c => !c.parentCodeValue || !known.has(c.parentCodeValue));
+      return roots
+        .slice()
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+        .map(r => ({ ...r, children: buildChildren(r.codeValue) }));
+    });
+
+    const cfHasTree = computed(() => codes.value.some(c => Number(c.codeLevel || 1) > 1 || c.parentCodeValue));
 
     const onClose  = () => emit('close');
     const onSelect = (row) => emit('select', row);
 
-    return { codes, loading, error, onClose, onSelect };
+    return { codes, loading, error, tab, cfTree, cfHasTree, onClose, onSelect };
   },
   template: /* html */`
 <div v-if="show"
   style="position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);z-index:1500;display:flex;align-items:center;justify-content:center;"
   @click.self="onClose">
-  <div class="modal-box" style="background:#fff;border-radius:16px;width:640px;max-width:94vw;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;">
+  <div class="modal-box" style="background:#fff;border-radius:16px;width:960px;max-width:94vw;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;">
     <!-- 헤더 -->
     <div class="tree-modal-header" style="padding:14px 20px;border-bottom:1px solid #f0e0e7;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);">
       <div style="display:flex;align-items:center;gap:8px;">
@@ -243,17 +284,38 @@ window.BoCodeGrpModal = {
       <button @click="onClose" style="border:none;background:transparent;color:#888;font-size:18px;cursor:pointer;">✕</button>
     </div>
 
+    <!-- 탭 바 -->
+    <div style="display:flex;gap:0;border-bottom:1px solid #eee;background:#fafafa;padding:0 14px;">
+      <button type="button" @click="tab='list'"
+        :style="(tab==='list'
+          ? 'border:none;background:#fff;border-top:2px solid #ec4899;color:#222;font-weight:700;'
+          : 'border:none;background:transparent;color:#888;font-weight:500;')
+          + 'padding:10px 16px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;'"
+        >📋 일반 코드목록</button>
+      <button type="button" @click="tab='tree'"
+        :style="(tab==='tree'
+          ? 'border:none;background:#fff;border-top:2px solid #ec4899;color:#222;font-weight:700;'
+          : 'border:none;background:transparent;color:#888;font-weight:500;')
+          + 'padding:10px 16px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;'"
+        >🌲 트리목록 <span v-if="!cfHasTree" style="font-size:10px;color:#bbb;margin-left:4px;">(단층)</span></button>
+    </div>
+
     <!-- 본문 -->
     <div style="padding:14px 20px;overflow-y:auto;flex:1;">
       <div v-if="loading" style="padding:32px;text-align:center;color:#999;font-size:13px;">불러오는 중...</div>
       <div v-else-if="error" style="padding:24px;text-align:center;color:#d32f2f;font-size:13px;">{{ error }}</div>
       <div v-else-if="!codes.length" style="padding:32px;text-align:center;color:#aaa;font-size:13px;">등록된 코드가 없습니다.</div>
-      <table v-else class="bo-table" style="width:100%;font-size:12px;">
+
+      <!-- ── 일반 코드목록 ── -->
+      <table v-else-if="tab==='list'" class="bo-table" style="width:100%;font-size:12px;">
         <thead>
           <tr>
             <th style="width:36px;text-align:center;">번호</th>
-            <th style="width:140px;">코드값</th>
+            <th style="width:120px;">코드ID</th>
+            <th style="width:160px;">코드값</th>
             <th>코드명</th>
+            <th style="width:60px;text-align:center;">레벨</th>
+            <th style="width:140px;">부모코드값</th>
             <th style="width:60px;text-align:right;">정렬</th>
             <th style="width:50px;text-align:center;">사용</th>
           </tr>
@@ -263,8 +325,16 @@ window.BoCodeGrpModal = {
               @dblclick="onSelect(row)" style="cursor:pointer;"
               title="더블클릭하여 선택">
             <td style="text-align:center;color:#999;">{{ idx + 1 }}</td>
+            <td><code style="background:#f3e5f5;padding:2px 6px;border-radius:4px;font-family:monospace;color:#6a1b9a;font-size:11px;">{{ row.codeId }}</code></td>
             <td><code style="background:#f5f5f7;padding:2px 6px;border-radius:4px;font-family:monospace;color:#1565c0;">{{ row.codeValue }}</code></td>
             <td>{{ row.codeLabel }}</td>
+            <td style="text-align:center;">
+              <span class="badge" :class="row.codeLevel===1?'badge-blue':row.codeLevel===2?'badge-green':'badge-orange'" style="font-size:10px;">L{{ row.codeLevel }}</span>
+            </td>
+            <td>
+              <code v-if="row.parentCodeValue" style="background:#fafafa;padding:2px 6px;border-radius:4px;font-family:monospace;color:#888;font-size:11px;">{{ row.parentCodeValue }}</code>
+              <span v-else style="color:#ccc;">-</span>
+            </td>
             <td style="text-align:right;color:#666;">{{ row.sortOrd != null ? row.sortOrd : '-' }}</td>
             <td style="text-align:center;">
               <span :class="['badge', row.useYn==='Y' ? 'badge-green' : 'badge-gray']" style="font-size:10px;">{{ row.useYn || '-' }}</span>
@@ -272,6 +342,15 @@ window.BoCodeGrpModal = {
           </tr>
         </tbody>
       </table>
+
+      <!-- ── 트리목록 ── -->
+      <div v-else-if="tab==='tree'" style="font-size:12px;">
+        <div v-if="!cfTree.length" style="padding:32px;text-align:center;color:#aaa;">표시할 트리가 없습니다.</div>
+        <ul v-else style="list-style:none;padding-left:0;margin:0;">
+          <bo-code-grp-tree-node v-for="node in cfTree" :key="node.codeId || node.codeValue"
+            :node="node" :depth="0" @select="onSelect" />
+        </ul>
+      </div>
     </div>
 
     <!-- 푸터 -->
@@ -281,4 +360,47 @@ window.BoCodeGrpModal = {
     </div>
   </div>
 </div>`
+};
+
+/* ── BoCodeGrpTreeNode (재귀 노드 컴포넌트) ───────────────────── */
+window.BoCodeGrpTreeNode = {
+  name: 'BoCodeGrpTreeNode',
+  props: {
+    node:  { type: Object, required: true },
+    depth: { type: Number, default: 0 },
+  },
+  emits: ['select'],
+  setup(props, { emit }) {
+    const { ref } = Vue;
+    const open = ref(true);
+    const onSelect = (n) => emit('select', n);
+    const toggle = () => { open.value = !open.value; };
+    return { open, toggle, onSelect };
+  },
+  template: /* html */`
+<li :style="'margin:0;padding:0;'">
+  <div @dblclick="onSelect(node)"
+       :style="'display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;'
+               + (depth%2===0 ? '' : 'background:#fafbfc;')
+               + 'border-left:3px solid '+(node.codeLevel===1?'#1677ff':node.codeLevel===2?'#22c55e':'#f59e0b')+';'
+               + 'margin-left:'+(depth*16)+'px;'"
+       title="더블클릭하여 선택">
+    <button v-if="node.children && node.children.length"
+      type="button" @click.stop="toggle"
+      style="border:none;background:transparent;cursor:pointer;font-size:11px;color:#666;width:16px;">
+      {{ open ? '▼' : '▶' }}
+    </button>
+    <span v-else style="display:inline-block;width:16px;color:#ddd;font-size:11px;text-align:center;">·</span>
+    <span class="badge" :class="node.codeLevel===1?'badge-blue':node.codeLevel===2?'badge-green':'badge-orange'" style="font-size:10px;flex-shrink:0;">L{{ node.codeLevel }}</span>
+    <code style="background:#f3e5f5;padding:1px 6px;border-radius:4px;font-family:monospace;color:#6a1b9a;font-size:11px;flex-shrink:0;">{{ node.codeId }}</code>
+    <code style="background:#f5f5f7;padding:1px 6px;border-radius:4px;font-family:monospace;color:#1565c0;flex-shrink:0;">{{ node.codeValue }}</code>
+    <span style="flex:1;">{{ node.codeLabel }}</span>
+    <span style="color:#888;font-size:11px;flex-shrink:0;">정렬 {{ node.sortOrd }}</span>
+    <span :class="['badge', node.useYn==='Y' ? 'badge-green' : 'badge-gray']" style="font-size:10px;flex-shrink:0;">{{ node.useYn || '-' }}</span>
+  </div>
+  <ul v-if="open && node.children && node.children.length" style="list-style:none;padding-left:0;margin:0;">
+    <bo-code-grp-tree-node v-for="child in node.children" :key="child.codeId || child.codeValue"
+      :node="child" :depth="depth+1" @select="onSelect" />
+  </ul>
+</li>`
 };
