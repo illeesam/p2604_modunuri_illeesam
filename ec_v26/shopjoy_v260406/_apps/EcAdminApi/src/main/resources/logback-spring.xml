@@ -20,13 +20,13 @@
     <property name="ERR_LOG"     value="${LOG_DIR}/${APP_NAME}-error.log"/>
     <property name="ARCH_DIR"    value="${LOG_DIR}/archived"/>
 
-    <!-- 일반 파일 패턴 — [siteId:userTypeCd:userId:roleId] [uiNm>cmdNm] -->
+    <!-- 일반 파일 패턴 — [siteId:appTypeCd:userId:roleId] [uiNm>cmdNm] -->
     <property name="FILE_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{siteId}:%X{userTypeCd}:%X{userId}:%X{roleId}] [%X{uiNm}%replace(%X{cmdNm}){'(.+)', '>$1'}] [%thread] %logger{50} : %msg%n%wex"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{siteId}:%X{appTypeCd}:%X{userId}:%X{roleId}] [%X{uiNm}%replace(%X{cmdNm}){'(.+)', '>$1'}] [%thread] %logger{50} : %msg%n%wex"/>
 
-    <!-- 에러 파일 패턴 — [siteId:userTypeCd:userId:roleId] + [method host/path] + [uiNm>cmdNm] -->
+    <!-- 에러 파일 패턴 — [siteId:appTypeCd:userId:roleId] + [method host/path] + [uiNm>cmdNm] -->
     <property name="ERROR_FILE_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{siteId}:%X{userTypeCd}:%X{userId}:%X{roleId}] [%X{req}] [%X{uiNm}%replace(%X{cmdNm}){'(.+)', '>$1'}] [%thread] %logger{50} : %msg%n%wex"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{siteId}:%X{appTypeCd}:%X{userId}:%X{roleId}] [%X{req}] [%X{uiNm}%replace(%X{cmdNm}){'(.+)', '>$1'}] [%thread] %logger{50} : %msg%n%wex"/>
 
 
     <!-- ================================================================
@@ -44,7 +44,7 @@
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
                 <layout class="ch.qos.logback.classic.PatternLayout">
-                    <pattern>%d{HH:mm:ss.SSS} %clr(%-5level){highlight} %clr([%X{siteId}:%X{userTypeCd}:%X{userId}]){magenta} %clr([%X{uiNm}%replace(%X{cmdNm}){'(.+)', '>$1'}]){cyan} %logger{39} : %msg%n%clr(%wex){red}</pattern>
+                    <pattern>%d{HH:mm:ss.SSS} %clr(%-5level){highlight} %clr([%X{siteId}:%X{appTypeCd}:%X{userId}]){magenta} %clr([%X{uiNm}%replace(%X{cmdNm}){'(.+)', '>$1'}]){cyan} %logger{39} : %msg%n%clr(%wex){red}</pattern>
                 </layout>
             </encoder>
         </appender>

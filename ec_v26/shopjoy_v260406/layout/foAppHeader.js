@@ -114,12 +114,14 @@ window.foAppHeader = {
     });
     onUnmounted(() => unbindUserMenuOutside());
 
+    const cfTopMenu = computed(() => window.sfGetFoMenuStore?.()?.svTopMenu || []);
+
     return {
       uiState, codes, userMenuRoot,
       toggleUserMenu, closeUserMenu, goMy, doLogout, cfMenuItems,
       pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
       pw, openPw, savePw, IS,
-      cfAuthUser, cfUserFirstChar, cfIsLogin,
+      cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu,
       foSiteNo: window.FO_SITE_NO || '01',
       boSiteNo: '01', /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
       cfFoActive: computed(() => window.useFoAppStore?.()?.svActive || '-'),
@@ -202,7 +204,7 @@ window.foAppHeader = {
 
   <!-- Top nav -->
   <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
-    <template v-for="m in config.topMenu" :key="m.menuId">
+    <template v-for="m in cfTopMenu" :key="m.menuId">
       <!-- Site 01은 disp UI 샘플 메뉴 숨김 (samples는 01 에서 제외) -->
       <template v-if="foSiteNo==='01' && (m.menuId && (m.menuId.startsWith('dispUi') || m.menuId==='divider-disp'))"></template>
       <span v-else-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>

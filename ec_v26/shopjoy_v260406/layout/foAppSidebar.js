@@ -4,7 +4,7 @@ window.foAppSidebar = {
   props: ['page', 'appSidebarOpen', 'appMobileOpen', 'config', 'navigate', 'appCartCount', 'appAuth'],
   emits: ['app-toggle-sidebar', 'app-close-mobile'],
   setup(props, { emit }) {
-    const { ref, reactive, watch } = Vue;
+    const { ref, reactive, computed, watch } = Vue;
 
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
     const isMenuActive = (page, menuId) => {
@@ -78,16 +78,18 @@ window.foAppSidebar = {
     const foSiteNo = window.FO_SITE_NO || '01';
     const showSamples = foSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
 
+    const cfSidebarMenu = computed(() => window.sfGetFoMenuStore?.()?.svSidebarMenu || []);
+
     return { isMenuActive, uiState, codes,
              SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS, navTo, navToSite,
-             showSamples, foSiteNo };
+             showSamples, foSiteNo, cfSidebarMenu };
   },
   template: /* html */ `
 <div id="sidebar" :class="[appSidebarOpen?'':'collapsed', appMobileOpen?'open':'']" @click.stop>
   <div class="sidebar-inner" style="padding:16px 10px;overflow-y:auto;height:100%;display:flex;flex-direction:column;gap:6px;">
 
     <!-- 기존 sidebarMenu 섹션 (샘플 전시 제외) -->
-    <template v-for="section in config.sidebarMenu" :key="section.section">
+    <template v-for="section in cfSidebarMenu" :key="section.section">
       <template v-if="section.section !== '샘플 전시'">
         <div v-if="appSidebarOpen" style="padding:12px 8px 4px;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
           {{ section.section }}

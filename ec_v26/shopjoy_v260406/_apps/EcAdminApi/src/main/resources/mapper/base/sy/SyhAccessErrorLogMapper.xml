@@ -12,7 +12,7 @@
             </if>
             <if test="method    != null and method    != ''">AND l.req_method = #{method}</if>
             <if test="path      != null and path      != ''">AND l.req_path LIKE '%'||#{path}||'%'</if>
-            <if test="userTypeCd != null and userTypeCd != ''">AND l.user_type_cd = #{userTypeCd}</if>
+            <if test="appTypeCd != null and appTypeCd != ''">AND l.app_type_cd = #{appTypeCd}</if>
             <if test="uiNm      != null and uiNm      != ''">AND l.ui_nm    LIKE '%'||#{uiNm}||'%'</if>
             <if test="traceId   != null and traceId   != ''">AND l.trace_id LIKE '%'||#{traceId}||'%'</if>
             <if test="kw        != null and kw        != ''">AND (l.req_ip LIKE '%'||#{kw}||'%' OR l.user_id LIKE '%'||#{kw}||'%' OR l.error_type LIKE '%'||#{kw}||'%')</if>
@@ -28,7 +28,7 @@
             , l.req_query
             , l.req_ip
             , l.req_ua
-            , l.user_type_cd
+            , l.app_type_cd
             , l.user_id
             , l.role_id
             , l.dept_id
