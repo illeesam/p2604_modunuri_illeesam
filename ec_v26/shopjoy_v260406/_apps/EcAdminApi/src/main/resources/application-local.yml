@@ -37,7 +37,7 @@ spring:
       - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
 
   # Kotlin/Groovy 메시지 변환기 비활성
-  http:
+  mvc:
     converters:
       preferred-json-mapper: jackson
 
@@ -136,10 +136,10 @@ server:
 
 jwt:
   secret: ${JWT_SECRET:c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt}
-  bo-access-expiry: ${JWT_BO_ACCESS_EXPIRY:900000}      # 15분 accessToken 만료
-  fo-access-expiry: ${JWT_FO_ACCESS_EXPIRY:900000}      # 15분 accessToken 만료
-  bo-refresh-expiry: ${JWT_BO_REFRESH_EXPIRY:7200000}   # BO 관리자 refreshToken: 2시간 (Sliding)
-  fo-refresh-expiry: ${JWT_FO_REFRESH_EXPIRY:1296000000} # FO 회원 refreshToken: 15일 (Sliding)
+  bo-access-expiry: ${JWT_BO_ACCESS_EXPIRY:604800000}    # 7일  accessToken  만료 (local)
+  fo-access-expiry: ${JWT_FO_ACCESS_EXPIRY:604800000}    # 7일  accessToken  만료 (local)
+  bo-refresh-expiry: ${JWT_BO_REFRESH_EXPIRY:2592000000} # 30일 refreshToken 만료 (local, Sliding)
+  fo-refresh-expiry: ${JWT_FO_REFRESH_EXPIRY:2592000000} # 30일 refreshToken 만료 (local, Sliding)
 
 
 management:
