@@ -90,10 +90,10 @@ app:
 
 ### 마이그레이션 SQL 위치
 
-`_doc/ddlPgsql/migration_*.sql` — 날짜 또는 주제별 파일로 작성
+`_doc/ddl_pgsql/migration_*.sql` — 날짜 또는 주제별 파일로 작성
 
 ```
-_doc/ddlPgsql/
+_doc/ddl_pgsql/
 ├─ migration_2026_05_05_align.sql           ← 일반 정렬 마이그레이션
 ├─ migration_st_settle_adj_aprv_status_cd.sql  ← 단일 컬럼 추가
 ├─ migration_zz_sample_align.sql            ← 테이블 단위 재구축
@@ -171,7 +171,7 @@ java -Dspring.profiles.active=validate -jar EcAdminApi.jar
 | 검증 러너 | `_apps/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/common/validation/JpaSchemaValidationRunner.java` |
 | 프로파일 yml | `_apps/EcAdminApi/src/main/resources/application-validate.yml` |
 | logback 블록 | `_apps/EcAdminApi/src/main/resources/logback-spring.xml` (`<springProfile name="validate">`) |
-| 마이그레이션 SQL 보관 | `_doc/ddlPgsql/migration_*.sql` |
+| 마이그레이션 SQL 보관 | `_doc/ddl_pgsql/migration_*.sql` |
 
 ## 관련 정책서
 

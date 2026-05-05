@@ -242,6 +242,7 @@
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
 | **네이밍** | `sy.54.네이밍규칙.md` (Vue), `sy.55.mybatis쿼리테이블별칭정책.md` (SQL) |
 | **JPA 검증** | `sy.56.JPA스키마검증.md` — validate 프로파일 게이트 |
+| **DDL 관리** | `base/base.DDL작성규칙.md` — DB 자동 추출, `_doc/ddl_pgsql/{ec,sy}/` 구조 |
 | **권한** | `base/base.권한-*.md`, `sy.07.권한.md`, `sy/운영업체/sy.*.md` |
 | **배포/설정** | `base/base.운영환경-배포설정.md` |
 

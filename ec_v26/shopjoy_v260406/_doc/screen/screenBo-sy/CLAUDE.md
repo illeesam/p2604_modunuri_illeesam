@@ -22,4 +22,4 @@
 | `syVendorMng` | `sy-vendor-mng` | `pages/admin/sy/SyVendorMng.js` |
 
 ## 관련 DDL
-- `_doc/ddlPgsql-sy/` — 시스템 도메인 전체 DDL
+- `_doc/ddl_pgsql/sy/` — 시스템 도메인 전체 DDL

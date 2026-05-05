@@ -28,7 +28,7 @@ UI (DispX01Ui)
 | `dispWidgetMng` | `ec-disp-widget-mng` | `pages/admin/ec/dp/DispWidgetMng.js` |
 
 ## 관련 DDL
-- `_doc/ddlPgsql-ec-dp/` — 전시 도메인 전체 DDL
+- `_doc/ddl_pgsql/ec/` — 전시 도메인 전체 DDL
 
 ## 관련 정책서
 - `_doc/정책서-ec-dp/` — 전시 도메인 정책

@@ -18,7 +18,7 @@
 | `pdSetMng` | `ec-pd-set-mng` | `pages/admin/ec/pd/PdSetMng.js` |
 
 ## 관련 DDL
-- `_doc/ddlPgsql-ec-pd/` — 상품 도메인 전체 DDL
+- `_doc/ddl_pgsql/ec/` — 상품 도메인 전체 DDL
 
 ## 관련 정책서
 - `_doc/정책서-ec-pd/` — 상품 도메인 정책

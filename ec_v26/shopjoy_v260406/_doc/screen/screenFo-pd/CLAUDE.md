@@ -20,4 +20,4 @@ FRONT_SITE_NO에 따라 동적 로드:
 - SKU별 재고/가격 표시
 
 ## 관련 DDL
-- `_doc/ddlPgsql-ec-pd/pd_prod.sql`, `pd_prod_opt.sql`, `pd_prod_sku.sql`
+- `_doc/ddl_pgsql/ec/pd_prod.sql`, `pd_prod_opt.sql`, `pd_prod_sku.sql`

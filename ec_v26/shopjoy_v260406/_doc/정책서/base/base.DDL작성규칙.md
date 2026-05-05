@@ -8,19 +8,42 @@
 - 파일당 테이블 1개 원칙
 - 파일명: `{prefix}_{table_name}.sql`
 
-## 도메인 폴더
+## DDL 폴더 구조 (`_doc/ddl_pgsql/`)
 
 | 폴더 | 도메인 |
 |---|---|
-| `ddl-pgsql-ec-cm/` | 커뮤니티 (게시판·채팅·공지·푸시) |
-| `ddl-pgsql-ec-dp/` | 전시 (UI·Area·Panel·Widget) |
-| `ddl-pgsql-ec-mb/` | 회원 |
-| `ddl-pgsql-ec-od/` | 주문·결제·배송·클레임 |
-| `ddl-pgsql-ec-pd/` | 상품·카테고리·옵션·배송템플릿 |
-| `ddl-pgsql-ec-pm/` | 프로모션 (쿠폰·캐시·적립금·할인·사은품) |
-| `ddl-pgsql-ec-st/` | 정산 |
-| `ddl-pgsql-sy/` | 시스템 (사이트·코드·사용자·메뉴·권한) |
-| `ddl-pgsql-zz.기타/` | 기타 설계 메모 |
+| `ddl_pgsql/ec/` | EC 전체 (cm, dp, mb, od, pd, pm, st 및 그 *_hist 테이블 포함) |
+| `ddl_pgsql/sy/` | 시스템 (sy_*, syh_*, zz_sample*) |
+| `ddl_pgsql/migration_*.sql` | 운영 변경 이력 SQL (날짜/주제별) |
+| `ddl_pgsql/_legacy/` | 옛 도메인별 CLAUDE.md, 설계 메모, 보조 파이썬 스크립트 |
+
+### 진화 이력
+- 이전: `ddlPgsql/ddlPgsql-{ec-cm,ec-pd,sy,...}/` 도메인별 분리 폴더 (2026-04-29 이전)
+- 현재: `ddl_pgsql/{ec,sy}/` 단순 2폴더 구조 + 파일명 prefix(cm_/dp_/mb_/...)로 도메인 식별 (2026-05-05)
+
+## DDL 파일 생성·갱신 정책 (DB 기준 단일 소스)
+
+**원칙**: DDL 파일은 운영 PostgreSQL DB(`shopjoy_2604`)에서 자동 추출하여 생성한다.
+
+### 자동 추출 도구
+- 위치: `c:\tmp\ddl_extract\DdlExtract.java`
+- 동작: `information_schema` + `pg_catalog` 메타데이터 조회 → 테이블별 .sql 파일 생성
+- 출력 형식:
+  1. 헤더 코멘트 (테이블명 + DB 코멘트)
+  2. `CREATE TABLE` (컬럼/타입/NULL/DEFAULT/PK + FK 제약)
+  3. `COMMENT ON TABLE/COLUMN`
+  4. `CREATE INDEX` (PK 제외 모든 인덱스)
+- 분류: 테이블명 prefix가 `sy/syh/zz` → `sy/`, 그 외 → `ec/`
+- 후처리: `'value'::character varying` → `'value'` 캐스팅 단순화, UTF-8 BOM 제거
+
+### 갱신 시점
+- DB 스키마 변경 후 추출 도구 재실행 → 변경된 테이블 .sql 파일 갱신
+- 마이그레이션 SQL은 `migration_YYYY_MM_DD_*.sql` 형식으로 별도 보관 (이력 추적)
+
+### Entity와 DDL의 관계
+- **JPA Entity가 단일 소스 (Single Source of Truth)** — `_apps/EcAdminApi/.../entity/*.java`
+- DDL 파일은 DB 현재 상태의 스냅샷 (운영 검증용·문서용)
+- 컬럼명 참조는 Entity의 `@Column(name="...")`를 우선
 
 ## 컬럼명 표준
 - 단일 단어 컬럼은 테이블명 프리픽스 필수 (예: `name` → `member_nm`, `email` → `site_email`)

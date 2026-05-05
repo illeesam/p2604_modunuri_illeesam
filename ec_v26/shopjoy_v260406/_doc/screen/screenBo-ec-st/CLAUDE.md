@@ -17,7 +17,7 @@
 3. 지급 요청 → 확인 → 완료 (이의신청 처리 포함)
 
 ## 관련 DDL
-- `_doc/ddlPgsql-ec-st/` — 정산 도메인 전체 DDL
+- `_doc/ddl_pgsql/ec/` — 정산 도메인 전체 DDL
 
 ## 관련 정책서
 - `_doc/정책서-ec-st/` — 정산 도메인 정책

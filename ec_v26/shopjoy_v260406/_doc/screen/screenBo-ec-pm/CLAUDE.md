@@ -15,7 +15,7 @@
 | `pmEventMng` | `ec-pm-event-mng` | `pages/admin/ec/pm/PmEventMng.js` |
 
 ## 관련 DDL
-- `_doc/ddlPgsql-ec-pm/` — 프로모션 도메인 전체 DDL
+- `_doc/ddl_pgsql/ec/` — 프로모션 도메인 전체 DDL
 
 ## 관련 정책서
 - `_doc/정책서-ec-pm/` — 프로모션 도메인 정책

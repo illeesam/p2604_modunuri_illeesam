@@ -312,17 +312,18 @@ boApiSvc.pmPoint = {
 
 ### `_doc/ddl_pgsql/` — **PostgreSQL DDL 정의**
 
-실 운영 DB 스키마. **파일당 테이블 1개** 원칙. 도메인별 하위 폴더로 구분.
+실 운영 DB(`shopjoy_2604`)에서 자동 추출한 DDL. **파일당 테이블 1개** 원칙. prefix(cm_/dp_/mb_/od_/pd_/pm_/st_/sy_ 등)로 도메인 식별.
 
 ```
 _doc/ddl_pgsql/
-├─ ec/    (46 파일) — 전자상거래: 회원/상품/옵션/주문/클레임/배송/쿠폰/캐쉬/
-│                    전시(panel/widget/area)/이벤트/블로그/리뷰/채팅/공지/로그
-├─ sy/    (26 파일) — 시스템: 사이트/코드/브랜드/업체/사용자/부서/권한/메뉴/
-│                    첨부/템플릿/배치/알람/게시판/문의/로그
-├─ 단어사전.sql     — 용어 표준
-└─ zz.*.txt         — 설계 메모(카테고리/쿠폰/이벤트/전시 등 이슈 정리)
+├─ ec/                  (~117 파일) — cm_*, dp_*, mb_*, od_*, odh_*, pd_*, pdh_*, pm_*, st_*
+├─ sy/                  (~43 파일)  — sy_*, syh_*, zz_sample*
+├─ migration_*.sql                  — 운영 변경 이력 SQL
+└─ _legacy/                         — 옛 도메인별 CLAUDE.md, 설계 메모(zz_design_memos), 보조 파이썬 스크립트
 ```
+
+**자동 추출 도구**: `c:\tmp\ddl_extract\DdlExtract.java` (JDBC + information_schema/pg_catalog).  
+**갱신 정책**: `_doc/정책서/base/base.DDL작성규칙.md` 참조.
 
 ### `_doc/sample_insert_pgsql/` — **샘플 INSERT 데이터**
 

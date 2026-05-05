@@ -18,7 +18,7 @@
 `order_status_cd`: PENDING / PAID / PREPARING / SHIPPED / COMPLT / CANCEL
 
 ## 관련 DDL
-- `_doc/ddlPgsql-ec-od/` — 주문 도메인 전체 DDL
+- `_doc/ddl_pgsql/ec/` — 주문 도메인 전체 DDL
 
 ## 관련 정책서
 - `_doc/정책서-ec-od/` — 주문 도메인 정책

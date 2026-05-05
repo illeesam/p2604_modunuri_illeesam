@@ -12,7 +12,7 @@
 | `mbMemberMng` | `ec-mb-member-mng` | `pages/admin/ec/mb/MbMemberMng.js` |
 
 ## 관련 DDL
-- `_doc/ddlPgsql-ec-mb/` — 회원 도메인 전체 DDL
+- `_doc/ddl_pgsql/ec/` — 회원 도메인 전체 DDL
 
 ## 관련 정책서
 - `_doc/정책서-ec-mb/` — 회원 도메인 정책
