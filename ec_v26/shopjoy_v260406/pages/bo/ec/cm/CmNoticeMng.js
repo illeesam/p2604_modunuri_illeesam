@@ -309,7 +309,9 @@ window.CmNoticeMng = {
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :tab-mode="cfIsViewMode"
-    />
+    
+    :on-list-reload="handleSearchList"
+  />
   </div>
 
 </div>

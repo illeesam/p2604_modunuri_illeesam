@@ -6,7 +6,8 @@ window.MbMemberDtl = {
     handleSave:   { type: Function, default: () => {} }, // 콜백 함수
     handleDelete: { type: Function, default: () => {} }, // 콜백 함수
     closeDetail:  { type: Function, default: () => {} }, // 콜백 함수
-    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const { watch, ref, reactive, onMounted } = Vue;

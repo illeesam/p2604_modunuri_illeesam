@@ -375,23 +375,23 @@ window.CategoryTree = {
 window.BoPager = {
   name: 'BoPager',
   props: {
-    pager:        { type: Object,   required: true },
-    onSetPage:    { type: Function, required: true },
-    onSizeChange: { type: Function, required: true },
+    pager:        { type: Object,   default: () => ({ pageNo: 1, pageTotalPage: 1, pageNums: [1], pageSize: 20, pageSizes: [10, 20, 50, 100] }) },
+    onSetPage:    { type: Function, default: () => {} },
+    onSizeChange: { type: Function, default: () => {} },
   },
   template: /* html */`
-<div class="pagination">
+<div v-if="pager" class="pagination">
   <div></div>
   <div class="pager">
     <button :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
     <button :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
-    <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+    <button v-for="n in (pager.pageNums||[])" :key="n" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
     <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
     <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
   </div>
   <div class="pager-right">
     <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-      <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
+      <option v-for="s in (pager.pageSizes||[])" :key="s" :value="s">{{ s }}개</option>
     </select>
   </div>
 </div>`,

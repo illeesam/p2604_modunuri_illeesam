@@ -251,7 +251,9 @@ const CATEGORIES = [
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    />
+    
+    :on-list-reload="handleSearchList"
+  />
   </div>
 </div>
 `

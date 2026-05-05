@@ -7,6 +7,7 @@ window.PdProdDtl = {
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
+    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -701,6 +702,9 @@ window.PdProdDtl = {
             const newId = res.data?.data?.prodId || res.data?.prodId || null;
             if (newId) form.prodId = newId;
           }
+          /* UX-admin §18: 저장 후 재조회 — 본 탭 + 첫 탭(info)이면 상위 Mng 도 */
+          await handleLoadData();
+          if (tabId === 'info') { try { await props.onListReload(); } catch (_) {} }
           _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
         return;
@@ -713,7 +717,7 @@ window.PdProdDtl = {
       const TAB_LABEL = { content: '상품설명', option: '옵션설정', price: '옵션(가격/재고)', image: '이미지', related: '연관상품' };
       let payload = null;
       switch (tabId) {
-        case 'content':  payload = { contentBlocks }; break;
+        case 'content':  payload = { contentBlocks: [...contentBlocks] }; break;
         case 'option':   payload = { optGroups };     break;
         case 'price':    payload = { skus };          break;
         case 'image':    payload = { images: images.map(({ id, ...rest }) => rest) }; break;
@@ -721,7 +725,12 @@ window.PdProdDtl = {
         default:         payload = {}; break;
       }
       try {
-        const res = await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', `${TAB_LABEL[tabId] || tabId}저장`);
+        /* content 탭은 전용 엔드포인트(PUT /contents) 로 분리 호출 — 백엔드에서 일괄 저장 처리 */
+        const res = (tabId === 'content')
+          ? await boApiSvc.pdProd.saveContents(cfCurProdId.value, payload, '상품관리', '상품설명저장')
+          : await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', `${TAB_LABEL[tabId] || tabId}저장`);
+        /* UX-admin §18: 저장한 탭의 데이터를 다시 가져와 화면 동기화 */
+        await handleLoadData();
         _afterApiOk(res, `${TAB_LABEL[tabId] || ''} 저장되었습니다.`);
       } catch (err) { _afterApiErr(err); }
     };
@@ -754,9 +763,15 @@ window.PdProdDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    /* 사용자 페이스 미리보기 — 새 창에서 상품 상세 표시 */
+    const onPreview = () => {
+      if (!cfHasProdId.value) { showToast('상품 등록 후 미리보기 가능합니다.', 'error'); return; }
+      window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${cfCurProdId.value}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+    };
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave,
+    return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus,
@@ -785,7 +800,14 @@ window.PdProdDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '상품 등록' : '상품 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.prodId }}</span></div>
+  <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
+    <span>
+      {{ cfIsNew ? '상품 등록' : '상품 수정' }}
+      <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.prodId }}</span>
+    </span>
+    <button v-if="!cfIsNew" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
+      title="사용자 페이스에서 상품 상세 미리보기" @click="onPreview">👁 미리보기</button>
+  </div>
 
   <!-- -- 탭바 ------------------------------------------------------------- -->
   <div class="tab-bar-row">

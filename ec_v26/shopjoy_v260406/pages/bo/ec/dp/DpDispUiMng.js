@@ -192,7 +192,9 @@ window.DpDispUiMng = {
       :set-api-res="$setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :tab-mode="uiStateDetail.openMode" />
+      :tab-mode="uiStateDetail.openMode" 
+      :on-list-reload="handleSearchList"
+    />
   </div>
 </div>`
 };

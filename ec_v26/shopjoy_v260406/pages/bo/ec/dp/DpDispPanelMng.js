@@ -615,7 +615,9 @@ window.DpDispPanelMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    />
+    
+    :on-list-reload="handleSearchData"
+  />
   </div>
 
   <!-- -- 패널미리보기 오버레이 ---------------------------------------------------- -->

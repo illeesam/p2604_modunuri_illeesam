@@ -255,11 +255,21 @@
     const bad = (rows || []).filter(r => (r.rowStatus === 'U' || r.rowStatus === 'D') && !r[idKey]);
     if (!bad.length) return null;
     const label = [uiNm, cmdNm].filter(Boolean).join(' > ');
-    const msg = `[${label || 'saveList'}] ${bad.length}건 행에 ID(${idKey})가 없습니다.`;
+    /* row 안의 실제 'Id'/'id' 로 끝나는 키 후보 수집 — 키 미스매치 디버깅용 */
+    const idCandidates = Array.from(new Set(
+      bad.flatMap(r => Object.keys(r || {}).filter(k => /Id$|_id$/.test(k)))
+    ));
+    const hint = idCandidates.length
+      ? ` (row 의 실제 ID 후보 키: ${idCandidates.join(', ')})`
+      : '';
+    const msg = `[${label || 'saveList'}] ${bad.length}건 행에 ID(${idKey})가 없습니다.${hint}`;
+    /* 상세: 문제 행을 JSON 으로 함께 노출 */
+    let details = '';
+    try { details = JSON.stringify(bad, null, 2); } catch (_) { details = String(bad); }
     const toast = global.boApp?.showToast || global.foApp?.showToast;
-    if (toast) toast(msg, 'error');
-    else console.error(msg);
-    return Promise.reject(new Error(msg));
+    if (toast) toast(msg, 'error', 0, details);
+    else console.error(msg, '\n', details);
+    return Promise.reject(new Error(msg + '\n' + details));
   }
 
   /**

@@ -131,9 +131,24 @@ window.MbMemberMng = {
         if (si !== -1) Object.assign(members[si], detailModal.form);
       }
       try {
+        /* DB join_date 컬럼은 TIMESTAMP — LocalDateTime 매핑이라 'YYYY-MM-DDTHH:mm:ss' 형식 필요 */
+        const fnToDateTime = (s) => {
+          if (!s) return s;
+          return /^\d{4}-\d{2}-\d{2}$/.test(s) ? `${s}T00:00:00` : s;
+        };
+        const payload = {
+          ...detailModal.form,
+          joinDate: fnToDateTime(detailModal.form.joinDate),
+          /* DB NOT NULL: login_id = email, login_pwd_hash = 임시 비밀번호 해시 (BO 등록 시 자동 생성) */
+          loginId: detailModal.form.email,
+        };
+        if (isNewMember && !payload.loginPwdHash) {
+          /* 신규 등록 시 임시 비밀번호 = 'init1234' 의 sha256 (회원에게 별도 안내 후 변경 유도) */
+          payload.loginPwdHash = await coUtil.sha256('init1234');
+        }
         const res = await (isNewMember
-          ? boApiSvc.mbMember.create({ ...detailModal.form }, '회원관리', '등록')
-          : boApiSvc.mbMember.update(detailModal.form.memberId, { ...detailModal.form }, '회원관리', '저장'));
+          ? boApiSvc.mbMember.create(payload, '회원관리', '등록')
+          : boApiSvc.mbMember.update(detailModal.form.memberId, payload, '회원관리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -241,7 +256,9 @@ window.MbMemberMng = {
     </table>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-  <mb-member-dtl :detail-modal="detailModal" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail" />
+  <mb-member-dtl :detail-modal="detailModal" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail" 
+  :on-list-reload="handleSearchList"
+/>
 </div>
 `
 };

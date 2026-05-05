@@ -4,7 +4,8 @@ window.DpDispWidgetLibDtl = {
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
     dtlId:        { type: String, default: null }, // 수정 대상 ID
-    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   emits: ['close'],
   setup(props, { emit }) {

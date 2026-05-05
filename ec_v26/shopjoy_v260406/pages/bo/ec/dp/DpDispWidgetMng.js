@@ -292,7 +292,9 @@ window.DpDispWidgetMng = {
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       @close="closeDetail"
-    />
+    
+    :on-list-reload="handleSearchData"
+  />
   </div>
 </div>
 `

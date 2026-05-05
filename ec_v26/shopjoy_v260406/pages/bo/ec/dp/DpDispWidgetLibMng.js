@@ -215,7 +215,9 @@ window.DpDispWidgetLibMng = {
       :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    />
+    
+    :on-list-reload="handleSearchList"
+  />
   </div>
 </div>
 `

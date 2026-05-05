@@ -891,6 +891,29 @@ window.Prod03View = {
           </div>
         </div>
 
+        <!-- -- BO 등록 상품설명 블록 -------------------------------------- -->
+        <div v-if="svContents.length" class="card" style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
+          <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">📝 상세 설명</h2>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div v-for="(blk, bi) in svContents" :key="blk?.prodContentId || bi">
+              <div v-if="(blk.contentTypeCd||'').toUpperCase()==='HTML'"
+                   style="font-size:0.9rem;line-height:1.8;color:var(--text-primary);"
+                   v-html="blk.contentHtml"></div>
+              <img v-else-if="(blk.contentTypeCd||'').toUpperCase()==='IMAGE'"
+                   :src="blk.contentHtml" alt="상품설명 이미지"
+                   style="max-width:100%;height:auto;border-radius:8px;display:block;" />
+              <div v-else-if="(blk.contentTypeCd||'').toUpperCase()==='URL'">
+                <img v-if="/\.(jpe?g|png|gif|webp|svg)$/i.test(blk.contentHtml||'')"
+                     :src="blk.contentHtml" alt="상품설명 이미지"
+                     style="max-width:100%;height:auto;border-radius:8px;display:block;" />
+                <a v-else :href="blk.contentHtml" target="_blank"
+                   style="color:var(--blue);text-decoration:underline;">{{ blk.contentHtml }}</a>
+              </div>
+              <div v-else style="font-size:0.9rem;line-height:1.8;color:var(--text-primary);" v-html="blk.contentHtml"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="card" style="padding:28px;">
           <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">🧺 세탁 및 관리</h2>
           <div style="display:flex;flex-direction:column;gap:12px;">

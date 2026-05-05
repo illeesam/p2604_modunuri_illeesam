@@ -106,7 +106,7 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/mb/member-grade', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/mb/member-grade/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/mb/member-grade/${_id}`, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'gradeId', uiNm, cmdNm) || global.boApi.post(  '/bo/ec/mb/member-grade/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'memberGradeId', uiNm, cmdNm) || global.boApi.post(  '/bo/ec/mb/member-grade/save-list', rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── mb: 회원그룹 ───────────────────────────────────────────── */
@@ -115,7 +115,7 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/mb/member-group', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/mb/member-group/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/mb/member-group/${_id}`, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'groupId', uiNm, cmdNm) || global.boApi.post(  '/bo/ec/mb/member-group/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'memberGroupId', uiNm, cmdNm) || global.boApi.post(  '/bo/ec/mb/member-group/save-list', rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── mb: 회원 ───────────────────────────────────────────────── */
@@ -220,6 +220,7 @@
     getOpts(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod/${_id}/opts`,     hdr(uiNm, cmdNm)); },
     getSkus(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod/${_id}/skus`,     hdr(uiNm, cmdNm)); },
     getContents(_id, uiNm, cmdNm)  { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod/${_id}/contents`, hdr(uiNm, cmdNm)); },
+    saveContents(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(`/bo/ec/pd/prod/${_id}/contents`, body, hdr(uiNm, cmdNm)); },
     getRels(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod/${_id}/rels`,     hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/pd/prod', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/pd/prod/${_id}`, body, hdr(uiNm, cmdNm)); },

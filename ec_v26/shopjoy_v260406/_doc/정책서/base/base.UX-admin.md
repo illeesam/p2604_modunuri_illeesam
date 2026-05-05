@@ -2,7 +2,7 @@
 정책명: 관리자(Back Office) UX 정책
 정책번호: base-UX-admin
 관리자: 개발팀
-최종수정: 2026-04-19
+최종수정: 2026-05-05
 ---
 
 # 관리자(Back Office) UX 정책
@@ -707,3 +707,107 @@ Vue.onMounted(async () => {
 | 역할 선택 | `await handleSearchList()` | `SyRoleMng`, `SyVendorUserMng` |
 | 경로 선택 | `PathPickModal` 내부 자동 처리 | 전체 (18개 파일) |
 | 회원 선택 | `await handleSearchData()` | `MbCustInfoMng` |
+
+---
+
+## 18. 상세화면 탭별 저장 후 재조회 정책 ⭐
+
+상세(Dtl) 화면이 여러 탭으로 구성된 경우, 각 탭의 [저장] 버튼은 **해당 탭만 부분 저장**하는 패턴이다.
+저장 후 화면 정합성을 보장하려면 **저장된 영역을 다시 서버에서 가져와 상태를 동기화**해야 한다.
+
+### 18.1 핵심 규칙
+
+1. **저장한 탭의 데이터를 즉시 재조회한다**
+   - 저장 응답으로 받은 값에 의존하지 않는다 (백엔드 보정 필드·sortOrd 재계산 등 누락 위험)
+   - 항상 GET API 를 다시 호출해 화면 reactive 를 새로 채운다
+
+2. **첫 번째 탭(기본정보)의 저장은 상위 목록(Mng) 도 재조회한다**
+   - 첫 탭은 보통 Mng 그리드 컬럼에 노출되는 핵심 필드(상품명·상태·가격 등)를 다룸
+   - Mng 행 정보가 즉시 갱신되어야 사용자에게 일관된 결과로 보임
+
+3. **재조회는 `await` 으로 순차 실행 — 화면 깜빡임 방지**
+   - 저장 → 재조회 사이에 다른 사용자 액션이 끼면 안 됨
+   - 저장 성공 toast 와 재조회 완료가 동시에 노출되어야 자연스러움
+
+### 18.2 표준 패턴
+
+```js
+const handleSave = async () => {
+  const tabId = uiState.activeTab;
+  // ...payload 구성...
+  try {
+    const res = (tabId === 'content')
+      ? await boApiSvc.pdProd.saveContents(prodId, payload, '상품관리', '상품설명저장')
+      : await boApiSvc.pdProd.update(prodId, payload, '상품관리', `${TAB_LABEL[tabId]}저장`);
+
+    /* ① 저장한 탭 데이터를 다시 가져와 화면 동기화 */
+    await reloadTabData(tabId);
+
+    /* ② 첫 번째 탭(기본정보)이면 상위 목록도 재조회 */
+    if (tabId === 'base' && props.onListReload) {
+      await props.onListReload();   // 또는 emit('list-reload')
+    }
+
+    showToast('저장되었습니다.', 'success');
+  } catch (err) { /* ... */ }
+};
+
+/* 탭별 재조회 — Mng/Dtl 양쪽에서 재사용 가능하게 분리 */
+const reloadTabData = async (tabId) => {
+  switch (tabId) {
+    case 'base':    return handleLoadBase();      // GET /{id}
+    case 'content': return handleLoadContents();  // GET /{id}/contents
+    case 'option':  return handleLoadOpts();      // GET /{id}/opts
+    case 'price':   return handleLoadSkus();      // GET /{id}/skus
+    case 'image':   return handleLoadImages();    // GET /{id}/images
+    case 'related': return handleLoadRels();      // GET /{id}/rels
+  }
+};
+```
+
+### 18.3 적용 대상 (예시)
+
+| 화면 | 저장 단위 | 첫 탭 | 첫 탭 저장 후 Mng 재조회 |
+|---|---|---|---|
+| `PdProdDtl` 상품관리 | 기본정보/상품설명/옵션설정/옵션(가격재고)/이미지/연관상품 | 기본정보 | ✅ 상품 목록 |
+| `OdOrderDtl` 주문관리 | 기본/배송/결제/이력 | 기본 | ✅ 주문 목록 |
+| `OdClaimDtl` 클레임 | 기본/처리/이력 | 기본 | ✅ 클레임 목록 |
+| `OdDlivDtl` 배송 | 기본/이력 | 기본 | ✅ 배송 목록 |
+| `PmCouponDtl` 쿠폰 | 기본/사용내역 | 기본 | ✅ 쿠폰 목록 |
+| `PmEventDtl` 이벤트 | 기본/대상/이력 | 기본 | ✅ 이벤트 목록 |
+| `MbCustInfoMng` 고객종합정보 | 9개 영역 탭 | 기본 | ✅ (회원 그리드와 연동 시) |
+| `DpDispUiDtl`, `DpDispAreaDtl` 등 전시 | 기본/하위 항목 | 기본 | ✅ 상위 Mng |
+
+### 18.4 안티패턴 (금지)
+
+```js
+// ❌ 저장 응답으로 화면 직접 갱신 — 백엔드 보정 필드 누락 위험
+const res = await boApiSvc.pdProd.saveContents(prodId, payload);
+contentBlocks.splice(0, contentBlocks.length, ...res.data.data);   // 응답 신뢰 금지
+
+// ❌ 첫 탭 저장 후 Mng 미갱신 — 사용자가 목록에서 옛 데이터를 봄
+await boApiSvc.pdProd.update(prodId, baseForm);
+showToast('저장되었습니다.');
+// ← Mng 그리드에 옛 상품명·상태가 그대로 남아있음
+
+// ❌ 재조회 미사용 — sortOrd, regDate 등 서버 계산 필드 비동기화
+await boApiSvc.pdProd.saveContents(prodId, { contentBlocks });
+// ← 화면의 contentBlocks 는 sortOrd 가 없거나 임시 ID 만 가진 상태
+```
+
+### 18.5 부모-자식 컴포넌트 간 재조회 신호 전파
+
+Mng 안에 Dtl 이 인라인 임베드된 경우(§12.1), Dtl 의 첫 탭 저장 시 부모 Mng 의 목록을 재조회하려면:
+
+```js
+// Dtl props
+props: {
+  navigate:     { type: Function, required: true },
+  onListReload: { type: Function, default: () => {} },   // 부모가 전달한 재조회 함수
+}
+
+// Mng — Dtl 임베드 시 onListReload 전달
+<pd-prod-dtl :dtl-id="cfDetailEditId" :on-list-reload="handleSearchList" ... />
+```
+
+또는 **`reloadTrigger` props 패턴**(자식이 emit, 부모가 watch)도 가능. MEMORY 의 「Modal reloadTrigger 표준」과 동일한 사상.

@@ -192,7 +192,9 @@ const searchParam = reactive(_initSearchParam());
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :tab-mode="uiStateDetail.openMode"
-      @close="closeDetail" />
+      @close="closeDetail" 
+      :on-list-reload="handleSearchData"
+    />
   </div>
 </div>`
 };

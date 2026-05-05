@@ -241,6 +241,7 @@
 | **UI 정책** | `base/base.UX-*.md` |
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
 | **`/api/base/**` 호출 금지** ⭐ | `base/base.기술-api.md` §3.5 — 클라이언트는 `/api/bo/**` / `/api/fo/**` 만 호출 |
+| **탭별 저장 후 재조회** ⭐ | `base/base.UX-admin.md` §18 — 저장 탭 즉시 GET 재조회, 첫 탭 저장 시 상위 Mng 도 재조회 |
 | **네이밍** | `sy.54.네이밍규칙.md` (Vue), `sy.55.mybatis쿼리테이블별칭정책.md` (SQL) |
 | **JPA 검증** | `sy.56.JPA스키마검증.md` — validate 프로파일 게이트 |
 | **DDL 관리** | `base/base.DDL작성규칙.md` — DB 자동 추출, `_doc/ddl_pgsql/{ec,sy}/` 구조 |

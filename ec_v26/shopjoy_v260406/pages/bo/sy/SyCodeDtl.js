@@ -4,7 +4,8 @@ window.SyCodeDtl = {
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
     dtlId:       { type: String, default: null }, // 수정 대상 ID
-    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
+    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };

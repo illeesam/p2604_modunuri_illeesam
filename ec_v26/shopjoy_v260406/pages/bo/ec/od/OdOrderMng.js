@@ -408,7 +408,9 @@ window.OdOrderMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    />
+    
+    :on-list-reload="handleSearchData"
+  />
   </div>
 
   <!-- -- 변경작업 모달 -------------------------------------------------------- -->

@@ -24,6 +24,7 @@ window.MbMemGradeMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     const makeRow = (b) => ({
       ...b,
@@ -52,6 +53,7 @@ window.MbMemGradeMng = {
     };
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleSearchList();
     });
 

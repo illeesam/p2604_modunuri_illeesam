@@ -70,9 +70,9 @@ window.PdReviewMng = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
+      handleSearchList('DEFAULT');
     });
-const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
     const _initSearchParam = () => ({ kw: '', status: '', rating: '' });
     const searchParam = reactive(_initSearchParam());
@@ -80,28 +80,113 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
     const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
     const fnStatusBadge  = s => ({ ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' }[s] || 'badge-gray');
 
-    const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : id; };
-    const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : id; };
+    const getProdNm = id => { const p = (products||[]).find(p => p.productId === id || p.prodId === id); return p ? (p.prodNm || p.productName) : ''; };
+    const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id || m.memberId === id); return m ? (m.memberNm || m.name) : id; };
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSelectedRow = computed(() => reviews.find(r => r.reviewId === selectedId.value) || null);
 
     const openDetail = (row) => { selectedId.value = selectedId.value === row.reviewId ? null : row.reviewId; };
-    const changeStatus = async (row, newStatus) => {
-      const ok = await showConfirm('상태변경', `[${row.reviewTitle}] 상태를 [${STATUS_LABEL[newStatus]}]로 변경하시겠습니까?`);
-      if (!ok) return;
-      row.reviewStatusCd = newStatus; if (cfSelectedRow.value) cfSelectedRow.value.reviewStatusCd = newStatus;
+
+    /* ── 상품 미리보기 (FO 새 창) ─────────────────────── */
+    const previewProduct = (prodId) => {
+      if (!prodId) return;
+      window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+    };
+
+    /* ── 상품ID 클릭 → 하단에 해당 상품의 리뷰 페이징 목록 ─── */
+    const prodReviews = reactive([]);
+    const prodReviewPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 50], pageCond: {}, pageNums: [1] });
+    const selectedProdId = ref(null);
+    const fnBuildProdReviewPagerNums = () => { const c=prodReviewPager.pageNo,l=prodReviewPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); prodReviewPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    const handleSearchProdReviews = async () => {
+      if (!selectedProdId.value) { prodReviews.splice(0); return; }
       try {
-        const res = await boApiSvc.pdReview.updateStatus(row.reviewId, { reviewStatusCd: newStatus }, '리뷰관리', '상태변경');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        const res = await boApiSvc.pdReview.getPage({ pageNo: prodReviewPager.pageNo, pageSize: prodReviewPager.pageSize, prodId: selectedProdId.value }, '상품리뷰관리', '상품별리뷰조회');
+        const data = res.data?.data;
+        prodReviews.splice(0, prodReviews.length, ...(data?.pageList || []));
+        prodReviewPager.pageTotalCount = data?.pageTotalCount || 0;
+        prodReviewPager.pageTotalPage = data?.pageTotalPage || 1;
+        fnBuildProdReviewPagerNums();
       } catch (err) {
-        console.error('[catch-info]', err);
+        console.error('[handleSearchProdReviews]', err);
+      }
+    };
+
+    const onProdIdClick = async (prodId) => {
+      if (!prodId) return;
+      if (selectedProdId.value === prodId) {
+        selectedProdId.value = null;
+        prodReviews.splice(0);
+        return;
+      }
+      selectedProdId.value = prodId;
+      prodReviewPager.pageNo = 1;
+      await handleSearchProdReviews();
+    };
+
+    const setProdReviewPage = async (n) => {
+      if (n >= 1 && n <= prodReviewPager.pageTotalPage) {
+        prodReviewPager.pageNo = n;
+        await handleSearchProdReviews();
+      }
+    };
+    const onProdReviewSizeChange = () => { prodReviewPager.pageNo = 1; handleSearchProdReviews(); };
+
+    /* ── 상태변경 사유 입력 모달 ───────────────────────── */
+    const statusModal = reactive({
+      show: false,
+      row: null,
+      newStatus: '',
+      reason: '',
+    });
+
+    const openStatusModal = (row, newStatus) => {
+      if (!newStatus || newStatus === row.reviewStatusCd) return;
+      statusModal.row = row;
+      statusModal.newStatus = newStatus;
+      statusModal.reason = '';
+      statusModal.show = true;
+    };
+
+    const closeStatusModal = () => {
+      statusModal.show = false;
+      /* select 가 미리 새 값으로 바뀌었을 수 있으므로 원복용 트리거 */
+      // row.reviewStatusCd 는 그대로 — UI 의 select 가 다음 렌더에서 동기화됨
+      statusModal.row = null;
+      statusModal.newStatus = '';
+      statusModal.reason = '';
+    };
+
+    const confirmStatusChange = async () => {
+      const row = statusModal.row;
+      const newStatus = statusModal.newStatus;
+      const reason = (statusModal.reason || '').trim();
+      if (!row) return;
+      if (!reason) { showToast('변경 사유를 입력해주세요.', 'error'); return; }
+      try {
+        const res = await boApiSvc.pdReview.updateStatus(
+          row.reviewId,
+          { reviewStatusCd: newStatus, statusChgReason: reason },
+          '리뷰관리', '상태변경'
+        );
+        row.reviewStatusCd = newStatus;
+        if (cfSelectedRow.value && cfSelectedRow.value.reviewId === row.reviewId) {
+          cfSelectedRow.value.reviewStatusCd = newStatus;
+        }
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast(`상태가 [${STATUS_LABEL[newStatus]}] 로 변경되었습니다.`, 'success');
+        statusModal.show = false;
+      } catch (err) {
+        console.error('[confirmStatusChange]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
@@ -121,7 +206,11 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
     // -- return ---------------------------------------------------------------
 
     return { reviews, uiState, searchParam, pager, setPage, onSearch, onReset,
-              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, onSizeChange, codes, onSort, sortIcon };
+              selectedId, cfSelectedRow, openDetail, fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, onSizeChange, codes, onSort, sortIcon,
+              previewProduct,
+              prodReviews, prodReviewPager, selectedProdId, onProdIdClick, setProdReviewPage, onProdReviewSizeChange,
+              statusModal, openStatusModal, closeStatusModal, confirmStatusChange,
+            };
   },
   template: `
 <div>
@@ -158,42 +247,115 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
       </div>
       <table class="bo-table">
         <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th>리뷰 제목</th><th style="width:120px">상품</th><th style="width:80px">작성자</th>
+          <th style="width:36px;text-align:center;">번호</th>
+          <th>리뷰 제목</th>
+          <th style="width:110px">상품ID</th>
+          <th>상품명</th>
+          <th style="width:48px;text-align:center;">미리</th>
+          <th style="width:80px">작성자</th>
           <th style="width:90px;text-align:center">평점</th>
           <th style="width:60px;text-align:right">도움</th>
           <th style="width:80px;text-align:center">상태</th>
           <th @click="onSort('reg')" style="width:140px;cursor:pointer;user-select:none;white-space:nowrap;">작성일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-          <th style="width:80px;text-align:center">상태변경</th>
+          <th style="width:90px;text-align:center">상태변경</th>
         </tr></thead>
         <tbody>
           <tr v-for="(row, idx) in reviews" :key="row?.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><span class="title-link">{{ row.reviewTitle }}</span></td>
-            <td style="font-size:12px;color:#666">{{ getProdNm(row.prodId) }}</td>
+            <td style="font-size:12px;" @click.stop>
+              <span class="title-link"
+                :style="{color: selectedProdId===row.prodId ? '#e8587a' : '#1e88e5', fontWeight: selectedProdId===row.prodId ? 700 : 500, cursor:'pointer'}"
+                title="해당 상품의 리뷰만 하단에 표시"
+                @click="onProdIdClick(row.prodId)">{{ row.prodId }}</span>
+            </td>
+            <td style="font-size:12px;color:#444;">{{ getProdNm(row.prodId) || row.prodNm || '' }}</td>
+            <td style="text-align:center" @click.stop>
+              <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click="previewProduct(row.prodId)">👁</button>
+            </td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
-            <td style="text-align:center;color:#f59e0b;font-size:13px">{{ row.rating.toFixed(1) }} ★</td>
+            <td style="text-align:center;color:#f59e0b;font-size:13px">{{ Number(row.rating || 0).toFixed(1) }} ★</td>
             <td style="text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
             <td style="text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
             <td style="font-size:12px">{{ row.reviewDate }}</td>
             <td style="text-align:center" @click.stop>
-              <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="changeStatus(row,$event.target.value)">
+              <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="openStatusModal(row,$event.target.value); $event.target.value = row.reviewStatusCd;">
                 <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
               </select>
             </td>
           </tr>
-          <tr v-if="!reviews.length"><td colspan="9" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!reviews.length"><td colspan="11" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
     </div>
+
+    <!-- ── 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ─────────────────── -->
+    <div class="card" v-if="selectedProdId">
+      <div class="toolbar">
+        <span class="list-title">📦 [{{ selectedProdId }}] 상품의 리뷰 목록</span>
+        <span class="list-count">총 {{ prodReviewPager.pageTotalCount }}건</span>
+        <button class="btn btn-xs" style="margin-left:auto;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:2px 8px;" @click="onProdIdClick(selectedProdId)">✕ 닫기</button>
+      </div>
+      <table class="bo-table">
+        <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th>
+          <th>리뷰 제목</th>
+          <th style="width:80px">작성자</th>
+          <th style="width:90px;text-align:center">평점</th>
+          <th style="width:60px;text-align:right">도움</th>
+          <th style="width:80px;text-align:center">상태</th>
+          <th style="width:140px">작성일</th>
+        </tr></thead>
+        <tbody>
+          <tr v-for="(row, idx) in prodReviews" :key="row?.reviewId">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (prodReviewPager.pageNo - 1) * prodReviewPager.pageSize + idx + 1 }}</td>
+            <td>{{ row.reviewTitle }}</td>
+            <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
+            <td style="text-align:center;color:#f59e0b;font-size:13px">{{ Number(row.rating || 0).toFixed(1) }} ★</td>
+            <td style="text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
+            <td style="text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
+            <td style="font-size:12px">{{ row.reviewDate }}</td>
+          </tr>
+          <tr v-if="!prodReviews.length"><td colspan="7" style="text-align:center;padding:24px;color:#aaa">해당 상품의 리뷰가 없습니다.</td></tr>
+        </tbody>
+      </table>
+      <bo-pager :pager="prodReviewPager" :on-set-page="setProdReviewPage" :on-size-change="onProdReviewSizeChange" />
+    </div>
+
     <div class="card" v-if="cfSelectedRow">
       <div class="toolbar"><span class="list-title">리뷰 내용</span></div>
       <div style="padding:16px">
         <div style="font-size:16px;font-weight:600;margin-bottom:8px">{{ cfSelectedRow.reviewTitle }}</div>
-        <div style="color:#f59e0b;margin-bottom:8px">평점: {{ cfSelectedRow.rating.toFixed(1) }} / 5.0</div>
+        <div style="color:#f59e0b;margin-bottom:8px">평점: {{ Number(cfSelectedRow.rating || 0).toFixed(1) }} / 5.0</div>
         <div style="background:#f9f9f9;padding:12px;border-radius:6px;white-space:pre-wrap;font-size:14px">{{ cfSelectedRow.reviewContent }}</div>
         <div style="margin-top:8px;font-size:12px;color:#888">도움이 됐어요 {{ cfSelectedRow.helpfulCnt }} | 도움이 안됐어요 {{ cfSelectedRow.unhelpfulCnt }}</div>
       </div>
     </div>
+
+    <!-- ── 상태변경 사유 입력 모달 ─────────────────────────── -->
+    <base-modal v-if="statusModal.show" title="리뷰 상태 변경" @close="closeStatusModal" size="sm">
+      <template #body>
+        <div style="padding:6px 4px;">
+          <div style="margin-bottom:14px;font-size:13px;color:#444;">
+            <div style="margin-bottom:4px;"><b>리뷰</b>: {{ statusModal.row?.reviewTitle }}</div>
+            <div>
+              <b>상태 변경</b>:
+              <span :class="['badge', fnStatusBadge(statusModal.row?.reviewStatusCd)]" style="margin-left:6px;">{{ STATUS_LABEL[statusModal.row?.reviewStatusCd] }}</span>
+              <span style="margin:0 6px;color:#888;">→</span>
+              <span :class="['badge', fnStatusBadge(statusModal.newStatus)]">{{ STATUS_LABEL[statusModal.newStatus] }}</span>
+            </div>
+          </div>
+          <label class="form-label" style="font-size:12px;font-weight:600;color:#555;">변경 사유 <span style="color:#e57373;">*</span></label>
+          <textarea class="form-control" v-model="statusModal.reason" rows="4"
+            placeholder="상태 변경 사유를 입력해주세요. (필수)"
+            style="margin:6px 0 0;width:100%;font-size:13px;"></textarea>
+        </div>
+      </template>
+      <template #footer>
+        <button class="btn btn-secondary btn-sm" @click="closeStatusModal">취소</button>
+        <button class="btn btn-primary btn-sm" @click="confirmStatusChange">저장</button>
+      </template>
+    </base-modal>
 </div>`
 };
