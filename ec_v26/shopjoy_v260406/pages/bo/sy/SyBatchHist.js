@@ -83,10 +83,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       else uiState.expandedSet.add(logId);
     };
     const onExpandAll = () => {
-      uiState.expandedSet = new Set(batchLogs.map(l => l.logId));
+      uiState.expandedSet.clear();
+      batchLogs.forEach(l => uiState.expandedSet.add(l.logId));
     };
     const onCollapseAll = () => {
-      uiState.expandedSet = new Set();
+      uiState.expandedSet.clear();
     };
 
     const fnRunBadge = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
@@ -170,16 +171,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <td style="text-align:center;padding:0 4px;">
             <button
               @click="toggleExpand(log.logId)"
-              :title="expandedId===log.logId ? '접기' : '상세 펼치기'"
+              :title="isExpanded(log.logId) ? '접기' : '상세 펼치기'"
               style="background:none;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;padding:2px 5px;font-size:11px;color:#888;line-height:1;transition:all .15s;"
-              :style="expandedId===log.logId ? 'background:#f0f8ff;border-color:#2563eb;color:#2563eb;' : ''">
-              {{ expandedId===log.logId ? '▲' : '▼' }}
+              :style="isExpanded(log.logId) ? 'background:#f0f8ff;border-color:#2563eb;color:#2563eb;' : ''">
+              {{ isExpanded(log.logId) ? '▲' : '▼' }}
             </button>
           </td>
         </tr>
 
         <!-- ── 상세 펼침 행 ────────────────────────────────────────────────── -->
-        <tr v-if="expandedId===log.logId"
+        <tr v-if="isExpanded(log.logId)"
           :style="log.runStatus==='실패' ? 'background:#fff0f0;' : 'background:#f8faff;'">
           <td colspan="8" style="padding:0;">
             <div style="padding:12px 16px 14px;border-top:1px dashed #e0e0e0;">

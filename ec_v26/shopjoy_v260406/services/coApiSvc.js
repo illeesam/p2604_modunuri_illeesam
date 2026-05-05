@@ -152,10 +152,10 @@
   /* ── sy: 공통코드 (FO·BO 모두 코드 조회 시 사용) ────────── */
   coApiSvc.syCode = {
     getList(params, uiNm, cmdNm) {
-      return client().get('/co/sy/code/list', { params, ...hdr(uiNm, cmdNm) });
+      return client().get('/co/sy/code', { params, ...hdr(uiNm, cmdNm) });
     },
     getGrpCodes(codeGrp, uiNm, cmdNm) {
-      return client().get('/co/sy/code/list', { params: { codeGrp }, ...hdr(uiNm, cmdNm) });
+      return client().get('/co/sy/code', { params: { codeGrp }, ...hdr(uiNm, cmdNm) });
     },
   };
 

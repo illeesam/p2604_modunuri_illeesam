@@ -1081,16 +1081,22 @@ window.PdProdDtl = {
       <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
 
       <!-- -- STEP 1: OPT_TYPE 1레벨 (카테고리) 선택 — pd_prod_opt.opt_type_cd 레벨 1 ---- -->
-      <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:12px;color:#555;font-weight:600;flex-shrink:0;">옵션 카테고리</span>
-          <select class="form-control" v-model="prodOptCategoryTypeCd"
-            style="width:170px;font-size:12px;"
-            @change="onCategoryChange">
-            <option value="">-- 옵션 카테고리 선택 --</option>
-            <option v-for="c in cfOptTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
+      <div style="display:flex;align-items:flex-start;gap:6px;">
+          <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start;flex-shrink:0;margin-top:6px;">
+            <span style="font-size:12px;color:#555;font-weight:600;">옵션 카테고리</span>
+            <code style="font-size:10px;color:#6a1b9a;background:#f3e5f5;padding:1px 4px;border-radius:3px;font-family:monospace;border:1px solid #e1bee7;">PROD_OPT_CATEGORY</code>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <select class="form-control" v-model="prodOptCategoryTypeCd"
+              style="width:170px;font-size:12px;"
+              @change="onCategoryChange">
+              <option value="">-- 옵션 카테고리 선택 --</option>
+              <option v-for="c in cfOptTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+            </select>
+            <code v-if="prodOptCategoryTypeCd" style="font-size:10px;color:#1565c0;background:#f5f5f7;padding:1px 4px;border-radius:3px;font-family:monospace;align-self:flex-start;">{{ prodOptCategoryTypeCd }}</code>
+          </div>
           <button type="button" class="btn btn-xs"
-            style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:13px;padding:2px 8px;"
+            style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:13px;padding:2px 8px;margin-top:4px;"
             title="옵션 카테고리 공통코드 미리보기 (PROD_OPT_CATEGORY)"
             @click="openCodeGrpModal('PROD_OPT_CATEGORY', '옵션 카테고리 공통코드')">📋</button>
         </div>
@@ -1099,15 +1105,18 @@ window.PdProdDtl = {
         <template v-if="prodOptCategoryTypeCd && optGroups.length>0">
           <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
           <div v-for="(grp, gi) in optGroups" :key="'typeCd-'+grp._id"
-            style="display:flex;align-items:center;gap:6px;">
-            <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ gi+1 }}단 유형</span>
-            <select class="form-control" v-model="grp.typeCd" style="width:140px;font-size:12px;"
-              @change="grp.items.forEach(i=>{i.val='';i.valCodeId='';})"
-              >
-              <option value="">-- 유형선택 --</option>
-              <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
-            </select>
-            <span v-if="grp.typeCd" style="font-size:11px;color:#1677ff;">{{ getOptValCodes(grp.typeCd).length }}개 프리셋</span>
+            style="display:flex;align-items:flex-start;gap:6px;">
+            <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;margin-top:4px;">{{ gi+1 }}단 유형</span>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <select class="form-control" v-model="grp.typeCd" style="width:140px;font-size:12px;"
+                @change="grp.items.forEach(i=>{i.val='';i.valCodeId='';})"
+                >
+                <option value="">-- 유형선택 --</option>
+                <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
+              </select>
+              <code v-if="grp.typeCd" style="font-size:10px;color:#1565c0;background:#f5f5f7;padding:1px 4px;border-radius:3px;font-family:monospace;align-self:flex-start;">{{ grp.typeCd }}</code>
+            </div>
+            <span v-if="grp.typeCd" style="font-size:11px;color:#1677ff;margin-top:6px;">{{ getOptValCodes(grp.typeCd).length }}개 프리셋</span>
           </div>
         </template>
         <span v-if="!prodOptCategoryTypeCd" style="font-size:12px;color:#f5a623;">← 옵션 카테고리를 먼저 선택하세요</span>

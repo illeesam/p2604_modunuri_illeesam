@@ -705,6 +705,9 @@
   }
   };
 
+  const onApiLogEnter = (log) => { apiLogHoverDetail.value = log; };
+  const onApiLogLeave = (log) => { if (apiLogLockedDetail.value !== log) apiLogHoverDetail.value = null; };
+
   const formatJsonData = (data) => {
   try {
   if (!data) return 'N/A';
@@ -1278,7 +1281,7 @@
   refModal, showRefModal, closeRefModal,
   helpModal, showHelp,
   rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
-  apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
+  apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, onApiLogEnter, onApiLogLeave, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
   tabBarRef, scrollTabs,
   boInitReady, cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
   loginModal, loginForm, regForm, loginError, uiState, userRoles,
@@ -1749,8 +1752,8 @@
   <div v-if="apiLogs.length === 0" style="font-size: 11px; color: #9ca3af; padding: 8px; text-align: center;">로그 없음</div>
   <div v-else style="max-height: 525px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 3px; background: white;">
   <div v-for="(log, idx) in apiLogs" :key="idx"
-  @mouseenter="apiLogHoverDetail = log"
-  @mouseleave="apiLogLockedDetail !== log ? (apiLogHoverDetail = null) : null"
+  @mouseenter="onApiLogEnter(log)"
+  @mouseleave="onApiLogLeave(log)"
   style="padding: 6px 8px; border-bottom: 1px solid #f3f4f6; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
   :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }">
   <div v-if="log.uiLabel" style="font-size: 9px; font-weight: 700; color: #7c3aed; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.2px;">{{ log.uiLabel }}</div>
