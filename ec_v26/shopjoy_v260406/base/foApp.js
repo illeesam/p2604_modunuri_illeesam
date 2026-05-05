@@ -672,6 +672,7 @@
       foHomeComp, foProdListComp, foProdViewComp,
       foApiLogs, showApiLog, showSettings, apiLogLockedDetail, apiLogHoverDetail,
       clearFoApiLogs, foApiLogStatusClass, foApiLogMethodStyle,
+      onToggleApiLog: () => { showApiLog.value = !showApiLog.value; showSettings.value = false; },
       notFoundPageId: computed(() => {
         try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
       }),
@@ -710,7 +711,7 @@
     :app-api-logs="foApiLogs"
     @app-toggle-sidebar="sidebarOpen=!sidebarOpen" @app-toggle-mobile="toggleMobileMenu"
     @app-toggle-settings="showSettings=!showSettings"
-    @app-toggle-api-log="showApiLog=!showApiLog; showSettings=false"
+    @app-toggle-api-log="onToggleApiLog"
   />
 
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
@@ -952,11 +953,11 @@
         </div>
         <div v-if="apiLogLockedDetail.reqHeaders && apiLogLockedDetail.reqHeaders.length" style="margin-top:4px;">
           <div style="font-size:10px;color:#888;margin-bottom:2px;">요청 헤더</div>
-          <pre style="margin:0;padding:6px;background:#f0f8ff;border-radius:4px;font-size:10px;color:#1a5276;white-space:pre-wrap;word-break:break-all;max-height:80px;overflow-y:auto;">{{ (apiLogLockedDetail.reqHeaders||[]).join('\n') }}</pre>
+          <pre style="margin:0;padding:6px;background:#f0f8ff;border-radius:4px;font-size:10px;color:#1a5276;white-space:pre-wrap;word-break:break-all;max-height:80px;overflow-y:auto;">{{ (apiLogLockedDetail.reqHeaders||[]).join(String.fromCharCode(10)) }}</pre>
         </div>
         <div v-if="apiLogLockedDetail.resHeaders && apiLogLockedDetail.resHeaders.length" style="margin-top:4px;">
           <div style="font-size:10px;color:#888;margin-bottom:2px;">응답 헤더</div>
-          <pre style="margin:0;padding:6px;background:#f0fff0;border-radius:4px;font-size:10px;color:#1e8449;white-space:pre-wrap;word-break:break-all;max-height:80px;overflow-y:auto;">{{ (apiLogLockedDetail.resHeaders||[]).join('\n') }}</pre>
+          <pre style="margin:0;padding:6px;background:#f0fff0;border-radius:4px;font-size:10px;color:#1e8449;white-space:pre-wrap;word-break:break-all;max-height:80px;overflow-y:auto;">{{ (apiLogLockedDetail.resHeaders||[]).join(String.fromCharCode(10)) }}</pre>
         </div>
       </div>
     </div>

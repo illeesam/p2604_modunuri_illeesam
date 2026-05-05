@@ -155,7 +155,6 @@ window.XsStore = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       selectStore(cfStoreList.value[0].name);
-      }
     });
 
     // -- return ---------------------------------------------------------------
