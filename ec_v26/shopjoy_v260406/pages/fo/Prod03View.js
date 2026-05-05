@@ -1,4 +1,4 @@
-﻿/* ShopJoy - Prod01View (상품 상세 리뉴얼) */
+/* ShopJoy - Prod01View (상품 상세 리뉴얼) */
 window.Prod03View = {
   name: "Prod03View",
   props: {
@@ -14,10 +14,23 @@ window.Prod03View = {
     const toggleLike           = (id) => window.foApp.toggleLike(id);
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, quickBuyOpen: false });
     const codes = reactive({});
 
-    const svProduct = ref(prod || null);
+    const svProduct = reactive({});
+    /* 객체 통째 갱신: 기존 키 정리 후 새 객체 키 복사 (정책: reactive 객체 in-place 갱신) */
+    const fnApplySvProduct = (newProd) => {
+      Object.keys(svProduct).forEach(k => delete svProduct[k]);
+      if (newProd) Object.assign(svProduct, newProd);
+    };
+    if (prod) fnApplySvProduct(prod);
+    /* Tier 2/3 lazy 데이터 — 배열/객체는 reactive (정책: base.데이터흐름-상태관리.md §2-1) */
+    const svContents     = reactive([]);
+    const svRels         = reactive([]);
+    const svReviews      = reactive([]);
+    const svReviewImages = reactive([]);
+    const svQna          = reactive([]);
+    const svPromotions   = reactive({});
 
     /* URL 해시에서 prodid 직접 추출 — 목록 진입/직접 URL 모두 동일하게 동작 */
     const fnGetProdIdFromHash = () => {
@@ -27,20 +40,44 @@ window.Prod03View = {
       } catch (e) { return ''; }
     };
 
+    const fnPickData = (res) => res?.data?.data ?? res?.data ?? null;
+    const fnPickList = (res) => {
+      const d = fnPickData(res);
+      if (Array.isArray(d)) return d;
+      return d?.pageList || d?.list || [];
+    };
+
     const handleSearchList = async (searchType = 'DEFAULT') => {
-      const prodId = fnGetProdIdFromHash() || svProduct.value?.prodId;
+      const prodId = fnGetProdIdFromHash() || svProduct.prodId;
       if (!prodId) return;
+      /* Tier 1: 첫 화면 통합 */
       try {
         const res = await foApiSvc.pdProd.getById(prodId, '상품상세', '상세조회');
-        const data = res.data?.data || {};
+        const data = fnPickData(res) || {};
         const prod = data.prod || data;
-        if (prod && prod.prodId) {
-          /* 단건 조회 결과로 svProduct 교체 — 목록 데이터에 의존하지 않음 */
-          svProduct.value = { ...prod };
-        }
-      } catch (e) {
-        console.error('[handleSearchList]', e);
-      }
+        if (prod && prod.prodId) fnApplySvProduct(prod);
+      } catch (e) { console.error('[handleSearchList:getById]', e); }
+
+      /* Tier 2: lazy 호출 — 병렬 처리 */
+      const tier2 = await Promise.allSettled([
+        foApiSvc.pdProd.getContents(prodId, '상품상세', '상세설명조회'),
+        foApiSvc.pdProd.getRels(prodId, '상품상세', '연관상품조회'),
+        foApiSvc.pdProd.getReviews(prodId, { pageNo: 1, pageSize: 20 }, '상품상세', '리뷰조회'),
+        foApiSvc.pdProd.getReviewImages(prodId, '상품상세', '리뷰이미지조회'),
+        foApiSvc.pdProd.getQna(prodId, { pageNo: 1, pageSize: 20 }, '상품상세', 'Q&A조회'),
+      ]);
+      if (tier2[0].status === 'fulfilled') svContents.splice(0, svContents.length, ...fnPickList(tier2[0].value));
+      if (tier2[1].status === 'fulfilled') svRels.splice(0, svRels.length, ...fnPickList(tier2[1].value));
+      if (tier2[2].status === 'fulfilled') svReviews.splice(0, svReviews.length, ...fnPickList(tier2[2].value));
+      if (tier2[3].status === 'fulfilled') svReviewImages.splice(0, svReviewImages.length, ...fnPickList(tier2[3].value));
+      if (tier2[4].status === 'fulfilled') svQna.splice(0, svQna.length, ...fnPickList(tier2[4].value));
+
+      /* Tier 3: 사용자별 프로모션 */
+      try {
+        const res = await foApiSvc.pdProd.getPromotions(prodId, '상품상세', '프로모션조회');
+        Object.keys(svPromotions).forEach(k => delete svPromotions[k]);
+        Object.assign(svPromotions, fnPickData(res) || {});
+      } catch (e) { console.error('[handleSearchList:getPromotions]', e); }
     };
 
     const fnLoadCodes = () => {
@@ -118,7 +155,7 @@ window.Prod03View = {
     };
 
     const cfMockImages = computed(() => {
-      const p = svProduct.value;
+      const p = svProduct;
       if (!p) return [];
       const opt1s = p.opt1s || [];
       const colorIdx = opt1s.findIndex(c => c.name === uiState.selectedColor?.name);
@@ -141,7 +178,7 @@ window.Prod03View = {
     ];
 
     const cfMockReviews = computed(() => {
-      const p = svProduct.value;
+      const p = svProduct;
       if (!p) return [];
       const pid    = p.prodId || 1;
       const colors = p.opt1s || [];
@@ -213,9 +250,7 @@ window.Prod03View = {
     let scrollEl = null;
     const getScrollEl = () => scrollEl || (scrollEl = document.querySelector('.layout-main')) || window;
 
-    const tabFixedTop  = ref(0);
-        const tabFixedW    = ref(0);
-        let tabNaturalScrollTop = 0;   // 탭바가 fixed 되기 직전의 scrollTop
+    let tabNaturalScrollTop = 0;   // 탭바가 fixed 되기 직전의 scrollTop
 
     const updateTabFixedPos = () => {
       const main = getScrollEl();
@@ -285,8 +320,7 @@ window.Prod03View = {
       }
     };
 
-    /* -- 드로어 상태 (anyModalOpen 보다 먼저 선언 필요) -- */
-    const drawerMode   = ref('buy'); // 'buy' | 'cart'
+    /* -- 드로어 상태는 uiState.drawerMode 사용 ('buy' | 'cart') -- */
 
     /* -- 모달 공통 닫기 (ESC / 뒤로가기) -- */
     const anyModalOpen = () =>
@@ -323,7 +357,7 @@ window.Prod03View = {
       window.addEventListener('keydown', onKeydown);
       window.addEventListener('popstate', onPopState);
       /* 품절/중지 아닌 첫 색상 자동 선택 */
-      const firstAvail = (svProduct.value?.opt1s || []).find(c => colorStatus(c) === 'ok');
+      const firstAvail = (svProduct.opt1s || []).find(c => colorStatus(c) === 'ok');
       if (firstAvail) uiState.selectedColor = firstAvail;
       handleSearchList();
     });
@@ -335,7 +369,7 @@ window.Prod03View = {
     });
 
     watch(() => prod, (p) => {
-      svProduct.value = p;
+      fnApplySvProduct(p);
       uiState.selectedColor = (p?.opt1s || []).find(c => colorStatus(c) === 'ok') || null;
       uiState.selectedSize  = null;
       uiState.qty           = 1;
@@ -354,7 +388,7 @@ window.Prod03View = {
 
     /* -- 옵션 재고 상태 (목업: 색상 + 사이즈) -- */
     const cfColorStockMap = computed(() => {
-      const p = svProduct.value;
+      const p = svProduct;
       if (!p) return {};
       const opt1s = p.opt1s || [];
       const pid = p.prodId || 1;
@@ -370,7 +404,7 @@ window.Prod03View = {
     const colorStatus = (c) => cfColorStockMap.value[c?.name] || 'ok';
 
     const cfSizeStockMap = computed(() => {
-      const p = svProduct.value;
+      const p = svProduct;
       if (!p) return {};
       const sizes = p.opt2s || [];
       const pid = p.prodId || 1;
@@ -387,12 +421,12 @@ window.Prod03View = {
 
     /* -- 옵션별 가격 -- */
     const cfBasePrice = computed(() => {
-      const numStr = String(svProduct.value?.price || '').replace(/[^0-9]/g, '');
+      const numStr = String(svProduct.price || '').replace(/[^0-9]/g, '');
       return Number(numStr) || 0;
     });
 
     /* opt2Prices에서 사이즈 delta 조회 */
-    const getSizeDelta = (sizeName) => (svProduct.value?.opt2Prices || {})[sizeName] || 0;
+    const getSizeDelta = (sizeName) => (svProduct.opt2Prices || {})[sizeName] || 0;
 
     /* 선택된 색상+사이즈의 최종 단가 */
     const cfSelectedUnitPrice = computed(() => {
@@ -403,7 +437,7 @@ window.Prod03View = {
 
     /* 모든 옵션 조합의 최소~최대 가격 범위 */
     const cfPriceRange = computed(() => {
-      const p = svProduct.value;
+      const p = svProduct;
       if (!p || !cfBasePrice.value) return null;
       const colorDeltas = (p.opt1s || []).map(c => c.priceDelta || 0);
       const sizeDeltas  = Object.values(p.opt2Prices || {}).concat([0]);
@@ -419,7 +453,7 @@ window.Prod03View = {
        - 색상만 선택          → 색상가격 (사이즈 delta 존재 시 범위)
        - 미선택               → 전체 범위 또는 기본가 */
     const cfDisplayPrice = computed(() => {
-      const p = svProduct.value;
+      const p = svProduct;
       if (!p || !cfBasePrice.value) return p?.price || '';
 
       const colorDelta = uiState.selectedColor?.priceDelta || 0;
@@ -450,8 +484,8 @@ window.Prod03View = {
 
     /* 바로구매 총 금액 */
     const cfQuickBuyTotal = computed(() => {
-      if (!svProduct.value) return '';
-      if (!cfSelectedUnitPrice.value) return svProduct.value.price;
+      if (!svProduct.prodId) return '';
+      if (!cfSelectedUnitPrice.value) return svProduct.price;
       const total = cfSelectedUnitPrice.value * uiState.qty;
       return total.toLocaleString('ko-KR') + '원';
     });
@@ -472,7 +506,7 @@ window.Prod03View = {
       let ok = true;
       if (!uiState.selectedColor) { uiState.colorError = '색상을 선택해주세요.'; ok = false; }
       /* 사이즈 FREE 또는 미설정이면 자동 선택 */
-      const sizes = svProduct.value?.opt2s || [];
+      const sizes = svProduct.opt2s || [];
       if (!uiState.selectedSize) {
         if (sizes.length === 1 && sizes[0] === 'FREE') { uiState.selectedSize = 'FREE'; }
         else if (sizes.length === 0) { uiState.selectedSize = 'FREE'; }
@@ -483,8 +517,8 @@ window.Prod03View = {
 
     const handleAddToCart = () => {
       if (!validate()) return;
-      addToCart(svProduct.value, uiState.selectedColor, uiState.selectedSize, uiState.qty);
-      uiState.selectedColor = svProduct.value?.opt1s?.[0] || null;
+      addToCart(svProduct, uiState.selectedColor, uiState.selectedSize, uiState.qty);
+      uiState.selectedColor = svProduct.opt1s?.[0] || null;
       uiState.selectedSize  = null;
       uiState.qty = 1;
     };
@@ -495,7 +529,7 @@ window.Prod03View = {
       uiState.quickBuyOpen = false;
       props.navigate('order', {
         instantOrder: {
-          prod: svProduct.value,
+          prod: svProduct,
           color: uiState.selectedColor,
           size: uiState.selectedSize,
           qty: uiState.qty,
@@ -506,9 +540,9 @@ window.Prod03View = {
     /* 드로어 장바구니 담기 */
     const execCartFromDrawer = () => {
       if (!validate()) return;
-      addToCart(svProduct.value, uiState.selectedColor, uiState.selectedSize, uiState.qty);
+      addToCart(svProduct, uiState.selectedColor, uiState.selectedSize, uiState.qty);
       uiState.quickBuyOpen = false;
-      uiState.selectedColor = svProduct.value?.opt1s?.[0] || null;
+      uiState.selectedColor = svProduct.opt1s?.[0] || null;
       uiState.selectedSize  = null;
       uiState.qty = 1;
     };
@@ -569,6 +603,7 @@ window.Prod03View = {
     return {
       uiState,
       prod: svProduct,
+      svContents, svRels, svReviews, svReviewImages, svQna, svPromotions,
       cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
       openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
       sizeGuideRows, styleItems,
@@ -809,10 +844,10 @@ window.Prod03View = {
     </div><!-- -- /page-wrap top --------------------------------------------------- -->
 
     <!-- -- ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ ----------------------------------- -->
-    <div v-if="uiState.tabFixed" :style="{ height: tabPlaceholderH + 'px', marginTop:'24px' }"></div>
+    <div v-if="uiState.tabFixed" :style="{ height: uiState.tabPlaceholderH + 'px', marginTop:'24px' }"></div>
     <div ref="tabBarRef"
       :style="uiState.tabFixed ? {
-        position:'fixed', top:tabFixedTop+'px', left:tabFixedLeft+'px', width:tabFixedW+'px',
+        position:'fixed', top:uiState.tabFixedTop+'px', left:uiState.tabFixedLeft+'px', width:uiState.tabFixedW+'px',
         zIndex:55,
         background:'linear-gradient(to bottom, rgba(245,248,253,0.98) 0%, var(--bg-card) 100%)',
         backdropFilter:'blur(10px)',
@@ -1068,8 +1103,8 @@ window.Prod03View = {
       </div>
       <!-- -- 페이지네이션 ----------------------------------------------------- -->
       <div v-if="cfPhotoGridPageCount > 1" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:20px;">
-        <button v-for="p in cfPhotoGridPageCount" :key="p" @click="photoGridPage=p"
-          :style="{ width:'32px', height:'32px', borderRadius:'6px', border:'1px solid var(--border)', background: photoGridPage===p ? 'var(--text-primary)' : 'var(--bg-card)', color: photoGridPage===p ? '#fff' : 'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight: photoGridPage===p ? 700 : 400 }">
+        <button v-for="p in cfPhotoGridPageCount" :key="p" @click="uiState.photoGridPage=p"
+          :style="{ width:'32px', height:'32px', borderRadius:'6px', border:'1px solid var(--border)', background: uiState.photoGridPage===p ? 'var(--text-primary)' : 'var(--bg-card)', color: uiState.photoGridPage===p ? '#fff' : 'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight: uiState.photoGridPage===p ? 700 : 400 }">
           {{ p }}
         </button>
       </div>
@@ -1085,7 +1120,7 @@ window.Prod03View = {
 
   <!-- -- ══ 포토 리뷰 개별 팝업 ══ ---------------------------------------------- -->
   <teleport to="body">
-  <div v-if="selectedReview && prod" @click.self="closePhotoDetail"
+  <div v-if="uiState.selectedReview && prod" @click.self="closePhotoDetail"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1501;display:flex;align-items:center;justify-content:center;padding:20px;">
 
     <!-- -- 좌 화살표 -------------------------------------------------------- -->
@@ -1185,7 +1220,7 @@ window.Prod03View = {
   <!-- -- ══ 바로구매 드로어 (우측) ══ -------------------------------------------- -->
   <template v-if="uiState.quickBuyOpen && prod">
     <!-- -- 딤 오버레이 ------------------------------------------------------- -->
-    <div @click="quickBuyOpen=false"
+    <div @click="uiState.quickBuyOpen=false"
       style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:150;transition:opacity .25s;"></div>
 
     <!-- -- 드로어 패널 ------------------------------------------------------- -->
@@ -1193,8 +1228,8 @@ window.Prod03View = {
 
       <!-- -- 헤더 --------------------------------------------------------- -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
-        <span style="font-size:0.9rem;font-weight:800;color:var(--text-primary);">{{ drawerMode==='cart' ? '🛒 장바구니 담기' : '⚡ 바로구매' }}</span>
-        <button @click="quickBuyOpen=false" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);line-height:1;padding:0;">✕</button>
+        <span style="font-size:0.9rem;font-weight:800;color:var(--text-primary);">{{ uiState.drawerMode==='cart' ? '🛒 장바구니 담기' : '⚡ 바로구매' }}</span>
+        <button @click="uiState.quickBuyOpen=false" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);line-height:1;padding:0;">✕</button>
       </div>
 
       <!-- -- 스크롤 영역 ----------------------------------------------------- -->
@@ -1285,7 +1320,7 @@ window.Prod03View = {
           <span style="font-size:0.85rem;color:var(--text-muted);">총 주문금액</span>
           <span style="font-size:1.2rem;font-weight:900;color:var(--blue);">{{ cfQuickBuyTotal }}</span>
         </div>
-        <button v-if="drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execCartFromDrawer">
+        <button v-if="uiState.drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execCartFromDrawer">
           🛒 장바구니 담기
         </button>
         <button v-else class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execBuyNow">

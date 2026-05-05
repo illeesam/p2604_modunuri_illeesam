@@ -14,6 +14,7 @@ window.DpDispUiDtl = {
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_ui_types: [], use_yn: [] });
+    const allUiCodes = reactive([]); // DISP_UI 전체 목록 (코드관리에서 로드)
     const displays = reactive([]);
     const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickKw: '', htmlDescEl: null });
     const activeTab = Vue.toRef(uiState, 'activeTab');
@@ -23,6 +24,7 @@ window.DpDispUiDtl = {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_ui_types = codeStore.sgGetGrpCodes('DISP_UI_TYPE');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      allUiCodes.splice(0, allUiCodes.length, ...codeStore.sgGetGrpCodes('DISP_UI'));
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
@@ -78,10 +80,10 @@ window.DpDispUiDtl = {
 
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
-        const u = (codes || []).find(c => c.codeId === props.dtlId && c.codeGrp === 'DISP_UI');
+        const u = allUiCodes.find(c => String(c.codeId) === String(props.dtlId) && c.codeGrp === 'DISP_UI');
         if (u) Object.assign(form, { ...u });
       } else {
-        const uis = (Array.isArray(codes) ? codes : []).filter(c => c.codeGrp === 'DISP_UI');
+        const uis = allUiCodes;
         form.sortOrd = uis.length ? Math.max(...uis.map(c => c.sortOrd || 0)) + 1 : 1;
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
@@ -152,9 +154,9 @@ window.DpDispUiDtl = {
 
     /* 영역 선택 팝업 */
     const pickKw   = ref('');
-    const pickSel  = reactive(new Set());
+    const pickSel  = ref(new Set());
     const cfAvailableAreas = computed(() => {
-      const all = (Array.isArray(codes) ? codes : []).filter(c => c.codeGrp === 'DISP_AREA');
+      const all = areas.filter(c => c.codeGrp === 'DISP_AREA');
       const kw  = uiState.pickKw.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, a => {
         if (a.uiCode === form.codeValue) return false;
@@ -162,7 +164,7 @@ window.DpDispUiDtl = {
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
-    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; pickSel = new Set(); };
+    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; pickSel.value = new Set(); };
     const onAreaPicked = (a) => {
       if (!form.codeValue) { showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       a.uiCode = form.codeValue;
@@ -171,17 +173,16 @@ window.DpDispUiDtl = {
     };
     const closePick = () => { uiState.pickOpen = false; };
     const togglePick = (id) => {
-      const s = new Set(pickSel);
+      const s = new Set(pickSel.value);
       if (s.has(id)) s.delete(id); else s.add(id);
-      pickSel = s;
+      pickSel.value = s;
     };
     const confirmPick = () => {
-      const ids = Array.from(pickSel);
+      const ids = Array.from(pickSel.value);
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
-      const codesData = codes || [];
       window.safeArrayUtils.safeForEach(ids, id => {
-        const a = window.safeArrayUtils.safeFind(codes, x => x.codeId === id);
+        const a = window.safeArrayUtils.safeFind(areas, x => x.codeId === id);
         if (a) a.uiCode = form.codeValue;
       });
       showToast && showToast(`${ids.length}개 영역을 추가했습니다.`, 'info');
@@ -279,13 +280,12 @@ window.DpDispUiDtl = {
       const isNewUi = cfIsNew.value;
       const ok = await showConfirm('저장', isNewUi ? '신규 UI를 등록하시겠습니까?' : 'UI 정보를 수정하시겠습니까?');
       if (!ok) return;
-      const codesData = codes;
       if (isNewUi) {
-        const newId = boUtil.nextId(codesData, 'codeId');
-        codesData.push({ ...form, codeId: newId });
+        const newId = boUtil.nextId(allUiCodes, 'codeId');
+        allUiCodes.push({ ...form, codeId: newId });
       } else {
-        const idx = codesData.findIndex(c => c.codeId === form.codeId);
-        if (idx !== -1) Object.assign(codesData[idx], form);
+        const idx = allUiCodes.findIndex(c => c.codeId === form.codeId);
+        if (idx !== -1) Object.assign(allUiCodes[idx], form);
       }
       try {
         const res = await (isNewUi ? boApiSvc.dpUi.create({ ...form }, '전시UI관리', '등록') : boApiSvc.dpUi.update(form.codeId, { ...form }, '전시UI관리', '저장'));

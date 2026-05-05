@@ -652,28 +652,78 @@ window.PdProdDtl = {
     });
 
     // -- 저장
+    /* ── 현재 작업중인 prodId: props.dtlId 우선, 없으면 신규등록 직후 form.prodId ── */
+    const cfCurProdId   = computed(() => props.dtlId || form.prodId || null);
+    const cfHasProdId   = computed(() => !!cfCurProdId.value);
+    /* info 외 탭의 [저장] 버튼은 prodId 없으면 비활성화 (info 탭은 신규등록 위해 항상 활성) */
+    const cfSaveDisabled = computed(() => topTab.value !== 'info' && !cfHasProdId.value);
+
+    /* ── 공통: API 호출 결과 처리 ── */
+    const _afterApiOk  = (res, msg) => {
+      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+      if (showToast) showToast(msg, 'success');
+    };
+    const _afterApiErr = (err) => {
+      console.error('[handleSave]', err);
+      const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+      if (showToast) showToast(errMsg, 'error', 0);
+    };
+
+    /* ── 탭별 저장: topTab 값으로 분기. info/detail 은 form 전체 저장(같은 form 공유).
+     *   info 탭의 신규 모드만 create() 호출 — 응답에서 prodId 받아 form.prodId 에 주입하면
+     *   cfCurProdId 가 true 가 되어 다른 탭의 [저장] 버튼이 활성화된다. */
     const handleSave = async () => {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const imgData = images.map(({ id, ...rest }) => rest);
-      const mainImg = safeFind(images, img => img.isMain);
-      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
-      try {
-        const payload = { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans };
-        const res = await (cfIsNew.value
-          ? boApiSvc.pdProd.create(payload, '상품관리', '등록')
-          : boApiSvc.pdProd.update(form.prodId, payload, '상품관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pdProdMng', { reload: true });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+      const tabId = topTab.value;
+
+      /* 신규(prodId 없음)인데 info 가 아닌 탭에서 저장 시도 시 가드 */
+      if (!cfHasProdId.value && tabId !== 'info') {
+        showToast('먼저 기본정보 탭에서 상품을 등록해주세요.', 'error');
+        return;
       }
+
+      /* info / detail 탭: pd_prod 본체 전체 저장 (둘은 form 공유) */
+      if (tabId === 'info' || tabId === 'detail') {
+        Object.keys(errors).forEach(k => delete errors[k]);
+        try { await schema.validate(form, { abortEarly: false }); }
+        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+
+        const isCreate = !cfHasProdId.value; // info 신규
+        const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
+        if (!ok) return;
+        try {
+          const payload = { ...form };
+          const res = isCreate
+            ? await boApiSvc.pdProd.create(payload, '상품관리', '등록')
+            : await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', tabId === 'info' ? '기본정보저장' : '상세설정저장');
+          /* 신규 등록 응답에서 prodId 추출하여 form.prodId 에 주입 → 다른 탭 활성화 */
+          if (isCreate) {
+            const newId = res.data?.data?.prodId || res.data?.prodId || null;
+            if (newId) form.prodId = newId;
+          }
+          _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
+        } catch (err) { _afterApiErr(err); }
+        return;
+      }
+
+      /* 그 외 탭: 부분 PUT — payload 에 해당 탭 데이터만 포함 */
+      const ok = await showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+
+      const TAB_LABEL = { content: '상품설명', option: '옵션설정', price: '옵션(가격/재고)', image: '이미지', related: '연관상품' };
+      let payload = null;
+      switch (tabId) {
+        case 'content':  payload = { contentBlocks }; break;
+        case 'option':   payload = { optGroups };     break;
+        case 'price':    payload = { skus };          break;
+        case 'image':    payload = { images: images.map(({ id, ...rest }) => rest) }; break;
+        case 'related':  payload = { relProds, codeProds }; break;
+        default:         payload = {}; break;
+      }
+      try {
+        const res = await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', `${TAB_LABEL[tabId] || tabId}저장`);
+        _afterApiOk(res, `${TAB_LABEL[tabId] || ''} 저장되었습니다.`);
+      } catch (err) { _afterApiErr(err); }
     };
 
     const catDragoverIdx = Vue.toRef(uiState, 'catDragoverIdx');
@@ -706,7 +756,7 @@ window.PdProdDtl = {
 
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave,
+    return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus,
@@ -742,10 +792,10 @@ window.PdProdDtl = {
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:topTab==='info'}"    :disabled="tabMode2!=='tab'" @click="topTab='info'">📋 기본정보</button>
       <button class="tab-btn" :class="{active:topTab==='detail'}"  :disabled="tabMode2!=='tab'" @click="topTab='detail'">📝 상세설정</button>
-      <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="tabMode2!=='tab'" @click="topTab='image'">🖼 이미지 <span class="tab-count">{{ tabData.images.length }}</span></button>
       <button class="tab-btn" :class="{active:topTab==='content'}" :disabled="tabMode2!=='tab'" @click="topTab='content'">📄 상품설명 <span class="tab-count">{{ tabData.content.length }}</span></button>
       <button class="tab-btn" :class="{active:topTab==='option'}"  :disabled="tabMode2!=='tab'" @click="topTab='option'">⚙ 옵션설정 <span class="tab-count">{{ tabData.opts.groups.length }}</span></button>
       <button class="tab-btn" :class="{active:topTab==='price'}"   :disabled="tabMode2!=='tab'" @click="topTab='price'">💰 옵션(가격/재고) <span class="tab-count">{{ tabData.skus.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="tabMode2!=='tab'" @click="topTab='image'">🖼 이미지 <span class="tab-count">{{ tabData.images.length }}</span></button>
       <button class="tab-btn" :class="{active:topTab==='related'}" :disabled="tabMode2!=='tab'" @click="topTab='related'">🔗 연관상품 <span class="tab-count">{{ tabData.rels.length }}</span></button>
     </div>
     <div class="tab-modes">
@@ -961,7 +1011,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -1149,7 +1199,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -1273,7 +1323,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions" v-if="!cfDtlMode" style="padding:12px 16px;border-top:1px solid #f0f0f0;">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -1344,7 +1394,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions" v-if="!cfDtlMode" style="margin-top:20px;">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -1428,7 +1478,7 @@ window.PdProdDtl = {
       <span class="pager-right">{{ images.length }}개 / {{ tabPage.images.pageSize }}개씩</span>
     </div>
     <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -1544,7 +1594,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
 
@@ -1834,7 +1884,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
 

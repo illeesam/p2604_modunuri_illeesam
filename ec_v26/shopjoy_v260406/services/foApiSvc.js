@@ -101,6 +101,9 @@
     getReviews(_id, params, uiNm, cmdNm) {
       return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}/reviews`, { params, ...hdr(uiNm, cmdNm) });
     },
+    getReviewImages(_id, uiNm, cmdNm) {
+      return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}/review-images`, hdr(uiNm, cmdNm));
+    },
     getQna(_id, params, uiNm, cmdNm) {
       return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}/qna`, { params, ...hdr(uiNm, cmdNm) });
     },

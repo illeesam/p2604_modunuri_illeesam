@@ -157,29 +157,68 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       showToast('이벤트 참여가 완료되었습니다! 감사합니다.', 'success');
     };
 
+    const cfCurId       = computed(() => props.dtlId || form.eventId || null);
+    const cfHasId       = computed(() => !!cfCurId.value);
+    /* 신규 등록은 info 탭에서만 가능. 그 외 탭(banner/content/products/preview)은 ID 없으면 비활성 */
+    const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
+
+    const _afterApiOk  = (res, msg) => {
+      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+      if (showToast) showToast(msg, 'success');
+    };
+    const _afterApiErr = (err) => {
+      console.error('[handleSave]', err);
+      const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+      if (showToast) showToast(errMsg, 'error', 0);
+    };
+
+    /* ── 탭별 저장: info=본체, banner=배너이미지, content=콘텐츠5개, products=대상상품, preview=저장없음 ── */
     const handleSave = async () => {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      try {
-        await schema.validate(form, { abortEarly: false });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
+      const tabId = uiState.tab;
+
+      if (!cfHasId.value && tabId !== 'info') {
+        showToast('먼저 기본정보 탭에서 등록해주세요.', 'error');
         return;
       }
-      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
-      try {
-        const res = await (cfIsNew.value ? boApiSvc.pmEvent.create({ ...form }, '이벤트관리', '등록') : boApiSvc.pmEvent.update(form.eventId, { ...form }, '이벤트관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pmEventMng', { reload: true });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+
+      if (tabId === 'info') {
+        Object.keys(errors).forEach(k => delete errors[k]);
+        try { await schema.validate(form, { abortEarly: false }); }
+        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+
+        const isCreate = !cfHasId.value;
+        const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
+        if (!ok) return;
+        try {
+          const payload = { ...form };
+          const res = isCreate
+            ? await boApiSvc.pmEvent.create(payload, '이벤트관리', '등록')
+            : await boApiSvc.pmEvent.update(cfCurId.value, payload, '이벤트관리', '기본정보저장');
+          if (isCreate) {
+            const newId = res.data?.data?.eventId || res.data?.eventId || null;
+            if (newId) form.eventId = newId;
+          }
+          _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
+        } catch (err) { _afterApiErr(err); }
+        return;
       }
+
+      const ok = await showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+
+      const TAB_LABEL = { banner: '배너이미지', content: '이벤트내용', products: '대상상품' };
+      let payload = null;
+      switch (tabId) {
+        case 'banner':   payload = { bannerImage: form.bannerImage }; break;
+        case 'content':  payload = { content1: form.content1, content2: form.content2, content3: form.content3, content4: form.content4, content5: form.content5 }; break;
+        case 'products': payload = { targetProducts: form.targetProducts, visibilityTargets: form.visibilityTargets }; break;
+        default:         payload = {}; break;
+      }
+      try {
+        const res = await boApiSvc.pmEvent.update(cfCurId.value, payload, '이벤트관리', `${TAB_LABEL[tabId] || tabId}저장`);
+        _afterApiOk(res, `${TAB_LABEL[tabId] || ''} 저장되었습니다.`);
+      } catch (err) { _afterApiErr(err); }
     };
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
@@ -211,7 +250,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { events, uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor };
+    return { events, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -249,7 +288,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="handleSave">저장</button>
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">취소</button>
         </template>
       </div>
@@ -356,7 +395,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="handleSave">저장</button>
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">취소</button>
         </template>
       </div>
@@ -389,7 +428,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="handleSave">저장</button>
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">취소</button>
         </template>
       </div>
@@ -423,7 +462,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="handleSave">저장</button>
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">취소</button>
         </template>
       </div>

@@ -35,7 +35,7 @@ window.PathTree = {
 
     const _cache = (window._pathTreeCache = window._pathTreeCache || {});
 
-    const tree     = ref({ pathId: null, pathLabel: '전체', children: [], count: 0 });
+    const tree     = reactive({ pathId: null, pathLabel: '전체', children: [], count: 0 });
     const expanded = reactive(new Set([null]));
     const loading  = ref(false);
 
@@ -65,11 +65,19 @@ window.PathTree = {
       (node.children || []).forEach(ch => initExpanded(ch, depth + 1, maxDepth));
     };
 
+    /* tree(reactive 객체)에 새 트리 통째 적용 — 키 4개를 in-place 갱신 */
+    const fnApplyTree = (newTree) => {
+      tree.pathId    = newTree.pathId;
+      tree.pathLabel = newTree.pathLabel;
+      tree.children  = newTree.children;
+      tree.count     = newTree.count;
+    };
+
     const load = async () => {
       if (_cache[props.bizCd]) {
-        tree.value = buildTree(_cache[props.bizCd], props.bizCd);
+        fnApplyTree(buildTree(_cache[props.bizCd], props.bizCd));
         expanded.clear();
-        initExpanded(tree.value, 0, props.expandDepth);
+        initExpanded(tree, 0, props.expandDepth);
         return;
       }
       loading.value = true;
@@ -80,9 +88,9 @@ window.PathTree = {
         _cache[props.bizCd] = list;
         /* boUtil._boCmPaths 호환 — 기존 코드(pathLabel 등)가 읽을 수 있도록 병합 */
         window._boCmPaths = [...(window._boCmPaths || []).filter(p => p.bizCd !== props.bizCd), ...list];
-        tree.value = buildTree(list, props.bizCd);
+        fnApplyTree(buildTree(list, props.bizCd));
         expanded.clear();
-        initExpanded(tree.value, 0, props.expandDepth);
+        initExpanded(tree, 0, props.expandDepth);
       } catch (e) {
         console.error('[PathTree] load error', e);
       } finally {
@@ -92,7 +100,7 @@ window.PathTree = {
 
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { emit('select', id); };
-    const expandAll  = () => { const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(tree.value); };
+    const expandAll  = () => { const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(tree); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
     watch(() => props.bizCd, () => { delete _cache[props.bizCd]; load(); });

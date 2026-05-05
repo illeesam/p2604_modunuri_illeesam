@@ -90,11 +90,11 @@ window.DpDispAreaDtl = {
     /* -- 로드 -- */
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
-        const a = areas.find(c => c.codeId === props.dtlId && c.codeGrp === 'DISP_AREA');
+        const a = areas.find(c => String(c.codeId) === String(props.dtlId) && c.codeGrp === 'DISP_AREA');
         if (a) Object.assign(form, { ...a });
       } else {
-        const areas = (Array.isArray(codes) ? codes : (codes?.disp_areas || [])).filter(c => c.codeGrp === 'DISP_AREA');
-        form.sortOrd = areas.length ? Math.max(...areas.map(c => c.sortOrd || 0)) + 1 : 1;
+        const areaList = areas.filter(c => c.codeGrp === 'DISP_AREA');
+        form.sortOrd = areaList.length ? Math.max(...areaList.map(c => c.sortOrd || 0)) + 1 : 1;
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
         form.regDate = `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`;
@@ -121,7 +121,7 @@ window.DpDispAreaDtl = {
 
     /* -- 패널 선택 팝업 -- */
     const pickKw   = ref('');
-    const pickSel  = reactive(new Set());
+    const pickSel  = ref(new Set());
     const cfAvailablePanels = computed(() => {
       const all = (panels || []);
       const kw  = uiState.pickKw.trim().toLowerCase();
@@ -131,7 +131,7 @@ window.DpDispAreaDtl = {
         return true;
       }).sort((a, b) => (a.name||'').localeCompare(b.name||''));
     });
-    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; pickSel = new Set(); };
+    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; pickSel.value = new Set(); };
     const movePanel = (idx, dir) => {
       const arr = cfRelatedPanels.value;
       const target = idx + dir;
@@ -150,12 +150,12 @@ window.DpDispAreaDtl = {
     };
     const closePick = () => { uiState.pickOpen = false; };
     const togglePick = (id) => {
-      const s = new Set(pickSel);
+      const s = new Set(pickSel.value);
       if (s.has(id)) s.delete(id); else s.add(id);
-      pickSel = s;
+      pickSel.value = s;
     };
     const confirmPick = () => {
-      const ids = Array.from(pickSel);
+      const ids = Array.from(pickSel.value);
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { showToast && showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       const list = panels || [];

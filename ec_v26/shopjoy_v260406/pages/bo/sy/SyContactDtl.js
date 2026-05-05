@@ -113,44 +113,69 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray'
     }[s] || 'badge-gray');
 
-    const handleSave = async () => {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      try {
-        await schema.validate(form, { abortEarly: false });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
-        return;
-      }
-      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
-      try {
-        const res = await (cfIsNew.value ? boApiSvc.syContact.create({ ...form }, '문의관리', '등록') : boApiSvc.syContact.update(form.inquiryId, { ...form }, '문의관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syContactMng', { reload: true });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
-      }
+    const cfCurId       = computed(() => props.dtlId || form.inquiryId || null);
+    const cfHasId       = computed(() => !!cfCurId.value);
+    /* 첫 탭 = content. answer/history 탭은 ID 없으면 비활성. */
+    const cfSaveDisabled = computed(() => uiState.tab !== 'content' && !cfHasId.value);
+
+    const _afterApiOk  = (res, msg) => {
+      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+      if (showToast) showToast(msg, 'success');
+    };
+    const _afterApiErr = (err) => {
+      console.error('[handleSave]', err);
+      const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+      if (showToast) showToast(errMsg, 'error', 0);
     };
 
-    const saveAnswer = async () => {
-      if (!cfIsNew.value) {
-        try {
-          await boApiSvc.syContact.update(form.inquiryId, { ...form }, '문의관리', '답변저장');
-          showToast('답변이 저장되었습니다.');
-          if (props.navigate) props.navigate('syContactMng', { reload: true });
-        } catch (err) {
-          console.error('[catch-info]', err);
-          showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
-        }
-      } else {
-        showToast('답변이 저장되었습니다.');
+    /* ── 탭별 저장: content=문의 본체(신규/수정), answer=답변만 부분 PUT ── */
+    const handleSave = async () => {
+      const tabId = uiState.tab;
+
+      if (!cfHasId.value && tabId !== 'content') {
+        showToast('먼저 문의 내용 탭에서 등록해주세요.', 'error');
+        return;
       }
+
+      if (tabId === 'content') {
+        Object.keys(errors).forEach(k => delete errors[k]);
+        try { await schema.validate(form, { abortEarly: false }); }
+        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+
+        const isCreate = !cfHasId.value;
+        const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
+        if (!ok) return;
+        try {
+          const payload = { ...form };
+          const res = isCreate
+            ? await boApiSvc.syContact.create(payload, '문의관리', '등록')
+            : await boApiSvc.syContact.update(cfCurId.value, payload, '문의관리', '문의내용저장');
+          if (isCreate) {
+            const newId = res.data?.data?.inquiryId || res.data?.inquiryId || null;
+            if (newId) form.inquiryId = newId;
+          }
+          _afterApiOk(res, isCreate ? '등록되었습니다. 답변 탭에서 답변을 저장할 수 있습니다.' : '저장되었습니다.');
+        } catch (err) { _afterApiErr(err); }
+        return;
+      }
+
+      /* answer 탭은 saveAnswer 가 담당 — handleSave 가 호출되면 saveAnswer 로 위임 */
+      if (tabId === 'answer') { await saveAnswer(); return; }
+    };
+
+    /* ── 답변 부분 저장 ── */
+    const saveAnswer = async () => {
+      if (!cfHasId.value) {
+        showToast('먼저 문의 내용 탭에서 등록해주세요.', 'error');
+        return;
+      }
+      const ok = await showConfirm('답변 저장', '답변을 저장하시겠습니까?');
+      if (!ok) return;
+      try {
+        const res = await boApiSvc.syContact.update(cfCurId.value, { answer: form.answer, statusCd: form.statusCd }, '문의관리', '답변저장');
+        _afterApiOk(res, '답변이 저장되었습니다.');
+      } catch (err) { _afterApiErr(err); }
     };
 
     const answerEl = Vue.toRef(uiState, 'answerEl');
@@ -161,7 +186,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
+    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
   },
   template: /* html */`
 <div>
@@ -236,7 +261,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
           <button class="btn btn-secondary" @click="navigate('syContactMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="handleSave">저장</button>
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('syContactMng')">취소</button>
         </template>
       </div>
@@ -261,8 +286,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
           <button class="btn btn-secondary" @click="navigate('syContactMng')">닫기</button>
         </template>
         <template v-else>
-          <button v-if="!cfIsNew" class="btn btn-primary" @click="saveAnswer">답변 저장</button>
-          <button class="btn btn-primary" @click="handleSave">전체 저장</button>
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="saveAnswer">답변 저장</button>
           <button class="btn btn-secondary" @click="navigate('syContactMng')">취소</button>
         </template>
       </div>

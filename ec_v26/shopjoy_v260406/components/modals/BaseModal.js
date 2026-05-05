@@ -582,17 +582,17 @@ window.SiteSelectModal = {
     const pageSize = 10;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ kw: '' });
-    const list = ref([]);
+    const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
         const res = await boApiSvc.sySite.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '사이트관리', '목록조회');
         const data = res.data?.data;
-        list.value = data?.pageList || data?.list || [];
+        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.value = []; } finally { loading.value = false; }
+      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
@@ -644,17 +644,17 @@ window.VendorSelectModal = {
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ kw: '' });
-    const list = ref([]);
+    const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
         const res = await boApiSvc.syVendor.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '판매자관리', '목록조회');
         const data = res.data?.data;
-        list.value = data?.pageList || data?.list || [];
+        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.value = []; } finally { loading.value = false; }
+      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
@@ -954,17 +954,17 @@ window.MemberSelectModal = {
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ kw: '' });
-    const list = ref([]);
+    const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
         const res = await boApiSvc.mbMember.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '회원관리', '목록조회');
         const data = res.data?.data;
-        list.value = data?.pageList || data?.list || [];
+        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.value = []; } finally { loading.value = false; }
+      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
@@ -1012,17 +1012,17 @@ window.OrderSelectModal = {
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ kw: '' });
-    const list = ref([]);
+    const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
         const res = await boApiSvc.odOrder.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '주문관리', '목록조회');
         const data = res.data?.data;
-        list.value = data?.pageList || data?.list || [];
+        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.value = []; } finally { loading.value = false; }
+      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
@@ -1070,17 +1070,17 @@ window.BbmSelectModal = {
     const pageSize = 6;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ kw: '' });
-    const list = ref([]);
+    const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
         const res = await boApiSvc.syBbm.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '게시판모드관리', '목록조회');
         const data = res.data?.data;
-        list.value = data?.pageList || data?.list || [];
+        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.value = []; } finally { loading.value = false; }
+      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
@@ -1241,9 +1241,9 @@ window.TemplateSendModal = {
     const getId = (item) => item.memberId || item.userId || item.boUserId;
 
     /* ── API 데이터 ── */
-    const allDepts = ref([]);
-    const allMembers = ref([]);
-    const allBoUsers = ref([]);
+    const allDepts = reactive([]);
+    const allMembers = reactive([]);
+    const allBoUsers = reactive([]);
     const handleSearchList = async () => {
       try {
         const [deptRes, memberRes, userRes] = await Promise.all([
@@ -1251,9 +1251,9 @@ window.TemplateSendModal = {
           boApiSvc.mbMember.getList({ pageSize: 10000 }, '회원관리', '목록조회'),
           boApiSvc.syUser.getList({ pageSize: 10000 }, '사용자관리', '목록조회'),
         ]);
-        allDepts.value = deptRes.data?.data || [];
-        allMembers.value = memberRes.data?.data || [];
-        allBoUsers.value = userRes.data?.data || [];
+        allDepts.splice(0, allDepts.length, ...(deptRes.data?.data || []));
+        allMembers.splice(0, allMembers.length, ...(memberRes.data?.data || []));
+        allBoUsers.splice(0, allBoUsers.length, ...(userRes.data?.data || []));
       } catch (e) {}
     };
     onMounted(() => { handleSearchList(); });
@@ -1270,7 +1270,7 @@ window.TemplateSendModal = {
     const fnFlattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); fnFlattenDept(n._kids, result); }); return result; };
     const cfFlatDeptTree = computed(() => {
       const k = uiState.deptKw.trim().toLowerCase();
-      const base = k ? allDepts.value.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : allDepts.value;
+      const base = k ? allDepts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : allDepts;
       return fnFlattenDept(fnBuildDeptTree(base, null, 1));
     });
     const fnGetDescDeptIds = (deptId) => {
@@ -1279,7 +1279,7 @@ window.TemplateSendModal = {
       while (queue.length) {
         const id = queue.shift();
         ids.add(id);
-        allDepts.value.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId));
+        allDepts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId));
       }
       return ids;
     };
@@ -1290,14 +1290,14 @@ window.TemplateSendModal = {
     /* ── 목록 ── */
     const cfMemberList = computed(() => {
       const k = searchParam.kw.trim().toLowerCase();
-      let list = allMembers.value;
+      let list = allMembers;
       if (selectedGrade.value) list = list.filter(m => m.memberGrade === selectedGrade.value || m.grade === selectedGrade.value);
       if (k) list = list.filter(m => (m.memberNm || '').toLowerCase().includes(k) || (m.memberEmail || m.email || '').toLowerCase().includes(k) || String(m.memberId || m.userId || '').includes(k));
       return list;
     });
     const cfUserList = computed(() => {
       const k = searchParam.kw.trim().toLowerCase();
-      let list = allBoUsers.value;
+      let list = allBoUsers;
       if (selectedDeptId.value !== null) {
         const ids = fnGetDescDeptIds(selectedDeptId.value);
         list = list.filter(u => ids.has(u.deptId));
@@ -1536,12 +1536,12 @@ window.RoleTreeModal = {
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
-    const allRoles = ref([]);
+    const allRoles = reactive([]);
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.syRole.getList({ pageSize: 10000 }, '역할관리', '목록조회');
-        allRoles.value = res.data?.data || [];
-      } catch (e) { allRoles.value = []; }
+        allRoles.splice(0, allRoles.length, ...(res.data?.data || []));
+      } catch (e) { allRoles.splice(0, allRoles.length); }
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
@@ -1559,10 +1559,10 @@ window.RoleTreeModal = {
     const cfFlatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); allRoles.value.filter(r => r.parentId === id).forEach(r => mark(r.roleId)); };
+        const mark = (id) => { excSet.add(id); allRoles.filter(r => r.parentId === id).forEach(r => mark(r.roleId)); };
         mark(props.excludeId);
       }
-      const base = allRoles.value.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
+      const base = allRoles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
       const kwVal = uiState.kw.trim().toLowerCase();
       const list  = kwVal ? base.filter(r => r.roleNm.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
       return fnFlatten(fnBuildTree(list, null, 0));
@@ -1630,12 +1630,12 @@ window.MenuTreeModal = {
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
-    const allMenus = ref([]);
+    const allMenus = reactive([]);
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.syMenu.getList({ pageSize: 10000 }, '메뉴관리', '목록조회');
-        allMenus.value = res.data?.data || [];
-      } catch (e) { allMenus.value = []; }
+        allMenus.splice(0, allMenus.length, ...(res.data?.data || []));
+      } catch (e) { allMenus.splice(0, allMenus.length); }
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
@@ -1657,11 +1657,11 @@ window.MenuTreeModal = {
       if (props.excludeId) {
         const markExclude = (id) => {
           excSet.add(id);
-          allMenus.value.filter(m => m.parentId === id).forEach(m => markExclude(m.menuId));
+          allMenus.filter(m => m.parentId === id).forEach(m => markExclude(m.menuId));
         };
         markExclude(props.excludeId);
       }
-      const base = allMenus.value.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
+      const base = allMenus.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
       const kwVal = uiState.kw.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(m => m.menuNm.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
@@ -1764,12 +1764,12 @@ window.DeptTreeModal = {
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
-    const allDepts = ref([]);
+    const allDepts = reactive([]);
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.syDept.getList({ pageSize: 10000 }, '부서관리', '목록조회');
-        allDepts.value = res.data?.data || [];
-      } catch (e) { allDepts.value = []; }
+        allDepts.splice(0, allDepts.length, ...(res.data?.data || []));
+      } catch (e) { allDepts.splice(0, allDepts.length); }
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
@@ -1792,11 +1792,11 @@ window.DeptTreeModal = {
       if (props.excludeId) {
         const markExclude = (id) => {
           excSet.add(id);
-          allDepts.value.filter(d => d.parentId === id).forEach(d => markExclude(d.deptId));
+          allDepts.filter(d => d.parentId === id).forEach(d => markExclude(d.deptId));
         };
         markExclude(props.excludeId);
       }
-      const base = allDepts.value.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
+      const base = allDepts.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
       const kwVal = uiState.kw.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(d => d.deptNm.toLowerCase().includes(kwVal) || d.deptCode.toLowerCase().includes(kwVal))
@@ -1908,12 +1908,12 @@ window.CategoryTreeModal = {
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
-    const allCategories = ref([]);
+    const allCategories = reactive([]);
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.pdCategory.getList({ pageSize: 10000 }, '카테고리관리', '목록조회');
-        allCategories.value = res.data?.data || [];
-      } catch (e) { allCategories.value = []; }
+        allCategories.splice(0, allCategories.length, ...(res.data?.data || []));
+      } catch (e) { allCategories.splice(0, allCategories.length); }
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
@@ -1933,10 +1933,10 @@ window.CategoryTreeModal = {
     const cfFlatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); allCategories.value.filter(c => c.parentId === id).forEach(c => mark(c.categoryId)); };
+        const mark = (id) => { excSet.add(id); allCategories.filter(c => c.parentId === id).forEach(c => mark(c.categoryId)); };
         mark(props.excludeId);
       }
-      const base   = allCategories.value.filter(c => !excSet.has(c.categoryId) && (c.useYn === 'Y' || c.status === '활성'));
+      const base   = allCategories.filter(c => !excSet.has(c.categoryId) && (c.useYn === 'Y' || c.status === '활성'));
       const kwVal  = uiState.kw.trim().toLowerCase();
       const list   = kwVal ? base.filter(c => c.categoryNm.toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));
@@ -2384,7 +2384,7 @@ window.RowPickModal = {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
     const searchStatus = ref('');
-    const activeStatuses = Vue.ref([]);
+    const activeStatuses = reactive([]);
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
@@ -2480,7 +2480,7 @@ window.RowPickModal = {
 
     Vue.onMounted(() => {
       const codeStore = window.sfGetBoCodeStore?.();
-      if (codeStore?.sgGetGrpCodes) activeStatuses.value = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      if (codeStore?.sgGetGrpCodes) activeStatuses.splice(0, activeStatuses.length, ...(codeStore.sgGetGrpCodes('ACTIVE_STATUS') || []));
     });
 
     return {
@@ -2607,11 +2607,11 @@ window.AreaPickModal = {
     const { ref, reactive, computed, onMounted } = Vue;
     const searchParam = reactive({ kw: '', useYn: '' });
     const pager = reactive({ page: 1, size: 5 });
-    const useYnOpts = ref([]);
+    const useYnOpts = reactive([]);
     onMounted(() => {
       try {
         const s = window.sfGetBoCodeStore?.();
-        if (s?.sgGetGrpCodes) useYnOpts.value = s.sgGetGrpCodes('USE_YN');
+        if (s?.sgGetGrpCodes) useYnOpts.splice(0, useYnOpts.length, ...(s.sgGetGrpCodes('USE_YN') || []));
       } catch(e) {}
     });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
@@ -2809,7 +2809,7 @@ window.PanelPickModal = {
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
     const searchParam = reactive({ kw: '', status: '' });
-    const activeStatuses = Vue.ref([]);
+    const activeStatuses = reactive([]);
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
@@ -2882,7 +2882,7 @@ window.PanelPickModal = {
 
     Vue.onMounted(() => {
       const codeStore = window.sfGetBoCodeStore?.();
-      if (codeStore?.sgGetGrpCodes) activeStatuses.value = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      if (codeStore?.sgGetGrpCodes) activeStatuses.splice(0, activeStatuses.length, ...(codeStore.sgGetGrpCodes('ACTIVE_STATUS') || []));
     });
 
     return {
@@ -3067,10 +3067,10 @@ window.WidgetLibPickModal = {
     ];
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
     const onPick = (lib) => emit('pick', lib);
-    const activeStatuses = Vue.ref([]);
+    const activeStatuses = reactive([]);
     Vue.onMounted(() => {
       const codeStore = window.sfGetBoCodeStore?.();
-      if (codeStore?.sgGetGrpCodes) activeStatuses.value = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      if (codeStore?.sgGetGrpCodes) activeStatuses.splice(0, activeStatuses.length, ...(codeStore.sgGetGrpCodes('ACTIVE_STATUS') || []));
     });
 
     return {

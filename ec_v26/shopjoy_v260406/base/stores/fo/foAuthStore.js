@@ -190,6 +190,4 @@
       return !!(store?.svAuthUser?.authId && store?.svAccessToken);
     } catch (e) { return false; }
   };
-
-  window.sfIsFoLogin = window.sfIsFoLogin;
 })();

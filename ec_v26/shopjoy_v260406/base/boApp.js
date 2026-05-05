@@ -930,7 +930,10 @@
   }, 100);
   checkWidth(); window.addEventListener('resize', checkWidth);
   const codeStore = window.sfGetBoCodeStore?.();
-  if (codeStore?.sgGetGrpCodes) userRoles.value = codeStore.sgGetGrpCodes('USER_ROLE');
+  if (codeStore?.sgGetGrpCodes) {
+    const roles = codeStore.sgGetGrpCodes('USER_ROLE') || [];
+    userRoles.splice(0, userRoles.length, ...roles);
+  }
   });
   watch(currentAuthUser, (u) => {
   try {
@@ -1016,7 +1019,7 @@
   doLogin();
   };
   const regForm  = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
-  const userRoles  = ref([]);
+  const userRoles  = reactive([]);
   const loginError  = ref('');
   const uiState = reactive({ userMenuShow: false, profileModalShow: false, pwModalShow: false, relatedSiteOpen: false });
 

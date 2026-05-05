@@ -30,15 +30,15 @@ window.MyClaim = {
     const paginate = myStore.paginate;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
-    const claimStatusFilter = ref([]);
+    const claimStatusFilter = reactive([]);
     const toggleClaimStatus = (step) => {
-      const idx = claimStatusFilter.value.indexOf(step);
-      if (idx === -1) claimStatusFilter.value.push(step);
-      else claimStatusFilter.value.splice(idx, 1);
+      const idx = claimStatusFilter.indexOf(step);
+      if (idx === -1) claimStatusFilter.push(step);
+      else claimStatusFilter.splice(idx, 1);
     };
     const cfDateFilteredClaims = computed(() => filteredClaims.value
       .filter(c => inRange(c.requestDate))
-      .filter(c => !claimStatusFilter.value.length || claimStatusFilter.value.includes(c.status))
+      .filter(c => !claimStatusFilter.length || claimStatusFilter.includes(c.status))
     );
 
     const cfAuthUser = computed(() => window.foAuth.state.user);

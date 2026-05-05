@@ -196,29 +196,57 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       }
     };
 
+    const cfCurId       = computed(() => props.dtlId || form.couponId || null);
+    const cfHasId       = computed(() => !!cfCurId.value);
+    /* 신규: info 탭만 활성. 수정: info/detail 만 저장 의미 있음 (issued/used/preview 는 조회전용 → 비활성) */
+    const cfSaveDisabled = computed(() => {
+      const t = uiState.tab;
+      if (t === 'info') return false;                       // info 는 항상 활성
+      if (!cfHasId.value) return true;                      // info 외 탭은 ID 없으면 비활성
+      if (t === 'detail') return false;                     // detail 은 ID 있으면 활성
+      return true;                                          // issued / used / preview 는 비활성
+    });
+
+    const _afterApiOk  = (res, msg) => {
+      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+      if (showToast) showToast(msg, 'success');
+    };
+    const _afterApiErr = (err) => {
+      console.error('[handleSave]', err);
+      const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+      if (showToast) showToast(errMsg, 'error', 0);
+    };
+
+    /* ── 탭별 저장: info/detail 은 form 전체 저장. 그 외 탭은 저장 의미 없음 ── */
     const handleSave = async () => {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      try {
-        await schema.validate(form, { abortEarly: false });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
+      const tabId = uiState.tab;
+
+      if (cfSaveDisabled.value) {
+        if (!cfHasId.value && tabId !== 'info') showToast('먼저 기본정보 탭에서 등록해주세요.', 'error');
         return;
       }
-      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+
+      if (tabId !== 'info' && tabId !== 'detail') return;   // 안전장치
+
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try { await schema.validate(form, { abortEarly: false }); }
+      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+
+      const isCreate = !cfHasId.value;
+      const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? boApiSvc.pmCoupon.create({ ...form }, '쿠폰관리', '등록') : boApiSvc.pmCoupon.update(form.couponId, { ...form }, '쿠폰관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pmCouponMng', { reload: true });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
-      }
+        const payload = { ...form };
+        const res = isCreate
+          ? await boApiSvc.pmCoupon.create(payload, '쿠폰관리', '등록')
+          : await boApiSvc.pmCoupon.update(cfCurId.value, payload, '쿠폰관리', tabId === 'info' ? '기본정보저장' : '상세정보저장');
+        if (isCreate) {
+          const newId = res.data?.data?.couponId || res.data?.couponId || null;
+          if (newId) form.couponId = newId;
+        }
+        _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
+      } catch (err) { _afterApiErr(err); }
     };
 
     const memoEl = Vue.ref(null);
@@ -230,7 +258,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, tab, form, errors, showTab, tabMode2, handleSave, memoEl, onTabChange,
+    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, tabMode2, handleSave, memoEl, onTabChange,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       cfSelectedVendorNm, selectVendor,
     };
@@ -605,7 +633,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
   </div>
 
   <div style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
-    <button class="btn btn-primary" @click="handleSave" style="min-width:120px;">저장</button>
+    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" @click="handleSave" style="min-width:120px;">저장</button>
     <button class="btn btn-secondary" @click="navigate('pmCouponMng')" style="min-width:120px;">취소</button>
   </div>
 </div>

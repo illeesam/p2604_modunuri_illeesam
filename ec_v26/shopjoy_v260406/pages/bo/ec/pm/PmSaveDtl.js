@@ -95,29 +95,62 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       uiState.showVendorModal = false;
     };
 
+    const cfCurId       = computed(() => props.dtlId || form.saveId || null);
+    const cfHasId       = computed(() => !!cfCurId.value);
+    const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
+
+    const _afterApiOk  = (res, msg) => {
+      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+      if (showToast) showToast(msg, 'success');
+    };
+    const _afterApiErr = (err) => {
+      console.error('[handleSave]', err);
+      const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+      if (showToast) showToast(errMsg, 'error', 0);
+    };
+
     const handleSave = async () => {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      try {
-        await schema.validate(form, { abortEarly: false });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
+      const tabId = uiState.tab;
+
+      if (!cfHasId.value && tabId !== 'info') {
+        showToast('먼저 기본정보 탭에서 등록해주세요.', 'error');
         return;
       }
-      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
-      try {
-        const res = await (cfIsNew.value ? boApiSvc.pmSave.create({ ...form }, '적립금관리', '등록') : boApiSvc.pmSave.update(form.saveId, { ...form }, '적립금관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pmSaveMng', { reload: true });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+
+      if (tabId === 'info') {
+        Object.keys(errors).forEach(k => delete errors[k]);
+        try { await schema.validate(form, { abortEarly: false }); }
+        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+
+        const isCreate = !cfHasId.value;
+        const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
+        if (!ok) return;
+        try {
+          const payload = { ...form };
+          const res = isCreate
+            ? await boApiSvc.pmSave.create(payload, '적립금관리', '등록')
+            : await boApiSvc.pmSave.update(cfCurId.value, payload, '적립금관리', '기본정보저장');
+          if (isCreate) {
+            const newId = res.data?.data?.saveId || res.data?.saveId || null;
+            if (newId) form.saveId = newId;
+          }
+          _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
+        } catch (err) { _afterApiErr(err); }
+        return;
       }
+
+      const ok = await showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+      let payload = null;
+      switch (tabId) {
+        case 'visibility': payload = { visibilityTargets: form.visibilityTargets }; break;
+        default:           payload = {}; break;
+      }
+      try {
+        const res = await boApiSvc.pmSave.update(cfCurId.value, payload, '적립금관리', `${tabId}저장`);
+        _afterApiOk(res, '저장되었습니다.');
+      } catch (err) { _afterApiErr(err); }
     };
 
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
@@ -127,7 +160,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
+    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -249,7 +282,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         </div>
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" @click="handleSave">저장</button>
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('pmSaveMng')">취소</button>
       </div>
     </div>
@@ -266,7 +299,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         </label>
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" @click="handleSave">저장</button>
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('pmSaveMng')">취소</button>
       </div>
     </div>
