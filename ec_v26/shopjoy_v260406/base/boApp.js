@@ -87,7 +87,7 @@
   { id: 'syContactMng',  label: '문의관리' },
   { id: 'cmChattMng',  label: '채팅관리' },
   { group: '커뮤니티' },
-  { id: 'cmBltnMng',  label: '게시판관리' },
+  { id: 'syBbmMng',  label: '게시판관리' },
   ],
   settle:  [
   { group: '기준정보' },
@@ -327,7 +327,6 @@
   'syDeptMng':'sy-dept-mng', 'syMenuMng':'sy-menu-mng', 'syRoleMng':'sy-role-mng',
   'cmNoticeMng':'cm-notice-mng', 'syAlarmMng':'sy-alarm-mng', 'syPropMng':'sy-prop-mng', 'syPathMng':'sy-path-mng', 'syI18nMng':'sy-i18n-mng',
   'syBbmMng':'sy-bbm-mng', 'syBbsMng':'sy-bbs-mng',
-  'cmBltnMng':'cm-bltn-mng',
   'syMemberLoginHist':'sy-member-login-hist',
   'syUserLoginHist':'sy-user-login-hist',
   'syApiLogMng':'sy-api-log-mng',
@@ -1636,8 +1635,6 @@
   <pd-qna-mng  v-else-if="page==='pdQnaMng'"  :navigate="navigate" />
   <pd-restock-noti-mng v-else-if="page==='pdRestockNotiMng'" :navigate="navigate" />
   <pd-tag-mng  v-else-if="page==='pdTagMng'"  :navigate="navigate" />
-  <!-- ── 고객센터 추가 ── -->
-  <cm-bltn-mng  v-else-if="page==='cmBltnMng'"  :navigate="navigate" />
   <!-- ── 정산 ── -->
   <st-config-mng  v-else-if="page==='stConfigMng'"  :navigate="navigate" />
   <st-raw-mng  v-else-if="page==='stRawMng'"  :navigate="navigate" />

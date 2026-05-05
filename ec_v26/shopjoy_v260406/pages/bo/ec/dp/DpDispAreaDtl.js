@@ -194,7 +194,6 @@ window.DpDispAreaDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        console.error('[catch-info]', err);
         (err.inner || []).forEach(e => { errors[e.path] = e.message; });
         showToast && showToast('입력 내용을 확인해주세요.', 'error');
         return;

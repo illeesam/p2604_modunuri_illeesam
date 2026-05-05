@@ -148,7 +148,7 @@ window.DpDispWidgetMng = {
 
     return { widgets, widgetLibs, uiState, pathLabel,
       codes, wTypeLabel, wIcon,
-      searchParam, searchParamOrg, pager,
+      searchParam, pager,
       onSearch, onReset,
       cfSiteNm,
       setPage, onSizeChange,

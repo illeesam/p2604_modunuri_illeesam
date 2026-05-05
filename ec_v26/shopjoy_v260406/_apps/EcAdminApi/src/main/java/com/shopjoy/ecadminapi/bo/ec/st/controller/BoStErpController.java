@@ -1,9 +1,11 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto;
+import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StErpVoucherRepository;
 import com.shopjoy.ecadminapi.base.ec.st.service.StErpVoucherService;
+import com.shopjoy.ecadminapi.base.ec.st.service.StReconService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
@@ -28,6 +30,7 @@ public class BoStErpController {
 
     private final StErpVoucherService service;
     private final StErpVoucherRepository stErpVoucherRepository;
+    private final StReconService stReconService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<StErpVoucherDto>>> list(@RequestParam Map<String, Object> p) {
@@ -37,6 +40,18 @@ public class BoStErpController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StErpVoucherDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+    }
+
+    /* ── ERP 전표 생성 목록 (page) ────────────────────── */
+    @GetMapping("/gen/page")
+    public ResponseEntity<ApiResponse<PageResult<StErpVoucherDto>>> genPage(@RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+    }
+
+    /* ── ERP 대사(Recon) 목록 (page) ──────────────────── */
+    @GetMapping("/recon/page")
+    public ResponseEntity<ApiResponse<PageResult<StReconDto>>> reconPage(@RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(stReconService.getPageData(p)));
     }
 
     @PostMapping("/gen")

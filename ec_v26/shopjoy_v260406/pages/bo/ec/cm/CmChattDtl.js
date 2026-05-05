@@ -135,7 +135,9 @@ window.CmChattDtl = {
       const ok = await showConfirm('등록', '등록하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await boApiSvc.cmChatt.create({ ...form }, '채팅관리', '등록');
+        /* DB 컬럼명: cm_chatt_room.member_id / member_nm (NOT NULL) — form.userId/userNm 매핑 */
+        const payload = { ...form, memberId: form.userId, memberNm: form.userNm };
+        const res = await boApiSvc.cmChatt.create(payload, '채팅관리', '등록');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('등록되었습니다.', 'success');
         if (props.navigate) props.navigate('cmChattMng', { reload: true });
