@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,9 +8,23 @@
     <sql id="syI18nCond">
         <where>
             <if test="siteId != null and siteId != ''">AND i.site_id = #{siteId}</if>
-            <if test="dateStart != null and dateStart != ''">AND i.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="i18nId != null and i18nId != ''">AND i.i18n_id = #{i18nId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND i.reg_date &gt;= #{dateStart}::DATE
+                AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="syI18nSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY i.i18n_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY i.i18n_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 다국어 상세 조회 -->
@@ -35,13 +49,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_is ON cd_is.code_grp = 'I18N_SCOPE' AND cd_is.code_value = i.i18n_scope_cd
             <include refid="syI18nCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.i18n_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.i18n_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syI18nSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -55,13 +63,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_is ON cd_is.code_grp = 'I18N_SCOPE' AND cd_is.code_value = i.i18n_scope_cd
             <include refid="syI18nCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.i18n_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.i18n_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syI18nSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

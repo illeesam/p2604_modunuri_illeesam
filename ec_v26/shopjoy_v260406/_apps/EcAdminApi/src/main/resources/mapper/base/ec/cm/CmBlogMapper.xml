@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,13 +8,31 @@
     <sql id="cmBlogCond">
         <where>
             <if test="siteId != null and siteId != ''">AND b.site_id = #{siteId}</if>
+            <if test="blogId != null and blogId != ''">AND b.blog_id = #{blogId}</if>
+            <if test="blogCateId != null and blogCateId != ''">AND b.blog_cate_id = #{blogCateId}</if>
+            <if test="prodId != null and prodId != ''">AND b.prod_id = #{prodId}</if>
             <if test="kw != null and kw != ''">
                 AND (b.blog_title ILIKE '%' || #{kw} || '%'
                   OR b.blog_author ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND b.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND b.reg_date &gt;= #{dateStart}::DATE
+                AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="cmBlogSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY b.blog_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY b.blog_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY b.blog_title ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY b.blog_title DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
+            <otherwise>ORDER BY b.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 게시물 상세 조회 -->
@@ -43,15 +61,7 @@
             LEFT JOIN cm_blog_cate bct ON bct.blog_cate_id = b.blog_cate_id
             LEFT JOIN pd_prod prd ON prd.prod_id = b.prod_id
             <include refid="cmBlogCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY b.blog_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY b.blog_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY b.blog_title ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY b.blog_title DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
-            <otherwise>ORDER BY b.reg_date DESC</otherwise>
-        </choose>
+        <include refid="cmBlogSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -67,15 +77,7 @@
             LEFT JOIN cm_blog_cate bct ON bct.blog_cate_id = b.blog_cate_id
             LEFT JOIN pd_prod prd ON prd.prod_id = b.prod_id
             <include refid="cmBlogCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY b.blog_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY b.blog_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY b.blog_title ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY b.blog_title DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
-            <otherwise>ORDER BY b.reg_date DESC</otherwise>
-        </choose>
+        <include refid="cmBlogSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

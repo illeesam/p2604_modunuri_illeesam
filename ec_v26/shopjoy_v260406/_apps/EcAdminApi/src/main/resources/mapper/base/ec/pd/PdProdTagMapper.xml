@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,9 +8,24 @@
     <sql id="pdProdTagCond">
         <where>
             <if test="siteId != null and siteId != ''">AND t.site_id = #{siteId}</if>
-            <if test="dateStart != null and dateStart != ''">AND t.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND t.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="prodTagId != null and prodTagId != ''">AND t.prod_tag_id = #{prodTagId}</if>
+            <if test="prodId != null and prodId != ''">AND t.prod_id = #{prodId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND t.reg_date &gt;= #{dateStart}::DATE
+                AND t.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pdProdTagSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY t.prod_tag_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY t.prod_tag_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
+            <otherwise>ORDER BY t.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 상품 태그 상세 조회 -->
@@ -35,13 +50,7 @@
             LEFT JOIN pd_prod prd ON prd.prod_id = t.prod_id
             LEFT JOIN sy_site ste ON ste.site_id = t.site_id
             <include refid="pdProdTagCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY t.prod_tag_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY t.prod_tag_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
-            <otherwise>ORDER BY t.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdProdTagSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -55,13 +64,7 @@
             LEFT JOIN pd_prod prd ON prd.prod_id = t.prod_id
             LEFT JOIN sy_site ste ON ste.site_id = t.site_id
             <include refid="pdProdTagCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY t.prod_tag_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY t.prod_tag_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
-            <otherwise>ORDER BY t.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdProdTagSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

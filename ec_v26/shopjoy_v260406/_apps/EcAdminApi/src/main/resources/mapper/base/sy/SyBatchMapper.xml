@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,6 +8,7 @@
     <sql id="syBatchCond">
         <where>
             <if test="siteId != null and siteId != ''">AND b.site_id = #{siteId}</if>
+            <if test="batchId != null and batchId != ''">AND b.batch_id = #{batchId}</if>
             <if test="pathId != null and pathId != ''">
                 AND b.path_id IN (
                     WITH RECURSIVE sub AS (
@@ -22,9 +23,24 @@
                 AND (b.batch_nm ILIKE '%' || #{kw} || '%'
                   OR b.batch_code ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND b.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND b.reg_date &gt;= #{dateStart}::DATE
+                AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="syBatchSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY b.batch_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY b.batch_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY b.batch_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY b.batch_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
+            <otherwise>ORDER BY b.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 배치 상세 조회 -->
@@ -53,15 +69,7 @@
             LEFT JOIN sy_code cd_bc ON cd_bc.code_grp = 'BATCH_CYCLE' AND cd_bc.code_value = b.batch_cycle_cd
             LEFT JOIN sy_code cd_bs ON cd_bs.code_grp = 'BATCH_STATUS' AND cd_bs.code_value = b.batch_status_cd
             <include refid="syBatchCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY b.batch_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY b.batch_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY b.batch_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY b.batch_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
-            <otherwise>ORDER BY b.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syBatchSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -77,15 +85,7 @@
             LEFT JOIN sy_code cd_bc ON cd_bc.code_grp = 'BATCH_CYCLE' AND cd_bc.code_value = b.batch_cycle_cd
             LEFT JOIN sy_code cd_bs ON cd_bs.code_grp = 'BATCH_STATUS' AND cd_bs.code_value = b.batch_status_cd
             <include refid="syBatchCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY b.batch_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY b.batch_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY b.batch_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY b.batch_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
-            <otherwise>ORDER BY b.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syBatchSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

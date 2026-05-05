@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -7,16 +7,30 @@
     <sql id="syhUserTokenLogCond">
         <where>
             <if test="siteId      != null and siteId      != ''">AND l.site_id       = #{siteId}</if>
+            <if test="logId != null and logId != ''">AND l.log_id = #{logId}</if>
             <if test="userId      != null and userId      != ''">AND l.user_id        = #{userId}</if>
             <if test="actionCd    != null and actionCd    != ''">AND l.action_cd      = #{actionCd}</if>
             <if test="tokenTypeCd != null and tokenTypeCd != ''">AND l.token_type_cd  = #{tokenTypeCd}</if>
-            <if test="dateStart   != null and dateStart   != ''">AND l.reg_date      &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd     != null and dateEnd     != ''">AND l.reg_date      &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND l.reg_date      &gt;= #{dateStart}::DATE
+                AND l.reg_date      &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
             <if test="ip          != null and ip          != ''">AND l.ip            LIKE '%'||#{ip}||'%'</if>
             <if test="uiNm        != null and uiNm        != ''">AND l.ui_nm         LIKE '%'||#{uiNm}||'%'</if>
             <if test="traceId     != null and traceId     != ''">AND l.trace_id      LIKE '%'||#{traceId}||'%'</if>
             <if test="kw          != null and kw          != ''">AND (l.user_id LIKE '%'||#{kw}||'%' OR l.login_id LIKE '%'||#{kw}||'%')</if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="syhUserTokenLogSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY l.log_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
+            <otherwise>ORDER BY l.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto">
@@ -47,13 +61,7 @@
             LEFT JOIN sy_code cd_ta ON cd_ta.code_grp = 'TOKEN_ACTION' AND cd_ta.code_value = l.action_cd
             LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TOKEN_TYPE'   AND cd_tt.code_value = l.token_type_cd
         <include refid="syhUserTokenLogCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY l.log_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
-            <otherwise>ORDER BY l.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syhUserTokenLogSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -70,13 +78,7 @@
             LEFT JOIN sy_code cd_ta ON cd_ta.code_grp = 'TOKEN_ACTION' AND cd_ta.code_value = l.action_cd
             LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TOKEN_TYPE'   AND cd_tt.code_value = l.token_type_cd
         <include refid="syhUserTokenLogCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY l.log_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
-            <otherwise>ORDER BY l.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syhUserTokenLogSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

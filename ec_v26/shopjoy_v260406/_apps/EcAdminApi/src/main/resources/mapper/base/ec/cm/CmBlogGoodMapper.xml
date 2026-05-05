@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -7,9 +7,24 @@
     <!-- 게시물 좋아요 조회 조건 -->
     <sql id="cmBlogGoodCond">
         <where>
-            <if test="dateStart != null and dateStart != ''">AND g.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+                        <if test="likeId != null and likeId != ''">AND g.like_id = #{likeId}</if>
+<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+    AND g.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="blogId != null and blogId != ''">AND g.blog_id = #{blogId}
+    AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+</if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="cmBlogGoodSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY g.like_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY g.like_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY g.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY g.reg_date DESC</when>
+            <otherwise>ORDER BY g.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 게시물 좋아요 상세 조회 -->
@@ -30,13 +45,7 @@
         FROM cm_blog_good g
             LEFT JOIN cm_blog blt ON blt.blog_id = g.blog_id
             <include refid="cmBlogGoodCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY g.like_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY g.like_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY g.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY g.reg_date DESC</when>
-            <otherwise>ORDER BY g.reg_date DESC</otherwise>
-        </choose>
+        <include refid="cmBlogGoodSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -48,13 +57,7 @@
         FROM cm_blog_good g
             LEFT JOIN cm_blog blt ON blt.blog_id = g.blog_id
             <include refid="cmBlogGoodCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY g.like_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY g.like_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY g.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY g.reg_date DESC</when>
-            <otherwise>ORDER BY g.reg_date DESC</otherwise>
-        </choose>
+        <include refid="cmBlogGoodSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

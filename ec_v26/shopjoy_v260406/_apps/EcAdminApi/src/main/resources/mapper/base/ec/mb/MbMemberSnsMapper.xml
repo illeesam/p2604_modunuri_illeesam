@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -7,9 +7,24 @@
     <!-- SNS 연동 회원 조회 조건 -->
     <sql id="mbMemberSnsCond">
         <where>
-            <if test="dateStart != null and dateStart != ''">AND m.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+                        <if test="memberSnsId != null and memberSnsId != ''">AND m.member_sns_id = #{memberSnsId}</if>
+<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+    AND m.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="memberId != null and memberId != ''">AND m.member_id = #{memberId}
+    AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+</if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="mbMemberSnsSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY m.member_sns_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY m.member_sns_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- SNS 연동 회원 상세 조회 -->
@@ -34,13 +49,7 @@
             LEFT JOIN mb_member mem ON mem.member_id = m.member_id
             LEFT JOIN sy_code cd_sc ON cd_sc.code_grp = 'SNS_CHANNEL' AND cd_sc.code_value = m.sns_channel_cd
             <include refid="mbMemberSnsCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY m.member_sns_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY m.member_sns_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
-            <otherwise>ORDER BY m.reg_date DESC</otherwise>
-        </choose>
+        <include refid="mbMemberSnsSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -54,13 +63,7 @@
             LEFT JOIN mb_member mem ON mem.member_id = m.member_id
             LEFT JOIN sy_code cd_sc ON cd_sc.code_grp = 'SNS_CHANNEL' AND cd_sc.code_value = m.sns_channel_cd
             <include refid="mbMemberSnsCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY m.member_sns_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY m.member_sns_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
-            <otherwise>ORDER BY m.reg_date DESC</otherwise>
-        </choose>
+        <include refid="mbMemberSnsSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

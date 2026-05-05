@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -9,10 +9,24 @@
         <where>
             <if test="prodId != null and prodId != ''">AND c.prod_id = #{prodId}</if>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="prodContentId != null and prodContentId != ''">AND c.prod_content_id = #{prodContentId}</if>
             <if test="typeCd != null and typeCd != ''">AND c.content_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND c.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND c.reg_date &gt;= #{dateStart}::DATE
+                AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pdProdContentSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY c.prod_content_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.prod_content_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 상품 상세 콘텐츠 상세 조회 -->
@@ -41,13 +55,7 @@
             LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
             LEFT JOIN sy_code cd_pct ON cd_pct.code_grp = 'PROD_CONTENT_TYPE' AND cd_pct.code_value = c.content_type_cd
             <include refid="pdProdContentCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.prod_content_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.prod_content_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdProdContentSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -63,13 +71,7 @@
             LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
             LEFT JOIN sy_code cd_pct ON cd_pct.code_grp = 'PROD_CONTENT_TYPE' AND cd_pct.code_value = c.content_type_cd
             <include refid="pdProdContentCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.prod_content_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.prod_content_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdProdContentSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

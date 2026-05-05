@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,9 +8,23 @@
     <sql id="cmChattMsgCond">
         <where>
             <if test="siteId != null and siteId != ''">AND m.site_id = #{siteId}</if>
-            <if test="dateStart != null and dateStart != ''">AND m.send_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND m.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="chattMsgId != null and chattMsgId != ''">AND m.chatt_msg_id = #{chattMsgId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND m.send_date &gt;= #{dateStart}::DATE
+                AND m.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="cmChattMsgSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY m.chatt_msg_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY m.chatt_msg_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY m.send_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY m.send_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 채팅 메시지 상세 조회 -->
@@ -31,13 +45,7 @@
         FROM cm_chatt_msg m
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
             <include refid="cmChattMsgCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY m.chatt_msg_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY m.chatt_msg_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY m.send_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY m.send_date DESC</when>
-            <otherwise>ORDER BY m.reg_date DESC</otherwise>
-        </choose>
+        <include refid="cmChattMsgSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -49,13 +57,7 @@
         FROM cm_chatt_msg m
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
             <include refid="cmChattMsgCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY m.chatt_msg_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY m.chatt_msg_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY m.send_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY m.send_date DESC</when>
-            <otherwise>ORDER BY m.reg_date DESC</otherwise>
-        </choose>
+        <include refid="cmChattMsgSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

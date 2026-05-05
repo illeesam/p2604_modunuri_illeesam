@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,25 @@
     <sql id="stSettleConfigCond">
         <where>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="settleConfigId != null and settleConfigId != ''">AND c.settle_config_id = #{settleConfigId}</if>
+            <if test="categoryId != null and categoryId != ''">AND c.category_id = #{categoryId}</if>
             <if test="vendorId != null and vendorId != ''">AND c.vendor_id = #{vendorId}</if>
-            <if test="dateStart != null and dateStart != ''">AND c.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND c.reg_date &gt;= #{dateStart}::DATE
+                AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="stSettleConfigSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY c.settle_config_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.settle_config_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 정산 설정 상세 조회 -->
@@ -44,13 +59,7 @@
             LEFT JOIN pd_category cat ON cat.category_id = c.category_id
             LEFT JOIN sy_code cd_sc ON cd_sc.code_grp = 'SETTLE_CYCLE' AND cd_sc.code_value = c.settle_cycle_cd
             <include refid="stSettleConfigCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.settle_config_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.settle_config_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettleConfigSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -68,13 +77,7 @@
             LEFT JOIN pd_category cat ON cat.category_id = c.category_id
             LEFT JOIN sy_code cd_sc ON cd_sc.code_grp = 'SETTLE_CYCLE' AND cd_sc.code_value = c.settle_cycle_cd
             <include refid="stSettleConfigCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.settle_config_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.settle_config_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettleConfigSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

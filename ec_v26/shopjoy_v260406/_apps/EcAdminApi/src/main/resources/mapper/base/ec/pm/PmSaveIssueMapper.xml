@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,11 +8,29 @@
     <sql id="pmSaveIssueCond">
         <where>
             <if test="siteId != null and siteId != ''">AND i.site_id = #{siteId}</if>
+            <if test="saveIssueId != null and saveIssueId != ''">AND i.save_issue_id = #{saveIssueId}</if>
+            <if test="orderId != null and orderId != ''">AND i.order_id = #{orderId}</if>
+            <if test="memberId != null and memberId != ''">AND i.member_id = #{memberId}</if>
+            <if test="orderItemId != null and orderItemId != ''">AND i.order_item_id = #{orderItemId}</if>
+            <if test="prodId != null and prodId != ''">AND i.prod_id = #{prodId}</if>
             <if test="status != null and status != ''">AND i.issue_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND i.save_issue_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND i.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND i.reg_date &gt;= #{dateStart}::DATE
+                AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pmSaveIssueSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY i.save_issue_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY i.save_issue_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 적립금 지급 이력 상세 조회 -->
@@ -57,13 +75,7 @@
             LEFT JOIN sy_code cd_sit ON cd_sit.code_grp = 'SAVE_ISSUE_TYPE' AND cd_sit.code_value = i.save_issue_type_cd
             LEFT JOIN sy_code cd_sis ON cd_sis.code_grp = 'SAVE_ISSUE_STATUS' AND cd_sis.code_value = i.issue_status_cd
             <include refid="pmSaveIssueCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.save_issue_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.save_issue_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmSaveIssueSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -87,13 +99,7 @@
             LEFT JOIN sy_code cd_sit ON cd_sit.code_grp = 'SAVE_ISSUE_TYPE' AND cd_sit.code_value = i.save_issue_type_cd
             LEFT JOIN sy_code cd_sis ON cd_sis.code_grp = 'SAVE_ISSUE_STATUS' AND cd_sis.code_value = i.issue_status_cd
             <include refid="pmSaveIssueCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.save_issue_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.save_issue_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmSaveIssueSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

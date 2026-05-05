@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,12 +8,27 @@
     <sql id="stReconCond">
         <where>
             <if test="siteId != null and siteId != ''">AND r.site_id = #{siteId}</if>
+            <if test="reconId != null and reconId != ''">AND r.recon_id = #{reconId}</if>
+            <if test="settleRawId != null and settleRawId != ''">AND r.settle_raw_id = #{settleRawId}</if>
             <if test="vendorId != null and vendorId != ''">AND r.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND r.recon_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND r.recon_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND r.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND r.reg_date &gt;= #{dateStart}::DATE
+                AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="stReconSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY r.recon_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY r.recon_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
+            <otherwise>ORDER BY r.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 정산 대사 상세 조회 -->
@@ -50,13 +65,7 @@
             LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'RECON_TYPE' AND cd_rt.code_value = r.recon_type_cd
             LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'RECON_STATUS' AND cd_rs.code_value = r.recon_status_cd
             <include refid="stReconCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY r.recon_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY r.recon_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
-            <otherwise>ORDER BY r.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stReconSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -76,13 +85,7 @@
             LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'RECON_TYPE' AND cd_rt.code_value = r.recon_type_cd
             LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'RECON_STATUS' AND cd_rs.code_value = r.recon_status_cd
             <include refid="stReconCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY r.recon_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY r.recon_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
-            <otherwise>ORDER BY r.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stReconSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

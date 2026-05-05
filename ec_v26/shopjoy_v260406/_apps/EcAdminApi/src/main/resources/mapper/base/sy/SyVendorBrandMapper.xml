@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -7,10 +7,25 @@
     <sql id="syVendorBrandCond">
         <where>
             <if test="siteId != null and siteId != ''">AND b.site_id = #{siteId}</if>
+            <if test="vendorBrandId != null and vendorBrandId != ''">AND b.vendor_brand_id = #{vendorBrandId}</if>
+            <if test="brandId != null and brandId != ''">AND b.brand_id = #{brandId}</if>
             <if test="vendorId != null and vendorId != ''">AND b.vendor_id = #{vendorId}</if>
-            <if test="dateStart != null and dateStart != ''">AND b.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND b.reg_date &gt;= #{dateStart}::DATE
+                AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="syVendorBrandSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY b.vendor_brand_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY b.vendor_brand_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
+            <otherwise>ORDER BY b.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorBrandDto">
@@ -41,13 +56,7 @@
             LEFT JOIN sy_brand brd ON brd.brand_id = b.brand_id
             LEFT JOIN sy_code cd_vbc ON cd_vbc.code_grp = 'VENDOR_BRAND_CONTRACT' AND cd_vbc.code_value = b.contract_cd
             <include refid="syVendorBrandCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY b.vendor_brand_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY b.vendor_brand_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
-            <otherwise>ORDER BY b.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syVendorBrandSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -64,13 +73,7 @@
             LEFT JOIN sy_brand brd ON brd.brand_id = b.brand_id
             LEFT JOIN sy_code cd_vbc ON cd_vbc.code_grp = 'VENDOR_BRAND_CONTRACT' AND cd_vbc.code_value = b.contract_cd
             <include refid="syVendorBrandCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY b.vendor_brand_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY b.vendor_brand_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
-            <otherwise>ORDER BY b.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syVendorBrandSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

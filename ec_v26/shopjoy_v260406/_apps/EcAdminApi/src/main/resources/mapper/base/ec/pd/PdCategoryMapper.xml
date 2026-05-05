@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -11,11 +11,25 @@
     <sql id="pdCategoryCond">
 <where>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="categoryId != null and categoryId != ''">AND c.category_id = #{categoryId}</if>
             <if test="depth != null">AND c.category_depth = #{depth}</if>
             <if test="parentCategoryId != null and parentCategoryId != ''">AND c.parent_category_id = #{parentCategoryId}</if>
             <if test="status != null and status != ''">AND c.category_status_cd = #{status}</if>
             <if test="kw != null and kw != ''">AND c.category_nm ILIKE '%' || #{kw} || '%'</if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pdCategorySort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY c.category_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.category_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY c.category_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY c.category_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.category_depth ASC, c.sort_ord ASC, c.reg_date ASC</otherwise>
+        </choose>
     </sql>
 
     <!-- 상품 카테고리 상세 조회 -->
@@ -44,15 +58,7 @@
             LEFT JOIN pd_category p2 ON p2.category_id = p1.parent_category_id
             LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'USE_YN' AND cd_cs.code_value = c.category_status_cd
                 <include refid="pdCategoryCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.category_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.category_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY c.category_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY c.category_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.category_depth ASC, c.sort_ord ASC, c.reg_date ASC</otherwise>
-        </choose>
+        <include refid="pdCategorySort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -68,15 +74,7 @@
             LEFT JOIN pd_category p2 ON p2.category_id = p1.parent_category_id
             LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'USE_YN' AND cd_cs.code_value = c.category_status_cd
                 <include refid="pdCategoryCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.category_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.category_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY c.category_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY c.category_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.category_depth ASC, c.sort_ord ASC, c.reg_date ASC</otherwise>
-        </choose>
+        <include refid="pdCategorySort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -6,9 +6,26 @@
 
     <sql id="syUserRoleCond">
         <where>
-            <if test="dateStart != null and dateStart != ''">AND r.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+                        <if test="userRoleId != null and userRoleId != ''">AND r.user_role_id = #{userRoleId}</if>
+<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+    AND r.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="grantUserId != null and grantUserId != ''">AND r.grant_user_id = #{grantUserId}</if>
+            <if test="roleId != null and roleId != ''">AND r.role_id = #{roleId}</if>
+            <if test="userId != null and userId != ''">AND r.user_id = #{userId}
+    AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+</if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="syUserRoleSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY r.user_role_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY r.user_role_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
+            <otherwise>ORDER BY r.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
@@ -48,13 +65,7 @@
             LEFT JOIN sy_role rol ON rol.role_id = r.role_id
             LEFT JOIN sy_user usr2 ON usr2.user_id = r.grant_user_id
             <include refid="syUserRoleCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY r.user_role_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY r.user_role_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
-            <otherwise>ORDER BY r.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syUserRoleSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -69,13 +80,7 @@
             LEFT JOIN sy_role rol ON rol.role_id = r.role_id
             LEFT JOIN sy_user usr2 ON usr2.user_id = r.grant_user_id
             <include refid="syUserRoleCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY r.user_role_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY r.user_role_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
-            <otherwise>ORDER BY r.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syUserRoleSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

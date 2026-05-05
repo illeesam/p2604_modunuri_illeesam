@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,24 @@
     <sql id="stSettleEtcAdjCond">
         <where>
             <if test="siteId != null and siteId != ''">AND a.site_id = #{siteId}</if>
+            <if test="settleEtcAdjId != null and settleEtcAdjId != ''">AND a.settle_etc_adj_id = #{settleEtcAdjId}</if>
             <if test="typeCd != null and typeCd != ''">AND a.etc_adj_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND a.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND a.reg_date &gt;= #{dateStart}::DATE
+                AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="stSettleEtcAdjSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY a.settle_etc_adj_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY a.settle_etc_adj_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
+            <otherwise>ORDER BY a.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 정산 기타 조정 상세 조회 -->
@@ -40,13 +54,7 @@
             LEFT JOIN sy_code cd_seat ON cd_seat.code_grp = 'SETTLE_ETC_ADJ_TYPE' AND cd_seat.code_value = a.etc_adj_type_cd
             LEFT JOIN sy_code cd_ad ON cd_ad.code_grp = 'ADJ_DIR' AND cd_ad.code_value = a.etc_adj_dir_cd
         <include refid="stSettleEtcAdjCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY a.settle_etc_adj_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY a.settle_etc_adj_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
-            <otherwise>ORDER BY a.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettleEtcAdjSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -62,13 +70,7 @@
             LEFT JOIN sy_code cd_seat ON cd_seat.code_grp = 'SETTLE_ETC_ADJ_TYPE' AND cd_seat.code_value = a.etc_adj_type_cd
             LEFT JOIN sy_code cd_ad ON cd_ad.code_grp = 'ADJ_DIR' AND cd_ad.code_value = a.etc_adj_dir_cd
         <include refid="stSettleEtcAdjCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY a.settle_etc_adj_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY a.settle_etc_adj_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
-            <otherwise>ORDER BY a.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettleEtcAdjSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -6,8 +6,10 @@
 
     <sql id="syhAccessLogCond">
         <where>
-            <if test="dateStart != null and dateStart != ''">AND l.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND l.reg_date &gt;= #{dateStart}::DATE
+                AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
             <if test="method    != null and method    != ''">AND l.req_method = #{method}</if>
             <if test="status    != null and status    != ''">AND l.resp_status = #{status}::INTEGER</if>
             <if test="path      != null and path      != ''">AND l.req_path LIKE '%'||#{path}||'%'</if>

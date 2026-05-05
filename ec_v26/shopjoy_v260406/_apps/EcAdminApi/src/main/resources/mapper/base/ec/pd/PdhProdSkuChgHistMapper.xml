@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,25 @@
     <sql id="pdhProdSkuChgHistCond">
         <where>
             <if test="siteId != null and siteId != ''">AND h.site_id = #{siteId}</if>
+            <if test="histId != null and histId != ''">AND h.hist_id = #{histId}</if>
+            <if test="prodId != null and prodId != ''">AND h.prod_id = #{prodId}</if>
             <if test="typeCd != null and typeCd != ''">AND h.chg_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND h.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND h.reg_date &gt;= #{dateStart}::DATE
+                AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pdhProdSkuChgHistSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY h.hist_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY h.hist_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
+            <otherwise>ORDER BY h.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 상품 SKU 변경 이력 상세 조회 -->
@@ -40,13 +55,7 @@
             LEFT JOIN pd_prod prd ON prd.prod_id = h.prod_id
             LEFT JOIN sy_code cd_sct ON cd_sct.code_grp = 'SKU_CHG_TYPE' AND cd_sct.code_value = h.chg_type_cd
             <include refid="pdhProdSkuChgHistCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY h.hist_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY h.hist_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
-            <otherwise>ORDER BY h.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdhProdSkuChgHistSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -62,13 +71,7 @@
             LEFT JOIN pd_prod prd ON prd.prod_id = h.prod_id
             LEFT JOIN sy_code cd_sct ON cd_sct.code_grp = 'SKU_CHG_TYPE' AND cd_sct.code_value = h.chg_type_cd
             <include refid="pdhProdSkuChgHistCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY h.hist_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY h.hist_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
-            <otherwise>ORDER BY h.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdhProdSkuChgHistSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,14 +8,30 @@
     <sql id="pdReviewCommentCond">
         <where>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="reviewCommentId != null and reviewCommentId != ''">AND c.review_comment_id = #{reviewCommentId}</if>
             <if test="status != null and status != ''">AND c.reply_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND c.writer_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
                 AND (c.writer_nm ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND c.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND c.reg_date &gt;= #{dateStart}::DATE
+                AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pdReviewCommentSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY c.review_comment_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.review_comment_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY c.writer_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY c.writer_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 리뷰 댓글 상세 조회 -->
@@ -40,15 +56,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             LEFT JOIN sy_code cd_rwt ON cd_rwt.code_grp = 'REVIEW_WRITER_TYPE' AND cd_rwt.code_value = c.writer_type_cd
             <include refid="pdReviewCommentCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.review_comment_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.review_comment_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY c.writer_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY c.writer_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdReviewCommentSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -62,15 +70,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             LEFT JOIN sy_code cd_rwt ON cd_rwt.code_grp = 'REVIEW_WRITER_TYPE' AND cd_rwt.code_value = c.writer_type_cd
             <include refid="pdReviewCommentCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.review_comment_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.review_comment_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY c.writer_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY c.writer_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdReviewCommentSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

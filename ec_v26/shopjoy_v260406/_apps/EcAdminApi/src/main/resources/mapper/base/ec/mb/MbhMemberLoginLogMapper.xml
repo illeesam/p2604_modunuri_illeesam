@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,14 +8,29 @@
     <sql id="mbhMemberLoginLogCond">
         <where>
             <if test="siteId    != null and siteId    != ''">AND l.site_id    = #{siteId}</if>
-            <if test="dateStart != null and dateStart != ''">AND l.reg_date  &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND l.reg_date  &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="logId != null and logId != ''">AND l.log_id = #{logId}</if>
+            <if test="memberId != null and memberId != ''">AND l.member_id = #{memberId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND l.reg_date  &gt;= #{dateStart}::DATE
+                AND l.reg_date  &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
             <if test="resultCd  != null and resultCd  != ''">AND l.result_cd  = #{resultCd}</if>
             <if test="ip        != null and ip        != ''">AND l.ip        LIKE '%'||#{ip}||'%'</if>
             <if test="uiNm      != null and uiNm      != ''">AND l.ui_nm     LIKE '%'||#{uiNm}||'%'</if>
             <if test="traceId   != null and traceId   != ''">AND l.trace_id  LIKE '%'||#{traceId}||'%'</if>
             <if test="kw        != null and kw        != ''">AND (l.member_id LIKE '%'||#{kw}||'%' OR l.login_id LIKE '%'||#{kw}||'%')</if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="mbhMemberLoginLogSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY l.log_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
+            <otherwise>ORDER BY l.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 회원 로그인 로그 상세 조회 -->
@@ -44,13 +59,7 @@
             LEFT JOIN mb_member mem ON mem.member_id = l.member_id
             LEFT JOIN sy_code cd_lr ON cd_lr.code_grp = 'LOGIN_RESULT' AND cd_lr.code_value = l.result_cd
             <include refid="mbhMemberLoginLogCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY l.log_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
-            <otherwise>ORDER BY l.reg_date DESC</otherwise>
-        </choose>
+        <include refid="mbhMemberLoginLogSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -66,13 +75,7 @@
             LEFT JOIN mb_member mem ON mem.member_id = l.member_id
             LEFT JOIN sy_code cd_lr ON cd_lr.code_grp = 'LOGIN_RESULT' AND cd_lr.code_value = l.result_cd
             <include refid="mbhMemberLoginLogCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY l.log_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
-            <otherwise>ORDER BY l.reg_date DESC</otherwise>
-        </choose>
+        <include refid="mbhMemberLoginLogSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

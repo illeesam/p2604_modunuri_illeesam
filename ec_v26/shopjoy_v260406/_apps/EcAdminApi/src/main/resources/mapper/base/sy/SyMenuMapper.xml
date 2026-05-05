@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,14 +8,30 @@
     <sql id="syMenuCond">
         <where>
             <if test="siteId != null and siteId != ''">AND m.site_id = #{siteId}</if>
+            <if test="menuId != null and menuId != ''">AND m.menu_id = #{menuId}</if>
             <if test="typeCd != null and typeCd != ''">AND m.menu_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
                 AND (m.menu_nm ILIKE '%' || #{kw} || '%'
                   OR m.menu_code ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND m.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND m.reg_date &gt;= #{dateStart}::DATE
+                AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="syMenuSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY m.menu_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY m.menu_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY m.menu_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY m.menu_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 메뉴 상세 조회 -->
@@ -40,15 +56,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
             LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MENU_TYPE' AND cd_mt.code_value = m.menu_type_cd
             <include refid="syMenuCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY m.menu_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY m.menu_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY m.menu_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY m.menu_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
-            <otherwise>ORDER BY m.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syMenuSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -62,15 +70,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
             LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MENU_TYPE' AND cd_mt.code_value = m.menu_type_cd
             <include refid="syMenuCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY m.menu_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY m.menu_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY m.menu_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY m.menu_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
-            <otherwise>ORDER BY m.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syMenuSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

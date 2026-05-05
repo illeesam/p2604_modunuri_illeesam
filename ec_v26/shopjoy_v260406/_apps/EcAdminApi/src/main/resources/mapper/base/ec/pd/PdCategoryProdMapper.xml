@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,11 +8,26 @@
     <sql id="pdCategoryProdCond">
         <where>
             <if test="siteId != null and siteId != ''">AND p.site_id = #{siteId}</if>
+            <if test="categoryProdId != null and categoryProdId != ''">AND p.category_prod_id = #{categoryProdId}</if>
+            <if test="prodId != null and prodId != ''">AND p.prod_id = #{prodId}</if>
             <if test="categoryId != null and categoryId != ''">AND p.category_id = #{categoryId}</if>
             <if test="typeCd != null and typeCd != ''">AND p.category_prod_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND p.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND p.reg_date &gt;= #{dateStart}::DATE
+                AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pdCategoryProdSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY p.category_prod_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.category_prod_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 카테고리-상품 매핑 상세 조회 -->
@@ -41,13 +56,7 @@
             LEFT JOIN pd_category cat ON cat.category_id = p.category_id
             LEFT JOIN pd_prod prd ON prd.prod_id = p.prod_id
         <include refid="pdCategoryProdCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY p.category_prod_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY p.category_prod_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
-            <otherwise>ORDER BY p.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdCategoryProdSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -63,13 +72,7 @@
             LEFT JOIN pd_category cat ON cat.category_id = p.category_id
             LEFT JOIN pd_prod prd ON prd.prod_id = p.prod_id
         <include refid="pdCategoryProdCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY p.category_prod_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY p.category_prod_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
-            <otherwise>ORDER BY p.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pdCategoryProdSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

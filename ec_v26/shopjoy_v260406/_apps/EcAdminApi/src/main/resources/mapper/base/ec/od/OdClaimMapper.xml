@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -11,6 +11,9 @@
     <sql id="odClaimCond">
         <where>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="claimId != null and claimId != ''">AND c.claim_id = #{claimId}</if>
+            <if test="memberId != null and memberId != ''">AND c.member_id = #{memberId}</if>
+            <if test="orderId != null and orderId != ''">AND c.order_id = #{orderId}</if>
             <if test="status != null and status != ''">AND c.claim_status_cd = #{status}</if>
             <if test="claimType != null and claimType != ''">AND c.claim_type_cd = #{claimType}</if>
             <if test="kw != null and kw != ''">
@@ -19,9 +22,24 @@
                   OR c.prod_nm         ILIKE '%' || #{kw} || '%'
                   OR m.login_id        ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND c.request_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND c.request_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND c.request_date &gt;= #{dateStart}::DATE
+                AND c.request_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="odClaimSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY c.claim_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.claim_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY c.member_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY c.member_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.request_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 클레임(취소/반품/교환) 상세 조회 -->
@@ -78,15 +96,7 @@
             LEFT JOIN sy_code cd_rc ON cd_rc.code_grp = 'COURIER'         AND cd_rc.code_value = c.return_courier_cd
             LEFT JOIN sy_code cd_ec ON cd_ec.code_grp = 'COURIER'         AND cd_ec.code_value = c.exchange_courier_cd
         <include refid="odClaimCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.claim_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.claim_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY c.member_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY c.member_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.request_date DESC</otherwise>
-        </choose>
+        <include refid="odClaimSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -110,15 +120,7 @@
             LEFT JOIN sy_code cd_rc ON cd_rc.code_grp = 'COURIER'         AND cd_rc.code_value = c.return_courier_cd
             LEFT JOIN sy_code cd_ec ON cd_ec.code_grp = 'COURIER'         AND cd_ec.code_value = c.exchange_courier_cd
         <include refid="odClaimCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.claim_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.claim_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY c.member_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY c.member_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.request_date DESC</otherwise>
-        </choose>
+        <include refid="odClaimSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

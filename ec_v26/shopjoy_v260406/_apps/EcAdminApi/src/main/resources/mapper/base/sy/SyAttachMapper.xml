@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,14 +8,17 @@
     <sql id="syAttachCond">
         <where>
             <if test="siteId != null and siteId != ''">AND a.site_id = #{siteId}</if>
+            <if test="attachId != null and attachId != ''">AND a.attach_id = #{attachId}</if>
             <if test="attachGrpId != null and attachGrpId != ''">AND a.attach_grp_id = #{attachGrpId}</if>
             <if test="typeCd != null and typeCd != ''">AND a.mime_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
                 AND (a.file_nm ILIKE '%' || #{kw} || '%'
                   OR a.stored_nm ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND a.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND a.reg_date &gt;= #{dateStart}::DATE
+                AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
     </sql>
 

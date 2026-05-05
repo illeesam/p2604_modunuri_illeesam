@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,12 +8,26 @@
     <sql id="stErpVoucherCond">
         <where>
             <if test="siteId != null and siteId != ''">AND v.site_id = #{siteId}</if>
+            <if test="erpVoucherId != null and erpVoucherId != ''">AND v.erp_voucher_id = #{erpVoucherId}</if>
             <if test="vendorId != null and vendorId != ''">AND v.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND v.erp_voucher_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND v.erp_voucher_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND v.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND v.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND v.reg_date &gt;= #{dateStart}::DATE
+                AND v.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="stErpVoucherSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY v.erp_voucher_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY v.erp_voucher_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY v.settle_ym ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY v.settle_ym DESC</when>
+            <otherwise>ORDER BY v.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- ERP 전표 상세 조회 -->
@@ -46,13 +60,7 @@
             LEFT JOIN sy_code cd_evt ON cd_evt.code_grp = 'ERP_VOUCHER_TYPE' AND cd_evt.code_value = v.erp_voucher_type_cd
             LEFT JOIN sy_code cd_evs ON cd_evs.code_grp = 'ERP_VOUCHER_STATUS' AND cd_evs.code_value = v.erp_voucher_status_cd
             <include refid="stErpVoucherCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY v.erp_voucher_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY v.erp_voucher_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY v.settle_ym ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY v.settle_ym DESC</when>
-            <otherwise>ORDER BY v.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stErpVoucherSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -70,13 +78,7 @@
             LEFT JOIN sy_code cd_evt ON cd_evt.code_grp = 'ERP_VOUCHER_TYPE' AND cd_evt.code_value = v.erp_voucher_type_cd
             LEFT JOIN sy_code cd_evs ON cd_evs.code_grp = 'ERP_VOUCHER_STATUS' AND cd_evs.code_value = v.erp_voucher_status_cd
             <include refid="stErpVoucherCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY v.erp_voucher_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY v.erp_voucher_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY v.settle_ym ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY v.settle_ym DESC</when>
-            <otherwise>ORDER BY v.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stErpVoucherSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

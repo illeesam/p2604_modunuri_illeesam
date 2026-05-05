@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,14 +8,30 @@
     <sql id="stSettlePayCond">
         <where>
             <if test="siteId != null and siteId != ''">AND p.site_id = #{siteId}</if>
+            <if test="settlePayId != null and settlePayId != ''">AND p.settle_pay_id = #{settlePayId}</if>
             <if test="vendorId != null and vendorId != ''">AND p.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND p.pay_status_cd = #{status}</if>
             <if test="kw != null and kw != ''">
                 AND (p.bank_nm ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND p.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND p.reg_date &gt;= #{dateStart}::DATE
+                AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="stSettlePaySort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY p.settle_pay_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.settle_pay_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY bank_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY bank_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 정산 지급 상세 조회 -->
@@ -48,15 +64,7 @@
             LEFT JOIN sy_code cd_pmc ON cd_pmc.code_grp = 'PAY_METHOD_CD' AND cd_pmc.code_value = p.pay_method_cd
             LEFT JOIN sy_code cd_sps ON cd_sps.code_grp = 'SETTLE_PAY_STATUS' AND cd_sps.code_value = p.pay_status_cd
             <include refid="stSettlePayCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY p.settle_pay_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY p.settle_pay_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY bank_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY bank_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
-            <otherwise>ORDER BY p.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettlePaySort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -74,15 +82,7 @@
             LEFT JOIN sy_code cd_pmc ON cd_pmc.code_grp = 'PAY_METHOD_CD' AND cd_pmc.code_value = p.pay_method_cd
             LEFT JOIN sy_code cd_sps ON cd_sps.code_grp = 'SETTLE_PAY_STATUS' AND cd_sps.code_value = p.pay_status_cd
             <include refid="stSettlePayCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY p.settle_pay_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY p.settle_pay_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY bank_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY bank_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
-            <otherwise>ORDER BY p.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettlePaySort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

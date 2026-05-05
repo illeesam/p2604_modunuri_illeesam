@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,27 @@
     <sql id="odOrderItemDiscntCond">
         <where>
             <if test="siteId != null and siteId != ''">AND d.site_id = #{siteId}</if>
+            <if test="itemDiscntId != null and itemDiscntId != ''">AND d.item_discnt_id = #{itemDiscntId}</if>
+            <if test="orderItemId != null and orderItemId != ''">AND d.order_item_id = #{orderItemId}</if>
+            <if test="couponId != null and couponId != ''">AND d.coupon_id = #{couponId}</if>
+            <if test="orderId != null and orderId != ''">AND d.order_id = #{orderId}</if>
             <if test="typeCd != null and typeCd != ''">AND d.discnt_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND d.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND d.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND d.reg_date &gt;= #{dateStart}::DATE
+                AND d.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="odOrderItemDiscntSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY d.item_discnt_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY d.item_discnt_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY d.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY d.reg_date DESC</when>
+            <otherwise>ORDER BY d.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 주문 아이템 할인 상세 조회 -->
@@ -48,13 +65,7 @@
             LEFT JOIN pm_coupon cpn ON cpn.coupon_id = d.coupon_id
             LEFT JOIN sy_code cd_oidt ON cd_oidt.code_grp = 'ORDER_ITEM_DISCNT_TYPE' AND cd_oidt.code_value = d.discnt_type_cd
             <include refid="odOrderItemDiscntCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY d.item_discnt_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY d.item_discnt_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY d.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY d.reg_date DESC</when>
-            <otherwise>ORDER BY d.reg_date DESC</otherwise>
-        </choose>
+        <include refid="odOrderItemDiscntSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -74,13 +85,7 @@
             LEFT JOIN pm_coupon cpn ON cpn.coupon_id = d.coupon_id
             LEFT JOIN sy_code cd_oidt ON cd_oidt.code_grp = 'ORDER_ITEM_DISCNT_TYPE' AND cd_oidt.code_value = d.discnt_type_cd
             <include refid="odOrderItemDiscntCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY d.item_discnt_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY d.item_discnt_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY d.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY d.reg_date DESC</when>
-            <otherwise>ORDER BY d.reg_date DESC</otherwise>
-        </choose>
+        <include refid="odOrderItemDiscntSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

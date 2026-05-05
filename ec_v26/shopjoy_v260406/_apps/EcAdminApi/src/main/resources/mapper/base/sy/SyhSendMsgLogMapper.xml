@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -7,10 +7,26 @@
     <sql id="syhSendMsgLogCond">
         <where>
             <if test="siteId != null and siteId != ''">AND l.site_id = #{siteId}</if>
+            <if test="logId != null and logId != ''">AND l.log_id = #{logId}</if>
+            <if test="userId != null and userId != ''">AND l.user_id = #{userId}</if>
+            <if test="templateId != null and templateId != ''">AND l.template_id = #{templateId}</if>
             <if test="typeCd != null and typeCd != ''">AND l.ref_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND l.send_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND l.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND l.send_date &gt;= #{dateStart}::DATE
+                AND l.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="syhSendMsgLogSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY l.log_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY l.send_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY l.send_date DESC</when>
+            <otherwise>ORDER BY l.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto">
@@ -45,13 +61,7 @@
             LEFT JOIN sy_code cd_mc ON cd_mc.code_grp = 'MSG_CHANNEL' AND cd_mc.code_value = l.channel_cd
             LEFT JOIN sy_code cd_sr ON cd_sr.code_grp = 'SEND_RESULT' AND cd_sr.code_value = l.result_cd
             <include refid="syhSendMsgLogCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY l.log_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY l.send_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY l.send_date DESC</when>
-            <otherwise>ORDER BY l.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syhSendMsgLogSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -70,13 +80,7 @@
             LEFT JOIN sy_code cd_mc ON cd_mc.code_grp = 'MSG_CHANNEL' AND cd_mc.code_value = l.channel_cd
             LEFT JOIN sy_code cd_sr ON cd_sr.code_grp = 'SEND_RESULT' AND cd_sr.code_value = l.result_cd
             <include refid="syhSendMsgLogCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY l.log_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY l.send_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY l.send_date DESC</when>
-            <otherwise>ORDER BY l.reg_date DESC</otherwise>
-        </choose>
+        <include refid="syhSendMsgLogSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

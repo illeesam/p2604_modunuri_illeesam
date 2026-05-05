@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,26 @@
     <sql id="pmVoucherIssueCond">
         <where>
             <if test="siteId != null and siteId != ''">AND i.site_id = #{siteId}</if>
+            <if test="voucherIssueId != null and voucherIssueId != ''">AND i.voucher_issue_id = #{voucherIssueId}</if>
+            <if test="orderId != null and orderId != ''">AND i.order_id = #{orderId}</if>
+            <if test="voucherId != null and voucherId != ''">AND i.voucher_id = #{voucherId}</if>
             <if test="status != null and status != ''">AND i.voucher_issue_status_cd = #{status}</if>
-            <if test="dateStart != null and dateStart != ''">AND i.issue_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND i.issue_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND i.issue_date &gt;= #{dateStart}::DATE
+                AND i.issue_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pmVoucherIssueSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY i.voucher_issue_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY i.voucher_issue_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 바우처(상품권) 발행 이력 상세 조회 -->
@@ -44,13 +60,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_vis ON cd_vis.code_grp = 'VOUCHER_ISSUE_STATUS' AND cd_vis.code_value = i.voucher_issue_status_cd
             <include refid="pmVoucherIssueCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.voucher_issue_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.voucher_issue_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmVoucherIssueSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -68,13 +78,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_vis ON cd_vis.code_grp = 'VOUCHER_ISSUE_STATUS' AND cd_vis.code_value = i.voucher_issue_status_cd
             <include refid="pmVoucherIssueCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.voucher_issue_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.voucher_issue_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmVoucherIssueSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

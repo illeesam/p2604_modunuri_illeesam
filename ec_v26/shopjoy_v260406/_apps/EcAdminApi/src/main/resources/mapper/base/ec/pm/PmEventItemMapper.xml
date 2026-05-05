@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,25 @@
     <sql id="pmEventItemCond">
         <where>
             <if test="siteId != null and siteId != ''">AND i.site_id = #{siteId}</if>
+            <if test="eventItemId != null and eventItemId != ''">AND i.event_item_id = #{eventItemId}</if>
+            <if test="eventId != null and eventId != ''">AND i.event_id = #{eventId}</if>
             <if test="typeCd != null and typeCd != ''">AND i.target_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND i.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND i.reg_date &gt;= #{dateStart}::DATE
+                AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pmEventItemSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY i.event_item_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY i.event_item_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 이벤트 대상 상품 상세 조회 -->
@@ -40,13 +55,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_eit ON cd_eit.code_grp = 'EVENT_ITEM_TARGET' AND cd_eit.code_value = i.target_type_cd
             <include refid="pmEventItemCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.event_item_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.event_item_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmEventItemSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -62,13 +71,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_eit ON cd_eit.code_grp = 'EVENT_ITEM_TARGET' AND cd_eit.code_value = i.target_type_cd
             <include refid="pmEventItemCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.event_item_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.event_item_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmEventItemSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

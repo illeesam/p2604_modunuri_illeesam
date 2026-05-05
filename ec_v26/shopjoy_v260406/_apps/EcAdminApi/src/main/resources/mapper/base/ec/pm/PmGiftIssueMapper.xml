@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,27 @@
     <sql id="pmGiftIssueCond">
         <where>
             <if test="siteId != null and siteId != ''">AND i.site_id = #{siteId}</if>
+            <if test="giftIssueId != null and giftIssueId != ''">AND i.gift_issue_id = #{giftIssueId}</if>
+            <if test="orderId != null and orderId != ''">AND i.order_id = #{orderId}</if>
+            <if test="giftId != null and giftId != ''">AND i.gift_id = #{giftId}</if>
+            <if test="memberId != null and memberId != ''">AND i.member_id = #{memberId}</if>
             <if test="status != null and status != ''">AND i.gift_issue_status_cd = #{status}</if>
-            <if test="dateStart != null and dateStart != ''">AND i.issue_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND i.issue_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND i.issue_date &gt;= #{dateStart}::DATE
+                AND i.issue_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pmGiftIssueSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY i.gift_issue_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY i.gift_issue_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 사은품 발행 이력 상세 조회 -->
@@ -48,13 +65,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_gis ON cd_gis.code_grp = 'GIFT_ISSUE_STATUS' AND cd_gis.code_value = i.gift_issue_status_cd
             <include refid="pmGiftIssueCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.gift_issue_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.gift_issue_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmGiftIssueSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -74,13 +85,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_gis ON cd_gis.code_grp = 'GIFT_ISSUE_STATUS' AND cd_gis.code_value = i.gift_issue_status_cd
             <include refid="pmGiftIssueCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY i.gift_issue_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY i.gift_issue_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
-            <otherwise>ORDER BY i.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmGiftIssueSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

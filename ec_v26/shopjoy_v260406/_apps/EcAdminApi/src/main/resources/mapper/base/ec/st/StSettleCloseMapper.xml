@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,24 @@
     <sql id="stSettleCloseCond">
         <where>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="settleCloseId != null and settleCloseId != ''">AND c.settle_close_id = #{settleCloseId}</if>
             <if test="status != null and status != ''">AND c.close_status_cd = #{status}</if>
-            <if test="dateStart != null and dateStart != ''">AND c.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND c.reg_date &gt;= #{dateStart}::DATE
+                AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="stSettleCloseSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY c.settle_close_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.settle_close_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 정산 마감 상세 조회 -->
@@ -36,13 +50,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             LEFT JOIN sy_code cd_scs ON cd_scs.code_grp = 'SETTLE_CLOSE_STATUS' AND cd_scs.code_value = c.close_status_cd
             <include refid="stSettleCloseCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.settle_close_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.settle_close_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettleCloseSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -56,13 +64,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             LEFT JOIN sy_code cd_scs ON cd_scs.code_grp = 'SETTLE_CLOSE_STATUS' AND cd_scs.code_value = c.close_status_cd
             <include refid="stSettleCloseCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.settle_close_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.settle_close_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettleCloseSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

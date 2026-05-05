@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,9 +8,27 @@
     <sql id="pmSaveUsageCond">
         <where>
             <if test="siteId != null and siteId != ''">AND u.site_id = #{siteId}</if>
-            <if test="dateStart != null and dateStart != ''">AND u.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="saveUsageId != null and saveUsageId != ''">AND u.save_usage_id = #{saveUsageId}</if>
+            <if test="memberId != null and memberId != ''">AND u.member_id = #{memberId}</if>
+            <if test="orderItemId != null and orderItemId != ''">AND u.order_item_id = #{orderItemId}</if>
+            <if test="orderId != null and orderId != ''">AND u.order_id = #{orderId}</if>
+            <if test="prodId != null and prodId != ''">AND u.prod_id = #{prodId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND u.reg_date &gt;= #{dateStart}::DATE
+                AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pmSaveUsageSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY u.save_usage_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY u.save_usage_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
+            <otherwise>ORDER BY u.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 적립금 사용 이력 상세 조회 -->
@@ -47,13 +65,7 @@
             LEFT JOIN od_order_item ite ON ite.order_item_id = u.order_item_id
             LEFT JOIN pd_prod prd ON prd.prod_id = u.prod_id
             <include refid="pmSaveUsageCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY u.save_usage_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY u.save_usage_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
-            <otherwise>ORDER BY u.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmSaveUsageSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -73,13 +85,7 @@
             LEFT JOIN od_order_item ite ON ite.order_item_id = u.order_item_id
             LEFT JOIN pd_prod prd ON prd.prod_id = u.prod_id
             <include refid="pmSaveUsageCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY u.save_usage_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY u.save_usage_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
-            <otherwise>ORDER BY u.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmSaveUsageSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

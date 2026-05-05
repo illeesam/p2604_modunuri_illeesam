@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,25 @@
     <sql id="pmGiftCondCond">
         <where>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="giftCondId != null and giftCondId != ''">AND c.gift_cond_id = #{giftCondId}</if>
+            <if test="giftId != null and giftId != ''">AND c.gift_id = #{giftId}</if>
             <if test="typeCd != null and typeCd != ''">AND c.cond_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND c.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND c.reg_date &gt;= #{dateStart}::DATE
+                AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="pmGiftCondSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY c.gift_cond_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.gift_cond_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 사은품 지급 조건 상세 조회 -->
@@ -40,13 +55,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             LEFT JOIN sy_code cd_gct ON cd_gct.code_grp = 'GIFT_COND_TYPE' AND cd_gct.code_value = c.cond_type_cd
             <include refid="pmGiftCondCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.gift_cond_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.gift_cond_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmGiftCondSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -62,13 +71,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             LEFT JOIN sy_code cd_gct ON cd_gct.code_grp = 'GIFT_COND_TYPE' AND cd_gct.code_value = c.cond_type_cd
             <include refid="pmGiftCondCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.gift_cond_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.gift_cond_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="pmGiftCondSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

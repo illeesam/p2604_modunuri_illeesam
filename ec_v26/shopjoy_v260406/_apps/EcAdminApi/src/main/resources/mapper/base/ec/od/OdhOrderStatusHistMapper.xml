@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -7,10 +7,26 @@
     <sql id="odhOrderStatusHistCond">
         <where>
             <if test="siteId != null and siteId != ''">AND h.site_id = #{siteId}</if>
+            <if test="orderStatusHistId != null and orderStatusHistId != ''">AND h.order_status_hist_id = #{orderStatusHistId}</if>
+            <if test="orderId != null and orderId != ''">AND h.order_id = #{orderId}</if>
+            <if test="chgUserId != null and chgUserId != ''">AND h.chg_user_id = #{chgUserId}</if>
             <if test="status != null and status != ''">AND h.order_status_cd = #{status}</if>
-            <if test="dateStart != null and dateStart != ''">AND h.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND h.reg_date &gt;= #{dateStart}::DATE
+                AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="odhOrderStatusHistSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY h.order_status_hist_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY h.order_status_hist_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
+            <otherwise>ORDER BY h.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderStatusHistDto">
@@ -41,13 +57,7 @@
             LEFT JOIN sy_user usr ON usr.user_id = h.chg_user_id
             LEFT JOIN sy_code cd_os ON cd_os.code_grp = 'ORDER_STATUS' AND cd_os.code_value = h.order_status_cd
             <include refid="odhOrderStatusHistCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY h.order_status_hist_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY h.order_status_hist_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
-            <otherwise>ORDER BY h.reg_date DESC</otherwise>
-        </choose>
+        <include refid="odhOrderStatusHistSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -64,13 +74,7 @@
             LEFT JOIN sy_user usr ON usr.user_id = h.chg_user_id
             LEFT JOIN sy_code cd_os ON cd_os.code_grp = 'ORDER_STATUS' AND cd_os.code_value = h.order_status_cd
             <include refid="odhOrderStatusHistCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY h.order_status_hist_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY h.order_status_hist_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
-            <otherwise>ORDER BY h.reg_date DESC</otherwise>
-        </choose>
+        <include refid="odhOrderStatusHistSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,11 +8,27 @@
     <sql id="odRefundCond">
         <where>
             <if test="siteId != null and siteId != ''">AND r.site_id = #{siteId}</if>
+            <if test="refundId != null and refundId != ''">AND r.refund_id = #{refundId}</if>
+            <if test="orderId != null and orderId != ''">AND r.order_id = #{orderId}</if>
+            <if test="claimId != null and claimId != ''">AND r.claim_id = #{claimId}</if>
             <if test="status != null and status != ''">AND r.refund_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND r.refund_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND r.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND r.reg_date &gt;= #{dateStart}::DATE
+                AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="odRefundSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY r.refund_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY r.refund_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
+            <otherwise>ORDER BY r.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 환불 상세 조회 -->
@@ -53,13 +69,7 @@
             LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'REFUND_STATUS' AND cd_rs.code_value = r.refund_status_cd
             LEFT JOIN sy_code cd_cf ON cd_cf.code_grp = 'CLAIM_FAULT' AND cd_cf.code_value = r.fault_type_cd
             <include refid="odRefundCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY r.refund_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY r.refund_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
-            <otherwise>ORDER BY r.reg_date DESC</otherwise>
-        </choose>
+        <include refid="odRefundSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -81,13 +91,7 @@
             LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'REFUND_STATUS' AND cd_rs.code_value = r.refund_status_cd
             LEFT JOIN sy_code cd_cf ON cd_cf.code_grp = 'CLAIM_FAULT' AND cd_cf.code_value = r.fault_type_cd
             <include refid="odRefundCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY r.refund_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY r.refund_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
-            <otherwise>ORDER BY r.reg_date DESC</otherwise>
-        </choose>
+        <include refid="odRefundSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

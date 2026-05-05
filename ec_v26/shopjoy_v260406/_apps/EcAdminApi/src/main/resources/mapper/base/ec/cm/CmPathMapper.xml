@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -7,9 +7,23 @@
     <!-- 경로(메뉴/URL) 조회 조건 -->
     <sql id="cmPathCond">
         <where>
-            <if test="dateStart != null and dateStart != ''">AND p.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+                        <if test="pathId != null and pathId != ''">AND p.path_id = #{pathId}</if>
+<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+    AND p.reg_date &gt;= #{dateStart}::DATE
+    AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+</if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="cmPathSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY p.path_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.path_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 경로(메뉴/URL) 상세 조회 -->
@@ -24,13 +38,7 @@
         SELECT p.*  /* base.ec.cm :: CmPath :: selectList */
         FROM cm_path p
             <include refid="cmPathCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY p.path_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY p.path_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
-            <otherwise>ORDER BY p.reg_date DESC</otherwise>
-        </choose>
+        <include refid="cmPathSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -39,13 +47,7 @@
         SELECT p.*  /* base.ec.cm :: CmPath :: selectPageList */
         FROM cm_path p
             <include refid="cmPathCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY p.path_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY p.path_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
-            <otherwise>ORDER BY p.reg_date DESC</otherwise>
-        </choose>
+        <include refid="cmPathSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

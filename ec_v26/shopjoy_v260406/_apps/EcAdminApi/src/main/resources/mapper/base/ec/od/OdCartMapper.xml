@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,11 +8,26 @@
     <sql id="odCartCond">
         <where>
             <if test="siteId   != null and siteId   != ''">AND c.site_id   = #{siteId}</if>
+            <if test="cartId != null and cartId != ''">AND c.cart_id = #{cartId}</if>
+            <if test="prodId != null and prodId != ''">AND c.prod_id = #{prodId}</if>
             <if test="memberId != null and memberId != ''">AND c.member_id = #{memberId}</if>
             <if test="kw       != null and kw       != ''">AND (mem.member_nm LIKE '%'||#{kw}||'%' OR c.member_id LIKE '%'||#{kw}||'%' OR c.prod_id LIKE '%'||#{kw}||'%' OR prd.prod_nm LIKE '%'||#{kw}||'%')</if>
-            <if test="dateStart != null and dateStart != ''">AND c.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND c.reg_date &gt;= #{dateStart}::DATE
+                AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="odCartSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY c.cart_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.cart_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 장바구니 상세 조회 -->
@@ -49,13 +64,7 @@
             LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = c.opt_item_id_1
             LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = c.opt_item_id_2
             <include refid="odCartCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.cart_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.cart_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="odCartSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -75,13 +84,7 @@
             LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = c.opt_item_id_1
             LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = c.opt_item_id_2
             <include refid="odCartCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY c.cart_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY c.cart_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
-            <otherwise>ORDER BY c.reg_date DESC</otherwise>
-        </choose>
+        <include refid="odCartSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

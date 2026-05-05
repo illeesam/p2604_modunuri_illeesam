@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,6 +8,20 @@
     <sql id="stSettleRawCond">
         <where>
             <if test="siteId != null and siteId != ''">AND r.site_id = #{siteId}</if>
+            <if test="settleRawId != null and settleRawId != ''">AND r.settle_raw_id = #{settleRawId}</if>
+            <if test="claimId != null and claimId != ''">AND r.claim_id = #{claimId}</if>
+            <if test="memberId != null and memberId != ''">AND r.member_id = #{memberId}</if>
+            <if test="voucherId != null and voucherId != ''">AND r.voucher_id = #{voucherId}</if>
+            <if test="prodId != null and prodId != ''">AND r.prod_id = #{prodId}</if>
+            <if test="couponId != null and couponId != ''">AND r.coupon_id = #{couponId}</if>
+            <if test="orderId != null and orderId != ''">AND r.order_id = #{orderId}</if>
+            <if test="claimItemId != null and claimItemId != ''">AND r.claim_item_id = #{claimItemId}</if>
+            <if test="giftId != null and giftId != ''">AND r.gift_id = #{giftId}</if>
+            <if test="discntId != null and discntId != ''">AND r.discnt_id = #{discntId}</if>
+            <if test="orderItemId != null and orderItemId != ''">AND r.order_item_id = #{orderItemId}</if>
+            <if test="promoId != null and promoId != ''">AND r.promo_id = #{promoId}</if>
+            <if test="mdUserId != null and mdUserId != ''">AND r.md_user_id = #{mdUserId}</if>
+            <if test="brandId != null and brandId != ''">AND r.brand_id = #{brandId}</if>
             <if test="vendorId != null and vendorId != ''">AND r.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND r.raw_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND r.raw_type_cd = #{typeCd}</if>
@@ -15,9 +29,24 @@
                 AND (r.prod_nm ILIKE '%' || #{kw} || '%'
                   OR r.brand_nm ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND r.order_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND r.order_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND r.order_date &gt;= #{dateStart}::DATE
+                AND r.order_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="stSettleRawSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY r.settle_raw_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY r.settle_raw_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY r.prod_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY r.prod_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY r.order_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY r.order_date DESC</when>
+            <otherwise>ORDER BY r.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 정산 원천 데이터 상세 조회 -->
@@ -114,15 +143,7 @@
             LEFT JOIN sy_code cd_vt ON cd_vt.code_grp = 'VENDOR_TYPE' AND cd_vt.code_value = r.vendor_type_cd
             LEFT JOIN sy_code cd_pmc ON cd_pmc.code_grp = 'PAY_METHOD_CD' AND cd_pmc.code_value = r.pay_method_cd
             <include refid="stSettleRawCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY r.settle_raw_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY r.settle_raw_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY r.prod_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY r.prod_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY r.order_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY r.order_date DESC</when>
-            <otherwise>ORDER BY r.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettleRawSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -172,15 +193,7 @@
             LEFT JOIN sy_code cd_vt ON cd_vt.code_grp = 'VENDOR_TYPE' AND cd_vt.code_value = r.vendor_type_cd
             LEFT JOIN sy_code cd_pmc ON cd_pmc.code_grp = 'PAY_METHOD_CD' AND cd_pmc.code_value = r.pay_method_cd
             <include refid="stSettleRawCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY r.settle_raw_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY r.settle_raw_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY r.prod_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY r.prod_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY r.order_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY r.order_date DESC</when>
-            <otherwise>ORDER BY r.reg_date DESC</otherwise>
-        </choose>
+        <include refid="stSettleRawSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

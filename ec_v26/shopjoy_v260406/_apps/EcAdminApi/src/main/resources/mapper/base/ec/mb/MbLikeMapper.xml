@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -8,10 +8,26 @@
     <sql id="mbLikeCond">
         <where>
             <if test="siteId != null and siteId != ''">AND l.site_id = #{siteId}</if>
+            <if test="likeId != null and likeId != ''">AND l.like_id = #{likeId}</if>
+            <if test="memberId != null and memberId != ''">AND l.member_id = #{memberId}</if>
+            <if test="targetId != null and targetId != ''">AND l.target_id = #{targetId}</if>
             <if test="typeCd != null and typeCd != ''">AND l.target_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND l.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
+                AND l.reg_date &gt;= #{dateStart}::DATE
+                AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            </if>
         </where>
+    </sql>
+
+    <!-- ?뺣젹 議곌굔 -->
+    <sql id="mbLikeSort">
+        <choose>
+            <when test="sort == 'id_asc'">ORDER BY l.like_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY l.like_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
+            <otherwise>ORDER BY l.reg_date DESC</otherwise>
+        </choose>
     </sql>
 
     <!-- 좋아요(찜) 상세 조회 -->
@@ -44,13 +60,7 @@
             LEFT JOIN pd_prod prd ON prd.prod_id = l.target_id
             LEFT JOIN sy_code cd_ltt ON cd_ltt.code_grp = 'LIKE_TARGET_TYPE' AND cd_ltt.code_value = l.target_type_cd
             <include refid="mbLikeCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY l.like_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY l.like_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
-            <otherwise>ORDER BY l.reg_date DESC</otherwise>
-        </choose>
+        <include refid="mbLikeSort"/>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
@@ -68,13 +78,7 @@
             LEFT JOIN pd_prod prd ON prd.prod_id = l.target_id
             LEFT JOIN sy_code cd_ltt ON cd_ltt.code_grp = 'LIKE_TARGET_TYPE' AND cd_ltt.code_value = l.target_type_cd
             <include refid="mbLikeCond"/>
-        <choose>
-            <when test="sort == 'id_asc'">ORDER BY l.like_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY l.like_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
-            <otherwise>ORDER BY l.reg_date DESC</otherwise>
-        </choose>
+        <include refid="mbLikeSort"/>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
