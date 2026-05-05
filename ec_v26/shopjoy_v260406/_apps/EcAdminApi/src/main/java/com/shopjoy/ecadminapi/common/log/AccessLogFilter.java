@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -48,10 +49,16 @@ public class AccessLogFilter extends OncePerRequestFilter {
         this.activeProfile = activeProfile;
     }
 
+    /** CORS preflight (OPTIONS) 는 비즈니스 정보가 없으므로 로그 적재 자체 skip */
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+        return "OPTIONS".equalsIgnoreCase(request.getMethod());
+    }
+
+    @Override
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain chain) throws ServletException, IOException {
         boolean captureBody = props.getMaxBodySize() > 0;
         ContentCachingRequestWrapper  reqWrap  = captureBody
                 ? new ContentCachingRequestWrapper(request,  props.getMaxBodySize())

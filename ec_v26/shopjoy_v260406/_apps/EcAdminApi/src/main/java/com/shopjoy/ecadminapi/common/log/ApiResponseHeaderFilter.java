@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -20,10 +21,16 @@ public class ApiResponseHeaderFilter extends OncePerRequestFilter {
 
     private static final DateTimeFormatter TRACE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
+    /** CORS preflight (OPTIONS) 는 응답 헤더 추가 불필요 — 필터 자체 skip */
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+        return "OPTIONS".equalsIgnoreCase(request.getMethod());
+    }
+
+    @Override
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain chain) throws ServletException, IOException {
         try {
             // 요청 헤더에서 X- 정보 수집
             String fileNm = getHeader(request, "X-File-Nm");

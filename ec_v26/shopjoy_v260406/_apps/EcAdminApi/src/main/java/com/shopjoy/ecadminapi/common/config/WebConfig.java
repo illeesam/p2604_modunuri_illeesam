@@ -24,8 +24,8 @@ public class WebConfig implements WebMvcConfigurer {
             .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true)
-            .maxAge(3600);
-        log.info("[WebConfig] CORS 설정 완료 — allowedOriginPatterns=*, maxAge=3600s");
+            .maxAge(7200);  // 2시간 — Chrome 상한, preflight 빈도 최소화
+        log.info("[WebConfig] CORS 설정 완료 — allowedOriginPatterns=*, maxAge=7200s");
     }
 
     @Override
