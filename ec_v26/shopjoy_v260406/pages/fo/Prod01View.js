@@ -251,6 +251,40 @@ window.Prod01View = {
     const cfMockImages = computed(() => {
       const p = svProduct;
       if (!p) return [];
+      // 1) 실제 등록된 이미지(prod.images) 우선
+      //    - 색상이 선택되었으면 그 색상에 매핑된 이미지(optItemId1=색상itemId)만 표시
+      //    - 매핑 0건이면 빈 상태 (fallback 안 함 — 다른 색상 이미지가 노출되면 안 됨)
+      //    - 색상 미선택 시: 등록된 이미지 전체 표시
+      const real = Array.isArray(p.images) ? p.images : [];
+      if (real.length) {
+        const colorItemId = uiState.selectedColor?.optItemId || '';
+        const opt1ById = new Map((p.opt1s || []).map(c => [c.optItemId, c]));
+        const opt2ById = new Map((p.opt2sAll || []).map(c => [c.optItemId, c]));
+        const filtered = colorItemId
+          ? real.filter(im => im.optItemId1 === colorItemId)
+          : real;
+        const list = filtered.slice().sort((a,b) =>
+          ((b.isThumb === 'Y') - (a.isThumb === 'Y')) || ((a.sortOrd||0) - (b.sortOrd||0))
+        );
+        return list.map((im, i) => {
+          const c1 = opt1ById.get(im.optItemId1);
+          const c2 = opt2ById.get(im.optItemId2);
+          // hover 시 표시할 옵션 라벨 — "색상: 블랙 / 사이즈: M" 형태
+          const parts = [];
+          if (c1) parts.push((p.opt1Nm || '색상') + ': ' + c1.name);
+          if (c2) parts.push((p.opt2Nm || '사이즈') + ': ' + c2.name);
+          if (im.isThumb === 'Y') parts.push('★ 대표');
+          return {
+            src:    im.cdnImgUrl || im.cdnThumbUrl || im.previewUrl || '',
+            label:  '이미지 ' + (i + 1),
+            optTip: parts.join(' / '),
+            opt1Nm: c1 ? c1.name : '',
+            opt2Nm: c2 ? c2.name : '',
+            isMain: im.isThumb === 'Y',
+          };
+        }).filter(it => it.src);
+      }
+      // 2) 실제 이미지 없을 때만 목업 fallback
       const opt1s = p.opt1s || [];
       const colorIdx = opt1s.findIndex(c => c.name === uiState.selectedColor?.name);
       return _buildColorImages(p, Math.max(0, colorIdx));
@@ -773,17 +807,32 @@ window.Prod01View = {
 
           <!-- -- 메인 이미지 ------------------------------------------------- -->
           <div style="position:relative;"
-            @mouseenter="$event.currentTarget.querySelector('.img-nav').style.opacity='1'"
-            @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'">
-            <div style="border-radius:12px;border:1px solid var(--border);overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
-              @click="uiState.zoomOpen=true">
+            @mouseenter="$event.currentTarget.querySelector('.img-nav').style.opacity='1'; const ov=$event.currentTarget.querySelector('.prod-img-overlay'); if(ov) ov.style.opacity='1';"
+            @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'; const ov=$event.currentTarget.querySelector('.prod-img-overlay'); if(ov) ov.style.opacity='0';">
+            <div class="prod-main-img" style="border-radius:12px;border:1px solid var(--border);overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
+              @click="uiState.zoomOpen=true"
+              :title="cfMockImages[uiState.selectedImg]?.optTip || ''">
               <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="prod.prodNm"
                 style="width:100%;height:100%;object-fit:cover;" />
+              <!-- 선택된 색상에 등록된 이미지가 없을 때 안내 -->
+              <div v-else-if="uiState.selectedColor"
+                style="display:flex;flex-direction:column;align-items:center;gap:6px;color:#bbb;font-size:0.85rem;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+                <span>{{ uiState.selectedColor.name }} 이미지가 등록되지 않았습니다</span>
+              </div>
               <div v-if="prod.badge" style="position:absolute;top:14px;left:14px;">
                 <span v-if="prod.badge==='NEW'"
                   style="background:var(--blue);color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">NEW</span>
                 <span v-else-if="prod.badge==='인기'"
                   style="background:#ff6b35;color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">인기</span>
+              </div>
+              <!-- 옵션 라벨 오버레이 (hover 시) -->
+              <div v-if="cfMockImages[uiState.selectedImg]?.optTip"
+                class="prod-img-overlay"
+                style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:linear-gradient(to top,rgba(0,0,0,0.65),rgba(0,0,0,0));color:#fff;font-size:0.78rem;font-weight:600;letter-spacing:0.2px;opacity:0;transition:opacity .15s;pointer-events:none;">
+                {{ cfMockImages[uiState.selectedImg].optTip }}
               </div>
             </div>
             <!-- -- 확대 아이콘 (우상단) ----------------------------------------- -->
@@ -811,14 +860,16 @@ window.Prod01View = {
           <div style="display:flex;flex-direction:row;gap:8px;overflow-x:auto;scrollbar-width:none;">
             <div v-for="(img,i) in cfMockImages" :key="i"
               @click="uiState.selectedImg=i"
+              :title="img.optTip || img.label"
               :style="{
                 width:'72px',height:'72px',borderRadius:'8px',overflow:'hidden',
-                cursor:'pointer',flexShrink:0,
+                cursor:'pointer',flexShrink:0,position:'relative',
                 border:uiState.selectedImg===i?'2px solid var(--blue)':'2px solid var(--border)',
                 transition:'border-color .15s',
                 background:'var(--bg-base)',
               }">
               <img v-if="img.src" :src="img.src" :alt="img.label" style="width:100%;height:100%;object-fit:cover;" />
+              <span v-if="img.isMain" style="position:absolute;top:2px;left:2px;font-size:9px;background:#e8587a;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1;">★</span>
             </div>
           </div>
 
@@ -850,23 +901,42 @@ window.Prod01View = {
                 <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">{{ prod.opt1Nm || '색상' }} 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
                 <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
               </div>
-              <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                <div v-for="c in prod.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                <div v-for="c in prod.opt1s" :key="c.name"
+                  :style="'position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px;border-radius:10px;transition:all .15s;'+
+                    (selectedColor && selectedColor.name===c.name
+                      ? 'background:#eef4ff;box-shadow:0 0 0 2px var(--blue) inset;transform:translateY(-2px);'
+                      : 'background:transparent;')">
                   <button @click="selectColor(c)"
                     :title="c.name + (colorStatus(c)==='soldout' ? ' (품절)' : colorStatus(c)==='stop' ? ' (판매중지)' : '')"
                     :style="{
-                      width:'30px',height:'30px',borderRadius:'50%',
+                      width:'34px',height:'34px',borderRadius:'50%',position:'relative',
                       cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed',
-                      background:c.hex,
-                      border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
-                      outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
-                      outlineOffset:'-4px',boxSizing:'border-box',transition:'border .15s',
+                      background:c.hex || '#e5e7eb',
+                      border: selectedColor&&selectedColor.name===c.name
+                              ? '3px solid #fff'
+                              : '1px solid rgba(0,0,0,0.18)',
+                      boxShadow: selectedColor&&selectedColor.name===c.name
+                              ? '0 0 0 2px var(--blue), 0 2px 8px rgba(22,119,255,0.35)'
+                              : '0 1px 2px rgba(0,0,0,0.08)',
+                      boxSizing:'border-box',transition:'all .15s',
                       opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
                     }">
+                    <!-- 선택 체크 아이콘 — 어두운 색상은 흰색, 밝은 색상은 검정 자동 판단 -->
+                    <svg v-if="selectedColor && selectedColor.name===c.name"
+                      width="16" height="16" viewBox="0 0 24 24" fill="none"
+                      :stroke="(c.hex && /^#(f|e|d)/i.test(c.hex)) ? '#222' : '#fff'"
+                      stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"
+                      style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
                   </button>
+                  <!-- 선택된 색상 이름 -->
+                  <span v-if="selectedColor && selectedColor.name===c.name"
+                    style="font-size:0.62rem;font-weight:700;color:var(--blue);line-height:1;white-space:nowrap;">{{ c.name }}</span>
                   <!-- -- 대각선 취소선 (품절/중지) -------------------------------- -->
-                  <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:0;left:0;width:30px;height:30px;pointer-events:none;" viewBox="0 0 30 30">
-                    <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
+                  <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:4px;left:4px;width:34px;height:34px;pointer-events:none;" viewBox="0 0 34 34">
+                    <line x1="5" y1="5" x2="29" y2="29" stroke="#ef4444" stroke-width="2" />
                   </svg>
                   <span v-if="colorStatus(c)==='soldout'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#ef4444;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">품절</span>
                   <span v-else-if="colorStatus(c)==='stop'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#9ca3af;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
@@ -919,7 +989,7 @@ window.Prod01View = {
             <!-- -- 선택 요약 ------------------------------------------------ -->
             <div v-if="uiState.selectedColor||uiState.selectedSize"
               style="background:var(--bg-base);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;">
-              <div v-if="uiState.selectedColor"><span style="font-weight:600;color:var(--text-primary);">색상:</span> {{ uiState.selectedColor.name }}</div>
+              <div v-if="uiState.selectedColor"><span style="font-weight:600;color:var(--text-primary);">{{ prod.opt1Nm || '색상' }}:</span> {{ uiState.selectedColor.name }}</div>
               <div v-if="uiState.selectedSize"><span style="font-weight:600;color:var(--text-primary);">사이즈:</span> {{ uiState.selectedSize }}</div>
               <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ uiState.qty }}개</div>
             </div>
