@@ -48,7 +48,7 @@ window.SyCodeMng = {
     let _tempId    = -1;
     let _grpTempId = -1;
     let _grpLoadSeq = 0;
-    const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark', 'parentCodeValue'];
+    const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'codeOpt1', 'remark', 'parentCodeValue'];
     const GRP_FIELDS  = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
 
     const codeTotal = () => uiState.gridRows.filter(r => r._row_status !== 'D').length;
@@ -279,8 +279,9 @@ window.SyCodeMng = {
 
     const makeRow = (c) => ({
       ...c, _row_status: 'N', _row_check: false,
+      codeOpt1: c.codeOpt1 || '',
       _row_org: { codeGrp: c.codeGrp, codeLabel: c.codeLabel, codeValue: c.codeValue,
-               sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, parentCodeValue: c.parentCodeValue || null },
+               sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, codeOpt1: c.codeOpt1 || '', parentCodeValue: c.parentCodeValue || null },
     });
 
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
@@ -291,9 +292,9 @@ window.SyCodeMng = {
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : uiState.gridRows.length;
       const newRow = {
         codeId: _tempId--, codeGrp: grp, codeLabel: '', codeValue: '',
-        sortOrd: maxSort + 1, useYn: 'Y', remark: '', parentCodeValue: null,
+        sortOrd: maxSort + 1, useYn: 'Y', codeOpt1: '', remark: '', parentCodeValue: null,
         _row_status: 'I', _row_check: false,
-        _row_org: { codeGrp: grp, codeLabel: '', codeValue: '', sortOrd: maxSort + 1, useYn: 'Y', remark: '', parentCodeValue: null },
+        _row_org: { codeGrp: grp, codeLabel: '', codeValue: '', sortOrd: maxSort + 1, useYn: 'Y', codeOpt1: '', remark: '', parentCodeValue: null },
       };
       uiState.gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
@@ -429,6 +430,23 @@ window.SyCodeMng = {
       handleLoadAllGroups();
     };
 
+    /* 전체펼치기 / 전체접기 — 자식이 있는 모든 노드의 codeValue 를 treeExpanded 에 add 또는 clear */
+    const codeExpandAll = () => {
+      treeExpanded.clear();
+      const visible = uiState.gridRows.filter(r => r._row_status !== 'D');
+      const byValue = new Map(visible.map(c => [c.codeValue, c]));
+      const parentVals = new Set();
+      visible.forEach(c => {
+        const pv = c.parentCodeValue;
+        if (pv && byValue.has(pv)) parentVals.add(pv);
+      });
+      parentVals.forEach(v => treeExpanded.add(v));
+      rebuildTree();
+    };
+    const codeCollapseAll = () => {
+      treeExpanded.clear();
+      rebuildTree();
+    };
     const codeToggleNode = (codeValue) => {
       if (treeExpanded.has(codeValue)) treeExpanded.delete(codeValue);
       else treeExpanded.add(codeValue);
@@ -471,7 +489,7 @@ window.SyCodeMng = {
       grpSelectNode, onGrpRowClick, onGrpSort, grpSortIcon,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       openGrpSetting,
-      treeExpanded, codeToggleNode, flatTree, parentOpts,
+      treeExpanded, codeToggleNode, codeExpandAll, codeCollapseAll, flatTree, parentOpts,
       handleLoadDetail, closeDetail, setFocused,
       onPathBtnHover, onPathBtnLeave,
     };
@@ -665,6 +683,7 @@ window.SyCodeMng = {
             <th v-if="uiState.isTreeType" style="width:140px;">상위코드값</th>
             <th class="col-ord">순서</th>
             <th class="col-use">사용여부</th>
+            <th style="width:140px;">스타일 (code_opt1)</th>
             <th>비고</th>
             <th style="width:80px;">사이트명</th>
             <th class="col-act-cancel"></th>
@@ -673,7 +692,7 @@ window.SyCodeMng = {
         </thead>
         <tbody>
           <tr v-if="uiState.gridRows.length===0">
-            <td :colspan="uiState.isTreeType ? 14 : 13" style="text-align:center;color:#999;padding:30px;">{{ uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.' }}</td>
+            <td :colspan="uiState.isTreeType ? 15 : 14" style="text-align:center;color:#999;padding:30px;">{{ uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.' }}</td>
           </tr>
           <tr v-for="(row, idx) in uiState.gridRows" :key="row.codeId"
             class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
@@ -709,6 +728,14 @@ window.SyCodeMng = {
                 <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </td>
+            <td>
+              <div style="display:flex;gap:4px;align-items:center;">
+                <span v-if="row.codeOpt1 && row.codeOpt1.startsWith('#')"
+                  :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+row.codeOpt1+';'"></span>
+                <input class="grid-input grid-mono" v-model="row.codeOpt1" placeholder="#000000 / fa-icon"
+                  :disabled="row._row_status==='D'" @input="onCellChange(row)" />
+              </div>
+            </td>
             <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
             <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
             <td class="col-act-cancel-val">
@@ -727,7 +754,18 @@ window.SyCodeMng = {
     <!-- -- 트리 탭 ---------------------------------------------------------- -->
     <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
       <div class="toolbar" style="background:#f9fafb;padding:12px;border-bottom:1px solid #e5e7eb;">
-        <span class="list-title">트리 형식 편집</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="list-title">트리 형식 편집</span>
+          <!-- 전체펼치기 / 전체접기 토글 -->
+          <div style="display:inline-flex;border:1px solid #d1d5db;border-radius:4px;overflow:hidden;">
+            <button type="button" @click="codeExpandAll"
+              style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;border-right:1px solid #d1d5db;"
+              title="모든 노드 펼치기">▼ 전체펼치기</button>
+            <button type="button" @click="codeCollapseAll"
+              style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;"
+              title="모든 노드 접기">▶ 전체접기</button>
+          </div>
+        </div>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
           <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
@@ -736,7 +774,7 @@ window.SyCodeMng = {
       </div>
       <div style="overflow-y:auto;max-height:400px;border:1px solid #e5e7eb;">
         <table class="bo-table crud-grid" style="margin-top:0;">
-        <thead>
+        <thead style="position:sticky;top:0;background:#f5f5f5;z-index:10;box-shadow:inset 0 -1px 0 #e5e7eb;">
           <tr>
             <th class="col-status">상태</th>
             <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
@@ -745,6 +783,7 @@ window.SyCodeMng = {
             <th style="width:140px;">상위코드값</th>
             <th class="col-ord">순서</th>
             <th class="col-use">사용여부</th>
+            <th style="width:140px;">스타일 (code_opt1)</th>
             <th>비고</th>
             <th style="width:80px;">사이트명</th>
             <th class="col-act-cancel"></th>
@@ -753,7 +792,7 @@ window.SyCodeMng = {
         </thead>
         <tbody>
           <tr v-if="flatTree.length===0">
-            <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+            <td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
           <tr v-for="(row, idx) in flatTree" :key="row.node.value"
             class="crud-row" :class="['status-'+row.node.code._row_status]"
@@ -764,7 +803,7 @@ window.SyCodeMng = {
             </td>
             <td class="col-check-val"><input type="checkbox" v-model="row.node.code._row_check" /></td>
             <td style="padding-left:0;">
-              <div style="display:flex;align-items:center;gap:0;">
+              <div style="display:flex;align-items:center;gap:4px;">
                 <span :style="{ minWidth: (row.depth * 20 + 4) + 'px', flexShrink: 0 }"></span>
                 <span v-if="row.node.children.length > 0"
                   @click.stop="codeToggleNode(row.node.value)"
@@ -773,7 +812,14 @@ window.SyCodeMng = {
                 </span>
                 <span v-else style="width:20px;flex-shrink:0;"></span>
                 <span v-if="row.depth > 0" style="color:#bfdbfe;margin-right:2px;font-weight:300;font-size:11px;">├</span>
+                <!-- 레벨 뱃지 -->
+                <span :style="'flex-shrink:0;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;'+
+                  (row.depth===0?'background:#dbeafe;color:#1e40af;':row.depth===1?'background:#dcfce7;color:#166534;':'background:#fef3c7;color:#92400e;')"
+                  :title="'레벨 ' + (row.depth+1)">L{{ row.depth+1 }}</span>
                 <input class="grid-input" style="flex:1;" v-model="row.node.code.codeLabel" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" />
+                <!-- 자식 개수 -->
+                <span v-if="row.node.children.length > 0" style="flex-shrink:0;font-size:10px;color:#6b7280;background:#f3f4f6;padding:1px 5px;border-radius:3px;"
+                  :title="'직속 자식 ' + row.node.children.length + '개'">↳ {{ row.node.children.length }}</span>
               </div>
             </td>
             <td><input class="grid-input grid-mono" v-model="row.node.code.codeValue" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
@@ -788,6 +834,14 @@ window.SyCodeMng = {
               <select class="grid-select" v-model="row.node.code.useYn" :disabled="row.node.code._row_status==='D'" @change="onCellChange(row.node.code)">
                 <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
+            </td>
+            <td>
+              <div style="display:flex;gap:4px;align-items:center;">
+                <span v-if="row.node.code.codeOpt1 && row.node.code.codeOpt1.startsWith('#')"
+                  :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+row.node.code.codeOpt1+';'"></span>
+                <input class="grid-input grid-mono" v-model="row.node.code.codeOpt1" placeholder="#000000 / fa-icon"
+                  :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" />
+              </div>
             </td>
             <td><input class="grid-input" v-model="row.node.code.remark" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
             <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
