@@ -1,4 +1,4 @@
-/* ShopJoy - Home */
+﻿/* ShopJoy - Home */
 window.Home01 = {
   name: 'Home',
   props: {
@@ -7,8 +7,8 @@ window.Home01 = {
   emits: [],
   setup(props) {
     const { computed, ref, onMounted, onBeforeUnmount, reactive, watch } = Vue;
-    const products             = window.foApp.products;
-    const selectProduct        = (p) => window.foApp.selectProduct(p);
+    const prods             = window.foApp.prods;
+    const selectProd        = (p) => window.foApp.selectProd(p);
     const toggleLike           = (id) => window.foApp.toggleLike(id);
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cartModalMode: false, quickViewProduct: null, bannerIdx: 0});
@@ -36,17 +36,17 @@ window.Home01 = {
       return map[id] || '🏷️';
     }
 
-    const cfNewProducts = computed(() =>
-      (products || []).filter(p => p.badge === 'NEW').slice(0, 3)
+    const cfNewProds = computed(() =>
+      (prods || []).filter(p => p.badge === 'NEW').slice(0, 3)
     );
 
-    const cfBestProducts = computed(() =>
-      (products || []).filter(p => p.badge === '인기').slice(0, 3)
+    const cfBestProds = computed(() =>
+      (prods || []).filter(p => p.badge === '인기').slice(0, 3)
     );
 
     /* -- 할인 상품 -- */
-    const cfSaleProducts = computed(() =>
-      (products || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
+    const cfSaleProds = computed(() =>
+      (prods || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
     );
 
     /* -- 빠른보기 모달 -- */
@@ -58,8 +58,8 @@ window.Home01 = {
        블로그   max-width:1080px / minmax(300px) → 최대 3열, 좁아지면 2→1열  */
 
     /* -- 홈 상품 8개 -- */
-    const cfAllHomeProducts = computed(() => {
-      const all = products || [];
+    const cfAllHomeProds = computed(() => {
+      const all = prods || [];
       return all.slice(0, 8);
     });
 
@@ -92,7 +92,7 @@ window.Home01 = {
     // -- return ---------------------------------------------------------------
 
     const siteConfig = window.SITE_CONFIG || {};
-    return { siteConfig, fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, uiState, banners, setBanner, codes, isLiked, toggleLike, selectProduct };
+    return { siteConfig, fnCategoryLabel, fnCatEmoji, cfNewProds, cfBestProds, cfAllHomeProds, cfSaleProds, uiState, banners, setBanner, codes, isLiked, toggleLike, selectProd };
   },
   template: /* html */ `
 <div>
@@ -143,7 +143,7 @@ window.Home01 = {
         @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,0.14)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 4px 24px rgba(0,0,0,0.09)'">
         <div style="width:clamp(56px,8vw,88px);height:clamp(56px,8vw,88px);border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--bg-base);">
-          <img :src="'assets/cdn/prod/img/shop/product/sm/pro-sm-' + (ci*3+1) + '.jpg'" style="width:100%;height:100%;object-fit:cover;" />
+          <img :src="'assets/cdn/prod/img/shop/prod/sm/pro-sm-' + (ci*3+1) + '.jpg'" style="width:100%;height:100%;object-fit:cover;" />
         </div>
         <div>
           <div style="font-size:clamp(0.88rem,2vw,1.05rem);font-weight:700;color:#1a1a1a;margin-bottom:4px;">{{ cat.categoryNm }}</div>
@@ -160,11 +160,11 @@ window.Home01 = {
       <p style="font-size:0.85rem;color:#999;">고객들이 사랑하는 트렌디한 아이템을 만나보세요</p>
     </div>
     <div class="home-prod-grid">
-      <div v-for="p in cfAllHomeProducts" :key="p.productId"
+      <div v-for="p in cfAllHomeProds" :key="p.prodId"
         style="cursor:pointer;transition:transform .25s,box-shadow .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-6px)';$event.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''"
-        @click="selectProduct(p)">
+        @click="selectProd(p)">
         <div style="background:#f5f5f5;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
           @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
           @mouseleave="$event.currentTarget.querySelector('.prod-hover').style.opacity='0'">
@@ -172,10 +172,10 @@ window.Home01 = {
           <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;"
             :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355', color:'#fff' }">{{ p.badge }}</span>
           <!-- -- 좋아요 (좋아요 상태면 항상 표시) ------------------------------------ -->
-          <button @click.stop="toggleLike(p.productId)"
+          <button @click.stop="toggleLike(p.prodId)"
             :style="{ position:'absolute', right:'12px', top:'12px', width:'32px', height:'32px', borderRadius:'50%', border:'none', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }"
             class="prod-like" title="위시리스트">
-            <svg width="16" height="16" viewBox="0 0 24 24" :fill="isLiked(p.productId)?'#ef4444':'none'" :stroke="isLiked(p.productId)?'#ef4444':'#555'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" :fill="isLiked(p.prodId)?'#ef4444':'none'" :stroke="isLiked(p.prodId)?'#ef4444':'#555'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </button>
           <!-- -- 장바구니 + 빠른보기 (hover 시에만) -------------------------------- -->
           <div class="prod-hover" style="opacity:0;transition:opacity .25s;position:absolute;right:12px;top:48px;display:flex;flex-direction:column;gap:6px;">
@@ -250,11 +250,11 @@ window.Home01 = {
       <p style="font-size:0.85rem;color:#999;">특별 할인 중인 인기 상품을 놓치지 마세요</p>
     </div>
     <div class="home-sale-grid">
-      <div v-for="p in cfSaleProducts" :key="'sale'+p.productId"
+      <div v-for="p in cfSaleProds" :key="'sale'+p.prodId"
         style="cursor:pointer;text-align:center;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
-        @click="selectProduct(p)">
+        @click="selectProd(p)">
         <div style="background:#f5f5f5;padding:20px;margin-bottom:12px;position:relative;aspect-ratio:1;overflow:hidden;">
           <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
           <span v-if="p.originalPrice && p.priceNum" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">
@@ -304,11 +304,11 @@ window.Home01 = {
   </div>
 
   <!-- -- ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ------------------------------ -->
-  <product-modal
+  <prod-modal
     :show="!!uiState.quickViewProduct"
-    :product="uiState.quickViewProduct"
+    :prod="uiState.quickViewProduct"
     :cart-mode="uiState.cartModalMode"
-    :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProduct(uiState.quickViewProduct); uiState.quickViewProduct=null; } }"
+    :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }"
     :toggle-like="toggleLike"
     :is-liked="isLiked"
     @close="uiState.quickViewProduct=null; uiState.cartModalMode=false"

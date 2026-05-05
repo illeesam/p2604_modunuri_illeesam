@@ -1,4 +1,4 @@
-/* ShopJoy - Blog (블로그 목록) */
+﻿/* ShopJoy - Blog (블로그 목록) */
 window.Blog = {
   name: 'Blog',
   props: {
@@ -124,7 +124,7 @@ window.Blog = {
     <aside>
       <!-- -- 카테고리 ------------------------------------------------------- -->
       <div style="margin-bottom:28px;">
-        <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">Product Categories</h3>
+        <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">Prod Categories</h3>
         <ul style="list-style:none;padding:0;margin:0;">
           <li v-for="cat in categories" :key="cat.id"
             @click="searchParam.cat=cat.id;onSearch()"

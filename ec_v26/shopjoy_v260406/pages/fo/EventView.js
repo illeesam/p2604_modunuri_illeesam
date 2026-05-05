@@ -1,4 +1,4 @@
-/* ShopJoy - EventView (이벤트 상세) */
+﻿/* ShopJoy - EventView (이벤트 상세) */
 window.EventView = {
   name: 'EventView',
   props: {
@@ -44,7 +44,7 @@ window.EventView = {
     const setTab = (i) => { uiState.activeTab = i; };
 
     /* 현재 탭 상품 ID 목록 → 이미지/이름 생성 */
-    const cfTabProducts = computed(() => {
+    const cfTabProds = computed(() => {
       const set = cfEvent.value.productSets[uiState.activeTab] || [];
       return set.map(id => ({
         id,
@@ -53,8 +53,8 @@ window.EventView = {
         origPrice: null,
         discount: [0,0,10,15,20,30,0,0,10,25,0,15][id % 12],
         img: id <= 12
-          ? `assets/cdn/prod/img/shop/product/fashion/fashion-${id}.webp`
-          : `assets/cdn/prod/img/shop/product/product_${((id-1)%23)+1}.png`,
+          ? `assets/cdn/prod/img/shop/prod/fashion/fashion-${id}.webp`
+          : `assets/cdn/prod/img/shop/prod/prod_${((id-1)%23)+1}.png`,
       })).map(p => ({
         ...p,
         origPrice: p.discount ? Math.round(p.price / (1 - p.discount/100) / 1000) * 1000 : null,
@@ -72,7 +72,7 @@ window.EventView = {
 
     // -- return ---------------------------------------------------------------
 
-    return { cfEvent, setTab, cfTabProducts, cfPromoEvents, uiState, codes };
+    return { cfEvent, setTab, cfTabProds, cfPromoEvents, uiState, codes };
   },
 
   template: /* html */ `
@@ -157,7 +157,7 @@ window.EventView = {
 
       <!-- -- 상품 그리드 ----------------------------------------------------- -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;">
-        <div v-for="p in cfTabProducts" :key="p.id"
+        <div v-for="p in cfTabProds" :key="p.id"
           style="cursor:pointer;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:transform .15s,box-shadow .15s;"
           @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 18px rgba(0,0,0,0.09)'"
           @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">

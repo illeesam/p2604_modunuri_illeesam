@@ -1,4 +1,4 @@
-/* ShopJoy - Prod01List (API 로드 + 고급 필터 + PC 페이지네이션 + 모바일 무한스크롤) */
+﻿/* ShopJoy - Prod01List (API 로드 + 고급 필터 + PC 페이지네이션 + 모바일 무한스크롤) */
 window.Prod02List = {
   name: "Prod02List",
   props: {
@@ -7,8 +7,8 @@ window.Prod02List = {
   setup(props) {
 
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
-    const products             = window.foApp.products;
-    const selectProduct        = (p) => window.foApp.selectProduct(p);
+    const prods             = window.foApp.prods;
+    const selectProd        = (p) => window.foApp.selectProd(p);
     const toggleLike           = (id) => window.foApp.toggleLike(id);
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
@@ -35,30 +35,30 @@ window.Prod02List = {
       if (p.sizes  && !p.opt2s) { p.opt2s = p.sizes; }
       /* 이미지 자동 할당 */
       if (!p.image) {
-        const id = p.productId || 1;
+        const id = p.prodId || 1;
         if (id <= 12) {
           p.image  = `${IMG_BASE}/fashion/fashion-${id}.webp`;
           p.images = [p.image, `${IMG_BASE}/fashion/fashion-${((id % 12) + 1)}.webp`];
         } else {
           const n = ((id - 1) % 23) + 1;
-          p.image  = `${IMG_BASE}/product_${n}.png`;
-          p.images = [p.image, `${IMG_BASE}/product_${(n % 23) + 1}.png`];
+          p.image  = `${IMG_BASE}/prod_${n}.png`;
+          p.images = [p.image, `${IMG_BASE}/prod_${(n % 23) + 1}.png`];
         }
       }
       return p;
     };
 
     /* -- 상품 데이터 -- */
-    const allProducts = reactive([]);
+    const allProds = reactive([]);
 
     const fnBuildPagerNums = () => {
-      const t = Math.max(1, Math.ceil(allProducts.length / pager.pageSize));
+      const t = Math.max(1, Math.ceil(allProds.length / pager.pageSize));
       pager.pageTotalPage = t;
-      pager.pageTotalCount = allProducts.length;
+      pager.pageTotalCount = allProds.length;
       const c = pager.pageNo;
       pager.pageList = uiState.isMobile
-        ? allProducts.slice(0, c * pager.pageSize)
-        : allProducts.slice((c - 1) * pager.pageSize, c * pager.pageSize);
+        ? allProds.slice(0, c * pager.pageSize)
+        : allProds.slice((c - 1) * pager.pageSize, c * pager.pageSize);
       if (t <= 7) { pager.pageNums = Array.from({ length: t }, (_, i) => i + 1); return; }
       const set = new Set([1, t, c-2, c-1, c, c+1, c+2].filter(n => n >= 1 && n <= t));
       const sorted = [...set].sort((a, b) => a - b);
@@ -70,7 +70,7 @@ window.Prod02List = {
       pager.pageNums = result;
     };
 
-    const handleLoadProducts = async () => {
+    const handleLoadProds = async () => {
       uiState.loading = true;
       try {
         const params = {
@@ -85,21 +85,21 @@ window.Prod02List = {
         const res = await foApiSvc.pdProd.getPage(params, '상품목록', '목록조회');
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
-        allProducts.splice(0, allProducts.length, ...(res.data?.data?.pageList || []).map(p => assignImage({
+        allProds.splice(0, allProds.length, ...(res.data?.data?.pageList || []).map(p => assignImage({
           ...p,
           priceNum: p.price,
           price: p.price.toLocaleString() + '원',
         })));
-        /* app.js products 도 갱신해 Detail/Cart 에서 동일 객체 참조 가능하게 */
+        /* app.js prods 도 갱신해 Detail/Cart 에서 동일 객체 참조 가능하게 */
         try {
-          if (window.SITE_CONFIG && Array.isArray(window.SITE_CONFIG.products)) {
-            window.SITE_CONFIG.products.splice(0, window.SITE_CONFIG.products.length, ...allProducts);
+          if (window.SITE_CONFIG && Array.isArray(window.SITE_CONFIG.prods)) {
+            window.SITE_CONFIG.prods.splice(0, window.SITE_CONFIG.prods.length, ...allProds);
           }
         } catch (e) {}
         fnBuildPagerNums();
       } catch (e) {
         console.error('[handleSearchList]', e);
-        allProducts.splice(0, allProducts.length);
+        allProds.splice(0, allProds.length);
       } finally {
         uiState.loading = false;
       }
@@ -113,13 +113,13 @@ window.Prod02List = {
     /* -- 필터 옵션 (로드된 상품 기반) -- */
     const cfAllColors = computed(() => {
       const map = new Map();
-      allProducts.forEach(p => (p.opt1s || []).forEach(c => { if (!map.has(c.name)) map.set(c.name, c); }));
+      allProds.forEach(p => (p.opt1s || []).forEach(c => { if (!map.has(c.name)) map.set(c.name, c); }));
       return [...map.values()];
     });
     const sizeOrder = ['FREE','XS','S','M','L','XL','XXL','XXXL'];
     const cfAllSizes = computed(() => {
       const seen = new Set();
-      allProducts.forEach(p => (p.opt2s || []).forEach(s => seen.add(s)));
+      allProds.forEach(p => (p.opt2s || []).forEach(s => seen.add(s)));
       return [...seen].sort((a, b) => {
         const ai = sizeOrder.indexOf(a); const bi = sizeOrder.indexOf(b);
         if (ai < 0 && bi < 0) return a.localeCompare(b);
@@ -166,7 +166,7 @@ window.Prod02List = {
       selCats
     ], () => {
       pager.pageNo = 1;
-      handleLoadProducts();
+      handleLoadProds();
     });
 
     /* -- IntersectionObserver (모바일 무한스크롤) -- */
@@ -186,12 +186,12 @@ window.Prod02List = {
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleLoadProducts();
+      await handleLoadProds();
       setupObserver();
     };
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
-      await handleLoadProducts();
+      await handleLoadProds();
       setupObserver();
     };
 
@@ -210,7 +210,7 @@ window.Prod02List = {
 
     return { pager,
       uiState,
-      allProducts,
+      allProds,
       selColors, selSizes, selCats,
       cfAllColors, cfAllSizes, cfAllCats,
       toggleColor, toggleSize, toggleCat, cfHasFilter, clearFilters,
@@ -220,7 +220,7 @@ window.Prod02List = {
       onResize,
       setupObserver,
       observer,
-      isLiked, toggleLike, selectProduct,
+      isLiked, toggleLike, selectProd,
     };
   },
   template: /* html */ `
@@ -373,14 +373,14 @@ window.Prod02List = {
   <!-- -- 결과 요약 ---------------------------------------------------------- -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div style="font-size:0.85rem;color:var(--text-secondary);">
-      총 <strong style="color:var(--text-primary);">{{ allProducts.length }}</strong>개 상품
+      총 <strong style="color:var(--text-primary);">{{ allProds.length }}</strong>개 상품
       <span v-if="cfHasFilter" style="color:#f97316;font-size:0.78rem;margin-left:6px;">(필터 적용중)</span>
     </div>
   </div>
 
   <!-- -- 스켈레톤 -- -->
   <div v-if="uiState.loading" class="grid-3">
-    <div v-for="i in 6" :key="'sk'+i" class="product-card" style="overflow:hidden;">
+    <div v-for="i in 6" :key="'sk'+i" class="prod-card" style="overflow:hidden;">
       <div style="height:160px;" class="skeleton-line"></div>
       <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
         <div class="skeleton-line" style="height:14px;width:70%;"></div>
@@ -396,8 +396,8 @@ window.Prod02List = {
 
   <!-- -- 상품 그리드 -- -->
   <div v-else class="grid-3">
-    <div v-for="p in pager.pageList" :key="p.productId"
-      class="product-card" style="cursor:pointer;" @click="selectProduct(p)">
+    <div v-for="p in pager.pageList" :key="p.prodId"
+      class="prod-card" style="cursor:pointer;" @click="selectProd(p)">
 
       <!-- -- 썸네일 -------------------------------------------------------- -->
       <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;">
@@ -413,12 +413,12 @@ window.Prod02List = {
           {{ Math.round((1-p.priceNum/p.originalPrice)*100) }}%
         </span>
         <!-- -- 좋아요 버튼 --------------------------------------------------- -->
-        <button v-if="toggleLike" @click.stop="toggleLike(p.productId)"
+        <button v-if="toggleLike" @click.stop="toggleLike(p.prodId)"
           style="position:absolute;bottom:10px;right:10px;width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;"
           title="위시리스트">
           <svg width="16" height="16" viewBox="0 0 24 24"
-            :fill="isLiked&&isLiked(p.productId)?'#ef4444':'none'"
-            :stroke="isLiked&&isLiked(p.productId)?'#ef4444':'#555'"
+            :fill="isLiked&&isLiked(p.prodId)?'#ef4444':'none'"
+            :stroke="isLiked&&isLiked(p.prodId)?'#ef4444':'#555'"
             stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
         </button>
       </div>
@@ -456,13 +456,13 @@ window.Prod02List = {
           </template>
         </div>
 
-        <button class="btn-outline" style="width:100%;padding:9px;" @click.stop="selectProduct(p)">상세보기</button>
+        <button class="btn-outline" style="width:100%;padding:9px;" @click.stop="selectProd(p)">상세보기</button>
       </div>
     </div>
   </div>
 
   <!-- -- 결과 없음 ---------------------------------------------------------- -->
-  <div v-if="!uiState.loading && allProducts.length===0"
+  <div v-if="!uiState.loading && allProds.length===0"
     style="text-align:center;padding:60px 0;color:var(--text-muted);">
     <div style="font-size:3rem;margin-bottom:12px;">🔍</div>
     <div style="font-size:1rem;font-weight:600;">해당 조건의 상품이 없습니다.</div>

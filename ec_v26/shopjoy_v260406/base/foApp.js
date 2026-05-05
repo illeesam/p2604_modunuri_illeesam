@@ -1,4 +1,4 @@
-/* ============================================
+﻿/* ============================================
    ShopJoy - FO Vue 3 SPA (의류 쇼핑몰)
    ============================================ */
 (function () {
@@ -182,7 +182,7 @@
     const _instantOrderToParams = (io) => {
       if (!io) return {};
       return {
-        prodId: io.product?.productId ?? '',
+        prodId: io.prod?.prodId ?? '',
         opt1Nm: io.color?.name        ?? '',   // 색상명 (colorId 없으므로 name 사용)
         opt2Id: io.size               ?? '',
         qty:    io.qty                ?? 1,
@@ -192,14 +192,14 @@
     /* URL 해시 파라미터 → instantOrder 재구성 */
     const _instantOrderFromParams = (params) => {
       const prodId = Number(params.get('prodId'));
-      if (!prodId || !Array.isArray(products)) return null;
-      const product = products.find(p => Number(p.productId) === prodId);
-      if (!product) return null;
+      if (!prodId || !Array.isArray(prods)) return null;
+      const prod = prods.find(p => Number(p.prodId) === prodId);
+      if (!prod) return null;
       const opt1Nm = params.get('opt1Nm') || '';
-      const color  = Array.isArray(product.opt1s) ? product.opt1s.find(c => c.name === opt1Nm) || null : null;
+      const color  = Array.isArray(prod.opt1s) ? prod.opt1s.find(c => c.name === opt1Nm) || null : null;
       const size   = params.get('opt2Id') || null;
       const qty    = Math.max(1, Number(params.get('qty')) || 1);
-      return { product, color, size, qty };
+      return { prod, color, size, qty };
     };
 
     const navigate = (id, opts = {}) => {
@@ -336,7 +336,7 @@
       new Promise(r => Object.assign(confirmState, { show: true, title, msg, type, resolve: r }));
     const closeConfirm = r => { confirmState.show = false; confirmState.resolve?.(r); };
 
-    /* ── Products (이미지 자동 할당) ── */
+    /* ── Prods (이미지 자동 할당) ── */
     const _IMG = 'assets/cdn/prod/img/shop/product';
     const _assignImg = (p) => {
       /* colors→opt1s, sizes→opt2s 호환 */
@@ -344,14 +344,14 @@
       if (p.sizes  && !p.opt2s) { p.opt2s = p.sizes; }
       /* 이미지 자동 할당 */
       if (!p.image) {
-        const id = p.productId || 1;
+        const id = p.prodId || 1;
         if (id <= 12) {
           p.image = `${_IMG}/fashion/fashion-${id}.webp`;
           p.images = [p.image, `${_IMG}/fashion/fashion-${((id % 12) + 1)}.webp`];
         } else {
           const n = ((id - 1) % 23) + 1;
-          p.image = `${_IMG}/product_${n}.png`;
-          p.images = [p.image, `${_IMG}/product_${(n % 23) + 1}.png`];
+          p.image = `${_IMG}/prod_${n}.png`;
+          p.images = [p.image, `${_IMG}/prod_${(n % 23) + 1}.png`];
         }
       }
       /* priceNum 보정 */
@@ -361,12 +361,12 @@
       return p;
     };
     /* SITE_CONFIG로 초기값 동기 세팅 → foApi 로드 성공 시 덮어씀 */
-    const _initFallback = window.SITE_CONFIG?.products || [];
+    const _initFallback = window.SITE_CONFIG?.prods || [];
     _initFallback.forEach(_assignImg);
-    const products = reactive([..._initFallback]);
-    const selectedProduct = ref(_initFallback.length > 0 ? _initFallback[0] : null);
-    const selectProduct = p => {
-      selectedProduct.value = p;
+    const prods = reactive([..._initFallback]);
+    const selectedProd = ref(_initFallback.length > 0 ? _initFallback[0] : null);
+    const selectProd = p => {
+      selectedProd.value = p;
       navigate('prodView');
     };
 
@@ -377,13 +377,13 @@
       if (savedLikes) likes = new Set(JSON.parse(savedLikes));
     } catch (e) {}
     const saveLikes = () => { try { localStorage.setItem('shopjoy_likes', JSON.stringify([...likes])); } catch (e) {} };
-    const toggleLike = (productId) => {
+    const toggleLike = (prodId) => {
       const s = new Set(likes);
-      if (s.has(productId)) s.delete(productId); else s.add(productId);
+      if (s.has(prodId)) s.delete(prodId); else s.add(prodId);
       likes = s;
       saveLikes();
     };
-    const isLiked = (productId) => likes.has(productId);
+    const isLiked = (prodId) => likes.has(prodId);
     const cfLikeCount = computed(() => likes.size);
 
     /* ── Cart ── */
@@ -397,18 +397,18 @@
         + Math.random().toString(36).slice(2,6).toUpperCase();
     };
 
-    /* products 로드 후: 장바구니 복원 + URL pid 복원 */
-    const _restoreAfterProducts = () => {
+    /* prods 로드 후: 장바구니 복원 + URL pid 복원 */
+    const _restoreAfterProds = () => {
       try {
         const saved = localStorage.getItem('shopjoy_cart');
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed)) {
             parsed.forEach(item => {
-              const p = products.find(x => x.productId === item.productId);
+              const p = prods.find(x => x.prodId === item.prodId);
               if (p && item.color && item.size && Array.isArray(p.opt1s)) {
                 const color = p.opt1s.find(c => c.name === item.color.name) || item.color;
-                cart.push({ cartId: item.cartId || genId(), product: p, color, size: item.size, qty: item.qty || 1 });
+                cart.push({ cartId: item.cartId || genId(), prod: p, color, size: item.size, qty: item.qty || 1 });
               }
             });
           }
@@ -417,51 +417,51 @@
       try {
         const rawHash = String(window.location.hash || '').replace(/^#/, '');
         if (rawHash.includes('page=')) {
-          const hpid = new URLSearchParams(rawHash).get('pid');
+          const hpid = new URLSearchParams(rawHash).get('prodid');
           const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
           if (!Number.isNaN(pid)) {
-            const f = products.find(x => Number(x.productId) === pid);
-            if (f) selectedProduct.value = f;
+            const f = prods.find(x => Number(x.prodId) === pid);
+            if (f) selectedProd.value = f;
           }
         }
       } catch (e) {}
-      if (!selectedProduct.value && products.length > 0) selectedProduct.value = products[0];
+      if (!selectedProd.value && prods.length > 0) selectedProd.value = prods[0];
     };
 
     /* ── 상품 데이터 로드 ── */
-    const handleFetchProducts = async () => {
+    const handleFetchProds = async () => {
       try {
         const res = await foApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 200 }, '상품', '목록조회');
         const list = res.data?.data?.pageList || [];
         list.forEach(_assignImg);
-        products.splice(0, products.length, ...list);
+        prods.splice(0, prods.length, ...list);
       } catch (e) {
         /* 초기값이 이미 SITE_CONFIG fallback이므로 API 실패 시 추가 처리 불필요 */
       }
-      _restoreAfterProducts();
+      _restoreAfterProds();
     };
-    onMounted(() => { handleFetchProducts(); });
+    onMounted(() => { handleFetchProds(); });
 
     const saveCart = () => {
       try {
         localStorage.setItem('shopjoy_cart', JSON.stringify(
-          cart.map(i => ({ cartId: i.cartId, productId: i.product.productId, color: i.color, size: i.size, qty: i.qty }))
+          cart.map(i => ({ cartId: i.cartId, prodId: i.prod.prodId, color: i.color, size: i.size, qty: i.qty }))
         ));
       } catch (e) {}
     };
 
     const cfCartCount = computed(() => cart.reduce((s, i) => s + i.qty, 0));
 
-    const addToCart = (product, color, size, qty = 1) => {
+    const addToCart = (prod, color, size, qty = 1) => {
       const existing = cart.find(i =>
-        i.product.productId === product.productId &&
+        i.prod.prodId === prod.prodId &&
         i.color.name === color.name &&
         i.size === size
       );
       if (existing) {
         existing.qty += qty;
       } else {
-        cart.push({ cartId: genId(), product, color, size, qty });
+        cart.push({ cartId: genId(), prod, color, size, qty });
       }
       saveCart();
       showToast(`장바구니에 담았습니다! (${color.name} / ${size})`, 'success');
@@ -560,11 +560,11 @@
           instantOrder.value = null;
           cartIds.splice(0, cartIds.length);
         }
-        const hpid = params.get('pid');
+        const hpid = params.get('prodid');
         const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
         if (!Number.isNaN(pid)) {
-          const f = products.find(x => Number(x.productId) === pid);
-          if (f) selectedProduct.value = f;
+          const f = prods.find(x => Number(x.prodId) === pid);
+          if (f) selectedProd.value = f;
         }
         const hEventId = params.get('eventId');
         const hEditId  = params.get('dtlId');
@@ -580,7 +580,7 @@
       const params = new URLSearchParams();
       params.set('page', page.value);
       if (id === 'prodView') {
-        params.set('pid', selectedProduct.value?.productId ?? '');
+        params.set('prodid', selectedProd.value?.prodId ?? '');
       }
       if (id === 'order' && instantOrder.value) {
         const io = _instantOrderToParams(instantOrder.value);
@@ -610,7 +610,7 @@
       if (!raw || !raw.includes('page=')) {
         const pr = new URLSearchParams();
         pr.set('page', page.value);
-        if (page.value === 'prodView') pr.set('pid', String(selectedProduct.value?.productId ?? ''));
+        if (page.value === 'prodView') pr.set('prodid', String(selectedProd.value?.prodId ?? ''));
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
       }
     } catch (e) {}
@@ -640,8 +640,8 @@
       get instantOrder()  { return instantOrder.value; },
       get cartIds()       { return cartIds; },
       get config()        { return window.SITE_CONFIG; },
-      get products()      { return products; },
-      get selectedProduct() { return selectedProduct.value; },
+      get prods()      { return prods; },
+      get selectedProd() { return selectedProd.value; },
       get auth()          { return auth; },
       addToCart,
       removeFromCart,
@@ -653,7 +653,7 @@
       showConfirm,
       toggleLike,
       isLiked,
-      selectProduct,
+      selectProd,
     };
     return {
       theme, toggleTheme,
@@ -662,7 +662,7 @@
       isApiLoading,
       alertState, showAlert, closeAlert,
       confirmState, showConfirm, closeConfirm,
-      products, selectedProduct, selectProduct,
+      prods, selectedProd, selectProd,
       cart, cfCartCount, addToCart, removeFromCart, updateCartQty, clearCart,
       likes, toggleLike, isLiked, cfLikeCount,
       instantOrder, cartIds, viewEditId,

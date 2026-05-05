@@ -1,4 +1,4 @@
-/* ShopJoy - Prod01View (상품 상세 리뉴얼) */
+﻿/* ShopJoy - Prod01View (상품 상세 리뉴얼) */
 window.Prod03View = {
   name: "Prod03View",
   props: {
@@ -7,7 +7,7 @@ window.Prod03View = {
   setup(props) {
 
     const { ref, computed, onMounted, onBeforeUnmount, watch, reactive } = Vue;
-    const product              = window.foApp.selectedProduct;
+    const prod              = window.foApp.selectedProd;
     const addToCart            = window.foApp.addToCart;
     const showToast            = window.foApp.showToast;
     const showAlert            = window.foApp.showAlert;
@@ -17,18 +17,18 @@ window.Prod03View = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy' });
     const codes = reactive({});
 
-    const svProduct = ref(product || null);
+    const svProduct = ref(prod || null);
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
-      const productId = svProduct.value?.productId;
-      if (!productId) return;
+      const prodId = svProduct.value?.prodId;
+      if (!prodId) return;
       try {
-        const res = await foApiSvc.pdProd.getById(productId, '상품상세', '상세조회');
+        const res = await foApiSvc.pdProd.getById(prodId, '상품상세', '상세조회');
         // Tier 1 응답 구조: { prod, images, opts, skus } — 현재는 prod 기본정보만 머지
         // (opt1s/opt2s 등 화면 전용 필드는 mock 유지. 디자인 모델 확정 시 어댑터 추가)
         const data = res.data?.data || {};
         const prod = data.prod || data;
-        if (prod && (prod.prodId || prod.productId)) {
+        if (prod && (prod.prodId || prod.prodId)) {
           svProduct.value = { ...svProduct.value, ...prod };
         }
       } catch (e) {
@@ -87,8 +87,8 @@ window.Prod03View = {
     /* -- 이미지 목록 (선택 색상별 교체) -- */
     const _IMG = 'assets/cdn/prod/img/shop/product';
     const _buildColorImages = (p, colorIdx) => {
-      const id = p.productId || 1;
-      const base = id <= 12 ? 'fashion' : 'product';
+      const id = p.prodId || 1;
+      const base = id <= 12 ? 'fashion' : 'prod';
       if (base === 'fashion') {
         /* fashion 이미지 3장씩 순환: colorIdx 기준 오프셋 */
         const startIdx = ((id - 1) * 3 + colorIdx * 3) % 12 + 1;
@@ -100,14 +100,14 @@ window.Prod03View = {
           return { src: `${_IMG}/fashion/fashion-${n}.webp`, label: '이미지 ' + offset };
         });
       }
-      /* product png: 3장씩 순환 */
+      /* prod png: 3장씩 순환 */
       const startIdx = ((id - 1) * 3 + colorIdx * 2) % 23 + 1;
       return [0,1,2].map(offset => {
         const n = ((startIdx - 1 + offset) % 23) + 1;
 
     // -- return ---------------------------------------------------------------
 
-        return { src: `${_IMG}/product_${n}.png`, label: '이미지 ' + (offset + 1) };
+        return { src: `${_IMG}/prod_${n}.png`, label: '이미지 ' + (offset + 1) };
       });
     };
 
@@ -137,7 +137,7 @@ window.Prod03View = {
     const cfMockReviews = computed(() => {
       const p = svProduct.value;
       if (!p) return [];
-      const pid    = p.productId || 1;
+      const pid    = p.prodId || 1;
       const colors = p.opt1s || [];
       const sizes  = p.opt2s  || ['S', 'M', 'L'];
       return MOCK_NAMES.map((name, i) => {
@@ -327,7 +327,7 @@ window.Prod03View = {
       window.removeEventListener('popstate', onPopState);
     });
 
-    watch(() => product, (p) => {
+    watch(() => prod, (p) => {
       svProduct.value = p;
       uiState.selectedColor = (p?.opt1s || []).find(c => colorStatus(c) === 'ok') || null;
       uiState.selectedSize  = null;
@@ -350,7 +350,7 @@ window.Prod03View = {
       const p = svProduct.value;
       if (!p) return {};
       const opt1s = p.opt1s || [];
-      const pid = p.productId || 1;
+      const pid = p.prodId || 1;
       const map = {};
       opt1s.forEach((c, i) => {
         const seed = (pid * 11 + i * 17) % 25;
@@ -366,7 +366,7 @@ window.Prod03View = {
       const p = svProduct.value;
       if (!p) return {};
       const sizes = p.opt2s || [];
-      const pid = p.productId || 1;
+      const pid = p.prodId || 1;
       const map = {};
       sizes.forEach((s, i) => {
         const seed = (pid * 7 + i * 13) % 20;
@@ -488,7 +488,7 @@ window.Prod03View = {
       uiState.quickBuyOpen = false;
       props.navigate('order', {
         instantOrder: {
-          product: svProduct.value,
+          prod: svProduct.value,
           color: uiState.selectedColor,
           size: uiState.selectedSize,
           qty: uiState.qty,
@@ -561,7 +561,7 @@ window.Prod03View = {
 
     return {
       uiState,
-      product: svProduct,
+      prod: svProduct,
       cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
       openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
       sizeGuideRows, styleItems,
@@ -592,7 +592,7 @@ window.Prod03View = {
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
     <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);"></div>
     <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Product</div>
+      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Prod</div>
       <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">상품 상세</h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
         <span style="cursor:pointer;" @click="navigate('home')">홈</span>
@@ -605,7 +605,7 @@ window.Prod03View = {
   </div>
 
 
-  <template v-if="product">
+  <template v-if="prod">
     <!-- -- ══ 상단: 갤러리 + 구매 옵션 ══ ---------------------------------------- -->
     <div class="prod-top-wrap" style="max-width:1100px;margin:0 auto;">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(16px,3vw,32px);align-items:start;" class="detail-grid">
@@ -619,12 +619,12 @@ window.Prod03View = {
             @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'">
             <div style="border-radius:12px;border:1px solid var(--border);overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
               @click="uiState.zoomOpen=true">
-              <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="product.prodNm"
+              <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="prod.prodNm"
                 style="width:100%;height:100%;object-fit:cover;" />
-              <div v-if="product.badge" style="position:absolute;top:14px;left:14px;">
-                <span v-if="product.badge==='NEW'"
+              <div v-if="prod.badge" style="position:absolute;top:14px;left:14px;">
+                <span v-if="prod.badge==='NEW'"
                   style="background:var(--blue);color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">NEW</span>
-                <span v-else-if="product.badge==='인기'"
+                <span v-else-if="prod.badge==='인기'"
                   style="background:#ff6b35;color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">인기</span>
               </div>
             </div>
@@ -672,8 +672,8 @@ window.Prod03View = {
 
             <!-- -- 상품명 + 카테고리 ------------------------------------------- -->
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
-              <h1 style="font-size:1.25rem;font-weight:800;color:var(--text-primary);flex:1;min-width:0;line-height:1.3;">{{ product.prodNm }}</h1>
-              <span style="font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--blue-dim);color:var(--blue);flex-shrink:0;white-space:nowrap;">{{ fnCategoryLabel(product) }}</span>
+              <h1 style="font-size:1.25rem;font-weight:800;color:var(--text-primary);flex:1;min-width:0;line-height:1.3;">{{ prod.prodNm }}</h1>
+              <span style="font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--blue-dim);color:var(--blue);flex-shrink:0;white-space:nowrap;">{{ fnCategoryLabel(prod) }}</span>
             </div>
 
             <!-- -- 별점 미리보기 ---------------------------------------------- -->
@@ -693,7 +693,7 @@ window.Prod03View = {
                 <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                <div v-for="c in product.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
+                <div v-for="c in prod.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
                   <button @click="selectColor(c)"
                     :title="c.name + (colorStatus(c)==='soldout' ? ' (품절)' : colorStatus(c)==='stop' ? ' (판매중지)' : '')"
                     :style="{
@@ -720,7 +720,7 @@ window.Prod03View = {
             </div>
 
             <!-- -- 사이즈 선택 (FREE 또는 미설정이면 숨김) ---------------------------- -->
-            <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:20px;">
+            <div v-if="prod.opt2s && prod.opt2s.length && !(prod.opt2s.length===1 && prod.opt2s[0]==='FREE')" style="margin-bottom:20px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
                 <button @click="uiState.showSizeGuide=true"
@@ -729,7 +729,7 @@ window.Prod03View = {
                 </button>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                <button v-for="s in product.opt2s" :key="s" @click="selectSize(s)"
+                <button v-for="s in prod.opt2s" :key="s" @click="selectSize(s)"
                   :style="{
                     padding:'7px 14px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                     cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
@@ -770,16 +770,16 @@ window.Prod03View = {
             <div ref="buyBtnRef" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
               <div style="display:flex;gap:8px;">
                 <button class="btn-blue" style="flex:1;padding:13px;font-size:0.95rem;" @click="handleAddToCart">🛒 장바구니 담기</button>
-                <button @click="toggleLike && toggleLike(product.productId)"
-                  :title="isLiked && isLiked(product.productId) ? '찜 해제' : '찜하기'"
+                <button @click="toggleLike && toggleLike(prod.prodId)"
+                  :title="isLiked && isLiked(prod.prodId) ? '찜 해제' : '찜하기'"
                   :style="{
                     width:'52px',flexShrink:0,border:'1.5px solid var(--border)',borderRadius:'10px',
-                    background: isLiked && isLiked(product.productId) ? '#fee2e2' : 'var(--bg-card)',
+                    background: isLiked && isLiked(prod.prodId) ? '#fee2e2' : 'var(--bg-card)',
                     cursor:'pointer',fontSize:'1.3rem',display:'flex',alignItems:'center',justifyContent:'center',
                     transition:'all .15s',
                   }">
-                  <span :style="{ color: isLiked && isLiked(product.productId) ? '#ef4444' : '#9ca3af' }">
-                    {{ isLiked && isLiked(product.productId) ? '♥' : '♡' }}
+                  <span :style="{ color: isLiked && isLiked(prod.prodId) ? '#ef4444' : '#9ca3af' }">
+                    {{ isLiked && isLiked(prod.prodId) ? '♥' : '♡' }}
                   </span>
                 </button>
               </div>
@@ -842,9 +842,9 @@ window.Prod03View = {
 
         <div class="card" style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
           <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">📋 상품 설명</h2>
-          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.9;margin-bottom:16px;">{{ product.desc }}</p>
+          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.9;margin-bottom:16px;">{{ prod.desc }}</p>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <span v-for="t in product.tags" :key="t"
+            <span v-for="t in prod.tags" :key="t"
               style="padding:4px 12px;background:var(--bg-base);border:1px solid var(--border);border-radius:20px;font-size:0.78rem;color:var(--text-secondary);"># {{ t }}</span>
           </div>
         </div>
@@ -1005,14 +1005,14 @@ window.Prod03View = {
 
   <!-- -- ══ 이미지 확대 모달 ══ ------------------------------------------------ -->
   <teleport to="body">
-  <div v-if="uiState.zoomOpen && product" @click="uiState.zoomOpen=false"
+  <div v-if="uiState.zoomOpen && prod" @click="uiState.zoomOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
     <!-- -- 닫기 ----------------------------------------------------------- -->
     <button @click.stop="uiState.zoomOpen=false"
       style="position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.8);color:#fff;font-size:1.4rem;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1510;">✕</button>
     <!-- -- 메인 확대 이미지 ---------------------------------------------------- -->
     <div @click.stop style="position:relative;width:95vw;height:85vh;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-      <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="product.prodNm"
+      <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="prod.prodNm"
         style="max-width:95vw;max-height:85vh;object-fit:contain;display:block;" />
       <!-- -- 좌/우 화살표 ---------------------------------------------------- -->
       <button @click.stop="uiState.selectedImg=(uiState.selectedImg-1+cfMockImages.length)%cfMockImages.length"
@@ -1038,7 +1038,7 @@ window.Prod03View = {
 
   <!-- -- ══ 포토 전체 팝업 ══ ------------------------------------------------- -->
   <teleport to="body">
-  <div v-if="uiState.photoPopupOpen && product" @click.self="uiState.photoPopupOpen=false"
+  <div v-if="uiState.photoPopupOpen && prod" @click.self="uiState.photoPopupOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;">
     <!-- -- 좌 화살표 -------------------------------------------------------- -->
     <button v-if="cfPhotoGridPageCount > 1" @click="photoGridPrev"
@@ -1078,7 +1078,7 @@ window.Prod03View = {
 
   <!-- -- ══ 포토 리뷰 개별 팝업 ══ ---------------------------------------------- -->
   <teleport to="body">
-  <div v-if="selectedReview && product" @click.self="closePhotoDetail"
+  <div v-if="selectedReview && prod" @click.self="closePhotoDetail"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1501;display:flex;align-items:center;justify-content:center;padding:20px;">
 
     <!-- -- 좌 화살표 -------------------------------------------------------- -->
@@ -1161,11 +1161,11 @@ window.Prod03View = {
   </teleport>
 
   <!-- -- ══ 고정 하단 바 ══ -------------------------------------------------- -->
-  <div v-if="product && uiState.showBottomBar"
+  <div v-if="prod && uiState.showBottomBar"
     style="position:fixed;bottom:0;left:0;right:0;z-index:100;padding:10px 24px;display:flex;justify-content:center;align-items:center;background:linear-gradient(to top, var(--bg-card) 0%, rgba(245,248,255,0.98) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--border);box-shadow:0 -4px 18px rgba(80,100,160,0.08);">
     <div style="display:flex;align-items:center;gap:10px;max-width:760px;width:100%;">
       <div style="flex:1;min-width:0;overflow:hidden;">
-        <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ product.prodNm }}</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ prod.prodNm }}</div>
         <div style="font-size:1.05rem;font-weight:900;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ cfDisplayPrice }}</div>
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
@@ -1176,7 +1176,7 @@ window.Prod03View = {
   </div>
 
   <!-- -- ══ 바로구매 드로어 (우측) ══ -------------------------------------------- -->
-  <template v-if="uiState.quickBuyOpen && product">
+  <template v-if="uiState.quickBuyOpen && prod">
     <!-- -- 딤 오버레이 ------------------------------------------------------- -->
     <div @click="quickBuyOpen=false"
       style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:150;transition:opacity .25s;"></div>
@@ -1200,7 +1200,7 @@ window.Prod03View = {
             <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            <div v-for="c in product.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div v-for="c in prod.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
               <button @click="selectColor(c)" :title="c.name"
                 :style="{
                   width:'30px',height:'30px',borderRadius:'50%',
@@ -1223,7 +1223,7 @@ window.Prod03View = {
         </div>
 
         <!-- -- 사이즈 (FREE면 숨김) ------------------------------------------- -->
-        <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:20px;">
+        <div v-if="prod.opt2s && prod.opt2s.length && !(prod.opt2s.length===1 && prod.opt2s[0]==='FREE')" style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div style="display:flex;align-items:center;gap:6px;">
               <span :style="{ fontSize:'0.82rem', fontWeight:'600', color: sizeError ? '#ef4444' : 'var(--text-secondary)' }">사이즈<span style="margin-left:2px;">*</span></span>
@@ -1236,7 +1236,7 @@ window.Prod03View = {
             border: sizeError ? '1px solid #ef4444' : '1px solid transparent',
             borderRadius:'6px', transition:'border-color .2s',
           }">
-            <button v-for="s in product.opt2s" :key="s" @click="selectSize(s)"
+            <button v-for="s in prod.opt2s" :key="s" @click="selectSize(s)"
               :style="{
                 padding:'7px 16px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                 cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',

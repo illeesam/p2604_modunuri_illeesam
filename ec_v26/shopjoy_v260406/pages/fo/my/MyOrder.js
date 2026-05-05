@@ -1,4 +1,4 @@
-/* ShopJoy - My 주문 페이지 (#page=myOrder) */
+﻿/* ShopJoy - My 주문 페이지 (#page=myOrder) */
 window.MyOrder = {
   name: 'MyOrder',
   props: {
@@ -101,7 +101,7 @@ window.MyOrder = {
     const cfClaimModalProduct = computed(() => {
       if (!claimModal.order) return null;
       const name = claimModal.order.items[claimModal.exchangeItemIdx]?.prodNm;
-      return window.SITE_CONFIG.products.find(p => p.prodNm === name) || null;
+      return window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
     });
     const openClaimModal = (orderId, type) => {
       claimModal.show = true; claimModal.type = type; claimModal.orderId = orderId;
@@ -127,10 +127,10 @@ window.MyOrder = {
 
     /* -- 공유 모달 -- */
     const cfAuthUser = computed(() => window.foAuth.state.user);
-    const findProduct = name => window.SITE_CONFIG.products.find(p => p.prodNm === name) || null;
-    const openProductModal = name => {
-      const p = findProduct(name);
-      if (p) { myStore.productModal.product = p; myStore.productModal.show = true; }
+    const findProd = name => window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
+    const openProdModal = name => {
+      const p = findProd(name);
+      if (p) { myStore.productModal.prod = p; myStore.productModal.show = true; }
     };
     const openCustomerModal = order => {
       myStore.customerModal.user = cfAuthUser.value;
@@ -209,7 +209,7 @@ window.MyOrder = {
       EXCHANGE_REASONS, RETURN_REASONS,
       claimModal, cfClaimShippingFee, cfApplicableCoupons, cfClaimSelectedCoupon, cfClaimFinalFee, cfClaimModalProduct,
       openClaimModal, submitClaimModal,
-      cfAuthUser, findProduct, openProductModal, openCustomerModal,
+      cfAuthUser, findProd, openProdModal, openCustomerModal,
       reviews, reviewModal, openReviewModal, submitReview, getReview, onReviewFileChange, removeReviewFile,
       uiState, codes };
   },
@@ -417,9 +417,9 @@ window.MyOrder = {
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
             <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.prodNm }}</span>
-            <button v-if="findProduct(item.prodNm)" @click="openProductModal(item.prodNm)"
+            <button v-if="findProd(item.prodNm)" @click="openProdModal(item.prodNm)"
               style="font-size:0.65rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);cursor:pointer;font-weight:600;line-height:1.7;white-space:nowrap;">
-              #{{ findProduct(item.prodNm).productId }}
+              #{{ findProd(item.prodNm).prodId }}
             </button>
           </div>
             <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
@@ -518,9 +518,9 @@ window.MyOrder = {
           <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">{{ reviewModal.isEdit ? '리뷰 수정' : '리뷰 작성' }}</div>
           <div v-if="reviewModal.item" style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
             <span>{{ reviewModal.item.emoji }} {{ reviewModal.item.prodNm }}</span>
-            <span v-if="findProduct(reviewModal.item.prodNm)"
+            <span v-if="findProd(reviewModal.item.prodNm)"
               style="font-size:0.7rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);font-weight:600;line-height:1.7;">
-              #{{ findProduct(reviewModal.item.prodNm).productId }}
+              #{{ findProd(reviewModal.item.prodNm).prodId }}
             </span>
             <span style="color:var(--border);">·</span>
             <span>{{ reviewModal.item.color }} / {{ reviewModal.item.size }}</span>
@@ -753,7 +753,7 @@ window.MyOrder = {
   <!-- -- 주문 상세 모달 ------------------------------------------------------- -->
   <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
   <!-- -- 상품 모달 ---------------------------------------------------------- -->
-  <ProductModal :show="myStore.productModal.show" :product="myStore.productModal.product" @close="myStore.productModal.show=false" />
+  <ProductModal :show="myStore.productModal.show" :prod="myStore.productModal.prod" @close="myStore.productModal.show=false" />
   <!-- -- 주문자 모달 --------------------------------------------------------- -->
   <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" @close="myStore.customerModal.show=false" />
 

@@ -1,4 +1,4 @@
-/* ShopJoy - Cart */
+﻿/* ShopJoy - Cart */
 window.Cart = {
   name: 'Cart',
   props: {
@@ -42,8 +42,8 @@ window.Cart = {
       if (!uiState.sortKey) return list;
       return list.sort((a, b) => {
         let va, vb;
-        if (uiState.sortKey === 'nm') { va = a.product?.prodNm || ''; vb = b.product?.prodNm || ''; return uiState.sortDir === 'asc' ? va.localeCompare(vb, 'ko') : vb.localeCompare(va, 'ko'); }
-        if (uiState.sortKey === 'price') { va = parsePrice(a.product?.price) * a.qty; vb = parsePrice(b.product?.price) * b.qty; return uiState.sortDir === 'asc' ? va - vb : vb - va; }
+        if (uiState.sortKey === 'nm') { va = a.prod?.prodNm || ''; vb = b.prod?.prodNm || ''; return uiState.sortDir === 'asc' ? va.localeCompare(vb, 'ko') : vb.localeCompare(va, 'ko'); }
+        if (uiState.sortKey === 'price') { va = parsePrice(a.prod?.price) * a.qty; vb = parsePrice(b.prod?.price) * b.qty; return uiState.sortDir === 'asc' ? va - vb : vb - va; }
         return 0;
       });
     });
@@ -112,7 +112,7 @@ window.Cart = {
     );
 
     const cfTotalPrice = computed(() =>
-      cfSummaryItems.value.reduce((s, item) => s + parsePrice(item.product.price) * item.qty, 0)
+      cfSummaryItems.value.reduce((s, item) => s + parsePrice(item.prod.price) * item.qty, 0)
     );
 
     const cfTotalPriceStr = computed(() =>
@@ -215,13 +215,13 @@ window.Cart = {
 
             <!-- -- 상품 이미지 ----------------------------------------------- -->
             <div style="width:80px;height:80px;border-radius:12px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
-              <img v-if="item.product.image" :src="item.product.image" :alt="item.product.prodNm" style="width:100%;height:100%;object-fit:cover;" />
+              <img v-if="item.prod.image" :src="item.prod.image" :alt="item.prod.prodNm" style="width:100%;height:100%;object-fit:cover;" />
             </div>
 
             <!-- -- 상품 정보 ------------------------------------------------ -->
             <div style="flex:1;min-width:0;">
               <div style="font-weight:700;color:var(--text-primary);font-size:0.95rem;margin-bottom:4px;">
-                {{ item.product.prodNm }}
+                {{ item.prod.prodNm }}
               </div>
               <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
                 <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:12px;background:var(--blue-dim);color:var(--blue);font-size:0.75rem;font-weight:600;">
@@ -237,7 +237,7 @@ window.Cart = {
                   <button class="qty-btn" @click="updateCartQty(item._origIdx,1)">+</button>
                 </div>
                 <div style="font-size:0.95rem;font-weight:800;color:var(--blue);">
-                  {{ formatPrice(item.product.price, item.qty) }}
+                  {{ formatPrice(item.prod.price, item.qty) }}
                 </div>
               </div>
             </div>
@@ -267,9 +267,9 @@ window.Cart = {
             <div v-for="(item, idx) in cfSummaryItems" :key="idx"
               style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
               <span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                {{ item.product.prodNm }} ({{ item.color.name }}/{{ item.size }}) × {{ item.qty }}
+                {{ item.prod.prodNm }} ({{ item.color.name }}/{{ item.size }}) × {{ item.qty }}
               </span>
-              <span style="font-weight:600;flex-shrink:0;color:var(--text-primary);">{{ formatPrice(item.product.price, item.qty) }}</span>
+              <span style="font-weight:600;flex-shrink:0;color:var(--text-primary);">{{ formatPrice(item.prod.price, item.qty) }}</span>
             </div>
           </div>
 

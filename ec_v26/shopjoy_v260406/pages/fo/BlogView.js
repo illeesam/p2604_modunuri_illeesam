@@ -1,4 +1,4 @@
-/* ShopJoy - BlogView (블로그 상세) */
+﻿/* ShopJoy - BlogView (블로그 상세) */
 window.BlogView = {
   name: 'BlogView',
   props: {
@@ -206,9 +206,9 @@ window.BlogView = {
         </div>
       </div>
 
-      <!-- -- Product Categories ----------------------------------------- -->
+      <!-- -- Prod Categories ----------------------------------------- -->
       <div>
-        <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">Product Categories</h4>
+        <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">Prod Categories</h4>
         <div style="display:flex;flex-direction:column;gap:0;">
           <div v-for="cat in categories" :key="cat.name"
             style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;"

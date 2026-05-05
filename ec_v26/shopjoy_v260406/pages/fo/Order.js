@@ -1,4 +1,4 @@
-/* ShopJoy - Order */
+﻿/* ShopJoy - Order */
 window.Order = {
   name: 'Order',
   props: {
@@ -45,7 +45,7 @@ window.Order = {
 
     /* 상품쿠폰: rate / amount 타입만 */
     const productCoupons = item => {
-      const price = parsePrice(item.product.price) * item.qty;
+      const price = parsePrice(item.prod.price) * item.qty;
       return allCoupons.filter(c =>
         (c.discountType === 'rate' || c.discountType === 'amount') &&
         price >= (c.minOrder || 0)
@@ -64,7 +64,7 @@ window.Order = {
     };
     const calcCouponDiscount = (c, item) => {
       if (!c) return 0;
-      const base = parsePrice(item.product.price) * item.qty;
+      const base = parsePrice(item.prod.price) * item.qty;
       if (c.discountType === 'rate')   return Math.floor(base * c.discountValue / 100);
       if (c.discountType === 'amount') return Math.min(c.discountValue, base);
       return 0;
@@ -105,7 +105,7 @@ window.Order = {
 
     /* -- 금액 계산 -- */
     const cfCartTotal = computed(() =>
-      cfOrderItems.value.reduce((s, i) => s + parsePrice(i.product.price) * i.qty, 0)
+      cfOrderItems.value.reduce((s, i) => s + parsePrice(i.prod.price) * i.qty, 0)
     );
     const cfTotalCouponDiscount = computed(() =>
       cfOrderItems.value.reduce((s, item, idx) =>
@@ -169,11 +169,11 @@ window.Order = {
           orderDate: new Date().toISOString().slice(0, 10),
           form: { ...form },
           items: cfOrderItems.value.map((i, idx) => ({
-            productId:   i.product.productId,
-            prodNm: i.product.prodNm,
-            image:       i.product.image,
+            prodId:   i.prod.prodId,
+            prodNm: i.prod.prodNm,
+            image:       i.prod.image,
             color: i.color.name, size: i.size, qty: i.qty,
-            price:    parsePrice(i.product.price) * i.qty,
+            price:    parsePrice(i.prod.price) * i.qty,
             coupon:   selectedCoupons[idx]?.name || null,
             discount: calcCouponDiscount(selectedCoupons[idx], i),
           })),
@@ -221,7 +221,7 @@ window.Order = {
 
       <div class="card" style="padding:20px;text-align:left;margin-bottom:20px;">
         <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;">📦 주문 상품</div>
-        <div v-for="item in uiState.resultData.items" :key="item.productId"
+        <div v-for="item in uiState.resultData.items" :key="item.prodId"
           style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
           <div style="width:40px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--bg-base);"><img v-if="item.image" :src="item.image" style="width:100%;height:100%;object-fit:cover;" /></div>
           <div style="flex:1;">
@@ -316,10 +316,10 @@ window.Order = {
             <!-- -- 상품 행 ------------------------------------------------- -->
             <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
               <div style="width:52px;height:52px;border-radius:10px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
-                <img v-if="item.product.image" :src="item.product.image" :alt="item.product.prodNm" style="width:100%;height:100%;object-fit:cover;" />
+                <img v-if="item.prod.image" :src="item.prod.image" :alt="item.prod.prodNm" style="width:100%;height:100%;object-fit:cover;" />
               </div>
               <div style="flex:1;min-width:0;">
-                <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ item.product.prodNm }}</div>
+                <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ item.prod.prodNm }}</div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">
                   <span v-if="item.color" style="font-size:0.75rem;padding:1px 8px;border-radius:10px;background:var(--blue-dim);color:var(--blue);font-weight:600;">{{ item.color.name }}</span>
                   <span style="font-size:0.75rem;padding:1px 8px;border-radius:10px;background:var(--purple-dim);color:var(--purple);font-weight:600;">{{ item.size }}</span>
@@ -327,7 +327,7 @@ window.Order = {
                 </div>
               </div>
               <div style="text-align:right;flex-shrink:0;">
-                <div style="font-weight:800;color:var(--text-primary);font-size:0.9rem;">{{ fmt(parsePrice(item.product.price)*item.qty) }}</div>
+                <div style="font-weight:800;color:var(--text-primary);font-size:0.9rem;">{{ fmt(parsePrice(item.prod.price)*item.qty) }}</div>
                 <div v-if="selectedCoupons[idx]" style="font-size:0.78rem;color:var(--blue);margin-top:2px;">-{{ fmt(calcCouponDiscount(selectedCoupons[idx],item)) }}</div>
               </div>
             </div>

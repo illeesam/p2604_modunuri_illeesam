@@ -102,7 +102,15 @@ public class SecurityConfig {
 
                 .requestMatchers("/api/co/**").permitAll()          // 공통 API: 누구나
                 .requestMatchers("/api/autoRest/**").permitAll()   // 자동 REST: 누구나
-                .requestMatchers("/api/fo/**").access(FO_ONLY)     // FO 전용: 회원만 (appTypeCd=FO)
+                // FO: 인증 필요 경로만 FO_ONLY, 나머지 전부 공개 (비로그인 허용)
+                .requestMatchers("/api/fo/my/**").access(FO_ONLY)
+                .requestMatchers("/api/fo/ec/my/**").access(FO_ONLY)
+                .requestMatchers("/api/fo/ec/od/**").access(FO_ONLY)        // 장바구니·주문
+                .requestMatchers("/api/fo/order/**").access(FO_ONLY)
+                .requestMatchers("/api/fo/ec/mb/like/**").access(FO_ONLY)   // 찜
+                .requestMatchers("/api/fo/ec/pm/cache/**").access(FO_ONLY)  // 캐시(캐쉬)
+                .requestMatchers("/api/fo/ec/pm/coupon/**").access(FO_ONLY) // 쿠폰
+                .requestMatchers("/api/fo/**").permitAll()                   // 나머지 FO 전부 공개
                 .requestMatchers("/api/bo/**").access(BO_ONLY)     // BO 전용: 관리자만 (appTypeCd=BO)
                 .requestMatchers("/api/base/**").denyAll()          // 내부 레이어: 완전 차단
                 .requestMatchers("/api/ext/**").access(EXT_ONLY)   // 외부 시스템만 (appTypeCd=EXT)
