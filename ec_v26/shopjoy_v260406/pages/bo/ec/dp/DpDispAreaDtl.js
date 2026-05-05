@@ -7,16 +7,14 @@ window.DpDispAreaDtl = {
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;
     const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_areas: [], layout_types: [], use_yn: [] });
     const areas = reactive([]);
     const panels = reactive([]);
-    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickKw: '', activeTab: 'base', expanded: false, previewMode: 'default', previewPaneWidth: 520, htmlDescEl: null });
+    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickKw: '', activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, htmlDescEl: null });
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
@@ -36,8 +34,8 @@ window.DpDispAreaDtl = {
       uiState.loading = true;
       try {
         const [areaRes, panelRes] = await Promise.all([
-          boApiSvc.dpArea.getBasePage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '상세조회'),
-          boApiSvc.dpPanel.getBasePage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '패널조회')
+          boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '상세조회'),
+          boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '패널조회')
         ]);
         areas.splice(0, areas.length, ...(areaRes.data?.data?.pageList || areaRes.data?.data?.list || []));
         panels.splice(0, panels.length, ...(panelRes.data?.data?.pageList || panelRes.data?.data?.list || []));
@@ -106,10 +104,10 @@ window.DpDispAreaDtl = {
     };
 
     // ★ onMounted
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
+      await handleLoadData();
       handleInitForm();
-      handleLoadData();
     });
 
     /* -- 연결된 패널 -- */
@@ -120,18 +118,7 @@ window.DpDispAreaDtl = {
     );
 
     /* -- 패널 선택 팝업 -- */
-    const pickKw   = ref('');
-    const pickSel  = ref(new Set());
-    const cfAvailablePanels = computed(() => {
-      const all = (panels || []);
-      const kw  = uiState.pickKw.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(all, p => {
-        if (p.area === form.codeValue) return false; /* 이미 포함된 것 제외 */
-        if (kw && !p.name.toLowerCase().includes(kw) && !(p.area||'').toLowerCase().includes(kw)) return false;
-        return true;
-      }).sort((a, b) => (a.name||'').localeCompare(b.name||''));
-    });
-    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; pickSel.value = new Set(); };
+    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; };
     const movePanel = (idx, dir) => {
       const arr = cfRelatedPanels.value;
       const target = idx + dir;
@@ -149,25 +136,6 @@ window.DpDispAreaDtl = {
       uiState.pickOpen = false;
     };
     const closePick = () => { uiState.pickOpen = false; };
-    const togglePick = (id) => {
-      const s = new Set(pickSel.value);
-      if (s.has(id)) s.delete(id); else s.add(id);
-      pickSel.value = s;
-    };
-    const confirmPick = () => {
-      const ids = Array.from(pickSel.value);
-      if (!ids.length) { closePick(); return; }
-      if (!form.codeValue) { showToast && showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
-      const list = panels || [];
-      window.safeArrayUtils.safeForEach(ids, id => {
-        const p = window.safeArrayUtils.safeFind(list, x => x.dispId === id);
-        if (p) p.area = form.codeValue;
-      });
-      /* 순서 재부여 */
-      window.safeArrayUtils.safeFilter(list, p => p.area === form.codeValue).forEach((p, i) => { p.sortOrder = i + 1; });
-      showToast && showToast(`${ids.length}개 패널을 추가했습니다.`, 'info');
-      closePick();
-    };
     const removePanel = (p) => {
       showConfirm && showConfirm({
         title: '영역에서 제거',
@@ -239,13 +207,12 @@ window.DpDispAreaDtl = {
       const isNewArea = cfIsNew.value;
       const ok = await showConfirm('저장', isNewArea ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?');
       if (!ok) return;
-      const codesData = codes;
       if (isNewArea) {
-        const newId = boUtil.nextId(codesData, 'codeId');
-        codesData.push({ ...form, codeId: newId });
+        const newId = boUtil.nextId(areas, 'codeId');
+        areas.push({ ...form, codeId: newId });
       } else {
-        const idx = codesData.findIndex(c => c.codeId === form.codeId);
-        if (idx !== -1) Object.assign(codesData[idx], form);
+        const idx = areas.findIndex(c => c.codeId === form.codeId);
+        if (idx !== -1) Object.assign(areas[idx], form);
       }
       try {
         const res = await (isNewArea ? boApiSvc.dpArea.create({ ...form }, '전시영역관리', '등록') : boApiSvc.dpArea.update(form.codeId, { ...form }, '전시영역관리', '저장'));
@@ -391,15 +358,15 @@ window.DpDispAreaDtl = {
     // -- return ---------------------------------------------------------------
 
     return { codes, areas, panels, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
-      form, errors, cfIsNew, codes, uiState, fnAreaTypeLabel,
+      form, errors, cfIsNew, fnAreaTypeLabel,
       handleSave, onCancel, cfRelatedPanels,
-      uiState, pickKw, pickSel, cfAvailablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,
+      openPick, closePick, removePanel, onPanelPicked, movePanel,
       activeTab, selectTab, cfActivePanel, expanded,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
       openPanelPreview, openWidgetPreview, addPanelShortcut, fnWLabel,
       cfVisibilityOptions, hasPanelVisibility, togglePanelVisibility,
       areaDispEnvOptions, hasAreaDispEnv, toggleAreaDispEnv,
-      htmlDescEl,
+      htmlDescEl, pickOpen, showComponentTooltip,
       areaBaseDispEnvOptions, hasAreaBaseDispEnv, toggleAreaBaseDispEnv,
       hasAreaBaseVisibility, toggleAreaBaseVisibility,
     };

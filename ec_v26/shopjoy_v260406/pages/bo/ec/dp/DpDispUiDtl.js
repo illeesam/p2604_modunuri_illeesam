@@ -7,14 +7,11 @@ window.DpDispUiDtl = {
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;
     const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_ui_types: [], use_yn: [] });
-    const allUiCodes = reactive([]); // DISP_UI 전체 목록 (코드관리에서 로드)
     const displays = reactive([]);
     const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickKw: '', htmlDescEl: null });
     const activeTab = Vue.toRef(uiState, 'activeTab');
@@ -24,7 +21,6 @@ window.DpDispUiDtl = {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_ui_types = codeStore.sgGetGrpCodes('DISP_UI_TYPE');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      allUiCodes.splice(0, allUiCodes.length, ...codeStore.sgGetGrpCodes('DISP_UI'));
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
@@ -80,10 +76,12 @@ window.DpDispUiDtl = {
 
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
-        const u = allUiCodes.find(c => String(c.codeId) === String(props.dtlId) && c.codeGrp === 'DISP_UI');
+        /* displays가 아직 비어 있을 수 있으므로 handleLoadData 완료 후 재시도 */
+        const findInDisplays = () => displays.find(d => String(d.dispId || d.codeId) === String(props.dtlId));
+        let u = findInDisplays();
         if (u) Object.assign(form, { ...u });
       } else {
-        const uis = allUiCodes;
+        const uis = displays;
         form.sortOrd = uis.length ? Math.max(...uis.map(c => c.sortOrd || 0)) + 1 : 1;
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
@@ -96,10 +94,10 @@ window.DpDispUiDtl = {
     };
 
     // ★ onMounted
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
+      await handleLoadData();
       handleInitForm();
-      handleLoadData();
     });
 
     const areas = reactive([]);
@@ -153,8 +151,6 @@ window.DpDispUiDtl = {
     };
 
     /* 영역 선택 팝업 */
-    const pickKw   = ref('');
-    const pickSel  = ref(new Set());
     const cfAvailableAreas = computed(() => {
       const all = areas.filter(c => c.codeGrp === 'DISP_AREA');
       const kw  = uiState.pickKw.trim().toLowerCase();
@@ -164,7 +160,7 @@ window.DpDispUiDtl = {
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
-    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; pickSel.value = new Set(); };
+    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; };
     const onAreaPicked = (a) => {
       if (!form.codeValue) { showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       a.uiCode = form.codeValue;
@@ -172,22 +168,6 @@ window.DpDispUiDtl = {
       uiState.pickOpen = false;
     };
     const closePick = () => { uiState.pickOpen = false; };
-    const togglePick = (id) => {
-      const s = new Set(pickSel.value);
-      if (s.has(id)) s.delete(id); else s.add(id);
-      pickSel.value = s;
-    };
-    const confirmPick = () => {
-      const ids = Array.from(pickSel.value);
-      if (!ids.length) { closePick(); return; }
-      if (!form.codeValue) { showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
-      window.safeArrayUtils.safeForEach(ids, id => {
-        const a = window.safeArrayUtils.safeFind(areas, x => x.codeId === id);
-        if (a) a.uiCode = form.codeValue;
-      });
-      showToast && showToast(`${ids.length}개 영역을 추가했습니다.`, 'info');
-      closePick();
-    };
     const moveArea = (idx, dir) => {
       const arr = cfRelatedAreas.value;
       const target = idx + dir;
@@ -280,13 +260,7 @@ window.DpDispUiDtl = {
       const isNewUi = cfIsNew.value;
       const ok = await showConfirm('저장', isNewUi ? '신규 UI를 등록하시겠습니까?' : 'UI 정보를 수정하시겠습니까?');
       if (!ok) return;
-      if (isNewUi) {
-        const newId = boUtil.nextId(allUiCodes, 'codeId');
-        allUiCodes.push({ ...form, codeId: newId });
-      } else {
-        const idx = allUiCodes.findIndex(c => c.codeId === form.codeId);
-        if (idx !== -1) Object.assign(allUiCodes[idx], form);
-      }
+      /* 로컬 캐시 업데이트 (선택) */
       try {
         const res = await (isNewUi ? boApiSvc.dpUi.create({ ...form }, '전시UI관리', '등록') : boApiSvc.dpUi.update(form.codeId, { ...form }, '전시UI관리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
@@ -334,10 +308,10 @@ window.DpDispUiDtl = {
     // -- return ---------------------------------------------------------------
 
     return { codes, displays, areas, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      form, errors, cfIsNew,
+      form, errors, cfIsNew, expanded, pickOpen, showComponentTooltip,
       handleSave, doCancel, cfRelatedAreas, panelsOfArea,
-      activeTab, selectTab, cfActiveArea, uiState, moveArea,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState, codes, pickKw, pickSel, cfAvailableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
+      activeTab, selectTab, cfActiveArea, moveArea,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, cfAvailableAreas, openPick, closePick, removeArea, onAreaPicked,
       openUiPreview, openAreaPreview,
       cfVisibilityOptions, hasAreaVisibility, toggleAreaVisibility,
       uiDispEnvOptions, hasUiDispEnv, toggleUiDispEnv,

@@ -8,7 +8,6 @@ window.DpDispPanelDtl = {
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;
     const showConfirm  = window.boApp.showConfirm;
@@ -18,7 +17,7 @@ window.DpDispPanelDtl = {
     const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy', htmlDescEl: null, htmlContentEl: null });
     const tab = Vue.toRef(uiState, 'tab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
-    const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
+    const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], disp_areas: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
     const events = reactive([]);
 
     const fnLoadCodes = () => {
@@ -26,6 +25,7 @@ window.DpDispPanelDtl = {
       codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
       codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      codes.disp_areas = codeStore.sgGetGrpCodes('DISP_AREA');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
@@ -204,9 +204,9 @@ window.DpDispPanelDtl = {
     };
 
     const cfAreas = computed(() =>
-      (Array.isArray(codes) ? codes : [])
-        .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
-        .sort((a, b) => a.sortOrd - b.sortOrd)
+      codes.disp_areas
+        .filter(c => c.useYn === 'Y')
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
     );
 
     const cfIsChart       = computed(() => cfActiveRow.value?.widgetType?.startsWith('chart_'));
@@ -691,8 +691,8 @@ window.DpDispPanelDtl = {
     // -- return ---------------------------------------------------------------
 
     return { uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
-      libPickMode, openLibPick, onLibPicked,
-      onRowCopy,
+      libPickMode, libPickOpen, openLibPick, onLibPicked,
+      onRowCopy, rowCopyOpen, viewAll, htmlSourceMode, showComponentTooltip, showRefModal,
       cfVisibilityOptions, hasVisibility, toggleVisibility,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
       hasPanelDispEnv, togglePanelDispEnv, hasPanelVisibility, togglePanelVisibility,

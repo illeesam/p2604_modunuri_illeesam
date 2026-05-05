@@ -11,10 +11,9 @@ window.DpDispWidgetDtl = {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;
     const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
-    const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', htmlContentEl: null});
+    const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', libPickOpen: false, htmlSourceMode: false, htmlContentEl: null, showComponentTooltip: false, jsonCopied: false });
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
     const fnLoadCodes = () => {
@@ -33,7 +32,6 @@ window.DpDispWidgetDtl = {
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { form.pathId = pathId; };
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-    const widgetLibs = reactive([]);
     const cfIsNew = computed(() => !props.dtlId);
 
     /* -- 폼 초기값 -- */
@@ -479,6 +477,10 @@ window.DpDispWidgetDtl = {
     };
 
     const libPickMode = Vue.toRef(uiState, 'libPickMode');
+    const libPickOpen = Vue.toRef(uiState, 'libPickOpen');
+    const htmlSourceMode = Vue.toRef(uiState, 'htmlSourceMode');
+    const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
+    const jsonCopied = Vue.toRef(uiState, 'jsonCopied');
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
 
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
@@ -488,14 +490,15 @@ window.DpDispWidgetDtl = {
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      uiState, libPickMode, openLibPick, onLibPicked,
+      uiState, libPickMode, libPickOpen, htmlSourceMode, showComponentTooltip, jsonCopied,
+      openLibPick, onLibPicked,
       cfDtlMode, cfIsNew, form, errors, codes,
       cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,
       cfIsPopup, cfIsFile, cfIsFileList, cfIsCoupon, cfIsHtmlEditor, cfIsEvent, cfIsCache, cfIsEmbed,
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
-      cfPreviewWidget, cfSampleJson, uiState, copyJson, handleSave, handleDelete,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState,
-      htmlContentEl, uiState, toggleHtmlSource,
+      cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
+      htmlContentEl, toggleHtmlSource,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
     };
   },
