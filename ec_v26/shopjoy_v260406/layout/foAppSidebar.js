@@ -1,8 +1,8 @@
 /* ShopJoy - AppSidebar */
 window.foAppSidebar = {
   name: 'FoAppSidebar',
-  props: ['page', 'sidebarOpen', 'mobileOpen', 'config', 'navigate', 'cartCount', 'auth'],
-  emits: ['toggle-sidebar', 'close-mobile'],
+  props: ['page', 'appSidebarOpen', 'appMobileOpen', 'config', 'navigate', 'appCartCount', 'appAuth'],
+  emits: ['app-toggle-sidebar', 'app-close-mobile'],
   setup(props, { emit }) {
     const { ref, reactive, watch } = Vue;
 
@@ -72,7 +72,7 @@ window.foAppSidebar = {
 
     const navTo = (menuId) => {
       props.navigate(menuId, { replace: true });
-      emit('close-mobile');
+      emit('app-close-mobile');
     };
 
     const foSiteNo = window.FO_SITE_NO || '01';
@@ -83,26 +83,26 @@ window.foAppSidebar = {
              showSamples, foSiteNo };
   },
   template: /* html */ `
-<div id="sidebar" :class="[sidebarOpen?'':'collapsed', mobileOpen?'open':'']" @click.stop>
+<div id="sidebar" :class="[appSidebarOpen?'':'collapsed', appMobileOpen?'open':'']" @click.stop>
   <div class="sidebar-inner" style="padding:16px 10px;overflow-y:auto;height:100%;display:flex;flex-direction:column;gap:6px;">
 
     <!-- 기존 sidebarMenu 섹션 (샘플 전시 제외) -->
     <template v-for="section in config.sidebarMenu" :key="section.section">
       <template v-if="section.section !== '샘플 전시'">
-        <div v-if="sidebarOpen" style="padding:12px 8px 4px;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
+        <div v-if="appSidebarOpen" style="padding:12px 8px 4px;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
           {{ section.section }}
         </div>
         <template v-for="item in section.items" :key="item.menuId">
-          <button v-if="!item.authRequired || (auth && auth.user)" type="button"
+          <button v-if="!item.authRequired || (appAuth && appAuth.user)" type="button"
             @click.stop="navTo(item.menuId)"
             class="sidebar-link" :class="{active: isMenuActive(page, item.menuId)}"
             :data-tip="item.menuNm" :aria-label="item.menuNm">
             <span class="sidebar-link-icon" style="font-size:1rem;flex-shrink:0;">{{ item.icon }}</span>
-            <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">
+            <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">
               {{ item.menuNm }}
-              <span v-if="item.menuId==='cart' && cartCount>0"
+              <span v-if="item.menuId==='cart' && appCartCount>0"
                 style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;background:var(--blue);color:#fff;font-size:0.6rem;font-weight:800;padding:0 4px;margin-left:4px;">
-                {{ cartCount > 99 ? '99+' : cartCount }}
+                {{ appCartCount > 99 ? '99+' : appCartCount }}
               </span>
             </span>
           </button>
@@ -111,7 +111,7 @@ window.foAppSidebar = {
     </template>
 
     <!-- 개발도구 섹션 -->
-    <div v-if="sidebarOpen" style="padding:12px 8px 0;">
+    <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.devToolsOpen=!uiState.devToolsOpen"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>개발도구</span>
@@ -124,14 +124,14 @@ window.foAppSidebar = {
         class="sidebar-link" :class="{active: item.menuId && page === item.menuId}"
         :data-tip="item.menuNm || item.siteNm" :aria-label="item.menuNm || item.siteNm">
         <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">{{ item.menuId ? '🔧' : '🌐' }}</span>
-        <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm || item.siteNm }}</span>
+        <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm || item.siteNm }}</span>
       </button>
     </template>
 
     <!-- 샘플 섹션 — Site 01은 전체 숨김 -->
     <template v-if="showSamples">
     <!-- 샘플0 (01~06) -->
-    <div v-if="sidebarOpen" style="padding:12px 8px 0;">
+    <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.sample0Open=!uiState.sample0Open"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>샘플0</span>
@@ -144,12 +144,12 @@ window.foAppSidebar = {
         class="sidebar-link" :class="{active: page === item.menuId}"
         :data-tip="item.menuNm" :aria-label="item.menuNm">
         <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">📄</span>
-        <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
+        <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
       </button>
     </template>
 
     <!-- 샘플1 (07~14) -->
-    <div v-if="sidebarOpen" style="padding:12px 8px 0;">
+    <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.sample1Open=!uiState.sample1Open"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>샘플1</span>
@@ -162,12 +162,12 @@ window.foAppSidebar = {
         class="sidebar-link" :class="{active: page === item.menuId}"
         :data-tip="item.menuNm" :aria-label="item.menuNm">
         <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">📄</span>
-        <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
+        <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
       </button>
     </template>
 
     <!-- 샘플2 (21~23) -->
-    <div v-if="sidebarOpen" style="padding:12px 8px 0;">
+    <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.sample2Open=!uiState.sample2Open"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>샘플2</span>
@@ -180,12 +180,12 @@ window.foAppSidebar = {
         class="sidebar-link" :class="{active: page === item.menuId}"
         :data-tip="item.menuNm" :aria-label="item.menuNm">
         <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">📄</span>
-        <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
+        <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
       </button>
     </template>
 
     <!-- 샘플 전시 (토글) -->
-    <div v-if="sidebarOpen" style="padding:12px 8px 0;">
+    <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.dispUiOpen=!uiState.dispUiOpen"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>샘플 전시</span>
@@ -198,19 +198,19 @@ window.foAppSidebar = {
         class="sidebar-link" :class="{active: page === item.menuId}"
         :data-tip="item.menuNm" :aria-label="item.menuNm">
         <span class="sidebar-link-icon" style="font-size:1rem;flex-shrink:0;">🖼</span>
-        <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">{{ item.menuNm }}</span>
+        <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">{{ item.menuNm }}</span>
       </button>
     </template>
     </template>  <!-- /showSamples -->
 
     <div style="flex:1;"></div>
-    <button type="button" @click.stop="$emit('toggle-sidebar')"
+    <button type="button" @click.stop="$emit('app-toggle-sidebar')"
       style="display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;border-radius:8px;background:none;border:1px solid var(--border);color:var(--text-muted);cursor:pointer;font-size:0.75rem;transition:all 0.2s;"
       class="hidden-sm sidebar-collapse-toggle"
-      :title="!mobileOpen ? (sidebarOpen ? '사이드바 접기' : '사이드바 펼치기') : ''"
-      :aria-label="sidebarOpen ? '사이드바 접기' : '사이드바 펼치기'">
-      <span>{{ sidebarOpen ? '◀' : '▶' }}</span>
-      <span v-if="sidebarOpen">접기</span>
+      :title="!appMobileOpen ? (appSidebarOpen ? '사이드바 접기' : '사이드바 펼치기') : ''"
+      :aria-label="appSidebarOpen ? '사이드바 접기' : '사이드바 펼치기'">
+      <span>{{ appSidebarOpen ? '◀' : '▶' }}</span>
+      <span v-if="appSidebarOpen">접기</span>
     </button>
   </div>
 </div>

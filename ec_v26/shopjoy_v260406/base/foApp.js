@@ -221,6 +221,55 @@
     };
     window.addEventListener('resize', () => { if (window.innerWidth < 1024) uiState.mobileOpen = false; });
 
+    /* ── FO API Log ── */
+    const FO_API_LOG_KEY = 'modu-fo-apiLog';
+    const MAX_FO_API_LOGS = 15;
+    const foApiLogs = reactive(JSON.parse(localStorage.getItem(FO_API_LOG_KEY) || '[]'));
+    const showApiLog = ref(false);
+    const showSettings = ref(false);
+    const apiLogLockedDetail = ref(null);
+    const apiLogHoverDetail  = ref(null);
+    let _foApiLogSeq = foApiLogs.length ? Math.max(...foApiLogs.map(l => l._seq || 0)) + 1 : 1;
+
+    const addFoApiLog = (detail) => {
+      const now = new Date();
+      const ts = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0')
+        + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+      const entry = { _seq: _foApiLogSeq++, ts, ...detail };
+      foApiLogs.unshift(entry);
+      if (foApiLogs.length > MAX_FO_API_LOGS) foApiLogs.splice(MAX_FO_API_LOGS);
+      try { localStorage.setItem(FO_API_LOG_KEY, JSON.stringify(foApiLogs)); } catch(e) {}
+    };
+    const clearFoApiLogs = () => {
+      foApiLogs.splice(0, foApiLogs.length);
+      apiLogLockedDetail.value = null;
+      try { localStorage.removeItem(FO_API_LOG_KEY); } catch(e) {}
+    };
+    const foApiLogStatusClass = (status) => {
+      if (!status) return 'color:#999;';
+      if (status >= 500) return 'color:#e74c3c;font-weight:700;';
+      if (status >= 400) return 'color:#e67e22;font-weight:700;';
+      return 'color:#27ae60;font-weight:700;';
+    };
+    const foApiLogMethodStyle = (method) => {
+      const m = (method || '').toUpperCase();
+      if (m === 'GET')    return 'background:#e8f5e9;color:#388e3c;';
+      if (m === 'POST')   return 'background:#e3f2fd;color:#1565c0;';
+      if (m === 'PUT')    return 'background:#fff3e0;color:#e65100;';
+      if (m === 'PATCH')  return 'background:#f3e5f5;color:#6a1b9a;';
+      if (m === 'DELETE') return 'background:#fce4ec;color:#c62828;';
+      return 'background:#f5f5f5;color:#555;';
+    };
+
+    window.addEventListener('api-success', (ev) => { addFoApiLog(ev.detail || {}); });
+    window.addEventListener('api-validation-error', (ev) => { addFoApiLog({ ...(ev.detail || {}), _isErr: true }); });
+    window.addEventListener('api-error', (ev) => { addFoApiLog({ ...(ev.detail || {}), _isErr: true }); });
+    /* 설정 드롭다운 바깥 클릭 시 닫기 */
+    document.addEventListener('pointerdown', (e) => {
+      if (!showSettings.value) return;
+      if (!e.target.closest('[data-fo-settings]')) showSettings.value = false;
+    }, true);
+
     /* ── Toast (누적 스택) ── */
     const toasts = reactive([]);
     let _toastSeq = 0;
@@ -621,6 +670,8 @@
       auth, uiState, onShowLogin, onLogout,
       foInitReady,
       foHomeComp, foProdListComp, foProdViewComp,
+      foApiLogs, showApiLog, showSettings, apiLogLockedDetail, apiLogHoverDetail,
+      clearFoApiLogs, foApiLogStatusClass, foApiLogMethodStyle,
       notFoundPageId: computed(() => {
         try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
       }),
@@ -652,17 +703,21 @@
   </div>
 
   <fo-app-header
-    :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="uiState.mobileOpen"
-    :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :cart-count="cfCartCount" :like-count="cfLikeCount"
-    :auth="auth" :on-show-login="onShowLogin" :on-logout="onLogout"
-    @toggle-sidebar="sidebarOpen=!sidebarOpen" @toggle-mobile="toggleMobileMenu"
+    :page="page" :theme="theme" :app-sidebar-open="sidebarOpen" :app-mobile-open="uiState.mobileOpen"
+    :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :app-cart-count="cfCartCount" :app-like-count="cfLikeCount"
+    :app-auth="auth" :on-app-show-login="onShowLogin" :on-app-logout="onLogout"
+    :app-show-settings="showSettings" :app-show-api-log="showApiLog"
+    :app-api-logs="foApiLogs"
+    @app-toggle-sidebar="sidebarOpen=!sidebarOpen" @app-toggle-mobile="toggleMobileMenu"
+    @app-toggle-settings="showSettings=!showSettings"
+    @app-toggle-api-log="showApiLog=!showApiLog; showSettings=false"
   />
 
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
     <fo-app-sidebar
-      :page="page" :sidebar-open="sidebarOpen" :mobile-open="uiState.mobileOpen"
-      :config="config" :navigate="navigate" :cart-count="cfCartCount" :auth="auth"
-      @toggle-sidebar="sidebarOpen=!sidebarOpen" @close-mobile="closeMobileMenu"
+      :page="page" :app-sidebar-open="sidebarOpen" :app-mobile-open="uiState.mobileOpen"
+      :config="config" :navigate="navigate" :app-cart-count="cfCartCount" :app-auth="auth"
+      @app-toggle-sidebar="sidebarOpen=!sidebarOpen" @app-close-mobile="closeMobileMenu"
     />
     <div class="sidebar-overlay" :class="{show: uiState.mobileOpen}" @click="closeMobileMenu"></div>
 
@@ -799,7 +854,9 @@
   <login v-if="uiState.showLogin" :show-toast="showToast" @close="uiState.showLogin=false" />
 
   <!-- TOAST STACK -->
-  <div v-if="toasts.length" style="position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px;max-width:420px;min-width:300px;">
+  <div v-if="toasts.length"
+    style="position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px;min-width:300px;transition:max-width 0.2s ease;"
+    :style="toasts.some(t=>t.expanded)?'max-width:630px;':'max-width:420px;'">
     <!-- 개별 toast 카드 -->
     <div v-for="t in toasts" :key="t.id"
       style="border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.18);overflow:hidden;background:#fff;border-left:4px solid;"
@@ -855,6 +912,73 @@
       <div class="modal-msg">{{ alertState.msg }}</div>
       <div class="modal-actions">
         <button class="btn-blue" @click="closeAlert" style="padding:10px 28px;">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FO API LOG PANEL -->
+  <div v-if="showApiLog"
+    style="position:fixed;top:0;right:0;bottom:0;width:420px;max-width:95vw;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.18);z-index:9990;display:flex;flex-direction:column;border-left:3px solid var(--accent,#c9a96e);">
+    <!-- 패널 헤더 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;background:linear-gradient(135deg,#fff8f0,#fff3e0);border-bottom:1px solid #eee;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:14px;">🌐</span>
+        <span style="font-size:14px;font-weight:700;color:#333;">API 로그 (FO)</span>
+        <span style="font-size:11px;background:#f5f5f5;border-radius:10px;padding:1px 7px;color:#888;">{{ foApiLogs.length }}/15</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button @click="clearFoApiLogs" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;color:#999;">지우기</button>
+        <button @click="showApiLog=false" style="width:24px;height:24px;border-radius:50%;border:none;background:rgba(0,0,0,.08);cursor:pointer;color:#666;font-size:14px;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+    </div>
+    <!-- 선택된 로그 상세 -->
+    <div v-if="apiLogLockedDetail" style="padding:10px 12px;background:#fffbf0;border-bottom:2px solid var(--accent,#c9a96e);flex-shrink:0;max-height:260px;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:11px;font-weight:700;color:#888;">상세 보기</span>
+        <button @click="apiLogLockedDetail=null" style="font-size:10px;padding:1px 6px;border:1px solid #ddd;border-radius:3px;background:#fff;cursor:pointer;color:#aaa;">닫기</button>
+      </div>
+      <div style="font-size:11px;color:#555;line-height:1.6;">
+        <div style="margin-bottom:4px;">
+          <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700;margin-right:4px;" :style="foApiLogMethodStyle(apiLogLockedDetail.method)">{{ apiLogLockedDetail.method }}</span>
+          <span style="color:#1a5276;word-break:break-all;">{{ apiLogLockedDetail.url }}</span>
+          <span style="margin-left:6px;font-weight:700;" :style="foApiLogStatusClass(apiLogLockedDetail.status)">{{ apiLogLockedDetail.status }}</span>
+          <span v-if="apiLogLockedDetail.duration" style="margin-left:6px;color:#aaa;font-size:10px;">{{ apiLogLockedDetail.duration }}ms</span>
+        </div>
+        <div v-if="apiLogLockedDetail.uiLabel" style="color:#7d3c98;margin-bottom:4px;font-size:10px;">{{ apiLogLockedDetail.uiLabel }}</div>
+        <div v-if="apiLogLockedDetail.ts" style="color:#aaa;font-size:10px;margin-bottom:4px;">{{ apiLogLockedDetail.ts }}</div>
+        <div v-if="apiLogLockedDetail.detail" style="margin-top:4px;">
+          <div style="font-size:10px;color:#888;margin-bottom:2px;">응답 데이터</div>
+          <pre style="margin:0;padding:6px;background:#f8f9fa;border-radius:4px;font-size:10px;color:#333;white-space:pre-wrap;word-break:break-all;max-height:100px;overflow-y:auto;">{{ apiLogLockedDetail.detail }}</pre>
+        </div>
+        <div v-if="apiLogLockedDetail.reqHeaders && apiLogLockedDetail.reqHeaders.length" style="margin-top:4px;">
+          <div style="font-size:10px;color:#888;margin-bottom:2px;">요청 헤더</div>
+          <pre style="margin:0;padding:6px;background:#f0f8ff;border-radius:4px;font-size:10px;color:#1a5276;white-space:pre-wrap;word-break:break-all;max-height:80px;overflow-y:auto;">{{ (apiLogLockedDetail.reqHeaders||[]).join('\n') }}</pre>
+        </div>
+        <div v-if="apiLogLockedDetail.resHeaders && apiLogLockedDetail.resHeaders.length" style="margin-top:4px;">
+          <div style="font-size:10px;color:#888;margin-bottom:2px;">응답 헤더</div>
+          <pre style="margin:0;padding:6px;background:#f0fff0;border-radius:4px;font-size:10px;color:#1e8449;white-space:pre-wrap;word-break:break-all;max-height:80px;overflow-y:auto;">{{ (apiLogLockedDetail.resHeaders||[]).join('\n') }}</pre>
+        </div>
+      </div>
+    </div>
+    <!-- 로그 목록 -->
+    <div style="flex:1;overflow-y:auto;padding:6px 0;">
+      <div v-if="!foApiLogs.length" style="padding:24px;text-align:center;color:#ccc;font-size:13px;">API 호출 기록이 없습니다</div>
+      <div v-for="log in foApiLogs" :key="log._seq"
+        @click="apiLogLockedDetail = apiLogLockedDetail && apiLogLockedDetail._seq===log._seq ? null : log"
+        @mouseenter="apiLogHoverDetail=log" @mouseleave="apiLogHoverDetail=null"
+        style="padding:7px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .12s;"
+        :style="(apiLogLockedDetail && apiLogLockedDetail._seq===log._seq)?'background:#fffbf0;':log._isErr?'background:#fff5f5;':'background:#fff;'">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
+          <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700;flex-shrink:0;" :style="foApiLogMethodStyle(log.method)">{{ log.method || '-' }}</span>
+          <span style="font-size:11px;color:#1a5276;word-break:break-all;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="log.url">{{ log.url }}</span>
+          <span style="font-size:11px;font-weight:700;flex-shrink:0;" :style="foApiLogStatusClass(log.status)">{{ log.status }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span v-if="log.uiLabel" style="font-size:10px;color:#7d3c98;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">{{ log.uiLabel }}</span>
+          <span v-else style="flex:1;"></span>
+          <span v-if="log.duration" style="font-size:10px;color:#aaa;flex-shrink:0;">{{ log.duration }}ms</span>
+          <span style="font-size:10px;color:#ccc;flex-shrink:0;">{{ log.ts ? log.ts.slice(11,19) : '' }}</span>
+        </div>
       </div>
     </div>
   </div>

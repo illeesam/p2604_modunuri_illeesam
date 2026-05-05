@@ -1,9 +1,10 @@
 /* ShopJoy - AppHeader */
 window.foAppHeader = {
   name: 'FoAppHeader',
-  props: ['page', 'theme', 'sidebarOpen', 'mobileOpen', 'config', 'navigate',
-          'toggleTheme', 'cartCount', 'likeCount', 'auth', 'onShowLogin', 'onLogout'],
-  emits: ['toggle-sidebar', 'toggle-mobile'],
+  props: ['page', 'theme', 'appSidebarOpen', 'appMobileOpen', 'config', 'navigate',
+          'toggleTheme', 'appCartCount', 'appLikeCount', 'appAuth', 'onAppShowLogin', 'onAppLogout',
+          'appShowSettings', 'appShowApiLog', 'appApiLogs'],
+  emits: ['app-toggle-sidebar', 'app-toggle-mobile', 'app-toggle-settings', 'app-toggle-api-log'],
   setup(props) {
     const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
 
@@ -14,14 +15,14 @@ window.foAppHeader = {
     const toggleUserMenu = () => { uiState.userMenuOpen = !uiState.userMenuOpen; };
     const closeUserMenu  = () => { uiState.userMenuOpen = false; };
     const goMy    = () => { closeUserMenu(); props.navigate('myOrder'); };
-    const doLogout = () => { closeUserMenu(); props.onLogout(); };
+    const doLogout = () => { closeUserMenu(); props.onAppLogout(); };
 
     /* ── Profile 모달 ── */
     const pf = reactive({ memberNm: '', email: '', phone: '', birthdate: '', gender: '',
                           postcode: '', address: '', addressDetail: '' });
     const openProfile = () => {
       closeUserMenu();
-      const u = props.auth.user || {};
+      const u = props.appAuth.user || {};
       pf.memberNm = u.memberNm || ''; pf.email = u.email || ''; pf.phone = u.phone || '';
       pf.birthdate = u.birthdate || ''; pf.gender = u.gender || '';
       pf.postcode = u.postcode || ''; pf.address = u.address || '';
@@ -30,7 +31,7 @@ window.foAppHeader = {
     };
     const saveProfile = () => {
       if (!pf.memberNm.trim()) return;
-      const u = props.auth.user;
+      const u = props.appAuth.user;
       if (u) {
         Object.assign(u, {
           memberNm: pf.memberNm, phone: pf.phone, birthdate: pf.birthdate, gender: pf.gender,
@@ -75,9 +76,9 @@ window.foAppHeader = {
     };
 
     /* ── 안전한 사용자 정보 접근 ── */
-    const cfAuthUser = computed(() => props?.auth?.user || { authNm: '', memberNm: '', email: '' });
+    const cfAuthUser = computed(() => props?.appAuth?.user || { authNm: '', memberNm: '', email: '' });
     const cfUserFirstChar = computed(() => ((cfAuthUser.value?.authNm || cfAuthUser.value?.memberNm || '').charAt(0)) || '?');
-    const cfIsLogin = computed(() => !!(props?.auth?.user?.authId));
+    const cfIsLogin = computed(() => !!(props?.appAuth?.user?.authId));
 
     /* ── 공통 인풋 스타일 ── */
     const IS = 'width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;';
@@ -130,7 +131,7 @@ window.foAppHeader = {
 <header class="glass" style="height:var(--header-h,60px);min-height:60px;flex-shrink:0;display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:50;border-left:none;border-right:none;border-top:none;">
 
   <!-- Hamburger (mobile) -->
-  <button @click="$emit('toggle-mobile')"
+  <button @click="$emit('app-toggle-mobile')"
     style="background:none;border:none;cursor:pointer;padding:6px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;"
     class="lg:hidden" aria-label="메뉴">
     <span style="display:block;width:20px;height:2px;background:var(--text-primary);border-radius:2px;transition:all 0.25s;"></span>
@@ -139,7 +140,7 @@ window.foAppHeader = {
   </button>
 
   <!-- Collapse toggle (desktop) -->
-  <button @click="$emit('toggle-sidebar')"
+  <button @click="$emit('app-toggle-sidebar')"
     style="background:none;border:none;cursor:pointer;padding:6px;display:none;align-items:center;color:var(--text-secondary);flex-shrink:0;"
     class="hidden-sm" aria-label="사이드바 토글">
     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
@@ -215,7 +216,7 @@ window.foAppHeader = {
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
 
     <!-- 비로그인 -->
-    <button v-if="!cfIsLogin" @click="onShowLogin"
+    <button v-if="!cfIsLogin" @click="onAppShowLogin"
       style="padding:7px 16px;border:1.5px solid var(--blue);border-radius:20px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:700;white-space:nowrap;transition:all 0.2s;"
       @mouseenter="$event.target.style.background='var(--blue)';$event.target.style.color='#fff';"
       @mouseleave="$event.target.style.background='transparent';$event.target.style.color='var(--blue)';">
@@ -284,7 +285,7 @@ window.foAppHeader = {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
         </svg>
-        <span v-if="likeCount > 0" class="header-cart-badge">{{ likeCount > 99 ? '99+' : likeCount }}</span>
+        <span v-if="appLikeCount > 0" class="header-cart-badge">{{ appLikeCount > 99 ? '99+' : appLikeCount }}</span>
       </span>
     </button>
 
@@ -292,14 +293,14 @@ window.foAppHeader = {
     <button type="button" @click="navigate('cart'); closeUserMenu()"
       class="header-cart-link"
       style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
-      :aria-label="cartCount > 0 ? ('장바구니, ' + (cartCount > 99 ? '99개 이상' : cartCount + '개') + ' 상품') : '장바구니, 비어 있음'"
+      :aria-label="appCartCount > 0 ? ('장바구니, ' + (appCartCount > 99 ? '99개 이상' : appCartCount + '개') + ' 상품') : '장바구니, 비어 있음'"
       title="장바구니">
       <span class="header-cart-icon-wrap" style="position:relative;display:flex;align-items:center;justify-content:center;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--blue);">
           <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
         </svg>
-        <span v-if="cartCount > 0" class="header-cart-badge">{{ cartCount > 99 ? '99+' : cartCount }}</span>
+        <span v-if="appCartCount > 0" class="header-cart-badge">{{ appCartCount > 99 ? '99+' : appCartCount }}</span>
       </span>
     </button>
 
@@ -308,6 +309,27 @@ window.foAppHeader = {
       <span v-if="theme==='light'">🌙</span>
       <span v-else>☀️</span>
     </button>
+
+    <!-- 설정 아이콘 -->
+    <div data-fo-settings style="position:relative;flex-shrink:0;">
+      <button @click="$emit('app-toggle-settings')"
+        style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;font-size:15px;color:var(--text-secondary);transition:all 0.2s;"
+        :style="appShowSettings?'border-color:var(--accent,#c9a96e);background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);':''"
+        title="설정">⚙</button>
+      <!-- 설정 드롭다운 -->
+      <div v-if="appShowSettings"
+        style="position:absolute;right:0;top:calc(100% + 8px);width:148px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:200;overflow:hidden;padding:4px 0;">
+        <button @click="$emit('app-toggle-api-log')"
+          style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
+          :style="appShowApiLog?'background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);font-weight:700;':''"
+          @mouseenter="$event.currentTarget.style.background='var(--blue-dim,#f0f4ff)'"
+          @mouseleave="$event.currentTarget.style.background=appShowApiLog?'var(--accent-dim,#fdf8f1)':'transparent'">
+          <span style="font-size:13px;">🌐</span>
+          <span>API 보기</span>
+          <span v-if="appApiLogs && appApiLogs.length" style="margin-left:auto;font-size:10px;background:#e8e8e8;border-radius:8px;padding:1px 5px;color:#666;">{{ appApiLogs.length }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- ══ Profile 모달 ══ -->
