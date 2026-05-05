@@ -199,7 +199,7 @@ window.PdDlivTmpltMng = {
           <th style="width:60px;text-align:center">사용</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row, idx) in dlivTmplts" :key="row?.dlivTmpltId" :class="{active:uiState.selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="(row, idx) in dlivTmplts" :key="(row && row.dlivTmpltId)" :class="{active:uiState.selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><span class="title-link">{{ row.dlivTmpltNm }}</span></td>
             <td><span :class="['badge',fnMethodBadge(row.dlivMethodCd)]">{{ row.dlivMethodCd }}</span></td>

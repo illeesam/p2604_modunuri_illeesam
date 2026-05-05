@@ -368,6 +368,23 @@ window.SyVendorUserMng = {
     });
     const fnPermBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
 
+    /* hover 헬퍼 — 인라인 표현식 SyntaxError 회피 */
+    const onRoleRootHover = (root, evt) => {
+      if (root.roleCode === cfFormAllowedRootCode.value && evt && evt.currentTarget) {
+        evt.currentTarget.style.background = '#eff6ff';
+      }
+    };
+    const onRoleChildHover = (ch, evt) => {
+      if (ch.allowed && uiState.roleModalTemp !== ch.roleCode && evt && evt.currentTarget) {
+        evt.currentTarget.style.background = '#eff6ff';
+      }
+    };
+    const onRoleChildLeave = (ch, evt) => {
+      if (uiState.roleModalTemp !== ch.roleCode && evt && evt.currentTarget) {
+        evt.currentTarget.style.background = 'transparent';
+      }
+    };
+
     // -- return ---------------------------------------------------------------
 
     return {
@@ -385,6 +402,7 @@ window.SyVendorUserMng = {
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
       toggleRoleNode, pickRoleInModal, cfFormRoleTree, cfFormAllowedRootCode,
       roleNmByCode, cfSelectedModalRole, cfModalMenuList, fnPermBadgeColor,
+      onRoleRootHover, onRoleChildHover, onRoleChildLeave,
       sendJoinMail: () => {
         if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
         showToast(formData.vendorUserEmail + ' 로 회원가입 메일을 보냈습니다.', 'success');
@@ -614,7 +632,7 @@ window.SyVendorUserMng = {
               <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px',
                 color:root.roleCode===cfFormAllowedRootCode?'#1e40af':'#cbd5e1'}"
                 @click="toggleRoleNode(root.roleId)"
-                @mouseover="root.roleCode===cfFormAllowedRootCode&&($event.currentTarget.style.background='#eff6ff')"
+                @mouseover="onRoleRootHover(root, $event)"
                 @mouseout="$event.currentTarget.style.background='transparent'">
                 <span style="width:12px;font-size:10px;color:#9ca3af;">{{ roleTreeExpanded.has(root.roleId)?'▾':'▸' }}</span>
                 <span>📁 {{ root.roleNm }}</span>
@@ -627,8 +645,8 @@ window.SyVendorUserMng = {
                     background:uiState.roleModalTemp===ch.roleCode?'linear-gradient(135deg,#3b82f6,#2563eb)':'transparent',
                     borderRadius:'6px',fontWeight:uiState.roleModalTemp===ch.roleCode?700:500,marginBottom:'2px',
                     display:'flex',alignItems:'center',gap:'6px',transition:'all .1s'}"
-                  @mouseover="ch.allowed&&uiState.roleModalTemp!==ch.roleCode&&($event.currentTarget.style.background='#eff6ff')"
-                  @mouseout="uiState.roleModalTemp!==ch.roleCode&&($event.currentTarget.style.background='transparent')">
+                  @mouseover="onRoleChildHover(ch, $event)"
+                  @mouseout="onRoleChildLeave(ch, $event)">
                   <span style="font-size:9px;">●</span>
                   <span>{{ ch.roleNm }}</span>
                 </div>

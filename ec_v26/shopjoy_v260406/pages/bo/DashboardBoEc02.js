@@ -348,7 +348,7 @@
       <button v-for="t in TABS" :key="t.key" class="tab-btn"
         :class="{active: activeTab===t.key && tabMode==='tab'}"
         :disabled="tabMode!=='tab'"
-        @click="tabMode==='tab' && (activeTab=t.key)"
+        @click="tabMode==='tab' ? (activeTab=t.key) : null"
         :style="tabMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
         <span style="margin-right:4px;">{{ t.icon }}</span>{{ t.label }}
       </button>

@@ -733,7 +733,7 @@ window.DpDispPanelDtl = {
       <button v-if="!cfDtlMode" class="btn btn-sm" :disabled="cfIsNew"
         :style="cfIsNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
         :title="cfIsNew ? '저장 후 전시항목을 복사할 수 있습니다.' : ''"
-        @click="!cfIsNew && (rowCopyOpen = true)">
+        @click="!cfIsNew ? (rowCopyOpen = true) : null">
         📄 전시항목 복사
       </button>
       <button v-if="!cfDtlMode" class="btn btn-primary btn-sm" @click="handleSave" style="font-weight:700;">💾 저장</button>
@@ -856,7 +856,7 @@ window.DpDispPanelDtl = {
                 <label class="form-label">표시방식</label>
                 <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
                   <button v-for="o in codes.layout_types" :key="o?.codeValue"
-                    @click="!cfDtlMode && (form.layoutType = o.codeValue)"
+                    @click="!cfDtlMode ? (form.layoutType = o.codeValue) : null"
                     type="button"
                     style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
                     :style="[o.codeValue==='grid'?'border-left:none;':'', form.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
@@ -869,7 +869,7 @@ window.DpDispPanelDtl = {
                 <div style="display:flex;align-items:center;gap:6px;">
                   <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
                     <button v-for="n in [1,2,3,4]" :key="Math.random()" type="button"
-                      @click="!cfDtlMode && (form.gridCols = n)"
+                      @click="!cfDtlMode ? (form.gridCols = n) : null"
                       style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
                       :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
                       {{ n }}

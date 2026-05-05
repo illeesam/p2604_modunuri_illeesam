@@ -144,7 +144,7 @@ window.PdRestockNotiMng = {
           <th style="width:140px">신청일</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row, idx) in restockNotis" :key="row?.restockNotiId">
+          <tr v-for="(row, idx) in restockNotis" :key="(row && row.restockNotiId)">
             <td><input type="checkbox" :checked="checkedIds.has(row.restockNotiId)" @change="toggleOne(row.restockNotiId)"></td>
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td>{{ getProdNm(row.prodId) }}</td>

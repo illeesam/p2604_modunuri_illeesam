@@ -344,7 +344,7 @@ window.PdCategoryProdMng = {
         <!-- -- 탭바 + 뷰모드 버튼 ---------------------------------------------- -->
         <div class="tab-bar-row" style="margin:12px 0 0">
           <div class="tab-nav" style="flex:1;flex-wrap:wrap">
-            <button v-for="tab in TYPE_TABS" :key="tab?.cd"
+            <button v-for="tab in TYPE_TABS" :key="(tab && tab.cd)"
                     class="tab-btn" :class="{ active: uiState.activeTypeCd===tab.cd }"
                     @click="uiState.activeTypeCd=tab.cd">
               {{ tab.nm }}
@@ -380,7 +380,7 @@ window.PdCategoryProdMng = {
             <th style="width:40px;text-align:center">삭제</th>
           </tr></thead>
           <tbody>
-            <tr v-for="(row, idx) in cfFilteredRows" :key="row?._id"
+            <tr v-for="(row, idx) in cfFilteredRows" :key="(row && row._id)"
                 draggable="true"
                 @dragstart="onDragStart(idx)"
                 @dragover.prevent="onDragOver(idx)"
@@ -395,7 +395,7 @@ window.PdCategoryProdMng = {
                   <span style="font-weight:500">{{ getProdNm(row.prodId) }}</span>
                 </div>
                 <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
-                  <button v-for="opt in EMPHASIS_OPTS" :key="opt?.cd"
+                  <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)"
                           @click="toggleEmphasis(row, opt.cd)"
                           style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
                           :style="hasEmphasis(row.emphasisCd, opt.cd)
@@ -411,7 +411,7 @@ window.PdCategoryProdMng = {
               <td style="text-align:right;font-size:12px">
                 {{ ((getProd(row.prodId)?.salePrice||getProd(row.prodId)?.price||0)).toLocaleString() }}원
               </td>
-              <td style="text-align:center;font-size:12px">{{ getProd(row.prodId)?.stock ?? '-' }}</td>
+              <td style="text-align:center;font-size:12px">{{ ((getProd(row.prodId) || {}).stock != null ? (getProd(row.prodId) || {}).stock : '-') }}</td>
               <td style="text-align:center">
                 <span :class="['badge',
                        getProd(row.prodId)?.status==='판매중' ? 'badge-green' :
@@ -455,7 +455,7 @@ window.PdCategoryProdMng = {
                gridTemplateColumns: uiState.tabMode==='2col' ? 'repeat(2,1fr)' : uiState.tabMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
                gap:'10px',
              }">
-          <div v-for="(row, idx) in cfFilteredRows" :key="row?._id"
+          <div v-for="(row, idx) in cfFilteredRows" :key="(row && row._id)"
                draggable="true"
                @dragstart="onDragStart(idx)"
                @dragover.prevent="onDragOver(idx)"
@@ -486,7 +486,7 @@ window.PdCategoryProdMng = {
               <span style="font-size:12px;font-weight:700;color:#e8587a">
                 {{ ((getProd(row.prodId)?.salePrice||getProd(row.prodId)?.price||0)).toLocaleString() }}원
               </span>
-              <span style="font-size:10px;color:#999">재고 {{ getProd(row.prodId)?.stock ?? '-' }}</span>
+              <span style="font-size:10px;color:#999">재고 {{ ((getProd(row.prodId) || {}).stock != null ? (getProd(row.prodId) || {}).stock : '-') }}</span>
               <span :class="['badge',
                      getProd(row.prodId)?.status==='판매중' ? 'badge-green' :
                      getProd(row.prodId)?.status==='품절'   ? 'badge-red'   : 'badge-gray']"
@@ -496,7 +496,7 @@ window.PdCategoryProdMng = {
             </div>
             <!-- -- 강조옵션 chips ------------------------------------------- -->
             <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px">
-              <button v-for="opt in EMPHASIS_OPTS" :key="opt?.cd"
+              <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)"
                       @click="toggleEmphasis(row, opt.cd)"
                       style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
                       :style="hasEmphasis(row.emphasisCd, opt.cd)
@@ -560,12 +560,12 @@ window.PdCategoryProdMng = {
               <th style="width:56px;text-align:center">추가</th>
             </tr></thead>
             <tbody>
-              <tr v-for="p in cfPickerList" :key="p?.productId">
+              <tr v-for="p in cfPickerList" :key="(p && p.productId)">
                 <td style="color:#aaa;font-size:12px">{{ p.productId }}</td>
                 <td>{{ p.prodNm || p.productName }}</td>
                 <td style="text-align:center;font-size:12px;color:#888">{{ p.category || '-' }}</td>
                 <td style="text-align:right;font-size:12px">{{ (p.salePrice||p.price||0).toLocaleString() }}원</td>
-                <td style="text-align:center;font-size:12px">{{ p.stock ?? '-' }}</td>
+                <td style="text-align:center;font-size:12px">{{ p.stock != null ? p.stock : '-' }}</td>
                 <td style="text-align:center">
                   <button class="btn btn-blue btn-xs" @click="addProd(p)">추가</button>
                 </td>

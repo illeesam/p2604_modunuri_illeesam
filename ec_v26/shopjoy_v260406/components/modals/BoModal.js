@@ -1,15 +1,24 @@
-/* ShopJoy Admin - 공통 참조 모달 (회원/상품/주문/클레임/쿠폰)
+/* ShopJoy BO - 공용 모달 모음
    -----------------------------------------------------------------------
-   [공통 props: reloadTrigger]
-   상세 사용법은 components/modals/BaseModal.js 상단 주석 참조.
+   여기에 등록하는 모달은 어디서든 <bo-xxx-modal /> 태그로 사용 가능.
 
-   요약:
-     - 모달이 마운트된 상태에서 부모가 "다시 조회" 신호를 보낼 때 사용
-     - 부모: const modal = reactive({ show:false, reloadTrigger:0 });
-             refresh() { modal.reloadTrigger++; }
-     - 모달 내부: watch(() => props.reloadTrigger, () => handleSearchData());
+   현재 등록된 모달:
+     - BoRefModal      — 회원/상품/주문/클레임/쿠폰 참조 상세 (showRefModal 헬퍼가 호출)
+     - BoCodeGrpModal  — 공통코드 그룹 미리보기 (codeGrp 으로 코드 항목 조회)
+
+   추가 시: 파일 끝에 window.BoXxxModal 등록 + bo.html 에 본 파일이 로드되면 됨.
    -----------------------------------------------------------------------
 */
+
+/* ── BoRefModal ──────────────────────────────────────────────
+ * 공통 참조 모달 (회원/상품/주문/클레임/쿠폰).
+ *
+ * [공통 props: reloadTrigger]
+ * 모달이 마운트된 상태에서 부모가 "다시 조회" 신호를 보낼 때:
+ *   부모: const modal = reactive({ show:false, reloadTrigger:0 });
+ *         refresh() { modal.reloadTrigger++; }
+ *   모달 내부: watch(() => props.reloadTrigger, () => handleSearchData());
+ * ──────────────────────────────────────────────────────────── */
 window.BoRefModal = {
   name: 'BoRefModal',
   props: {
@@ -19,11 +28,6 @@ window.BoRefModal = {
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
-
     const close = () => emit('close');
     const s = props.state;
 
@@ -158,4 +162,123 @@ window.BoRefModal = {
   </div>
 </div>
 `
+};
+
+/* ── BoCodeGrpModal ──────────────────────────────────────────
+ * 공통코드 그룹 미리보기 모달.
+ *
+ * Props:
+ *   show     (Boolean)  — 모달 노출 여부
+ *   codeGrp  (String)   — 조회할 코드 그룹 (예: 'PROD_OPT_CATEGORY')
+ *   title    (String)   — 헤더 타이틀 (선택, 미설정 시 codeGrp 사용)
+ *
+ * Emits:
+ *   close             — 닫기 버튼/배경 클릭
+ *   select(codeRow)   — 행 더블클릭 시 코드 선택 (선택 사용 시)
+ *
+ * 사용:
+ *   <bo-code-grp-modal :show="codeModal.show" :code-grp="codeModal.grp"
+ *                      :title="'옵션 카테고리 코드'"
+ *                      @close="codeModal.show=false" @select="onCodePick" />
+ * ──────────────────────────────────────────────────────────── */
+window.BoCodeGrpModal = {
+  name: 'BoCodeGrpModal',
+  props: {
+    show:    { type: Boolean, default: false },
+    codeGrp: { type: String,  default: '' },
+    title:   { type: String,  default: '' },
+  },
+  emits: ['close', 'select'],
+  setup(props, { emit }) {
+    const { ref, watch } = Vue;
+    const codes = ref([]);
+    const loading = ref(false);
+    const error = ref('');
+
+    const fnLoad = async () => {
+      if (!props.codeGrp) { codes.value = []; return; }
+      loading.value = true;
+      error.value = '';
+      try {
+        /* 1차: 클라이언트 코드 스토어에서 시도 (네트워크 0회) */
+        const store = window.sfGetBoCodeStore?.();
+        const local = store?.sgGetCodesByGroup?.(props.codeGrp);
+        if (Array.isArray(local) && local.length) {
+          codes.value = local.slice().sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+          return;
+        }
+        /* 2차: API 직접 조회 */
+        const res = await window.coApiSvc.syCode.getGrpCodes(props.codeGrp, '공통코드', '코드그룹조회');
+        const list = res?.data?.data?.pageList || res?.data?.data || [];
+        codes.value = (Array.isArray(list) ? list : []).slice().sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+      } catch (err) {
+        console.error('[BoCodeGrpModal:fnLoad]', err);
+        error.value = err.message || '코드 조회 실패';
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    /* show=true 또는 codeGrp 변경 시 자동 로드 */
+    watch(() => [props.show, props.codeGrp], ([show]) => {
+      if (show) fnLoad();
+    }, { immediate: true });
+
+    const onClose  = () => emit('close');
+    const onSelect = (row) => emit('select', row);
+
+    return { codes, loading, error, onClose, onSelect };
+  },
+  template: /* html */`
+<div v-if="show"
+  style="position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);z-index:1500;display:flex;align-items:center;justify-content:center;"
+  @click.self="onClose">
+  <div class="modal-box" style="background:#fff;border-radius:16px;width:640px;max-width:94vw;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;">
+    <!-- 헤더 -->
+    <div class="tree-modal-header" style="padding:14px 20px;border-bottom:1px solid #f0e0e7;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:14px;font-weight:700;color:#222;">{{ title || '공통코드 미리보기' }}</span>
+        <code style="font-size:11px;background:#fff;color:#6a1b9a;padding:2px 8px;border-radius:4px;border:1px solid #e1bee7;font-family:monospace;">{{ codeGrp }}</code>
+      </div>
+      <button @click="onClose" style="border:none;background:transparent;color:#888;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+
+    <!-- 본문 -->
+    <div style="padding:14px 20px;overflow-y:auto;flex:1;">
+      <div v-if="loading" style="padding:32px;text-align:center;color:#999;font-size:13px;">불러오는 중...</div>
+      <div v-else-if="error" style="padding:24px;text-align:center;color:#d32f2f;font-size:13px;">{{ error }}</div>
+      <div v-else-if="!codes.length" style="padding:32px;text-align:center;color:#aaa;font-size:13px;">등록된 코드가 없습니다.</div>
+      <table v-else class="bo-table" style="width:100%;font-size:12px;">
+        <thead>
+          <tr>
+            <th style="width:36px;text-align:center;">번호</th>
+            <th style="width:140px;">코드값</th>
+            <th>코드명</th>
+            <th style="width:60px;text-align:right;">정렬</th>
+            <th style="width:50px;text-align:center;">사용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row, idx) in codes" :key="(row && (row.codeId || row.codeValue)) || idx"
+              @dblclick="onSelect(row)" style="cursor:pointer;"
+              title="더블클릭하여 선택">
+            <td style="text-align:center;color:#999;">{{ idx + 1 }}</td>
+            <td><code style="background:#f5f5f7;padding:2px 6px;border-radius:4px;font-family:monospace;color:#1565c0;">{{ row.codeValue }}</code></td>
+            <td>{{ row.codeLabel }}</td>
+            <td style="text-align:right;color:#666;">{{ row.sortOrd != null ? row.sortOrd : '-' }}</td>
+            <td style="text-align:center;">
+              <span :class="['badge', row.useYn==='Y' ? 'badge-green' : 'badge-gray']" style="font-size:10px;">{{ row.useYn || '-' }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 푸터 -->
+    <div style="padding:12px 20px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:11px;color:#888;">총 {{ codes.length }}건 · 행 더블클릭 시 선택</span>
+      <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+    </div>
+  </div>
+</div>`
 };

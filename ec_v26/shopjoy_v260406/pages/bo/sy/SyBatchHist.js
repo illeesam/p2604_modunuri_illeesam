@@ -14,7 +14,7 @@ window.SyBatchHist = {
     const setApiRes    = window.boApp.setApiRes;
     const batches = reactive([]);
     const batchLogs = reactive([]);
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, error: null, searchBatchId: '', searchStatus: '', expandedId: null });
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, error: null, searchBatchId: '', searchStatus: '', expandedSet: new Set() });
     const codes = reactive({ batch_run_statuses: [] });
 
     // onMounted에서 API 로드
@@ -72,13 +72,21 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     );
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
-    const onSearch     = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData().then(() => { onExpandAll(); }); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchData().then(() => { onExpandAll(); }); };
+    const onSearch     = () => { pager.pageNo = 1; handleSearchData('DEFAULT').then(() => { onExpandAll(); }); };
 
     /* ── 메시지 상세 토글 ── */
-        const toggleExpand = (logId) => {
-      uiState.expandedId = uiState.expandedId === logId ? null : logId;
+    const isExpanded = (logId) => uiState.expandedSet.has(logId);
+    const toggleExpand = (logId) => {
+      if (uiState.expandedSet.has(logId)) uiState.expandedSet.delete(logId);
+      else uiState.expandedSet.add(logId);
+    };
+    const onExpandAll = () => {
+      uiState.expandedSet = new Set(batchLogs.map(l => l.logId));
+    };
+    const onCollapseAll = () => {
+      uiState.expandedSet = new Set();
     };
 
     const fnRunBadge = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
@@ -89,18 +97,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       return `${Math.floor(sec / 60)}분 ${sec % 60}초`;
     };
 
-    const expandedId = Vue.toRef(uiState, 'expandedId');
-
     // ── return ───────────────────────────────────────────────────────────────
 
     onMounted(() => {
-      handleSearchData();
+      handleSearchData().then(() => { onExpandAll(); });
     });
 
     return { batches, batchLogs, uiState, cfBatchOptions,
       pager,
       setPage, onSizeChange, onSearch,
-      toggleExpand,
+      isExpanded, toggleExpand, onExpandAll, onCollapseAll,
       fnRunBadge, fnFmtDuration,
       codes,
     };
@@ -114,6 +120,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <span class="list-count" style="margin-left:4px;">{{ pager.pageTotalCount }}건</span>
     </div>
     <div style="display:flex;gap:6px;align-items:center;">
+      <button class="btn btn-secondary btn-sm" @click="onExpandAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">▼ 전체펼치기</button>
+      <button class="btn btn-secondary btn-sm" @click="onCollapseAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">▲ 전체접기</button>
       <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
         <option value="">배치 전체</option>
         <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">{{ b.label }}</option>

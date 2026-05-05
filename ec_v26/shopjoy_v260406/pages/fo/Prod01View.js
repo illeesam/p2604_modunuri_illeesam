@@ -901,8 +901,8 @@ window.Prod01View = {
               <div v-if="(blk.contentTypeCd||'').toUpperCase()==='HTML'"
                    style="font-size:0.9rem;line-height:1.8;color:var(--text-primary);"
                    v-html="blk.contentHtml"></div>
-              <!-- IMAGE 블록 (data:image base64 또는 URL) -->
-              <img v-else-if="(blk.contentTypeCd||'').toUpperCase()==='IMAGE'"
+              <!-- IMAGE / FILE(첨부 base64) 블록 -->
+              <img v-else-if="['IMAGE','FILE'].includes((blk.contentTypeCd||'').toUpperCase())"
                    :src="blk.contentHtml" alt="상품설명 이미지"
                    style="max-width:100%;height:auto;border-radius:8px;display:block;" />
               <!-- URL 블록 (외부 링크 또는 외부 이미지) -->

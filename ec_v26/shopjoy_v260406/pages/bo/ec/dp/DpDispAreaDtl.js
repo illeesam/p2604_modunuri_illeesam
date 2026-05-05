@@ -614,7 +614,7 @@ window.DpDispAreaDtl = {
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:12px;">
           <span><b style="color:#888;">표시:</b> {{ cfActivePanel.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(cfActivePanel.gridCols||1)+'열' }}</span>
-          <span><b style="color:#888;">순서:</b> {{ cfActivePanel.sortOrder ?? '-' }}</span>
+          <span><b style="color:#888;">순서:</b> {{ cfActivePanel.sortOrder != null ? cfActivePanel.sortOrder : '-' }}</span>
           <span><b style="color:#888;">패널기본전시기간:</b>
             <template v-if="cfActivePanel.dispStartDate || cfActivePanel.dispEndDate">
               {{ cfActivePanel.dispStartDate || '∞' }} ~ {{ cfActivePanel.dispEndDate || '∞' }}

@@ -579,8 +579,22 @@ window.PdProdDtl = {
           else if (p.mainImage) images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, optItemId1: '', optItemId2: '' });
 
           // 상품설명 — tabData.content에서 채움
+          // DB contentTypeCd (HTML/FILE/URL/IMAGE) → 클라이언트 type (html/file/url) 매핑
+          const fnMapTypeCd = (cd) => {
+            const v = String(cd || 'HTML').toUpperCase();
+            if (v === 'FILE') return 'file';
+            if (v === 'URL') return 'url';
+            if (v === 'IMAGE') return 'file'; // IMAGE 는 첨부와 동일 표시 (data:image)
+            return 'html';
+          };
           if (tabData.content.length) {
-            contentBlocks.splice(0, contentBlocks.length, ...tabData.content.map(c => ({ _id: _blockSeq++, type: 'html', content: c.contentHtml || '', fileName: '', prodContentId: c.prodContentId })));
+            contentBlocks.splice(0, contentBlocks.length, ...tabData.content.map(c => ({
+              _id: _blockSeq++,
+              type: fnMapTypeCd(c.contentTypeCd),
+              content: c.contentHtml || '',
+              fileName: c.fileName || '',
+              prodContentId: c.prodContentId,
+            })));
           } else if (form.contentHtml) {
             contentBlocks.splice(0, contentBlocks.length, { _id: _blockSeq++, type: 'html', content: form.contentHtml, fileName: '' });
           }
@@ -769,9 +783,17 @@ window.PdProdDtl = {
       window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${cfCurProdId.value}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
+    /* 공통코드 그룹 미리보기 모달 (BoCodeGrpModal) */
+    const codeGrpModal = reactive({ show: false, codeGrp: '', title: '' });
+    const openCodeGrpModal = (codeGrp, title) => {
+      codeGrpModal.codeGrp = codeGrp;
+      codeGrpModal.title = title || '';
+      codeGrpModal.show = true;
+    };
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview,
+    return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus,
@@ -1067,6 +1089,10 @@ window.PdProdDtl = {
             <option value="">-- 옵션 카테고리 선택 --</option>
             <option v-for="c in cfOptTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
+          <button type="button" class="btn btn-xs"
+            style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:13px;padding:2px 8px;"
+            title="옵션 카테고리 공통코드 미리보기 (PROD_OPT_CATEGORY)"
+            @click="openCodeGrpModal('PROD_OPT_CATEGORY', '옵션 카테고리 공통코드')">📋</button>
         </div>
 
         <!-- -- STEP 2: 옵션 차원별 유형 선택 — 1레벨 선택 후 활성화 ----------- -->
@@ -1976,6 +2002,13 @@ window.PdProdDtl = {
   <div v-if="!cfIsNew" style="margin-top:20px;">
     <pd-prod-hist :prod-id="dtlId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
+
+  <!-- 공통코드 그룹 미리보기 모달 (BoModal.js / window.BoCodeGrpModal) -->
+  <bo-code-grp-modal
+    :show="codeGrpModal.show"
+    :code-grp="codeGrpModal.codeGrp"
+    :title="codeGrpModal.title"
+    @close="codeGrpModal.show=false" />
 </div>
 `
 };

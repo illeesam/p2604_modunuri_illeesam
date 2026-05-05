@@ -899,7 +899,7 @@ window.Prod02View = {
               <div v-if="(blk.contentTypeCd||'').toUpperCase()==='HTML'"
                    style="font-size:0.9rem;line-height:1.8;color:var(--text-primary);"
                    v-html="blk.contentHtml"></div>
-              <img v-else-if="(blk.contentTypeCd||'').toUpperCase()==='IMAGE'"
+              <img v-else-if="['IMAGE','FILE'].includes((blk.contentTypeCd||'').toUpperCase())"
                    :src="blk.contentHtml" alt="상품설명 이미지"
                    style="max-width:100%;height:auto;border-radius:8px;display:block;" />
               <div v-else-if="(blk.contentTypeCd||'').toUpperCase()==='URL'">

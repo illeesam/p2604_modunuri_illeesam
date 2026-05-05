@@ -435,7 +435,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <th style="width:110px;text-align:center">관리</th>
       </tr></thead>
       <tbody>
-        <template v-for="(g, idx) in bundleList" :key="g?.bundleProdId">
+        <template v-for="(g, idx) in bundleList" :key="(g && g.bundleProdId)">
           <tr :style="(uiState.dtlMode==='edit' && uiState.editBundleId===g.bundleProdId) ? 'background:#e6f4ff' : ''">
             <td style="text-align:center;font-size:11px;color:#999;vertical-align:top;padding-top:12px;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td>
@@ -444,7 +444,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
                 <div>
                   <span class="title-link" @click="openDtl(g.bundleProdId)">{{ g.prodNm }}</span>
                   <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
-                    <span v-for="(item,i) in (g?.items || [])" :key="item?.bundleItemId||i"
+                    <span v-for="(item,i) in (g?.items || [])" :key="(item && item.bundleItemId)||i"
                           style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
                       {{ getProdNm(item.itemProdId) }}
                       <span style="color:#1677ff">×{{ item.itemQty }}</span>
@@ -547,7 +547,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <label class="form-label">브랜드</label>
           <select class="form-control" v-model="newForm.brandId">
             <option value="">선택</option>
-            <option v-for="b in ([]||[])" :key="b?.brandId" :value="b.brandId">
+            <option v-for="b in ([]||[])" :key="(b && b.brandId)" :value="b.brandId">
               {{ b.brandNm || b.brandName }}
             </option>
           </select>
@@ -556,7 +556,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <label class="form-label">판매업체</label>
           <select class="form-control" v-model="newForm.vendorId">
             <option value="">선택</option>
-            <option v-for="v in ([]||[])" :key="v?.vendorId" :value="v.vendorId">
+            <option v-for="v in ([]||[])" :key="(v && v.vendorId)" :value="v.vendorId">
               {{ v.vendorNm || v.vendorName }}
             </option>
           </select>
@@ -571,7 +571,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <label class="form-label">카테고리 <span style="font-size:11px;color:#aaa;font-weight:400">N개 등록 · 첫 번째 = 대표</span></label>
         <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
           <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
-          <div v-for="(cat,idx) in dtlCategories" :key="cat?.categoryId"
+          <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)"
                draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
                :style="uiState.catDragoverIdx===idx?'opacity:0.5;':''"
                style="display:flex;align-items:center;gap:4px;padding:2px 0;">
@@ -604,7 +604,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <th style="width:50px;text-align:center">삭제</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(item, idx) in dtlItems" :key="item?._id"
+        <tr v-for="(item, idx) in dtlItems" :key="(item && item._id)"
             draggable="true"
             @dragstart="onDragStart(idx)"
             @dragover.prevent="onDragOver(idx)"
@@ -693,7 +693,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
               <th style="width:56px;text-align:center">선택</th>
             </tr></thead>
             <tbody>
-              <tr v-for="p in cfPickerList" :key="p?.productId">
+              <tr v-for="p in cfPickerList" :key="(p && p.productId)">
                 <td style="color:#aaa;font-size:12px">{{ p.productId }}</td>
                 <td>{{ p.prodNm || p.productName }}</td>
                 <td style="text-align:center;font-size:12px;color:#888">{{ p.category || '-' }}</td>

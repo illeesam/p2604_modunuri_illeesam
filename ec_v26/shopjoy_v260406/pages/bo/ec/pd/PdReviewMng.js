@@ -85,7 +85,12 @@ window.PdReviewMng = {
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    const cfSelectedRow = computed(() => reviews.find(r => r.reviewId === selectedId.value) || null);
+    /* 상단/하단 리뷰 목록 모두에서 선택된 리뷰를 찾는다 */
+    const cfSelectedRow = computed(() =>
+      reviews.find(r => r.reviewId === selectedId.value) ||
+      prodReviews.find(r => r.reviewId === selectedId.value) ||
+      null
+    );
 
     const openDetail = (row) => { selectedId.value = selectedId.value === row.reviewId ? null : row.reviewId; };
 
@@ -151,6 +156,17 @@ window.PdReviewMng = {
       statusModal.show = true;
     };
 
+    /* select @change 핸들러 — 모달 열기 + select 값 즉시 원복 (저장 전이므로) */
+    const onStatusSelectChange = (row, evt) => {
+      const newStatus = evt && evt.target ? evt.target.value : '';
+      openStatusModal(row, newStatus);
+      if (evt && evt.target && row) evt.target.value = row.reviewStatusCd;
+    };
+
+    /* 모달 표시용 — row 의 안전 접근 (template 의 ?. 표현식 회피) */
+    const cfStatusModalRowTitle  = computed(() => (statusModal.row && statusModal.row.reviewTitle) || '');
+    const cfStatusModalCurrentCd = computed(() => (statusModal.row && statusModal.row.reviewStatusCd) || '');
+
     const closeStatusModal = () => {
       statusModal.show = false;
       /* select 가 미리 새 값으로 바뀌었을 수 있으므로 원복용 트리거 */
@@ -173,6 +189,10 @@ window.PdReviewMng = {
           '리뷰관리', '상태변경'
         );
         row.reviewStatusCd = newStatus;
+        /* 상단/하단 두 목록 모두에서 같은 reviewId 찾아 상태 동기화 */
+        const sync = (arr) => { const t = arr.find(r => r.reviewId === row.reviewId); if (t) t.reviewStatusCd = newStatus; };
+        sync(reviews);
+        sync(prodReviews);
         if (cfSelectedRow.value && cfSelectedRow.value.reviewId === row.reviewId) {
           cfSelectedRow.value.reviewStatusCd = newStatus;
         }
@@ -209,7 +229,8 @@ window.PdReviewMng = {
               selectedId, cfSelectedRow, openDetail, fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, onSizeChange, codes, onSort, sortIcon,
               previewProduct,
               prodReviews, prodReviewPager, selectedProdId, onProdIdClick, setProdReviewPage, onProdReviewSizeChange,
-              statusModal, openStatusModal, closeStatusModal, confirmStatusChange,
+              statusModal, openStatusModal, onStatusSelectChange, closeStatusModal, confirmStatusChange,
+              cfStatusModalRowTitle, cfStatusModalCurrentCd,
             };
   },
   template: `
@@ -260,7 +281,7 @@ window.PdReviewMng = {
           <th style="width:90px;text-align:center">상태변경</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row, idx) in reviews" :key="row?.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="(row, idx) in reviews" :key="row && row.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><span class="title-link">{{ row.reviewTitle }}</span></td>
             <td style="font-size:12px;" @click.stop>
@@ -279,7 +300,7 @@ window.PdReviewMng = {
             <td style="text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
             <td style="font-size:12px">{{ row.reviewDate }}</td>
             <td style="text-align:center" @click.stop>
-              <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="openStatusModal(row,$event.target.value); $event.target.value = row.reviewStatusCd;">
+              <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="onStatusSelectChange(row, $event)">
                 <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
               </select>
             </td>
@@ -306,26 +327,52 @@ window.PdReviewMng = {
           <th style="width:60px;text-align:right">도움</th>
           <th style="width:80px;text-align:center">상태</th>
           <th style="width:140px">작성일</th>
+          <th style="width:90px;text-align:center">상태변경</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row, idx) in prodReviews" :key="row?.reviewId">
+          <tr v-for="(row, idx) in prodReviews" :key="row && row.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (prodReviewPager.pageNo - 1) * prodReviewPager.pageSize + idx + 1 }}</td>
-            <td>{{ row.reviewTitle }}</td>
+            <td><span class="title-link">{{ row.reviewTitle }}</span></td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
             <td style="text-align:center;color:#f59e0b;font-size:13px">{{ Number(row.rating || 0).toFixed(1) }} ★</td>
             <td style="text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
             <td style="text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
             <td style="font-size:12px">{{ row.reviewDate }}</td>
+            <td style="text-align:center" @click.stop>
+              <select class="form-control" style="font-size:11px;padding:2px 4px"
+                :value="row.reviewStatusCd"
+                @change="onStatusSelectChange(row, $event)">
+                <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
+              </select>
+            </td>
           </tr>
-          <tr v-if="!prodReviews.length"><td colspan="7" style="text-align:center;padding:24px;color:#aaa">해당 상품의 리뷰가 없습니다.</td></tr>
+          <tr v-if="!prodReviews.length"><td colspan="8" style="text-align:center;padding:24px;color:#aaa">해당 상품의 리뷰가 없습니다.</td></tr>
         </tbody>
       </table>
       <bo-pager :pager="prodReviewPager" :on-set-page="setProdReviewPage" :on-size-change="onProdReviewSizeChange" />
     </div>
 
     <div class="card" v-if="cfSelectedRow">
-      <div class="toolbar"><span class="list-title">리뷰 내용</span></div>
+      <div class="toolbar">
+        <span class="list-title">리뷰 내용</span>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:#888;">현재 상태:</span>
+          <span :class="['badge', fnStatusBadge(cfSelectedRow.reviewStatusCd)]">{{ STATUS_LABEL[cfSelectedRow.reviewStatusCd] || cfSelectedRow.reviewStatusCd }}</span>
+          <span style="font-size:12px;color:#888;margin-left:8px;">변경:</span>
+          <select class="form-control" style="font-size:12px;padding:3px 6px;width:auto;height:28px;"
+            :value="cfSelectedRow.reviewStatusCd"
+            @change="onStatusSelectChange(cfSelectedRow, $event)">
+            <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
+          </select>
+          <button class="btn btn-xs" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="selectedId = null">✕ 닫기</button>
+        </span>
+      </div>
       <div style="padding:16px">
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:10px;">
+          <span><b style="color:#888;">상품:</b> [{{ cfSelectedRow.prodId }}] {{ getProdNm(cfSelectedRow.prodId) || cfSelectedRow.prodNm || '' }}</span>
+          <span><b style="color:#888;">작성자:</b> {{ getMemNm(cfSelectedRow.memberId) }}</span>
+          <span><b style="color:#888;">작성일:</b> {{ cfSelectedRow.reviewDate }}</span>
+        </div>
         <div style="font-size:16px;font-weight:600;margin-bottom:8px">{{ cfSelectedRow.reviewTitle }}</div>
         <div style="color:#f59e0b;margin-bottom:8px">평점: {{ Number(cfSelectedRow.rating || 0).toFixed(1) }} / 5.0</div>
         <div style="background:#f9f9f9;padding:12px;border-radius:6px;white-space:pre-wrap;font-size:14px">{{ cfSelectedRow.reviewContent }}</div>
@@ -334,28 +381,34 @@ window.PdReviewMng = {
     </div>
 
     <!-- ── 상태변경 사유 입력 모달 ─────────────────────────── -->
-    <base-modal v-if="statusModal.show" title="리뷰 상태 변경" @close="closeStatusModal" size="sm">
-      <template #body>
-        <div style="padding:6px 4px;">
-          <div style="margin-bottom:14px;font-size:13px;color:#444;">
-            <div style="margin-bottom:4px;"><b>리뷰</b>: {{ statusModal.row?.reviewTitle }}</div>
-            <div>
+    <div v-if="statusModal.show"
+      style="position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);z-index:1500;display:flex;align-items:center;justify-content:center;"
+      @click.self="closeStatusModal">
+      <div class="modal-box" style="background:#fff;border-radius:16px;width:480px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;">
+        <div class="tree-modal-header" style="padding:14px 20px;border-bottom:1px solid #f0e0e7;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);">
+          <div style="font-size:14px;font-weight:700;color:#222;">리뷰 상태 변경</div>
+          <button @click="closeStatusModal" style="border:none;background:transparent;color:#888;font-size:18px;cursor:pointer;">✕</button>
+        </div>
+        <div style="padding:18px 20px;">
+          <div style="margin-bottom:14px;font-size:13px;color:#444;line-height:1.7;">
+            <div><b>리뷰</b>: {{ cfStatusModalRowTitle }}</div>
+            <div style="margin-top:4px;">
               <b>상태 변경</b>:
-              <span :class="['badge', fnStatusBadge(statusModal.row?.reviewStatusCd)]" style="margin-left:6px;">{{ STATUS_LABEL[statusModal.row?.reviewStatusCd] }}</span>
+              <span :class="['badge', fnStatusBadge(cfStatusModalCurrentCd)]" style="margin-left:6px;">{{ STATUS_LABEL[cfStatusModalCurrentCd] }}</span>
               <span style="margin:0 6px;color:#888;">→</span>
               <span :class="['badge', fnStatusBadge(statusModal.newStatus)]">{{ STATUS_LABEL[statusModal.newStatus] }}</span>
             </div>
           </div>
-          <label class="form-label" style="font-size:12px;font-weight:600;color:#555;">변경 사유 <span style="color:#e57373;">*</span></label>
+          <label class="form-label" style="font-size:12px;font-weight:600;color:#555;display:block;">변경 사유 <span style="color:#e57373;">*</span></label>
           <textarea class="form-control" v-model="statusModal.reason" rows="4"
             placeholder="상태 변경 사유를 입력해주세요. (필수)"
-            style="margin:6px 0 0;width:100%;font-size:13px;"></textarea>
+            style="margin:6px 0 0;width:100%;font-size:13px;box-sizing:border-box;"></textarea>
         </div>
-      </template>
-      <template #footer>
-        <button class="btn btn-secondary btn-sm" @click="closeStatusModal">취소</button>
-        <button class="btn btn-primary btn-sm" @click="confirmStatusChange">저장</button>
-      </template>
-    </base-modal>
+        <div style="padding:12px 20px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:flex-end;gap:8px;">
+          <button class="btn btn-secondary btn-sm" @click="closeStatusModal">취소</button>
+          <button class="btn btn-primary btn-sm" @click="confirmStatusChange">저장</button>
+        </div>
+      </div>
+    </div>
 </div>`
 };

@@ -416,7 +416,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               {{ uiState.selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
-          <tr v-else v-for="(row, idx) in pager.pageList" :key="row?.categoryId"
+          <tr v-else v-for="(row, idx) in pager.pageList" :key="(row && row.categoryId)"
               :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]"
               draggable="true"
               @dragstart="onRowDragStart(getRealIdx(idx))"
@@ -524,7 +524,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
                @click="onParentSelect(null)">최상위 (상위없음)</div>
-          <div v-for="c in cfCatPickerList" :key="c?.categoryId"
+          <div v-for="c in cfCatPickerList" :key="(c && c.categoryId)"
                style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;cursor:pointer;display:flex;align-items:center;gap:6px"
                :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }"
                @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''"

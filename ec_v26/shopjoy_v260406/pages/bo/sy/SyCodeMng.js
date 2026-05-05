@@ -449,6 +449,15 @@ window.SyCodeMng = {
 
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
+    /* PathPick 버튼 hover 효과 — 인라인 할당식 회피 */
+    const onPathBtnHover = (g, evt) => {
+      if (g._row_status === 'D' || !evt || !evt.currentTarget) return;
+      evt.currentTarget.style.background = '#eef2ff';
+    };
+    const onPathBtnLeave = (evt) => {
+      if (evt && evt.currentTarget) evt.currentTarget.style.background = '#fff';
+    };
+
     // -- return ----------------------------------------------------------------
 
     return {
@@ -464,6 +473,7 @@ window.SyCodeMng = {
       openGrpSetting,
       treeExpanded, codeToggleNode, flatTree, parentOpts,
       handleLoadDetail, closeDetail, setFocused,
+      onPathBtnHover, onPathBtnLeave,
     };
   },
   template: /* html */`
@@ -563,8 +573,8 @@ window.SyCodeMng = {
                   @click="openPathPick(g)" @dblclick.stop="openPathPick(g)"
                   title="표시경로 선택"
                   :style="{cursor: g._row_status==='D' ? 'not-allowed' : 'pointer', display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: g._row_status==='D' ? 0.4 : 1}"
-                  @mouseover="(g._row_status!=='D') && ($event.currentTarget.style.background='#eef2ff')"
-                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+                  @mouseover="onPathBtnHover(g, $event)"
+                  @mouseout="onPathBtnLeave($event)">🔍</button>
               </div>
             </td>
             <td><input class="grid-input grid-mono" v-model="g.codeGrp" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
@@ -572,7 +582,7 @@ window.SyCodeMng = {
               <div style="display:flex;gap:8px;align-items:center;">
                 <input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="onGrpChange(g)" style="flex:1;" />
                 <span v-if="g._row_status !== 'D'" style="font-size:11px;color:#666;font-weight:500;white-space:nowrap;padding:4px 8px;background:#f3f4f6;border-radius:4px;">
-                  {{ g.codeCount ?? '-' }}개
+                  {{ g.codeCount != null ? g.codeCount : '-' }}개
                 </span>
               </div>
             </td>

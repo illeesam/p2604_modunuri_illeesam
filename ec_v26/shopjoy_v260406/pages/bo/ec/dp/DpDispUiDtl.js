@@ -513,7 +513,7 @@ window.DpDispUiDtl = {
         <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:12px;">
           <span><b style="color:#888;">유형:</b> {{ cfActiveArea.areaType || '-' }}</span>
           <span><b style="color:#888;">표시:</b> {{ cfActiveArea.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(cfActiveArea.gridCols||1)+'열' }}</span>
-          <span><b style="color:#888;">순서:</b> {{ cfActiveArea.sortOrd ?? '-' }}</span>
+          <span><b style="color:#888;">순서:</b> {{ cfActiveArea.sortOrd != null ? cfActiveArea.sortOrd : '-' }}</span>
           <span><b style="color:#888;">포함 패널:</b> {{ panelsOfArea(cfActiveArea.codeValue).length }}개</span>
           <span v-if="cfActiveArea.remark" style="flex:1 1 100%;"><b style="color:#888;">설명:</b> {{ cfActiveArea.remark }}</span>
         </div>

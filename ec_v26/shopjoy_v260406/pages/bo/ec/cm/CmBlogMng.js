@@ -214,7 +214,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
           <th style="width:80px;text-align:center">공개전환</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row, idx) in blogs" :key="row?.blogId" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="(row, idx) in blogs" :key="(row && row.blogId)" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td>
               <span v-if="row.isNotice==='Y'" class="badge badge-orange" style="margin-right:4px;font-size:10px">공지</span>

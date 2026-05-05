@@ -662,7 +662,7 @@ window.XsSample07 = {
           <span v-else-if="tab.resStatus" style="font-size:9px;" :style="fnStatusStyle(tab.resStatus)">{{ tab.resStatus }} · {{ tab.resTime }}ms</span>
           <!-- -- 자동실행 라벨 + 카운트다운 ---------------------------------------- -->
           <span v-if="tab.autoMs" style="font-size:9px;color:#22a84a;margin-left:auto;font-weight:600;white-space:nowrap;">
-            ⏱ {{ tab.autoLabel }} <span style="color:#aaa;font-weight:400;">({{ countdown[tab.tabId] ?? '-' }}초)</span>
+            ⏱ {{ tab.autoLabel }} <span style="color:#aaa;font-weight:400;">({{ countdown[tab.tabId] != null ? countdown[tab.tabId] : '-' }}초)</span>
           </span>
         </div>
       </div>

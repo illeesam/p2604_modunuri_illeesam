@@ -512,7 +512,7 @@ window.DpDispPanelMng = {
                 <span><b style="color:#888;">표시:</b>
                   {{ (d.layoutType||'grid')==='dashboard' ? '🧩 대시보드' : '🔲 그리드 ' + (d.gridCols||1) + '열' }}
                 </span>
-                <span><b style="color:#888;">순서:</b> {{ d.sortOrder ?? '-' }}</span>
+                <span><b style="color:#888;">순서:</b> {{ d.sortOrder != null ? d.sortOrder : '-' }}</span>
                 <span><b style="color:#888;">타이틀:</b>
                   {{ d.titleYn==='Y' ? (d.title || '표시') : '미표시' }}
                 </span>

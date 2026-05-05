@@ -3288,9 +3288,23 @@ window.PathPickModal = {
     };
 
     const labelOf = (id) => boUtil.getPathLabel(id);
+
+    /* hover 효과 헬퍼 — 인라인 표현식 SyntaxError 회피 */
+    const onRootHover = (evt) => {
+      if (selectedId.value !== null && addParent.value !== null && evt && evt.currentTarget) {
+        evt.currentTarget.style.background = '#f9fafb';
+      }
+    };
+    const onRootLeave = (evt) => {
+      if (selectedId.value !== null && addParent.value !== null && evt && evt.currentTarget) {
+        evt.currentTarget.style.background = 'transparent';
+      }
+    };
+
     return { cfTree, expanded, toggle, expandAll, collapseAll, selectedId, select, confirm,
              addParent, addLabel, setAddParent, doAdd, labelOf,
-             editingId, editLabel, startEdit, saveEdit, cancelEdit, deleteNode };
+             editingId, editLabel, startEdit, saveEdit, cancelEdit, deleteNode,
+             onRootHover, onRootLeave };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -3339,8 +3353,8 @@ window.PathPickModal = {
                    color:      selectedId===null ? '#e8587a' : '#374151',
                    fontWeight: selectedId===null ? 700 : 500, fontSize:'13px',
                    border:     selectedId===null ? '1px solid #fecdd3' : (addParent===null ? '1px solid #a7f3d0' : '1px solid transparent')}"
-          @mouseover="(selectedId!==null && addParent!==null) && ($event.currentTarget.style.background='#f9fafb')"
-          @mouseout="(selectedId!==null && addParent!==null) && ($event.currentTarget.style.background='transparent')">
+          @mouseover="onRootHover($event)"
+          @mouseout="onRootLeave($event)">
           <span style="margin-right:8px;">📁</span>(루트)
           <span style="font-size:10px;color:#6b7280;background:#fff;padding:1px 8px;border-radius:10px;border:1px solid #e5e7eb;margin-left:8px;font-weight:500;">{{ cfTree.count }}</span>
         </div>
@@ -3386,20 +3400,41 @@ window.PathPickTreeNode = {
   props: ['node', 'expanded', 'selected', 'addParent', 'editingId', 'editLabel',
           'onToggle', 'onSelect', 'onSetParent', 'onConfirm',
           'onStartEdit', 'onSaveEdit', 'onCancelEdit', 'onUpdateLabel', 'onDelete', 'depth', 'reloadTrigger'],
+  methods: {
+    onPathNodeClick(ch) {
+      if (this.editingId === ch.pathId) return;
+      this.onSelect && this.onSelect(ch.pathId);
+      this.onSetParent && this.onSetParent(ch.pathId);
+    },
+    onPathNodeDblClick(ch) {
+      if (this.editingId === ch.pathId) return;
+      this.onSelect && this.onSelect(ch.pathId);
+      if (this.onConfirm) this.onConfirm();
+    },
+    onPathNodeHover(ch, evt) {
+      if (this.selected !== ch.pathId && evt && evt.currentTarget) {
+        evt.currentTarget.style.background = '#f3f4f6';
+      }
+    },
+    onPathNodeLeave(ch, evt) {
+      if (this.selected !== ch.pathId && evt && evt.currentTarget) {
+        evt.currentTarget.style.background = (this.addParent === ch.pathId ? '#ecfdf5' : 'transparent');
+      }
+    },
+  },
   template: /* html */`
 <div v-if="(node.children||[]).length > 0" style="position:relative;">
   <div v-for="(ch, ci) in node.children" :key="ch.pathId" style="position:relative;">
     <!-- 노드 행 -->
-    <div @click="(editingId !== ch.pathId) && (onSelect(ch.pathId), onSetParent(ch.pathId))"
-      @dblclick="(editingId !== ch.pathId) && (onSelect(ch.pathId), onConfirm && onConfirm())"
+    <div @click="onPathNodeClick(ch)" @dblclick="onPathNodeDblClick(ch)"
       :style="{position:'relative',display:'flex',alignItems:'center',padding:'4px 8px 4px 0',cursor: editingId===ch.pathId ? 'default' : 'pointer',transition:'background .12s',
                paddingLeft: (depth*20 + 8) + 'px',
                background: selected===ch.pathId ? '#fef2f4' : (addParent===ch.pathId ? '#ecfdf5' : 'transparent'),
                color:      selected===ch.pathId ? '#e8587a' : '#374151',
                fontWeight: selected===ch.pathId ? 700 : 500, fontSize:'13px',
                borderLeft: selected===ch.pathId ? '3px solid #e8587a' : '3px solid transparent'}"
-      @mouseover="(selected!==ch.pathId) && ($event.currentTarget.style.background='#f3f4f6')"
-      @mouseout="(selected!==ch.pathId) && ($event.currentTarget.style.background = (addParent===ch.pathId ? '#ecfdf5' : 'transparent'))">
+      @mouseover="onPathNodeHover(ch, $event)"
+      @mouseout="onPathNodeLeave(ch, $event)">
 
       <span :style="{position:'absolute',left:(depth*20 + 11)+'px',top:'50%',width:'10px',height:'1px',borderTop:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
 

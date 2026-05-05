@@ -156,7 +156,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
           <th style="width:60px;text-align:center">삭제</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row,idx) in gridRows" :key="row?.tagId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}">
+          <tr v-for="(row,idx) in gridRows" :key="(row && row.tagId)" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><input v-if="row._row_status" class="form-control" v-model="row.tagNm" @input="onCellChange(idx)"><span v-else><span class="badge badge-blue">#</span> {{ row.tagNm }}</span></td>
             <td><input v-if="row._row_status" class="form-control" v-model="row.tagDesc" @input="onCellChange(idx)"><span v-else style="color:#888;font-size:12px">{{ row.tagDesc }}</span></td>

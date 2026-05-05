@@ -2238,6 +2238,7 @@
   .component('BaseAttachOne',  window.BaseAttachOne)
   /* ── pages/bo/ (공통) ── */
   .component('BoRefModal',  window.BoRefModal)
+  .component('BoCodeGrpModal',  window.BoCodeGrpModal)
   /* ── pages/bo/ec/ — 회원 ── */
   .component('MbMemberMng',  window.MbMemberMng)
   .component('MbMemberDtl',  window.MbMemberDtl)

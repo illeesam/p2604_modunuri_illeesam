@@ -471,7 +471,7 @@ window.Order = {
               boxShadow: uiState.submitting ? 'none' : '0 2px 8px rgba(0,0,0,0.15)',
               letterSpacing:'0.5px',
             }"
-            @mouseenter="!uiState.submitting && ($event.currentTarget.style.transform='translateY(-1px)', $event.currentTarget.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)')"
+            @mouseenter="!uiState.submitting ? ($event.currentTarget.style.transform='translateY(-1px)', $event.currentTarget.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)') : null"
             @mouseleave="$event.currentTarget.style.transform='', $event.currentTarget.style.boxShadow=uiState.submitting?'none':'0 2px 8px rgba(0,0,0,0.15)'">
             {{ uiState.submitting ? '처리 중...' : '🛒 주문 완료' }}
           </button>

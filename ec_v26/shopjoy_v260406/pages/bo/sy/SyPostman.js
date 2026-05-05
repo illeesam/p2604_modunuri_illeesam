@@ -642,7 +642,7 @@ window.SyPostman = {
           <span v-if="tab.sending" style="font-size:9px;color:#1a73e8;">전송 중…</span>
           <span v-else-if="tab.resStatus" style="font-size:9px;" :style="statusStyle(tab.resStatus)">{{ tab.resStatus }} · {{ tab.resTime }}ms</span>
           <span v-if="tab.autoMs" style="font-size:9px;color:#22a84a;margin-left:auto;font-weight:600;white-space:nowrap;">
-            ⏱ {{ tab.autoLabel }} <span style="color:#aaa;font-weight:400;">({{ countdown[tab.tabId] ?? '-' }}초)</span>
+            ⏱ {{ tab.autoLabel }} <span style="color:#aaa;font-weight:400;">({{ countdown[tab.tabId] != null ? countdown[tab.tabId] : '-' }}초)</span>
           </span>
         </div>
       </div>
