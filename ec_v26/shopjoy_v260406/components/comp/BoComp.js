@@ -137,6 +137,18 @@ window.PathTreeNode = {
     depth:     { type: Number,   default: 0 },
     showBizCd: { type: Boolean,  default: false },
   },
+  methods: {
+    onNodeHover(evt) {
+      if (!evt || !evt.currentTarget) return;
+      const isSel = (this.selected === this.node.pathId);
+      evt.currentTarget.style.background = isSel ? '#fff0f4' : '#f8f9fb';
+    },
+    onNodeLeave(evt) {
+      if (!evt || !evt.currentTarget) return;
+      const isSel = (this.selected === this.node.pathId);
+      evt.currentTarget.style.background = isSel ? '#fff0f4' : 'transparent';
+    },
+  },
   template: /* html */`
 <div>
   <div @click="onSelect(node.pathId)"
@@ -145,8 +157,8 @@ window.PathTreeNode = {
               background: selected===node.pathId ? '#fff0f4' : 'transparent',
               color:      selected===node.pathId ? '#e8587a' : '#444',
               fontWeight: selected===node.pathId ? 700 : 400 }"
-    @mouseover="$event.currentTarget.style.background = selected===node.pathId ? '#fff0f4' : '#f8f9fb'"
-    @mouseout="$event.currentTarget.style.background = selected===node.pathId ? '#fff0f4' : 'transparent'">
+    @mouseover="onNodeHover($event)"
+    @mouseout="onNodeLeave($event)">
     <span v-if="(node.children||[]).length>0" style="width:14px;font-size:10px;color:#999;flex-shrink:0"
           @click.stop="onToggle(node.pathId)">{{ expanded.has(node.pathId) ? '▼' : '▶' }}</span>
     <span v-else style="width:14px;flex-shrink:0"></span>

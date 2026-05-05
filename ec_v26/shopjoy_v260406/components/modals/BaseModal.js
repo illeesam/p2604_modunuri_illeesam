@@ -3300,11 +3300,23 @@ window.PathPickModal = {
         evt.currentTarget.style.background = 'transparent';
       }
     };
+    const onCloseHover = (evt) => {
+      if (!evt || !evt.currentTarget) return;
+      evt.currentTarget.style.background = '#f3f4f6';
+      evt.currentTarget.style.color = '#374151';
+    };
+    const onCloseLeave = (evt) => {
+      if (!evt || !evt.currentTarget) return;
+      evt.currentTarget.style.background = 'transparent';
+      evt.currentTarget.style.color = '#9ca3af';
+    };
+    const onAddHover = (evt) => { if (evt && evt.currentTarget) evt.currentTarget.style.background = '#059669'; };
+    const onAddLeave = (evt) => { if (evt && evt.currentTarget) evt.currentTarget.style.background = '#10b981'; };
 
     return { cfTree, expanded, toggle, expandAll, collapseAll, selectedId, select, confirm,
              addParent, addLabel, setAddParent, doAdd, labelOf,
              editingId, editLabel, startEdit, saveEdit, cancelEdit, deleteNode,
-             onRootHover, onRootLeave };
+             onRootHover, onRootLeave, onCloseHover, onCloseLeave, onAddHover, onAddLeave };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -3320,8 +3332,8 @@ window.PathPickModal = {
         </div>
         <span class="modal-close" style="color:#9ca3af;cursor:pointer;font-size:20px;line-height:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;"
           @click="$emit('close')"
-          @mouseover="$event.currentTarget.style.background='#f3f4f6';$event.currentTarget.style.color='#374151';"
-          @mouseout="$event.currentTarget.style.background='transparent';$event.currentTarget.style.color='#9ca3af';">✕</span>
+          @mouseover="onCloseHover($event)"
+          @mouseout="onCloseLeave($event)">✕</span>
       </div>
       <!-- 선택 경로 미리보기 -->
       <div style="margin-top:12px;padding:10px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;display:flex;align-items:center;gap:10px;">
@@ -3378,8 +3390,8 @@ window.PathPickModal = {
           <input class="form-control" v-model="addLabel" placeholder="새 경로명 입력 후 Enter" style="flex:1;height:34px;font-size:12.5px;" @keyup.enter="doAdd" />
           <button @click="doAdd"
             style="padding:0 16px;font-size:12px;font-weight:700;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;"
-            @mouseover="$event.currentTarget.style.background='#059669'"
-            @mouseout="$event.currentTarget.style.background='#10b981'">+ 추가</button>
+            @mouseover="onAddHover($event)"
+            @mouseout="onAddLeave($event)">+ 추가</button>
         </div>
       </div>
 
