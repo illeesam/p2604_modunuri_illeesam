@@ -25,15 +25,15 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 public class PdCategoryProdService {
 
 
-    private final PdCategoryProdMapper mapper;
-    private final PdCategoryProdRepository repository;
+    private final PdCategoryProdMapper pdCategoryProdMapper;
+    private final PdCategoryProdRepository pdCategoryProdRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdCategoryProdDto getById(String id) {
         // pd_category_prod :: select one :: id [orm:mybatis]
-        PdCategoryProdDto result = mapper.selectById(id);
+        PdCategoryProdDto result = pdCategoryProdMapper.selectById(id);
         return result;
     }
 
@@ -41,7 +41,7 @@ public class PdCategoryProdService {
     public List<PdCategoryProdDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_category_prod :: select list :: p [orm:mybatis]
-        List<PdCategoryProdDto> result = mapper.selectList(p);
+        List<PdCategoryProdDto> result = pdCategoryProdMapper.selectList(p);
         return result;
     }
 
@@ -49,13 +49,13 @@ public class PdCategoryProdService {
     public PageResult<PdCategoryProdDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_category_prod :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdCategoryProdMapper.selectPageList(p), pdCategoryProdMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdCategoryProd entity) {
         // pd_category_prod :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdCategoryProdMapper.updateSelective(entity);
         return result;
     }
 
@@ -69,27 +69,27 @@ public class PdCategoryProdService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_category_prod :: insert or update :: [orm:jpa]
-        PdCategoryProd result = repository.save(entity);
+        PdCategoryProd result = pdCategoryProdRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PdCategoryProd save(PdCategoryProd entity) {
-        if (!repository.existsById(entity.getCategoryProdId()))
+        if (!pdCategoryProdRepository.existsById(entity.getCategoryProdId()))
             throw new CmBizException("존재하지 않는 PdCategoryProd입니다: " + entity.getCategoryProdId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_category_prod :: insert or update :: [orm:jpa]
-        PdCategoryProd result = repository.save(entity);
+        PdCategoryProd result = pdCategoryProdRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pdCategoryProdRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PdCategoryProd입니다: " + id);
         // pd_category_prod :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pdCategoryProdRepository.deleteById(id);
     }
 
     @Transactional
@@ -102,16 +102,16 @@ public class PdCategoryProdService {
                 row.setCategoryProdId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_category_prod"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pdCategoryProdRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCategoryProdId(), "categoryProdId must not be null");
-                PdCategoryProd entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PdCategoryProd entity = pdCategoryProdRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "categoryProdId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pdCategoryProdRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCategoryProdId(), "categoryProdId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pdCategoryProdRepository.existsById(id)) pdCategoryProdRepository.deleteById(id);
             }
         }
     }

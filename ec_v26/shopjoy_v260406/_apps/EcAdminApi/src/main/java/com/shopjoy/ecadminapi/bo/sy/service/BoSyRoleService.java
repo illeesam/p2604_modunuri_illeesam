@@ -26,8 +26,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyRoleService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyRoleMapper        mapper;
-    private final SyRoleRepository    repository;
+    private final SyRoleMapper        syRoleMapper;
+    private final SyRoleRepository    syRoleRepository;
     private final SyRoleRedisStore    roleCache;
     private final SyRoleMenuRedisStore roleMenuCache;
     @PersistenceContext
@@ -36,18 +36,18 @@ public class BoSyRoleService {
     @Transactional(readOnly = true)
     public List<SyRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syRoleMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syRoleMapper.selectPageList(p), syRoleMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyRoleDto getById(String id) {
-        SyRoleDto dto = mapper.selectById(id);
+        SyRoleDto dto = syRoleMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -59,7 +59,7 @@ public class BoSyRoleService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyRole saved = repository.save(body);
+        SyRole saved = syRoleRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         roleCache.evictAll();
         return saved;
@@ -67,11 +67,11 @@ public class BoSyRoleService {
 
     @Transactional
     public SyRoleDto update(String id, SyRole body) {
-        SyRole entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyRole entity = syRoleRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "roleId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyRole saved = repository.save(entity);
+        SyRole saved = syRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         roleCache.evictAll();
@@ -80,11 +80,11 @@ public class BoSyRoleService {
 
     @Transactional
     public void delete(String id) {
-        SyRole entity = repository.findById(id)
+        SyRole entity = syRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syRoleRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syRoleRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
         roleCache.evictAll();
         roleMenuCache.evict(id);
@@ -101,7 +101,7 @@ public class BoSyRoleService {
             .map(SyRole::getRoleId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syRoleRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
             deleteIds.forEach(roleMenuCache::evict);
@@ -112,11 +112,11 @@ public class BoSyRoleService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getRoleId() != null)
             .toList();
         for (SyRole row : updateRows) {
-            SyRole entity = repository.findById(row.getRoleId())
+            SyRole entity = syRoleRepository.findById(row.getRoleId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getRoleId()));
             VoUtil.voCopyExclude(row, entity, "roleId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syRoleRepository.save(entity);
         }
         em.flush();
 
@@ -128,7 +128,7 @@ public class BoSyRoleService {
             row.setRoleId("RL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syRoleRepository.save(row);
         }
         em.flush();
         em.clear();

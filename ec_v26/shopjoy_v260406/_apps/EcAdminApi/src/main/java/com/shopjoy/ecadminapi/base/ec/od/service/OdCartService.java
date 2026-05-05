@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class OdCartService {
 
-    private final OdCartMapper mapper;
-    private final OdCartRepository repository;
+    private final OdCartMapper odCartMapper;
+    private final OdCartRepository odCartRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdCartDto getById(String id) {
-        OdCartDto result = mapper.selectById(id);
+        OdCartDto result = odCartMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdCartDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdCartDto> result = mapper.selectList(p);
+        List<OdCartDto> result = odCartMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdCartDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odCartMapper.selectPageList(p), odCartMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdCart entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odCartMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class OdCartService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdCart result = repository.save(entity);
+        OdCart result = odCartRepository.save(entity);
         return result;
     }
 
     @Transactional
     public OdCart save(OdCart entity) {
-        if (!repository.existsById(entity.getCartId()))
+        if (!odCartRepository.existsById(entity.getCartId()))
             throw new CmBizException("존재하지 않는 OdCart입니다: " + entity.getCartId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdCart result = repository.save(entity);
+        OdCart result = odCartRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odCartRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdCart입니다: " + id);
-        repository.deleteById(id);
+        odCartRepository.deleteById(id);
     }
 
     @Transactional
@@ -93,16 +93,16 @@ public class OdCartService {
                 row.setCartId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_cart"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                odCartRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCartId(), "cartId must not be null");
-                OdCart entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                OdCart entity = odCartRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "cartId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                odCartRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCartId(), "cartId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (odCartRepository.existsById(id)) odCartRepository.deleteById(id);
             }
         }
     }

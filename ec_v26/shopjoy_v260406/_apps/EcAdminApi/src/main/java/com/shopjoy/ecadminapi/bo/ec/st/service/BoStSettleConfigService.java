@@ -23,26 +23,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoStSettleConfigService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final StSettleConfigMapper mapper;
-    private final StSettleConfigRepository repository;
+    private final StSettleConfigMapper stSettleConfigMapper;
+    private final StSettleConfigRepository stSettleConfigRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<StSettleConfigDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return stSettleConfigMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettleConfigDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettleConfigMapper.selectPageList(p), stSettleConfigMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public StSettleConfigDto getById(String id) {
-        StSettleConfigDto dto = mapper.selectById(id);
+        StSettleConfigDto dto = stSettleConfigMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -54,17 +54,17 @@ public class BoStSettleConfigService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        StSettleConfig saved = repository.save(body);
+        StSettleConfig saved = stSettleConfigRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public StSettleConfigDto update(String id, StSettleConfig body) {
-        StSettleConfig entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettleConfig entity = stSettleConfigRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleConfig saved = repository.save(entity);
+        StSettleConfig saved = stSettleConfigRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -72,11 +72,11 @@ public class BoStSettleConfigService {
 
     @Transactional
     public void delete(String id) {
-        StSettleConfig entity = repository.findById(id)
+        StSettleConfig entity = stSettleConfigRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettleConfigRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettleConfigRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 }

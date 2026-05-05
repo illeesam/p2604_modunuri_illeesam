@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPmDiscntService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmDiscntMapper mapper;
-    private final PmDiscntRepository repository;
+    private final PmDiscntMapper pmDiscntMapper;
+    private final PmDiscntRepository pmDiscntRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PmDiscntDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pmDiscntMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmDiscntDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmDiscntMapper.selectPageList(p), pmDiscntMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PmDiscntDto getById(String id) {
-        PmDiscntDto dto = mapper.selectById(id);
+        PmDiscntDto dto = pmDiscntMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoPmDiscntService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PmDiscnt saved = repository.save(body);
+        PmDiscnt saved = pmDiscntRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PmDiscntDto update(String id, PmDiscnt body) {
-        PmDiscnt entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PmDiscnt entity = pmDiscntRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "discntId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmDiscnt saved = repository.save(entity);
+        PmDiscnt saved = pmDiscntRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,22 +75,22 @@ public class BoPmDiscntService {
 
     @Transactional
     public void delete(String id) {
-        PmDiscnt entity = repository.findById(id)
+        PmDiscnt entity = pmDiscntRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pmDiscntRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pmDiscntRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public PmDiscntDto changeStatus(String id, String statusCd) {
-        PmDiscnt entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+        PmDiscnt entity = pmDiscntRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setDiscntStatusCdBefore(entity.getDiscntStatusCd());
         entity.setDiscntStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmDiscnt saved = repository.save(entity);
+        PmDiscnt saved = pmDiscntRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -106,7 +106,7 @@ public class BoPmDiscntService {
             .map(PmDiscnt::getDiscntId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pmDiscntRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -115,11 +115,11 @@ public class BoPmDiscntService {
         for (PmDiscnt row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getDiscntId(), "discntId must not be null");
-            PmDiscnt entity = repository.findById(id)
+            PmDiscnt entity = pmDiscntRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "discntId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pmDiscntRepository.save(entity);
         }
         em.flush();
 
@@ -129,7 +129,7 @@ public class BoPmDiscntService {
             row.setDiscntId("DS" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pmDiscntRepository.save(row);
         }
         em.flush();
         em.clear();

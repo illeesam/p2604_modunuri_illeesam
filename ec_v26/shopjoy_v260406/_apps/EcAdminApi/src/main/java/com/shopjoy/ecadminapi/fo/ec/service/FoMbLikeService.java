@@ -29,20 +29,20 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 public class FoMbLikeService {
 
 
-    private final MbLikeMapper     mapper;
-    private final MbLikeRepository repository;
+    private final MbLikeMapper     mbLikeMapper;
+    private final MbLikeRepository mbLikeRepository;
 
     @Transactional(readOnly = true)
     public List<MbLikeDto> getMyLikes(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return mapper.selectList(p);
+        return mbLikeMapper.selectList(p);
     }
 
     /** 찜 토글: 없으면 추가, 있으면 삭제 → true=추가됨 false=취소됨 */
     @Transactional
     public boolean toggle(String targetTypeCd, String targetId, Map<String, Object> p) {
         String authId = SecurityUtil.getAuthUser().authId();
-        Optional<MbLike> existing = repository.findAll().stream()
+        Optional<MbLike> existing = mbLikeRepository.findAll().stream()
             .filter(l -> authId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())
                       && targetTypeCd.equals(l.getTargetTypeCd())
@@ -50,7 +50,7 @@ public class FoMbLikeService {
             .findFirst();
 
         if (existing.isPresent()) {
-            repository.delete(existing.get());
+            mbLikeRepository.delete(existing.get());
             return false;
         } else {
             MbLike like = new MbLike();
@@ -63,7 +63,7 @@ public class FoMbLikeService {
             like.setRegDate(LocalDateTime.now());
             like.setUpdBy(authId);
             like.setUpdDate(LocalDateTime.now());
-            MbLike saved = repository.save(like);
+            MbLike saved = mbLikeRepository.save(like);
             if (saved == null) throw new CmBizException("찜 추가에 실패했습니다.");
             return true;
         }
@@ -72,12 +72,12 @@ public class FoMbLikeService {
     @Transactional
     public void unlike(String targetTypeCd, String targetId, Map<String, Object> p) {
         String authId = SecurityUtil.getAuthUser().authId();
-        repository.findAll().stream()
+        mbLikeRepository.findAll().stream()
             .filter(l -> authId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())
                       && targetTypeCd.equals(l.getTargetTypeCd()))
             .findFirst()
-            .ifPresent(repository::delete);
+            .ifPresent(mbLikeRepository::delete);
     }
 
 }

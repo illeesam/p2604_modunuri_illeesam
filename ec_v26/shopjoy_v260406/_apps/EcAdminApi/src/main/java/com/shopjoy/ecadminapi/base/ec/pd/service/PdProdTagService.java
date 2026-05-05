@@ -24,15 +24,15 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class PdProdTagService {
 
-    private final PdProdTagMapper mapper;
-    private final PdProdTagRepository repository;
+    private final PdProdTagMapper pdProdTagMapper;
+    private final PdProdTagRepository pdProdTagRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdProdTagDto getById(String id) {
         // pd_prod_tag :: select one :: id [orm:mybatis]
-        PdProdTagDto result = mapper.selectById(id);
+        PdProdTagDto result = pdProdTagMapper.selectById(id);
         return result;
     }
 
@@ -40,7 +40,7 @@ public class PdProdTagService {
     public List<PdProdTagDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_prod_tag :: select list :: p [orm:mybatis]
-        List<PdProdTagDto> result = mapper.selectList(p);
+        List<PdProdTagDto> result = pdProdTagMapper.selectList(p);
         return result;
     }
 
@@ -48,13 +48,13 @@ public class PdProdTagService {
     public PageResult<PdProdTagDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_prod_tag :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdProdTagMapper.selectPageList(p), pdProdTagMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdProdTag entity) {
         // pd_prod_tag :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdProdTagMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class PdProdTagService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod_tag :: insert or update :: [orm:jpa]
-        PdProdTag result = repository.save(entity);
+        PdProdTag result = pdProdTagRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PdProdTag save(PdProdTag entity) {
-        if (!repository.existsById(entity.getProdTagId()))
+        if (!pdProdTagRepository.existsById(entity.getProdTagId()))
             throw new CmBizException("존재하지 않는 PdProdTag입니다: " + entity.getProdTagId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod_tag :: insert or update :: [orm:jpa]
-        PdProdTag result = repository.save(entity);
+        PdProdTag result = pdProdTagRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pdProdTagRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PdProdTag입니다: " + id);
         // pd_prod_tag :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pdProdTagRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<PdProdTag> rows) {
@@ -100,16 +100,16 @@ public class PdProdTagService {
                 row.setProdTagId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_prod_tag"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pdProdTagRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getProdTagId(), "prodTagId must not be null");
-                PdProdTag entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PdProdTag entity = pdProdTagRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "prodTagId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pdProdTagRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getProdTagId(), "prodTagId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pdProdTagRepository.existsById(id)) pdProdTagRepository.deleteById(id);
             }
         }
     }

@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyUserRoleService {
 
 
-    private final SyUserRoleMapper mapper;
-    private final SyUserRoleRepository repository;
+    private final SyUserRoleMapper syUserRoleMapper;
+    private final SyUserRoleRepository syUserRoleRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyUserRoleService {
     @Transactional(readOnly = true)
     public SyUserRoleDto getById(String id) {
         // sy_user_role :: select one :: id [orm:mybatis]
-        SyUserRoleDto result = mapper.selectById(id);
+        SyUserRoleDto result = syUserRoleMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyUserRoleService {
     public List<SyUserRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_user_role :: select list :: p [orm:mybatis]
-        List<SyUserRoleDto> result = mapper.selectList(p);
+        List<SyUserRoleDto> result = syUserRoleMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyUserRoleService {
     public PageResult<SyUserRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_user_role :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syUserRoleMapper.selectPageList(p), syUserRoleMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyUserRole entity) {
         // sy_user_role :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syUserRoleMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyUserRoleService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_user_role :: insert or update :: [orm:jpa]
-        SyUserRole result = repository.save(entity);
+        SyUserRole result = syUserRoleRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyUserRole save(SyUserRole entity) {
-        if (!repository.existsById(entity.getUserRoleId()))
+        if (!syUserRoleRepository.existsById(entity.getUserRoleId()))
             throw new CmBizException("존재하지 않는 SyUserRole입니다: " + entity.getUserRoleId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_user_role :: insert or update :: [orm:jpa]
-        SyUserRole result = repository.save(entity);
+        SyUserRole result = syUserRoleRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyUserRole entity = repository.findById(id)
+        SyUserRole entity = syUserRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syUserRoleRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syUserRoleRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyUserRoleService {
                 row.setUserRoleId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_user_role"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syUserRoleRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getUserRoleId(), "userRoleId must not be null");
-                SyUserRole entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyUserRole entity = syUserRoleRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "userRoleId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syUserRoleRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getUserRoleId(), "userRoleId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syUserRoleRepository.existsById(id)) syUserRoleRepository.deleteById(id);
             }
         }
         em.flush();

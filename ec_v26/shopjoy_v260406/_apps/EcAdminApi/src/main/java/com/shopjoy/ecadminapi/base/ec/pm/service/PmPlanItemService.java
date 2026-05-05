@@ -24,33 +24,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmPlanItemService {
 
 
-    private final PmPlanItemMapper mapper;
-    private final PmPlanItemRepository repository;
+    private final PmPlanItemMapper pmPlanItemMapper;
+    private final PmPlanItemRepository pmPlanItemRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmPlanItemDto getById(String id) {
-        PmPlanItemDto result = mapper.selectById(id);
+        PmPlanItemDto result = pmPlanItemMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<PmPlanItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<PmPlanItemDto> result = mapper.selectList(p);
+        List<PmPlanItemDto> result = pmPlanItemMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmPlanItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmPlanItemMapper.selectPageList(p), pmPlanItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmPlanItem entity) {
-        int result = mapper.updateSelective(entity);
+        int result = pmPlanItemMapper.updateSelective(entity);
         return result;
     }
 
@@ -63,25 +63,25 @@ public class PmPlanItemService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmPlanItem result = repository.save(entity);
+        PmPlanItem result = pmPlanItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmPlanItem save(PmPlanItem entity) {
-        if (!repository.existsById(entity.getPlanItemId()))
+        if (!pmPlanItemRepository.existsById(entity.getPlanItemId()))
             throw new CmBizException("존재하지 않는 PmPlanItem입니다: " + entity.getPlanItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmPlanItem result = repository.save(entity);
+        PmPlanItem result = pmPlanItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmPlanItemRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmPlanItem입니다: " + id);
-        repository.deleteById(id);
+        pmPlanItemRepository.deleteById(id);
     }
 
     @Transactional
@@ -94,16 +94,16 @@ public class PmPlanItemService {
                 row.setPlanItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_plan_item"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmPlanItemRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getPlanItemId(), "planItemId must not be null");
-                PmPlanItem entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmPlanItem entity = pmPlanItemRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "planItemId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmPlanItemRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getPlanItemId(), "planItemId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmPlanItemRepository.existsById(id)) pmPlanItemRepository.deleteById(id);
             }
         }
     }

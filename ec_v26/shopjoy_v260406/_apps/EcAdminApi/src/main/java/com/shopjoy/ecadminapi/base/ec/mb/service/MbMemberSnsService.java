@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class MbMemberSnsService {
 
-    private final MbMemberSnsMapper mapper;
-    private final MbMemberSnsRepository repository;
+    private final MbMemberSnsMapper mbMemberSnsMapper;
+    private final MbMemberSnsRepository mbMemberSnsRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public MbMemberSnsDto getById(String id) {
-        MbMemberSnsDto result = mapper.selectById(id);
+        MbMemberSnsDto result = mbMemberSnsMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<MbMemberSnsDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<MbMemberSnsDto> result = mapper.selectList(p);
+        List<MbMemberSnsDto> result = mbMemberSnsMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<MbMemberSnsDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(mbMemberSnsMapper.selectPageList(p), mbMemberSnsMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(MbMemberSns entity) {
-        int result = mapper.updateSelective(entity);
+        int result = mbMemberSnsMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class MbMemberSnsService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        MbMemberSns result = repository.save(entity);
+        MbMemberSns result = mbMemberSnsRepository.save(entity);
         return result;
     }
 
     @Transactional
     public MbMemberSns save(MbMemberSns entity) {
-        if (!repository.existsById(entity.getMemberSnsId()))
+        if (!mbMemberSnsRepository.existsById(entity.getMemberSnsId()))
             throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + entity.getMemberSnsId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        MbMemberSns result = repository.save(entity);
+        MbMemberSns result = mbMemberSnsRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!mbMemberSnsRepository.existsById(id))
             throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + id);
-        repository.deleteById(id);
+        mbMemberSnsRepository.deleteById(id);
     }
 
     @Transactional
@@ -93,16 +93,16 @@ public class MbMemberSnsService {
                 row.setMemberSnsId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("mb_member_sns"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                mbMemberSnsRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getMemberSnsId(), "memberSnsId must not be null");
-                MbMemberSns entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                MbMemberSns entity = mbMemberSnsRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "memberSnsId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                mbMemberSnsRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getMemberSnsId(), "memberSnsId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (mbMemberSnsRepository.existsById(id)) mbMemberSnsRepository.deleteById(id);
             }
         }
     }

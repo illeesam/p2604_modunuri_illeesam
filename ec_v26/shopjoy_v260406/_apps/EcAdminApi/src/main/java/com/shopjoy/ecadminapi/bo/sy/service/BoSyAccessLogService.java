@@ -15,18 +15,18 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyAccessLogService {
 
-    private final SyhAccessLogMapper mapper;
-    private final SyhAccessLogRepository repository;
+    private final SyhAccessLogMapper syhAccessLogMapper;
+    private final SyhAccessLogRepository syhAccessLogRepository;
 
     @Transactional(readOnly = true)
     public PageResult<SyhAccessLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+        return PageResult.of(syhAccessLogMapper.selectPageList(p), syhAccessLogMapper.selectPageCount(p),
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public void deleteAll() {
-        repository.deleteAllBulk();
+        syhAccessLogRepository.deleteAllBulk();
     }
 }

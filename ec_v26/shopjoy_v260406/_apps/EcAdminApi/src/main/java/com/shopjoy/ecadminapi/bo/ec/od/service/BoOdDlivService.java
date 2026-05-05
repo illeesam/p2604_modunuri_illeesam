@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoOdDlivService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final OdDlivMapper mapper;
-    private final OdDlivRepository repository;
+    private final OdDlivMapper odDlivMapper;
+    private final OdDlivRepository odDlivRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<OdDlivDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return odDlivMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdDlivDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odDlivMapper.selectPageList(p), odDlivMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public OdDlivDto getById(String id) {
-        OdDlivDto dto = mapper.selectById(id);
+        OdDlivDto dto = odDlivMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,18 +57,18 @@ public class BoOdDlivService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        OdDliv saved = repository.save(body);
+        OdDliv saved = odDlivRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public OdDlivDto update(String id, OdDliv body) {
-        OdDliv entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        OdDliv entity = odDlivRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "dlivId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdDliv saved = repository.save(entity);
+        OdDliv saved = odDlivRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -76,22 +76,22 @@ public class BoOdDlivService {
 
     @Transactional
     public void delete(String id) {
-        OdDliv entity = repository.findById(id)
+        OdDliv entity = odDlivRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        odDlivRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (odDlivRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public OdDlivDto changeStatus(String id, String statusCd) {
-        OdDliv entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+        OdDliv entity = odDlivRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setDlivStatusCdBefore(entity.getDlivStatusCd());
         entity.setDlivStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdDliv saved = repository.save(entity);
+        OdDliv saved = odDlivRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -105,12 +105,12 @@ public class BoOdDlivService {
         if (ids == null || status == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
         for (String id : ids) {
-            repository.findById(id).ifPresent(e -> {
+            odDlivRepository.findById(id).ifPresent(e -> {
                 e.setDlivStatusCdBefore(e.getDlivStatusCd());
                 e.setDlivStatusCd(status);
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
-                OdDliv saved = repository.save(e);
+                OdDliv saved = odDlivRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
             });
         }
@@ -125,12 +125,12 @@ public class BoOdDlivService {
         if (ids == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
         for (String id : ids) {
-            repository.findById(id).ifPresent(e -> {
+            odDlivRepository.findById(id).ifPresent(e -> {
                 if (courier != null) e.setOutboundCourierCd(courier);
                 if (trackingNo != null) e.setOutboundTrackingNo(trackingNo);
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
-                OdDliv saved = repository.save(e);
+                OdDliv saved = odDlivRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
             });
         }
@@ -143,10 +143,10 @@ public class BoOdDlivService {
         if (ids == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
         for (String id : ids) {
-            repository.findById(id).ifPresent(e -> {
+            odDlivRepository.findById(id).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
-                OdDliv saved = repository.save(e);
+                OdDliv saved = odDlivRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
             });
         }
@@ -159,10 +159,10 @@ public class BoOdDlivService {
         if (ids == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
         for (String id : ids) {
-            repository.findById(id).ifPresent(e -> {
+            odDlivRepository.findById(id).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
-                OdDliv saved = repository.save(e);
+                OdDliv saved = odDlivRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
             });
         }
@@ -178,7 +178,7 @@ public class BoOdDlivService {
             .map(OdDliv::getDlivId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            odDlivRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -187,11 +187,11 @@ public class BoOdDlivService {
         for (OdDliv row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getDlivId(), "dlivId must not be null");
-            OdDliv entity = repository.findById(id)
+            OdDliv entity = odDlivRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "dlivId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            odDlivRepository.save(entity);
         }
         em.flush();
 
@@ -201,7 +201,7 @@ public class BoOdDlivService {
             row.setDlivId("DL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            odDlivRepository.save(row);
         }
         em.flush();
         em.clear();

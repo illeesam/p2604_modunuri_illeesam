@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class DpUiAreaService {
 
-    private final DpUiAreaMapper mapper;
-    private final DpUiAreaRepository repository;
+    private final DpUiAreaMapper dpUiAreaMapper;
+    private final DpUiAreaRepository dpUiAreaRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public DpUiAreaDto getById(String id) {
         // dp_ui_area :: select one :: id [orm:mybatis]
-        DpUiAreaDto result = mapper.selectById(id);
+        DpUiAreaDto result = dpUiAreaMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class DpUiAreaService {
     public List<DpUiAreaDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // dp_ui_area :: select list :: p [orm:mybatis]
-        List<DpUiAreaDto> result = mapper.selectList(p);
+        List<DpUiAreaDto> result = dpUiAreaMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class DpUiAreaService {
     public PageResult<DpUiAreaDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // dp_ui_area :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(dpUiAreaMapper.selectPageList(p), dpUiAreaMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpUiArea entity) {
         // dp_ui_area :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = dpUiAreaMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class DpUiAreaService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_ui_area :: insert or update :: [orm:jpa]
-        DpUiArea result = repository.save(entity);
+        DpUiArea result = dpUiAreaRepository.save(entity);
         return result;
     }
 
     @Transactional
     public DpUiArea save(DpUiArea entity) {
-        if (!repository.existsById(entity.getUiAreaId()))
+        if (!dpUiAreaRepository.existsById(entity.getUiAreaId()))
             throw new CmBizException("존재하지 않는 DpUiArea입니다: " + entity.getUiAreaId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_ui_area :: insert or update :: [orm:jpa]
-        DpUiArea result = repository.save(entity);
+        DpUiArea result = dpUiAreaRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!dpUiAreaRepository.existsById(id))
             throw new CmBizException("존재하지 않는 DpUiArea입니다: " + id);
         // dp_ui_area :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        dpUiAreaRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class DpUiAreaService {
                 row.setUiAreaId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("dp_area"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                dpUiAreaRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getUiAreaId(), "uiAreaId must not be null");
-                DpUiArea entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                DpUiArea entity = dpUiAreaRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "uiAreaId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                dpUiAreaRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getUiAreaId(), "uiAreaId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (dpUiAreaRepository.existsById(id)) dpUiAreaRepository.deleteById(id);
             }
         }
     }

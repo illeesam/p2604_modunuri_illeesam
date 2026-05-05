@@ -17,15 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SyhApiLogService {
 
-    private final SyhApiLogMapper mapper;
-    private final SyhApiLogRepository repository;
+    private final SyhApiLogMapper syhApiLogMapper;
+    private final SyhApiLogRepository syhApiLogRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public SyhApiLogDto getById(String id) {
         // syh_api_log :: select one :: id [orm:mybatis]
-        SyhApiLogDto result = mapper.selectById(id);
+        SyhApiLogDto result = syhApiLogMapper.selectById(id);
         return result;
     }
 
@@ -33,7 +33,7 @@ public class SyhApiLogService {
     public List<SyhApiLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // syh_api_log :: select list :: p [orm:mybatis]
-        List<SyhApiLogDto> result = mapper.selectList(p);
+        List<SyhApiLogDto> result = syhApiLogMapper.selectList(p);
         return result;
     }
 
@@ -41,13 +41,13 @@ public class SyhApiLogService {
     public PageResult<SyhApiLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // syh_api_log :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syhApiLogMapper.selectPageList(p), syhApiLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyhApiLog entity) {
         // syh_api_log :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syhApiLogMapper.updateSelective(entity);
         return result;
     }
 

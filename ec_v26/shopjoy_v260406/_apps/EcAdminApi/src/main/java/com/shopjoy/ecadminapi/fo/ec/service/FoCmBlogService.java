@@ -35,30 +35,30 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 public class FoCmBlogService {
 
 
-    private final CmBlogMapper     mapper;
-    private final CmBlogRepository repository;
+    private final CmBlogMapper     cmBlogMapper;
+    private final CmBlogRepository cmBlogRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<CmBlogDto> getList(Map<String, Object> p) {
-        return mapper.selectList(p);
+        return cmBlogMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(cmBlogMapper.selectPageList(p), cmBlogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public CmBlogDto getByIdAndIncrView(String blogId) {
-        CmBlog entity = repository.findById(blogId)
+        CmBlog entity = cmBlogRepository.findById(blogId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
         entity.setViewCount((entity.getViewCount() != null ? entity.getViewCount() : 0) + 1);
-        repository.save(entity);
+        cmBlogRepository.save(entity);
         em.flush();
-        return mapper.selectById(blogId);
+        return cmBlogMapper.selectById(blogId);
     }
 
     @Transactional
@@ -70,14 +70,14 @@ public class FoCmBlogService {
         entity.setUpdDate(LocalDateTime.now());
         if (entity.getUseYn() == null) entity.setUseYn("Y");
         if (entity.getViewCount() == null) entity.setViewCount(0);
-        CmBlog saved = repository.save(entity);
+        CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("게시물 작성에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public CmBlog update(String blogId, CmBlog entity) {
-        CmBlog existing = repository.findById(blogId)
+        CmBlog existing = cmBlogRepository.findById(blogId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
         if (!existing.getRegBy().equals(SecurityUtil.getAuthUser().authId()) && !SecurityUtil.isBo())
             throw new CmBizException("수정 권한이 없습니다.");
@@ -86,7 +86,7 @@ public class FoCmBlogService {
         entity.setRegDate(existing.getRegDate());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        CmBlog saved = repository.save(entity);
+        CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("게시물 수정에 실패했습니다.");
         em.flush();
         return saved;
@@ -94,11 +94,11 @@ public class FoCmBlogService {
 
     @Transactional
     public void delete(String blogId) {
-        CmBlog existing = repository.findById(blogId)
+        CmBlog existing = cmBlogRepository.findById(blogId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
         if (!existing.getRegBy().equals(SecurityUtil.getAuthUser().authId()) && !SecurityUtil.isBo())
             throw new CmBizException("삭제 권한이 없습니다.");
-        repository.deleteById(blogId);
+        cmBlogRepository.deleteById(blogId);
         em.flush();
     }
 

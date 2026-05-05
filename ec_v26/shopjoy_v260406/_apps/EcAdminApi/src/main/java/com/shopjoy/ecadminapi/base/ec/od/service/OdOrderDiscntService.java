@@ -24,33 +24,33 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class OdOrderDiscntService {
 
-    private final OdOrderDiscntMapper mapper;
-    private final OdOrderDiscntRepository repository;
+    private final OdOrderDiscntMapper odOrderDiscntMapper;
+    private final OdOrderDiscntRepository odOrderDiscntRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdOrderDiscntDto getById(String id) {
-        OdOrderDiscntDto result = mapper.selectById(id);
+        OdOrderDiscntDto result = odOrderDiscntMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdOrderDiscntDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdOrderDiscntDto> result = mapper.selectList(p);
+        List<OdOrderDiscntDto> result = odOrderDiscntMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdOrderDiscntDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odOrderDiscntMapper.selectPageList(p), odOrderDiscntMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdOrderDiscnt entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odOrderDiscntMapper.updateSelective(entity);
         return result;
     }
 
@@ -63,25 +63,25 @@ public class OdOrderDiscntService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdOrderDiscnt result = repository.save(entity);
+        OdOrderDiscnt result = odOrderDiscntRepository.save(entity);
         return result;
     }
 
     @Transactional
     public OdOrderDiscnt save(OdOrderDiscnt entity) {
-        if (!repository.existsById(entity.getOrderDiscntId()))
+        if (!odOrderDiscntRepository.existsById(entity.getOrderDiscntId()))
             throw new CmBizException("존재하지 않는 OdOrderDiscnt입니다: " + entity.getOrderDiscntId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdOrderDiscnt result = repository.save(entity);
+        OdOrderDiscnt result = odOrderDiscntRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odOrderDiscntRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdOrderDiscnt입니다: " + id);
-        repository.deleteById(id);
+        odOrderDiscntRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<OdOrderDiscnt> rows) {
@@ -93,16 +93,16 @@ public class OdOrderDiscntService {
                 row.setOrderDiscntId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_order_discnt"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                odOrderDiscntRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getOrderDiscntId(), "orderDiscntId must not be null");
-                OdOrderDiscnt entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                OdOrderDiscnt entity = odOrderDiscntRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "orderDiscntId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                odOrderDiscntRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getOrderDiscntId(), "orderDiscntId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (odOrderDiscntRepository.existsById(id)) odOrderDiscntRepository.deleteById(id);
             }
         }
     }

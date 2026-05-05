@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class StSettleConfigService {
 
 
-    private final StSettleConfigMapper mapper;
-    private final StSettleConfigRepository repository;
+    private final StSettleConfigMapper stSettleConfigMapper;
+    private final StSettleConfigRepository stSettleConfigRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -36,26 +36,26 @@ public class StSettleConfigService {
 
     @Transactional(readOnly = true)
     public StSettleConfigDto getById(String id) {
-        StSettleConfigDto result = mapper.selectById(id);
+        StSettleConfigDto result = stSettleConfigMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<StSettleConfigDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StSettleConfigDto> result = mapper.selectList(p);
+        List<StSettleConfigDto> result = stSettleConfigMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettleConfigDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettleConfigMapper.selectPageList(p), stSettleConfigMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(StSettleConfig entity) {
-        int result = mapper.updateSelective(entity);
+        int result = stSettleConfigMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class StSettleConfigService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleConfig result = repository.save(entity);
+        StSettleConfig result = stSettleConfigRepository.save(entity);
         return result;
     }
 
     @Transactional
     public StSettleConfig save(StSettleConfig entity) {
-        if (!repository.existsById(entity.getSettleConfigId()))
+        if (!stSettleConfigRepository.existsById(entity.getSettleConfigId()))
             throw new CmBizException("존재하지 않는 StSettleConfig입니다: " + entity.getSettleConfigId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleConfig result = repository.save(entity);
+        StSettleConfig result = stSettleConfigRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        StSettleConfig entity = repository.findById(id)
+        StSettleConfig entity = stSettleConfigRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettleConfigRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettleConfigRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -102,16 +102,16 @@ public class StSettleConfigService {
                 row.setSettleConfigId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_settle_config"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                stSettleConfigRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleConfigId(), "settleConfigId must not be null");
-                StSettleConfig entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                StSettleConfig entity = stSettleConfigRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "settleConfigId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                stSettleConfigRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleConfigId(), "settleConfigId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (stSettleConfigRepository.existsById(id)) stSettleConfigRepository.deleteById(id);
             }
         }
         em.flush();

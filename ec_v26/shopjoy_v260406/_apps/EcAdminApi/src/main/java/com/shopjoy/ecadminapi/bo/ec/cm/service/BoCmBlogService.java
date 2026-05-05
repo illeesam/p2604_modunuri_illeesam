@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoCmBlogService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final CmBlogMapper mapper;
-    private final CmBlogRepository repository;
+    private final CmBlogMapper cmBlogMapper;
+    private final CmBlogRepository cmBlogRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<CmBlogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return cmBlogMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(cmBlogMapper.selectPageList(p), cmBlogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public CmBlogDto getById(String id) {
-        CmBlogDto dto = mapper.selectById(id);
+        CmBlogDto dto = cmBlogMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,18 +57,18 @@ public class BoCmBlogService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        CmBlog saved = repository.save(body);
+        CmBlog saved = cmBlogRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public CmBlogDto update(String id, CmBlog body) {
-        CmBlog entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        CmBlog entity = cmBlogRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "blogId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        CmBlog saved = repository.save(entity);
+        CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -76,21 +76,21 @@ public class BoCmBlogService {
 
     @Transactional
     public void delete(String id) {
-        CmBlog entity = repository.findById(id)
+        CmBlog entity = cmBlogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        cmBlogRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (cmBlogRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public CmBlogDto toggleUse(String id, Map<String, Object> body) {
-        CmBlog entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        CmBlog entity = cmBlogRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUseYn((String) body.get("useYn"));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        CmBlog saved = repository.save(entity);
+        CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -106,7 +106,7 @@ public class BoCmBlogService {
             .map(CmBlog::getBlogId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            cmBlogRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -115,11 +115,11 @@ public class BoCmBlogService {
         for (CmBlog row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getBlogId(), "blogId must not be null");
-            CmBlog entity = repository.findById(id)
+            CmBlog entity = cmBlogRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "blogId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            cmBlogRepository.save(entity);
         }
         em.flush();
 
@@ -129,7 +129,7 @@ public class BoCmBlogService {
             row.setBlogId("BL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            cmBlogRepository.save(row);
         }
         em.flush();
         em.clear();

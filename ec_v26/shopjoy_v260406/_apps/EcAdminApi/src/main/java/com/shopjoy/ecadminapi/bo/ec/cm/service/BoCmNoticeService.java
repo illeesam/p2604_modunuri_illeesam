@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoCmNoticeService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyNoticeMapper mapper;
-    private final SyNoticeRepository repository;
+    private final SyNoticeMapper syNoticeMapper;
+    private final SyNoticeRepository syNoticeRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyNoticeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syNoticeMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyNoticeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syNoticeMapper.selectPageList(p), syNoticeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyNoticeDto getById(String id) {
-        SyNoticeDto dto = mapper.selectById(id);
+        SyNoticeDto dto = syNoticeMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -58,29 +58,29 @@ public class BoCmNoticeService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyNotice saved = repository.save(body);
+        SyNotice saved = syNoticeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public SyNoticeDto update(String id, SyNotice body) {
-        SyNotice entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyNotice entity = syNoticeRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "noticeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        syNoticeRepository.save(entity);
         em.flush();
         return getById(id);
     }
 
     @Transactional
     public void delete(String id) {
-        SyNotice entity = repository.findById(id)
+        SyNotice entity = syNoticeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syNoticeRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syNoticeRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
     @Transactional
@@ -94,7 +94,7 @@ public class BoCmNoticeService {
             .map(SyNotice::getNoticeId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syNoticeRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -103,11 +103,11 @@ public class BoCmNoticeService {
         for (SyNotice row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getNoticeId(), "noticeId must not be null");
-            SyNotice entity = repository.findById(id)
+            SyNotice entity = syNoticeRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "noticeId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syNoticeRepository.save(entity);
         }
         em.flush();
 
@@ -117,7 +117,7 @@ public class BoCmNoticeService {
             row.setNoticeId("NT" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syNoticeRepository.save(row);
         }
         em.flush();
         em.clear();

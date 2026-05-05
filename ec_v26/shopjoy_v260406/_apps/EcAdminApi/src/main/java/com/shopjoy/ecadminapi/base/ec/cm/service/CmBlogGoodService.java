@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class CmBlogGoodService {
 
-    private final CmBlogGoodMapper mapper;
-    private final CmBlogGoodRepository repository;
+    private final CmBlogGoodMapper cmBlogGoodMapper;
+    private final CmBlogGoodRepository cmBlogGoodRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public CmBlogGoodDto getById(String id) {
         // cm_blog_good :: select one :: id [orm:mybatis]
-        CmBlogGoodDto result = mapper.selectById(id);
+        CmBlogGoodDto result = cmBlogGoodMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class CmBlogGoodService {
     public List<CmBlogGoodDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_blog_good :: select list :: p [orm:mybatis]
-        List<CmBlogGoodDto> result = mapper.selectList(p);
+        List<CmBlogGoodDto> result = cmBlogGoodMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class CmBlogGoodService {
     public PageResult<CmBlogGoodDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_blog_good :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(cmBlogGoodMapper.selectPageList(p), cmBlogGoodMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmBlogGood entity) {
         // cm_blog_good :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = cmBlogGoodMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class CmBlogGoodService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_blog_good :: insert or update :: [orm:jpa]
-        CmBlogGood result = repository.save(entity);
+        CmBlogGood result = cmBlogGoodRepository.save(entity);
         return result;
     }
 
     @Transactional
     public CmBlogGood save(CmBlogGood entity) {
-        if (!repository.existsById(entity.getLikeId()))
+        if (!cmBlogGoodRepository.existsById(entity.getLikeId()))
             throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + entity.getLikeId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_blog_good :: insert or update :: [orm:jpa]
-        CmBlogGood result = repository.save(entity);
+        CmBlogGood result = cmBlogGoodRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!cmBlogGoodRepository.existsById(id))
             throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + id);
         // cm_blog_good :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        cmBlogGoodRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class CmBlogGoodService {
                 row.setLikeId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("cm_blog_good"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                cmBlogGoodRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getLikeId(), "likeId must not be null");
-                CmBlogGood entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                CmBlogGood entity = cmBlogGoodRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "likeId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                cmBlogGoodRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getLikeId(), "likeId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (cmBlogGoodRepository.existsById(id)) cmBlogGoodRepository.deleteById(id);
             }
         }
     }

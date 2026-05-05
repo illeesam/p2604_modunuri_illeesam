@@ -24,26 +24,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyBrandService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyBrandMapper mapper;
-    private final SyBrandRepository repository;
+    private final SyBrandMapper syBrandMapper;
+    private final SyBrandRepository syBrandRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyBrandDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syBrandMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyBrandDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syBrandMapper.selectPageList(p), syBrandMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyBrandDto getById(String id) {
-        SyBrandDto dto = mapper.selectById(id);
+        SyBrandDto dto = syBrandMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -55,18 +55,18 @@ public class BoSyBrandService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyBrand saved = repository.save(body);
+        SyBrand saved = syBrandRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public SyBrandDto update(String id, SyBrand body) {
-        SyBrand entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyBrand entity = syBrandRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "brandId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyBrand saved = repository.save(entity);
+        SyBrand saved = syBrandRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -74,11 +74,11 @@ public class BoSyBrandService {
 
     @Transactional
     public void delete(String id) {
-        SyBrand entity = repository.findById(id)
+        SyBrand entity = syBrandRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syBrandRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syBrandRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -93,7 +93,7 @@ public class BoSyBrandService {
             .map(SyBrand::getBrandId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syBrandRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -103,11 +103,11 @@ public class BoSyBrandService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBrandId() != null)
             .toList();
         for (SyBrand row : updateRows) {
-            SyBrand entity = repository.findById(row.getBrandId())
+            SyBrand entity = syBrandRepository.findById(row.getBrandId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getBrandId()));
             VoUtil.voCopyExclude(row, entity, "brandId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syBrandRepository.save(entity);
         }
         em.flush();
 
@@ -119,7 +119,7 @@ public class BoSyBrandService {
             row.setBrandId("BR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syBrandRepository.save(row);
         }
         em.flush();
         em.clear();

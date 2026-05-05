@@ -26,13 +26,13 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 public class FoOdCartService {
 
 
-    private final OdCartMapper     mapper;
-    private final OdCartRepository repository;
+    private final OdCartMapper     odCartMapper;
+    private final OdCartRepository odCartRepository;
 
     @Transactional(readOnly = true)
     public List<OdCartDto> getMyCart(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return mapper.selectList(p);
+        return odCartMapper.selectList(p);
     }
 
     @Transactional
@@ -43,32 +43,32 @@ public class FoOdCartService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdCart saved = repository.save(entity);
+        OdCart saved = odCartRepository.save(entity);
         if (saved == null) throw new CmBizException("장바구니 추가에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public OdCart updateQty(String cartId, int qty) {
-        OdCart cart = repository.findById(cartId)
+        OdCart cart = odCartRepository.findById(cartId)
                 .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId));
         if (!cart.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
             throw new CmBizException("접근 권한이 없습니다.");
         cart.setOrderQty(qty);
         cart.setUpdBy(SecurityUtil.getAuthUser().authId());
         cart.setUpdDate(LocalDateTime.now());
-        OdCart saved = repository.save(cart);
+        OdCart saved = odCartRepository.save(cart);
         if (saved == null) throw new CmBizException("수량 변경에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public void removeFromCart(String cartId) {
-        OdCart cart = repository.findById(cartId)
+        OdCart cart = odCartRepository.findById(cartId)
                 .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId));
         if (!cart.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
             throw new CmBizException("접근 권한이 없습니다.");
-        repository.deleteById(cartId);
+        odCartRepository.deleteById(cartId);
     }
 
 }

@@ -24,33 +24,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmPlanService {
 
 
-    private final PmPlanMapper mapper;
-    private final PmPlanRepository repository;
+    private final PmPlanMapper pmPlanMapper;
+    private final PmPlanRepository pmPlanRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmPlanDto getById(String id) {
-        PmPlanDto result = mapper.selectById(id);
+        PmPlanDto result = pmPlanMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<PmPlanDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<PmPlanDto> result = mapper.selectList(p);
+        List<PmPlanDto> result = pmPlanMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmPlanDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmPlanMapper.selectPageList(p), pmPlanMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmPlan entity) {
-        int result = mapper.updateSelective(entity);
+        int result = pmPlanMapper.updateSelective(entity);
         return result;
     }
 
@@ -63,25 +63,25 @@ public class PmPlanService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmPlan result = repository.save(entity);
+        PmPlan result = pmPlanRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmPlan save(PmPlan entity) {
-        if (!repository.existsById(entity.getPlanId()))
+        if (!pmPlanRepository.existsById(entity.getPlanId()))
             throw new CmBizException("존재하지 않는 PmPlan입니다: " + entity.getPlanId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmPlan result = repository.save(entity);
+        PmPlan result = pmPlanRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmPlanRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmPlan입니다: " + id);
-        repository.deleteById(id);
+        pmPlanRepository.deleteById(id);
     }
 
     @Transactional
@@ -94,16 +94,16 @@ public class PmPlanService {
                 row.setPlanId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_plan"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmPlanRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getPlanId(), "planId must not be null");
-                PmPlan entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmPlan entity = pmPlanRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "planId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmPlanRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getPlanId(), "planId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmPlanRepository.existsById(id)) pmPlanRepository.deleteById(id);
             }
         }
     }

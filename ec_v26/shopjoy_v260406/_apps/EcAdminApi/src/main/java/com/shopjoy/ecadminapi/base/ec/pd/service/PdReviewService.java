@@ -24,15 +24,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PdReviewService {
 
 
-    private final PdReviewMapper mapper;
-    private final PdReviewRepository repository;
+    private final PdReviewMapper pdReviewMapper;
+    private final PdReviewRepository pdReviewRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdReviewDto getById(String id) {
         // pd_review :: select one :: id [orm:mybatis]
-        PdReviewDto result = mapper.selectById(id);
+        PdReviewDto result = pdReviewMapper.selectById(id);
         return result;
     }
 
@@ -40,7 +40,7 @@ public class PdReviewService {
     public List<PdReviewDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_review :: select list :: p [orm:mybatis]
-        List<PdReviewDto> result = mapper.selectList(p);
+        List<PdReviewDto> result = pdReviewMapper.selectList(p);
         return result;
     }
 
@@ -48,7 +48,7 @@ public class PdReviewService {
     public PageResult<PdReviewDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_review :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdReviewMapper.selectPageList(p), pdReviewMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /**
@@ -57,14 +57,14 @@ public class PdReviewService {
      */
     @Transactional(readOnly = true)
     public Map<String, Object> getRatingSummary(String prodId) {
-        Map<String, Object> result = mapper.selectRatingSummary(prodId);
+        Map<String, Object> result = pdReviewMapper.selectRatingSummary(prodId);
         return result != null ? result : new java.util.LinkedHashMap<>();
     }
 
     @Transactional
     public int update(PdReview entity) {
         // pd_review :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdReviewMapper.updateSelective(entity);
         return result;
     }
 
@@ -78,27 +78,27 @@ public class PdReviewService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_review :: insert or update :: [orm:jpa]
-        PdReview result = repository.save(entity);
+        PdReview result = pdReviewRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PdReview save(PdReview entity) {
-        if (!repository.existsById(entity.getReviewId()))
+        if (!pdReviewRepository.existsById(entity.getReviewId()))
             throw new CmBizException("존재하지 않는 PdReview입니다: " + entity.getReviewId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_review :: insert or update :: [orm:jpa]
-        PdReview result = repository.save(entity);
+        PdReview result = pdReviewRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pdReviewRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PdReview입니다: " + id);
         // pd_review :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pdReviewRepository.deleteById(id);
     }
 
     @Transactional
@@ -111,16 +111,16 @@ public class PdReviewService {
                 row.setReviewId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_review"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pdReviewRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getReviewId(), "reviewId must not be null");
-                PdReview entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PdReview entity = pdReviewRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "reviewId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pdReviewRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getReviewId(), "reviewId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pdReviewRepository.existsById(id)) pdReviewRepository.deleteById(id);
             }
         }
     }

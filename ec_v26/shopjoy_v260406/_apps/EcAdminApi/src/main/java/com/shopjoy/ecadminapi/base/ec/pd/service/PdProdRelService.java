@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class PdProdRelService {
 
-    private final PdProdRelMapper mapper;
-    private final PdProdRelRepository repository;
+    private final PdProdRelMapper pdProdRelMapper;
+    private final PdProdRelRepository pdProdRelRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdProdRelDto getById(String id) {
         // pd_prod_rel :: select one :: id [orm:mybatis]
-        PdProdRelDto result = mapper.selectById(id);
+        PdProdRelDto result = pdProdRelMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class PdProdRelService {
     public List<PdProdRelDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_prod_rel :: select list :: p [orm:mybatis]
-        List<PdProdRelDto> result = mapper.selectList(p);
+        List<PdProdRelDto> result = pdProdRelMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class PdProdRelService {
     public PageResult<PdProdRelDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_prod_rel :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdProdRelMapper.selectPageList(p), pdProdRelMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdProdRel entity) {
         // pd_prod_rel :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdProdRelMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class PdProdRelService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod_rel :: insert or update :: [orm:jpa]
-        PdProdRel result = repository.save(entity);
+        PdProdRel result = pdProdRelRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PdProdRel save(PdProdRel entity) {
-        if (!repository.existsById(entity.getProdRelId()))
+        if (!pdProdRelRepository.existsById(entity.getProdRelId()))
             throw new CmBizException("존재하지 않는 PdProdRel입니다: " + entity.getProdRelId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod_rel :: insert or update :: [orm:jpa]
-        PdProdRel result = repository.save(entity);
+        PdProdRel result = pdProdRelRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pdProdRelRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PdProdRel입니다: " + id);
         // pd_prod_rel :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pdProdRelRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<PdProdRel> rows) {
@@ -99,16 +99,16 @@ public class PdProdRelService {
                 row.setProdRelId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_prod_rel"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pdProdRelRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getProdRelId(), "prodRelId must not be null");
-                PdProdRel entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PdProdRel entity = pdProdRelRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "prodRelId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pdProdRelRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getProdRelId(), "prodRelId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pdProdRelRepository.existsById(id)) pdProdRelRepository.deleteById(id);
             }
         }
     }

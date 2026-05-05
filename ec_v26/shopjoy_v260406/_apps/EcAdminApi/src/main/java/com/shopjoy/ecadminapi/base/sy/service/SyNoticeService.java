@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyNoticeService {
 
 
-    private final SyNoticeMapper mapper;
-    private final SyNoticeRepository repository;
+    private final SyNoticeMapper syNoticeMapper;
+    private final SyNoticeRepository syNoticeRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyNoticeService {
     @Transactional(readOnly = true)
     public SyNoticeDto getById(String id) {
         // sy_notice :: select one :: id [orm:mybatis]
-        SyNoticeDto result = mapper.selectById(id);
+        SyNoticeDto result = syNoticeMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyNoticeService {
     public List<SyNoticeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_notice :: select list :: p [orm:mybatis]
-        List<SyNoticeDto> result = mapper.selectList(p);
+        List<SyNoticeDto> result = syNoticeMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyNoticeService {
     public PageResult<SyNoticeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_notice :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syNoticeMapper.selectPageList(p), syNoticeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyNotice entity) {
         // sy_notice :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syNoticeMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyNoticeService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_notice :: insert or update :: [orm:jpa]
-        SyNotice result = repository.save(entity);
+        SyNotice result = syNoticeRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyNotice save(SyNotice entity) {
-        if (!repository.existsById(entity.getNoticeId()))
+        if (!syNoticeRepository.existsById(entity.getNoticeId()))
             throw new CmBizException("존재하지 않는 SyNotice입니다: " + entity.getNoticeId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_notice :: insert or update :: [orm:jpa]
-        SyNotice result = repository.save(entity);
+        SyNotice result = syNoticeRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyNotice entity = repository.findById(id)
+        SyNotice entity = syNoticeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syNoticeRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syNoticeRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyNoticeService {
                 row.setNoticeId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_notice"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syNoticeRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getNoticeId(), "noticeId must not be null");
-                SyNotice entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyNotice entity = syNoticeRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "noticeId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syNoticeRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getNoticeId(), "noticeId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syNoticeRepository.existsById(id)) syNoticeRepository.deleteById(id);
             }
         }
         em.flush();

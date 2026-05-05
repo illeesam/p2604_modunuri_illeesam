@@ -26,8 +26,8 @@ import java.util.Map;
 public class SyCodeGrpService {
 
 
-    private final SyCodeGrpMapper mapper;
-    private final SyCodeGrpRepository repository;
+    private final SyCodeGrpMapper syCodeGrpMapper;
+    private final SyCodeGrpRepository syCodeGrpRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyCodeGrpService {
     @Transactional(readOnly = true)
     public SyCodeGrpDto getById(String id) {
         // sy_code_grp :: select one :: id [orm:mybatis]
-        SyCodeGrpDto result = mapper.selectById(id);
+        SyCodeGrpDto result = syCodeGrpMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyCodeGrpService {
     public List<SyCodeGrpDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_code_grp :: select list :: p [orm:mybatis]
-        List<SyCodeGrpDto> result = mapper.selectList(p);
+        List<SyCodeGrpDto> result = syCodeGrpMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyCodeGrpService {
     public PageResult<SyCodeGrpDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_code_grp :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syCodeGrpMapper.selectPageList(p), syCodeGrpMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyCodeGrp entity) {
         // sy_code_grp :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syCodeGrpMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyCodeGrpService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_code_grp :: insert or update :: [orm:jpa]
-        SyCodeGrp result = repository.save(entity);
+        SyCodeGrp result = syCodeGrpRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyCodeGrp save(SyCodeGrp entity) {
-        if (!repository.existsById(entity.getCodeGrpId()))
+        if (!syCodeGrpRepository.existsById(entity.getCodeGrpId()))
             throw new CmBizException("존재하지 않는 SyCodeGrp입니다: " + entity.getCodeGrpId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_code_grp :: insert or update :: [orm:jpa]
-        SyCodeGrp result = repository.save(entity);
+        SyCodeGrp result = syCodeGrpRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyCodeGrp entity = repository.findById(id)
+        SyCodeGrp entity = syCodeGrpRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syCodeGrpRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syCodeGrpRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,17 +108,17 @@ public class SyCodeGrpService {
                 row.setCodeGrpId(CmUtil.generateId("sy_code_grp"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syCodeGrpRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCodeGrpId(), "codeGrpId must not be null");
-                SyCodeGrp entity = repository.findById(id)
+                SyCodeGrp entity = syCodeGrpRepository.findById(id)
                     .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "codeGrpId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syCodeGrpRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCodeGrpId(), "codeGrpId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syCodeGrpRepository.existsById(id)) syCodeGrpRepository.deleteById(id);
             }
         }
         em.flush();

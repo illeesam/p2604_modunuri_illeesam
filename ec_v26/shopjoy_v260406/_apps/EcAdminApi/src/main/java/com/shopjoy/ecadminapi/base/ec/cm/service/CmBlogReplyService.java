@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class CmBlogReplyService {
 
-    private final CmBlogReplyMapper mapper;
-    private final CmBlogReplyRepository repository;
+    private final CmBlogReplyMapper cmBlogReplyMapper;
+    private final CmBlogReplyRepository cmBlogReplyRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public CmBlogReplyDto getById(String id) {
         // cm_blog_reply :: select one :: id [orm:mybatis]
-        CmBlogReplyDto result = mapper.selectById(id);
+        CmBlogReplyDto result = cmBlogReplyMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class CmBlogReplyService {
     public List<CmBlogReplyDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_blog_reply :: select list :: p [orm:mybatis]
-        List<CmBlogReplyDto> result = mapper.selectList(p);
+        List<CmBlogReplyDto> result = cmBlogReplyMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class CmBlogReplyService {
     public PageResult<CmBlogReplyDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_blog_reply :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(cmBlogReplyMapper.selectPageList(p), cmBlogReplyMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmBlogReply entity) {
         // cm_blog_reply :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = cmBlogReplyMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class CmBlogReplyService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_blog_reply :: insert or update :: [orm:jpa]
-        CmBlogReply result = repository.save(entity);
+        CmBlogReply result = cmBlogReplyRepository.save(entity);
         return result;
     }
 
     @Transactional
     public CmBlogReply save(CmBlogReply entity) {
-        if (!repository.existsById(entity.getCommentId()))
+        if (!cmBlogReplyRepository.existsById(entity.getCommentId()))
             throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + entity.getCommentId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_blog_reply :: insert or update :: [orm:jpa]
-        CmBlogReply result = repository.save(entity);
+        CmBlogReply result = cmBlogReplyRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!cmBlogReplyRepository.existsById(id))
             throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + id);
         // cm_blog_reply :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        cmBlogReplyRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class CmBlogReplyService {
                 row.setCommentId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("cm_blog_reply"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                cmBlogReplyRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCommentId(), "commentId must not be null");
-                CmBlogReply entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                CmBlogReply entity = cmBlogReplyRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "commentId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                cmBlogReplyRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCommentId(), "commentId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (cmBlogReplyRepository.existsById(id)) cmBlogReplyRepository.deleteById(id);
             }
         }
     }

@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class CmBlogTagService {
 
-    private final CmBlogTagMapper mapper;
-    private final CmBlogTagRepository repository;
+    private final CmBlogTagMapper cmBlogTagMapper;
+    private final CmBlogTagRepository cmBlogTagRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public CmBlogTagDto getById(String id) {
         // cm_blog_tag :: select one :: id [orm:mybatis]
-        CmBlogTagDto result = mapper.selectById(id);
+        CmBlogTagDto result = cmBlogTagMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class CmBlogTagService {
     public List<CmBlogTagDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_blog_tag :: select list :: p [orm:mybatis]
-        List<CmBlogTagDto> result = mapper.selectList(p);
+        List<CmBlogTagDto> result = cmBlogTagMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class CmBlogTagService {
     public PageResult<CmBlogTagDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_blog_tag :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(cmBlogTagMapper.selectPageList(p), cmBlogTagMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmBlogTag entity) {
         // cm_blog_tag :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = cmBlogTagMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class CmBlogTagService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_blog_tag :: insert or update :: [orm:jpa]
-        CmBlogTag result = repository.save(entity);
+        CmBlogTag result = cmBlogTagRepository.save(entity);
         return result;
     }
 
     @Transactional
     public CmBlogTag save(CmBlogTag entity) {
-        if (!repository.existsById(entity.getBlogTagId()))
+        if (!cmBlogTagRepository.existsById(entity.getBlogTagId()))
             throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_blog_tag :: insert or update :: [orm:jpa]
-        CmBlogTag result = repository.save(entity);
+        CmBlogTag result = cmBlogTagRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!cmBlogTagRepository.existsById(id))
             throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + id);
         // cm_blog_tag :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        cmBlogTagRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class CmBlogTagService {
                 row.setBlogTagId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("cm_blog_tag"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                cmBlogTagRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getBlogTagId(), "blogTagId must not be null");
-                CmBlogTag entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                CmBlogTag entity = cmBlogTagRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "blogTagId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                cmBlogTagRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getBlogTagId(), "blogTagId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (cmBlogTagRepository.existsById(id)) cmBlogTagRepository.deleteById(id);
             }
         }
     }

@@ -21,24 +21,24 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SyPathService {
 
-    private final SyPathMapper mapper;
-    private final SyPathRepository repository;
+    private final SyPathMapper syPathMapper;
+    private final SyPathRepository syPathRepository;
 
     @Transactional(readOnly = true)
     public SyPathDto getById(String id) {
-        return mapper.selectById(id);
+        return syPathMapper.selectById(id);
     }
 
     @Transactional(readOnly = true)
     public List<SyPathDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syPathMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyPathDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+        return PageResult.of(syPathMapper.selectPageList(p), syPathMapper.selectPageCount(p),
                 PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
@@ -49,30 +49,30 @@ public class SyPathService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
         entity.setUpdDate(LocalDateTime.now());
-        return repository.save(entity);
+        return syPathRepository.save(entity);
     }
 
     @Transactional
     public SyPath save(String id, SyPath entity) {
-        if (!repository.existsById(id))
+        if (!syPathRepository.existsById(id))
             throw new CmBizException("존재하지 않는 SyPath입니다: " + id);
         entity.setPathId(id);
         entity.setUpdBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
         entity.setUpdDate(LocalDateTime.now());
-        return repository.save(entity);
+        return syPathRepository.save(entity);
     }
 
     @Transactional
     public int update(String id, SyPath entity) {
         entity.setPathId(id);
-        return mapper.updateSelective(entity);
+        return syPathMapper.updateSelective(entity);
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!syPathRepository.existsById(id))
             throw new CmBizException("존재하지 않는 SyPath입니다: " + id);
-        repository.deleteById(id);
+        syPathRepository.deleteById(id);
     }
 
     @Transactional
@@ -85,11 +85,11 @@ public class SyPathService {
                 row.setPathId(CmUtil.generateId("sy_path"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syPathRepository.save(row);
             } else if ("U".equals(rs)) {
                 String pid = row.getPathId();
                 if (pid == null) throw new CmBizException("수정 시 pathId는 필수입니다.");
-                SyPath entity = repository.findById(pid)
+                SyPath entity = syPathRepository.findById(pid)
                     .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + pid));
                 entity.setBizCd(row.getBizCd());
                 entity.setParentPathId(row.getParentPathId());
@@ -98,10 +98,10 @@ public class SyPathService {
                 entity.setUseYn(row.getUseYn());
                 entity.setPathRemark(row.getPathRemark());
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syPathRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String pid = row.getPathId();
-                if (pid != null && repository.existsById(pid)) repository.deleteById(pid);
+                if (pid != null && syPathRepository.existsById(pid)) syPathRepository.deleteById(pid);
             }
         }
     }

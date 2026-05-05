@@ -25,8 +25,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SyAlarmService {
 
-    private final SyAlarmMapper mapper;
-    private final SyAlarmRepository repository;
+    private final SyAlarmMapper syAlarmMapper;
+    private final SyAlarmRepository syAlarmRepository;
     @PersistenceContext
     private EntityManager em;
 
@@ -35,7 +35,7 @@ public class SyAlarmService {
     @Transactional(readOnly = true)
     public SyAlarmDto getById(String id) {
         // sy_alarm :: select one :: id [orm:mybatis]
-        SyAlarmDto result = mapper.selectById(id);
+        SyAlarmDto result = syAlarmMapper.selectById(id);
         return result;
     }
 
@@ -43,7 +43,7 @@ public class SyAlarmService {
     public List<SyAlarmDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_alarm :: select list :: p [orm:mybatis]
-        List<SyAlarmDto> result = mapper.selectList(p);
+        List<SyAlarmDto> result = syAlarmMapper.selectList(p);
         return result;
     }
 
@@ -51,13 +51,13 @@ public class SyAlarmService {
     public PageResult<SyAlarmDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_alarm :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syAlarmMapper.selectPageList(p), syAlarmMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyAlarm entity) {
         // sy_alarm :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syAlarmMapper.updateSelective(entity);
         return result;
     }
 
@@ -71,29 +71,29 @@ public class SyAlarmService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_alarm :: insert or update :: [orm:jpa]
-        SyAlarm result = repository.save(entity);
+        SyAlarm result = syAlarmRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyAlarm save(SyAlarm entity) {
-        if (!repository.existsById(entity.getAlarmId())) {
+        if (!syAlarmRepository.existsById(entity.getAlarmId())) {
             throw new CmBizException("존재하지 않는 알람입니다: " + entity.getAlarmId());
         }
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_alarm :: insert or update :: [orm:jpa]
-        SyAlarm result = repository.save(entity);
+        SyAlarm result = syAlarmRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyAlarm entity = repository.findById(id)
+        SyAlarm entity = syAlarmRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syAlarmRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syAlarmRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -119,15 +119,15 @@ public class SyAlarmService {
         return switch (req.getRowStatus()) {
             case "I" -> create(req.toEntity());
             case "U" -> {
-                if (!repository.existsById(req.getAlarmId()))
+                if (!syAlarmRepository.existsById(req.getAlarmId()))
                     throw new CmBizException("존재하지 않는 알람입니다: " + req.getAlarmId());
                 yield save(req.toEntity());
             }
             case "D" -> {
-                if (!repository.existsById(req.getAlarmId()))
+                if (!syAlarmRepository.existsById(req.getAlarmId()))
                     throw new CmBizException("존재하지 않는 알람입니다: " + req.getAlarmId());
                 // sy_alarm :: delete :: alarmId [orm:jpa]
-                repository.deleteById(req.getAlarmId());
+                syAlarmRepository.deleteById(req.getAlarmId());
                 yield null;
             }
             default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus());

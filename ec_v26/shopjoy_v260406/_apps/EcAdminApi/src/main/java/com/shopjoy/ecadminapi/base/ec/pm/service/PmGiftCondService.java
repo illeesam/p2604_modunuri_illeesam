@@ -24,33 +24,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmGiftCondService {
 
 
-    private final PmGiftCondMapper mapper;
-    private final PmGiftCondRepository repository;
+    private final PmGiftCondMapper pmGiftCondMapper;
+    private final PmGiftCondRepository pmGiftCondRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmGiftCondDto getById(String id) {
-        PmGiftCondDto result = mapper.selectById(id);
+        PmGiftCondDto result = pmGiftCondMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<PmGiftCondDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<PmGiftCondDto> result = mapper.selectList(p);
+        List<PmGiftCondDto> result = pmGiftCondMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmGiftCondDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmGiftCondMapper.selectPageList(p), pmGiftCondMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmGiftCond entity) {
-        int result = mapper.updateSelective(entity);
+        int result = pmGiftCondMapper.updateSelective(entity);
         return result;
     }
 
@@ -63,25 +63,25 @@ public class PmGiftCondService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmGiftCond result = repository.save(entity);
+        PmGiftCond result = pmGiftCondRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmGiftCond save(PmGiftCond entity) {
-        if (!repository.existsById(entity.getGiftCondId()))
+        if (!pmGiftCondRepository.existsById(entity.getGiftCondId()))
             throw new CmBizException("존재하지 않는 PmGiftCond입니다: " + entity.getGiftCondId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmGiftCond result = repository.save(entity);
+        PmGiftCond result = pmGiftCondRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmGiftCondRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmGiftCond입니다: " + id);
-        repository.deleteById(id);
+        pmGiftCondRepository.deleteById(id);
     }
 
     @Transactional
@@ -94,16 +94,16 @@ public class PmGiftCondService {
                 row.setGiftCondId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_gift_cond"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmGiftCondRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getGiftCondId(), "giftCondId must not be null");
-                PmGiftCond entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmGiftCond entity = pmGiftCondRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "giftCondId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmGiftCondRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getGiftCondId(), "giftCondId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmGiftCondRepository.existsById(id)) pmGiftCondRepository.deleteById(id);
             }
         }
     }

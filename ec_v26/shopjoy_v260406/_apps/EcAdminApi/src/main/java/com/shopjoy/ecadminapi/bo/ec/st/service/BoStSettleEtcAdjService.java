@@ -23,26 +23,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoStSettleEtcAdjService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final StSettleEtcAdjMapper mapper;
-    private final StSettleEtcAdjRepository repository;
+    private final StSettleEtcAdjMapper stSettleEtcAdjMapper;
+    private final StSettleEtcAdjRepository stSettleEtcAdjRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<StSettleEtcAdjDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return stSettleEtcAdjMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettleEtcAdjDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettleEtcAdjMapper.selectPageList(p), stSettleEtcAdjMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public StSettleEtcAdjDto getById(String id) {
-        StSettleEtcAdjDto dto = mapper.selectById(id);
+        StSettleEtcAdjDto dto = stSettleEtcAdjMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -54,17 +54,17 @@ public class BoStSettleEtcAdjService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        StSettleEtcAdj saved = repository.save(body);
+        StSettleEtcAdj saved = stSettleEtcAdjRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public StSettleEtcAdjDto update(String id, StSettleEtcAdj body) {
-        StSettleEtcAdj entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettleEtcAdj entity = stSettleEtcAdjRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleEtcAdj saved = repository.save(entity);
+        StSettleEtcAdj saved = stSettleEtcAdjRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -72,11 +72,11 @@ public class BoStSettleEtcAdjService {
 
     @Transactional
     public void delete(String id) {
-        StSettleEtcAdj entity = repository.findById(id)
+        StSettleEtcAdj entity = stSettleEtcAdjRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettleEtcAdjRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettleEtcAdjRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 }

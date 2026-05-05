@@ -25,32 +25,32 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyUserRoleService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyUserRoleMapper mapper;
-    private final SyUserRoleRepository repository;
+    private final SyUserRoleMapper syUserRoleMapper;
+    private final SyUserRoleRepository syUserRoleRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyUserRoleDto> getRolesByUserId(String userId) {
-        return mapper.selectByUserId(userId);
+        return syUserRoleMapper.selectByUserId(userId);
     }
 
     @Transactional(readOnly = true)
     public List<SyUserRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syUserRoleMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyUserRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+        return PageResult.of(syUserRoleMapper.selectPageList(p), syUserRoleMapper.selectPageCount(p),
                 PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyUserRoleDto getById(String id) {
-        SyUserRoleDto dto = mapper.selectById(id);
+        SyUserRoleDto dto = syUserRoleMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -63,28 +63,28 @@ public class BoSyUserRoleService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(authId);
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        return syUserRoleRepository.save(body);
     }
 
     @Transactional
     public SyUserRoleDto update(String id, SyUserRole body) {
         String authId = SecurityUtil.getAuthUser().authId();
-        SyUserRole entity = repository.findById(id)
+        SyUserRole entity = syUserRoleRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(authId);
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        syUserRoleRepository.save(entity);
         em.flush();
         return getById(id);
     }
 
     @Transactional
     public void delete(String id) {
-        SyUserRole entity = repository.findById(id)
+        SyUserRole entity = syUserRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syUserRoleRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syUserRoleRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
     @Transactional
@@ -98,7 +98,7 @@ public class BoSyUserRoleService {
             .map(SyUserRole::getUserRoleId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syUserRoleRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -108,11 +108,11 @@ public class BoSyUserRoleService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getUserRoleId() != null)
             .toList();
         for (SyUserRole row : updateRows) {
-            SyUserRole entity = repository.findById(row.getUserRoleId())
+            SyUserRole entity = syUserRoleRepository.findById(row.getUserRoleId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getUserRoleId()));
             VoUtil.voCopyExclude(row, entity, "userRoleId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syUserRoleRepository.save(entity);
         }
         em.flush();
 
@@ -124,7 +124,7 @@ public class BoSyUserRoleService {
             row.setUserRoleId("UR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syUserRoleRepository.save(row);
         }
         em.flush();
         em.clear();

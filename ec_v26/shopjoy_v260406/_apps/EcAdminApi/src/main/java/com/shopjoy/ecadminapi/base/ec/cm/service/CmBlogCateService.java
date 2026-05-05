@@ -23,15 +23,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CmBlogCateService {
 
-    private final CmBlogCateMapper mapper;
-    private final CmBlogCateRepository repository;
+    private final CmBlogCateMapper cmBlogCateMapper;
+    private final CmBlogCateRepository cmBlogCateRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public CmBlogCateDto getById(String id) {
         // cm_blog_cate :: select one :: id [orm:mybatis]
-        CmBlogCateDto result = mapper.selectById(id);
+        CmBlogCateDto result = cmBlogCateMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class CmBlogCateService {
     public List<CmBlogCateDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_blog_cate :: select list :: p [orm:mybatis]
-        List<CmBlogCateDto> result = mapper.selectList(p);
+        List<CmBlogCateDto> result = cmBlogCateMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class CmBlogCateService {
     public PageResult<CmBlogCateDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_blog_cate :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(cmBlogCateMapper.selectPageList(p), cmBlogCateMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmBlogCate entity) {
         // cm_blog_cate :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = cmBlogCateMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,29 +67,29 @@ public class CmBlogCateService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_blog_cate :: insert or update :: [orm:jpa]
-        CmBlogCate result = repository.save(entity);
+        CmBlogCate result = cmBlogCateRepository.save(entity);
         return result;
     }
 
     @Transactional
     public CmBlogCate save(CmBlogCate entity) {
-        if (!repository.existsById(entity.getBlogCateId())) {
+        if (!cmBlogCateRepository.existsById(entity.getBlogCateId())) {
             throw new CmBizException("존재하지 않는 카테고리입니다: " + entity.getBlogCateId());
         }
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_blog_cate :: insert or update :: [orm:jpa]
-        CmBlogCate result = repository.save(entity);
+        CmBlogCate result = cmBlogCateRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) {
+        if (!cmBlogCateRepository.existsById(id)) {
             throw new CmBizException("존재하지 않는 카테고리입니다: " + id);
         }
         // cm_blog_cate :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        cmBlogCateRepository.deleteById(id);
     }
 
     // ── _row_status 기반 저장 ────────────────────────────────────
@@ -114,15 +114,15 @@ public class CmBlogCateService {
         return switch (req.getRowStatus()) {
             case "I" -> create(req.toEntity());
             case "U" -> {
-                if (!repository.existsById(req.getBlogCateId()))
+                if (!cmBlogCateRepository.existsById(req.getBlogCateId()))
                     throw new CmBizException("존재하지 않는 카테고리입니다: " + req.getBlogCateId());
                 yield save(req.toEntity());
             }
             case "D" -> {
-                if (!repository.existsById(req.getBlogCateId()))
+                if (!cmBlogCateRepository.existsById(req.getBlogCateId()))
                     throw new CmBizException("존재하지 않는 카테고리입니다: " + req.getBlogCateId());
                 // cm_blog_cate :: delete :: blogCateId [orm:jpa]
-                repository.deleteById(req.getBlogCateId());
+                cmBlogCateRepository.deleteById(req.getBlogCateId());
                 yield null;
             }
             default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus());

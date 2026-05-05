@@ -24,15 +24,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmEventService {
 
 
-    private final PmEventMapper mapper;
-    private final PmEventRepository repository;
+    private final PmEventMapper pmEventMapper;
+    private final PmEventRepository pmEventRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmEventDto getById(String id) {
         // pm_event :: select one :: id [orm:mybatis]
-        PmEventDto result = mapper.selectById(id);
+        PmEventDto result = pmEventMapper.selectById(id);
         return result;
     }
 
@@ -40,7 +40,7 @@ public class PmEventService {
     public List<PmEventDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pm_event :: select list :: p [orm:mybatis]
-        List<PmEventDto> result = mapper.selectList(p);
+        List<PmEventDto> result = pmEventMapper.selectList(p);
         return result;
     }
 
@@ -48,13 +48,13 @@ public class PmEventService {
     public PageResult<PmEventDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pm_event :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmEventMapper.selectPageList(p), pmEventMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmEvent entity) {
         // pm_event :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pmEventMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class PmEventService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_event :: insert or update :: [orm:jpa]
-        PmEvent result = repository.save(entity);
+        PmEvent result = pmEventRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmEvent save(PmEvent entity) {
-        if (!repository.existsById(entity.getEventId()))
+        if (!pmEventRepository.existsById(entity.getEventId()))
             throw new CmBizException("존재하지 않는 PmEvent입니다: " + entity.getEventId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_event :: insert or update :: [orm:jpa]
-        PmEvent result = repository.save(entity);
+        PmEvent result = pmEventRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmEventRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmEvent입니다: " + id);
         // pm_event :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pmEventRepository.deleteById(id);
     }
 
     @Transactional
@@ -101,16 +101,16 @@ public class PmEventService {
                 row.setEventId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_event"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmEventRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getEventId(), "eventId must not be null");
-                PmEvent entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmEvent entity = pmEventRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "eventId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmEventRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getEventId(), "eventId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmEventRepository.existsById(id)) pmEventRepository.deleteById(id);
             }
         }
     }

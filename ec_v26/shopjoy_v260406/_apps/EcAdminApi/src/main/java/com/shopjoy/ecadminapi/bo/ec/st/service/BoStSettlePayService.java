@@ -23,26 +23,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoStSettlePayService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final StSettlePayMapper mapper;
-    private final StSettlePayRepository repository;
+    private final StSettlePayMapper stSettlePayMapper;
+    private final StSettlePayRepository stSettlePayRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<StSettlePayDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return stSettlePayMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettlePayDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettlePayMapper.selectPageList(p), stSettlePayMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public StSettlePayDto getById(String id) {
-        StSettlePayDto dto = mapper.selectById(id);
+        StSettlePayDto dto = stSettlePayMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -54,17 +54,17 @@ public class BoStSettlePayService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        StSettlePay saved = repository.save(body);
+        StSettlePay saved = stSettlePayRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public StSettlePayDto update(String id, StSettlePay body) {
-        StSettlePay entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettlePay entity = stSettlePayRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettlePay saved = repository.save(entity);
+        StSettlePay saved = stSettlePayRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -72,23 +72,23 @@ public class BoStSettlePayService {
 
     @Transactional
     public void delete(String id) {
-        StSettlePay entity = repository.findById(id)
+        StSettlePay entity = stSettlePayRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettlePayRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettlePayRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public StSettlePayDto pay(String id) {
-        StSettlePay entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettlePay entity = stSettlePayRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setPayStatusCdBefore(entity.getPayStatusCd());
         entity.setPayStatusCd("PAID");
         entity.setPayDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettlePay saved = repository.save(entity);
+        StSettlePay saved = stSettlePayRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);

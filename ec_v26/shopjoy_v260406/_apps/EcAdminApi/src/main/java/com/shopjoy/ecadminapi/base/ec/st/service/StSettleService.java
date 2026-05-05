@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class StSettleService {
 
 
-    private final StSettleMapper mapper;
-    private final StSettleRepository repository;
+    private final StSettleMapper stSettleMapper;
+    private final StSettleRepository stSettleRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -36,26 +36,26 @@ public class StSettleService {
 
     @Transactional(readOnly = true)
     public StSettleDto getById(String id) {
-        StSettleDto result = mapper.selectById(id);
+        StSettleDto result = stSettleMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<StSettleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StSettleDto> result = mapper.selectList(p);
+        List<StSettleDto> result = stSettleMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettleMapper.selectPageList(p), stSettleMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(StSettle entity) {
-        int result = mapper.updateSelective(entity);
+        int result = stSettleMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class StSettleService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettle result = repository.save(entity);
+        StSettle result = stSettleRepository.save(entity);
         return result;
     }
 
     @Transactional
     public StSettle save(StSettle entity) {
-        if (!repository.existsById(entity.getSettleId()))
+        if (!stSettleRepository.existsById(entity.getSettleId()))
             throw new CmBizException("존재하지 않는 StSettle입니다: " + entity.getSettleId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettle result = repository.save(entity);
+        StSettle result = stSettleRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        StSettle entity = repository.findById(id)
+        StSettle entity = stSettleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettleRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettleRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -102,16 +102,16 @@ public class StSettleService {
                 row.setSettleId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_settle"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                stSettleRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleId(), "settleId must not be null");
-                StSettle entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                StSettle entity = stSettleRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "settleId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                stSettleRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleId(), "settleId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (stSettleRepository.existsById(id)) stSettleRepository.deleteById(id);
             }
         }
         em.flush();

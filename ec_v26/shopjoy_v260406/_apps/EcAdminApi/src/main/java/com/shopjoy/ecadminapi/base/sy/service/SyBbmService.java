@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyBbmService {
 
 
-    private final SyBbmMapper mapper;
-    private final SyBbmRepository repository;
+    private final SyBbmMapper syBbmMapper;
+    private final SyBbmRepository syBbmRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyBbmService {
     @Transactional(readOnly = true)
     public SyBbmDto getById(String id) {
         // sy_bbm :: select one :: id [orm:mybatis]
-        SyBbmDto result = mapper.selectById(id);
+        SyBbmDto result = syBbmMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyBbmService {
     public List<SyBbmDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_bbm :: select list :: p [orm:mybatis]
-        List<SyBbmDto> result = mapper.selectList(p);
+        List<SyBbmDto> result = syBbmMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyBbmService {
     public PageResult<SyBbmDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_bbm :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syBbmMapper.selectPageList(p), syBbmMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyBbm entity) {
         // sy_bbm :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syBbmMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyBbmService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_bbm :: insert or update :: [orm:jpa]
-        SyBbm result = repository.save(entity);
+        SyBbm result = syBbmRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyBbm save(SyBbm entity) {
-        if (!repository.existsById(entity.getBbmId()))
+        if (!syBbmRepository.existsById(entity.getBbmId()))
             throw new CmBizException("존재하지 않는 SyBbm입니다: " + entity.getBbmId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_bbm :: insert or update :: [orm:jpa]
-        SyBbm result = repository.save(entity);
+        SyBbm result = syBbmRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyBbm entity = repository.findById(id)
+        SyBbm entity = syBbmRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syBbmRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syBbmRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyBbmService {
                 row.setBbmId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_bbm"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syBbmRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getBbmId(), "bbmId must not be null");
-                SyBbm entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyBbm entity = syBbmRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "bbmId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syBbmRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getBbmId(), "bbmId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syBbmRepository.existsById(id)) syBbmRepository.deleteById(id);
             }
         }
         em.flush();

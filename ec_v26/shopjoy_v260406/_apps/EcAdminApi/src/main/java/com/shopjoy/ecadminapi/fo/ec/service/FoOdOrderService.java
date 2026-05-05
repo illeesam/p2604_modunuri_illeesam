@@ -29,25 +29,25 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 public class FoOdOrderService {
 
 
-    private final OdOrderMapper     mapper;
-    private final OdOrderRepository repository;
+    private final OdOrderMapper     odOrderMapper;
+    private final OdOrderRepository odOrderRepository;
 
     @Transactional(readOnly = true)
     public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return mapper.selectList(p);
+        return odOrderMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdOrderDto> getMyOrderPage(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odOrderMapper.selectPageList(p), odOrderMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public OdOrderDto getById(String orderId) {
-        OdOrderDto dto = mapper.selectById(orderId);
+        OdOrderDto dto = odOrderMapper.selectById(orderId);
         if (dto == null) throw new CmBizException("존재하지 않는 주문입니다: " + orderId);
         if (!dto.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
             throw new CmBizException("접근 권한이 없습니다.");
@@ -63,7 +63,7 @@ public class FoOdOrderService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdOrder saved = repository.save(entity);
+        OdOrder saved = odOrderRepository.save(entity);
         if (saved == null) throw new CmBizException("주문 생성에 실패했습니다.");
         return saved;
     }

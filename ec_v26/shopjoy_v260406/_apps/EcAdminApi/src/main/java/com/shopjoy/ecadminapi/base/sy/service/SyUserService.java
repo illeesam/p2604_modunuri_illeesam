@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyUserService {
 
 
-    private final SyUserMapper mapper;
-    private final SyUserRepository repository;
+    private final SyUserMapper syUserMapper;
+    private final SyUserRepository syUserRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyUserService {
     @Transactional(readOnly = true)
     public SyUserDto getById(String id) {
         // sy_user :: select one :: id [orm:mybatis]
-        SyUserDto result = mapper.selectById(id);
+        SyUserDto result = syUserMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyUserService {
     public List<SyUserDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_user :: select list :: p [orm:mybatis]
-        List<SyUserDto> result = mapper.selectList(p);
+        List<SyUserDto> result = syUserMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyUserService {
     public PageResult<SyUserDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_user :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syUserMapper.selectPageList(p), syUserMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyUser entity) {
         // sy_user :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syUserMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyUserService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_user :: insert or update :: [orm:jpa]
-        SyUser result = repository.save(entity);
+        SyUser result = syUserRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyUser save(SyUser entity) {
-        if (!repository.existsById(entity.getUserId()))
+        if (!syUserRepository.existsById(entity.getUserId()))
             throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_user :: insert or update :: [orm:jpa]
-        SyUser result = repository.save(entity);
+        SyUser result = syUserRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyUser entity = repository.findById(id)
+        SyUser entity = syUserRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syUserRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syUserRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyUserService {
                 row.setUserId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_user"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syUserRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getUserId(), "userId must not be null");
-                SyUser entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyUser entity = syUserRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "userId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syUserRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getUserId(), "userId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syUserRepository.existsById(id)) syUserRepository.deleteById(id);
             }
         }
         em.flush();

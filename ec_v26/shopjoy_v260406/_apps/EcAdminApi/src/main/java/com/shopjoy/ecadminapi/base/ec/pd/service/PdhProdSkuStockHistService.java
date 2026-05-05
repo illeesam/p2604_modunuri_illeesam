@@ -17,15 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PdhProdSkuStockHistService {
 
-    private final PdhProdSkuStockHistMapper mapper;
-    private final PdhProdSkuStockHistRepository repository;
+    private final PdhProdSkuStockHistMapper pdhProdSkuStockHistMapper;
+    private final PdhProdSkuStockHistRepository pdhProdSkuStockHistRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdhProdSkuStockHistDto getById(String id) {
         // pdh_prod_sku_stock_hist :: select one :: id [orm:mybatis]
-        PdhProdSkuStockHistDto result = mapper.selectById(id);
+        PdhProdSkuStockHistDto result = pdhProdSkuStockHistMapper.selectById(id);
         return result;
     }
 
@@ -33,7 +33,7 @@ public class PdhProdSkuStockHistService {
     public List<PdhProdSkuStockHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pdh_prod_sku_stock_hist :: select list :: p [orm:mybatis]
-        List<PdhProdSkuStockHistDto> result = mapper.selectList(p);
+        List<PdhProdSkuStockHistDto> result = pdhProdSkuStockHistMapper.selectList(p);
         return result;
     }
 
@@ -41,13 +41,13 @@ public class PdhProdSkuStockHistService {
     public PageResult<PdhProdSkuStockHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pdh_prod_sku_stock_hist :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdhProdSkuStockHistMapper.selectPageList(p), pdhProdSkuStockHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdhProdSkuStockHist entity) {
         // pdh_prod_sku_stock_hist :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdhProdSkuStockHistMapper.updateSelective(entity);
         return result;
     }
 

@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class OdClaimItemService {
 
-    private final OdClaimItemMapper mapper;
-    private final OdClaimItemRepository repository;
+    private final OdClaimItemMapper odClaimItemMapper;
+    private final OdClaimItemRepository odClaimItemRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdClaimItemDto getById(String id) {
-        OdClaimItemDto result = mapper.selectById(id);
+        OdClaimItemDto result = odClaimItemMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdClaimItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdClaimItemDto> result = mapper.selectList(p);
+        List<OdClaimItemDto> result = odClaimItemMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdClaimItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odClaimItemMapper.selectPageList(p), odClaimItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdClaimItem entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odClaimItemMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class OdClaimItemService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdClaimItem result = repository.save(entity);
+        OdClaimItem result = odClaimItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public OdClaimItem save(OdClaimItem entity) {
-        if (!repository.existsById(entity.getClaimItemId()))
+        if (!odClaimItemRepository.existsById(entity.getClaimItemId()))
             throw new CmBizException("존재하지 않는 OdClaimItem입니다: " + entity.getClaimItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdClaimItem result = repository.save(entity);
+        OdClaimItem result = odClaimItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odClaimItemRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdClaimItem입니다: " + id);
-        repository.deleteById(id);
+        odClaimItemRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<OdClaimItem> rows) {
@@ -92,16 +92,16 @@ public class OdClaimItemService {
                 row.setClaimItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_claim_item"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                odClaimItemRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getClaimItemId(), "claimItemId must not be null");
-                OdClaimItem entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                OdClaimItem entity = odClaimItemRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "claimItemId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                odClaimItemRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getClaimItemId(), "claimItemId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (odClaimItemRepository.existsById(id)) odClaimItemRepository.deleteById(id);
             }
         }
     }

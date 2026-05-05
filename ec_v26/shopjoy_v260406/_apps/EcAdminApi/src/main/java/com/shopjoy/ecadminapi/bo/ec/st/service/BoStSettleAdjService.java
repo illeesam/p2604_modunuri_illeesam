@@ -23,26 +23,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoStSettleAdjService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final StSettleAdjMapper mapper;
-    private final StSettleAdjRepository repository;
+    private final StSettleAdjMapper stSettleAdjMapper;
+    private final StSettleAdjRepository stSettleAdjRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<StSettleAdjDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return stSettleAdjMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettleAdjDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettleAdjMapper.selectPageList(p), stSettleAdjMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public StSettleAdjDto getById(String id) {
-        StSettleAdjDto dto = mapper.selectById(id);
+        StSettleAdjDto dto = stSettleAdjMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -54,17 +54,17 @@ public class BoStSettleAdjService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        StSettleAdj saved = repository.save(body);
+        StSettleAdj saved = stSettleAdjRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public StSettleAdjDto update(String id, StSettleAdj body) {
-        StSettleAdj entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettleAdj entity = stSettleAdjRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleAdj saved = repository.save(entity);
+        StSettleAdj saved = stSettleAdjRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -72,21 +72,21 @@ public class BoStSettleAdjService {
 
     @Transactional
     public void delete(String id) {
-        StSettleAdj entity = repository.findById(id)
+        StSettleAdj entity = stSettleAdjRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettleAdjRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettleAdjRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public StSettleAdjDto approve(String id, Map<String, Object> body) {
-        StSettleAdj entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettleAdj entity = stSettleAdjRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setAprvStatusCd((String) body.getOrDefault("aprvStatusCd", "승인"));   // 코드그룹: SETTLE_ADJ_STATUS (대기/승인/반려)
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleAdj saved = repository.save(entity);
+        StSettleAdj saved = stSettleAdjRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);

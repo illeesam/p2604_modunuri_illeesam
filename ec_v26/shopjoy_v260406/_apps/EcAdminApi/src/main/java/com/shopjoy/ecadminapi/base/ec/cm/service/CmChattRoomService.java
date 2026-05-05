@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class CmChattRoomService {
 
-    private final CmChattRoomMapper mapper;
-    private final CmChattRoomRepository repository;
+    private final CmChattRoomMapper cmChattRoomMapper;
+    private final CmChattRoomRepository cmChattRoomRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public CmChattRoomDto getById(String id) {
         // cm_chatt_room :: select one :: id [orm:mybatis]
-        CmChattRoomDto result = mapper.selectById(id);
+        CmChattRoomDto result = cmChattRoomMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class CmChattRoomService {
     public List<CmChattRoomDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_chatt_room :: select list :: p [orm:mybatis]
-        List<CmChattRoomDto> result = mapper.selectList(p);
+        List<CmChattRoomDto> result = cmChattRoomMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class CmChattRoomService {
     public PageResult<CmChattRoomDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_chatt_room :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(cmChattRoomMapper.selectPageList(p), cmChattRoomMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmChattRoom entity) {
         // cm_chatt_room :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = cmChattRoomMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class CmChattRoomService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_chatt_room :: insert or update :: [orm:jpa]
-        CmChattRoom result = repository.save(entity);
+        CmChattRoom result = cmChattRoomRepository.save(entity);
         return result;
     }
 
     @Transactional
     public CmChattRoom save(CmChattRoom entity) {
-        if (!repository.existsById(entity.getChattRoomId()))
+        if (!cmChattRoomRepository.existsById(entity.getChattRoomId()))
             throw new CmBizException("존재하지 않는 CmChattRoom입니다: " + entity.getChattRoomId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_chatt_room :: insert or update :: [orm:jpa]
-        CmChattRoom result = repository.save(entity);
+        CmChattRoom result = cmChattRoomRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!cmChattRoomRepository.existsById(id))
             throw new CmBizException("존재하지 않는 CmChattRoom입니다: " + id);
         // cm_chatt_room :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        cmChattRoomRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class CmChattRoomService {
                 row.setChattRoomId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("cm_chatt_room"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                cmChattRoomRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getChattRoomId(), "chattRoomId must not be null");
-                CmChattRoom entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                CmChattRoom entity = cmChattRoomRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "chattRoomId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                cmChattRoomRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getChattRoomId(), "chattRoomId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (cmChattRoomRepository.existsById(id)) cmChattRoomRepository.deleteById(id);
             }
         }
     }

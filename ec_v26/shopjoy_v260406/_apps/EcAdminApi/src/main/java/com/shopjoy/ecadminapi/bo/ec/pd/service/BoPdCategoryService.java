@@ -27,8 +27,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPdCategoryService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PdCategoryMapper mapper;
-    private final PdCategoryRepository repository;
+    private final PdCategoryMapper pdCategoryMapper;
+    private final PdCategoryRepository pdCategoryRepository;
     private final PdCategoryProdRepository categoryProdRepository;
     @PersistenceContext
     private EntityManager em;
@@ -36,18 +36,18 @@ public class BoPdCategoryService {
     @Transactional(readOnly = true)
     public List<PdCategoryDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pdCategoryMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PdCategoryDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdCategoryMapper.selectPageList(p), pdCategoryMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PdCategoryDto getById(String id) {
-        PdCategoryDto dto = mapper.selectById(id);
+        PdCategoryDto dto = pdCategoryMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -59,18 +59,18 @@ public class BoPdCategoryService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PdCategory saved = repository.save(body);
+        PdCategory saved = pdCategoryRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PdCategoryDto update(String id, PdCategory body) {
-        PdCategory entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PdCategory entity = pdCategoryRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "categoryId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PdCategory saved = repository.save(entity);
+        PdCategory saved = pdCategoryRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -78,11 +78,11 @@ public class BoPdCategoryService {
 
     @Transactional
     public void delete(String id) {
-        PdCategory entity = repository.findById(id)
+        PdCategory entity = pdCategoryRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pdCategoryRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pdCategoryRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -127,7 +127,7 @@ public class BoPdCategoryService {
             .map(PdCategory::getCategoryId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pdCategoryRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -136,11 +136,11 @@ public class BoPdCategoryService {
         for (PdCategory row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getCategoryId(), "categoryId must not be null");
-            PdCategory entity = repository.findById(id)
+            PdCategory entity = pdCategoryRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "categoryId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pdCategoryRepository.save(entity);
         }
         em.flush();
 
@@ -150,7 +150,7 @@ public class BoPdCategoryService {
             row.setCategoryId("CT" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pdCategoryRepository.save(row);
         }
         em.flush();
         em.clear();

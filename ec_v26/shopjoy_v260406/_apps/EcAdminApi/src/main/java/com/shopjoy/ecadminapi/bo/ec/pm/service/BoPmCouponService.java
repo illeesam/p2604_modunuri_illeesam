@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPmCouponService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmCouponMapper mapper;
-    private final PmCouponRepository repository;
+    private final PmCouponMapper pmCouponMapper;
+    private final PmCouponRepository pmCouponRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PmCouponDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pmCouponMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmCouponDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmCouponMapper.selectPageList(p), pmCouponMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PmCouponDto getById(String id) {
-        PmCouponDto dto = mapper.selectById(id);
+        PmCouponDto dto = pmCouponMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoPmCouponService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PmCoupon saved = repository.save(body);
+        PmCoupon saved = pmCouponRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PmCouponDto update(String id, PmCoupon body) {
-        PmCoupon entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PmCoupon entity = pmCouponRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "couponId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmCoupon saved = repository.save(entity);
+        PmCoupon saved = pmCouponRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,22 +75,22 @@ public class BoPmCouponService {
 
     @Transactional
     public void delete(String id) {
-        PmCoupon entity = repository.findById(id)
+        PmCoupon entity = pmCouponRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pmCouponRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pmCouponRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public PmCouponDto changeStatus(String id, String statusCd) {
-        PmCoupon entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+        PmCoupon entity = pmCouponRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setCouponStatusCdBefore(entity.getCouponStatusCd());
         entity.setCouponStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmCoupon saved = repository.save(entity);
+        PmCoupon saved = pmCouponRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -106,7 +106,7 @@ public class BoPmCouponService {
             .map(PmCoupon::getCouponId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pmCouponRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -115,11 +115,11 @@ public class BoPmCouponService {
         for (PmCoupon row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getCouponId(), "couponId must not be null");
-            PmCoupon entity = repository.findById(id)
+            PmCoupon entity = pmCouponRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "couponId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pmCouponRepository.save(entity);
         }
         em.flush();
 
@@ -129,7 +129,7 @@ public class BoPmCouponService {
             row.setCouponId("CP" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pmCouponRepository.save(row);
         }
         em.flush();
         em.clear();

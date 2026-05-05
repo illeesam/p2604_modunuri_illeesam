@@ -24,31 +24,31 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyDeptService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyDeptMapper mapper;
-    private final SyDeptRepository repository;
+    private final SyDeptMapper syDeptMapper;
+    private final SyDeptRepository syDeptRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyDeptDto> getTree() {
-        return mapper.selectTree();
+        return syDeptMapper.selectTree();
     }
 
     @Transactional(readOnly = true)
     public List<SyDeptDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syDeptMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyDeptDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syDeptMapper.selectPageList(p), syDeptMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyDeptDto getById(String id) {
-        SyDeptDto dto = mapper.selectById(id);
+        SyDeptDto dto = syDeptMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -60,18 +60,18 @@ public class BoSyDeptService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyDept saved = repository.save(body);
+        SyDept saved = syDeptRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public SyDeptDto update(String id, SyDept body) {
-        SyDept entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyDept entity = syDeptRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "deptId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyDept saved = repository.save(entity);
+        SyDept saved = syDeptRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -79,11 +79,11 @@ public class BoSyDeptService {
 
     @Transactional
     public void delete(String id) {
-        SyDept entity = repository.findById(id)
+        SyDept entity = syDeptRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syDeptRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syDeptRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -98,7 +98,7 @@ public class BoSyDeptService {
             .map(SyDept::getDeptId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syDeptRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -108,11 +108,11 @@ public class BoSyDeptService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getDeptId() != null)
             .toList();
         for (SyDept row : updateRows) {
-            SyDept entity = repository.findById(row.getDeptId())
+            SyDept entity = syDeptRepository.findById(row.getDeptId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getDeptId()));
             VoUtil.voCopyExclude(row, entity, "deptId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syDeptRepository.save(entity);
         }
         em.flush();
 
@@ -124,7 +124,7 @@ public class BoSyDeptService {
             row.setDeptId("DP" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syDeptRepository.save(row);
         }
         em.flush();
         em.clear();

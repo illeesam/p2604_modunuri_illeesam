@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoDpAreaService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final DpAreaMapper mapper;
-    private final DpAreaRepository repository;
+    private final DpAreaMapper dpAreaMapper;
+    private final DpAreaRepository dpAreaRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<DpAreaDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return dpAreaMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<DpAreaDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(dpAreaMapper.selectPageList(p), dpAreaMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public DpAreaDto getById(String id) {
-        DpAreaDto dto = mapper.selectById(id);
+        DpAreaDto dto = dpAreaMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,18 +57,18 @@ public class BoDpAreaService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        DpArea saved = repository.save(body);
+        DpArea saved = dpAreaRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public DpAreaDto update(String id, DpArea body) {
-        DpArea entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        DpArea entity = dpAreaRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "areaId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        DpArea saved = repository.save(entity);
+        DpArea saved = dpAreaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -76,11 +76,11 @@ public class BoDpAreaService {
 
     @Transactional
     public void delete(String id) {
-        DpArea entity = repository.findById(id)
+        DpArea entity = dpAreaRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        dpAreaRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (dpAreaRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -95,7 +95,7 @@ public class BoDpAreaService {
             .map(DpArea::getAreaId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            dpAreaRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -104,11 +104,11 @@ public class BoDpAreaService {
         for (DpArea row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getAreaId(), "areaId must not be null");
-            DpArea entity = repository.findById(id)
+            DpArea entity = dpAreaRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "areaId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            dpAreaRepository.save(entity);
         }
         em.flush();
 
@@ -118,7 +118,7 @@ public class BoDpAreaService {
             row.setAreaId("AR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            dpAreaRepository.save(row);
         }
         em.flush();
         em.clear();

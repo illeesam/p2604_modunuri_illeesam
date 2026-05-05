@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyVendorUserService {
 
 
-    private final SyVendorUserMapper mapper;
-    private final SyVendorUserRepository repository;
+    private final SyVendorUserMapper syVendorUserMapper;
+    private final SyVendorUserRepository syVendorUserRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyVendorUserService {
     @Transactional(readOnly = true)
     public SyVendorUserDto getById(String id) {
         // sy_vendor_user :: select one :: id [orm:mybatis]
-        SyVendorUserDto result = mapper.selectById(id);
+        SyVendorUserDto result = syVendorUserMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyVendorUserService {
     public List<SyVendorUserDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_vendor_user :: select list :: p [orm:mybatis]
-        List<SyVendorUserDto> result = mapper.selectList(p);
+        List<SyVendorUserDto> result = syVendorUserMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyVendorUserService {
     public PageResult<SyVendorUserDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_vendor_user :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syVendorUserMapper.selectPageList(p), syVendorUserMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyVendorUser entity) {
         // sy_vendor_user :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syVendorUserMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyVendorUserService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_vendor_user :: insert or update :: [orm:jpa]
-        SyVendorUser result = repository.save(entity);
+        SyVendorUser result = syVendorUserRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyVendorUser save(SyVendorUser entity) {
-        if (!repository.existsById(entity.getVendorUserId()))
+        if (!syVendorUserRepository.existsById(entity.getVendorUserId()))
             throw new CmBizException("존재하지 않는 SyVendorUser입니다: " + entity.getVendorUserId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_vendor_user :: insert or update :: [orm:jpa]
-        SyVendorUser result = repository.save(entity);
+        SyVendorUser result = syVendorUserRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyVendorUser entity = repository.findById(id)
+        SyVendorUser entity = syVendorUserRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syVendorUserRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syVendorUserRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyVendorUserService {
                 row.setVendorUserId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_vendor_user"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syVendorUserRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getVendorUserId(), "vendorUserId must not be null");
-                SyVendorUser entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyVendorUser entity = syVendorUserRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "vendorUserId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syVendorUserRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getVendorUserId(), "vendorUserId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syVendorUserRepository.existsById(id)) syVendorUserRepository.deleteById(id);
             }
         }
         em.flush();

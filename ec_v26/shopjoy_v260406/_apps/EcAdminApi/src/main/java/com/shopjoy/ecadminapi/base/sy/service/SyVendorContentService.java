@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyVendorContentService {
 
 
-    private final SyVendorContentMapper mapper;
-    private final SyVendorContentRepository repository;
+    private final SyVendorContentMapper syVendorContentMapper;
+    private final SyVendorContentRepository syVendorContentRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyVendorContentService {
     @Transactional(readOnly = true)
     public SyVendorContentDto getById(String id) {
         // sy_vendor_content :: select one :: id [orm:mybatis]
-        SyVendorContentDto result = mapper.selectById(id);
+        SyVendorContentDto result = syVendorContentMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyVendorContentService {
     public List<SyVendorContentDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_vendor_content :: select list :: p [orm:mybatis]
-        List<SyVendorContentDto> result = mapper.selectList(p);
+        List<SyVendorContentDto> result = syVendorContentMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyVendorContentService {
     public PageResult<SyVendorContentDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_vendor_content :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syVendorContentMapper.selectPageList(p), syVendorContentMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyVendorContent entity) {
         // sy_vendor_content :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syVendorContentMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyVendorContentService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_vendor_content :: insert or update :: [orm:jpa]
-        SyVendorContent result = repository.save(entity);
+        SyVendorContent result = syVendorContentRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyVendorContent save(SyVendorContent entity) {
-        if (!repository.existsById(entity.getVendorContentId()))
+        if (!syVendorContentRepository.existsById(entity.getVendorContentId()))
             throw new CmBizException("존재하지 않는 SyVendorContent입니다: " + entity.getVendorContentId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_vendor_content :: insert or update :: [orm:jpa]
-        SyVendorContent result = repository.save(entity);
+        SyVendorContent result = syVendorContentRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyVendorContent entity = repository.findById(id)
+        SyVendorContent entity = syVendorContentRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syVendorContentRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syVendorContentRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyVendorContentService {
                 row.setVendorContentId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_vendor_content"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syVendorContentRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getVendorContentId(), "vendorContentId must not be null");
-                SyVendorContent entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyVendorContent entity = syVendorContentRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "vendorContentId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syVendorContentRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getVendorContentId(), "vendorContentId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syVendorContentRepository.existsById(id)) syVendorContentRepository.deleteById(id);
             }
         }
         em.flush();

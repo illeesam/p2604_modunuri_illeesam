@@ -17,15 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PdhProdSkuChgHistService {
 
-    private final PdhProdSkuChgHistMapper mapper;
-    private final PdhProdSkuChgHistRepository repository;
+    private final PdhProdSkuChgHistMapper pdhProdSkuChgHistMapper;
+    private final PdhProdSkuChgHistRepository pdhProdSkuChgHistRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdhProdSkuChgHistDto getById(String id) {
         // pdh_prod_sku_chg_hist :: select one :: id [orm:mybatis]
-        PdhProdSkuChgHistDto result = mapper.selectById(id);
+        PdhProdSkuChgHistDto result = pdhProdSkuChgHistMapper.selectById(id);
         return result;
     }
 
@@ -33,7 +33,7 @@ public class PdhProdSkuChgHistService {
     public List<PdhProdSkuChgHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pdh_prod_sku_chg_hist :: select list :: p [orm:mybatis]
-        List<PdhProdSkuChgHistDto> result = mapper.selectList(p);
+        List<PdhProdSkuChgHistDto> result = pdhProdSkuChgHistMapper.selectList(p);
         return result;
     }
 
@@ -41,13 +41,13 @@ public class PdhProdSkuChgHistService {
     public PageResult<PdhProdSkuChgHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pdh_prod_sku_chg_hist :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdhProdSkuChgHistMapper.selectPageList(p), pdhProdSkuChgHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdhProdSkuChgHist entity) {
         // pdh_prod_sku_chg_hist :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdhProdSkuChgHistMapper.updateSelective(entity);
         return result;
     }
 

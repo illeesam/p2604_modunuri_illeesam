@@ -17,39 +17,39 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MbhMemberTokenLogService {
 
-    private final MbhMemberTokenLogMapper mapper;
-    private final MbhMemberTokenLogRepository repository;
+    private final MbhMemberTokenLogMapper mbhMemberTokenLogMapper;
+    private final MbhMemberTokenLogRepository mbhMemberTokenLogRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public MbhMemberTokenLogDto getById(String id) {
-        MbhMemberTokenLogDto result = mapper.selectById(id);
+        MbhMemberTokenLogDto result = mbhMemberTokenLogMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<MbhMemberTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<MbhMemberTokenLogDto> result = mapper.selectList(p);
+        List<MbhMemberTokenLogDto> result = mbhMemberTokenLogMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<MbhMemberTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(mbhMemberTokenLogMapper.selectPageList(p), mbhMemberTokenLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(MbhMemberTokenLog entity) {
-        int result = mapper.updateSelective(entity);
+        int result = mbhMemberTokenLogMapper.updateSelective(entity);
         return result;
     }
 
     @Transactional
     public void deleteAll() {
-        repository.deleteAllBulk();
+        mbhMemberTokenLogRepository.deleteAllBulk();
     }
 
 }

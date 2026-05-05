@@ -23,8 +23,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoPdCategoryProdService {
 
-    private final PdCategoryProdMapper mapper;
-    private final PdCategoryProdRepository repository;
+    private final PdCategoryProdMapper pdCategoryProdMapper;
+    private final PdCategoryProdRepository pdCategoryProdRepository;
     @PersistenceContext
     private EntityManager em;
 
@@ -32,8 +32,8 @@ public class BoPdCategoryProdService {
     public PageResult<PdCategoryProdDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(
-                mapper.selectPageList(p),
-                mapper.selectPageCount(p),
+                pdCategoryProdMapper.selectPageList(p),
+                pdCategoryProdMapper.selectPageCount(p),
                 PageHelper.getPageNo(),
                 PageHelper.getPageSize(),
                 p);
@@ -52,8 +52,8 @@ public class BoPdCategoryProdService {
         for (Map<String, Object> row : rows) {
             if ("D".equals(row.getOrDefault("rowStatus", "U"))) {
                 String id = (String) row.get("categoryProdId");
-                if (id != null && repository.existsById(id)) {
-                    repository.deleteById(id);
+                if (id != null && pdCategoryProdRepository.existsById(id)) {
+                    pdCategoryProdRepository.deleteById(id);
                 }
             }
         }
@@ -74,7 +74,7 @@ public class BoPdCategoryProdService {
                 entity.setRegBy(authId);
                 entity.setRegDate(now);
             } else {
-                entity = repository.findById(id)
+                entity = pdCategoryProdRepository.findById(id)
                         .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             }
 
@@ -90,7 +90,7 @@ public class BoPdCategoryProdService {
             entity.setUpdBy(authId);
             entity.setUpdDate(now);
 
-            repository.save(entity);
+            pdCategoryProdRepository.save(entity);
         }
         em.flush();
         em.clear();

@@ -17,15 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PdhProdChgHistService {
 
-    private final PdhProdChgHistMapper mapper;
-    private final PdhProdChgHistRepository repository;
+    private final PdhProdChgHistMapper pdhProdChgHistMapper;
+    private final PdhProdChgHistRepository pdhProdChgHistRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdhProdChgHistDto getById(String id) {
         // pdh_prod_chg_hist :: select one :: id [orm:mybatis]
-        PdhProdChgHistDto result = mapper.selectById(id);
+        PdhProdChgHistDto result = pdhProdChgHistMapper.selectById(id);
         return result;
     }
 
@@ -33,7 +33,7 @@ public class PdhProdChgHistService {
     public List<PdhProdChgHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pdh_prod_chg_hist :: select list :: p [orm:mybatis]
-        List<PdhProdChgHistDto> result = mapper.selectList(p);
+        List<PdhProdChgHistDto> result = pdhProdChgHistMapper.selectList(p);
         return result;
     }
 
@@ -41,13 +41,13 @@ public class PdhProdChgHistService {
     public PageResult<PdhProdChgHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pdh_prod_chg_hist :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdhProdChgHistMapper.selectPageList(p), pdhProdChgHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdhProdChgHist entity) {
         // pdh_prod_chg_hist :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdhProdChgHistMapper.updateSelective(entity);
         return result;
     }
 

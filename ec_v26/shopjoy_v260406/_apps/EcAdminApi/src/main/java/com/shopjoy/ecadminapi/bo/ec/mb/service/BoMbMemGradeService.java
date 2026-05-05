@@ -25,26 +25,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoMbMemGradeService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final MbMemberGradeMapper mapper;
-    private final MbMemberGradeRepository repository;
+    private final MbMemberGradeMapper mbMemberGradeMapper;
+    private final MbMemberGradeRepository mbMemberGradeRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<MbMemberGradeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return mbMemberGradeMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<MbMemberGradeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(mbMemberGradeMapper.selectPageList(p), mbMemberGradeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public MbMemberGradeDto getById(String id) {
-        MbMemberGradeDto dto = mapper.selectById(id);
+        MbMemberGradeDto dto = mbMemberGradeMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,18 +57,18 @@ public class BoMbMemGradeService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        MbMemberGrade saved = repository.save(body);
+        MbMemberGrade saved = mbMemberGradeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public MbMemberGradeDto update(String id, MbMemberGrade body) {
-        MbMemberGrade entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        MbMemberGrade entity = mbMemberGradeRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "memberGradeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        MbMemberGrade saved = repository.save(entity);
+        MbMemberGrade saved = mbMemberGradeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -76,11 +76,11 @@ public class BoMbMemGradeService {
 
     @Transactional
     public void delete(String id) {
-        MbMemberGrade entity = repository.findById(id)
+        MbMemberGrade entity = mbMemberGradeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        mbMemberGradeRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (mbMemberGradeRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -95,7 +95,7 @@ public class BoMbMemGradeService {
             .map(MbMemberGrade::getMemberGradeId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            mbMemberGradeRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -104,11 +104,11 @@ public class BoMbMemGradeService {
         for (MbMemberGrade row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getMemberGradeId(), "memberGradeId must not be null");
-            MbMemberGrade entity = repository.findById(id)
+            MbMemberGrade entity = mbMemberGradeRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "memberGradeId^regBy^regDate");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            mbMemberGradeRepository.save(entity);
         }
         em.flush();
 
@@ -118,7 +118,7 @@ public class BoMbMemGradeService {
             row.setMemberGradeId("GR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            mbMemberGradeRepository.save(row);
         }
         em.flush();
         em.clear();

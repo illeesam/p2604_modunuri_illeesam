@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class DpWidgetLibService {
 
-    private final DpWidgetLibMapper mapper;
-    private final DpWidgetLibRepository repository;
+    private final DpWidgetLibMapper dpWidgetLibMapper;
+    private final DpWidgetLibRepository dpWidgetLibRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public DpWidgetLibDto getById(String id) {
         // dp_widget_lib :: select one :: id [orm:mybatis]
-        DpWidgetLibDto result = mapper.selectById(id);
+        DpWidgetLibDto result = dpWidgetLibMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class DpWidgetLibService {
     public List<DpWidgetLibDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // dp_widget_lib :: select list :: p [orm:mybatis]
-        List<DpWidgetLibDto> result = mapper.selectList(p);
+        List<DpWidgetLibDto> result = dpWidgetLibMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class DpWidgetLibService {
     public PageResult<DpWidgetLibDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // dp_widget_lib :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(dpWidgetLibMapper.selectPageList(p), dpWidgetLibMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpWidgetLib entity) {
         // dp_widget_lib :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = dpWidgetLibMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class DpWidgetLibService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_widget_lib :: insert or update :: [orm:jpa]
-        DpWidgetLib result = repository.save(entity);
+        DpWidgetLib result = dpWidgetLibRepository.save(entity);
         return result;
     }
 
     @Transactional
     public DpWidgetLib save(DpWidgetLib entity) {
-        if (!repository.existsById(entity.getWidgetLibId()))
+        if (!dpWidgetLibRepository.existsById(entity.getWidgetLibId()))
             throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_widget_lib :: insert or update :: [orm:jpa]
-        DpWidgetLib result = repository.save(entity);
+        DpWidgetLib result = dpWidgetLibRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!dpWidgetLibRepository.existsById(id))
             throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + id);
         // dp_widget_lib :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        dpWidgetLibRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class DpWidgetLibService {
                 row.setWidgetLibId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("dp_widget_lib"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                dpWidgetLibRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getWidgetLibId(), "widgetLibId must not be null");
-                DpWidgetLib entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                DpWidgetLib entity = dpWidgetLibRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "widgetLibId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                dpWidgetLibRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getWidgetLibId(), "widgetLibId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (dpWidgetLibRepository.existsById(id)) dpWidgetLibRepository.deleteById(id);
             }
         }
     }

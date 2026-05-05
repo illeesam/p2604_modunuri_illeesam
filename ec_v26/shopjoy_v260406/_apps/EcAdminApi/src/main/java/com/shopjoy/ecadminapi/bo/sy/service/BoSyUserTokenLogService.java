@@ -16,29 +16,29 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyUserTokenLogService {
 
-    private final SyhUserTokenLogMapper mapper;
-    private final SyhUserTokenLogRepository repository;
+    private final SyhUserTokenLogMapper syhUserTokenLogMapper;
+    private final SyhUserTokenLogRepository syhUserTokenLogRepository;
 
     @Transactional(readOnly = true)
     public List<SyhUserTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syhUserTokenLogMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyhUserTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+        return PageResult.of(syhUserTokenLogMapper.selectPageList(p), syhUserTokenLogMapper.selectPageCount(p),
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyhUserTokenLogDto getById(String id) {
-        return mapper.selectById(id);
+        return syhUserTokenLogMapper.selectById(id);
     }
 
     @Transactional
     public void deleteAll() {
-        repository.deleteAllBulk();
+        syhUserTokenLogRepository.deleteAllBulk();
     }
 }

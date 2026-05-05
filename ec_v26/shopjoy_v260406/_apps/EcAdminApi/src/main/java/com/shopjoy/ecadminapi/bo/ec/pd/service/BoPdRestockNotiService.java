@@ -27,26 +27,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPdRestockNotiService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PdRestockNotiMapper mapper;
-    private final PdRestockNotiRepository repository;
+    private final PdRestockNotiMapper pdRestockNotiMapper;
+    private final PdRestockNotiRepository pdRestockNotiRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PdRestockNotiDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pdRestockNotiMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PdRestockNotiDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdRestockNotiMapper.selectPageList(p), pdRestockNotiMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PdRestockNotiDto getById(String id) {
-        PdRestockNotiDto dto = mapper.selectById(id);
+        PdRestockNotiDto dto = pdRestockNotiMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -58,18 +58,18 @@ public class BoPdRestockNotiService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PdRestockNoti saved = repository.save(body);
+        PdRestockNoti saved = pdRestockNotiRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PdRestockNotiDto update(String id, PdRestockNoti body) {
-        PdRestockNoti entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PdRestockNoti entity = pdRestockNotiRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "restockNotiId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PdRestockNoti saved = repository.save(entity);
+        PdRestockNoti saved = pdRestockNotiRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -77,11 +77,11 @@ public class BoPdRestockNotiService {
 
     @Transactional
     public void delete(String id) {
-        PdRestockNoti entity = repository.findById(id)
+        PdRestockNoti entity = pdRestockNotiRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pdRestockNotiRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pdRestockNotiRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -102,7 +102,7 @@ public class BoPdRestockNotiService {
             .map(PdRestockNoti::getRestockNotiId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pdRestockNotiRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -111,11 +111,11 @@ public class BoPdRestockNotiService {
         for (PdRestockNoti row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getRestockNotiId(), "restockNotiId must not be null");
-            PdRestockNoti entity = repository.findById(id)
+            PdRestockNoti entity = pdRestockNotiRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "restockNotiId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pdRestockNotiRepository.save(entity);
         }
         em.flush();
 
@@ -125,7 +125,7 @@ public class BoPdRestockNotiService {
             row.setRestockNotiId("RN" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pdRestockNotiRepository.save(row);
         }
         em.flush();
         em.clear();

@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPmGiftService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmGiftMapper mapper;
-    private final PmGiftRepository repository;
+    private final PmGiftMapper pmGiftMapper;
+    private final PmGiftRepository pmGiftRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PmGiftDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pmGiftMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmGiftDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmGiftMapper.selectPageList(p), pmGiftMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PmGiftDto getById(String id) {
-        PmGiftDto dto = mapper.selectById(id);
+        PmGiftDto dto = pmGiftMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoPmGiftService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PmGift saved = repository.save(body);
+        PmGift saved = pmGiftRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PmGiftDto update(String id, PmGift body) {
-        PmGift entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PmGift entity = pmGiftRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "giftId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmGift saved = repository.save(entity);
+        PmGift saved = pmGiftRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,22 +75,22 @@ public class BoPmGiftService {
 
     @Transactional
     public void delete(String id) {
-        PmGift entity = repository.findById(id)
+        PmGift entity = pmGiftRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pmGiftRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pmGiftRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public PmGiftDto changeStatus(String id, String statusCd) {
-        PmGift entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+        PmGift entity = pmGiftRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setGiftStatusCdBefore(entity.getGiftStatusCd());
         entity.setGiftStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmGift saved = repository.save(entity);
+        PmGift saved = pmGiftRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -106,7 +106,7 @@ public class BoPmGiftService {
             .map(PmGift::getGiftId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pmGiftRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -115,11 +115,11 @@ public class BoPmGiftService {
         for (PmGift row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getGiftId(), "giftId must not be null");
-            PmGift entity = repository.findById(id)
+            PmGift entity = pmGiftRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "giftId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pmGiftRepository.save(entity);
         }
         em.flush();
 
@@ -129,7 +129,7 @@ public class BoPmGiftService {
             row.setGiftId("GF" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pmGiftRepository.save(row);
         }
         em.flush();
         em.clear();

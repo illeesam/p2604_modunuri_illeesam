@@ -17,15 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SyhUserLoginLogService {
 
-    private final SyhUserLoginLogMapper mapper;
-    private final SyhUserLoginLogRepository repository;
+    private final SyhUserLoginLogMapper syhUserLoginLogMapper;
+    private final SyhUserLoginLogRepository syhUserLoginLogRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public SyhUserLoginLogDto getById(String id) {
         // syh_user_login_log :: select one :: id [orm:mybatis]
-        SyhUserLoginLogDto result = mapper.selectById(id);
+        SyhUserLoginLogDto result = syhUserLoginLogMapper.selectById(id);
         return result;
     }
 
@@ -33,7 +33,7 @@ public class SyhUserLoginLogService {
     public List<SyhUserLoginLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // syh_user_login_log :: select list :: p [orm:mybatis]
-        List<SyhUserLoginLogDto> result = mapper.selectList(p);
+        List<SyhUserLoginLogDto> result = syhUserLoginLogMapper.selectList(p);
         return result;
     }
 
@@ -41,19 +41,19 @@ public class SyhUserLoginLogService {
     public PageResult<SyhUserLoginLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // syh_user_login_log :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syhUserLoginLogMapper.selectPageList(p), syhUserLoginLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyhUserLoginLog entity) {
         // syh_user_login_log :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syhUserLoginLogMapper.updateSelective(entity);
         return result;
     }
 
     @Transactional
     public void deleteAll() {
-        repository.deleteAllBulk();
+        syhUserLoginLogRepository.deleteAllBulk();
     }
 
 }

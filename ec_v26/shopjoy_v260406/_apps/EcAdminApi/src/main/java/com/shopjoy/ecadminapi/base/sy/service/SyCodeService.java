@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyCodeService {
 
 
-    private final SyCodeMapper mapper;
-    private final SyCodeRepository repository;
+    private final SyCodeMapper syCodeMapper;
+    private final SyCodeRepository syCodeRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyCodeService {
     @Transactional(readOnly = true)
     public SyCodeDto getById(String id) {
         // sy_code :: select one :: id [orm:mybatis]
-        SyCodeDto result = mapper.selectById(id);
+        SyCodeDto result = syCodeMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyCodeService {
     public List<SyCodeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_code :: select list :: p [orm:mybatis]
-        List<SyCodeDto> result = mapper.selectList(p);
+        List<SyCodeDto> result = syCodeMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyCodeService {
     public PageResult<SyCodeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_code :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syCodeMapper.selectPageList(p), syCodeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyCode entity) {
         // sy_code :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syCodeMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyCodeService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_code :: insert or update :: [orm:jpa]
-        SyCode result = repository.save(entity);
+        SyCode result = syCodeRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyCode save(SyCode entity) {
-        if (!repository.existsById(entity.getCodeId()))
+        if (!syCodeRepository.existsById(entity.getCodeId()))
             throw new CmBizException("존재하지 않는 SyCode입니다: " + entity.getCodeId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_code :: insert or update :: [orm:jpa]
-        SyCode result = repository.save(entity);
+        SyCode result = syCodeRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyCode entity = repository.findById(id)
+        SyCode entity = syCodeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syCodeRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syCodeRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyCodeService {
                 row.setCodeId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_code"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syCodeRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCodeId(), "codeId must not be null");
-                SyCode entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyCode entity = syCodeRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "codeId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syCodeRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCodeId(), "codeId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syCodeRepository.existsById(id)) syCodeRepository.deleteById(id);
             }
         }
         em.flush();

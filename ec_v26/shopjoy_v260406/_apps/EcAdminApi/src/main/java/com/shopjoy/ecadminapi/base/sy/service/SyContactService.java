@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyContactService {
 
 
-    private final SyContactMapper mapper;
-    private final SyContactRepository repository;
+    private final SyContactMapper syContactMapper;
+    private final SyContactRepository syContactRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyContactService {
     @Transactional(readOnly = true)
     public SyContactDto getById(String id) {
         // sy_contact :: select one :: id [orm:mybatis]
-        SyContactDto result = mapper.selectById(id);
+        SyContactDto result = syContactMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyContactService {
     public List<SyContactDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_contact :: select list :: p [orm:mybatis]
-        List<SyContactDto> result = mapper.selectList(p);
+        List<SyContactDto> result = syContactMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyContactService {
     public PageResult<SyContactDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_contact :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syContactMapper.selectPageList(p), syContactMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyContact entity) {
         // sy_contact :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syContactMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyContactService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_contact :: insert or update :: [orm:jpa]
-        SyContact result = repository.save(entity);
+        SyContact result = syContactRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyContact save(SyContact entity) {
-        if (!repository.existsById(entity.getContactId()))
+        if (!syContactRepository.existsById(entity.getContactId()))
             throw new CmBizException("존재하지 않는 SyContact입니다: " + entity.getContactId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_contact :: insert or update :: [orm:jpa]
-        SyContact result = repository.save(entity);
+        SyContact result = syContactRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyContact entity = repository.findById(id)
+        SyContact entity = syContactRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syContactRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syContactRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyContactService {
                 row.setContactId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_contact"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syContactRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getContactId(), "contactId must not be null");
-                SyContact entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyContact entity = syContactRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "contactId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syContactRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getContactId(), "contactId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syContactRepository.existsById(id)) syContactRepository.deleteById(id);
             }
         }
         em.flush();

@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPmCacheService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmCacheMapper mapper;
-    private final PmCacheRepository repository;
+    private final PmCacheMapper pmCacheMapper;
+    private final PmCacheRepository pmCacheRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PmCacheDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pmCacheMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmCacheDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmCacheMapper.selectPageList(p), pmCacheMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PmCacheDto getById(String id) {
-        PmCacheDto dto = mapper.selectById(id);
+        PmCacheDto dto = pmCacheMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoPmCacheService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PmCache saved = repository.save(body);
+        PmCache saved = pmCacheRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PmCacheDto update(String id, PmCache body) {
-        PmCache entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PmCache entity = pmCacheRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "cacheId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmCache saved = repository.save(entity);
+        PmCache saved = pmCacheRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,11 +75,11 @@ public class BoPmCacheService {
 
     @Transactional
     public void delete(String id) {
-        PmCache entity = repository.findById(id)
+        PmCache entity = pmCacheRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pmCacheRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pmCacheRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
     @Transactional
@@ -93,7 +93,7 @@ public class BoPmCacheService {
             .map(PmCache::getCacheId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pmCacheRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -102,11 +102,11 @@ public class BoPmCacheService {
         for (PmCache row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getCacheId(), "cacheId must not be null");
-            PmCache entity = repository.findById(id)
+            PmCache entity = pmCacheRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "cacheId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pmCacheRepository.save(entity);
         }
         em.flush();
 
@@ -116,7 +116,7 @@ public class BoPmCacheService {
             row.setCacheId("CA" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pmCacheRepository.save(row);
         }
         em.flush();
         em.clear();

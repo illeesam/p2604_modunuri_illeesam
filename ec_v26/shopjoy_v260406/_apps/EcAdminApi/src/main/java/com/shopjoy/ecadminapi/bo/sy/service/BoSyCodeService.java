@@ -25,8 +25,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyCodeService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyCodeMapper      mapper;
-    private final SyCodeRepository  repository;
+    private final SyCodeMapper      syCodeMapper;
+    private final SyCodeRepository  syCodeRepository;
     private final SyCodeRedisStore  codeCache;
     @PersistenceContext
     private EntityManager em;
@@ -34,18 +34,18 @@ public class BoSyCodeService {
     @Transactional(readOnly = true)
     public List<SyCodeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syCodeMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyCodeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syCodeMapper.selectPageList(p), syCodeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyCodeDto getById(String id) {
-        SyCodeDto dto = mapper.selectById(id);
+        SyCodeDto dto = syCodeMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,7 +57,7 @@ public class BoSyCodeService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyCode saved = repository.save(body);
+        SyCode saved = syCodeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         codeCache.evictAll();
         return saved;
@@ -65,11 +65,11 @@ public class BoSyCodeService {
 
     @Transactional
     public SyCodeDto update(String id, SyCode body) {
-        SyCode entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyCode entity = syCodeRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopy(body, entity, "codeId", "regBy", "regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyCode saved = repository.save(entity);
+        SyCode saved = syCodeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         codeCache.evictAll();
@@ -78,11 +78,11 @@ public class BoSyCodeService {
 
     @Transactional
     public void delete(String id) {
-        SyCode entity = repository.findById(id)
+        SyCode entity = syCodeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syCodeRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syCodeRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
         codeCache.evictAll();
     }
@@ -98,7 +98,7 @@ public class BoSyCodeService {
             .map(SyCode::getCodeId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syCodeRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -108,11 +108,11 @@ public class BoSyCodeService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getCodeId() != null)
             .toList();
         for (SyCode row : updateRows) {
-            SyCode entity = repository.findById(row.getCodeId())
+            SyCode entity = syCodeRepository.findById(row.getCodeId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getCodeId()));
             VoUtil.voCopy(row, entity, "codeId", "regBy", "regDate");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syCodeRepository.save(entity);
         }
         em.flush();
 
@@ -124,7 +124,7 @@ public class BoSyCodeService {
             row.setCodeId("CD" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syCodeRepository.save(row);
         }
         em.flush();
         em.clear();

@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class StSettleCloseService {
 
 
-    private final StSettleCloseMapper mapper;
-    private final StSettleCloseRepository repository;
+    private final StSettleCloseMapper stSettleCloseMapper;
+    private final StSettleCloseRepository stSettleCloseRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -36,26 +36,26 @@ public class StSettleCloseService {
 
     @Transactional(readOnly = true)
     public StSettleCloseDto getById(String id) {
-        StSettleCloseDto result = mapper.selectById(id);
+        StSettleCloseDto result = stSettleCloseMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<StSettleCloseDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StSettleCloseDto> result = mapper.selectList(p);
+        List<StSettleCloseDto> result = stSettleCloseMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettleCloseDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettleCloseMapper.selectPageList(p), stSettleCloseMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(StSettleClose entity) {
-        int result = mapper.updateSelective(entity);
+        int result = stSettleCloseMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class StSettleCloseService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleClose result = repository.save(entity);
+        StSettleClose result = stSettleCloseRepository.save(entity);
         return result;
     }
 
     @Transactional
     public StSettleClose save(StSettleClose entity) {
-        if (!repository.existsById(entity.getSettleCloseId()))
+        if (!stSettleCloseRepository.existsById(entity.getSettleCloseId()))
             throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleClose result = repository.save(entity);
+        StSettleClose result = stSettleCloseRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        StSettleClose entity = repository.findById(id)
+        StSettleClose entity = stSettleCloseRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettleCloseRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettleCloseRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -102,16 +102,16 @@ public class StSettleCloseService {
                 row.setSettleCloseId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_settle_close"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                stSettleCloseRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleCloseId(), "settleCloseId must not be null");
-                StSettleClose entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                StSettleClose entity = stSettleCloseRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "settleCloseId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                stSettleCloseRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleCloseId(), "settleCloseId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (stSettleCloseRepository.existsById(id)) stSettleCloseRepository.deleteById(id);
             }
         }
         em.flush();

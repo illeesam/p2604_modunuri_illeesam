@@ -17,15 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SyhSendMsgLogService {
 
-    private final SyhSendMsgLogMapper mapper;
-    private final SyhSendMsgLogRepository repository;
+    private final SyhSendMsgLogMapper syhSendMsgLogMapper;
+    private final SyhSendMsgLogRepository syhSendMsgLogRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public SyhSendMsgLogDto getById(String id) {
         // syh_send_msg_log :: select one :: id [orm:mybatis]
-        SyhSendMsgLogDto result = mapper.selectById(id);
+        SyhSendMsgLogDto result = syhSendMsgLogMapper.selectById(id);
         return result;
     }
 
@@ -33,7 +33,7 @@ public class SyhSendMsgLogService {
     public List<SyhSendMsgLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // syh_send_msg_log :: select list :: p [orm:mybatis]
-        List<SyhSendMsgLogDto> result = mapper.selectList(p);
+        List<SyhSendMsgLogDto> result = syhSendMsgLogMapper.selectList(p);
         return result;
     }
 
@@ -41,13 +41,13 @@ public class SyhSendMsgLogService {
     public PageResult<SyhSendMsgLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // syh_send_msg_log :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syhSendMsgLogMapper.selectPageList(p), syhSendMsgLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyhSendMsgLog entity) {
         // syh_send_msg_log :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syhSendMsgLogMapper.updateSelective(entity);
         return result;
     }
 

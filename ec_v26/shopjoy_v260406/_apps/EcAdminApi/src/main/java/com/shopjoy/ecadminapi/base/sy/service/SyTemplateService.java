@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyTemplateService {
 
 
-    private final SyTemplateMapper mapper;
-    private final SyTemplateRepository repository;
+    private final SyTemplateMapper syTemplateMapper;
+    private final SyTemplateRepository syTemplateRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyTemplateService {
     @Transactional(readOnly = true)
     public SyTemplateDto getById(String id) {
         // sy_template :: select one :: id [orm:mybatis]
-        SyTemplateDto result = mapper.selectById(id);
+        SyTemplateDto result = syTemplateMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyTemplateService {
     public List<SyTemplateDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_template :: select list :: p [orm:mybatis]
-        List<SyTemplateDto> result = mapper.selectList(p);
+        List<SyTemplateDto> result = syTemplateMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyTemplateService {
     public PageResult<SyTemplateDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_template :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syTemplateMapper.selectPageList(p), syTemplateMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyTemplate entity) {
         // sy_template :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syTemplateMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyTemplateService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_template :: insert or update :: [orm:jpa]
-        SyTemplate result = repository.save(entity);
+        SyTemplate result = syTemplateRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyTemplate save(SyTemplate entity) {
-        if (!repository.existsById(entity.getTemplateId()))
+        if (!syTemplateRepository.existsById(entity.getTemplateId()))
             throw new CmBizException("존재하지 않는 SyTemplate입니다: " + entity.getTemplateId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_template :: insert or update :: [orm:jpa]
-        SyTemplate result = repository.save(entity);
+        SyTemplate result = syTemplateRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyTemplate entity = repository.findById(id)
+        SyTemplate entity = syTemplateRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syTemplateRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syTemplateRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyTemplateService {
                 row.setTemplateId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_template"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syTemplateRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getTemplateId(), "templateId must not be null");
-                SyTemplate entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyTemplate entity = syTemplateRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "templateId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syTemplateRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getTemplateId(), "templateId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syTemplateRepository.existsById(id)) syTemplateRepository.deleteById(id);
             }
         }
         em.flush();

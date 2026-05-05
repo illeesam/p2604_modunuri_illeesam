@@ -16,33 +16,33 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class BoOdCartService {
-    private final OdCartMapper mapper;
-    private final OdCartRepository repository;
+    private final OdCartMapper odCartMapper;
+    private final OdCartRepository odCartRepository;
 
     @Transactional(readOnly = true)
     public List<OdCartDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return odCartMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdCartDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+        return PageResult.of(odCartMapper.selectPageList(p), odCartMapper.selectPageCount(p),
                 PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public OdCartDto getById(String id) {
-        OdCartDto dto = mapper.selectById(id);
+        OdCartDto dto = odCartMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odCartRepository.existsById(id))
             throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        repository.deleteById(id);
+        odCartRepository.deleteById(id);
     }
 }

@@ -20,13 +20,13 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class FoPmCacheService {
 
-    private final PmCacheMapper mapper;
+    private final PmCacheMapper pmCacheMapper;
 
     /** 현재 회원의 최신 잔액 (balance_amt 기준) */
     @Transactional(readOnly = true)
     public long getBalance(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
-        List<PmCacheDto> list = mapper.selectList(p);
+        List<PmCacheDto> list = pmCacheMapper.selectList(p);
         return list.isEmpty() ? 0L : (list.get(0).getBalanceAmt() != null ? list.get(0).getBalanceAmt() : 0L);
     }
 }

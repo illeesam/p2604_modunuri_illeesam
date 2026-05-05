@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class OdDlivItemService {
 
-    private final OdDlivItemMapper mapper;
-    private final OdDlivItemRepository repository;
+    private final OdDlivItemMapper odDlivItemMapper;
+    private final OdDlivItemRepository odDlivItemRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdDlivItemDto getById(String id) {
-        OdDlivItemDto result = mapper.selectById(id);
+        OdDlivItemDto result = odDlivItemMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdDlivItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdDlivItemDto> result = mapper.selectList(p);
+        List<OdDlivItemDto> result = odDlivItemMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdDlivItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odDlivItemMapper.selectPageList(p), odDlivItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdDlivItem entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odDlivItemMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class OdDlivItemService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdDlivItem result = repository.save(entity);
+        OdDlivItem result = odDlivItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public OdDlivItem save(OdDlivItem entity) {
-        if (!repository.existsById(entity.getDlivItemId()))
+        if (!odDlivItemRepository.existsById(entity.getDlivItemId()))
             throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + entity.getDlivItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdDlivItem result = repository.save(entity);
+        OdDlivItem result = odDlivItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odDlivItemRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + id);
-        repository.deleteById(id);
+        odDlivItemRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<OdDlivItem> rows) {
@@ -92,16 +92,16 @@ public class OdDlivItemService {
                 row.setDlivItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_dliv_item"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                odDlivItemRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDlivItemId(), "dlivItemId must not be null");
-                OdDlivItem entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                OdDlivItem entity = odDlivItemRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "dlivItemId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                odDlivItemRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDlivItemId(), "dlivItemId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (odDlivItemRepository.existsById(id)) odDlivItemRepository.deleteById(id);
             }
         }
     }

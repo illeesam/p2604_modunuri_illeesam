@@ -27,26 +27,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPmVoucherService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmVoucherMapper mapper;
-    private final PmVoucherRepository repository;
+    private final PmVoucherMapper pmVoucherMapper;
+    private final PmVoucherRepository pmVoucherRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PmVoucherDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pmVoucherMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmVoucherDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmVoucherMapper.selectPageList(p), pmVoucherMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PmVoucherDto getById(String id) {
-        PmVoucherDto dto = mapper.selectById(id);
+        PmVoucherDto dto = pmVoucherMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -58,18 +58,18 @@ public class BoPmVoucherService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PmVoucher saved = repository.save(body);
+        PmVoucher saved = pmVoucherRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PmVoucherDto update(String id, PmVoucher body) {
-        PmVoucher entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PmVoucher entity = pmVoucherRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "voucherId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmVoucher saved = repository.save(entity);
+        PmVoucher saved = pmVoucherRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -77,27 +77,27 @@ public class BoPmVoucherService {
 
     @Transactional
     public void delete(String id) {
-        PmVoucher entity = repository.findById(id)
+        PmVoucher entity = pmVoucherRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pmVoucherRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pmVoucherRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     public void sendSns(String id, Map<String, Object> body) {
-        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        if (!pmVoucherRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         log.info("SNS 발송 요청 - voucherId={}, channel={}", id, body.get("channel"));
     }
 
     @Transactional
     public PmVoucherDto changeStatus(String id, String statusCd) {
-        PmVoucher entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+        PmVoucher entity = pmVoucherRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setVoucherStatusCdBefore(entity.getVoucherStatusCd());
         entity.setVoucherStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmVoucher saved = repository.save(entity);
+        PmVoucher saved = pmVoucherRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -113,7 +113,7 @@ public class BoPmVoucherService {
             .map(PmVoucher::getVoucherId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pmVoucherRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -122,11 +122,11 @@ public class BoPmVoucherService {
         for (PmVoucher row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getVoucherId(), "voucherId must not be null");
-            PmVoucher entity = repository.findById(id)
+            PmVoucher entity = pmVoucherRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "voucherId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pmVoucherRepository.save(entity);
         }
         em.flush();
 
@@ -136,7 +136,7 @@ public class BoPmVoucherService {
             row.setVoucherId("VR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pmVoucherRepository.save(row);
         }
         em.flush();
         em.clear();

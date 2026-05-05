@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyDeptService {
 
 
-    private final SyDeptMapper mapper;
-    private final SyDeptRepository repository;
+    private final SyDeptMapper syDeptMapper;
+    private final SyDeptRepository syDeptRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -36,13 +36,13 @@ public class SyDeptService {
 
     @Transactional(readOnly = true)
     public List<SyDeptDto> getTree() {
-        return mapper.selectTree();
+        return syDeptMapper.selectTree();
     }
 
     @Transactional(readOnly = true)
     public SyDeptDto getById(String id) {
         // sy_dept :: select one :: id [orm:mybatis]
-        SyDeptDto result = mapper.selectById(id);
+        SyDeptDto result = syDeptMapper.selectById(id);
         return result;
     }
 
@@ -50,7 +50,7 @@ public class SyDeptService {
     public List<SyDeptDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_dept :: select list :: p [orm:mybatis]
-        List<SyDeptDto> result = mapper.selectList(p);
+        List<SyDeptDto> result = syDeptMapper.selectList(p);
         return result;
     }
 
@@ -58,13 +58,13 @@ public class SyDeptService {
     public PageResult<SyDeptDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_dept :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syDeptMapper.selectPageList(p), syDeptMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyDept entity) {
         // sy_dept :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syDeptMapper.updateSelective(entity);
         return result;
     }
 
@@ -78,28 +78,28 @@ public class SyDeptService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_dept :: insert or update :: [orm:jpa]
-        SyDept result = repository.save(entity);
+        SyDept result = syDeptRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyDept save(SyDept entity) {
-        if (!repository.existsById(entity.getDeptId()))
+        if (!syDeptRepository.existsById(entity.getDeptId()))
             throw new CmBizException("존재하지 않는 SyDept입니다: " + entity.getDeptId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_dept :: insert or update :: [orm:jpa]
-        SyDept result = repository.save(entity);
+        SyDept result = syDeptRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyDept entity = repository.findById(id)
+        SyDept entity = syDeptRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syDeptRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syDeptRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -113,16 +113,16 @@ public class SyDeptService {
                 row.setDeptId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_dept"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syDeptRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDeptId(), "deptId must not be null");
-                SyDept entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyDept entity = syDeptRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "deptId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syDeptRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDeptId(), "deptId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syDeptRepository.existsById(id)) syDeptRepository.deleteById(id);
             }
         }
         em.flush();

@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class CmChattMsgService {
 
-    private final CmChattMsgMapper mapper;
-    private final CmChattMsgRepository repository;
+    private final CmChattMsgMapper cmChattMsgMapper;
+    private final CmChattMsgRepository cmChattMsgRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public CmChattMsgDto getById(String id) {
         // cm_chatt_msg :: select one :: id [orm:mybatis]
-        CmChattMsgDto result = mapper.selectById(id);
+        CmChattMsgDto result = cmChattMsgMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class CmChattMsgService {
     public List<CmChattMsgDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_chatt_msg :: select list :: p [orm:mybatis]
-        List<CmChattMsgDto> result = mapper.selectList(p);
+        List<CmChattMsgDto> result = cmChattMsgMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class CmChattMsgService {
     public PageResult<CmChattMsgDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_chatt_msg :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(cmChattMsgMapper.selectPageList(p), cmChattMsgMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmChattMsg entity) {
         // cm_chatt_msg :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = cmChattMsgMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class CmChattMsgService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_chatt_msg :: insert or update :: [orm:jpa]
-        CmChattMsg result = repository.save(entity);
+        CmChattMsg result = cmChattMsgRepository.save(entity);
         return result;
     }
 
     @Transactional
     public CmChattMsg save(CmChattMsg entity) {
-        if (!repository.existsById(entity.getChattMsgId()))
+        if (!cmChattMsgRepository.existsById(entity.getChattMsgId()))
             throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getChattMsgId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_chatt_msg :: insert or update :: [orm:jpa]
-        CmChattMsg result = repository.save(entity);
+        CmChattMsg result = cmChattMsgRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!cmChattMsgRepository.existsById(id))
             throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + id);
         // cm_chatt_msg :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        cmChattMsgRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class CmChattMsgService {
                 row.setChattMsgId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("cm_chatt_msg"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                cmChattMsgRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getChattMsgId(), "chattMsgId must not be null");
-                CmChattMsg entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                CmChattMsg entity = cmChattMsgRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "chattMsgId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                cmChattMsgRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getChattMsgId(), "chattMsgId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (cmChattMsgRepository.existsById(id)) cmChattMsgRepository.deleteById(id);
             }
         }
     }

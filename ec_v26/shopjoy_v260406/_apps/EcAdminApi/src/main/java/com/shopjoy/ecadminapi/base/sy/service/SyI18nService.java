@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyI18nService {
 
 
-    private final SyI18nMapper mapper;
-    private final SyI18nRepository repository;
+    private final SyI18nMapper syI18nMapper;
+    private final SyI18nRepository syI18nRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyI18nService {
     @Transactional(readOnly = true)
     public SyI18nDto getById(String id) {
         // sy_i18n :: select one :: id [orm:mybatis]
-        SyI18nDto result = mapper.selectById(id);
+        SyI18nDto result = syI18nMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyI18nService {
     public List<SyI18nDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_i18n :: select list :: p [orm:mybatis]
-        List<SyI18nDto> result = mapper.selectList(p);
+        List<SyI18nDto> result = syI18nMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyI18nService {
     public PageResult<SyI18nDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_i18n :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syI18nMapper.selectPageList(p), syI18nMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyI18n entity) {
         // sy_i18n :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syI18nMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyI18nService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_i18n :: insert or update :: [orm:jpa]
-        SyI18n result = repository.save(entity);
+        SyI18n result = syI18nRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyI18n save(SyI18n entity) {
-        if (!repository.existsById(entity.getI18nId()))
+        if (!syI18nRepository.existsById(entity.getI18nId()))
             throw new CmBizException("존재하지 않는 SyI18n입니다: " + entity.getI18nId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_i18n :: insert or update :: [orm:jpa]
-        SyI18n result = repository.save(entity);
+        SyI18n result = syI18nRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyI18n entity = repository.findById(id)
+        SyI18n entity = syI18nRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syI18nRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syI18nRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyI18nService {
                 row.setI18nId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_i18n"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syI18nRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getI18nId(), "i18nId must not be null");
-                SyI18n entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyI18n entity = syI18nRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "i18nId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syI18nRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getI18nId(), "i18nId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syI18nRepository.existsById(id)) syI18nRepository.deleteById(id);
             }
         }
         em.flush();

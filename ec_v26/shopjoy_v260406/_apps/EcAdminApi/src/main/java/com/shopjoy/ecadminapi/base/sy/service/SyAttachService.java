@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyAttachService {
 
 
-    private final SyAttachMapper mapper;
-    private final SyAttachRepository repository;
+    private final SyAttachMapper syAttachMapper;
+    private final SyAttachRepository syAttachRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyAttachService {
     @Transactional(readOnly = true)
     public SyAttachDto getById(String id) {
         // sy_attach :: select one :: id [orm:mybatis]
-        SyAttachDto result = mapper.selectById(id);
+        SyAttachDto result = syAttachMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyAttachService {
     public List<SyAttachDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_attach :: select list :: p [orm:mybatis]
-        List<SyAttachDto> result = mapper.selectList(p);
+        List<SyAttachDto> result = syAttachMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyAttachService {
     public PageResult<SyAttachDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_attach :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syAttachMapper.selectPageList(p), syAttachMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyAttach entity) {
         // sy_attach :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syAttachMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyAttachService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_attach :: insert or update :: [orm:jpa]
-        SyAttach result = repository.save(entity);
+        SyAttach result = syAttachRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyAttach save(SyAttach entity) {
-        if (!repository.existsById(entity.getAttachId()))
+        if (!syAttachRepository.existsById(entity.getAttachId()))
             throw new CmBizException("존재하지 않는 SyAttach입니다: " + entity.getAttachId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_attach :: insert or update :: [orm:jpa]
-        SyAttach result = repository.save(entity);
+        SyAttach result = syAttachRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyAttach entity = repository.findById(id)
+        SyAttach entity = syAttachRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syAttachRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syAttachRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyAttachService {
                 row.setAttachId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_attach"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syAttachRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getAttachId(), "attachId must not be null");
-                SyAttach entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyAttach entity = syAttachRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "attachId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syAttachRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getAttachId(), "attachId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syAttachRepository.existsById(id)) syAttachRepository.deleteById(id);
             }
         }
         em.flush();

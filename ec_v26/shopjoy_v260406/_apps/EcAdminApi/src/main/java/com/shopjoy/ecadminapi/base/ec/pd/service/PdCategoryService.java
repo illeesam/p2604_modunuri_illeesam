@@ -25,15 +25,15 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 public class PdCategoryService {
 
 
-    private final PdCategoryMapper mapper;
-    private final PdCategoryRepository repository;
+    private final PdCategoryMapper pdCategoryMapper;
+    private final PdCategoryRepository pdCategoryRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdCategoryDto getById(String id) {
         // pd_category :: select one :: id [orm:mybatis]
-        PdCategoryDto result = mapper.selectById(id);
+        PdCategoryDto result = pdCategoryMapper.selectById(id);
         return result;
     }
 
@@ -41,7 +41,7 @@ public class PdCategoryService {
     public List<PdCategoryDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_category :: select list :: p [orm:mybatis]
-        List<PdCategoryDto> result = mapper.selectList(p);
+        List<PdCategoryDto> result = pdCategoryMapper.selectList(p);
         return result;
     }
 
@@ -49,13 +49,13 @@ public class PdCategoryService {
     public PageResult<PdCategoryDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_category :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdCategoryMapper.selectPageList(p), pdCategoryMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdCategory entity) {
         // pd_category :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdCategoryMapper.updateSelective(entity);
         return result;
     }
 
@@ -69,27 +69,27 @@ public class PdCategoryService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_category :: insert or update :: [orm:jpa]
-        PdCategory result = repository.save(entity);
+        PdCategory result = pdCategoryRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PdCategory save(PdCategory entity) {
-        if (!repository.existsById(entity.getCategoryId()))
+        if (!pdCategoryRepository.existsById(entity.getCategoryId()))
             throw new CmBizException("존재하지 않는 PdCategory입니다: " + entity.getCategoryId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_category :: insert or update :: [orm:jpa]
-        PdCategory result = repository.save(entity);
+        PdCategory result = pdCategoryRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pdCategoryRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PdCategory입니다: " + id);
         // pd_category :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pdCategoryRepository.deleteById(id);
     }
 
     @Transactional
@@ -102,16 +102,16 @@ public class PdCategoryService {
                 row.setCategoryId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_category"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pdCategoryRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCategoryId(), "categoryId must not be null");
-                PdCategory entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PdCategory entity = pdCategoryRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "categoryId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pdCategoryRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCategoryId(), "categoryId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pdCategoryRepository.existsById(id)) pdCategoryRepository.deleteById(id);
             }
         }
     }

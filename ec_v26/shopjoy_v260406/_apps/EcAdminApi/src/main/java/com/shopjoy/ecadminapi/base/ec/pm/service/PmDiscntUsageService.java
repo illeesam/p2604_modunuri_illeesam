@@ -24,15 +24,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmDiscntUsageService {
 
 
-    private final PmDiscntUsageMapper mapper;
-    private final PmDiscntUsageRepository repository;
+    private final PmDiscntUsageMapper pmDiscntUsageMapper;
+    private final PmDiscntUsageRepository pmDiscntUsageRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmDiscntUsageDto getById(String id) {
         // pm_discnt_usage :: select one :: id [orm:mybatis]
-        PmDiscntUsageDto result = mapper.selectById(id);
+        PmDiscntUsageDto result = pmDiscntUsageMapper.selectById(id);
         return result;
     }
 
@@ -40,7 +40,7 @@ public class PmDiscntUsageService {
     public List<PmDiscntUsageDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pm_discnt_usage :: select list :: p [orm:mybatis]
-        List<PmDiscntUsageDto> result = mapper.selectList(p);
+        List<PmDiscntUsageDto> result = pmDiscntUsageMapper.selectList(p);
         return result;
     }
 
@@ -48,13 +48,13 @@ public class PmDiscntUsageService {
     public PageResult<PmDiscntUsageDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pm_discnt_usage :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmDiscntUsageMapper.selectPageList(p), pmDiscntUsageMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmDiscntUsage entity) {
         // pm_discnt_usage :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pmDiscntUsageMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class PmDiscntUsageService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_discnt_usage :: insert or update :: [orm:jpa]
-        PmDiscntUsage result = repository.save(entity);
+        PmDiscntUsage result = pmDiscntUsageRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmDiscntUsage save(PmDiscntUsage entity) {
-        if (!repository.existsById(entity.getDiscntUsageId()))
+        if (!pmDiscntUsageRepository.existsById(entity.getDiscntUsageId()))
             throw new CmBizException("존재하지 않는 PmDiscntUsage입니다: " + entity.getDiscntUsageId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_discnt_usage :: insert or update :: [orm:jpa]
-        PmDiscntUsage result = repository.save(entity);
+        PmDiscntUsage result = pmDiscntUsageRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmDiscntUsageRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmDiscntUsage입니다: " + id);
         // pm_discnt_usage :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pmDiscntUsageRepository.deleteById(id);
     }
 
     @Transactional
@@ -101,16 +101,16 @@ public class PmDiscntUsageService {
                 row.setDiscntUsageId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_discnt_usage"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmDiscntUsageRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDiscntUsageId(), "discntUsageId must not be null");
-                PmDiscntUsage entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmDiscntUsage entity = pmDiscntUsageRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "discntUsageId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmDiscntUsageRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDiscntUsageId(), "discntUsageId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmDiscntUsageRepository.existsById(id)) pmDiscntUsageRepository.deleteById(id);
             }
         }
     }

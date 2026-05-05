@@ -24,15 +24,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmCouponService {
 
 
-    private final PmCouponMapper mapper;
-    private final PmCouponRepository repository;
+    private final PmCouponMapper pmCouponMapper;
+    private final PmCouponRepository pmCouponRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmCouponDto getById(String id) {
         // pm_coupon :: select one :: id [orm:mybatis]
-        PmCouponDto result = mapper.selectById(id);
+        PmCouponDto result = pmCouponMapper.selectById(id);
         return result;
     }
 
@@ -40,7 +40,7 @@ public class PmCouponService {
     public List<PmCouponDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pm_coupon :: select list :: p [orm:mybatis]
-        List<PmCouponDto> result = mapper.selectList(p);
+        List<PmCouponDto> result = pmCouponMapper.selectList(p);
         return result;
     }
 
@@ -48,13 +48,13 @@ public class PmCouponService {
     public PageResult<PmCouponDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pm_coupon :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmCouponMapper.selectPageList(p), pmCouponMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmCoupon entity) {
         // pm_coupon :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pmCouponMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class PmCouponService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_coupon :: insert or update :: [orm:jpa]
-        PmCoupon result = repository.save(entity);
+        PmCoupon result = pmCouponRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmCoupon save(PmCoupon entity) {
-        if (!repository.existsById(entity.getCouponId()))
+        if (!pmCouponRepository.existsById(entity.getCouponId()))
             throw new CmBizException("존재하지 않는 PmCoupon입니다: " + entity.getCouponId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_coupon :: insert or update :: [orm:jpa]
-        PmCoupon result = repository.save(entity);
+        PmCoupon result = pmCouponRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmCouponRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmCoupon입니다: " + id);
         // pm_coupon :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pmCouponRepository.deleteById(id);
     }
 
     @Transactional
@@ -101,16 +101,16 @@ public class PmCouponService {
                 row.setCouponId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_coupon"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmCouponRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCouponId(), "couponId must not be null");
-                PmCoupon entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmCoupon entity = pmCouponRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "couponId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmCouponRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCouponId(), "couponId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmCouponRepository.existsById(id)) pmCouponRepository.deleteById(id);
             }
         }
     }

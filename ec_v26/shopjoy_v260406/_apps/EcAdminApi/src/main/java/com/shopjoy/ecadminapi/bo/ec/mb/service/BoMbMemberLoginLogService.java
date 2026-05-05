@@ -16,29 +16,29 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoMbMemberLoginLogService {
 
-    private final MbhMemberLoginLogMapper mapper;
-    private final MbhMemberLoginLogRepository repository;
+    private final MbhMemberLoginLogMapper mbhMemberLoginLogMapper;
+    private final MbhMemberLoginLogRepository mbhMemberLoginLogRepository;
 
     @Transactional(readOnly = true)
     public List<MbhMemberLoginLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return mbhMemberLoginLogMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<MbhMemberLoginLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+        return PageResult.of(mbhMemberLoginLogMapper.selectPageList(p), mbhMemberLoginLogMapper.selectPageCount(p),
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public MbhMemberLoginLogDto getById(String id) {
-        return mapper.selectById(id);
+        return mbhMemberLoginLogMapper.selectById(id);
     }
 
     @Transactional
     public void deleteAll() {
-        repository.deleteAllBulk();
+        mbhMemberLoginLogRepository.deleteAllBulk();
     }
 }

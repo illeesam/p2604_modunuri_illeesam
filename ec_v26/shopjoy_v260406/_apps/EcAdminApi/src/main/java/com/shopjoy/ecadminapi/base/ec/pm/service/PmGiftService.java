@@ -24,33 +24,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmGiftService {
 
 
-    private final PmGiftMapper mapper;
-    private final PmGiftRepository repository;
+    private final PmGiftMapper pmGiftMapper;
+    private final PmGiftRepository pmGiftRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmGiftDto getById(String id) {
-        PmGiftDto result = mapper.selectById(id);
+        PmGiftDto result = pmGiftMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<PmGiftDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<PmGiftDto> result = mapper.selectList(p);
+        List<PmGiftDto> result = pmGiftMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmGiftDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmGiftMapper.selectPageList(p), pmGiftMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmGift entity) {
-        int result = mapper.updateSelective(entity);
+        int result = pmGiftMapper.updateSelective(entity);
         return result;
     }
 
@@ -63,25 +63,25 @@ public class PmGiftService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmGift result = repository.save(entity);
+        PmGift result = pmGiftRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmGift save(PmGift entity) {
-        if (!repository.existsById(entity.getGiftId()))
+        if (!pmGiftRepository.existsById(entity.getGiftId()))
             throw new CmBizException("존재하지 않는 PmGift입니다: " + entity.getGiftId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmGift result = repository.save(entity);
+        PmGift result = pmGiftRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmGiftRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmGift입니다: " + id);
-        repository.deleteById(id);
+        pmGiftRepository.deleteById(id);
     }
 
     @Transactional
@@ -94,16 +94,16 @@ public class PmGiftService {
                 row.setGiftId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_gift"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmGiftRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getGiftId(), "giftId must not be null");
-                PmGift entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmGift entity = pmGiftRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "giftId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmGiftRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getGiftId(), "giftId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmGiftRepository.existsById(id)) pmGiftRepository.deleteById(id);
             }
         }
     }

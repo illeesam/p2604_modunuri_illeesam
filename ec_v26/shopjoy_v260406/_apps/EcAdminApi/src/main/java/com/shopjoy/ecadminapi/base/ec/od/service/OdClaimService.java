@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class OdClaimService {
 
-    private final OdClaimMapper mapper;
-    private final OdClaimRepository repository;
+    private final OdClaimMapper odClaimMapper;
+    private final OdClaimRepository odClaimRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdClaimDto getById(String id) {
-        OdClaimDto result = mapper.selectById(id);
+        OdClaimDto result = odClaimMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdClaimDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdClaimDto> result = mapper.selectList(p);
+        List<OdClaimDto> result = odClaimMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdClaimDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odClaimMapper.selectPageList(p), odClaimMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdClaim entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odClaimMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class OdClaimService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdClaim result = repository.save(entity);
+        OdClaim result = odClaimRepository.save(entity);
         return result;
     }
 
     @Transactional
     public OdClaim save(OdClaim entity) {
-        if (!repository.existsById(entity.getClaimId()))
+        if (!odClaimRepository.existsById(entity.getClaimId()))
             throw new CmBizException("존재하지 않는 OdClaim입니다: " + entity.getClaimId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdClaim result = repository.save(entity);
+        OdClaim result = odClaimRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odClaimRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdClaim입니다: " + id);
-        repository.deleteById(id);
+        odClaimRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<OdClaim> rows) {
@@ -92,16 +92,16 @@ public class OdClaimService {
                 row.setClaimId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_claim"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                odClaimRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getClaimId(), "claimId must not be null");
-                OdClaim entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                OdClaim entity = odClaimRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "claimId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                odClaimRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getClaimId(), "claimId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (odClaimRepository.existsById(id)) odClaimRepository.deleteById(id);
             }
         }
     }

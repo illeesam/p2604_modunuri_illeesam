@@ -24,33 +24,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmSaveIssueService {
 
 
-    private final PmSaveIssueMapper mapper;
-    private final PmSaveIssueRepository repository;
+    private final PmSaveIssueMapper pmSaveIssueMapper;
+    private final PmSaveIssueRepository pmSaveIssueRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmSaveIssueDto getById(String id) {
-        PmSaveIssueDto result = mapper.selectById(id);
+        PmSaveIssueDto result = pmSaveIssueMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<PmSaveIssueDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<PmSaveIssueDto> result = mapper.selectList(p);
+        List<PmSaveIssueDto> result = pmSaveIssueMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmSaveIssueDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmSaveIssueMapper.selectPageList(p), pmSaveIssueMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmSaveIssue entity) {
-        int result = mapper.updateSelective(entity);
+        int result = pmSaveIssueMapper.updateSelective(entity);
         return result;
     }
 
@@ -63,25 +63,25 @@ public class PmSaveIssueService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmSaveIssue result = repository.save(entity);
+        PmSaveIssue result = pmSaveIssueRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmSaveIssue save(PmSaveIssue entity) {
-        if (!repository.existsById(entity.getSaveIssueId()))
+        if (!pmSaveIssueRepository.existsById(entity.getSaveIssueId()))
             throw new CmBizException("존재하지 않는 PmSaveIssue입니다: " + entity.getSaveIssueId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmSaveIssue result = repository.save(entity);
+        PmSaveIssue result = pmSaveIssueRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmSaveIssueRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmSaveIssue입니다: " + id);
-        repository.deleteById(id);
+        pmSaveIssueRepository.deleteById(id);
     }
 
     @Transactional
@@ -94,16 +94,16 @@ public class PmSaveIssueService {
                 row.setSaveIssueId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_save_issue"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmSaveIssueRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSaveIssueId(), "saveIssueId must not be null");
-                PmSaveIssue entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmSaveIssue entity = pmSaveIssueRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "saveIssueId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmSaveIssueRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSaveIssueId(), "saveIssueId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmSaveIssueRepository.existsById(id)) pmSaveIssueRepository.deleteById(id);
             }
         }
     }

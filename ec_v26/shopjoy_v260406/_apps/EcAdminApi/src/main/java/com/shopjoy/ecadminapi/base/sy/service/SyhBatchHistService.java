@@ -17,15 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SyhBatchHistService {
 
-    private final SyhBatchHistMapper mapper;
-    private final SyhBatchHistRepository repository;
+    private final SyhBatchHistMapper syhBatchHistMapper;
+    private final SyhBatchHistRepository syhBatchHistRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public SyhBatchHistDto getById(String id) {
         // syh_batch_hist :: select one :: id [orm:mybatis]
-        SyhBatchHistDto result = mapper.selectById(id);
+        SyhBatchHistDto result = syhBatchHistMapper.selectById(id);
         return result;
     }
 
@@ -33,7 +33,7 @@ public class SyhBatchHistService {
     public List<SyhBatchHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // syh_batch_hist :: select list :: p [orm:mybatis]
-        List<SyhBatchHistDto> result = mapper.selectList(p);
+        List<SyhBatchHistDto> result = syhBatchHistMapper.selectList(p);
         return result;
     }
 
@@ -41,13 +41,13 @@ public class SyhBatchHistService {
     public PageResult<SyhBatchHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // syh_batch_hist :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syhBatchHistMapper.selectPageList(p), syhBatchHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyhBatchHist entity) {
         // syh_batch_hist :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syhBatchHistMapper.updateSelective(entity);
         return result;
     }
 

@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class StErpVoucherService {
 
 
-    private final StErpVoucherMapper mapper;
-    private final StErpVoucherRepository repository;
+    private final StErpVoucherMapper stErpVoucherMapper;
+    private final StErpVoucherRepository stErpVoucherRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -36,26 +36,26 @@ public class StErpVoucherService {
 
     @Transactional(readOnly = true)
     public StErpVoucherDto getById(String id) {
-        StErpVoucherDto result = mapper.selectById(id);
+        StErpVoucherDto result = stErpVoucherMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<StErpVoucherDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StErpVoucherDto> result = mapper.selectList(p);
+        List<StErpVoucherDto> result = stErpVoucherMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<StErpVoucherDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stErpVoucherMapper.selectPageList(p), stErpVoucherMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(StErpVoucher entity) {
-        int result = mapper.updateSelective(entity);
+        int result = stErpVoucherMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class StErpVoucherService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StErpVoucher result = repository.save(entity);
+        StErpVoucher result = stErpVoucherRepository.save(entity);
         return result;
     }
 
     @Transactional
     public StErpVoucher save(StErpVoucher entity) {
-        if (!repository.existsById(entity.getErpVoucherId()))
+        if (!stErpVoucherRepository.existsById(entity.getErpVoucherId()))
             throw new CmBizException("존재하지 않는 StErpVoucher입니다: " + entity.getErpVoucherId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StErpVoucher result = repository.save(entity);
+        StErpVoucher result = stErpVoucherRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        StErpVoucher entity = repository.findById(id)
+        StErpVoucher entity = stErpVoucherRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stErpVoucherRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stErpVoucherRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -102,16 +102,16 @@ public class StErpVoucherService {
                 row.setErpVoucherId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_erp_voucher"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                stErpVoucherRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getErpVoucherId(), "erpVoucherId must not be null");
-                StErpVoucher entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                StErpVoucher entity = stErpVoucherRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "erpVoucherId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                stErpVoucherRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getErpVoucherId(), "erpVoucherId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (stErpVoucherRepository.existsById(id)) stErpVoucherRepository.deleteById(id);
             }
         }
         em.flush();

@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoDpUiService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final DpUiMapper mapper;
-    private final DpUiRepository repository;
+    private final DpUiMapper dpUiMapper;
+    private final DpUiRepository dpUiRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<DpUiDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return dpUiMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<DpUiDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(dpUiMapper.selectPageList(p), dpUiMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public DpUiDto getById(String id) {
-        DpUiDto dto = mapper.selectById(id);
+        DpUiDto dto = dpUiMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,18 +57,18 @@ public class BoDpUiService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        DpUi saved = repository.save(body);
+        DpUi saved = dpUiRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public DpUiDto update(String id, DpUi body) {
-        DpUi entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        DpUi entity = dpUiRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "uiId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        DpUi saved = repository.save(entity);
+        DpUi saved = dpUiRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -76,11 +76,11 @@ public class BoDpUiService {
 
     @Transactional
     public void delete(String id) {
-        DpUi entity = repository.findById(id)
+        DpUi entity = dpUiRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        dpUiRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (dpUiRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
     @Transactional
@@ -94,7 +94,7 @@ public class BoDpUiService {
             .map(DpUi::getUiId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            dpUiRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -103,11 +103,11 @@ public class BoDpUiService {
         for (DpUi row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getUiId(), "uiId must not be null");
-            DpUi entity = repository.findById(id)
+            DpUi entity = dpUiRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "uiId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            dpUiRepository.save(entity);
         }
         em.flush();
 
@@ -117,7 +117,7 @@ public class BoDpUiService {
             row.setUiId("UI" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            dpUiRepository.save(row);
         }
         em.flush();
         em.clear();

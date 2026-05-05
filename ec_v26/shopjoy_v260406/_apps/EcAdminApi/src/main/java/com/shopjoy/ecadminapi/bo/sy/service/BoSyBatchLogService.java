@@ -15,23 +15,23 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyBatchLogService {
 
-    private final SyhBatchLogMapper mapper;
+    private final SyhBatchLogMapper syhBatchLogMapper;
 
     @Transactional(readOnly = true)
     public List<SyhBatchLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syhBatchLogMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyhBatchLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+        return PageResult.of(syhBatchLogMapper.selectPageList(p), syhBatchLogMapper.selectPageCount(p),
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyhBatchLogDto getById(String id) {
-        return mapper.selectById(id);
+        return syhBatchLogMapper.selectById(id);
     }
 }

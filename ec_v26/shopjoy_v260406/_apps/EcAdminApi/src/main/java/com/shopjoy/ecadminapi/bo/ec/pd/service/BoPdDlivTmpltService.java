@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPdDlivTmpltService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PdDlivTmpltMapper mapper;
-    private final PdDlivTmpltRepository repository;
+    private final PdDlivTmpltMapper pdDlivTmpltMapper;
+    private final PdDlivTmpltRepository pdDlivTmpltRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PdDlivTmpltDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pdDlivTmpltMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PdDlivTmpltDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdDlivTmpltMapper.selectPageList(p), pdDlivTmpltMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PdDlivTmpltDto getById(String id) {
-        PdDlivTmpltDto dto = mapper.selectById(id);
+        PdDlivTmpltDto dto = pdDlivTmpltMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,18 +57,18 @@ public class BoPdDlivTmpltService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PdDlivTmplt saved = repository.save(body);
+        PdDlivTmplt saved = pdDlivTmpltRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PdDlivTmpltDto update(String id, PdDlivTmplt body) {
-        PdDlivTmplt entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PdDlivTmplt entity = pdDlivTmpltRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "dlivTmpltId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PdDlivTmplt saved = repository.save(entity);
+        PdDlivTmplt saved = pdDlivTmpltRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -76,11 +76,11 @@ public class BoPdDlivTmpltService {
 
     @Transactional
     public void delete(String id) {
-        PdDlivTmplt entity = repository.findById(id)
+        PdDlivTmplt entity = pdDlivTmpltRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pdDlivTmpltRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pdDlivTmpltRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -95,7 +95,7 @@ public class BoPdDlivTmpltService {
             .map(PdDlivTmplt::getDlivTmpltId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pdDlivTmpltRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -104,11 +104,11 @@ public class BoPdDlivTmpltService {
         for (PdDlivTmplt row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getDlivTmpltId(), "dlivTmpltId must not be null");
-            PdDlivTmplt entity = repository.findById(id)
+            PdDlivTmplt entity = pdDlivTmpltRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "dlivTmpltId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pdDlivTmpltRepository.save(entity);
         }
         em.flush();
 
@@ -118,7 +118,7 @@ public class BoPdDlivTmpltService {
             row.setDlivTmpltId("DT" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pdDlivTmpltRepository.save(row);
         }
         em.flush();
         em.clear();

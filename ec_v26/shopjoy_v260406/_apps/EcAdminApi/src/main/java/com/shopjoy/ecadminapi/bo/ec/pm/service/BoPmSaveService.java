@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPmSaveService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmSaveMapper mapper;
-    private final PmSaveRepository repository;
+    private final PmSaveMapper pmSaveMapper;
+    private final PmSaveRepository pmSaveRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PmSaveDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pmSaveMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmSaveDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmSaveMapper.selectPageList(p), pmSaveMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PmSaveDto getById(String id) {
-        PmSaveDto dto = mapper.selectById(id);
+        PmSaveDto dto = pmSaveMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoPmSaveService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PmSave saved = repository.save(body);
+        PmSave saved = pmSaveRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PmSaveDto update(String id, PmSave body) {
-        PmSave entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PmSave entity = pmSaveRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "saveId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmSave saved = repository.save(entity);
+        PmSave saved = pmSaveRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,11 +75,11 @@ public class BoPmSaveService {
 
     @Transactional
     public void delete(String id) {
-        PmSave entity = repository.findById(id)
+        PmSave entity = pmSaveRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pmSaveRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pmSaveRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -94,7 +94,7 @@ public class BoPmSaveService {
             .map(PmSave::getSaveId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pmSaveRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -103,11 +103,11 @@ public class BoPmSaveService {
         for (PmSave row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getSaveId(), "saveId must not be null");
-            PmSave entity = repository.findById(id)
+            PmSave entity = pmSaveRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "saveId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pmSaveRepository.save(entity);
         }
         em.flush();
 
@@ -117,7 +117,7 @@ public class BoPmSaveService {
             row.setSaveId("SV" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pmSaveRepository.save(row);
         }
         em.flush();
         em.clear();

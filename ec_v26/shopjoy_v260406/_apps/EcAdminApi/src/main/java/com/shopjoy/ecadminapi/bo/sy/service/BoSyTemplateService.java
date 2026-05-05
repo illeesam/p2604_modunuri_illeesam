@@ -25,26 +25,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyTemplateService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyTemplateMapper mapper;
-    private final SyTemplateRepository repository;
+    private final SyTemplateMapper syTemplateMapper;
+    private final SyTemplateRepository syTemplateRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyTemplateDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syTemplateMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyTemplateDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syTemplateMapper.selectPageList(p), syTemplateMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyTemplateDto getById(String id) {
-        SyTemplateDto dto = mapper.selectById(id);
+        SyTemplateDto dto = syTemplateMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,26 +56,26 @@ public class BoSyTemplateService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        return syTemplateRepository.save(body);
     }
 
     @Transactional
     public SyTemplateDto update(String id, SyTemplate body) {
-        SyTemplate entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyTemplate entity = syTemplateRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        syTemplateRepository.save(entity);
         em.flush();
         return getById(id);
     }
 
     @Transactional
     public void delete(String id) {
-        SyTemplate entity = repository.findById(id)
+        SyTemplate entity = syTemplateRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syTemplateRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syTemplateRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
     @Transactional
@@ -89,7 +89,7 @@ public class BoSyTemplateService {
             .map(SyTemplate::getTemplateId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syTemplateRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -99,11 +99,11 @@ public class BoSyTemplateService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getTemplateId() != null)
             .toList();
         for (SyTemplate row : updateRows) {
-            SyTemplate entity = repository.findById(row.getTemplateId())
+            SyTemplate entity = syTemplateRepository.findById(row.getTemplateId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getTemplateId()));
             VoUtil.voCopyExclude(row, entity, "templateId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syTemplateRepository.save(entity);
         }
         em.flush();
 
@@ -115,7 +115,7 @@ public class BoSyTemplateService {
             row.setTemplateId("TM" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syTemplateRepository.save(row);
         }
         em.flush();
         em.clear();

@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class DpUiService {
 
-    private final DpUiMapper mapper;
-    private final DpUiRepository repository;
+    private final DpUiMapper dpUiMapper;
+    private final DpUiRepository dpUiRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public DpUiDto getById(String id) {
         // dp_ui :: select one :: id [orm:mybatis]
-        DpUiDto result = mapper.selectById(id);
+        DpUiDto result = dpUiMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class DpUiService {
     public List<DpUiDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // dp_ui :: select list :: p [orm:mybatis]
-        List<DpUiDto> result = mapper.selectList(p);
+        List<DpUiDto> result = dpUiMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class DpUiService {
     public PageResult<DpUiDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // dp_ui :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(dpUiMapper.selectPageList(p), dpUiMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpUi entity) {
         // dp_ui :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = dpUiMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class DpUiService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_ui :: insert or update :: [orm:jpa]
-        DpUi result = repository.save(entity);
+        DpUi result = dpUiRepository.save(entity);
         return result;
     }
 
     @Transactional
     public DpUi save(DpUi entity) {
-        if (!repository.existsById(entity.getUiId()))
+        if (!dpUiRepository.existsById(entity.getUiId()))
             throw new CmBizException("존재하지 않는 DpUi입니다: " + entity.getUiId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_ui :: insert or update :: [orm:jpa]
-        DpUi result = repository.save(entity);
+        DpUi result = dpUiRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!dpUiRepository.existsById(id))
             throw new CmBizException("존재하지 않는 DpUi입니다: " + id);
         // dp_ui :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        dpUiRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class DpUiService {
                 row.setUiId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("dp_ui"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                dpUiRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getUiId(), "uiId must not be null");
-                DpUi entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                DpUi entity = dpUiRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "uiId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                dpUiRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getUiId(), "uiId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (dpUiRepository.existsById(id)) dpUiRepository.deleteById(id);
             }
         }
     }

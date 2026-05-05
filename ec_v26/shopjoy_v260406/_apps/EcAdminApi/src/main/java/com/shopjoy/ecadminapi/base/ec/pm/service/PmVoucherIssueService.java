@@ -24,33 +24,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmVoucherIssueService {
 
 
-    private final PmVoucherIssueMapper mapper;
-    private final PmVoucherIssueRepository repository;
+    private final PmVoucherIssueMapper pmVoucherIssueMapper;
+    private final PmVoucherIssueRepository pmVoucherIssueRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmVoucherIssueDto getById(String id) {
-        PmVoucherIssueDto result = mapper.selectById(id);
+        PmVoucherIssueDto result = pmVoucherIssueMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<PmVoucherIssueDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<PmVoucherIssueDto> result = mapper.selectList(p);
+        List<PmVoucherIssueDto> result = pmVoucherIssueMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmVoucherIssueDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmVoucherIssueMapper.selectPageList(p), pmVoucherIssueMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmVoucherIssue entity) {
-        int result = mapper.updateSelective(entity);
+        int result = pmVoucherIssueMapper.updateSelective(entity);
         return result;
     }
 
@@ -63,25 +63,25 @@ public class PmVoucherIssueService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmVoucherIssue result = repository.save(entity);
+        PmVoucherIssue result = pmVoucherIssueRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmVoucherIssue save(PmVoucherIssue entity) {
-        if (!repository.existsById(entity.getVoucherIssueId()))
+        if (!pmVoucherIssueRepository.existsById(entity.getVoucherIssueId()))
             throw new CmBizException("존재하지 않는 PmVoucherIssue입니다: " + entity.getVoucherIssueId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmVoucherIssue result = repository.save(entity);
+        PmVoucherIssue result = pmVoucherIssueRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmVoucherIssueRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmVoucherIssue입니다: " + id);
-        repository.deleteById(id);
+        pmVoucherIssueRepository.deleteById(id);
     }
 
     @Transactional
@@ -94,16 +94,16 @@ public class PmVoucherIssueService {
                 row.setVoucherIssueId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_voucher_issue"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmVoucherIssueRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getVoucherIssueId(), "voucherIssueId must not be null");
-                PmVoucherIssue entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmVoucherIssue entity = pmVoucherIssueRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "voucherIssueId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmVoucherIssueRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getVoucherIssueId(), "voucherIssueId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmVoucherIssueRepository.existsById(id)) pmVoucherIssueRepository.deleteById(id);
             }
         }
     }

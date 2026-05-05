@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyBrandService {
 
 
-    private final SyBrandMapper mapper;
-    private final SyBrandRepository repository;
+    private final SyBrandMapper syBrandMapper;
+    private final SyBrandRepository syBrandRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyBrandService {
     @Transactional(readOnly = true)
     public SyBrandDto getById(String id) {
         // sy_brand :: select one :: id [orm:mybatis]
-        SyBrandDto result = mapper.selectById(id);
+        SyBrandDto result = syBrandMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyBrandService {
     public List<SyBrandDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_brand :: select list :: p [orm:mybatis]
-        List<SyBrandDto> result = mapper.selectList(p);
+        List<SyBrandDto> result = syBrandMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyBrandService {
     public PageResult<SyBrandDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_brand :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syBrandMapper.selectPageList(p), syBrandMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyBrand entity) {
         // sy_brand :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syBrandMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyBrandService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_brand :: insert or update :: [orm:jpa]
-        SyBrand result = repository.save(entity);
+        SyBrand result = syBrandRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyBrand save(SyBrand entity) {
-        if (!repository.existsById(entity.getBrandId()))
+        if (!syBrandRepository.existsById(entity.getBrandId()))
             throw new CmBizException("존재하지 않는 SyBrand입니다: " + entity.getBrandId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_brand :: insert or update :: [orm:jpa]
-        SyBrand result = repository.save(entity);
+        SyBrand result = syBrandRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyBrand entity = repository.findById(id)
+        SyBrand entity = syBrandRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syBrandRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syBrandRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyBrandService {
                 row.setBrandId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_brand"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syBrandRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getBrandId(), "brandId must not be null");
-                SyBrand entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyBrand entity = syBrandRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "brandId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syBrandRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getBrandId(), "brandId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syBrandRepository.existsById(id)) syBrandRepository.deleteById(id);
             }
         }
         em.flush();

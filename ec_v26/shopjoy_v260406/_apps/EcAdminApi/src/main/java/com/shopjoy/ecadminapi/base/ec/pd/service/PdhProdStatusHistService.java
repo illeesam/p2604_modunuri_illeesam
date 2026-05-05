@@ -17,15 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PdhProdStatusHistService {
 
-    private final PdhProdStatusHistMapper mapper;
-    private final PdhProdStatusHistRepository repository;
+    private final PdhProdStatusHistMapper pdhProdStatusHistMapper;
+    private final PdhProdStatusHistRepository pdhProdStatusHistRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdhProdStatusHistDto getById(String id) {
         // pdh_prod_status_hist :: select one :: id [orm:mybatis]
-        PdhProdStatusHistDto result = mapper.selectById(id);
+        PdhProdStatusHistDto result = pdhProdStatusHistMapper.selectById(id);
         return result;
     }
 
@@ -33,7 +33,7 @@ public class PdhProdStatusHistService {
     public List<PdhProdStatusHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pdh_prod_status_hist :: select list :: p [orm:mybatis]
-        List<PdhProdStatusHistDto> result = mapper.selectList(p);
+        List<PdhProdStatusHistDto> result = pdhProdStatusHistMapper.selectList(p);
         return result;
     }
 
@@ -41,13 +41,13 @@ public class PdhProdStatusHistService {
     public PageResult<PdhProdStatusHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pdh_prod_status_hist :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdhProdStatusHistMapper.selectPageList(p), pdhProdStatusHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdhProdStatusHist entity) {
         // pdh_prod_status_hist :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdhProdStatusHistMapper.updateSelective(entity);
         return result;
     }
 

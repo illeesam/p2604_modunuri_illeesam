@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyBatchService {
 
 
-    private final SyBatchMapper mapper;
-    private final SyBatchRepository repository;
+    private final SyBatchMapper syBatchMapper;
+    private final SyBatchRepository syBatchRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyBatchService {
     @Transactional(readOnly = true)
     public SyBatchDto getById(String id) {
         // sy_batch :: select one :: id [orm:mybatis]
-        SyBatchDto result = mapper.selectById(id);
+        SyBatchDto result = syBatchMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyBatchService {
     public List<SyBatchDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_batch :: select list :: p [orm:mybatis]
-        List<SyBatchDto> result = mapper.selectList(p);
+        List<SyBatchDto> result = syBatchMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyBatchService {
     public PageResult<SyBatchDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_batch :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syBatchMapper.selectPageList(p), syBatchMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyBatch entity) {
         // sy_batch :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syBatchMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyBatchService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_batch :: insert or update :: [orm:jpa]
-        SyBatch result = repository.save(entity);
+        SyBatch result = syBatchRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyBatch save(SyBatch entity) {
-        if (!repository.existsById(entity.getBatchId()))
+        if (!syBatchRepository.existsById(entity.getBatchId()))
             throw new CmBizException("존재하지 않는 SyBatch입니다: " + entity.getBatchId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_batch :: insert or update :: [orm:jpa]
-        SyBatch result = repository.save(entity);
+        SyBatch result = syBatchRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyBatch entity = repository.findById(id)
+        SyBatch entity = syBatchRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syBatchRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syBatchRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyBatchService {
                 row.setBatchId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_batch"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syBatchRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getBatchId(), "batchId must not be null");
-                SyBatch entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyBatch entity = syBatchRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "batchId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syBatchRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getBatchId(), "batchId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syBatchRepository.existsById(id)) syBatchRepository.deleteById(id);
             }
         }
         em.flush();

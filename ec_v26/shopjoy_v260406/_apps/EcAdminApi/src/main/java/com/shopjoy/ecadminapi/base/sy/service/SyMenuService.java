@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyMenuService {
 
 
-    private final SyMenuMapper mapper;
-    private final SyMenuRepository repository;
+    private final SyMenuMapper syMenuMapper;
+    private final SyMenuRepository syMenuRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyMenuService {
     @Transactional(readOnly = true)
     public SyMenuDto getById(String id) {
         // sy_menu :: select one :: id [orm:mybatis]
-        SyMenuDto result = mapper.selectById(id);
+        SyMenuDto result = syMenuMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyMenuService {
     public List<SyMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_menu :: select list :: p [orm:mybatis]
-        List<SyMenuDto> result = mapper.selectList(p);
+        List<SyMenuDto> result = syMenuMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyMenuService {
     public PageResult<SyMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_menu :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syMenuMapper.selectPageList(p), syMenuMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyMenu entity) {
         // sy_menu :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syMenuMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyMenuService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_menu :: insert or update :: [orm:jpa]
-        SyMenu result = repository.save(entity);
+        SyMenu result = syMenuRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyMenu save(SyMenu entity) {
-        if (!repository.existsById(entity.getMenuId()))
+        if (!syMenuRepository.existsById(entity.getMenuId()))
             throw new CmBizException("존재하지 않는 SyMenu입니다: " + entity.getMenuId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_menu :: insert or update :: [orm:jpa]
-        SyMenu result = repository.save(entity);
+        SyMenu result = syMenuRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyMenu entity = repository.findById(id)
+        SyMenu entity = syMenuRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syMenuRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syMenuRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyMenuService {
                 row.setMenuId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_menu"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syMenuRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getMenuId(), "menuId must not be null");
-                SyMenu entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyMenu entity = syMenuRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "menuId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syMenuRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getMenuId(), "menuId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syMenuRepository.existsById(id)) syMenuRepository.deleteById(id);
             }
         }
         em.flush();

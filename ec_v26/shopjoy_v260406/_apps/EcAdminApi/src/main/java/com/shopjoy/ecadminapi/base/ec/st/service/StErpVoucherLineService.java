@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class StErpVoucherLineService {
 
 
-    private final StErpVoucherLineMapper mapper;
-    private final StErpVoucherLineRepository repository;
+    private final StErpVoucherLineMapper stErpVoucherLineMapper;
+    private final StErpVoucherLineRepository stErpVoucherLineRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -36,26 +36,26 @@ public class StErpVoucherLineService {
 
     @Transactional(readOnly = true)
     public StErpVoucherLineDto getById(String id) {
-        StErpVoucherLineDto result = mapper.selectById(id);
+        StErpVoucherLineDto result = stErpVoucherLineMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<StErpVoucherLineDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StErpVoucherLineDto> result = mapper.selectList(p);
+        List<StErpVoucherLineDto> result = stErpVoucherLineMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<StErpVoucherLineDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stErpVoucherLineMapper.selectPageList(p), stErpVoucherLineMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(StErpVoucherLine entity) {
-        int result = mapper.updateSelective(entity);
+        int result = stErpVoucherLineMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class StErpVoucherLineService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StErpVoucherLine result = repository.save(entity);
+        StErpVoucherLine result = stErpVoucherLineRepository.save(entity);
         return result;
     }
 
     @Transactional
     public StErpVoucherLine save(StErpVoucherLine entity) {
-        if (!repository.existsById(entity.getErpVoucherLineId()))
+        if (!stErpVoucherLineRepository.existsById(entity.getErpVoucherLineId()))
             throw new CmBizException("존재하지 않는 StErpVoucherLine입니다: " + entity.getErpVoucherLineId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StErpVoucherLine result = repository.save(entity);
+        StErpVoucherLine result = stErpVoucherLineRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        StErpVoucherLine entity = repository.findById(id)
+        StErpVoucherLine entity = stErpVoucherLineRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stErpVoucherLineRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stErpVoucherLineRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -102,16 +102,16 @@ public class StErpVoucherLineService {
                 row.setErpVoucherLineId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_erp_voucher_line"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                stErpVoucherLineRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getErpVoucherLineId(), "erpVoucherLineId must not be null");
-                StErpVoucherLine entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                StErpVoucherLine entity = stErpVoucherLineRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "erpVoucherLineId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                stErpVoucherLineRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getErpVoucherLineId(), "erpVoucherLineId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (stErpVoucherLineRepository.existsById(id)) stErpVoucherLineRepository.deleteById(id);
             }
         }
         em.flush();

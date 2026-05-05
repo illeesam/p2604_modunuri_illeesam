@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyRoleService {
 
 
-    private final SyRoleMapper mapper;
-    private final SyRoleRepository repository;
+    private final SyRoleMapper syRoleMapper;
+    private final SyRoleRepository syRoleRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyRoleService {
     @Transactional(readOnly = true)
     public SyRoleDto getById(String id) {
         // sy_role :: select one :: id [orm:mybatis]
-        SyRoleDto result = mapper.selectById(id);
+        SyRoleDto result = syRoleMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyRoleService {
     public List<SyRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_role :: select list :: p [orm:mybatis]
-        List<SyRoleDto> result = mapper.selectList(p);
+        List<SyRoleDto> result = syRoleMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyRoleService {
     public PageResult<SyRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_role :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syRoleMapper.selectPageList(p), syRoleMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyRole entity) {
         // sy_role :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syRoleMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyRoleService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_role :: insert or update :: [orm:jpa]
-        SyRole result = repository.save(entity);
+        SyRole result = syRoleRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyRole save(SyRole entity) {
-        if (!repository.existsById(entity.getRoleId()))
+        if (!syRoleRepository.existsById(entity.getRoleId()))
             throw new CmBizException("존재하지 않는 SyRole입니다: " + entity.getRoleId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_role :: insert or update :: [orm:jpa]
-        SyRole result = repository.save(entity);
+        SyRole result = syRoleRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyRole entity = repository.findById(id)
+        SyRole entity = syRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syRoleRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syRoleRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyRoleService {
                 row.setRoleId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_role"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syRoleRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getRoleId(), "roleId must not be null");
-                SyRole entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyRole entity = syRoleRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "roleId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syRoleRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getRoleId(), "roleId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syRoleRepository.existsById(id)) syRoleRepository.deleteById(id);
             }
         }
         em.flush();

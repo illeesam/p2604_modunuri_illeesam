@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class OdOrderService {
 
-    private final OdOrderMapper mapper;
-    private final OdOrderRepository repository;
+    private final OdOrderMapper odOrderMapper;
+    private final OdOrderRepository odOrderRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdOrderDto getById(String id) {
-        OdOrderDto result = mapper.selectById(id);
+        OdOrderDto result = odOrderMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdOrderDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdOrderDto> result = mapper.selectList(p);
+        List<OdOrderDto> result = odOrderMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdOrderDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odOrderMapper.selectPageList(p), odOrderMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdOrder entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odOrderMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class OdOrderService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdOrder result = repository.save(entity);
+        OdOrder result = odOrderRepository.save(entity);
         return result;
     }
 
     @Transactional
     public OdOrder save(OdOrder entity) {
-        if (!repository.existsById(entity.getOrderId()))
+        if (!odOrderRepository.existsById(entity.getOrderId()))
             throw new CmBizException("존재하지 않는 OdOrder입니다: " + entity.getOrderId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdOrder result = repository.save(entity);
+        OdOrder result = odOrderRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odOrderRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdOrder입니다: " + id);
-        repository.deleteById(id);
+        odOrderRepository.deleteById(id);
     }
 
     @Transactional
@@ -93,16 +93,16 @@ public class OdOrderService {
                 row.setOrderId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_order"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                odOrderRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getOrderId(), "orderId must not be null");
-                OdOrder entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                OdOrder entity = odOrderRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "orderId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                odOrderRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getOrderId(), "orderId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (odOrderRepository.existsById(id)) odOrderRepository.deleteById(id);
             }
         }
     }

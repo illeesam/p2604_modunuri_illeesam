@@ -24,15 +24,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmCacheService {
 
 
-    private final PmCacheMapper mapper;
-    private final PmCacheRepository repository;
+    private final PmCacheMapper pmCacheMapper;
+    private final PmCacheRepository pmCacheRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmCacheDto getById(String id) {
         // pm_cache :: select one :: id [orm:mybatis]
-        PmCacheDto result = mapper.selectById(id);
+        PmCacheDto result = pmCacheMapper.selectById(id);
         return result;
     }
 
@@ -40,7 +40,7 @@ public class PmCacheService {
     public List<PmCacheDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pm_cache :: select list :: p [orm:mybatis]
-        List<PmCacheDto> result = mapper.selectList(p);
+        List<PmCacheDto> result = pmCacheMapper.selectList(p);
         return result;
     }
 
@@ -48,13 +48,13 @@ public class PmCacheService {
     public PageResult<PmCacheDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pm_cache :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmCacheMapper.selectPageList(p), pmCacheMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmCache entity) {
         // pm_cache :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pmCacheMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class PmCacheService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_cache :: insert or update :: [orm:jpa]
-        PmCache result = repository.save(entity);
+        PmCache result = pmCacheRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmCache save(PmCache entity) {
-        if (!repository.existsById(entity.getCacheId()))
+        if (!pmCacheRepository.existsById(entity.getCacheId()))
             throw new CmBizException("존재하지 않는 PmCache입니다: " + entity.getCacheId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_cache :: insert or update :: [orm:jpa]
-        PmCache result = repository.save(entity);
+        PmCache result = pmCacheRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmCacheRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmCache입니다: " + id);
         // pm_cache :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pmCacheRepository.deleteById(id);
     }
 
     @Transactional
@@ -101,16 +101,16 @@ public class PmCacheService {
                 row.setCacheId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_cache"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmCacheRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCacheId(), "cacheId must not be null");
-                PmCache entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmCache entity = pmCacheRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "cacheId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmCacheRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getCacheId(), "cacheId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmCacheRepository.existsById(id)) pmCacheRepository.deleteById(id);
             }
         }
     }

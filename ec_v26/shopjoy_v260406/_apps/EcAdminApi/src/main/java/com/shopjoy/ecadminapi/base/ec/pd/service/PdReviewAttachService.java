@@ -25,15 +25,15 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 public class PdReviewAttachService {
 
 
-    private final PdReviewAttachMapper mapper;
-    private final PdReviewAttachRepository repository;
+    private final PdReviewAttachMapper pdReviewAttachMapper;
+    private final PdReviewAttachRepository pdReviewAttachRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdReviewAttachDto getById(String id) {
         // pd_review_attach :: select one :: id [orm:mybatis]
-        PdReviewAttachDto result = mapper.selectById(id);
+        PdReviewAttachDto result = pdReviewAttachMapper.selectById(id);
         return result;
     }
 
@@ -41,7 +41,7 @@ public class PdReviewAttachService {
     public List<PdReviewAttachDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_review_attach :: select list :: p [orm:mybatis]
-        List<PdReviewAttachDto> result = mapper.selectList(p);
+        List<PdReviewAttachDto> result = pdReviewAttachMapper.selectList(p);
         return result;
     }
 
@@ -49,13 +49,13 @@ public class PdReviewAttachService {
     public PageResult<PdReviewAttachDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_review_attach :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdReviewAttachMapper.selectPageList(p), pdReviewAttachMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdReviewAttach entity) {
         // pd_review_attach :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdReviewAttachMapper.updateSelective(entity);
         return result;
     }
 
@@ -69,27 +69,27 @@ public class PdReviewAttachService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_review_attach :: insert or update :: [orm:jpa]
-        PdReviewAttach result = repository.save(entity);
+        PdReviewAttach result = pdReviewAttachRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PdReviewAttach save(PdReviewAttach entity) {
-        if (!repository.existsById(entity.getReviewAttachId()))
+        if (!pdReviewAttachRepository.existsById(entity.getReviewAttachId()))
             throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + entity.getReviewAttachId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_review_attach :: insert or update :: [orm:jpa]
-        PdReviewAttach result = repository.save(entity);
+        PdReviewAttach result = pdReviewAttachRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pdReviewAttachRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + id);
         // pd_review_attach :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pdReviewAttachRepository.deleteById(id);
     }
 
     @Transactional
@@ -102,16 +102,16 @@ public class PdReviewAttachService {
                 row.setReviewAttachId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_review_attach"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pdReviewAttachRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getReviewAttachId(), "reviewAttachId must not be null");
-                PdReviewAttach entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PdReviewAttach entity = pdReviewAttachRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "reviewAttachId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pdReviewAttachRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getReviewAttachId(), "reviewAttachId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pdReviewAttachRepository.existsById(id)) pdReviewAttachRepository.deleteById(id);
             }
         }
     }

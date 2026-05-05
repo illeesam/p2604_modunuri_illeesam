@@ -24,26 +24,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyBatchService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyBatchMapper mapper;
-    private final SyBatchRepository repository;
+    private final SyBatchMapper syBatchMapper;
+    private final SyBatchRepository syBatchRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyBatchDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syBatchMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyBatchDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syBatchMapper.selectPageList(p), syBatchMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyBatchDto getById(String id) {
-        SyBatchDto dto = mapper.selectById(id);
+        SyBatchDto dto = syBatchMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -55,18 +55,18 @@ public class BoSyBatchService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyBatch saved = repository.save(body);
+        SyBatch saved = syBatchRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public SyBatchDto update(String id, SyBatch body) {
-        SyBatch entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyBatch entity = syBatchRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "batchId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyBatch saved = repository.save(entity);
+        SyBatch saved = syBatchRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -74,11 +74,11 @@ public class BoSyBatchService {
 
     @Transactional
     public void delete(String id) {
-        SyBatch entity = repository.findById(id)
+        SyBatch entity = syBatchRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syBatchRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syBatchRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -93,7 +93,7 @@ public class BoSyBatchService {
             .map(SyBatch::getBatchId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syBatchRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -103,11 +103,11 @@ public class BoSyBatchService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBatchId() != null)
             .toList();
         for (SyBatch row : updateRows) {
-            SyBatch entity = repository.findById(row.getBatchId())
+            SyBatch entity = syBatchRepository.findById(row.getBatchId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getBatchId()));
             VoUtil.voCopyExclude(row, entity, "batchId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syBatchRepository.save(entity);
         }
         em.flush();
 
@@ -119,7 +119,7 @@ public class BoSyBatchService {
             row.setBatchId("BA" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syBatchRepository.save(row);
         }
         em.flush();
         em.clear();

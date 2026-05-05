@@ -22,22 +22,22 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoPmEventService {
 
-    private final PmEventMapper mapper;
+    private final PmEventMapper pmEventMapper;
 
     @Transactional(readOnly = true)
     public List<PmEventDto> getList(Map<String, Object> p) {
-        return mapper.selectList(p);
+        return pmEventMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmEventDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmEventMapper.selectPageList(p), pmEventMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PmEventDto getById(String eventId) {
-        PmEventDto dto = mapper.selectById(eventId);
+        PmEventDto dto = pmEventMapper.selectById(eventId);
         if (dto == null) throw new CmBizException("존재하지 않는 이벤트입니다: " + eventId);
         return dto;
     }

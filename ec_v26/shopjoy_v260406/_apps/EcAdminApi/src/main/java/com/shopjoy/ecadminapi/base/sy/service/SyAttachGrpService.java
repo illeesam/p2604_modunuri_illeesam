@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyAttachGrpService {
 
 
-    private final SyAttachGrpMapper mapper;
-    private final SyAttachGrpRepository repository;
+    private final SyAttachGrpMapper syAttachGrpMapper;
+    private final SyAttachGrpRepository syAttachGrpRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyAttachGrpService {
     @Transactional(readOnly = true)
     public SyAttachGrpDto getById(String id) {
         // sy_attach_grp :: select one :: id [orm:mybatis]
-        SyAttachGrpDto result = mapper.selectById(id);
+        SyAttachGrpDto result = syAttachGrpMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyAttachGrpService {
     public List<SyAttachGrpDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_attach_grp :: select list :: p [orm:mybatis]
-        List<SyAttachGrpDto> result = mapper.selectList(p);
+        List<SyAttachGrpDto> result = syAttachGrpMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyAttachGrpService {
     public PageResult<SyAttachGrpDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_attach_grp :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syAttachGrpMapper.selectPageList(p), syAttachGrpMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyAttachGrp entity) {
         // sy_attach_grp :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syAttachGrpMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyAttachGrpService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_attach_grp :: insert or update :: [orm:jpa]
-        SyAttachGrp result = repository.save(entity);
+        SyAttachGrp result = syAttachGrpRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyAttachGrp save(SyAttachGrp entity) {
-        if (!repository.existsById(entity.getAttachGrpId()))
+        if (!syAttachGrpRepository.existsById(entity.getAttachGrpId()))
             throw new CmBizException("존재하지 않는 SyAttachGrp입니다: " + entity.getAttachGrpId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_attach_grp :: insert or update :: [orm:jpa]
-        SyAttachGrp result = repository.save(entity);
+        SyAttachGrp result = syAttachGrpRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyAttachGrp entity = repository.findById(id)
+        SyAttachGrp entity = syAttachGrpRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syAttachGrpRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syAttachGrpRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyAttachGrpService {
                 row.setAttachGrpId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_attach_grp"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syAttachGrpRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getAttachGrpId(), "attachGrpId must not be null");
-                SyAttachGrp entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyAttachGrp entity = syAttachGrpRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "attachGrpId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syAttachGrpRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getAttachGrpId(), "attachGrpId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syAttachGrpRepository.existsById(id)) syAttachGrpRepository.deleteById(id);
             }
         }
         em.flush();

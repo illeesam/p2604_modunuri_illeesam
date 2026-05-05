@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoSyContactService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyContactMapper mapper;
-    private final SyContactRepository repository;
+    private final SyContactMapper syContactMapper;
+    private final SyContactRepository syContactRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyContactDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syContactMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyContactDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syContactMapper.selectPageList(p), syContactMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyContactDto getById(String id) {
-        SyContactDto dto = mapper.selectById(id);
+        SyContactDto dto = syContactMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoSyContactService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyContact saved = repository.save(body);
+        SyContact saved = syContactRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public SyContactDto update(String id, SyContact body) {
-        SyContact entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyContact entity = syContactRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "contactId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyContact saved = repository.save(entity);
+        SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,11 +75,11 @@ public class BoSyContactService {
 
     @Transactional
     public void delete(String id) {
-        SyContact entity = repository.findById(id)
+        SyContact entity = syContactRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syContactRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syContactRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
     @Transactional
@@ -93,7 +93,7 @@ public class BoSyContactService {
             .map(SyContact::getContactId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syContactRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -103,11 +103,11 @@ public class BoSyContactService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getContactId() != null)
             .toList();
         for (SyContact row : updateRows) {
-            SyContact entity = repository.findById(row.getContactId())
+            SyContact entity = syContactRepository.findById(row.getContactId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getContactId()));
             VoUtil.voCopyExclude(row, entity, "contactId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syContactRepository.save(entity);
         }
         em.flush();
 
@@ -119,7 +119,7 @@ public class BoSyContactService {
             row.setContactId("CO" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syContactRepository.save(row);
         }
         em.flush();
         em.clear();

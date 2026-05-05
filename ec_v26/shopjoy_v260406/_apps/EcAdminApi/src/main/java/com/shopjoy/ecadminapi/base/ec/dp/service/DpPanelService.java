@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class DpPanelService {
 
-    private final DpPanelMapper mapper;
-    private final DpPanelRepository repository;
+    private final DpPanelMapper dpPanelMapper;
+    private final DpPanelRepository dpPanelRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public DpPanelDto getById(String id) {
         // dp_panel :: select one :: id [orm:mybatis]
-        DpPanelDto result = mapper.selectById(id);
+        DpPanelDto result = dpPanelMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class DpPanelService {
     public List<DpPanelDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // dp_panel :: select list :: p [orm:mybatis]
-        List<DpPanelDto> result = mapper.selectList(p);
+        List<DpPanelDto> result = dpPanelMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class DpPanelService {
     public PageResult<DpPanelDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // dp_panel :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(dpPanelMapper.selectPageList(p), dpPanelMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpPanel entity) {
         // dp_panel :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = dpPanelMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class DpPanelService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_panel :: insert or update :: [orm:jpa]
-        DpPanel result = repository.save(entity);
+        DpPanel result = dpPanelRepository.save(entity);
         return result;
     }
 
     @Transactional
     public DpPanel save(DpPanel entity) {
-        if (!repository.existsById(entity.getPanelId()))
+        if (!dpPanelRepository.existsById(entity.getPanelId()))
             throw new CmBizException("존재하지 않는 DpPanel입니다: " + entity.getPanelId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_panel :: insert or update :: [orm:jpa]
-        DpPanel result = repository.save(entity);
+        DpPanel result = dpPanelRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!dpPanelRepository.existsById(id))
             throw new CmBizException("존재하지 않는 DpPanel입니다: " + id);
         // dp_panel :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        dpPanelRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class DpPanelService {
                 row.setPanelId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("dp_panel"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                dpPanelRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getPanelId(), "panelId must not be null");
-                DpPanel entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                DpPanel entity = dpPanelRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "panelId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                dpPanelRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getPanelId(), "panelId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (dpPanelRepository.existsById(id)) dpPanelRepository.deleteById(id);
             }
         }
     }

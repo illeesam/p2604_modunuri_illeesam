@@ -17,15 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PdhProdContentChgHistService {
 
-    private final PdhProdContentChgHistMapper mapper;
-    private final PdhProdContentChgHistRepository repository;
+    private final PdhProdContentChgHistMapper pdhProdContentChgHistMapper;
+    private final PdhProdContentChgHistRepository pdhProdContentChgHistRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdhProdContentChgHistDto getById(String id) {
         // pdh_prod_content_chg_hist :: select one :: id [orm:mybatis]
-        PdhProdContentChgHistDto result = mapper.selectById(id);
+        PdhProdContentChgHistDto result = pdhProdContentChgHistMapper.selectById(id);
         return result;
     }
 
@@ -33,7 +33,7 @@ public class PdhProdContentChgHistService {
     public List<PdhProdContentChgHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pdh_prod_content_chg_hist :: select list :: p [orm:mybatis]
-        List<PdhProdContentChgHistDto> result = mapper.selectList(p);
+        List<PdhProdContentChgHistDto> result = pdhProdContentChgHistMapper.selectList(p);
         return result;
     }
 
@@ -41,13 +41,13 @@ public class PdhProdContentChgHistService {
     public PageResult<PdhProdContentChgHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pdh_prod_content_chg_hist :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdhProdContentChgHistMapper.selectPageList(p), pdhProdContentChgHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdhProdContentChgHist entity) {
         // pdh_prod_content_chg_hist :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdhProdContentChgHistMapper.updateSelective(entity);
         return result;
     }
 

@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoDpPanelService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final DpPanelMapper mapper;
-    private final DpPanelRepository repository;
+    private final DpPanelMapper dpPanelMapper;
+    private final DpPanelRepository dpPanelRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<DpPanelDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return dpPanelMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<DpPanelDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(dpPanelMapper.selectPageList(p), dpPanelMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public DpPanelDto getById(String id) {
-        DpPanelDto dto = mapper.selectById(id);
+        DpPanelDto dto = dpPanelMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,18 +57,18 @@ public class BoDpPanelService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        DpPanel saved = repository.save(body);
+        DpPanel saved = dpPanelRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public DpPanelDto update(String id, DpPanel body) {
-        DpPanel entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        DpPanel entity = dpPanelRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "panelId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        DpPanel saved = repository.save(entity);
+        DpPanel saved = dpPanelRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -76,11 +76,11 @@ public class BoDpPanelService {
 
     @Transactional
     public void delete(String id) {
-        DpPanel entity = repository.findById(id)
+        DpPanel entity = dpPanelRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        dpPanelRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (dpPanelRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -95,7 +95,7 @@ public class BoDpPanelService {
             .map(DpPanel::getPanelId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            dpPanelRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -104,11 +104,11 @@ public class BoDpPanelService {
         for (DpPanel row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getPanelId(), "panelId must not be null");
-            DpPanel entity = repository.findById(id)
+            DpPanel entity = dpPanelRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "panelId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            dpPanelRepository.save(entity);
         }
         em.flush();
 
@@ -118,7 +118,7 @@ public class BoDpPanelService {
             row.setPanelId("PN" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            dpPanelRepository.save(row);
         }
         em.flush();
         em.clear();

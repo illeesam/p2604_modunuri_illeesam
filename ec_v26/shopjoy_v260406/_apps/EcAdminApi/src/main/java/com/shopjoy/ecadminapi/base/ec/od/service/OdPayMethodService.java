@@ -24,33 +24,33 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class OdPayMethodService {
 
-    private final OdPayMethodMapper mapper;
-    private final OdPayMethodRepository repository;
+    private final OdPayMethodMapper odPayMethodMapper;
+    private final OdPayMethodRepository odPayMethodRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdPayMethodDto getById(String id) {
-        OdPayMethodDto result = mapper.selectById(id);
+        OdPayMethodDto result = odPayMethodMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdPayMethodDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdPayMethodDto> result = mapper.selectList(p);
+        List<OdPayMethodDto> result = odPayMethodMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdPayMethodDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odPayMethodMapper.selectPageList(p), odPayMethodMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdPayMethod entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odPayMethodMapper.updateSelective(entity);
         return result;
     }
 
@@ -63,25 +63,25 @@ public class OdPayMethodService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdPayMethod result = repository.save(entity);
+        OdPayMethod result = odPayMethodRepository.save(entity);
         return result;
     }
 
     @Transactional
     public OdPayMethod save(OdPayMethod entity) {
-        if (!repository.existsById(entity.getPayMethodId()))
+        if (!odPayMethodRepository.existsById(entity.getPayMethodId()))
             throw new CmBizException("존재하지 않는 OdPayMethod입니다: " + entity.getPayMethodId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdPayMethod result = repository.save(entity);
+        OdPayMethod result = odPayMethodRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odPayMethodRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdPayMethod입니다: " + id);
-        repository.deleteById(id);
+        odPayMethodRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<OdPayMethod> rows) {
@@ -93,16 +93,16 @@ public class OdPayMethodService {
                 row.setPayMethodId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_pay_method"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                odPayMethodRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getPayMethodId(), "payMethodId must not be null");
-                OdPayMethod entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                OdPayMethod entity = odPayMethodRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "payMethodId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                odPayMethodRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getPayMethodId(), "payMethodId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (odPayMethodRepository.existsById(id)) odPayMethodRepository.deleteById(id);
             }
         }
     }

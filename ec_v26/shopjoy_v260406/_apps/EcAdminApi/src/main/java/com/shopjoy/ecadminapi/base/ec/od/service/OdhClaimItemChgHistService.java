@@ -17,33 +17,33 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OdhClaimItemChgHistService {
 
-    private final OdhClaimItemChgHistMapper mapper;
-    private final OdhClaimItemChgHistRepository repository;
+    private final OdhClaimItemChgHistMapper odhClaimItemChgHistMapper;
+    private final OdhClaimItemChgHistRepository odhClaimItemChgHistRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdhClaimItemChgHistDto getById(String id) {
-        OdhClaimItemChgHistDto result = mapper.selectById(id);
+        OdhClaimItemChgHistDto result = odhClaimItemChgHistMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdhClaimItemChgHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdhClaimItemChgHistDto> result = mapper.selectList(p);
+        List<OdhClaimItemChgHistDto> result = odhClaimItemChgHistMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdhClaimItemChgHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odhClaimItemChgHistMapper.selectPageList(p), odhClaimItemChgHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdhClaimItemChgHist entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odhClaimItemChgHistMapper.updateSelective(entity);
         return result;
     }
 

@@ -25,15 +25,15 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 public class PdDlivTmpltService {
 
 
-    private final PdDlivTmpltMapper mapper;
-    private final PdDlivTmpltRepository repository;
+    private final PdDlivTmpltMapper pdDlivTmpltMapper;
+    private final PdDlivTmpltRepository pdDlivTmpltRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdDlivTmpltDto getById(String id) {
         // pd_dliv_tmplt :: select one :: id [orm:mybatis]
-        PdDlivTmpltDto result = mapper.selectById(id);
+        PdDlivTmpltDto result = pdDlivTmpltMapper.selectById(id);
         return result;
     }
 
@@ -41,7 +41,7 @@ public class PdDlivTmpltService {
     public List<PdDlivTmpltDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_dliv_tmplt :: select list :: p [orm:mybatis]
-        List<PdDlivTmpltDto> result = mapper.selectList(p);
+        List<PdDlivTmpltDto> result = pdDlivTmpltMapper.selectList(p);
         return result;
     }
 
@@ -49,13 +49,13 @@ public class PdDlivTmpltService {
     public PageResult<PdDlivTmpltDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_dliv_tmplt :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdDlivTmpltMapper.selectPageList(p), pdDlivTmpltMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdDlivTmplt entity) {
         // pd_dliv_tmplt :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdDlivTmpltMapper.updateSelective(entity);
         return result;
     }
 
@@ -69,27 +69,27 @@ public class PdDlivTmpltService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_dliv_tmplt :: insert or update :: [orm:jpa]
-        PdDlivTmplt result = repository.save(entity);
+        PdDlivTmplt result = pdDlivTmpltRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PdDlivTmplt save(PdDlivTmplt entity) {
-        if (!repository.existsById(entity.getDlivTmpltId()))
+        if (!pdDlivTmpltRepository.existsById(entity.getDlivTmpltId()))
             throw new CmBizException("존재하지 않는 PdDlivTmplt입니다: " + entity.getDlivTmpltId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_dliv_tmplt :: insert or update :: [orm:jpa]
-        PdDlivTmplt result = repository.save(entity);
+        PdDlivTmplt result = pdDlivTmpltRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pdDlivTmpltRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PdDlivTmplt입니다: " + id);
         // pd_dliv_tmplt :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pdDlivTmpltRepository.deleteById(id);
     }
 
     @Transactional
@@ -102,16 +102,16 @@ public class PdDlivTmpltService {
                 row.setDlivTmpltId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_dliv_tmplt"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pdDlivTmpltRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDlivTmpltId(), "dlivTmpltId must not be null");
-                PdDlivTmplt entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PdDlivTmplt entity = pdDlivTmpltRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "dlivTmpltId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pdDlivTmpltRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDlivTmpltId(), "dlivTmpltId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pdDlivTmpltRepository.existsById(id)) pdDlivTmpltRepository.deleteById(id);
             }
         }
     }

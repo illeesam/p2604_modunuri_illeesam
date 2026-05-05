@@ -25,26 +25,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyBbmService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyBbmMapper mapper;
-    private final SyBbmRepository repository;
+    private final SyBbmMapper syBbmMapper;
+    private final SyBbmRepository syBbmRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyBbmDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syBbmMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyBbmDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syBbmMapper.selectPageList(p), syBbmMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyBbmDto getById(String id) {
-        SyBbmDto dto = mapper.selectById(id);
+        SyBbmDto dto = syBbmMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoSyBbmService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyBbm saved = repository.save(body);
+        SyBbm saved = syBbmRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public SyBbmDto update(String id, SyBbm body) {
-        SyBbm entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyBbm entity = syBbmRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "bbmId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyBbm saved = repository.save(entity);
+        SyBbm saved = syBbmRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,11 +75,11 @@ public class BoSyBbmService {
 
     @Transactional
     public void delete(String id) {
-        SyBbm entity = repository.findById(id)
+        SyBbm entity = syBbmRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syBbmRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syBbmRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
     @Transactional
@@ -93,7 +93,7 @@ public class BoSyBbmService {
             .map(SyBbm::getBbmId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syBbmRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -103,11 +103,11 @@ public class BoSyBbmService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBbmId() != null)
             .toList();
         for (SyBbm row : updateRows) {
-            SyBbm entity = repository.findById(row.getBbmId())
+            SyBbm entity = syBbmRepository.findById(row.getBbmId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getBbmId()));
             VoUtil.voCopyExclude(row, entity, "bbmId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syBbmRepository.save(entity);
         }
         em.flush();
 
@@ -119,7 +119,7 @@ public class BoSyBbmService {
             row.setBbmId("BB" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syBbmRepository.save(row);
         }
         em.flush();
         em.clear();

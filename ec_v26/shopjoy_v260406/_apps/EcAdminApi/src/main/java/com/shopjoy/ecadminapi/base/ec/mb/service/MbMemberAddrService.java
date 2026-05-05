@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class MbMemberAddrService {
 
-    private final MbMemberAddrMapper mapper;
-    private final MbMemberAddrRepository repository;
+    private final MbMemberAddrMapper mbMemberAddrMapper;
+    private final MbMemberAddrRepository mbMemberAddrRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public MbMemberAddrDto getById(String id) {
-        MbMemberAddrDto result = mapper.selectById(id);
+        MbMemberAddrDto result = mbMemberAddrMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<MbMemberAddrDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<MbMemberAddrDto> result = mapper.selectList(p);
+        List<MbMemberAddrDto> result = mbMemberAddrMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<MbMemberAddrDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(mbMemberAddrMapper.selectPageList(p), mbMemberAddrMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(MbMemberAddr entity) {
-        int result = mapper.updateSelective(entity);
+        int result = mbMemberAddrMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class MbMemberAddrService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        MbMemberAddr result = repository.save(entity);
+        MbMemberAddr result = mbMemberAddrRepository.save(entity);
         return result;
     }
 
     @Transactional
     public MbMemberAddr save(MbMemberAddr entity) {
-        if (!repository.existsById(entity.getMemberAddrId()))
+        if (!mbMemberAddrRepository.existsById(entity.getMemberAddrId()))
             throw new CmBizException("존재하지 않는 MbMemberAddr입니다: " + entity.getMemberAddrId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        MbMemberAddr result = repository.save(entity);
+        MbMemberAddr result = mbMemberAddrRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!mbMemberAddrRepository.existsById(id))
             throw new CmBizException("존재하지 않는 MbMemberAddr입니다: " + id);
-        repository.deleteById(id);
+        mbMemberAddrRepository.deleteById(id);
     }
 
     @Transactional
@@ -93,16 +93,16 @@ public class MbMemberAddrService {
                 row.setMemberAddrId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("mb_member_addr"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                mbMemberAddrRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getMemberAddrId(), "memberAddrId must not be null");
-                MbMemberAddr entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                MbMemberAddr entity = mbMemberAddrRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "memberAddrId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                mbMemberAddrRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getMemberAddrId(), "memberAddrId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (mbMemberAddrRepository.existsById(id)) mbMemberAddrRepository.deleteById(id);
             }
         }
     }

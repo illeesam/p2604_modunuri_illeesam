@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoSyVendorService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyVendorMapper mapper;
-    private final SyVendorRepository repository;
+    private final SyVendorMapper syVendorMapper;
+    private final SyVendorRepository syVendorRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyVendorDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syVendorMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyVendorDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syVendorMapper.selectPageList(p), syVendorMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyVendorDto getById(String id) {
-        SyVendorDto dto = mapper.selectById(id);
+        SyVendorDto dto = syVendorMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,27 +56,27 @@ public class BoSyVendorService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        return syVendorRepository.save(body);
     }
 
     @Transactional
     public SyVendorDto update(String id, SyVendor body) {
-        SyVendor entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyVendor entity = syVendorRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "vendorId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        syVendorRepository.save(entity);
         em.flush();
         return getById(id);
     }
 
     @Transactional
     public void delete(String id) {
-        SyVendor entity = repository.findById(id)
+        SyVendor entity = syVendorRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syVendorRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syVendorRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -91,7 +91,7 @@ public class BoSyVendorService {
             .map(SyVendor::getVendorId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syVendorRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -101,11 +101,11 @@ public class BoSyVendorService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorId() != null)
             .toList();
         for (SyVendor row : updateRows) {
-            SyVendor entity = repository.findById(row.getVendorId())
+            SyVendor entity = syVendorRepository.findById(row.getVendorId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getVendorId()));
             VoUtil.voCopyExclude(row, entity, "vendorId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syVendorRepository.save(entity);
         }
         em.flush();
 
@@ -117,7 +117,7 @@ public class BoSyVendorService {
             row.setVendorId("VD" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syVendorRepository.save(row);
         }
         em.flush();
         em.clear();

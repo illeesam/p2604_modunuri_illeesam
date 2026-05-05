@@ -24,32 +24,32 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmSaveItemService {
 
 
-    private final PmSaveItemMapper      mapper;
-    private final PmSaveItemRepository  repository;
+    private final PmSaveItemMapper      pmSaveItemMapper;
+    private final PmSaveItemRepository  pmSaveItemRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmSaveItemDto getById(String id) {
-        PmSaveItemDto result = mapper.selectById(id);
+        PmSaveItemDto result = pmSaveItemMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<PmSaveItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pmSaveItemMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmSaveItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmSaveItemMapper.selectPageList(p), pmSaveItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmSaveItem entity) {
-        return mapper.updateSelective(entity);
+        return pmSaveItemMapper.updateSelective(entity);
     }
 
     // ── JPA 저장/삭제 ────────────────────────────────────────────
@@ -61,23 +61,23 @@ public class PmSaveItemService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        return repository.save(entity);
+        return pmSaveItemRepository.save(entity);
     }
 
     @Transactional
     public PmSaveItem save(PmSaveItem entity) {
-        if (!repository.existsById(entity.getSaveItemId()))
+        if (!pmSaveItemRepository.existsById(entity.getSaveItemId()))
             throw new CmBizException("존재하지 않는 PmSaveItem입니다: " + entity.getSaveItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        return repository.save(entity);
+        return pmSaveItemRepository.save(entity);
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmSaveItemRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmSaveItem입니다: " + id);
-        repository.deleteById(id);
+        pmSaveItemRepository.deleteById(id);
     }
 
     @Transactional
@@ -90,16 +90,16 @@ public class PmSaveItemService {
                 row.setSaveItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_save_item"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmSaveItemRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSaveItemId(), "saveItemId must not be null");
-                PmSaveItem entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmSaveItem entity = pmSaveItemRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "saveItemId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmSaveItemRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSaveItemId(), "saveItemId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmSaveItemRepository.existsById(id)) pmSaveItemRepository.deleteById(id);
             }
         }
     }

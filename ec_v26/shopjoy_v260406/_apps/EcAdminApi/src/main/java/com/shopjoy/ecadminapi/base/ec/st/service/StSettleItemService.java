@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class StSettleItemService {
 
 
-    private final StSettleItemMapper mapper;
-    private final StSettleItemRepository repository;
+    private final StSettleItemMapper stSettleItemMapper;
+    private final StSettleItemRepository stSettleItemRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -36,26 +36,26 @@ public class StSettleItemService {
 
     @Transactional(readOnly = true)
     public StSettleItemDto getById(String id) {
-        StSettleItemDto result = mapper.selectById(id);
+        StSettleItemDto result = stSettleItemMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<StSettleItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StSettleItemDto> result = mapper.selectList(p);
+        List<StSettleItemDto> result = stSettleItemMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettleItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettleItemMapper.selectPageList(p), stSettleItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(StSettleItem entity) {
-        int result = mapper.updateSelective(entity);
+        int result = stSettleItemMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class StSettleItemService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleItem result = repository.save(entity);
+        StSettleItem result = stSettleItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public StSettleItem save(StSettleItem entity) {
-        if (!repository.existsById(entity.getSettleItemId()))
+        if (!stSettleItemRepository.existsById(entity.getSettleItemId()))
             throw new CmBizException("존재하지 않는 StSettleItem입니다: " + entity.getSettleItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleItem result = repository.save(entity);
+        StSettleItem result = stSettleItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        StSettleItem entity = repository.findById(id)
+        StSettleItem entity = stSettleItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettleItemRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettleItemRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -102,16 +102,16 @@ public class StSettleItemService {
                 row.setSettleItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_settle_item"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                stSettleItemRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleItemId(), "settleItemId must not be null");
-                StSettleItem entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                StSettleItem entity = stSettleItemRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "settleItemId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                stSettleItemRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleItemId(), "settleItemId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (stSettleItemRepository.existsById(id)) stSettleItemRepository.deleteById(id);
             }
         }
         em.flush();

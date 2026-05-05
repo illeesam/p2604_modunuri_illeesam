@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class StSettleEtcAdjService {
 
 
-    private final StSettleEtcAdjMapper mapper;
-    private final StSettleEtcAdjRepository repository;
+    private final StSettleEtcAdjMapper stSettleEtcAdjMapper;
+    private final StSettleEtcAdjRepository stSettleEtcAdjRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -36,26 +36,26 @@ public class StSettleEtcAdjService {
 
     @Transactional(readOnly = true)
     public StSettleEtcAdjDto getById(String id) {
-        StSettleEtcAdjDto result = mapper.selectById(id);
+        StSettleEtcAdjDto result = stSettleEtcAdjMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<StSettleEtcAdjDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StSettleEtcAdjDto> result = mapper.selectList(p);
+        List<StSettleEtcAdjDto> result = stSettleEtcAdjMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettleEtcAdjDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettleEtcAdjMapper.selectPageList(p), stSettleEtcAdjMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(StSettleEtcAdj entity) {
-        int result = mapper.updateSelective(entity);
+        int result = stSettleEtcAdjMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class StSettleEtcAdjService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleEtcAdj result = repository.save(entity);
+        StSettleEtcAdj result = stSettleEtcAdjRepository.save(entity);
         return result;
     }
 
     @Transactional
     public StSettleEtcAdj save(StSettleEtcAdj entity) {
-        if (!repository.existsById(entity.getSettleEtcAdjId()))
+        if (!stSettleEtcAdjRepository.existsById(entity.getSettleEtcAdjId()))
             throw new CmBizException("존재하지 않는 StSettleEtcAdj입니다: " + entity.getSettleEtcAdjId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleEtcAdj result = repository.save(entity);
+        StSettleEtcAdj result = stSettleEtcAdjRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        StSettleEtcAdj entity = repository.findById(id)
+        StSettleEtcAdj entity = stSettleEtcAdjRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettleEtcAdjRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettleEtcAdjRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -102,16 +102,16 @@ public class StSettleEtcAdjService {
                 row.setSettleEtcAdjId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_settle_etc_adj"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                stSettleEtcAdjRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleEtcAdjId(), "settleEtcAdjId must not be null");
-                StSettleEtcAdj entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                StSettleEtcAdj entity = stSettleEtcAdjRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "settleEtcAdjId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                stSettleEtcAdjRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getSettleEtcAdjId(), "settleEtcAdjId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (stSettleEtcAdjRepository.existsById(id)) stSettleEtcAdjRepository.deleteById(id);
             }
         }
         em.flush();

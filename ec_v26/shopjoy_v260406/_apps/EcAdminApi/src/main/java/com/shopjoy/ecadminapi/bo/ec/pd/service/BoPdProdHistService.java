@@ -14,30 +14,30 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoPdProdHistService {
 
-    private final PdProdHistMapper mapper;
+    private final PdProdHistMapper pdProdHistMapper;
 
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getOrders(String prodId, Map<String, Object> p) {
-        return mapper.selectOrders(prodId, p != null ? p : new HashMap<>());
+        return pdProdHistMapper.selectOrders(prodId, p != null ? p : new HashMap<>());
     }
 
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getStockHist(String prodId, Map<String, Object> p) {
-        return mapper.selectStockHist(prodId, p != null ? p : new HashMap<>());
+        return pdProdHistMapper.selectStockHist(prodId, p != null ? p : new HashMap<>());
     }
 
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getPriceHist(String prodId, Map<String, Object> p) {
-        return mapper.selectPriceHist(prodId, p != null ? p : new HashMap<>());
+        return pdProdHistMapper.selectPriceHist(prodId, p != null ? p : new HashMap<>());
     }
 
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getStatusHist(String prodId, Map<String, Object> p) {
-        return mapper.selectStatusHist(prodId, p != null ? p : new HashMap<>());
+        return pdProdHistMapper.selectStatusHist(prodId, p != null ? p : new HashMap<>());
     }
 
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getChangeHist(String prodId, Map<String, Object> p) {
-        return mapper.selectChangeHist(prodId, p != null ? p : new HashMap<>());
+        return pdProdHistMapper.selectChangeHist(prodId, p != null ? p : new HashMap<>());
     }
 }

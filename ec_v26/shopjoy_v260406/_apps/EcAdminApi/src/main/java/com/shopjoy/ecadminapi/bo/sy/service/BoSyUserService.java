@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoSyUserService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyUserMapper mapper;
-    private final SyUserRepository repository;
+    private final SyUserMapper syUserMapper;
+    private final SyUserRepository syUserRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyUserDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syUserMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyUserDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syUserMapper.selectPageList(p), syUserMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyUserDto getById(String id) {
-        SyUserDto dto = mapper.selectById(id);
+        SyUserDto dto = syUserMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoSyUserService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyUser saved = repository.save(body);
+        SyUser saved = syUserRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public SyUserDto update(String id, SyUser body) {
-        SyUser entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyUser entity = syUserRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "userId^loginId^loginPwdHash^regBy^regDate^lastLogin^lastLoginDate^loginFailCnt");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyUser saved = repository.save(entity);
+        SyUser saved = syUserRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,11 +75,11 @@ public class BoSyUserService {
 
     @Transactional
     public void delete(String id) {
-        SyUser entity = repository.findById(id)
+        SyUser entity = syUserRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syUserRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syUserRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
     @Transactional
@@ -93,7 +93,7 @@ public class BoSyUserService {
             .map(SyUser::getUserId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syUserRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -103,11 +103,11 @@ public class BoSyUserService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getUserId() != null)
             .toList();
         for (SyUser row : updateRows) {
-            SyUser entity = repository.findById(row.getUserId())
+            SyUser entity = syUserRepository.findById(row.getUserId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getUserId()));
             VoUtil.voCopyExclude(row, entity, "userId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syUserRepository.save(entity);
         }
         em.flush();
 
@@ -119,7 +119,7 @@ public class BoSyUserService {
             row.setUserId("US" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syUserRepository.save(row);
         }
         em.flush();
         em.clear();

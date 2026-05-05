@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoDpWidgetLibService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final DpWidgetLibMapper mapper;
-    private final DpWidgetLibRepository repository;
+    private final DpWidgetLibMapper dpWidgetLibMapper;
+    private final DpWidgetLibRepository dpWidgetLibRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<DpWidgetLibDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return dpWidgetLibMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<DpWidgetLibDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(dpWidgetLibMapper.selectPageList(p), dpWidgetLibMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public DpWidgetLibDto getById(String id) {
-        DpWidgetLibDto dto = mapper.selectById(id);
+        DpWidgetLibDto dto = dpWidgetLibMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,18 +57,18 @@ public class BoDpWidgetLibService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        DpWidgetLib saved = repository.save(body);
+        DpWidgetLib saved = dpWidgetLibRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public DpWidgetLibDto update(String id, DpWidgetLib body) {
-        DpWidgetLib entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        DpWidgetLib entity = dpWidgetLibRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "widgetLibId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        DpWidgetLib saved = repository.save(entity);
+        DpWidgetLib saved = dpWidgetLibRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -76,11 +76,11 @@ public class BoDpWidgetLibService {
 
     @Transactional
     public void delete(String id) {
-        DpWidgetLib entity = repository.findById(id)
+        DpWidgetLib entity = dpWidgetLibRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        dpWidgetLibRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (dpWidgetLibRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -95,7 +95,7 @@ public class BoDpWidgetLibService {
             .map(DpWidgetLib::getWidgetLibId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            dpWidgetLibRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -104,11 +104,11 @@ public class BoDpWidgetLibService {
         for (DpWidgetLib row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getWidgetLibId(), "widgetLibId must not be null");
-            DpWidgetLib entity = repository.findById(id)
+            DpWidgetLib entity = dpWidgetLibRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "widgetLibId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            dpWidgetLibRepository.save(entity);
         }
         em.flush();
 
@@ -118,7 +118,7 @@ public class BoDpWidgetLibService {
             row.setWidgetLibId("WL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            dpWidgetLibRepository.save(row);
         }
         em.flush();
         em.clear();

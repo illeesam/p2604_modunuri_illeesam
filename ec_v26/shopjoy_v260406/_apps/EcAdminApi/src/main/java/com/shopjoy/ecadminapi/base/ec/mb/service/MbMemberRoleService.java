@@ -23,35 +23,35 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class MbMemberRoleService {
 
-    private final MbMemberRoleMapper mapper;
-    private final MbMemberRoleRepository repository;
+    private final MbMemberRoleMapper mbMemberRoleMapper;
+    private final MbMemberRoleRepository mbMemberRoleRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public MbMemberRoleDto getById(String id) {
         // mb_member_role :: select one :: id [orm:mybatis]
-        return mapper.selectById(id);
+        return mbMemberRoleMapper.selectById(id);
     }
 
     @Transactional(readOnly = true)
     public List<MbMemberRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // mb_member_role :: select list :: p [orm:mybatis]
-        return mapper.selectList(p);
+        return mbMemberRoleMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<MbMemberRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // mb_member_role :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(mbMemberRoleMapper.selectPageList(p), mbMemberRoleMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(MbMemberRole entity) {
         // mb_member_role :: update :: entity [orm:mybatis]
-        return mapper.updateSelective(entity);
+        return mbMemberRoleMapper.updateSelective(entity);
     }
 
     // ── JPA 저장/삭제 ────────────────────────────────────────────
@@ -66,27 +66,27 @@ public class MbMemberRoleService {
         entity.setRegBy(authId);
         entity.setRegDate(now);
         // mb_member_role :: insert or update :: [orm:jpa]
-        return repository.save(entity);
+        return mbMemberRoleRepository.save(entity);
     }
 
     @Transactional
     @SuppressWarnings("null")
     public MbMemberRole save(MbMemberRole entity) {
-        if (!repository.existsById(entity.getMemberRoleId()))
+        if (!mbMemberRoleRepository.existsById(entity.getMemberRoleId()))
             throw new CmBizException("존재하지 않는 MbMemberRole입니다: " + entity.getMemberRoleId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // mb_member_role :: insert or update :: [orm:jpa]
-        return repository.save(entity);
+        return mbMemberRoleRepository.save(entity);
     }
 
     @Transactional
     @SuppressWarnings("null")
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!mbMemberRoleRepository.existsById(id))
             throw new CmBizException("존재하지 않는 MbMemberRole입니다: " + id);
         // mb_member_role :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        mbMemberRoleRepository.deleteById(id);
     }
 
     @Transactional
@@ -99,16 +99,16 @@ public class MbMemberRoleService {
                 row.setMemberRoleId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("mb_member_role"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                mbMemberRoleRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getMemberRoleId(), "memberRoleId must not be null");
-                MbMemberRole entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                MbMemberRole entity = mbMemberRoleRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "memberRoleId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                mbMemberRoleRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getMemberRoleId(), "memberRoleId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (mbMemberRoleRepository.existsById(id)) mbMemberRoleRepository.deleteById(id);
             }
         }
     }

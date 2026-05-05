@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class MbLikeService {
 
-    private final MbLikeMapper mapper;
-    private final MbLikeRepository repository;
+    private final MbLikeMapper mbLikeMapper;
+    private final MbLikeRepository mbLikeRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public MbLikeDto getById(String id) {
-        MbLikeDto result = mapper.selectById(id);
+        MbLikeDto result = mbLikeMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<MbLikeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<MbLikeDto> result = mapper.selectList(p);
+        List<MbLikeDto> result = mbLikeMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<MbLikeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(mbLikeMapper.selectPageList(p), mbLikeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(MbLike entity) {
-        int result = mapper.updateSelective(entity);
+        int result = mbLikeMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class MbLikeService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        MbLike result = repository.save(entity);
+        MbLike result = mbLikeRepository.save(entity);
         return result;
     }
 
     @Transactional
     public MbLike save(MbLike entity) {
-        if (!repository.existsById(entity.getLikeId()))
+        if (!mbLikeRepository.existsById(entity.getLikeId()))
             throw new CmBizException("존재하지 않는 MbLike입니다: " + entity.getLikeId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        MbLike result = repository.save(entity);
+        MbLike result = mbLikeRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!mbLikeRepository.existsById(id))
             throw new CmBizException("존재하지 않는 MbLike입니다: " + id);
-        repository.deleteById(id);
+        mbLikeRepository.deleteById(id);
     }
 
     @Transactional
@@ -93,16 +93,16 @@ public class MbLikeService {
                 row.setLikeId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("mb_like"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                mbLikeRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getLikeId(), "likeId must not be null");
-                MbLike entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                MbLike entity = mbLikeRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "likeId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                mbLikeRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getLikeId(), "likeId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (mbLikeRepository.existsById(id)) mbLikeRepository.deleteById(id);
             }
         }
     }

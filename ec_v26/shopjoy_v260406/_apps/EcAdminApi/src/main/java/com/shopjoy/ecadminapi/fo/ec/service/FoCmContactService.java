@@ -28,12 +28,12 @@ public class FoCmContactService {
 
     private static final String CONTACT_CATE = "CONTACT";
 
-    private final CmBlogRepository repository;
-    private final CmBlogMapper mapper;
+    private final CmBlogRepository cmBlogRepository;
+    private final CmBlogMapper cmBlogMapper;
 
     @Transactional(readOnly = true)
     public CmBlogDto getById(String id) {
-        CmBlogDto dto = mapper.selectById(id);
+        CmBlogDto dto = cmBlogMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 문의입니다: " + id);
         return dto;
     }
@@ -57,7 +57,7 @@ public class FoCmContactService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(authId);
         entity.setUpdDate(LocalDateTime.now());
-        CmBlog saved = repository.save(entity);
+        CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("문의 접수에 실패했습니다.");
         return saved;
     }

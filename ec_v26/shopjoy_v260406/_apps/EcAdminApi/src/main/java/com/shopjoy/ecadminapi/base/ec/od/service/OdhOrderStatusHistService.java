@@ -17,33 +17,33 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OdhOrderStatusHistService {
 
-    private final OdhOrderStatusHistMapper mapper;
-    private final OdhOrderStatusHistRepository repository;
+    private final OdhOrderStatusHistMapper odhOrderStatusHistMapper;
+    private final OdhOrderStatusHistRepository odhOrderStatusHistRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdhOrderStatusHistDto getById(String id) {
-        OdhOrderStatusHistDto result = mapper.selectById(id);
+        OdhOrderStatusHistDto result = odhOrderStatusHistMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdhOrderStatusHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdhOrderStatusHistDto> result = mapper.selectList(p);
+        List<OdhOrderStatusHistDto> result = odhOrderStatusHistMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdhOrderStatusHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odhOrderStatusHistMapper.selectPageList(p), odhOrderStatusHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdhOrderStatusHist entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odhOrderStatusHistMapper.updateSelective(entity);
         return result;
     }
 

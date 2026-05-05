@@ -24,15 +24,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class PmEventItemService {
 
 
-    private final PmEventItemMapper mapper;
-    private final PmEventItemRepository repository;
+    private final PmEventItemMapper pmEventItemMapper;
+    private final PmEventItemRepository pmEventItemRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PmEventItemDto getById(String id) {
         // pm_event_item :: select one :: id [orm:mybatis]
-        PmEventItemDto result = mapper.selectById(id);
+        PmEventItemDto result = pmEventItemMapper.selectById(id);
         return result;
     }
 
@@ -40,7 +40,7 @@ public class PmEventItemService {
     public List<PmEventItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pm_event_item :: select list :: p [orm:mybatis]
-        List<PmEventItemDto> result = mapper.selectList(p);
+        List<PmEventItemDto> result = pmEventItemMapper.selectList(p);
         return result;
     }
 
@@ -48,13 +48,13 @@ public class PmEventItemService {
     public PageResult<PmEventItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pm_event_item :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmEventItemMapper.selectPageList(p), pmEventItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmEventItem entity) {
         // pm_event_item :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pmEventItemMapper.updateSelective(entity);
         return result;
     }
 
@@ -68,27 +68,27 @@ public class PmEventItemService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_event_item :: insert or update :: [orm:jpa]
-        PmEventItem result = repository.save(entity);
+        PmEventItem result = pmEventItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PmEventItem save(PmEventItem entity) {
-        if (!repository.existsById(entity.getEventItemId()))
+        if (!pmEventItemRepository.existsById(entity.getEventItemId()))
             throw new CmBizException("존재하지 않는 PmEventItem입니다: " + entity.getEventItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_event_item :: insert or update :: [orm:jpa]
-        PmEventItem result = repository.save(entity);
+        PmEventItem result = pmEventItemRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pmEventItemRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PmEventItem입니다: " + id);
         // pm_event_item :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pmEventItemRepository.deleteById(id);
     }
 
     @Transactional
@@ -101,16 +101,16 @@ public class PmEventItemService {
                 row.setEventItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_event_item"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pmEventItemRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getEventItemId(), "eventItemId must not be null");
-                PmEventItem entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PmEventItem entity = pmEventItemRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "eventItemId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pmEventItemRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getEventItemId(), "eventItemId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pmEventItemRepository.existsById(id)) pmEventItemRepository.deleteById(id);
             }
         }
     }

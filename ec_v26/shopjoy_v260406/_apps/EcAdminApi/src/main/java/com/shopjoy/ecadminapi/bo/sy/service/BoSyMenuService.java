@@ -25,8 +25,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyMenuService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyMenuMapper      mapper;
-    private final SyMenuRepository  repository;
+    private final SyMenuMapper      syMenuMapper;
+    private final SyMenuRepository  syMenuRepository;
     private final SyMenuRedisStore  menuCache;
     @PersistenceContext
     private EntityManager em;
@@ -34,18 +34,18 @@ public class BoSyMenuService {
     @Transactional(readOnly = true)
     public List<SyMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syMenuMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syMenuMapper.selectPageList(p), syMenuMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyMenuDto getById(String id) {
-        SyMenuDto dto = mapper.selectById(id);
+        SyMenuDto dto = syMenuMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,7 +57,7 @@ public class BoSyMenuService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyMenu saved = repository.save(body);
+        SyMenu saved = syMenuRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         menuCache.evictAll();
         return saved;
@@ -65,11 +65,11 @@ public class BoSyMenuService {
 
     @Transactional
     public SyMenuDto update(String id, SyMenu body) {
-        SyMenu entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyMenu entity = syMenuRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "menuId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyMenu saved = repository.save(entity);
+        SyMenu saved = syMenuRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         menuCache.evictAll();
@@ -78,11 +78,11 @@ public class BoSyMenuService {
 
     @Transactional
     public void delete(String id) {
-        SyMenu entity = repository.findById(id)
+        SyMenu entity = syMenuRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syMenuRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syMenuRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
         menuCache.evictAll();
     }
@@ -98,7 +98,7 @@ public class BoSyMenuService {
             .map(SyMenu::getMenuId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syMenuRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -108,11 +108,11 @@ public class BoSyMenuService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getMenuId() != null)
             .toList();
         for (SyMenu row : updateRows) {
-            SyMenu entity = repository.findById(row.getMenuId())
+            SyMenu entity = syMenuRepository.findById(row.getMenuId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getMenuId()));
             VoUtil.voCopyExclude(row, entity, "menuId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syMenuRepository.save(entity);
         }
         em.flush();
 
@@ -124,7 +124,7 @@ public class BoSyMenuService {
             row.setMenuId("MN" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syMenuRepository.save(row);
         }
         em.flush();
         em.clear();

@@ -26,8 +26,8 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 public class SyI18nMsgService {
 
 
-    private final SyI18nMsgMapper mapper;
-    private final SyI18nMsgRepository repository;
+    private final SyI18nMsgMapper syI18nMsgMapper;
+    private final SyI18nMsgRepository syI18nMsgRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,7 +37,7 @@ public class SyI18nMsgService {
     @Transactional(readOnly = true)
     public SyI18nMsgDto getById(String id) {
         // sy_i18n_msg :: select one :: id [orm:mybatis]
-        SyI18nMsgDto result = mapper.selectById(id);
+        SyI18nMsgDto result = syI18nMsgMapper.selectById(id);
         return result;
     }
 
@@ -45,7 +45,7 @@ public class SyI18nMsgService {
     public List<SyI18nMsgDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_i18n_msg :: select list :: p [orm:mybatis]
-        List<SyI18nMsgDto> result = mapper.selectList(p);
+        List<SyI18nMsgDto> result = syI18nMsgMapper.selectList(p);
         return result;
     }
 
@@ -53,13 +53,13 @@ public class SyI18nMsgService {
     public PageResult<SyI18nMsgDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_i18n_msg :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syI18nMsgMapper.selectPageList(p), syI18nMsgMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyI18nMsg entity) {
         // sy_i18n_msg :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = syI18nMsgMapper.updateSelective(entity);
         return result;
     }
 
@@ -73,28 +73,28 @@ public class SyI18nMsgService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_i18n_msg :: insert or update :: [orm:jpa]
-        SyI18nMsg result = repository.save(entity);
+        SyI18nMsg result = syI18nMsgRepository.save(entity);
         return result;
     }
 
     @Transactional
     public SyI18nMsg save(SyI18nMsg entity) {
-        if (!repository.existsById(entity.getI18nMsgId()))
+        if (!syI18nMsgRepository.existsById(entity.getI18nMsgId()))
             throw new CmBizException("존재하지 않는 SyI18nMsg입니다: " + entity.getI18nMsgId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_i18n_msg :: insert or update :: [orm:jpa]
-        SyI18nMsg result = repository.save(entity);
+        SyI18nMsg result = syI18nMsgRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        SyI18nMsg entity = repository.findById(id)
+        SyI18nMsg entity = syI18nMsgRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syI18nMsgRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syI18nMsgRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -108,16 +108,16 @@ public class SyI18nMsgService {
                 row.setI18nMsgId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_i18n_msg"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                syI18nMsgRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getI18nMsgId(), "i18nMsgId must not be null");
-                SyI18nMsg entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                SyI18nMsg entity = syI18nMsgRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "i18nMsgId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                syI18nMsgRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getI18nMsgId(), "i18nMsgId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (syI18nMsgRepository.existsById(id)) syI18nMsgRepository.deleteById(id);
             }
         }
         em.flush();

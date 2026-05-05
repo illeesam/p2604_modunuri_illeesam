@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoSyAttachService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyAttachMapper mapper;
-    private final SyAttachRepository repository;
+    private final SyAttachMapper syAttachMapper;
+    private final SyAttachRepository syAttachRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyAttachDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return syAttachMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyAttachDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(syAttachMapper.selectPageList(p), syAttachMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SyAttachDto getById(String id) {
-        SyAttachDto dto = mapper.selectById(id);
+        SyAttachDto dto = syAttachMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoSyAttachService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        SyAttach saved = repository.save(body);
+        SyAttach saved = syAttachRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public SyAttachDto update(String id, SyAttach body) {
-        SyAttach entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyAttach entity = syAttachRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "attachId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        SyAttach saved = repository.save(entity);
+        SyAttach saved = syAttachRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,11 +75,11 @@ public class BoSyAttachService {
 
     @Transactional
     public void delete(String id) {
-        SyAttach entity = repository.findById(id)
+        SyAttach entity = syAttachRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        syAttachRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (syAttachRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
     @Transactional
@@ -93,7 +93,7 @@ public class BoSyAttachService {
             .map(SyAttach::getAttachId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            syAttachRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -103,11 +103,11 @@ public class BoSyAttachService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getAttachId() != null)
             .toList();
         for (SyAttach row : updateRows) {
-            SyAttach entity = repository.findById(row.getAttachId())
+            SyAttach entity = syAttachRepository.findById(row.getAttachId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getAttachId()));
             VoUtil.voCopyExclude(row, entity, "attachId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            syAttachRepository.save(entity);
         }
         em.flush();
 
@@ -119,7 +119,7 @@ public class BoSyAttachService {
             row.setAttachId("AT" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            syAttachRepository.save(row);
         }
         em.flush();
         em.clear();

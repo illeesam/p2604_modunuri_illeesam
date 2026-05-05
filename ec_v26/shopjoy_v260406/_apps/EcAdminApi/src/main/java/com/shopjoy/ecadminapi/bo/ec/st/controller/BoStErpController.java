@@ -27,7 +27,7 @@ import java.util.Map;
 public class BoStErpController {
 
     private final StErpVoucherService service;
-    private final StErpVoucherRepository repository;
+    private final StErpVoucherRepository stErpVoucherRepository;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<StErpVoucherDto>>> list(@RequestParam Map<String, Object> p) {
@@ -60,7 +60,7 @@ public class BoStErpController {
 
     @PostMapping("/resend/{id}")
     public ResponseEntity<ApiResponse<Void>> resend(@PathVariable("id") String id) {
-        StErpVoucher entity = repository.findById(id)
+        StErpVoucher entity = stErpVoucherRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 전표입니다: " + id));
         entity.setErpVoucherStatusCd("PENDING");
         entity.setErpSendDate(null);

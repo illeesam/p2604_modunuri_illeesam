@@ -23,26 +23,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoStSettleCloseService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final StSettleCloseMapper mapper;
-    private final StSettleCloseRepository repository;
+    private final StSettleCloseMapper stSettleCloseMapper;
+    private final StSettleCloseRepository stSettleCloseRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<StSettleCloseDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return stSettleCloseMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<StSettleCloseDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(stSettleCloseMapper.selectPageList(p), stSettleCloseMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public StSettleCloseDto getById(String id) {
-        StSettleCloseDto dto = mapper.selectById(id);
+        StSettleCloseDto dto = stSettleCloseMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -54,17 +54,17 @@ public class BoStSettleCloseService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        StSettleClose saved = repository.save(body);
+        StSettleClose saved = stSettleCloseRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public StSettleCloseDto update(String id, StSettleClose body) {
-        StSettleClose entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettleClose entity = stSettleCloseRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleClose saved = repository.save(entity);
+        StSettleClose saved = stSettleCloseRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -72,21 +72,21 @@ public class BoStSettleCloseService {
 
     @Transactional
     public void delete(String id) {
-        StSettleClose entity = repository.findById(id)
+        StSettleClose entity = stSettleCloseRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        stSettleCloseRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (stSettleCloseRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public StSettleCloseDto reopen(String id) {
-        StSettleClose entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettleClose entity = stSettleCloseRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setCloseStatusCd("OPEN");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleClose saved = repository.save(entity);
+        StSettleClose saved = stSettleCloseRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);

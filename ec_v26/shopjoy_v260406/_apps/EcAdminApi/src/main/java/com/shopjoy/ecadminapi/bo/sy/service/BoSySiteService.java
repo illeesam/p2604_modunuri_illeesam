@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoSySiteService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SySiteMapper mapper;
-    private final SySiteRepository repository;
+    private final SySiteMapper sySiteMapper;
+    private final SySiteRepository sySiteRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SySiteDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return sySiteMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SySiteDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(sySiteMapper.selectPageList(p), sySiteMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public SySiteDto getById(String id) {
-        SySiteDto dto = mapper.selectById(id);
+        SySiteDto dto = sySiteMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,27 +56,27 @@ public class BoSySiteService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        return sySiteRepository.save(body);
     }
 
     @Transactional
     public SySiteDto update(String id, SySite body) {
-        SySite entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SySite entity = sySiteRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "siteId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        sySiteRepository.save(entity);
         em.flush();
         return getById(id);
     }
 
     @Transactional
     public void delete(String id) {
-        SySite entity = repository.findById(id)
+        SySite entity = sySiteRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        sySiteRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (sySiteRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
@@ -91,7 +91,7 @@ public class BoSySiteService {
             .map(SySite::getSiteId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            sySiteRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -101,11 +101,11 @@ public class BoSySiteService {
             .filter(r -> "U".equals(r.getRowStatus()) && r.getSiteId() != null)
             .toList();
         for (SySite row : updateRows) {
-            SySite entity = repository.findById(row.getSiteId())
+            SySite entity = sySiteRepository.findById(row.getSiteId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getSiteId()));
             VoUtil.voCopyExclude(row, entity, "siteId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            sySiteRepository.save(entity);
         }
         em.flush();
 
@@ -117,7 +117,7 @@ public class BoSySiteService {
             row.setSiteId("SI" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            sySiteRepository.save(row);
         }
         em.flush();
         em.clear();

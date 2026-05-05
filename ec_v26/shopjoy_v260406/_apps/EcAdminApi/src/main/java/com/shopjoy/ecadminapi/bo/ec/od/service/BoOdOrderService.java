@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoOdOrderService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final OdOrderMapper mapper;
-    private final OdOrderRepository repository;
+    private final OdOrderMapper odOrderMapper;
+    private final OdOrderRepository odOrderRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<OdOrderDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return odOrderMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdOrderDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odOrderMapper.selectPageList(p), odOrderMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public OdOrderDto getById(String id) {
-        OdOrderDto dto = mapper.selectById(id);
+        OdOrderDto dto = odOrderMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -57,18 +57,18 @@ public class BoOdOrderService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        OdOrder saved = repository.save(body);
+        OdOrder saved = odOrderRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public OdOrderDto update(String id, OdOrder body) {
-        OdOrder entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        OdOrder entity = odOrderRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "orderId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdOrder saved = repository.save(entity);
+        OdOrder saved = odOrderRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -76,22 +76,22 @@ public class BoOdOrderService {
 
     @Transactional
     public void delete(String id) {
-        OdOrder entity = repository.findById(id)
+        OdOrder entity = odOrderRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        odOrderRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (odOrderRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public OdOrderDto changeStatus(String id, String statusCd) {
-        OdOrder entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+        OdOrder entity = odOrderRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setOrderStatusCdBefore(entity.getOrderStatusCd());
         entity.setOrderStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdOrder saved = repository.save(entity);
+        OdOrder saved = odOrderRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -107,7 +107,7 @@ public class BoOdOrderService {
             .map(OdOrder::getOrderId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            odOrderRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -116,11 +116,11 @@ public class BoOdOrderService {
         for (OdOrder row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getOrderId(), "orderId must not be null");
-            OdOrder entity = repository.findById(id)
+            OdOrder entity = odOrderRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "orderId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            odOrderRepository.save(entity);
         }
         em.flush();
 
@@ -130,7 +130,7 @@ public class BoOdOrderService {
             row.setOrderId("OD" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            odOrderRepository.save(row);
         }
         em.flush();
         em.clear();

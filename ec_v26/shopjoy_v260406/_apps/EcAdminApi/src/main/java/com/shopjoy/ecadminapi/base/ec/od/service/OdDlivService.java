@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class OdDlivService {
 
-    private final OdDlivMapper mapper;
-    private final OdDlivRepository repository;
+    private final OdDlivMapper odDlivMapper;
+    private final OdDlivRepository odDlivRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdDlivDto getById(String id) {
-        OdDlivDto result = mapper.selectById(id);
+        OdDlivDto result = odDlivMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdDlivDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdDlivDto> result = mapper.selectList(p);
+        List<OdDlivDto> result = odDlivMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdDlivDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odDlivMapper.selectPageList(p), odDlivMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdDliv entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odDlivMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class OdDlivService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdDliv result = repository.save(entity);
+        OdDliv result = odDlivRepository.save(entity);
         return result;
     }
 
     @Transactional
     public OdDliv save(OdDliv entity) {
-        if (!repository.existsById(entity.getDlivId()))
+        if (!odDlivRepository.existsById(entity.getDlivId()))
             throw new CmBizException("존재하지 않는 OdDliv입니다: " + entity.getDlivId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdDliv result = repository.save(entity);
+        OdDliv result = odDlivRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odDlivRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdDliv입니다: " + id);
-        repository.deleteById(id);
+        odDlivRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<OdDliv> rows) {
@@ -92,16 +92,16 @@ public class OdDlivService {
                 row.setDlivId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_dliv"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                odDlivRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDlivId(), "dlivId must not be null");
-                OdDliv entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                OdDliv entity = odDlivRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "dlivId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                odDlivRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getDlivId(), "dlivId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (odDlivRepository.existsById(id)) odDlivRepository.deleteById(id);
             }
         }
     }

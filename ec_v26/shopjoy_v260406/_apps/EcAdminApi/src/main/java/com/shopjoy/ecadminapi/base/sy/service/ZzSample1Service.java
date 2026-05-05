@@ -22,34 +22,34 @@ import java.util.Map;
 public class ZzSample1Service {
 
 
-    private final ZzSample1Mapper mapper;
-    private final ZzSample1Repository repository;
+    private final ZzSample1Mapper zzSample1Mapper;
+    private final ZzSample1Repository zzSample1Repository;
 
     @Transactional(readOnly = true)
     public ZzSample1Dto getById(String id) {
         // zz_sample1 :: select one :: id [orm:mybatis]
-        return mapper.selectById(id);
+        return zzSample1Mapper.selectById(id);
     }
 
     @Transactional(readOnly = true)
     public List<ZzSample1Dto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // zz_sample1 :: select list :: p [orm:mybatis]
-        return mapper.selectList(p);
+        return zzSample1Mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<ZzSample1Dto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // zz_sample1 :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+        return PageResult.of(zzSample1Mapper.selectPageList(p), zzSample1Mapper.selectPageCount(p),
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(ZzSample1 entity) {
         // zz_sample1 :: update :: entity [orm:mybatis]
-        return mapper.updateSelective(entity);
+        return zzSample1Mapper.updateSelective(entity);
     }
 
     @Transactional
@@ -58,25 +58,25 @@ public class ZzSample1Service {
         entity.setRgtr(SecurityUtil.getAuthUser().authId());
         entity.setRegDt(LocalDate.now());
         // zz_sample1 :: insert or update :: [orm:jpa]
-        return repository.save(entity);
+        return zzSample1Repository.save(entity);
     }
 
     @Transactional
     public ZzSample1 save(ZzSample1 entity) {
-        if (!repository.existsById(entity.getSample1Id()))
+        if (!zzSample1Repository.existsById(entity.getSample1Id()))
             throw new CmBizException("존재하지 않는 ZzSample1입니다: " + entity.getSample1Id());
         entity.setMdfr(SecurityUtil.getAuthUser().authId());
         entity.setMdfcnDt(LocalDate.now());
         // zz_sample1 :: insert or update :: [orm:jpa]
-        return repository.save(entity);
+        return zzSample1Repository.save(entity);
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!zzSample1Repository.existsById(id))
             throw new CmBizException("존재하지 않는 ZzSample1입니다: " + id);
         // zz_sample1 :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        zzSample1Repository.deleteById(id);
     }
 
 }

@@ -23,33 +23,33 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class OdRefundService {
 
-    private final OdRefundMapper mapper;
-    private final OdRefundRepository repository;
+    private final OdRefundMapper odRefundMapper;
+    private final OdRefundRepository odRefundRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public OdRefundDto getById(String id) {
-        OdRefundDto result = mapper.selectById(id);
+        OdRefundDto result = odRefundMapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
     public List<OdRefundDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdRefundDto> result = mapper.selectList(p);
+        List<OdRefundDto> result = odRefundMapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdRefundDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(odRefundMapper.selectPageList(p), odRefundMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(OdRefund entity) {
-        int result = mapper.updateSelective(entity);
+        int result = odRefundMapper.updateSelective(entity);
         return result;
     }
 
@@ -62,25 +62,25 @@ public class OdRefundService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdRefund result = repository.save(entity);
+        OdRefund result = odRefundRepository.save(entity);
         return result;
     }
 
     @Transactional
     public OdRefund save(OdRefund entity) {
-        if (!repository.existsById(entity.getRefundId()))
+        if (!odRefundRepository.existsById(entity.getRefundId()))
             throw new CmBizException("존재하지 않는 OdRefund입니다: " + entity.getRefundId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdRefund result = repository.save(entity);
+        OdRefund result = odRefundRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!odRefundRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdRefund입니다: " + id);
-        repository.deleteById(id);
+        odRefundRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<OdRefund> rows) {
@@ -92,16 +92,16 @@ public class OdRefundService {
                 row.setRefundId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_refund"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                odRefundRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getRefundId(), "refundId must not be null");
-                OdRefund entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                OdRefund entity = odRefundRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "refundId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                odRefundRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getRefundId(), "refundId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (odRefundRepository.existsById(id)) odRefundRepository.deleteById(id);
             }
         }
     }

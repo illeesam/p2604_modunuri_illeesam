@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class DpWidgetService {
 
-    private final DpWidgetMapper mapper;
-    private final DpWidgetRepository repository;
+    private final DpWidgetMapper dpWidgetMapper;
+    private final DpWidgetRepository dpWidgetRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public DpWidgetDto getById(String id) {
         // dp_widget :: select one :: id [orm:mybatis]
-        DpWidgetDto result = mapper.selectById(id);
+        DpWidgetDto result = dpWidgetMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class DpWidgetService {
     public List<DpWidgetDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // dp_widget :: select list :: p [orm:mybatis]
-        List<DpWidgetDto> result = mapper.selectList(p);
+        List<DpWidgetDto> result = dpWidgetMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class DpWidgetService {
     public PageResult<DpWidgetDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // dp_widget :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(dpWidgetMapper.selectPageList(p), dpWidgetMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpWidget entity) {
         // dp_widget :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = dpWidgetMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class DpWidgetService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_widget :: insert or update :: [orm:jpa]
-        DpWidget result = repository.save(entity);
+        DpWidget result = dpWidgetRepository.save(entity);
         return result;
     }
 
     @Transactional
     public DpWidget save(DpWidget entity) {
-        if (!repository.existsById(entity.getWidgetId()))
+        if (!dpWidgetRepository.existsById(entity.getWidgetId()))
             throw new CmBizException("존재하지 않는 DpWidget입니다: " + entity.getWidgetId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_widget :: insert or update :: [orm:jpa]
-        DpWidget result = repository.save(entity);
+        DpWidget result = dpWidgetRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!dpWidgetRepository.existsById(id))
             throw new CmBizException("존재하지 않는 DpWidget입니다: " + id);
         // dp_widget :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        dpWidgetRepository.deleteById(id);
     }
 
     @Transactional
@@ -100,16 +100,16 @@ public class DpWidgetService {
                 row.setWidgetId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("dp_widget"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                dpWidgetRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getWidgetId(), "widgetId must not be null");
-                DpWidget entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                DpWidget entity = dpWidgetRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "widgetId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                dpWidgetRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getWidgetId(), "widgetId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (dpWidgetRepository.existsById(id)) dpWidgetRepository.deleteById(id);
             }
         }
     }

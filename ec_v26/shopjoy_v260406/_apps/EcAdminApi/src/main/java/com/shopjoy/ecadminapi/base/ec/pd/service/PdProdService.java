@@ -23,15 +23,15 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 @RequiredArgsConstructor
 public class PdProdService {
 
-    private final PdProdMapper mapper;
-    private final PdProdRepository repository;
+    private final PdProdMapper pdProdMapper;
+    private final PdProdRepository pdProdRepository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public PdProdDto getById(String id) {
         // pd_prod :: select one :: id [orm:mybatis]
-        PdProdDto result = mapper.selectById(id);
+        PdProdDto result = pdProdMapper.selectById(id);
         return result;
     }
 
@@ -39,7 +39,7 @@ public class PdProdService {
     public List<PdProdDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_prod :: select list :: p [orm:mybatis]
-        List<PdProdDto> result = mapper.selectList(p);
+        List<PdProdDto> result = pdProdMapper.selectList(p);
         return result;
     }
 
@@ -47,13 +47,13 @@ public class PdProdService {
     public PageResult<PdProdDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_prod :: select page :: [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pdProdMapper.selectPageList(p), pdProdMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdProd entity) {
         // pd_prod :: update :: [orm:mybatis]
-        int result = mapper.updateSelective(entity);
+        int result = pdProdMapper.updateSelective(entity);
         return result;
     }
 
@@ -67,27 +67,27 @@ public class PdProdService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod :: insert or update :: [orm:jpa]
-        PdProd result = repository.save(entity);
+        PdProd result = pdProdRepository.save(entity);
         return result;
     }
 
     @Transactional
     public PdProd save(PdProd entity) {
-        if (!repository.existsById(entity.getProdId()))
+        if (!pdProdRepository.existsById(entity.getProdId()))
             throw new CmBizException("존재하지 않는 PdProd입니다: " + entity.getProdId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod :: insert or update :: [orm:jpa]
-        PdProd result = repository.save(entity);
+        PdProd result = pdProdRepository.save(entity);
         return result;
     }
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
+        if (!pdProdRepository.existsById(id))
             throw new CmBizException("존재하지 않는 PdProd입니다: " + id);
         // pd_prod :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        pdProdRepository.deleteById(id);
     }
     @Transactional
     public void saveList(List<PdProd> rows) {
@@ -99,16 +99,16 @@ public class PdProdService {
                 row.setProdId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_prod"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
+                pdProdRepository.save(row);
             } else if ("U".equals(rs)) {
                 String id = Objects.requireNonNull(row.getProdId(), "prodId must not be null");
-                PdProd entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                PdProd entity = pdProdRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
                 VoUtil.voCopyExclude(row, entity, "prodId^regBy^regDate^rowStatus");
                 entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
+                pdProdRepository.save(entity);
             } else if ("D".equals(rs)) {
                 String id = Objects.requireNonNull(row.getProdId(), "prodId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
+                if (pdProdRepository.existsById(id)) pdProdRepository.deleteById(id);
             }
         }
     }

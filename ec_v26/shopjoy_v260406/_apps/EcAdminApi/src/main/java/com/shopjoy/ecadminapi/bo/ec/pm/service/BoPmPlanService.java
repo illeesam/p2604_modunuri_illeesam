@@ -25,26 +25,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BoPmPlanService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmPlanMapper mapper;
-    private final PmPlanRepository repository;
+    private final PmPlanMapper pmPlanMapper;
+    private final PmPlanRepository pmPlanRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PmPlanDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mapper.selectList(p);
+        return pmPlanMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<PmPlanDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(pmPlanMapper.selectPageList(p), pmPlanMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
     public PmPlanDto getById(String id) {
-        PmPlanDto dto = mapper.selectById(id);
+        PmPlanDto dto = pmPlanMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -56,18 +56,18 @@ public class BoPmPlanService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        PmPlan saved = repository.save(body);
+        PmPlan saved = pmPlanRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         return saved;
     }
 
     @Transactional
     public PmPlanDto update(String id, PmPlan body) {
-        PmPlan entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        PmPlan entity = pmPlanRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         VoUtil.voCopyExclude(body, entity, "planId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmPlan saved = repository.save(entity);
+        PmPlan saved = pmPlanRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -75,22 +75,22 @@ public class BoPmPlanService {
 
     @Transactional
     public void delete(String id) {
-        PmPlan entity = repository.findById(id)
+        PmPlan entity = pmPlanRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
+        pmPlanRepository.delete(entity);
         em.flush();
-        if (repository.existsById(id))
+        if (pmPlanRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
     @Transactional
     public PmPlanDto changeStatus(String id, String statusCd) {
-        PmPlan entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+        PmPlan entity = pmPlanRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setPlanStatusCdBefore(entity.getPlanStatusCd());
         entity.setPlanStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmPlan saved = repository.save(entity);
+        PmPlan saved = pmPlanRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
@@ -106,7 +106,7 @@ public class BoPmPlanService {
             .map(PmPlan::getPlanId)
             .toList();
         if (!deleteIds.isEmpty()) {
-            repository.deleteAllById(deleteIds);
+            pmPlanRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
         }
@@ -115,11 +115,11 @@ public class BoPmPlanService {
         for (PmPlan row : rows) {
             if (!"U".equals(row.getRowStatus())) continue;
             String id = Objects.requireNonNull(row.getPlanId(), "planId must not be null");
-            PmPlan entity = repository.findById(id)
+            PmPlan entity = pmPlanRepository.findById(id)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             VoUtil.voCopyExclude(row, entity, "planId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
-            repository.save(entity);
+            pmPlanRepository.save(entity);
         }
         em.flush();
 
@@ -129,7 +129,7 @@ public class BoPmPlanService {
             row.setPlanId("PL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
-            repository.save(row);
+            pmPlanRepository.save(row);
         }
         em.flush();
         em.clear();
