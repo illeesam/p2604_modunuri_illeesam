@@ -21,7 +21,7 @@
 |------|------|
 | `base.기술-admin.md` | 관리자 페이스 기술 스택 (Vue 3, Pinia, axios) |
 | `base.기술-front.md` | 사용자 페이스 기술 스택 (Vue 3, CDN 로드, Pinia) |
-| `base.기술-api.md` | 백엔드 API 기술 스택 (Spring Boot, MyBatis, PostgreSQL) |
+| `base.기술-api.md` | 백엔드 API 기술 스택 (Spring Boot, MyBatis, PostgreSQL) — **§3.5 `/api/base/**` URL 직접 호출 금지** ⭐ |
 
 ### 🔑 인증 정책 (3개)
 | 파일 | 내용 |

@@ -2,7 +2,7 @@
 정책명: 백엔드 API 기술 정책 (EcAdminApi)
 정책번호: base-기술-api
 관리자: 개발팀
-최종수정: 2026-04-20
+최종수정: 2026-05-05
 ---
 
 # 백엔드 API 기술 정책 (EcAdminApi)
@@ -41,6 +41,7 @@ com.shopjoy.ecadminapi
 - **정의**: DDL → 자동 생성 도구(AutoRest 등)가 기계적으로 만들어 낸 CRUD 모듈
 - **특징**: 1 테이블 : 1 세트(Controller/Service/Mapper/Entity) 1:1 매핑
 - **수정 금지**: 수동 비즈니스 로직 추가 금지 — 재생성 시 덮어씀
+- **🚫 외부 직접 호출 금지** — `/api/base/**` 는 클라이언트(BO/FO)에서 절대 호출 금지. 자세한 내용은 [§ 3.5 BASE URL 직접 호출 금지](#35--api-base--url-직접-호출-금지--)
 - **하위 구조**:
 
 ```
@@ -95,6 +96,115 @@ fo/
 ├── controller/
 ├── service/
 └── mapper/
+```
+
+### 3.5 `/api/base/**` URL 직접 호출 금지 ⭐
+
+**원칙**: `base/` 패키지의 컨트롤러(`/api/base/**`)는 **내부 공통 레이어**다. 프론트엔드에서 직접
+호출하면 **반드시 안 된다**. BO 화면은 `/api/bo/**`, FO 화면은 `/api/fo/**` 컨트롤러를 거쳐야 한다.
+
+#### 금지하는 이유
+
+| 항목 | 설명 |
+|---|---|
+| **인증·인가** | `/api/bo/**` / `/api/fo/**` 만 SecurityConfig 의 BO_ONLY / FO_ONLY 인가 매처를 통과한다. `/api/base/**` 는 `denyAll()` 처리되어 클라이언트 호출 시 **403 Forbidden** 발생 |
+| **감사 로그** | UI명/명령명/파일명 등 BO·FO 컨텍스트 헤더 검증·기록은 `/bo`, `/fo` 레이어에서 수행 |
+| **API 책임 경계** | `base/` 는 자동 생성 CRUD 만 제공 — 인증·권한·비즈니스 규칙은 `bo/`, `fo/` 레이어 책임 |
+| **재생성 안전성** | `base/` 는 DDL 변경 시 재생성됨 — 외부 의존이 있으면 마이그레이션 깨짐 |
+
+#### 올바른 패턴
+
+```js
+// ❌ 금지 — BO 화면이 /api/base 직접 호출 → 403
+boApi.get('/base/sy/user-token-log/page')
+boApiSvc.stSettleConfig = {
+  getPage(p, ui, cmd) { return boApi.get('/base/ec/st/settle-config/page', ...) }
+};
+
+// ✅ 올바름 — /api/bo/** 컨트롤러를 통해 호출
+boApi.get('/bo/sy/user-token-log/page')
+boApiSvc.stSettleConfig = {
+  getPage(p, ui, cmd) { return boApi.get('/bo/ec/st/config/page', ...) }
+};
+```
+
+#### 신규 기능이 필요할 때 — 레이어 구성 원칙 ⭐
+
+`base/` 컨트롤러에만 엔드포인트가 있고 BO/FO 컨트롤러가 없으면, **`bo/` 또는 `fo/` 패키지에
+Controller 를 신규 작성**한 후 클라이언트에서 호출한다.
+
+**Service 작성 여부는 비즈니스 로직 유무로 결정한다.**
+
+| 케이스 | 권장 구성 |
+|---|---|
+| **단순 CRUD 위임** (검증·가공·권한 추가 없음) | Controller → **base Service 직접 호출** (BO/FO Service 생략) |
+| **비즈니스 로직 있음** (권한 체크·DTO 가공·트랜잭션 조합·캐시·감사 등) | Controller → **BO/FO Service** → base Service / base Mapper |
+
+##### 패턴 1 — 단순 위임 (BO/FO Service 생략 OK)
+
+```java
+// ✅ 단순 CRUD 만 위임 — BO Service 불필요
+@RestController
+@RequestMapping("/api/bo/sy/vendor-user")
+@RequiredArgsConstructor
+public class BoSyVendorUserController {
+    private final SyVendorUserService service;   // base Service 직접 주입
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<PageResult<SyVendorUserDto>>> page(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+    }
+}
+```
+
+##### 패턴 2 — 비즈니스 로직 보유 (BO/FO Service 필수)
+
+```java
+// ✅ BO 전용 권한 체크 + 가공 → BO Service 경유
+@RestController
+@RequestMapping("/api/bo/ec/st/config")
+@RequiredArgsConstructor
+public class BoStSettleConfigController {
+    private final BoStSettleConfigService service;   // ← BO Service
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<PageResult<StSettleConfigDto>>> page(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+    }
+}
+
+// BO Service: 비즈니스 로직 + base Mapper/Repository 직접 사용
+@Service
+@RequiredArgsConstructor
+public class BoStSettleConfigService {
+    private final StSettleConfigMapper mapper;       // ← base Mapper
+    private final StSettleConfigRepository repository; // ← base Repository
+
+    @Transactional
+    public StSettleConfig create(StSettleConfig body) {
+        body.setSettleConfigId(generateId());
+        body.setRegBy(SecurityUtil.getAuthUser().authId());   // ← BO 전용 감사
+        body.setRegDate(LocalDateTime.now());
+        return repository.save(body);
+    }
+}
+```
+
+##### 핵심 원칙 정리
+
+1. **Controller 는 항상 `bo/` 또는 `fo/` 에 둔다** (인증·인가 레이어 통과 목적)
+2. **Service** — 비즈니스 로직 있으면 BO/FO Service, 없으면 생략하고 base Service 직접 호출
+3. **CRUD 데이터 액세스** — base Service / base Mapper / base Repository 를 그대로 사용 (재사용)
+4. **쿼리 변경이 필요할 때** — base Mapper.xml 을 직접 수정한다 (BO/FO 별도 Mapper 작성 금지)
+5. **단순 위임에서 비즈니스 로직이 추가되는 시점** — 그때 BO/FO Service 클래스를 신설하면 된다 (사전 도입 불필요)
+
+#### 점검 방법
+
+```bash
+# 프론트 BO 코드에 /base 잔존 점검 (0건이어야 함)
+grep -rn "['\"]/\?base/\|/api/base/" pages/bo services/boApiSvc.js base/boApp.js
 ```
 
 ---
