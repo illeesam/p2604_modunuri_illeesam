@@ -181,7 +181,9 @@ public class BoPdProdTabController {
             String gClientId = String.valueOf(g.getOrDefault("_id", ""));
             Integer level    = toInt(g.get("level"), gIdx + 1);
             String  typeCd   = strOrNull(g.get("typeCd"));
+            // grpNm 은 NOT NULL — 비어있으면 typeCd 또는 "옵션N" 으로 fallback
             String  grpNm    = strOrNull(g.get("grpNm"));
+            if (grpNm == null) grpNm = (typeCd != null ? typeCd : "옵션" + (gIdx + 1));
             String  inputCd  = strOrEmpty(g.get("inputTypeCd"), "SELECT");
             Integer sortOrd  = toInt(g.get("sortOrd"), gIdx + 1);
 

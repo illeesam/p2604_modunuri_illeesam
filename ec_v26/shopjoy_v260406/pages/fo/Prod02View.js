@@ -34,12 +34,15 @@ window.Prod02View = {
       const lv2Items = itemsOf(lv2).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
       const opt1s = lv1Items.map(it => {
         const optImgs = imgList.filter(im => im.optItemId1 === it.optItemId);
+        const style   = (it.optStyle || '').trim();
         return {
           optItemId:  it.optItemId,
           name:       it.optNm || it.optVal || '',
           val:        it.optVal || '',
           priceDelta: 0,
           imgUrl:     optImgs[0]?.cdnImgUrl || optImgs[0]?.cdnThumbUrl || '',
+          optStyle:   style,
+          hex:        /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(style) ? style : '',
         };
       });
       const opt2s = lv2Items.map(it => it.optNm || it.optVal || '').filter(Boolean);

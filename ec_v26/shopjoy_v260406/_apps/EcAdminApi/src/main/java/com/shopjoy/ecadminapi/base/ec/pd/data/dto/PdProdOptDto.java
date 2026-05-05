@@ -11,18 +11,21 @@ import java.time.LocalDateTime;
 public class PdProdOptDto {
 
     // ── pd_prod_opt ──────────────────────────────────────────────
-    private String optId;
-    private String prodId;
-    private String optNm;
+    private String  optId;
+    private String  siteId;
+    private String  prodId;
+    private String  optGrpNm;
     private Integer optLevel;
-    private String optTypeCd;
-    private Integer sortNo;
-    private String useYn;
-    private String regBy;
+    private String  optTypeCd;
+    private String  optInputTypeCd;
+    private Integer sortOrd;
+    private String  regBy;
     private LocalDateTime regDate;
-    private String updBy;
+    private String  updBy;
     private LocalDateTime updDate;
 
     // ── JOIN: sy_code → 코드명 ─────────────────────────────────────
+    private String siteNm;
     private String optTypeCdNm;
+    private String optInputTypeCdNm;
 }

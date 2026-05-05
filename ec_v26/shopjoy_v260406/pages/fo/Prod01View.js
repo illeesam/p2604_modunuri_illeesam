@@ -39,15 +39,23 @@ window.Prod01View = {
       const lv1Items = itemsOf(lv1).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
       const lv2Items = itemsOf(lv2).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
 
-      // opt1s: 색상/1단 옵션 — name/priceDelta/imgUrl
+      // 옵션 그룹명 (사용자가 BO 옵션설정에서 입력한 옵션명) — 비면 기본값 fallback
+      const opt1Nm = (lv1?.optGrpNm || lv1?.grpNm || '').trim() || '색상';
+      const opt2Nm = (lv2?.optGrpNm || lv2?.grpNm || '').trim() || '사이즈';
+
+      // opt1s: 색상/1단 옵션 — name/priceDelta/imgUrl/hex
+      //   hex: pd_prod_opt_item.opt_style 의 hex 값(#xxxxxx) 그대로 사용. 비어있거나 hex 가 아니면 회색
       const opt1s = lv1Items.map(it => {
         const optImgs = imgList.filter(im => im.optItemId1 === it.optItemId);
+        const style   = (it.optStyle || '').trim();
         return {
           optItemId:  it.optItemId,
           name:       it.optNm || it.optVal || '',
           val:        it.optVal || '',
           priceDelta: 0,
           imgUrl:     optImgs[0]?.cdnImgUrl || optImgs[0]?.cdnThumbUrl || '',
+          optStyle:   style,
+          hex:        /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(style) ? style : '',
         };
       });
 
@@ -84,6 +92,8 @@ window.Prod01View = {
         price:      priceVal,
         mainImage,
         images:     imgList,
+        opt1Nm,       // 1단 옵션 라벨 (예: "색상", "색상2")
+        opt2Nm,       // 2단 옵션 라벨 (예: "사이즈", "사이즈2")
         opt1s,
         opt2s,        // 호환용: 사이즈 이름 unique 배열
         opt2sAll,     // 신규: 종속 정보 포함 전체 2단 항목
@@ -837,7 +847,7 @@ window.Prod01View = {
             <!-- -- 색상 선택 ------------------------------------------------ -->
             <div style="margin-bottom:20px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">색상 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
+                <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">{{ prod.opt1Nm || '색상' }} 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
                 <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:8px;">
@@ -870,7 +880,7 @@ window.Prod01View = {
             <!-- -- 사이즈 선택 (FREE 또는 미설정이면 숨김) — 선택된 색상 종속 사이즈만 표시 -- -->
             <div v-if="cfVisibleSizes.length && !(cfVisibleSizes.length===1 && cfVisibleSizes[0]==='FREE')" style="margin-bottom:20px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
+                <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">{{ prod.opt2Nm || '사이즈' }} 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
                 <button @click="uiState.showSizeGuide=true"
                   style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">
                   사이즈 가이드
@@ -1371,7 +1381,7 @@ window.Prod01View = {
         <!-- -- 색상 ------------------------------------------------------- -->
         <div style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">색상<span style="color:var(--blue);margin-left:2px;">*</span></span>
+            <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">{{ prod.opt1Nm || '색상' }}<span style="color:var(--blue);margin-left:2px;">*</span></span>
             <span v-if="uiState.selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ uiState.selectedColor.name }}</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;">
@@ -1401,7 +1411,7 @@ window.Prod01View = {
         <div v-if="cfVisibleSizes.length && !(cfVisibleSizes.length===1 && cfVisibleSizes[0]==='FREE')" style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div style="display:flex;align-items:center;gap:6px;">
-              <span :style="{ fontSize:'0.82rem', fontWeight:'600', color: sizeError ? '#ef4444' : 'var(--text-secondary)' }">사이즈<span style="margin-left:2px;">*</span></span>
+              <span :style="{ fontSize:'0.82rem', fontWeight:'600', color: sizeError ? '#ef4444' : 'var(--text-secondary)' }">{{ prod.opt2Nm || '사이즈' }}<span style="margin-left:2px;">*</span></span>
               <span v-if="sizeError" style="font-size:0.75rem;color:#ef4444;font-weight:500;">필수 선택</span>
             </div>
             <button @click="uiState.showSizeGuide=true" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">사이즈 안내</button>

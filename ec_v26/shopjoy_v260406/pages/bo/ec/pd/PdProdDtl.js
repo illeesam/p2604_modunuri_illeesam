@@ -956,7 +956,16 @@ window.PdProdDtl = {
       let payload = null;
       switch (tabId) {
         case 'content':  payload = { contentBlocks: [...contentBlocks] }; break;
-        case 'option':   payload = { optGroups };     break;
+        case 'option': {
+          // 옵션명 누락 자동 보정 (DB pd_prod_opt.opt_grp_nm 은 NOT NULL)
+          optGroups.forEach((g, i) => {
+            if (!g.grpNm || !String(g.grpNm).trim()) {
+              g.grpNm = g.typeCd || ('옵션' + (i + 1));
+            }
+          });
+          payload = { optGroups };
+          break;
+        }
         case 'price':    payload = { skus };          break;
         case 'image':    payload = { images: images.map(({ id, ...rest }) => rest) }; break;
         case 'related':  payload = { relProds, codeProds }; break;
