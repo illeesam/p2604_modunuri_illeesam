@@ -819,9 +819,10 @@ window.SyCodeMng = {
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <sy-code-dtl :navigate="navigate" :show-toast="showToast"
-      :show-confirm="showConfirm" :set-api-res="() =
+      :show-confirm="showConfirm" 
+      :set-api-res="() => {}" 
       :on-list-reload="handleSearchList"
-    > {}" :dtl-id="uiState.selectedCodeId"
+      :dtl-id="uiState.selectedCodeId"
       :dtl-mode="uiState.selectedCodeId ? 'edit' : 'new'" />
   </div>
 </div>
