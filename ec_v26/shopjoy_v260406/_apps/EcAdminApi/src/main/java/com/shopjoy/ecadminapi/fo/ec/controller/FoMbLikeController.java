@@ -23,12 +23,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoMbLikeController {
 
-    private final FoMbLikeService service;
+    private final FoMbLikeService foMbLikeService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbLikeDto>>> myLikes(
             @RequestParam Map<String, Object> p) {
-        List<MbLikeDto> result = service.getMyLikes(p);
+        List<MbLikeDto> result = foMbLikeService.getMyLikes(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -37,7 +37,7 @@ public class FoMbLikeController {
             @PathVariable("targetTypeCd") String targetTypeCd,
             @PathVariable("targetId") String targetId,
             @RequestParam Map<String, Object> p) {
-        boolean liked = service.toggle(targetTypeCd, targetId, p);
+        boolean liked = foMbLikeService.toggle(targetTypeCd, targetId, p);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("liked", liked)));
     }
 
@@ -46,7 +46,7 @@ public class FoMbLikeController {
             @PathVariable("targetTypeCd") String targetTypeCd,
             @PathVariable("targetId") String targetId,
             @RequestParam Map<String, Object> p) {
-        service.unlike(targetTypeCd, targetId, p);
+        foMbLikeService.unlike(targetTypeCd, targetId, p);
         return ResponseEntity.ok(ApiResponse.ok(null, "찜이 취소되었습니다."));
     }
 }

@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/attach")
 @RequiredArgsConstructor
 public class BoSyAttachController {
-    private final BoSyAttachService service;
+    private final BoSyAttachService boSyAttachService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyAttachDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyAttachDto> result = service.getList(p);
+        List<SyAttachDto> result = boSyAttachService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,41 +34,41 @@ public class BoSyAttachController {
     public ResponseEntity<ApiResponse<PageResult<SyAttachDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyAttachDto> result = service.getPageData(p);
+        PageResult<SyAttachDto> result = boSyAttachService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAttachDto>> getById(@PathVariable("id") String id) {
-        SyAttachDto result = service.getById(id);
+        SyAttachDto result = boSyAttachService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyAttach>> create(@RequestBody SyAttach body) {
-        SyAttach result = service.create(body);
+        SyAttach result = boSyAttachService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAttachDto>> update(@PathVariable("id") String id, @RequestBody SyAttach body) {
-        SyAttachDto result = service.update(id, body);
+        SyAttachDto result = boSyAttachService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAttachDto>> upsert(@PathVariable("id") String id, @RequestBody SyAttach body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyAttachService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyAttachService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyAttach> rows) {
-        service.saveList(rows);
+        boSyAttachService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -22,12 +22,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoPmCacheController {
 
-    private final FoPmCacheService service;
+    private final FoPmCacheService foPmCacheService;
 
     @GetMapping("/balance")
     public ResponseEntity<ApiResponse<Map<String, Long>>> balance(
             @RequestParam Map<String, Object> p) {
-        long bal = service.getBalance(p);
+        long bal = foPmCacheService.getBalance(p);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("balance", bal)));
     }
 }

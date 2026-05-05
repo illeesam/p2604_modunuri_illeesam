@@ -24,12 +24,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoPmCouponController {
 
-    private final FoPmCouponService service;
+    private final FoPmCouponService foPmCouponService;
 
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<PmCouponIssueDto>>> available(
             @RequestParam Map<String, Object> p) {
-        List<PmCouponIssueDto> result = service.getAvailableCoupons(p);
+        List<PmCouponIssueDto> result = foPmCouponService.getAvailableCoupons(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

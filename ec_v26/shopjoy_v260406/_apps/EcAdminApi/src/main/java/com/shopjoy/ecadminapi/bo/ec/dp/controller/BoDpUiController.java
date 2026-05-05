@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/dp/ui")
 @RequiredArgsConstructor
 public class BoDpUiController {
-    private final BoDpUiService service;
+    private final BoDpUiService boDpUiService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<DpUiDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<DpUiDto> result = service.getList(p);
+        List<DpUiDto> result = boDpUiService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,41 +41,41 @@ public class BoDpUiController {
     public ResponseEntity<ApiResponse<PageResult<DpUiDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<DpUiDto> result = service.getPageData(p);
+        PageResult<DpUiDto> result = boDpUiService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DpUiDto>> getById(@PathVariable("id") String id) {
-        DpUiDto result = service.getById(id);
+        DpUiDto result = boDpUiService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<DpUi>> create(@RequestBody DpUi body) {
-        DpUi result = service.create(body);
+        DpUi result = boDpUiService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<DpUiDto>> update(@PathVariable("id") String id, @RequestBody DpUi body) {
-        DpUiDto result = service.update(id, body);
+        DpUiDto result = boDpUiService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<DpUiDto>> upsert(@PathVariable("id") String id, @RequestBody DpUi body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boDpUiService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boDpUiService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpUi> rows) {
-        service.saveList(rows);
+        boDpUiService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

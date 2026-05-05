@@ -31,44 +31,44 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoCmBlogController {
 
-    private final FoCmBlogService service;
+    private final FoCmBlogService foCmBlogService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CmBlogDto>>> list(
             @RequestParam Map<String, Object> p) {
-        List<CmBlogDto> result = service.getList(p);
+        List<CmBlogDto> result = foCmBlogService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<CmBlogDto>>> page(
             @RequestParam Map<String, Object> p) {
-        PageResult<CmBlogDto> result = service.getPageData(p);
+        PageResult<CmBlogDto> result = foCmBlogService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{blogId}")
     public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable("blogId") String blogId) {
-        CmBlogDto result = service.getByIdAndIncrView(blogId);
+        CmBlogDto result = foCmBlogService.getByIdAndIncrView(blogId);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<CmBlog>> create(@RequestBody CmBlog entity) {
-        CmBlog result = service.create(entity);
+        CmBlog result = foCmBlogService.create(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{blogId}")
     public ResponseEntity<ApiResponse<CmBlog>> update(
             @PathVariable("blogId") String blogId, @RequestBody CmBlog entity) {
-        CmBlog result = service.update(blogId, entity);
+        CmBlog result = foCmBlogService.update(blogId, entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{blogId}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("blogId") String blogId) {
-        service.delete(blogId);
+        foCmBlogService.delete(blogId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }

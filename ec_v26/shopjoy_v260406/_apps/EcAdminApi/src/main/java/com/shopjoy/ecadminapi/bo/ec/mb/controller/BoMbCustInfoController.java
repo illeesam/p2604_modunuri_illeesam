@@ -19,36 +19,36 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/mb/cust-info")
 @RequiredArgsConstructor
 public class BoMbCustInfoController {
-    private final BoMbCustInfoService service;
+    private final BoMbCustInfoService boMbCustInfoService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbMemberDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boMbCustInfoService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<MbMemberDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boMbCustInfoService.getPageData(p)));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<MbMember>> create(@RequestBody MbMember body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(boMbCustInfoService.create(body)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberDto>> update(@PathVariable("id") String id, @RequestBody MbMember body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boMbCustInfoService.update(id, body)));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberDto>> upsert(@PathVariable("id") String id, @RequestBody MbMember body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boMbCustInfoService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boMbCustInfoService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }

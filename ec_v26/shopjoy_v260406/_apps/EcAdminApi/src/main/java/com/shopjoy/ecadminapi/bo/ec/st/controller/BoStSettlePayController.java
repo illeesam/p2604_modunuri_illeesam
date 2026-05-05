@@ -19,47 +19,47 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/st/pay")
 @RequiredArgsConstructor
 public class BoStSettlePayController {
-    private final BoStSettlePayService service;
+    private final BoStSettlePayService boStSettlePayService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<StSettlePayDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StSettlePayDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettlePayDto>> getById(@PathVariable("id") String id) {
-        StSettlePayDto result = service.getById(id);
+        StSettlePayDto result = boStSettlePayService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<StSettlePay>> create(@RequestBody StSettlePay body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(boStSettlePayService.create(body)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettlePayDto>> update(@PathVariable("id") String id, @RequestBody StSettlePay body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.update(id, body)));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettlePayDto>> upsert(@PathVariable("id") String id, @RequestBody StSettlePay body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boStSettlePayService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PutMapping("/{id}/pay")
     public ResponseEntity<ApiResponse<StSettlePayDto>> pay(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.pay(id)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.pay(id)));
     }
 }

@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pm/gift")
 @RequiredArgsConstructor
 public class BoPmGiftController {
-    private final BoPmGiftService service;
+    private final BoPmGiftService boPmGiftService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmGiftDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<PmGiftDto> result = service.getList(p);
+        List<PmGiftDto> result = boPmGiftService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,48 +34,48 @@ public class BoPmGiftController {
     public ResponseEntity<ApiResponse<PageResult<PmGiftDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<PmGiftDto> result = service.getPageData(p);
+        PageResult<PmGiftDto> result = boPmGiftService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmGiftDto>> getById(@PathVariable("id") String id) {
-        PmGiftDto result = service.getById(id);
+        PmGiftDto result = boPmGiftService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmGift>> create(@RequestBody PmGift body) {
-        PmGift result = service.create(body);
+        PmGift result = boPmGiftService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmGiftDto>> update(@PathVariable("id") String id, @RequestBody PmGift body) {
-        PmGiftDto result = service.update(id, body);
+        PmGiftDto result = boPmGiftService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PmGiftDto>> upsert(@PathVariable("id") String id, @RequestBody PmGift body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPmGiftService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPmGiftService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmGiftDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        PmGiftDto result = service.changeStatus(id, body.get("statusCd"));
+        PmGiftDto result = boPmGiftService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmGift> rows) {
-        service.saveList(rows);
+        boPmGiftService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

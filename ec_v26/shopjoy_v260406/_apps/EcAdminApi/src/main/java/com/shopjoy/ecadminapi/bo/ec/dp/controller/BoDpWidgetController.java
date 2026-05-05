@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/dp/widget")
 @RequiredArgsConstructor
 public class BoDpWidgetController {
-    private final BoDpWidgetService service;
+    private final BoDpWidgetService boDpWidgetService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<DpWidgetDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<DpWidgetDto> result = service.getList(p);
+        List<DpWidgetDto> result = boDpWidgetService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,41 +41,41 @@ public class BoDpWidgetController {
     public ResponseEntity<ApiResponse<PageResult<DpWidgetDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<DpWidgetDto> result = service.getPageData(p);
+        PageResult<DpWidgetDto> result = boDpWidgetService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DpWidgetDto>> getById(@PathVariable("id") String id) {
-        DpWidgetDto result = service.getById(id);
+        DpWidgetDto result = boDpWidgetService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<DpWidget>> create(@RequestBody DpWidget body) {
-        DpWidget result = service.create(body);
+        DpWidget result = boDpWidgetService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<DpWidgetDto>> update(@PathVariable("id") String id, @RequestBody DpWidget body) {
-        DpWidgetDto result = service.update(id, body);
+        DpWidgetDto result = boDpWidgetService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<DpWidgetDto>> upsert(@PathVariable("id") String id, @RequestBody DpWidget body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boDpWidgetService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boDpWidgetService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpWidget> rows) {
-        service.saveList(rows);
+        boDpWidgetService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

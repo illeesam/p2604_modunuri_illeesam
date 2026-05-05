@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pm/cache")
 @RequiredArgsConstructor
 public class BoPmCacheController {
-    private final BoPmCacheService service;
+    private final BoPmCacheService boPmCacheService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmCacheDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<PmCacheDto> result = service.getList(p);
+        List<PmCacheDto> result = boPmCacheService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,41 +34,41 @@ public class BoPmCacheController {
     public ResponseEntity<ApiResponse<PageResult<PmCacheDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<PmCacheDto> result = service.getPageData(p);
+        PageResult<PmCacheDto> result = boPmCacheService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCacheDto>> getById(@PathVariable("id") String id) {
-        PmCacheDto result = service.getById(id);
+        PmCacheDto result = boPmCacheService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmCache>> create(@RequestBody PmCache body) {
-        PmCache result = service.create(body);
+        PmCache result = boPmCacheService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCacheDto>> update(@PathVariable("id") String id, @RequestBody PmCache body) {
-        PmCacheDto result = service.update(id, body);
+        PmCacheDto result = boPmCacheService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCacheDto>> upsert(@PathVariable("id") String id, @RequestBody PmCache body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPmCacheService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPmCacheService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmCache> rows) {
-        service.saveList(rows);
+        boPmCacheService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

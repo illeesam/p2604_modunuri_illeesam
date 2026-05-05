@@ -28,13 +28,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/od/order")
 @RequiredArgsConstructor
 public class BoOdOrderController {
-    private final BoOdOrderService service;
+    private final BoOdOrderService boOdOrderService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdOrderDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<OdOrderDto> result = service.getList(p);
+        List<OdOrderDto> result = boOdOrderService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -42,48 +42,48 @@ public class BoOdOrderController {
     public ResponseEntity<ApiResponse<PageResult<OdOrderDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<OdOrderDto> result = service.getPageData(p);
+        PageResult<OdOrderDto> result = boOdOrderService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OdOrderDto>> getById(@PathVariable("id") String id) {
-        OdOrderDto result = service.getById(id);
+        OdOrderDto result = boOdOrderService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<OdOrder>> create(@RequestBody OdOrder body) {
-        OdOrder result = service.create(body);
+        OdOrder result = boOdOrderService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<OdOrderDto>> update(@PathVariable("id") String id, @RequestBody OdOrder body) {
-        OdOrderDto result = service.update(id, body);
+        OdOrderDto result = boOdOrderService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<OdOrderDto>> upsert(@PathVariable("id") String id, @RequestBody OdOrder body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boOdOrderService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<OdOrderDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        OdOrderDto result = service.changeStatus(id, body.get("statusCd"));
+        OdOrderDto result = boOdOrderService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdOrder> rows) {
-        service.saveList(rows);
+        boOdOrderService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

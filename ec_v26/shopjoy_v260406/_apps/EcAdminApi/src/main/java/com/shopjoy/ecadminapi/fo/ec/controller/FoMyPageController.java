@@ -37,69 +37,69 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoMyPageController {
 
-    private final FoMyPageService service;
+    private final FoMyPageService foMyPageService;
 
     @GetMapping("/info")
     public ResponseEntity<ApiResponse<MbMemberDto>> getMyInfo() {
-        MbMemberDto result = service.getMyInfo();
+        MbMemberDto result = foMyPageService.getMyInfo();
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PutMapping("/info")
     public ResponseEntity<ApiResponse<MbMemberDto>> updateMyInfo(@RequestBody MbMember body) {
-        MbMemberDto result = service.updateMyInfo(body);
+        MbMemberDto result = foMyPageService.updateMyInfo(body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/password")
     public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody Map<String, String> body) {
-        service.changePassword(body.get("currentPassword"), body.get("newPassword"));
+        foMyPageService.changePassword(body.get("currentPassword"), body.get("newPassword"));
         return ResponseEntity.ok(ApiResponse.ok(null, "비밀번호가 변경되었습니다."));
     }
 
     @GetMapping("/addr")
     public ResponseEntity<ApiResponse<List<MbMemberAddrDto>>> getMyAddrs() {
-        List<MbMemberAddrDto> result = service.getMyAddrs();
+        List<MbMemberAddrDto> result = foMyPageService.getMyAddrs();
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/addr")
     public ResponseEntity<ApiResponse<MbMemberAddr>> saveAddr(@RequestBody MbMemberAddr body) {
-        MbMemberAddr result = service.saveAddr(body);
+        MbMemberAddr result = foMyPageService.saveAddr(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @DeleteMapping("/addr/{addrId}")
     public ResponseEntity<ApiResponse<Void>> deleteAddr(@PathVariable("addrId") String addrId) {
-        service.deleteAddr(addrId);
+        foMyPageService.deleteAddr(addrId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @GetMapping("/order")
     public ResponseEntity<ApiResponse<List<OdOrderDto>>> getMyOrders(
             @RequestParam Map<String, Object> p) {
-        List<OdOrderDto> result = service.getMyOrders(p);
+        List<OdOrderDto> result = foMyPageService.getMyOrders(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/claim")
     public ResponseEntity<ApiResponse<List<OdClaimDto>>> getMyClaims(
             @RequestParam Map<String, Object> p) {
-        List<OdClaimDto> result = service.getMyClaims(p);
+        List<OdClaimDto> result = foMyPageService.getMyClaims(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/coupon")
     public ResponseEntity<ApiResponse<List<PmCouponDto>>> getMyCoupons(
             @RequestParam Map<String, Object> p) {
-        List<PmCouponDto> result = service.getMyCoupons(p);
+        List<PmCouponDto> result = foMyPageService.getMyCoupons(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/cache")
     public ResponseEntity<ApiResponse<List<PmCacheDto>>> getMyCacheHistory(
             @RequestParam Map<String, Object> p) {
-        List<PmCacheDto> result = service.getMyCacheHistory(p);
+        List<PmCacheDto> result = foMyPageService.getMyCacheHistory(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

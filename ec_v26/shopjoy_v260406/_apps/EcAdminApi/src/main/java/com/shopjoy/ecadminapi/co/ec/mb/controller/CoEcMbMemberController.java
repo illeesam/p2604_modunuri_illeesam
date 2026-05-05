@@ -20,11 +20,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CoEcMbMemberController {
 
-    private final BoMbMemberService service;
+    private final BoMbMemberService boMbMemberService;
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<MbMemberDto>>> page(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.getPageData(p)));
     }
 }

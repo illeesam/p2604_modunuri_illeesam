@@ -1,37 +1,21 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
-import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
+import com.shopjoy.ecadminapi.co.cm.service.CmUploadService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
-import com.shopjoy.ecadminapi.common.util.VideoConvertUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 
 /// 파일 업로드 API (단일 파일 + 썸네일 + DB 저장)
-@Slf4j
 @RestController
 @RequestMapping("/api/co/cm/upload")
 @RequiredArgsConstructor
 public class CmUploadOneController {
 
-    private final FileUploadUtil fileUploadUtil;
-    private final SyAttachService syAttachService;
-    private final VideoConvertUtil videoConvertUtil;
+    private final CmUploadService cmUploadService;
 
     /// 단일 파일 업로드 (확장자/용량 검증, 썸네일 옵션, DB 저장)
     @PostMapping("/one")
@@ -40,126 +24,7 @@ public class CmUploadOneController {
             @RequestParam(value = "businessCode", defaultValue = "common") String businessCode,
             @RequestParam(value = "createThumbnail", defaultValue = "false") boolean createThumbnail,
             @RequestParam(value = "attachGrpId", required = false) String attachGrpId) {
-
-        fileUploadUtil.validate(file);
-
-        try {
-            String folderPath = fileUploadUtil.generateFolderPath(businessCode);
-            Files.createDirectories(Paths.get(folderPath));
-
-            String originalName = file.getOriginalFilename();
-            String ext = fileUploadUtil.getFileExtension(originalName);
-            String savedName = fileUploadUtil.generateFileName(ext, 1);
-            String filePath = folderPath + "/" + savedName;
-
-            Files.write(Paths.get(filePath), file.getBytes());
-
-            String finalStoredNm = savedName;
-            String thumbFileNm = null;
-            String thumbStoredNm = null;
-            String thumbUrl = null;
-            String thumbGeneratedYn = "N";
-
-            if (fileUploadUtil.isVideo(ext)) {
-                fileUploadUtil.validateVideoSize(file.getSize());
-
-                String mp4Name = fileUploadUtil.generateFileName("mp4", 1);
-                String mp4Path = folderPath + "/" + mp4Name;
-                String convertedPath = videoConvertUtil.convertToStreamableVideo(filePath, mp4Path);
-
-                try {
-                    String thumbFileName = fileUploadUtil.generateThumbFileName(mp4Name);
-                    String thumbFilePath = folderPath + "/" + thumbFileName;
-
-                    boolean thumbGenerated = videoConvertUtil.generateVideoThumbnail(convertedPath, thumbFilePath);
-                    if (thumbGenerated) {
-                        thumbFileNm = originalName + " (thumbnail)";
-                        thumbStoredNm = thumbFileName;
-                        thumbUrl = thumbFilePath;
-                        thumbGeneratedYn = "Y";
-                        log.info("동영상 썸네일 생성 성공: {}", thumbFileName);
-                    }
-                } catch (Exception e) {
-                    log.warn("동영상 썸네일 생성 실패: {}", e.getMessage());
-                }
-
-                try {
-                    Files.delete(Paths.get(filePath));
-                    log.info("원본 동영상 파일 삭제: {}", filePath);
-                } catch (Exception e) {
-                    log.warn("원본 동영상 파일 삭제 실패: {}", e.getMessage());
-                }
-
-                finalStoredNm = mp4Name;
-                filePath = mp4Path;
-            }
-
-            SyAttach syAttach = SyAttach.builder()
-                    .attachGrpId(attachGrpId != null ? attachGrpId : "")
-                    .fileNm(originalName)
-                    .fileSize(file.getSize())
-                    .fileExt(fileUploadUtil.isVideo(ext) ? "mp4" : ext)
-                    .mimeTypeCd(file.getContentType())
-                    .storedNm(finalStoredNm)
-                    .storageType("LOCAL")
-                    .storagePath(filePath)
-                    .thumbGeneratedYn(thumbGeneratedYn)
-                    .sortOrd(1)
-                    .build();
-
-            if (thumbFileNm != null) {
-                syAttach.setThumbFileNm(thumbFileNm);
-                syAttach.setThumbStoredNm(thumbStoredNm);
-                syAttach.setThumbUrl(thumbUrl);
-            }
-
-            if (createThumbnail && !fileUploadUtil.isVideo(ext) && fileUploadUtil.canGenerateThumbnail(ext)) {
-                try {
-                    String thumbFileName = fileUploadUtil.generateThumbFileName(finalStoredNm);
-                    String thumbFilePath = folderPath + "/" + thumbFileName;
-
-                    Thumbnailator.createThumbnail(
-                            new File(filePath),
-                            new File(thumbFilePath),
-                            200, 200);
-
-                    syAttach.setThumbFileNm(originalName + " (thumbnail)");
-                    syAttach.setThumbStoredNm(thumbFileName);
-                    syAttach.setThumbUrl(thumbFilePath);
-                    syAttach.setThumbGeneratedYn("Y");
-
-                    log.info("이미지 썸네일 생성 성공: {}", thumbFileName);
-                } catch (Exception e) {
-                    log.warn("이미지 썸네일 생성 실패: {}", e.getMessage());
-                }
-            }
-
-            SyAttach savedAttach = syAttachService.create(syAttach);
-
-            Map<String, Object> result = new HashMap<>();
-            result.put("attachId", savedAttach.getAttachId());
-            result.put("originalName", originalName);
-            result.put("savedName", savedName);
-            result.put("filePath", filePath);
-            result.put("fileSize", file.getSize());
-            result.put("fileType", file.getContentType());
-            result.put("fileExt", ext);
-            result.put("uploadedAt", LocalDateTime.now());
-            result.put("storageType", "LOCAL");
-            result.put("storagePath", filePath);
-            result.put("thumbGeneratedYn", syAttach.getThumbGeneratedYn());
-            if ("Y".equals(syAttach.getThumbGeneratedYn())) {
-                result.put("thumbFileNm", syAttach.getThumbFileNm());
-                result.put("thumbStoredNm", syAttach.getThumbStoredNm());
-                result.put("thumbUrl", syAttach.getThumbUrl());
-            }
-
-            log.info("파일 업로드 성공: {} → {} (attachId: {})", originalName, filePath, savedAttach.getAttachId());
-            return ResponseEntity.status(201).body(ApiResponse.created(result));
-
-        } catch (Exception e) {
-            log.error("파일 업로드 실패", e);
-            throw new RuntimeException("파일 저장 중 오류가 발생했습니다.");
-        }
+        Map<String, Object> result = cmUploadService.uploadOne(file, businessCode, createThumbnail, attachGrpId);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 }

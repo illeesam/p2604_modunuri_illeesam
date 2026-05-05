@@ -22,14 +22,14 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/user")
 @RequiredArgsConstructor
 public class BoSyUserController {
-    private final BoSyUserService service;
+    private final BoSyUserService boSyUserService;
     private final BoSyUserRoleService userRoleService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyUserDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyUserDto> result = service.getList(p);
+        List<SyUserDto> result = boSyUserService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -37,36 +37,36 @@ public class BoSyUserController {
     public ResponseEntity<ApiResponse<PageResult<SyUserDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyUserDto> result = service.getPageData(p);
+        PageResult<SyUserDto> result = boSyUserService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyUserDto>> getById(@PathVariable("id") String id) {
-        SyUserDto result = service.getById(id);
+        SyUserDto result = boSyUserService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyUser>> create(@RequestBody SyUser body) {
-        SyUser result = service.create(body);
+        SyUser result = boSyUserService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyUserDto>> update(@PathVariable("id") String id, @RequestBody SyUser body) {
-        SyUserDto result = service.update(id, body);
+        SyUserDto result = boSyUserService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyUserDto>> upsert(@PathVariable("id") String id, @RequestBody SyUser body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyUserService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyUserService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
@@ -76,7 +76,7 @@ public class BoSyUserController {
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyUser> rows) {
-        service.saveList(rows);
+        boSyUserService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

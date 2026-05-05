@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/batch")
 @RequiredArgsConstructor
 public class BoSyBatchController {
-    private final BoSyBatchService service;
+    private final BoSyBatchService boSyBatchService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyBatchDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyBatchDto> result = service.getList(p);
+        List<SyBatchDto> result = boSyBatchService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,42 +34,42 @@ public class BoSyBatchController {
     public ResponseEntity<ApiResponse<PageResult<SyBatchDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyBatchDto> result = service.getPageData(p);
+        PageResult<SyBatchDto> result = boSyBatchService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBatchDto>> getById(@PathVariable("id") String id) {
-        SyBatchDto result = service.getById(id);
+        SyBatchDto result = boSyBatchService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyBatch>> create(@RequestBody SyBatch body) {
-        SyBatch result = service.create(body);
+        SyBatch result = boSyBatchService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBatchDto>> update(@PathVariable("id") String id, @RequestBody SyBatch body) {
-        SyBatchDto result = service.update(id, body);
+        SyBatchDto result = boSyBatchService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBatchDto>> upsert(@PathVariable("id") String id, @RequestBody SyBatch body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyBatchService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyBatchService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyBatch> rows) {
-        service.saveList(rows);
+        boSyBatchService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

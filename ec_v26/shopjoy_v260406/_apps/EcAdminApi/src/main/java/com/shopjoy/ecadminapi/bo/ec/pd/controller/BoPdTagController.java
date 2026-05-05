@@ -19,48 +19,48 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pd/tag")
 @RequiredArgsConstructor
 public class BoPdTagController {
-    private final BoPdTagService service;
+    private final BoPdTagService boPdTagService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdTagDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdTagService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdTagDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdTagService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdTagDto>> getById(@PathVariable("id") String id) {
-        PdTagDto result = service.getById(id);
+        PdTagDto result = boPdTagService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PdTag>> create(@RequestBody PdTag body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(boPdTagService.create(body)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdTagDto>> update(@PathVariable("id") String id, @RequestBody PdTag body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdTagService.update(id, body)));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PdTagDto>> upsert(@PathVariable("id") String id, @RequestBody PdTag body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdTagService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPdTagService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdTag> rows) {
-        service.saveList(rows);
+        boPdTagService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

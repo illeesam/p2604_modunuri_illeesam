@@ -44,25 +44,25 @@ public class CacheRedisInfoController {
 
     private static final String MSG_DISABLED = "Redis가 비활성화 상태입니다. (app.redis.enabled=false)";
 
-    private final CacheRedisInfoService service;
+    private final CacheRedisInfoService cacheRedisInfoService;
     private final RedisProperties       redisProps;
     private final Environment           env;
 
     /** 캐시 활성 여부 + 도메인별 지원 방식 */
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<Map<String, Object>>> status() {
-        if (!service.isEnabled())
+        if (!cacheRedisInfoService.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
-        Map<String, Object> result = service.getStatus();
+        Map<String, Object> result = cacheRedisInfoService.getStatus();
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** 도메인별 캐시 상태 (키 존재, 갱신 시각, 남은 TTL, 키 수) */
     @GetMapping("/info")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> info() {
-        if (!service.isEnabled())
+        if (!cacheRedisInfoService.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
-        List<Map<String, Object>> result = service.getInfo();
+        List<Map<String, Object>> result = cacheRedisInfoService.getInfo();
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -72,7 +72,7 @@ public class CacheRedisInfoController {
      */
     @GetMapping("/config")
     public ResponseEntity<ApiResponse<Map<String, Object>>> config() {
-        if (!service.isEnabled())
+        if (!cacheRedisInfoService.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -147,12 +147,12 @@ public class CacheRedisInfoController {
      */
     @GetMapping("/data/{domains}")
     public ResponseEntity<ApiResponse<Object>> getCacheAll(@PathVariable("domains") String domains) {
-        if (!service.isEnabled())
+        if (!cacheRedisInfoService.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
 
         String[] parts = domains.split("\\^");
         if (parts.length == 1) {
-            Object result = service.getCacheAll(domains.trim());
+            Object result = cacheRedisInfoService.getCacheAll(domains.trim());
             if (result == null)
                 return ResponseEntity.ok(ApiResponse.ok(null,
                     domains + ": 캐시 없음 또는 서브키가 필요한 도메인입니다."));
@@ -160,7 +160,7 @@ public class CacheRedisInfoController {
         }
         Map<String, Object> result = new LinkedHashMap<>();
         for (String d : parts) {
-            result.put(d.trim(), service.getCacheAll(d.trim()));
+            result.put(d.trim(), cacheRedisInfoService.getCacheAll(d.trim()));
         }
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -186,9 +186,9 @@ public class CacheRedisInfoController {
     public ResponseEntity<ApiResponse<Object>> getCacheByKey(
             @PathVariable("domain") String domain,
             @PathVariable("key") String key) {
-        if (!service.isEnabled())
+        if (!cacheRedisInfoService.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
-        Object result = service.getCacheByKey(domain, key);
+        Object result = cacheRedisInfoService.getCacheByKey(domain, key);
         if (result == null)
             return ResponseEntity.ok(ApiResponse.ok(null, domain + "/" + key + ": 캐시 없음"));
         return ResponseEntity.ok(ApiResponse.ok(result));

@@ -22,28 +22,28 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/od/cart")
 @RequiredArgsConstructor
 public class BoOdCartController {
-    private final BoOdCartService service;
+    private final BoOdCartService boOdCartService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdCartDto>>> list(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boOdCartService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<OdCartDto>>> page(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boOdCartService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OdCartDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(boOdCartService.getById(id)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boOdCartService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }

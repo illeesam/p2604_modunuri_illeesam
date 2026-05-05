@@ -21,51 +21,51 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyVendorUserRoleController {
 
-    private final SyVendorUserRoleService service;
+    private final SyVendorUserRoleService syVendorUserRoleService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyVendorUserRoleDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(syVendorUserRoleService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyVendorUserRoleDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(syVendorUserRoleService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendorUserRoleDto>> getById(@PathVariable("id") String id) {
-        SyVendorUserRoleDto result = service.getById(id);
+        SyVendorUserRoleDto result = syVendorUserRoleService.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyVendorUserRole>> create(@RequestBody SyVendorUserRole body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(syVendorUserRoleService.create(body)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendorUserRole>> save(@PathVariable("id") String id, @RequestBody SyVendorUserRole body) {
         body.setVendorUserRoleId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(body)));
+        return ResponseEntity.ok(ApiResponse.ok(syVendorUserRoleService.save(body)));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(@PathVariable("id") String id, @RequestBody SyVendorUserRole body) {
         body.setVendorUserRoleId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.update(body)));
+        return ResponseEntity.ok(ApiResponse.ok(syVendorUserRoleService.update(body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        syVendorUserRoleService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyVendorUserRole> rows) {
-        service.saveList(rows);
+        syVendorUserRoleService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

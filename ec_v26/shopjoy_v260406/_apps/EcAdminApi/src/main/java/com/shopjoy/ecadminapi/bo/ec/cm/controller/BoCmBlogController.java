@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/cm/blog")
 @RequiredArgsConstructor
 public class BoCmBlogController {
-    private final BoCmBlogService service;
+    private final BoCmBlogService boCmBlogService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CmBlogDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<CmBlogDto> result = service.getList(p);
+        List<CmBlogDto> result = boCmBlogService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,46 +41,46 @@ public class BoCmBlogController {
     public ResponseEntity<ApiResponse<PageResult<CmBlogDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<CmBlogDto> result = service.getPageData(p);
+        PageResult<CmBlogDto> result = boCmBlogService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable("id") String id) {
-        CmBlogDto result = service.getById(id);
+        CmBlogDto result = boCmBlogService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<CmBlog>> create(@RequestBody CmBlog body) {
-        CmBlog result = service.create(body);
+        CmBlog result = boCmBlogService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogDto>> update(@PathVariable("id") String id, @RequestBody CmBlog body) {
-        CmBlogDto result = service.update(id, body);
+        CmBlogDto result = boCmBlogService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogDto>> upsert(@PathVariable("id") String id, @RequestBody CmBlog body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boCmBlogService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boCmBlogService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PutMapping("/{id}/use")
     public ResponseEntity<ApiResponse<CmBlogDto>> toggleUse(@PathVariable("id") String id, @RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.toggleUse(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boCmBlogService.toggleUse(id, body)));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<CmBlog> rows) {
-        service.saveList(rows);
+        boCmBlogService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

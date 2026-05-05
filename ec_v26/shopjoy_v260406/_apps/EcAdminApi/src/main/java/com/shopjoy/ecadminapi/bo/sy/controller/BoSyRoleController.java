@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/role")
 @RequiredArgsConstructor
 public class BoSyRoleController {
-    private final BoSyRoleService service;
+    private final BoSyRoleService boSyRoleService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyRoleDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyRoleDto> result = service.getList(p);
+        List<SyRoleDto> result = boSyRoleService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,42 +34,42 @@ public class BoSyRoleController {
     public ResponseEntity<ApiResponse<PageResult<SyRoleDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyRoleDto> result = service.getPageData(p);
+        PageResult<SyRoleDto> result = boSyRoleService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyRoleDto>> getById(@PathVariable("id") String id) {
-        SyRoleDto result = service.getById(id);
+        SyRoleDto result = boSyRoleService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyRole>> create(@RequestBody SyRole body) {
-        SyRole result = service.create(body);
+        SyRole result = boSyRoleService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyRoleDto>> update(@PathVariable("id") String id, @RequestBody SyRole body) {
-        SyRoleDto result = service.update(id, body);
+        SyRoleDto result = boSyRoleService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyRoleDto>> upsert(@PathVariable("id") String id, @RequestBody SyRole body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyRoleService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyRoleService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyRole> rows) {
-        service.saveList(rows);
+        boSyRoleService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

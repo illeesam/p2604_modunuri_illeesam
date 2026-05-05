@@ -21,12 +21,12 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 public class BoPdBundleController {
-    private final BoPdProdService service;
+    private final BoPdProdService boPdProdService;
 
     @GetMapping("/api/bo/ec/pd/bundle/page")
     public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(@RequestParam Map<String, Object> p) {
         p.put("prodTypeCd", "BUNDLE");
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdService.getPageData(p)));
     }
 
     @PostMapping("/api/bo/ec/pd/prod-bundle")
@@ -41,7 +41,7 @@ public class BoPdBundleController {
 
     @DeleteMapping("/api/bo/ec/pd/prod-bundle/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPdProdService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }

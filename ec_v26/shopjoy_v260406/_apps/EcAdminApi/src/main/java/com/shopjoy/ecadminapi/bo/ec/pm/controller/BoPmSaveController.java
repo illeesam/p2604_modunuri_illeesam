@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pm/save")
 @RequiredArgsConstructor
 public class BoPmSaveController {
-    private final BoPmSaveService service;
+    private final BoPmSaveService boPmSaveService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmSaveDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<PmSaveDto> result = service.getList(p);
+        List<PmSaveDto> result = boPmSaveService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,42 +34,42 @@ public class BoPmSaveController {
     public ResponseEntity<ApiResponse<PageResult<PmSaveDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<PmSaveDto> result = service.getPageData(p);
+        PageResult<PmSaveDto> result = boPmSaveService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmSaveDto>> getById(@PathVariable("id") String id) {
-        PmSaveDto result = service.getById(id);
+        PmSaveDto result = boPmSaveService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmSave>> create(@RequestBody PmSave body) {
-        PmSave result = service.create(body);
+        PmSave result = boPmSaveService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmSaveDto>> update(@PathVariable("id") String id, @RequestBody PmSave body) {
-        PmSaveDto result = service.update(id, body);
+        PmSaveDto result = boPmSaveService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PmSaveDto>> upsert(@PathVariable("id") String id, @RequestBody PmSave body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPmSaveService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPmSaveService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmSave> rows) {
-        service.saveList(rows);
+        boPmSaveService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

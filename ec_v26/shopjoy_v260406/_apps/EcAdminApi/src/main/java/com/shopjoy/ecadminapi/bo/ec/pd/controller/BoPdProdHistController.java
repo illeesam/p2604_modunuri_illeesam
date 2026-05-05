@@ -23,40 +23,40 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoPdProdHistController {
 
-    private final BoPdProdHistService service;
+    private final BoPdProdHistService boPdProdHistService;
 
     @GetMapping("/orders")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> orders(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getOrders(prodId, p)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getOrders(prodId, p)));
     }
 
     @GetMapping("/stock")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> stock(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getStockHist(prodId, p)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStockHist(prodId, p)));
     }
 
     @GetMapping("/price")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> price(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPriceHist(prodId, p)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getPriceHist(prodId, p)));
     }
 
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> status(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getStatusHist(prodId, p)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStatusHist(prodId, p)));
     }
 
     @GetMapping("/changes")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> changes(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getChangeHist(prodId, p)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getChangeHist(prodId, p)));
     }
 }

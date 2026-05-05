@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/mb/member-group")
 @RequiredArgsConstructor
 public class BoMbMemGroupController {
-    private final BoMbMemGroupService service;
+    private final BoMbMemGroupService boMbMemGroupService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbMemberGroupDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<MbMemberGroupDto> result = service.getList(p);
+        List<MbMemberGroupDto> result = boMbMemGroupService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,42 +41,42 @@ public class BoMbMemGroupController {
     public ResponseEntity<ApiResponse<PageResult<MbMemberGroupDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<MbMemberGroupDto> result = service.getPageData(p);
+        PageResult<MbMemberGroupDto> result = boMbMemGroupService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberGroupDto>> getById(@PathVariable("id") String id) {
-        MbMemberGroupDto result = service.getById(id);
+        MbMemberGroupDto result = boMbMemGroupService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<MbMemberGroup>> create(@RequestBody MbMemberGroup body) {
-        MbMemberGroup result = service.create(body);
+        MbMemberGroup result = boMbMemGroupService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberGroupDto>> update(@PathVariable("id") String id, @RequestBody MbMemberGroup body) {
-        MbMemberGroupDto result = service.update(id, body);
+        MbMemberGroupDto result = boMbMemGroupService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberGroupDto>> upsert(@PathVariable("id") String id, @RequestBody MbMemberGroup body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boMbMemGroupService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boMbMemGroupService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<MbMemberGroup> rows) {
-        service.saveList(rows);
+        boMbMemGroupService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

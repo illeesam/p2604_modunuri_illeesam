@@ -20,11 +20,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CoSyUserController {
 
-    private final BoSyUserService service;
+    private final BoSyUserService boSyUserService;
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyUserDto>>> page(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyUserService.getPageData(p)));
     }
 }

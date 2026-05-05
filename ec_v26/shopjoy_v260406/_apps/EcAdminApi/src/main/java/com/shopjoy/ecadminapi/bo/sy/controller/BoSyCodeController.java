@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/code")
 @RequiredArgsConstructor
 public class BoSyCodeController {
-    private final BoSyCodeService service;
+    private final BoSyCodeService boSyCodeService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyCodeDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyCodeDto> result = service.getList(p);
+        List<SyCodeDto> result = boSyCodeService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,42 +34,42 @@ public class BoSyCodeController {
     public ResponseEntity<ApiResponse<PageResult<SyCodeDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyCodeDto> result = service.getPageData(p);
+        PageResult<SyCodeDto> result = boSyCodeService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyCodeDto>> getById(@PathVariable("id") String id) {
-        SyCodeDto result = service.getById(id);
+        SyCodeDto result = boSyCodeService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyCode> rows) {
-        service.saveList(rows);
+        boSyCodeService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyCode>> create(@RequestBody SyCode body) {
-        SyCode result = service.create(body);
+        SyCode result = boSyCodeService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyCodeDto>> update(@PathVariable("id") String id, @RequestBody SyCode body) {
-        SyCodeDto result = service.update(id, body);
+        SyCodeDto result = boSyCodeService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyCodeDto>> upsert(@PathVariable("id") String id, @RequestBody SyCode body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyCodeService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }

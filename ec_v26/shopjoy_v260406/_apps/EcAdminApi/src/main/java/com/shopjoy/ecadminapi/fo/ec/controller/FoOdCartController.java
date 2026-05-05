@@ -25,18 +25,18 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoOdCartController {
 
-    private final FoOdCartService service;
+    private final FoOdCartService foOdCartService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdCartDto>>> myCart(
             @RequestParam Map<String, Object> p) {
-        List<OdCartDto> result = service.getMyCart(p);
+        List<OdCartDto> result = foOdCartService.getMyCart(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<OdCart>> add(@RequestBody OdCart entity) {
-        OdCart result = service.addToCart(entity);
+        OdCart result = foOdCartService.addToCart(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
@@ -45,13 +45,13 @@ public class FoOdCartController {
             @PathVariable("cartId") String cartId,
             @RequestBody Map<String, Integer> body) {
         int qty = body.getOrDefault("qty", 1);
-        OdCart result = service.updateQty(cartId, qty);
+        OdCart result = foOdCartService.updateQty(cartId, qty);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{cartId}")
     public ResponseEntity<ApiResponse<Void>> remove(@PathVariable("cartId") String cartId) {
-        service.removeFromCart(cartId);
+        foOdCartService.removeFromCart(cartId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }

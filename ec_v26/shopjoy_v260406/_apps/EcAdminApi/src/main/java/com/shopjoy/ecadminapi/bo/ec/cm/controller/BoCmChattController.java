@@ -28,13 +28,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/cm/chatt")
 @RequiredArgsConstructor
 public class BoCmChattController {
-    private final BoCmChattService service;
+    private final BoCmChattService boCmChattService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CmChattRoomDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<CmChattRoomDto> result = service.getList(p);
+        List<CmChattRoomDto> result = boCmChattService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -42,48 +42,48 @@ public class BoCmChattController {
     public ResponseEntity<ApiResponse<PageResult<CmChattRoomDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<CmChattRoomDto> result = service.getPageData(p);
+        PageResult<CmChattRoomDto> result = boCmChattService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> getById(@PathVariable("id") String id) {
-        CmChattRoomDto result = service.getById(id);
+        CmChattRoomDto result = boCmChattService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<CmChattRoom>> create(@RequestBody CmChattRoom body) {
-        CmChattRoom result = service.create(body);
+        CmChattRoom result = boCmChattService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> update(@PathVariable("id") String id, @RequestBody CmChattRoom body) {
-        CmChattRoomDto result = service.update(id, body);
+        CmChattRoomDto result = boCmChattService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> upsert(@PathVariable("id") String id, @RequestBody CmChattRoom body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boCmChattService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boCmChattService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        CmChattRoomDto result = service.changeStatus(id, body.get("statusCd"));
+        CmChattRoomDto result = boCmChattService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<CmChattRoom> rows) {
-        service.saveList(rows);
+        boCmChattService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

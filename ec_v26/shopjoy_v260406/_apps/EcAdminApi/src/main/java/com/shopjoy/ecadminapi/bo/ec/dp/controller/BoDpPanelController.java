@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/dp/panel")
 @RequiredArgsConstructor
 public class BoDpPanelController {
-    private final BoDpPanelService service;
+    private final BoDpPanelService boDpPanelService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<DpPanelDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<DpPanelDto> result = service.getList(p);
+        List<DpPanelDto> result = boDpPanelService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,42 +41,42 @@ public class BoDpPanelController {
     public ResponseEntity<ApiResponse<PageResult<DpPanelDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<DpPanelDto> result = service.getPageData(p);
+        PageResult<DpPanelDto> result = boDpPanelService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DpPanelDto>> getById(@PathVariable("id") String id) {
-        DpPanelDto result = service.getById(id);
+        DpPanelDto result = boDpPanelService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<DpPanel>> create(@RequestBody DpPanel body) {
-        DpPanel result = service.create(body);
+        DpPanel result = boDpPanelService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<DpPanelDto>> update(@PathVariable("id") String id, @RequestBody DpPanel body) {
-        DpPanelDto result = service.update(id, body);
+        DpPanelDto result = boDpPanelService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<DpPanelDto>> upsert(@PathVariable("id") String id, @RequestBody DpPanel body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boDpPanelService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boDpPanelService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpPanel> rows) {
-        service.saveList(rows);
+        boDpPanelService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

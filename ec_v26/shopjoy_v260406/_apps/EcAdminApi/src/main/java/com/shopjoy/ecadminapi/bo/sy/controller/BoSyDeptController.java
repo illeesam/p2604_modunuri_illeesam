@@ -20,18 +20,18 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/dept")
 @RequiredArgsConstructor
 public class BoSyDeptController {
-    private final BoSyDeptService service;
+    private final BoSyDeptService boSyDeptService;
 
     @GetMapping("/tree")
     public ResponseEntity<ApiResponse<List<SyDeptDto>>> tree() {
-        return ResponseEntity.ok(ApiResponse.ok(service.getTree()));
+        return ResponseEntity.ok(ApiResponse.ok(boSyDeptService.getTree()));
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyDeptDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyDeptDto> result = service.getList(p);
+        List<SyDeptDto> result = boSyDeptService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -39,42 +39,42 @@ public class BoSyDeptController {
     public ResponseEntity<ApiResponse<PageResult<SyDeptDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyDeptDto> result = service.getPageData(p);
+        PageResult<SyDeptDto> result = boSyDeptService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyDeptDto>> getById(@PathVariable("id") String id) {
-        SyDeptDto result = service.getById(id);
+        SyDeptDto result = boSyDeptService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyDept>> create(@RequestBody SyDept body) {
-        SyDept result = service.create(body);
+        SyDept result = boSyDeptService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyDeptDto>> update(@PathVariable("id") String id, @RequestBody SyDept body) {
-        SyDeptDto result = service.update(id, body);
+        SyDeptDto result = boSyDeptService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyDeptDto>> upsert(@PathVariable("id") String id, @RequestBody SyDept body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyDeptService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyDeptService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyDept> rows) {
-        service.saveList(rows);
+        boSyDeptService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

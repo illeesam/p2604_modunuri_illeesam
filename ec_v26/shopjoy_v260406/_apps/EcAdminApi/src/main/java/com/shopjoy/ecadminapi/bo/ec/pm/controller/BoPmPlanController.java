@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pm/plan")
 @RequiredArgsConstructor
 public class BoPmPlanController {
-    private final BoPmPlanService service;
+    private final BoPmPlanService boPmPlanService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmPlanDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<PmPlanDto> result = service.getList(p);
+        List<PmPlanDto> result = boPmPlanService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,48 +34,48 @@ public class BoPmPlanController {
     public ResponseEntity<ApiResponse<PageResult<PmPlanDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<PmPlanDto> result = service.getPageData(p);
+        PageResult<PmPlanDto> result = boPmPlanService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmPlanDto>> getById(@PathVariable("id") String id) {
-        PmPlanDto result = service.getById(id);
+        PmPlanDto result = boPmPlanService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmPlan>> create(@RequestBody PmPlan body) {
-        PmPlan result = service.create(body);
+        PmPlan result = boPmPlanService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmPlanDto>> update(@PathVariable("id") String id, @RequestBody PmPlan body) {
-        PmPlanDto result = service.update(id, body);
+        PmPlanDto result = boPmPlanService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PmPlanDto>> upsert(@PathVariable("id") String id, @RequestBody PmPlan body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPmPlanService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPmPlanService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmPlanDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        PmPlanDto result = service.changeStatus(id, body.get("statusCd"));
+        PmPlanDto result = boPmPlanService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmPlan> rows) {
-        service.saveList(rows);
+        boPmPlanService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

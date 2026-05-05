@@ -24,11 +24,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoInquiryController {
 
-    private final FoCmContactService service;
+    private final FoCmContactService foCmContactService;
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Map<String, Object>>> createInquiry(@RequestBody Map<String, Object> body) {
-        CmBlog result = service.submit(body);
+        CmBlog result = foCmContactService.submit(body);
         Map<String, Object> response = new HashMap<>();
         response.put("data", result);
         return ResponseEntity.status(201).body(ApiResponse.created(response));

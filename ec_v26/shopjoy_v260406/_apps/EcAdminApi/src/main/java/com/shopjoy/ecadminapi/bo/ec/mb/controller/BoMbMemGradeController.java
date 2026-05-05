@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/mb/member-grade")
 @RequiredArgsConstructor
 public class BoMbMemGradeController {
-    private final BoMbMemGradeService service;
+    private final BoMbMemGradeService boMbMemGradeService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbMemberGradeDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<MbMemberGradeDto> result = service.getList(p);
+        List<MbMemberGradeDto> result = boMbMemGradeService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,42 +41,42 @@ public class BoMbMemGradeController {
     public ResponseEntity<ApiResponse<PageResult<MbMemberGradeDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<MbMemberGradeDto> result = service.getPageData(p);
+        PageResult<MbMemberGradeDto> result = boMbMemGradeService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberGradeDto>> getById(@PathVariable("id") String id) {
-        MbMemberGradeDto result = service.getById(id);
+        MbMemberGradeDto result = boMbMemGradeService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<MbMemberGrade>> create(@RequestBody MbMemberGrade body) {
-        MbMemberGrade result = service.create(body);
+        MbMemberGrade result = boMbMemGradeService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberGradeDto>> update(@PathVariable("id") String id, @RequestBody MbMemberGrade body) {
-        MbMemberGradeDto result = service.update(id, body);
+        MbMemberGradeDto result = boMbMemGradeService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberGradeDto>> upsert(@PathVariable("id") String id, @RequestBody MbMemberGrade body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boMbMemGradeService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boMbMemGradeService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<MbMemberGrade> rows) {
-        service.saveList(rows);
+        boMbMemGradeService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

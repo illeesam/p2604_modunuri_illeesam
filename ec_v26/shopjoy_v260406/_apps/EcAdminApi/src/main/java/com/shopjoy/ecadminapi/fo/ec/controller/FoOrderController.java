@@ -24,11 +24,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoOrderController {
 
-    private final FoOdOrderService service;
+    private final FoOdOrderService foOdOrderService;
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Map<String, Object>>> createOrder(@RequestBody OdOrder entity) {
-        OdOrder created = service.placeOrder(entity);
+        OdOrder created = foOdOrderService.placeOrder(entity);
         Map<String, Object> result = new HashMap<>();
         result.put("data", created);
         return ResponseEntity.status(201).body(ApiResponse.created(result));

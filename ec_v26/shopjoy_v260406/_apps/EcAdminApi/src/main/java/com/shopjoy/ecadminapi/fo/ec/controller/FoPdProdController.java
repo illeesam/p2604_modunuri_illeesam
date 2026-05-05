@@ -42,20 +42,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoPdProdController {
 
-    private final FoPdProdService service;
+    private final FoPdProdService foPdProdService;
 
     /* ── 목록 ────────────────────────────────────────────────── */
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdProdDto>>> list(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getPageData(p)));
     }
 
     /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
@@ -63,7 +63,7 @@ public class FoPdProdController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDetail(
             @PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getDetail(id)));
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getDetail(id)));
     }
 
     /* ── Tier 2: lazy load ──────────────────────────────────── */
@@ -71,33 +71,33 @@ public class FoPdProdController {
     @GetMapping("/{id}/contents")
     public ResponseEntity<ApiResponse<List<PdProdContentDto>>> getContents(
             @PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getContents(id)));
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getContents(id)));
     }
 
     @GetMapping("/{id}/rels")
     public ResponseEntity<ApiResponse<List<PdProdRelDto>>> getRels(
             @PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getRels(id)));
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getRels(id)));
     }
 
     @GetMapping("/{id}/reviews")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getReviews(
             @PathVariable("id") String id,
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getReviews(id, p)));
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getReviews(id, p)));
     }
 
     @GetMapping("/{id}/review-images")
     public ResponseEntity<ApiResponse<List<PdReviewAttachDto>>> getReviewImages(
             @PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getReviewImages(id)));
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getReviewImages(id)));
     }
 
     @GetMapping("/{id}/qna")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getQna(
             @PathVariable("id") String id,
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getQna(id, p)));
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getQna(id, p)));
     }
 
     /* ── Tier 3: 사용자별 프로모션 (통합) ───────────────────── */
@@ -105,6 +105,6 @@ public class FoPdProdController {
     @GetMapping("/{id}/promotions")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getPromotions(
             @PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPromotions(id)));
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getPromotions(id)));
     }
 }

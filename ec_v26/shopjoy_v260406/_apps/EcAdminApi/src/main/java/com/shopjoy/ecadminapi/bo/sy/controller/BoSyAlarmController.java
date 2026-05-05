@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/alarm")
 @RequiredArgsConstructor
 public class BoSyAlarmController {
-    private final BoSyAlarmService service;
+    private final BoSyAlarmService boSyAlarmService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyAlarmDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyAlarmDto> result = service.getList(p);
+        List<SyAlarmDto> result = boSyAlarmService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,41 +34,41 @@ public class BoSyAlarmController {
     public ResponseEntity<ApiResponse<PageResult<SyAlarmDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyAlarmDto> result = service.getPageData(p);
+        PageResult<SyAlarmDto> result = boSyAlarmService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarmDto>> getById(@PathVariable("id") String id) {
-        SyAlarmDto result = service.getById(id);
+        SyAlarmDto result = boSyAlarmService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyAlarm>> create(@RequestBody SyAlarm body) {
-        SyAlarm result = service.create(body);
+        SyAlarm result = boSyAlarmService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarmDto>> update(@PathVariable("id") String id, @RequestBody SyAlarm body) {
-        SyAlarmDto result = service.update(id, body);
+        SyAlarmDto result = boSyAlarmService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarmDto>> upsert(@PathVariable("id") String id, @RequestBody SyAlarm body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyAlarmService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyAlarmService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyAlarm> rows) {
-        service.saveList(rows);
+        boSyAlarmService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

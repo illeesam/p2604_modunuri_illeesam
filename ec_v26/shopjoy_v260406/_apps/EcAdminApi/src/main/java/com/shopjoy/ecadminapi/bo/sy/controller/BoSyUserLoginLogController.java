@@ -19,26 +19,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyUserLoginLogController {
 
-    private final BoSyUserLoginLogService service;
+    private final BoSyUserLoginLogService boSyUserLoginLogService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyhUserLoginLogDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyUserLoginLogService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyhUserLoginLogDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyUserLoginLogService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyhUserLoginLogDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyUserLoginLogService.getById(id)));
     }
 
     @DeleteMapping("/all")
     public ResponseEntity<ApiResponse<Void>> deleteAll() {
-        service.deleteAll();
+        boSyUserLoginLogService.deleteAll();
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

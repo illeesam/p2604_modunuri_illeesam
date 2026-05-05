@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/contact")
 @RequiredArgsConstructor
 public class BoSyContactController {
-    private final BoSyContactService service;
+    private final BoSyContactService boSyContactService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyContactDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyContactDto> result = service.getList(p);
+        List<SyContactDto> result = boSyContactService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,41 +34,41 @@ public class BoSyContactController {
     public ResponseEntity<ApiResponse<PageResult<SyContactDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyContactDto> result = service.getPageData(p);
+        PageResult<SyContactDto> result = boSyContactService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyContactDto>> getById(@PathVariable("id") String id) {
-        SyContactDto result = service.getById(id);
+        SyContactDto result = boSyContactService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyContact>> create(@RequestBody SyContact body) {
-        SyContact result = service.create(body);
+        SyContact result = boSyContactService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyContactDto>> update(@PathVariable("id") String id, @RequestBody SyContact body) {
-        SyContactDto result = service.update(id, body);
+        SyContactDto result = boSyContactService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyContactDto>> upsert(@PathVariable("id") String id, @RequestBody SyContact body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyContactService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyContactService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyContact> rows) {
-        service.saveList(rows);
+        boSyContactService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

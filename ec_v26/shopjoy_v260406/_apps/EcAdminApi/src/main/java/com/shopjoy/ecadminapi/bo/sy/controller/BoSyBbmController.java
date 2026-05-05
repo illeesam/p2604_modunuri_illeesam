@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/bbm")
 @RequiredArgsConstructor
 public class BoSyBbmController {
-    private final BoSyBbmService service;
+    private final BoSyBbmService boSyBbmService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyBbmDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyBbmDto> result = service.getList(p);
+        List<SyBbmDto> result = boSyBbmService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,41 +34,41 @@ public class BoSyBbmController {
     public ResponseEntity<ApiResponse<PageResult<SyBbmDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyBbmDto> result = service.getPageData(p);
+        PageResult<SyBbmDto> result = boSyBbmService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBbmDto>> getById(@PathVariable("id") String id) {
-        SyBbmDto result = service.getById(id);
+        SyBbmDto result = boSyBbmService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyBbm>> create(@RequestBody SyBbm body) {
-        SyBbm result = service.create(body);
+        SyBbm result = boSyBbmService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBbmDto>> update(@PathVariable("id") String id, @RequestBody SyBbm body) {
-        SyBbmDto result = service.update(id, body);
+        SyBbmDto result = boSyBbmService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBbmDto>> upsert(@PathVariable("id") String id, @RequestBody SyBbm body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyBbmService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyBbmService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyBbm> rows) {
-        service.saveList(rows);
+        boSyBbmService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

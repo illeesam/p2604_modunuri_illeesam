@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pd/review")
 @RequiredArgsConstructor
 public class BoPdReviewController {
-    private final BoPdReviewService service;
+    private final BoPdReviewService boPdReviewService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdReviewDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<PdReviewDto> result = service.getList(p);
+        List<PdReviewDto> result = boPdReviewService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,47 +41,47 @@ public class BoPdReviewController {
     public ResponseEntity<ApiResponse<PageResult<PdReviewDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<PdReviewDto> result = service.getPageData(p);
+        PageResult<PdReviewDto> result = boPdReviewService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdReviewDto>> getById(@PathVariable("id") String id) {
-        PdReviewDto result = service.getById(id);
+        PdReviewDto result = boPdReviewService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PdReview>> create(@RequestBody PdReview body) {
-        PdReview result = service.create(body);
+        PdReview result = boPdReviewService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdReviewDto>> update(@PathVariable("id") String id, @RequestBody PdReview body) {
-        PdReviewDto result = service.update(id, body);
+        PdReviewDto result = boPdReviewService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PdReviewDto>> upsert(@PathVariable("id") String id, @RequestBody PdReview body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPdReviewService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PdReviewDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.changeStatus(id, body.get("reviewStatusCd"))));
+        return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.changeStatus(id, body.get("reviewStatusCd"))));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdReview> rows) {
-        service.saveList(rows);
+        boPdReviewService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

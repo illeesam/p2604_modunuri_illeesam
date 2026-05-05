@@ -28,13 +28,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/mb/member")
 @RequiredArgsConstructor
 public class BoMbMemberController {
-    private final BoMbMemberService service;
+    private final BoMbMemberService boMbMemberService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbMemberDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<MbMemberDto> result = service.getList(p);
+        List<MbMemberDto> result = boMbMemberService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -42,48 +42,48 @@ public class BoMbMemberController {
     public ResponseEntity<ApiResponse<PageResult<MbMemberDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<MbMemberDto> result = service.getPageData(p);
+        PageResult<MbMemberDto> result = boMbMemberService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberDto>> getById(@PathVariable("id") String id) {
-        MbMemberDto result = service.getById(id);
+        MbMemberDto result = boMbMemberService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<MbMember>> create(@RequestBody MbMember body) {
-        MbMember result = service.create(body);
+        MbMember result = boMbMemberService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberDto>> update(@PathVariable("id") String id, @RequestBody MbMember body) {
-        MbMemberDto result = service.update(id, body);
+        MbMemberDto result = boMbMemberService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberDto>> upsert(@PathVariable("id") String id, @RequestBody MbMember body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boMbMemberService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<MbMemberDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        MbMemberDto result = service.changeStatus(id, body.get("statusCd"));
+        MbMemberDto result = boMbMemberService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<MbMember> rows) {
-        service.saveList(rows);
+        boMbMemberService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

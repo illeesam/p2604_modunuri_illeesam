@@ -18,16 +18,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyAccessErrorLogController {
 
-    private final BoSyAccessErrorLogService service;
+    private final BoSyAccessErrorLogService boSyAccessErrorLogService;
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyhAccessErrorLogDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyAccessErrorLogService.getPageData(p)));
     }
 
     @DeleteMapping("/all")
     public ResponseEntity<ApiResponse<Void>> deleteAll() {
-        service.deleteAll();
+        boSyAccessErrorLogService.deleteAll();
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

@@ -20,41 +20,41 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyRoleMenuController {
 
-    private final BoSyRoleMenuService service;
+    private final BoSyRoleMenuService boSyRoleMenuService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyRoleMenuDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyRoleMenuService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyRoleMenuDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyRoleMenuService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyRoleMenuDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyRoleMenuService.getById(id)));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyRoleMenu>> create(@RequestBody SyRoleMenu body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(boSyRoleMenuService.create(body)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyRoleMenuDto>> update(@PathVariable("id") String id, @RequestBody SyRoleMenu body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyRoleMenuService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyRoleMenuService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyRoleMenu> rows) {
-        service.saveList(rows);
+        boSyRoleMenuService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

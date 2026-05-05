@@ -20,41 +20,41 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyAttachGrpController {
 
-    private final BoSyAttachGrpService service;
+    private final BoSyAttachGrpService boSyAttachGrpService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyAttachGrpDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyAttachGrpService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyAttachGrpDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyAttachGrpService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAttachGrpDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyAttachGrpService.getById(id)));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyAttachGrp>> create(@RequestBody SyAttachGrp body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(boSyAttachGrpService.create(body)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAttachGrpDto>> update(@PathVariable("id") String id, @RequestBody SyAttachGrp body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyAttachGrpService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyAttachGrpService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyAttachGrp> rows) {
-        service.saveList(rows);
+        boSyAttachGrpService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

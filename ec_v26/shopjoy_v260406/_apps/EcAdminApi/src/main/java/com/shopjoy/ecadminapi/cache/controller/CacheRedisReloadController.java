@@ -35,14 +35,14 @@ public class CacheRedisReloadController {
 
     private static final String MSG_DISABLED = "Redis가 비활성화 상태입니다. (app.redis.enabled=false)";
 
-    private final CacheRedisReloadService service;
+    private final CacheRedisReloadService cacheRedisReloadService;
 
     /** 전체 도메인 재조회 */
     @PostMapping("/reloadAll")
     public ResponseEntity<ApiResponse<Map<String, Integer>>> reloadAll() {
-        if (!service.isEnabled())
+        if (!cacheRedisReloadService.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
-        Map<String, Integer> result = service.reloadAll();
+        Map<String, Integer> result = cacheRedisReloadService.reloadAll();
         return ResponseEntity.ok(ApiResponse.ok(result, "전체 캐시 재조회 완료"));
     }
 
@@ -53,9 +53,9 @@ public class CacheRedisReloadController {
      */
     @PostMapping("/reload/{domains}")
     public ResponseEntity<ApiResponse<Map<String, Integer>>> reload(@PathVariable("domains") String domains) {
-        if (!service.isEnabled())
+        if (!cacheRedisReloadService.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
-        Map<String, Integer> result = service.reloadMulti(domains);
+        Map<String, Integer> result = cacheRedisReloadService.reloadMulti(domains);
         return ResponseEntity.ok(ApiResponse.ok(result, "캐시 재조회 완료"));
     }
 
@@ -66,9 +66,9 @@ public class CacheRedisReloadController {
      */
     @DeleteMapping("/{domains}")
     public ResponseEntity<ApiResponse<Void>> evict(@PathVariable("domains") String domains) {
-        if (!service.isEnabled())
+        if (!cacheRedisReloadService.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
-        service.evictMulti(domains);
+        cacheRedisReloadService.evictMulti(domains);
         int count = domains.split("\\^").length;
         return ResponseEntity.ok(ApiResponse.ok(null, count + "개 도메인 캐시 삭제 완료"));
     }

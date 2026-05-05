@@ -28,13 +28,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/od/dliv")
 @RequiredArgsConstructor
 public class BoOdDlivController {
-    private final BoOdDlivService service;
+    private final BoOdDlivService boOdDlivService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdDlivDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<OdDlivDto> result = service.getList(p);
+        List<OdDlivDto> result = boOdDlivService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -42,72 +42,72 @@ public class BoOdDlivController {
     public ResponseEntity<ApiResponse<PageResult<OdDlivDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<OdDlivDto> result = service.getPageData(p);
+        PageResult<OdDlivDto> result = boOdDlivService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OdDlivDto>> getById(@PathVariable("id") String id) {
-        OdDlivDto result = service.getById(id);
+        OdDlivDto result = boOdDlivService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<OdDliv>> create(@RequestBody OdDliv body) {
-        OdDliv result = service.create(body);
+        OdDliv result = boOdDlivService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<OdDlivDto>> update(@PathVariable("id") String id, @RequestBody OdDliv body) {
-        OdDlivDto result = service.update(id, body);
+        OdDlivDto result = boOdDlivService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<OdDlivDto>> upsert(@PathVariable("id") String id, @RequestBody OdDliv body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boOdDlivService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boOdDlivService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<OdDlivDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        OdDlivDto result = service.changeStatus(id, body.get("statusCd"));
+        OdDlivDto result = boOdDlivService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PutMapping("/bulk-status")
     public ResponseEntity<ApiResponse<Void>> bulkStatus(@RequestBody Map<String, Object> body) {
-        service.bulkStatus(body);
+        boOdDlivService.bulkStatus(body);
         return ResponseEntity.ok(ApiResponse.ok(null, "상태가 변경되었습니다."));
     }
 
     @PutMapping("/bulk-courier")
     public ResponseEntity<ApiResponse<Void>> bulkCourier(@RequestBody Map<String, Object> body) {
-        service.bulkCourier(body);
+        boOdDlivService.bulkCourier(body);
         return ResponseEntity.ok(ApiResponse.ok(null, "택배정보가 변경되었습니다."));
     }
 
     @PutMapping("/bulk-approval")
     public ResponseEntity<ApiResponse<Void>> bulkApproval(@RequestBody Map<String, Object> body) {
-        service.bulkApproval(body);
+        boOdDlivService.bulkApproval(body);
         return ResponseEntity.ok(ApiResponse.ok(null, "결재 처리되었습니다."));
     }
 
     @PutMapping("/bulk-approvalReq")
     public ResponseEntity<ApiResponse<Void>> bulkApprovalReq(@RequestBody Map<String, Object> body) {
-        service.bulkApprovalReq(body);
+        boOdDlivService.bulkApprovalReq(body);
         return ResponseEntity.ok(ApiResponse.ok(null, "추가결재가 요청되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdDliv> rows) {
-        service.saveList(rows);
+        boOdDlivService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -24,25 +24,25 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoPmEventController {
 
-    private final FoPmEventService service;
+    private final FoPmEventService foPmEventService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmEventDto>>> list(
             @RequestParam Map<String, Object> p) {
-        List<PmEventDto> result = service.getList(p);
+        List<PmEventDto> result = foPmEventService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmEventDto>>> page(
             @RequestParam Map<String, Object> p) {
-        PageResult<PmEventDto> result = service.getPageData(p);
+        PageResult<PmEventDto> result = foPmEventService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{eventId}")
     public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable("eventId") String eventId) {
-        PmEventDto result = service.getById(eventId);
+        PmEventDto result = foPmEventService.getById(eventId);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

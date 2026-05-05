@@ -20,47 +20,47 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyPathController {
 
-    private final SyPathService service;
+    private final SyPathService syPathService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyPathDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(syPathService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyPathDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(syPathService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyPathDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(syPathService.getById(id)));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyPath>> create(@RequestBody SyPath entity) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
+        return ResponseEntity.status(201).body(ApiResponse.created(syPathService.create(entity)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyPath>> save(@PathVariable("id") String id, @RequestBody SyPath entity) {
-        return ResponseEntity.ok(ApiResponse.ok(service.save(id, entity)));
+        return ResponseEntity.ok(ApiResponse.ok(syPathService.save(id, entity)));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(@PathVariable("id") String id, @RequestBody SyPath entity) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, entity)));
+        return ResponseEntity.ok(ApiResponse.ok(syPathService.update(id, entity)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        syPathService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyPath> rows) {
-        service.saveList(rows);
+        syPathService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

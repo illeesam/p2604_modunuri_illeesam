@@ -22,16 +22,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoCmContactController {
 
-    private final FoCmContactService service;
+    private final FoCmContactService foCmContactService;
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(foCmContactService.getById(id)));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<CmBlog>> submit(@RequestBody Map<String, Object> body) {
-        CmBlog result = service.submit(body);
+        CmBlog result = foCmContactService.submit(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 }

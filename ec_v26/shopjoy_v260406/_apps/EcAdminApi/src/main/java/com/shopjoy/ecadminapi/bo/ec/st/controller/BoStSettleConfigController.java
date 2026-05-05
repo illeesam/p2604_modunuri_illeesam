@@ -19,42 +19,42 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/st/config")
 @RequiredArgsConstructor
 public class BoStSettleConfigController {
-    private final BoStSettleConfigService service;
+    private final BoStSettleConfigService boStSettleConfigService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<StSettleConfigDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StSettleConfigDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleConfigDto>> getById(@PathVariable("id") String id) {
-        StSettleConfigDto result = service.getById(id);
+        StSettleConfigDto result = boStSettleConfigService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<StSettleConfig>> create(@RequestBody StSettleConfig body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(boStSettleConfigService.create(body)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleConfigDto>> update(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.update(id, body)));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleConfigDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boStSettleConfigService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }

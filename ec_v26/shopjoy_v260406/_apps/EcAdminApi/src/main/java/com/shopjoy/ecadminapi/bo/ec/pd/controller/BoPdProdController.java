@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pd/prod")
 @RequiredArgsConstructor
 public class BoPdProdController {
-    private final BoPdProdService service;
+    private final BoPdProdService boPdProdService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdProdDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<PdProdDto> result = service.getList(p);
+        List<PdProdDto> result = boPdProdService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,41 +41,41 @@ public class BoPdProdController {
     public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<PdProdDto> result = service.getPageData(p);
+        PageResult<PdProdDto> result = boPdProdService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdDto>> getById(@PathVariable("id") String id) {
-        PdProdDto result = service.getById(id);
+        PdProdDto result = boPdProdService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PdProd>> create(@RequestBody PdProd body) {
-        PdProd result = service.create(body);
+        PdProd result = boPdProdService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdDto>> update(@PathVariable("id") String id, @RequestBody PdProd body) {
-        PdProdDto result = service.update(id, body);
+        PdProdDto result = boPdProdService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdDto>> upsert(@PathVariable("id") String id, @RequestBody PdProd body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPdProdService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdProd> rows) {
-        service.saveList(rows);
+        boPdProdService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

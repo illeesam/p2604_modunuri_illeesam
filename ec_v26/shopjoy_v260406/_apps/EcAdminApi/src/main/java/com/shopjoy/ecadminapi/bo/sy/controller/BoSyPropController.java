@@ -20,43 +20,43 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/prop")
 @RequiredArgsConstructor
 public class BoSyPropController {
-    private final SyPropService service;
+    private final SyPropService syPropService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyPropDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(syPropService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyPropDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(syPropService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyPropDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(syPropService.getById(id)));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyProp>> create(@RequestBody SyProp body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(syPropService.create(body)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyProp>> update(@PathVariable("id") String id, @RequestBody SyProp body) {
         body.setPropId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(body)));
+        return ResponseEntity.ok(ApiResponse.ok(syPropService.save(body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        syPropService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyProp> rows) {
-        service.saveList(rows);
+        syPropService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

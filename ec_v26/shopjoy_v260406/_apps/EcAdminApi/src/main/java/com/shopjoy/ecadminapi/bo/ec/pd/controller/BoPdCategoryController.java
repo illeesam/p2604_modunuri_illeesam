@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pd/category")
 @RequiredArgsConstructor
 public class BoPdCategoryController {
-    private final BoPdCategoryService service;
+    private final BoPdCategoryService boPdCategoryService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdCategoryDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<PdCategoryDto> result = service.getList(p);
+        List<PdCategoryDto> result = boPdCategoryService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,36 +41,36 @@ public class BoPdCategoryController {
     public ResponseEntity<ApiResponse<PageResult<PdCategoryDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<PdCategoryDto> result = service.getPageData(p);
+        PageResult<PdCategoryDto> result = boPdCategoryService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdCategoryDto>> getById(@PathVariable("id") String id) {
-        PdCategoryDto result = service.getById(id);
+        PdCategoryDto result = boPdCategoryService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PdCategory>> create(@RequestBody PdCategory body) {
-        PdCategory result = service.create(body);
+        PdCategory result = boPdCategoryService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdCategoryDto>> update(@PathVariable("id") String id, @RequestBody PdCategory body) {
-        PdCategoryDto result = service.update(id, body);
+        PdCategoryDto result = boPdCategoryService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PdCategoryDto>> upsert(@PathVariable("id") String id, @RequestBody PdCategory body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPdCategoryService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPdCategoryService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
@@ -79,12 +79,12 @@ public class BoPdCategoryController {
             @PathVariable("id") String id,
             @PathVariable("activeTypeCd") String activeTypeCd,
             @RequestBody Map<String, Object> body) {
-        service.updateProds(id, activeTypeCd, body);
+        boPdCategoryService.updateProds(id, activeTypeCd, body);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdCategory> rows) {
-        service.saveList(rows);
+        boPdCategoryService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

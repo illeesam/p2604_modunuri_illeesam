@@ -20,22 +20,22 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CoSyCodeController {
 
-    private final BoSyCodeService service;
+    private final BoSyCodeService boSyCodeService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyCodeDto>>> list(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyCodeDto>>> page(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyCodeDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.getById(id)));
     }
 }

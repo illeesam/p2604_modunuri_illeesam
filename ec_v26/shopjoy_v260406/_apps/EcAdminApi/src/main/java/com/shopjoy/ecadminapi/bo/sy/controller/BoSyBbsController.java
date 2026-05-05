@@ -19,47 +19,47 @@ import java.util.Map;
 @RequestMapping("/api/bo/sy/bbs")
 @RequiredArgsConstructor
 public class BoSyBbsController {
-    private final BoSyBbsService service;
+    private final BoSyBbsService boSyBbsService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyBbsDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyBbsService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyBbsDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyBbsService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBbsDto>> getById(@PathVariable("id") String id) {
-        SyBbsDto result = service.getById(id);
+        SyBbsDto result = boSyBbsService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyBbs>> create(@RequestBody SyBbs body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(boSyBbsService.create(body)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBbsDto>> update(@PathVariable("id") String id, @RequestBody SyBbs body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyBbsService.update(id, body)));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBbsDto>> upsert(@PathVariable("id") String id, @RequestBody SyBbs body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyBbsService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boSyBbsService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyBbs> rows) {
-        service.saveList(rows);
+        boSyBbsService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

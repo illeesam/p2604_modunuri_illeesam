@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pm/discnt")
 @RequiredArgsConstructor
 public class BoPmDiscntController {
-    private final BoPmDiscntService service;
+    private final BoPmDiscntService boPmDiscntService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmDiscntDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<PmDiscntDto> result = service.getList(p);
+        List<PmDiscntDto> result = boPmDiscntService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,48 +34,48 @@ public class BoPmDiscntController {
     public ResponseEntity<ApiResponse<PageResult<PmDiscntDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<PmDiscntDto> result = service.getPageData(p);
+        PageResult<PmDiscntDto> result = boPmDiscntService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmDiscntDto>> getById(@PathVariable("id") String id) {
-        PmDiscntDto result = service.getById(id);
+        PmDiscntDto result = boPmDiscntService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmDiscnt>> create(@RequestBody PmDiscnt body) {
-        PmDiscnt result = service.create(body);
+        PmDiscnt result = boPmDiscntService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmDiscntDto>> update(@PathVariable("id") String id, @RequestBody PmDiscnt body) {
-        PmDiscntDto result = service.update(id, body);
+        PmDiscntDto result = boPmDiscntService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PmDiscntDto>> upsert(@PathVariable("id") String id, @RequestBody PmDiscnt body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPmDiscntService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPmDiscntService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmDiscntDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        PmDiscntDto result = service.changeStatus(id, body.get("statusCd"));
+        PmDiscntDto result = boPmDiscntService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmDiscnt> rows) {
-        service.saveList(rows);
+        boPmDiscntService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

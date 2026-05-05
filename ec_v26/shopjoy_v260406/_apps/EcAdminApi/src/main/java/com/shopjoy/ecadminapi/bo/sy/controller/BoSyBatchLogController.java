@@ -19,20 +19,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyBatchLogController {
 
-    private final BoSyBatchLogService service;
+    private final BoSyBatchLogService boSyBatchLogService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyhBatchLogDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyBatchLogService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyhBatchLogDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyBatchLogService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyhBatchLogDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyBatchLogService.getById(id)));
     }
 }

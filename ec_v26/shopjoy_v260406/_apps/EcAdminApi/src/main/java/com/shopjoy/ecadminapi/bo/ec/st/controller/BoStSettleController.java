@@ -28,13 +28,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/st/settle")
 @RequiredArgsConstructor
 public class BoStSettleController {
-    private final BoStSettleService service;
+    private final BoStSettleService boStSettleService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<StSettleDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<StSettleDto> result = service.getList(p);
+        List<StSettleDto> result = boStSettleService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -42,43 +42,43 @@ public class BoStSettleController {
     public ResponseEntity<ApiResponse<PageResult<StSettleDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<StSettleDto> result = service.getPageData(p);
+        PageResult<StSettleDto> result = boStSettleService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleDto>> getById(@PathVariable("id") String id) {
-        StSettleDto result = service.getById(id);
+        StSettleDto result = boStSettleService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<StSettle>> create(@RequestBody StSettle body) {
-        StSettle result = service.create(body);
+        StSettle result = boStSettleService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleDto>> update(@PathVariable("id") String id, @RequestBody StSettle body) {
-        StSettleDto result = service.update(id, body);
+        StSettleDto result = boStSettleService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleDto>> upsert(@PathVariable("id") String id, @RequestBody StSettle body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boStSettleService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<StSettleDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        StSettleDto result = service.changeStatus(id, body.get("statusCd"));
+        StSettleDto result = boStSettleService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

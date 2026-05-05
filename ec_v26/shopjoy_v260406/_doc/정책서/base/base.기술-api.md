@@ -80,9 +80,13 @@ share/
 
 ```
 bo/
-├── controller/
-├── service/
-└── mapper/
+├── ec/
+│   ├── cm/  ├── dp/  ├── mb/  ├── od/
+│   ├── pd/  ├── pm/  └── st/
+│   └── (각 서브패키지 안에 controller/ + service/)
+└── sy/
+    ├── controller/
+    └── service/
 ```
 
 ### 3.4 `fo/` — Front Office (사용자) 전용 모듈
@@ -93,12 +97,158 @@ bo/
 
 ```
 fo/
-├── controller/
-├── service/
-└── mapper/
+├── ec/
+│   └── controller/  +  service/
+└── sy/   (현재 비어있음)
 ```
 
-### 3.5 `/api/base/**` URL 직접 호출 금지 ⭐
+### 3.4-A `co/` — 공통(Common) 모듈 ⭐
+
+- **정의**: BO·FO 양쪽에서 공통으로 사용하는 API (인증, 초기 데이터 로드, 공통 코드 등)
+- **URL 프리픽스**: `/api/co/...`
+- **하위 구조**:
+
+```
+co/
+├── auth/
+│   ├── controller/   BoAuthController, FoAuthController
+│   └── service/      BoAuthService, FoAuthService
+├── cm/
+│   ├── controller/   공통 초기화 데이터 (앱 스토어 데이터 등)
+│   └── service/      CmAppStoreDataService
+└── sy/
+    └── controller/   CoSyCodeController, CoSyPathController, CoSySiteController, CoSyUserController
+```
+
+- **예시**: `/api/co/bo-auth/login`, `/api/co/sy/code/list`, `/api/co/cm/bo-app-store`
+
+---
+
+### 3.5 Controller → Service 참조 규칙 ⭐
+
+**핵심 원칙**: **`bo/` · `fo/` · `co/` Controller 는 `base/` Service 를 직접 주입할 수 없다.**
+반드시 같은 레이어(bo/fo/co)의 Service 를 경유해야 한다.
+
+#### 계층 구조
+
+```
+[클라이언트]
+    │  /api/bo/**  /api/fo/**  /api/co/**
+    ▼
+[bo / fo / co Controller]
+    │  반드시 같은 레이어 Service 호출
+    ▼
+[bo / fo / co Service]          ← 비즈니스 로직, 권한 검증, 감사 기록
+    │  base Mapper / Repository 직접 주입 허용
+    ▼
+[base Mapper / base Repository] ← 순수 SQL/JPA CRUD
+    │
+    ▼
+[PostgreSQL DB]
+```
+
+#### 올바른 패턴 (✅)
+
+```java
+// BO Controller → BO Service (같은 레이어)
+@RestController
+@RequestMapping("/api/bo/ec/cm/blog")
+@RequiredArgsConstructor
+public class BoCmBlogController {
+    private final BoCmBlogService service;   // ✅ bo Service 주입
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<PageResult<CmBlogDto>>> page(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+    }
+}
+
+// BO Service → base Mapper / Repository (직접 주입 허용)
+@Service
+@RequiredArgsConstructor
+public class BoCmBlogService {
+    private final CmBlogMapper     cmBlogMapper;      // ✅ base Mapper 주입
+    private final CmBlogRepository cmBlogRepository;  // ✅ base Repository 주입
+
+    @Transactional(readOnly = true)
+    public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(
+            cmBlogMapper.selectPageList(p),
+            cmBlogMapper.selectPageCount(p),
+            PageHelper.getPageNo(), PageHelper.getPageSize(), p
+        );
+    }
+}
+```
+
+#### 금지 패턴 (❌)
+
+```java
+// ❌ BO Controller 가 base Service 를 직접 주입
+@RestController
+@RequestMapping("/api/bo/ec/cm/blog")
+@RequiredArgsConstructor
+public class BoCmBlogController {
+    private final CmBlogService baseService;   // ❌ base Service 직접 주입 금지
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<PageResult<CmBlogDto>>> page(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(baseService.getPageData(p)));
+        // 권한 검증·감사 로그가 완전히 우회됨
+    }
+}
+```
+
+#### 금지하는 이유
+
+| 항목 | 설명 |
+|---|---|
+| **권한 검증 우회** | bo/fo Service 에서 수행하는 memberId 확인, 역할 체크가 건너뜀 |
+| **감사 로그 누락** | X-UI-Nm / X-Cmd-Nm 헤더 기반 감사 기록이 bo/fo 레이어에서 처리됨 |
+| **비즈니스 로직 분산** | 검증 없이 base Service 호출 시 도메인 규칙 미적용 상태로 DB 변경 가능 |
+| **재생성 안전성** | base 는 DDL 변경 시 재생성 대상 — 외부 Controller 의존이 있으면 재생성 후 깨짐 |
+
+#### 예외 — 단순 위임 시 bo/fo Service 생략 허용
+
+비즈니스 로직이 전혀 없는 **단순 CRUD 위임**의 경우, bo/fo Service 클래스를 따로 만들지 않고
+Controller 에서 **base Service 를 직접 주입**하는 것을 예외적으로 허용한다.
+
+단, 이 경우에도 **Controller 는 반드시 `bo/` 또는 `fo/` 패키지에 위치**해야 한다.
+
+```java
+// ✅ 예외 허용 — 단순 CRUD 위임, 비즈니스 로직 없음
+@RestController
+@RequestMapping("/api/bo/sy/vendor-user")
+@RequiredArgsConstructor
+public class BoSyVendorUserController {
+    private final SyVendorUserService baseService;  // ✅ 예외: 단순 위임 시 base Service 직접 주입 허용
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<PageResult<SyVendorUserDto>>> page(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(baseService.getPageData(p)));
+    }
+}
+```
+
+**단순 위임 판단 기준**:
+
+| 조건 | 판단 |
+|---|---|
+| 권한 체크 필요 (memberId 확인, 역할 검증) | bo/fo Service 필수 |
+| DTO 가공 / 다중 테이블 조합 | bo/fo Service 필수 |
+| 트랜잭션 조합 (여러 엔티티 수정) | bo/fo Service 필수 |
+| 감사 이력 기록 필요 | bo/fo Service 필수 |
+| 순수 조회 CRUD, 별도 가공 없음 | base Service 직접 주입 허용 |
+
+**비즈니스 로직이 추가되는 시점**에 bo/fo Service 클래스를 신설한다 (사전 도입 불필요).
+
+---
+
+### 3.6 `/api/base/**` URL 직접 호출 금지 ⭐
 
 **원칙**: `base/` 패키지의 컨트롤러(`/api/base/**`)는 **내부 공통 레이어**다. 프론트엔드에서 직접
 호출하면 **반드시 안 된다**. BO 화면은 `/api/bo/**`, FO 화면은 `/api/fo/**` 컨트롤러를 거쳐야 한다.
@@ -128,77 +278,9 @@ boApiSvc.stSettleConfig = {
 };
 ```
 
-#### 신규 기능이 필요할 때 — 레이어 구성 원칙 ⭐
+#### 신규 기능이 필요할 때
 
-`base/` 컨트롤러에만 엔드포인트가 있고 BO/FO 컨트롤러가 없으면, **`bo/` 또는 `fo/` 패키지에
-Controller 를 신규 작성**한 후 클라이언트에서 호출한다.
-
-**Service 작성 여부는 비즈니스 로직 유무로 결정한다.**
-
-| 케이스 | 권장 구성 |
-|---|---|
-| **단순 CRUD 위임** (검증·가공·권한 추가 없음) | Controller → **base Service 직접 호출** (BO/FO Service 생략) |
-| **비즈니스 로직 있음** (권한 체크·DTO 가공·트랜잭션 조합·캐시·감사 등) | Controller → **BO/FO Service** → base Service / base Mapper |
-
-##### 패턴 1 — 단순 위임 (BO/FO Service 생략 OK)
-
-```java
-// ✅ 단순 CRUD 만 위임 — BO Service 불필요
-@RestController
-@RequestMapping("/api/bo/sy/vendor-user")
-@RequiredArgsConstructor
-public class BoSyVendorUserController {
-    private final SyVendorUserService service;   // base Service 직접 주입
-
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyVendorUserDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
-    }
-}
-```
-
-##### 패턴 2 — 비즈니스 로직 보유 (BO/FO Service 필수)
-
-```java
-// ✅ BO 전용 권한 체크 + 가공 → BO Service 경유
-@RestController
-@RequestMapping("/api/bo/ec/st/config")
-@RequiredArgsConstructor
-public class BoStSettleConfigController {
-    private final BoStSettleConfigService service;   // ← BO Service
-
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<StSettleConfigDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
-    }
-}
-
-// BO Service: 비즈니스 로직 + base Mapper/Repository 직접 사용
-@Service
-@RequiredArgsConstructor
-public class BoStSettleConfigService {
-    private final StSettleConfigMapper mapper;       // ← base Mapper
-    private final StSettleConfigRepository repository; // ← base Repository
-
-    @Transactional
-    public StSettleConfig create(StSettleConfig body) {
-        body.setSettleConfigId(generateId());
-        body.setRegBy(SecurityUtil.getAuthUser().authId());   // ← BO 전용 감사
-        body.setRegDate(LocalDateTime.now());
-        return repository.save(body);
-    }
-}
-```
-
-##### 핵심 원칙 정리
-
-1. **Controller 는 항상 `bo/` 또는 `fo/` 에 둔다** (인증·인가 레이어 통과 목적)
-2. **Service** — 비즈니스 로직 있으면 BO/FO Service, 없으면 생략하고 base Service 직접 호출
-3. **CRUD 데이터 액세스** — base Service / base Mapper / base Repository 를 그대로 사용 (재사용)
-4. **쿼리 변경이 필요할 때** — base Mapper.xml 을 직접 수정한다 (BO/FO 별도 Mapper 작성 금지)
-5. **단순 위임에서 비즈니스 로직이 추가되는 시점** — 그때 BO/FO Service 클래스를 신설하면 된다 (사전 도입 불필요)
+`base/` 에만 엔드포인트가 있고 BO/FO Controller 가 없으면, **`bo/` 또는 `fo/` 패키지에 Controller 를 신규 작성**한 후 클라이언트에서 호출한다. Service 작성 여부는 §3.5의 단순 위임 판단 기준을 따른다.
 
 #### 점검 방법
 

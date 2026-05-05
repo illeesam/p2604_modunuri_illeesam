@@ -36,7 +36,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AutoRestController {
 
-    private final AutoRestService service;
+    private final AutoRestService autoRestService;
 
     /* ── 1. 목록 조회 ── */
     @GetMapping
@@ -46,7 +46,7 @@ public class AutoRestController {
             @PathVariable("table") String table,
             @ModelAttribute SearchReq search) {
         checkTable(table);
-        List<RowMap> result = service.getList(table, search);
+        List<RowMap> result = autoRestService.getList(table, search);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -58,7 +58,7 @@ public class AutoRestController {
             @PathVariable("table") String table,
             @ModelAttribute SearchReq search) {
         checkTable(table);
-        PageResult<RowMap> result = service.getPageData(table, search);
+        PageResult<RowMap> result = autoRestService.getPageData(table, search);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -70,7 +70,7 @@ public class AutoRestController {
             @PathVariable("table") String table,
             @ModelAttribute SearchReq search) {
         checkTable(table);
-        long result = service.count(table, search);
+        long result = autoRestService.count(table, search);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -82,7 +82,7 @@ public class AutoRestController {
             @PathVariable("table") String table,
             @PathVariable("id") String id) {
         checkTable(table);
-        RowMap row = service.getById(table, id);
+        RowMap row = autoRestService.getById(table, id);
         if (row == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(row));
     }
@@ -95,7 +95,7 @@ public class AutoRestController {
             @PathVariable("table") String table,
             @RequestBody RowMap body) {
         checkTable(table);
-        RowMap result = service.create(table, body);
+        RowMap result = autoRestService.create(table, body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
@@ -108,7 +108,7 @@ public class AutoRestController {
             @PathVariable("id") String id,
             @RequestBody RowMap body) {
         checkTable(table);
-        RowMap result = service.update(table, id, body);
+        RowMap result = autoRestService.update(table, id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -121,7 +121,7 @@ public class AutoRestController {
             @PathVariable("id") String id,
             @RequestBody RowMap body) {
         checkTable(table);
-        RowMap result = service.patch(table, id, body);
+        RowMap result = autoRestService.patch(table, id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -133,7 +133,7 @@ public class AutoRestController {
             @PathVariable("table") String table,
             @PathVariable("id") String id) {
         checkTable(table);
-        service.delete(table, id);
+        autoRestService.delete(table, id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
@@ -145,7 +145,7 @@ public class AutoRestController {
             @PathVariable("table") String table,
             @RequestBody RowMap body) {
         checkTable(table);
-        RowMap result = service.saveByRowStatus(table, body);
+        RowMap result = autoRestService.saveByRowStatus(table, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -157,7 +157,7 @@ public class AutoRestController {
             @PathVariable("table") String table,
             @RequestBody List<RowMap> list) {
         checkTable(table);
-        List<RowMap> result = service.saveListByRowStatus(table, list);
+        List<RowMap> result = autoRestService.saveListByRowStatus(table, list);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -169,7 +169,7 @@ public class AutoRestController {
             @PathVariable("table") String table,
             @RequestBody @Valid BulkDeleteReq req) {
         checkTable(table);
-        int cnt = service.bulkDelete(table, req.getIds());
+        int cnt = autoRestService.bulkDelete(table, req.getIds());
         return ResponseEntity.ok(ApiResponse.ok(cnt, cnt + "건 삭제되었습니다."));
     }
 

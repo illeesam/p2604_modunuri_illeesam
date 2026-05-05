@@ -27,13 +27,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/cm/notice")
 @RequiredArgsConstructor
 public class BoCmNoticeController {
-    private final BoCmNoticeService service;
+    private final BoCmNoticeService boCmNoticeService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyNoticeDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<SyNoticeDto> result = service.getList(p);
+        List<SyNoticeDto> result = boCmNoticeService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -41,41 +41,41 @@ public class BoCmNoticeController {
     public ResponseEntity<ApiResponse<PageResult<SyNoticeDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<SyNoticeDto> result = service.getPageData(p);
+        PageResult<SyNoticeDto> result = boCmNoticeService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyNoticeDto>> getById(@PathVariable("id") String id) {
-        SyNoticeDto result = service.getById(id);
+        SyNoticeDto result = boCmNoticeService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyNotice>> create(@RequestBody SyNotice body) {
-        SyNotice result = service.create(body);
+        SyNotice result = boCmNoticeService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyNoticeDto>> update(@PathVariable("id") String id, @RequestBody SyNotice body) {
-        SyNoticeDto result = service.update(id, body);
+        SyNoticeDto result = boCmNoticeService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyNoticeDto>> upsert(@PathVariable("id") String id, @RequestBody SyNotice body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boCmNoticeService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boCmNoticeService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyNotice> rows) {
-        service.saveList(rows);
+        boCmNoticeService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

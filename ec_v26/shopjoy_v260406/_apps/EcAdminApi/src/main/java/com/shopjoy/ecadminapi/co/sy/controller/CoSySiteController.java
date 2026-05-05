@@ -20,22 +20,22 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CoSySiteController {
 
-    private final BoSySiteService service;
+    private final BoSySiteService boSySiteService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SySiteDto>>> list(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SySiteDto>>> page(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getPageData(p)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SySiteDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getById(id)));
     }
 }

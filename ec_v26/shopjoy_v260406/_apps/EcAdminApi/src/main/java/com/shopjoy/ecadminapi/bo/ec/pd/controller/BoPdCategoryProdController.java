@@ -20,18 +20,18 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoPdCategoryProdController {
 
-    private final BoPdCategoryProdService service;
+    private final BoPdCategoryProdService boPdCategoryProdService;
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdCategoryProdDto>>> page(
             @RequestParam Map<String, Object> p) {
-        PageResult<PdCategoryProdDto> result = service.getPageData(p);
+        PageResult<PdCategoryProdDto> result = boPdCategoryProdService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PutMapping
     public ResponseEntity<ApiResponse<Void>> saveProds(@RequestBody Map<String, Object> body) {
-        service.saveProds(body);
+        boPdCategoryProdService.saveProds(body);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

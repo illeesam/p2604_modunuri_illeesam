@@ -3,19 +3,14 @@ package com.shopjoy.ecadminapi.bo.ec.st.controller;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher;
-import com.shopjoy.ecadminapi.base.ec.st.repository.StErpVoucherRepository;
-import com.shopjoy.ecadminapi.base.ec.st.service.StErpVoucherService;
-import com.shopjoy.ecadminapi.base.ec.st.service.StReconService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.bo.ec.st.service.BoStErpService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -28,42 +23,34 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoStErpController {
 
-    private final StErpVoucherService service;
-    private final StErpVoucherRepository stErpVoucherRepository;
-    private final StReconService stReconService;
+    private final BoStErpService boStErpService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<StErpVoucherDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StErpVoucherDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getPageData(p)));
     }
 
-    /* ── ERP 전표 생성 목록 (page) ────────────────────── */
     @GetMapping("/gen/page")
     public ResponseEntity<ApiResponse<PageResult<StErpVoucherDto>>> genPage(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getPageData(p)));
     }
 
-    /* ── ERP 대사(Recon) 목록 (page) ──────────────────── */
     @GetMapping("/recon/page")
     public ResponseEntity<ApiResponse<PageResult<StReconDto>>> reconPage(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(stReconService.getPageData(p)));
+        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getReconPageData(p)));
     }
 
     @PostMapping("/gen")
     public ResponseEntity<ApiResponse<StErpVoucher>> gen(@RequestBody Map<String, Object> body) {
-        StErpVoucher entity = new StErpVoucher();
-        entity.setSettleYm((String) body.get("targetMon"));
-        entity.setErpVoucherTypeCd((String) body.get("slipType"));
-        entity.setErpVoucherStatusCd("PENDING");
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        StErpVoucher result = service.create(entity);
-        log.info("ERP 전표 생성 - id={}, targetMon={}", result.getErpVoucherId(), body.get("targetMon"));
+        StErpVoucher result = boStErpService.gen(
+            (String) body.get("targetMon"),
+            (String) body.get("slipType")
+        );
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
@@ -75,14 +62,7 @@ public class BoStErpController {
 
     @PostMapping("/resend/{id}")
     public ResponseEntity<ApiResponse<Void>> resend(@PathVariable("id") String id) {
-        StErpVoucher entity = stErpVoucherRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 전표입니다: " + id));
-        entity.setErpVoucherStatusCd("PENDING");
-        entity.setErpSendDate(null);
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        service.save(entity);
-        log.info("ERP 전표 재전송 요청 - slipId={}", id);
+        boStErpService.resend(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "재전송 요청되었습니다."));
     }
 }

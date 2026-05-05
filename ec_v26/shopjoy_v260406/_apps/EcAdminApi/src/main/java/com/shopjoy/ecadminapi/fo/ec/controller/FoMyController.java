@@ -31,29 +31,29 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FoMyController {
 
-    private final FoMyPageService service;
+    private final FoMyPageService foMyPageService;
 
     @GetMapping("/order/list")
     public ResponseEntity<ApiResponse<List<OdOrderDto>>> getOrders(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyOrders(p)));
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyOrders(p)));
     }
 
     @GetMapping("/claim/list")
     public ResponseEntity<ApiResponse<List<OdClaimDto>>> getClaims(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyClaims(p)));
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyClaims(p)));
     }
 
     @GetMapping("/coupon/list")
     public ResponseEntity<ApiResponse<List<PmCouponDto>>> getCoupons(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyCoupons(p)));
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCoupons(p)));
     }
 
     @GetMapping("/cash/info")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCashInfo() {
-        List<PmCacheDto> history = service.getMyCacheHistory(new HashMap<>());
+        List<PmCacheDto> history = foMyPageService.getMyCacheHistory(new HashMap<>());
         Map<String, Object> cashInfo = new HashMap<>();
         cashInfo.put("balance", 0);
         cashInfo.put("history", history);

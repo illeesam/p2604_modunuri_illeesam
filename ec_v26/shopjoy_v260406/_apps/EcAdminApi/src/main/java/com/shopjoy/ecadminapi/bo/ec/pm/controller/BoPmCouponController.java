@@ -20,13 +20,13 @@ import java.util.Map;
 @RequestMapping("/api/bo/ec/pm/coupon")
 @RequiredArgsConstructor
 public class BoPmCouponController {
-    private final BoPmCouponService service;
+    private final BoPmCouponService boPmCouponService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmCouponDto>>> list(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        List<PmCouponDto> result = service.getList(p);
+        List<PmCouponDto> result = boPmCouponService.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -34,48 +34,48 @@ public class BoPmCouponController {
     public ResponseEntity<ApiResponse<PageResult<PmCouponDto>>> page(
             @RequestParam Map<String, Object> p) {
         // CmUtil.require(p, "siteId");
-        PageResult<PmCouponDto> result = service.getPageData(p);
+        PageResult<PmCouponDto> result = boPmCouponService.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCouponDto>> getById(@PathVariable("id") String id) {
-        PmCouponDto result = service.getById(id);
+        PmCouponDto result = boPmCouponService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmCoupon>> create(@RequestBody PmCoupon body) {
-        PmCoupon result = service.create(body);
+        PmCoupon result = boPmCouponService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCouponDto>> update(@PathVariable("id") String id, @RequestBody PmCoupon body) {
-        PmCouponDto result = service.update(id, body);
+        PmCouponDto result = boPmCouponService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCouponDto>> upsert(@PathVariable("id") String id, @RequestBody PmCoupon body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        return ResponseEntity.ok(ApiResponse.ok(boPmCouponService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
+        boPmCouponService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmCouponDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        PmCouponDto result = service.changeStatus(id, body.get("statusCd"));
+        PmCouponDto result = boPmCouponService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmCoupon> rows) {
-        service.saveList(rows);
+        boPmCouponService.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }
