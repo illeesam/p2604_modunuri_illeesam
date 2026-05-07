@@ -164,5 +164,7 @@ app:
 # ────────────────────────────────────────────
 logging:
   file:
-    path: logs
+    # ⚠ 워크스페이스 밖 절대경로 — VSCode Live Server reload 무한 루프 회피
+    #   자세히: _doc/정책서-dev/local-logging.md
+    path: C:/_logs/shopjoy
   # level: hibernate SQL 로그 — p6spy 사용 중이므로 비활성 (중복 출력 방지)

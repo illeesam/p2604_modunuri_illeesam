@@ -11,9 +11,13 @@
 
     <!-- ================================================================
          공통 속성  (application.yml 의 logging.file.path 를 LOG_DIR 로 수신)
+         ※ 로컬 개발 기본값을 워크스페이스 밖 절대경로(C:/_logs/shopjoy)로 설정.
+           이유: VSCode Live Server 가 워크스페이스 안의 .log 파일 변경을 감지해
+                 0.5초 간격으로 브라우저를 reload 하던 무한 깜빡임 해결.
+                 자세한 설명: _doc/정책서-dev/local-logging.md
          ================================================================ -->
     <springProperty scope="context" name="LOG_DIR"
-                    source="logging.file.path" defaultValue="logs"/>
+                    source="logging.file.path" defaultValue="C:/_logs/shopjoy"/>
 
     <property name="APP_NAME"    value="ecadminapi"/>
     <property name="APP_LOG"     value="${LOG_DIR}/${APP_NAME}.log"/>
@@ -34,6 +38,9 @@
          - 콘솔: DEBUG+, 컬러, (%F:%L) IntelliJ 클릭 링크
          - 파일:  DEBUG+, 롤링(일별+50MB), 30일, 2GB, gzip 압축
          - 에러:  ERROR 전용, 롤링(일별+20MB), 90일, 500MB, gzip 압축
+         ※ 파일 경로는 워크스페이스 밖 절대경로 (LOG_DIR 기본값 C:/_logs/shopjoy).
+            VSCode Live Server 가 워크스페이스 안의 .log 변경을 감지해 브라우저
+            reload 를 반복하던 깜빡임 사이클 회피.  자세히: _doc/정책서-dev/local-logging.md
          ================================================================ -->
     <springProfile name="local,dev">
 
@@ -58,7 +65,7 @@
             </encoder>
         </appender>
 
-        <!-- ─── FILE: 롤링 ──────────────────────────────────────────── -->
+        <!-- ─── FILE: 롤링 (워크스페이스 밖 C:/_logs/shopjoy) ────────── -->
         <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${APP_LOG}</file>
             <encoder>
@@ -74,7 +81,7 @@
             </rollingPolicy>
         </appender>
 
-        <!-- ─── ERROR FILE: ERROR 전용 ───────────────────────────────── -->
+        <!-- ─── ERROR FILE: ERROR 전용 (워크스페이스 밖 C:/_logs/shopjoy) ── -->
         <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${ERR_LOG}</file>
             <filter class="ch.qos.logback.classic.filter.ThresholdFilter">

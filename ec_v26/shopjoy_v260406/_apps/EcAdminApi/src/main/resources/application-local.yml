@@ -257,4 +257,6 @@ app:
 # ────────────────────────────────────────────
 logging:
   file:
-    path: logs
+    # ⚠ 워크스페이스 밖 절대경로 — VSCode Live Server reload 무한 루프 회피
+    #   자세히: _doc/정책서-dev/local-logging.md
+    path: C:/_logs/shopjoy
