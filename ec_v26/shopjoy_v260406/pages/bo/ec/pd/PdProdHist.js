@@ -1,5 +1,5 @@
-/* ShopJoy Admin - 상품 이력 (연관주문 / 재고이력 / 가격변경이력 / 상품상태이력 / 상품정보변경이력) */
-window._ecProdHistState = window._ecProdHistState || { tab: 'orders', tabMode: 'tab' };
+/* ShopJoy Admin - 상품 이력 (Q&A / 리뷰 / 연관주문 / 재고이력 / 가격변경이력 / 상품상태이력 / 상품정보변경이력) */
+window._ecProdHistState = window._ecProdHistState || { tab: 'qna', tabMode: 'tab' };
 window.PdProdHist = {
   name: 'PdProdHist',
   props: {
@@ -35,6 +35,8 @@ window.PdProdHist = {
 
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
+    const qnaList       = reactive([]);
+    const reviewList    = reactive([]);
     const relatedOrders = reactive([]);
     const stockHistory  = reactive([]);
     const priceHistory  = reactive([]);
@@ -44,13 +46,26 @@ window.PdProdHist = {
     const BASE = (tab) => `/bo/ec/pd/prod/${props.prodId}/hist/${tab}`;
     const HDR  = (cmd) => coUtil.apiHdr('상품관리', cmd);
 
+    const fnPickPageList = (res) => {
+      const d = res?.data?.data;
+      return d?.pageList || d?.list || (Array.isArray(d) ? d : []);
+    };
+
+    const ALL_TABS = ['qna', 'review', 'orders', 'stock', 'price', 'status', 'changes'];
+
     const handleLoadTab = async (tab) => {
       if (!props.prodId || uiState.loadedTabs.has(tab)) return;
       uiState.loading = true;
       try {
-        if (tab === 'orders') {
+        if (tab === 'qna') {
+          const res = await boApiSvc.pdQna.getPage({ prodId: props.prodId, pageNo: 1, pageSize: 200 }, '상품관리', 'Q&A조회');
+          qnaList.splice(0, qnaList.length, ...fnPickPageList(res));
+        } else if (tab === 'review') {
+          const res = await boApiSvc.pdReview.getPage({ prodId: props.prodId, pageNo: 1, pageSize: 200 }, '상품관리', '리뷰조회');
+          reviewList.splice(0, reviewList.length, ...fnPickPageList(res));
+        } else if (tab === 'orders') {
           const res = await boApiSvc.odOrder.getPage({ prodId: props.prodId, pageNo: 1, pageSize: 200 }, '상품관리', '연관주문');
-          relatedOrders.splice(0, relatedOrders.length, ...(res.data?.data?.list || []));
+          relatedOrders.splice(0, relatedOrders.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         } else if (tab === 'stock') {
           const res = await boApi.get(BASE('stock'), HDR('재고이력'));
           stockHistory.splice(0, stockHistory.length, ...(res.data?.data || []));
@@ -82,16 +97,17 @@ window.PdProdHist = {
     };
 
     onMounted(() => {
-            if (isAppReady.value) fnLoadCodes();
-handleLoadTab(uiState.botTab);
+      if (isAppReady.value) fnLoadCodes();
+      handleLoadTab(uiState.botTab);
       if (uiState.tabMode2 !== 'tab') {
-        ['orders', 'stock', 'price', 'status', 'changes']
-          .forEach(t => t !== uiState.botTab && handleLoadTab(t));
+        ALL_TABS.forEach(t => t !== uiState.botTab && handleLoadTab(t));
       }
     });
 
     watch(() => props.prodId, () => {
       uiState.loadedTabs = new Set();
+      qnaList.splice(0);
+      reviewList.splice(0);
       relatedOrders.splice(0);
       stockHistory.splice(0);
       priceHistory.splice(0);
@@ -99,19 +115,17 @@ handleLoadTab(uiState.botTab);
       changeHistory.splice(0);
       handleLoadTab(uiState.botTab);
       if (uiState.tabMode2 !== 'tab') {
-        ['orders', 'stock', 'price', 'status', 'changes']
-          .forEach(t => t !== uiState.botTab && handleLoadTab(t));
+        ALL_TABS.forEach(t => t !== uiState.botTab && handleLoadTab(t));
       }
     });
 
     watch(() => uiState.tabMode2, (v) => {
-      if (v !== 'tab') {
-        ['orders', 'stock', 'price', 'status', 'changes'].forEach(t => handleLoadTab(t));
-      }
+      if (v !== 'tab') ALL_TABS.forEach(t => handleLoadTab(t));
     });
 
     return {
       uiState, botTab, tabMode2,
+      qnaList, reviewList,
       relatedOrders, stockHistory, priceHistory, statusHistory, changeHistory,
       showTab, fnFmtDate, fnStockBadge
     };
@@ -124,6 +138,8 @@ handleLoadTab(uiState.botTab);
   </div>
   <div class="tab-bar-row">
     <div class="tab-nav">
+      <button class="tab-btn" :class="{active:botTab==='qna'}"     :disabled="tabMode2!=='tab'" @click="botTab='qna'">💬 상품 Q&amp;A <span class="tab-count">{{ qnaList.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='review'}"  :disabled="tabMode2!=='tab'" @click="botTab='review'">⭐ 리뷰 <span class="tab-count">{{ reviewList.length }}</span></button>
       <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="tabMode2!=='tab'" @click="botTab='orders'">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></button>
       <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="tabMode2!=='tab'" @click="botTab='stock'">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></button>
       <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="tabMode2!=='tab'" @click="botTab='price'">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></button>
@@ -139,6 +155,53 @@ handleLoadTab(uiState.botTab);
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+
+  <!-- -- 상품 Q&A ----------------------------------------------------------- -->
+  <div class="card" v-show="showTab('qna')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 상품 Q&amp;A <span class="tab-count">{{ qnaList.length }}</span></div>
+    <table class="bo-table" v-if="qnaList.length">
+      <thead><tr>
+        <th style="width:36px;text-align:center;">번호</th>
+        <th>질문</th><th>작성자</th><th>작성일</th><th>상태</th><th>답변여부</th>
+      </tr></thead>
+      <tbody>
+        <tr v-for="(q, idx) in qnaList" :key="q.qnaId">
+          <td style="text-align:center;">{{ idx + 1 }}</td>
+          <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ q.qnaTitle || q.qnaContent }}</td>
+          <td>{{ q.memberNm || q.memberId }}</td>
+          <td>{{ fnFmtDate(q.regDate) }}</td>
+          <td><span class="badge" :class="q.qnaStatusCd==='ACTIVE'?'badge-green':'badge-gray'">{{ q.qnaStatusCdNm || q.qnaStatusCd }}</span></td>
+          <td><span class="badge" :class="q.answerYn==='Y'?'badge-blue':'badge-orange'">{{ q.answerYn==='Y' ? '답변완료' : '미답변' }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">Q&amp;A가 없습니다.</div>
+  </div>
+
+  <!-- -- 리뷰 --------------------------------------------------------------- -->
+  <div class="card" v-show="showTab('review')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⭐ 리뷰 <span class="tab-count">{{ reviewList.length }}</span></div>
+    <table class="bo-table" v-if="reviewList.length">
+      <thead><tr>
+        <th style="width:36px;text-align:center;">번호</th>
+        <th>평점</th><th>내용</th><th>작성자</th><th>작성일</th><th>상태</th>
+      </tr></thead>
+      <tbody>
+        <tr v-for="(r, idx) in reviewList" :key="r.reviewId">
+          <td style="text-align:center;">{{ idx + 1 }}</td>
+          <td style="white-space:nowrap;">
+            <span style="color:#faad14;font-weight:700;">{{ r.rating }}</span>
+            <span style="color:#faad14;font-size:11px;">★</span>
+          </td>
+          <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.reviewContent || r.reviewTitle }}</td>
+          <td>{{ r.memberNm || r.memberId }}</td>
+          <td>{{ fnFmtDate(r.reviewDate || r.regDate) }}</td>
+          <td><span class="badge" :class="r.reviewStatusCd==='ACTIVE'?'badge-green':'badge-gray'">{{ r.reviewStatusCdNm || r.reviewStatusCd }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">리뷰가 없습니다.</div>
+  </div>
 
   <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">

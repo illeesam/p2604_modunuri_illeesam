@@ -62,12 +62,13 @@ window.Prod03View = {
     };
     if (prod) fnApplySvProduct(prod);
     /* Tier 2/3 lazy 데이터 — 배열/객체는 reactive (정책: base.데이터흐름-상태관리.md §2-1) */
-    const svContents     = reactive([]);
-    const svRels         = reactive([]);
-    const svReviews      = reactive([]);
-    const svReviewImages = reactive([]);
-    const svQna          = reactive([]);
-    const svPromotions   = reactive({});
+    const svContents      = reactive([]);
+    const svRels          = reactive([]);
+    const svReviews       = reactive([]);
+    const svReviewSummary = reactive({});
+    const svReviewImages  = reactive([]);
+    const svQna           = reactive([]);
+    const svPromotions    = reactive({});
 
     /* URL 해시에서 prodid 직접 추출 — 목록 진입/직접 URL 모두 동일하게 동작 */
     const fnGetProdIdFromHash = () => {
@@ -109,9 +110,23 @@ window.Prod03View = {
       ]);
       if (tier2[0].status === 'fulfilled') svContents.splice(0, svContents.length, ...fnPickList(tier2[0].value));
       if (tier2[1].status === 'fulfilled') svRels.splice(0, svRels.length, ...fnPickList(tier2[1].value));
-      if (tier2[2].status === 'fulfilled') svReviews.splice(0, svReviews.length, ...fnPickList(tier2[2].value));
-      if (tier2[3].status === 'fulfilled') svReviewImages.splice(0, svReviewImages.length, ...fnPickList(tier2[3].value));
-      if (tier2[4].status === 'fulfilled') svQna.splice(0, svQna.length, ...fnPickList(tier2[4].value));
+      if (tier2[2].status === 'fulfilled') {
+        const rd = fnPickData(tier2[2].value) || {};
+        const rows = rd.reviewPage?.pageList || [];
+        svReviews.splice(0, svReviews.length, ...rows);
+        Object.keys(svReviewSummary).forEach(k => delete svReviewSummary[k]);
+        Object.assign(svReviewSummary, rd.summary || {});
+        const imgs = rd.attachImages || [];
+        svReviewImages.splice(0, svReviewImages.length, ...imgs);
+      }
+      if (tier2[3].status === 'fulfilled') {
+        const imgs = fnPickList(tier2[3].value);
+        svReviewImages.splice(0, svReviewImages.length, ...imgs);
+      }
+      if (tier2[4].status === 'fulfilled') {
+        const qd = fnPickData(tier2[4].value) || {};
+        svQna.splice(0, svQna.length, ...(qd.qnaPage?.pageList || qd.pageList || (Array.isArray(qd) ? qd : [])));
+      }
 
       /* Tier 3: 사용자별 프로모션 */
       try {
@@ -136,6 +151,7 @@ window.Prod03View = {
       { id: 'detail', label: '상세정보' },
       { id: 'size',   label: '사이즈' },
       { id: 'review', label: '상품평' },
+      { id: 'qna',    label: 'Q&A' },
       { id: 'style',  label: '스타일' },
     ];
 
@@ -145,6 +161,7 @@ window.Prod03View = {
     const detailSecRef = ref(null);
     const sizeSecRef   = ref(null);
     const reviewSecRef = ref(null);
+    const qnaSecRef    = ref(null);
     const styleSecRef  = ref(null);
 
     /* -- 상수 -- */
@@ -246,50 +263,31 @@ window.Prod03View = {
       return _buildColorImages(p, Math.max(0, colorIdx));
     });
 
-    /* -- 가상 리뷰 -- */
-    const MOCK_NAMES = ['김민지','이수진','박지현','정다운','최예린','강하늘','윤서연','오지은','임채원','한소희'];
-    const MOCK_COMMENTS = [
-      '생각보다 훨씬 예뻐요! 색감도 사진이랑 같고 소재도 정말 좋아요. 재구매 의사 있어요.',
-      '배송도 빠르고 상품 품질이 너무 좋아요. 착용감이 편하고 핏이 예쁘게 나와요.',
-      '사진보다 실제로 더 예쁜 것 같아요. 선물용으로 샀는데 상대방도 너무 좋아했어요.',
-      '소재가 고급스럽고 마감이 깔끔해요. 세탁 후에도 형태가 잘 유지됩니다.',
-      '핏이 너무 이뻐요! 처음엔 사이즈 고민했는데 평소 사이즈 딱 맞게 왔어요.',
-      '색이 진짜 예뻐서 매일 입고 싶어요. 여름에 입기 딱 좋은 소재입니다.',
-      '가격 대비 퀄리티가 정말 좋아요. 주변에서도 어디서 샀냐고 많이 물어봐요.',
-      '다음에도 또 구매할 것 같아요. 배송도 빠르고 포장도 꼼꼼하게 되어 있었어요.',
-      '입어보니 핏이 정말 이쁘고 소재도 좋아요. 여러 색상 다 사고 싶네요.',
-      '기대보다 훨씬 마음에 들어요. 실제 착용해보니 사진보다 더 예쁜 것 같아요.',
-    ];
+    /* -- DB 리뷰 정규화: PdReviewDto → 화면 표준 형태 -- */
+    const fnNormalizeReview = (r) => {
+      const rating = Number(r.rating) || 0;
+      const dt = r.reviewDate || r.regDate || '';
+      const dateStr = dt ? String(dt).slice(0, 10).replace(/-/g, '.') : '';
+      const mid = r.memberId || '';
+      const masked = mid.length >= 3
+        ? mid[0] + '*'.repeat(mid.length - 2) + mid.slice(-1)
+        : mid.length === 2 ? mid[0] + '*' : mid || '***';
+      const imgs = svReviewImages.filter(img => img.reviewId === r.reviewId);
+      return {
+        id:         r.reviewId,
+        maskedName: masked,
+        rating,
+        date:       dateStr,
+        sizeInfo:   r.optNm2 || r.sizeInfo || '',
+        colorInfo:  r.optNm1 || r.colorInfo || '',
+        text:       r.reviewContent || r.reviewTitle || '',
+        hasPhoto:   imgs.length > 0,
+        photoImg:   imgs[0]?.thumbUrl || imgs[0]?.cdnImgUrl || '',
+        helpful:    Number(r.helpfulCnt) || 0,
+      };
+    };
 
-    const cfMockReviews = computed(() => {
-      const p = svProduct;
-      if (!p) return [];
-      const pid    = p.prodId || 1;
-      const colors = p.opt1s || [];
-      const sizes  = p.opt2s  || ['S', 'M', 'L'];
-      return MOCK_NAMES.map((name, i) => {
-        const seed  = (pid * 7 + i * 13) % 10;
-        const cIdx  = (pid + i) % Math.max(1, colors.length);
-        const month = String(Math.min(9, 1 + (i % 4) + (pid % 3))).padStart(2, '0');
-        const day   = String(5 + (seed * 3) % 22).padStart(2, '0');
-
-    // -- return ---------------------------------------------------------------
-
-        return {
-          id:         i + 1,
-          maskedName: name[0] + '*' + (name.length > 2 ? name.slice(-1) : '*'),
-          rating:     seed < 6 ? 5 : seed < 9 ? 4 : 3,
-          date:       `2026.${month}.${day}`,
-          sizeInfo:   sizes[i % sizes.length],
-          colorInfo:  colors[cIdx]?.name || '기본',
-          text:       MOCK_COMMENTS[i],
-          hasPhoto:   i < 5,
-          photoImg:   `assets/cdn/prod/img/shop/product/sm/pro-sm-${(i % 10) + 1}.jpg`,
-          photoHex:   colors[cIdx]?.hex || '#e8587a',
-          helpful:    (pid * 3 + i * 7) % 38,
-        };
-      });
-    });
+    const cfMockReviews = computed(() => svReviews.map(fnNormalizeReview));
 
     const cfReviewsWithPhoto = computed(() => cfMockReviews.value.filter(r => r.hasPhoto));
 
@@ -302,6 +300,8 @@ window.Prod03View = {
     });
 
     const cfAvgRating = computed(() => {
+      const avg = Number(svReviewSummary.avgRating || svReviewSummary.avg_rating);
+      if (avg) return avg.toFixed(1);
       const r = cfMockReviews.value;
       return r.length ? (r.reduce((s, x) => s + x.rating, 0) / r.length).toFixed(1) : '0.0';
     });
@@ -309,10 +309,12 @@ window.Prod03View = {
     const cfRatingDist = computed(() =>
       [5, 4, 3, 2, 1].map(star => ({
         star,
-        count: cfMockReviews.value.filter(x => x.rating === star).length,
-        pct:   cfMockReviews.value.length
-          ? Math.round(cfMockReviews.value.filter(x => x.rating === star).length / cfMockReviews.value.length * 100)
-          : 0,
+        count: Number(svReviewSummary['rate' + star]) || cfMockReviews.value.filter(x => x.rating === star).length,
+        pct: (() => {
+          const total = Number(svReviewSummary.total) || cfMockReviews.value.length;
+          const cnt   = Number(svReviewSummary['rate' + star]) || cfMockReviews.value.filter(x => x.rating === star).length;
+          return total ? Math.round(cnt / total * 100) : 0;
+        })(),
       }))
     );
 
@@ -346,7 +348,7 @@ window.Prod03View = {
     };
 
     const scrollToTab = (tabId) => {
-      const map = { detail: detailSecRef, size: sizeSecRef, review: reviewSecRef, style: styleSecRef };
+      const map = { detail: detailSecRef, size: sizeSecRef, review: reviewSecRef, qna: qnaSecRef, style: styleSecRef };
       const el  = map[tabId]?.value;
       if (!el) return;
       const main = getScrollEl();
@@ -392,6 +394,7 @@ window.Prod03View = {
         : bar.getBoundingClientRect().bottom + 10;
       const sections = [
         { id: 'style',  ref: styleSecRef },
+        { id: 'qna',    ref: qnaSecRef },
         { id: 'review', ref: reviewSecRef },
         { id: 'size',   ref: sizeSecRef },
         { id: 'detail', ref: detailSecRef },
@@ -687,13 +690,13 @@ window.Prod03View = {
     return {
       uiState,
       prod: svProduct,
-      svContents, svRels, svReviews, svReviewImages, svQna, svPromotions,
+      svContents, svRels, svReviews, svReviewSummary, svReviewImages, svQna, svPromotions,
       cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
       openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
       sizeGuideRows, styleItems,
       cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,
       cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
-      TABS, tabBarRef, sizeSecRef, reviewSecRef, styleSecRef,
+      TABS, tabBarRef, sizeSecRef, reviewSecRef, qnaSecRef, styleSecRef,
       photoNavPrev, photoNavNext, cfPhotoNavIdx,
       scrollToTab, fnCategoryLabel, stars, colorStatus, sizeStatus,
       buyBtnRef,
@@ -806,7 +809,7 @@ window.Prod03View = {
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
               <span style="font-size:0.82rem;" v-html="stars(cfAvgRating)"></span>
               <span style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">{{ cfAvgRating }}</span>
-              <span style="font-size:0.78rem;color:var(--text-muted);">({{ cfMockReviews.length }})</span>
+              <span style="font-size:0.78rem;color:var(--text-muted);">({{ svReviewSummary.total || cfMockReviews.length }})</span>
             </div>
 
             <!-- -- 가격 --------------------------------------------------- -->
@@ -816,25 +819,39 @@ window.Prod03View = {
             <div style="margin-bottom:20px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">{{ prod.opt1Nm || '색상' }} 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
-                <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
+                <span v-if="uiState.selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ uiState.selectedColor.name }}</span>
               </div>
-              <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                <div v-for="c in prod.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                <div v-for="c in prod.opt1s" :key="c.name"
+                  style="position:relative;display:flex;flex-direction:column;align-items:center;">
                   <button @click="selectColor(c)"
                     :title="c.name + (colorStatus(c)==='soldout' ? ' (품절)' : colorStatus(c)==='stop' ? ' (판매중지)' : '')"
                     :style="{
-                      width:'30px',height:'30px',borderRadius:'50%',
+                      width:'34px',height:'34px',borderRadius:'50%',position:'relative',
                       cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed',
-                      background:c.hex,
-                      border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
-                      outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
-                      outlineOffset:'-4px',boxSizing:'border-box',transition:'border .15s',
+                      background:c.hex || '#e5e7eb',
+                      border: uiState.selectedColor&&uiState.selectedColor.name===c.name
+                              ? '3px solid #fff'
+                              : '1px solid rgba(0,0,0,0.18)',
+                      boxShadow: uiState.selectedColor&&uiState.selectedColor.name===c.name
+                              ? '0 0 0 2px var(--blue), 0 2px 8px rgba(22,119,255,0.35)'
+                              : '0 1px 2px rgba(0,0,0,0.08)',
+                      boxSizing:'border-box',transition:'all .15s',
                       opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
                     }">
+                    <svg v-if="uiState.selectedColor && uiState.selectedColor.name===c.name"
+                      width="16" height="16" viewBox="0 0 24 24" fill="none"
+                      :stroke="(c.hex && /^#(f|e|d)/i.test(c.hex)) ? '#222' : '#fff'"
+                      stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"
+                      style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
                   </button>
+                  <span v-if="uiState.selectedColor && uiState.selectedColor.name===c.name"
+                    style="font-size:0.62rem;font-weight:700;color:var(--blue);line-height:1;white-space:nowrap;">{{ c.name }}</span>
                   <!-- -- 대각선 취소선 (품절/중지) -------------------------------- -->
-                  <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:0;left:0;width:30px;height:30px;pointer-events:none;" viewBox="0 0 30 30">
-                    <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
+                  <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:4px;left:4px;width:34px;height:34px;pointer-events:none;" viewBox="0 0 34 34">
+                    <line x1="5" y1="5" x2="29" y2="29" stroke="#ef4444" stroke-width="2" />
                   </svg>
                   <span v-if="colorStatus(c)==='soldout'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#ef4444;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">품절</span>
                   <span v-else-if="colorStatus(c)==='stop'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#9ca3af;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
@@ -955,7 +972,25 @@ window.Prod03View = {
             fontWeight:uiState.activeTab===tab.id?'700':'500',
             fontSize:'0.88rem',transition:'all .15s',whiteSpace:'nowrap',
             marginBottom:'-2px',
-          }">{{ tab.label }}</button>
+          }">
+          {{ tab.label }}
+          <span v-if="tab.id==='review' && (svReviewSummary.total || cfMockReviews.length)"
+            :style="{
+              display:'inline-flex',alignItems:'center',justifyContent:'center',
+              minWidth:'18px',height:'18px',borderRadius:'9px',
+              background:uiState.activeTab==='review'?'var(--blue)':'var(--text-muted)',
+              color:'#fff',fontSize:'0.68rem',fontWeight:'700',
+              marginLeft:'4px',padding:'0 4px',verticalAlign:'middle',
+            }">{{ svReviewSummary.total || cfMockReviews.length }}</span>
+          <span v-if="tab.id==='qna' && svQna.length"
+            :style="{
+              display:'inline-flex',alignItems:'center',justifyContent:'center',
+              minWidth:'18px',height:'18px',borderRadius:'9px',
+              background:uiState.activeTab==='qna'?'var(--blue)':'var(--text-muted)',
+              color:'#fff',fontSize:'0.68rem',fontWeight:'700',
+              marginLeft:'4px',padding:'0 4px',verticalAlign:'middle',
+            }">{{ svQna.length }}</span>
+        </button>
       </div>
     </div>
 
@@ -1050,7 +1085,7 @@ window.Prod03View = {
       <div ref="reviewSecRef" style="padding-top:40px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
           <span style="font-size:1rem;font-weight:800;color:var(--text-primary);">상품평</span>
-          <span style="font-size:0.85rem;color:var(--text-muted);font-weight:400;">{{ cfMockReviews.length }}</span>
+          <span style="font-size:0.85rem;color:var(--text-muted);font-weight:400;">{{ svReviewSummary.total || cfMockReviews.length }}</span>
         </div>
 
         <!-- -- 평점 요약 ---------------------------------------------------- -->
@@ -1058,7 +1093,7 @@ window.Prod03View = {
           <div style="text-align:center;flex-shrink:0;min-width:90px;">
             <div style="font-size:3.2rem;font-weight:900;color:var(--text-primary);line-height:1;">{{ cfAvgRating }}</div>
             <div style="font-size:1rem;margin:6px 0;" v-html="stars(cfAvgRating)"></div>
-            <div style="font-size:0.76rem;color:var(--text-muted);">{{ cfMockReviews.length }}개 리뷰</div>
+            <div style="font-size:0.76rem;color:var(--text-muted);">{{ svReviewSummary.total || cfMockReviews.length }}개 리뷰</div>
           </div>
           <div style="flex:1;min-width:180px;">
             <div v-for="d in cfRatingDist" :key="d.star" style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
@@ -1128,6 +1163,43 @@ window.Prod03View = {
             <p style="font-size:0.87rem;color:var(--text-secondary);line-height:1.75;margin-bottom:10px;">{{ r.text }}</p>
             <div style="font-size:0.75rem;color:var(--text-muted);">
               도움이 돼요 <span style="font-weight:700;color:var(--text-secondary);">({{ r.helpful }})</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- -- Q&A ---------------------------------------------------------- -->
+      <div ref="qnaSecRef" style="padding-top:40px;padding-bottom:20px;">
+        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
+          Q&A
+          <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted);margin-left:8px;">({{ svQna.length }})</span>
+        </div>
+        <div v-if="!svQna.length" class="card" style="padding:40px;text-align:center;color:var(--text-muted);">
+          등록된 Q&A가 없습니다.
+        </div>
+        <div v-else style="display:flex;flex-direction:column;gap:12px;">
+          <div v-for="q in svQna" :key="q.qnaId"
+            class="card" style="padding:20px;">
+            <div style="display:flex;align-items:flex-start;gap:12px;">
+              <div style="min-width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#fff;flex-shrink:0;">Q</div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                  <span style="font-size:0.82rem;font-weight:600;color:var(--text-primary);">
+                    {{ q.memberId ? q.memberId[0]+'**' : '비회원' }}
+                  </span>
+                  <span style="font-size:0.76rem;color:var(--text-muted);">
+                    {{ String(q.regDate||'').slice(0,10).replace(/-/g,'.') }}
+                  </span>
+                </div>
+                <div style="font-size:0.88rem;color:var(--text-primary);line-height:1.6;white-space:pre-wrap;">{{ q.qnaTitle || q.qnaContent }}</div>
+                <div v-if="q.answYn === 'Y' && q.answContent" style="margin-top:12px;padding:12px;background:var(--bg-base);border-radius:8px;display:flex;gap:10px;">
+                  <div style="min-width:28px;height:28px;border-radius:50%;background:var(--text-muted);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#fff;flex-shrink:0;">A</div>
+                  <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;white-space:pre-wrap;">{{ q.answContent }}</div>
+                </div>
+                <div v-else style="margin-top:8px;">
+                  <span style="font-size:0.76rem;color:var(--text-muted);background:var(--bg-base);padding:3px 8px;border-radius:4px;">답변 대기중</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1346,29 +1418,41 @@ window.Prod03View = {
         <div style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">{{ prod.opt1Nm || '색상' }}<span style="color:var(--blue);margin-left:2px;">*</span></span>
-            <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
+            <span v-if="uiState.selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ uiState.selectedColor.name }}</span>
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            <div v-for="c in prod.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <div v-for="c in prod.opt1s" :key="c.name"
+              style="position:relative;display:flex;flex-direction:column;align-items:center;">
               <button @click="selectColor(c)" :title="c.name"
                 :style="{
-                  width:'30px',height:'30px',borderRadius:'50%',
+                  width:'34px',height:'34px',borderRadius:'50%',position:'relative',
                   cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed',
-                  background:c.hex,
-                  border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
-                  outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
-                  outlineOffset:'-4px',boxSizing:'border-box',
+                  background:c.hex || '#e5e7eb',
+                  border: uiState.selectedColor&&uiState.selectedColor.name===c.name
+                          ? '3px solid #fff'
+                          : '1px solid rgba(0,0,0,0.18)',
+                  boxShadow: uiState.selectedColor&&uiState.selectedColor.name===c.name
+                          ? '0 0 0 2px var(--blue), 0 2px 8px rgba(22,119,255,0.35)'
+                          : '0 1px 2px rgba(0,0,0,0.08)',
+                  boxSizing:'border-box',transition:'all .15s',
                   opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
                 }">
+                <svg v-if="uiState.selectedColor && uiState.selectedColor.name===c.name"
+                  width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  :stroke="(c.hex && /^#(f|e|d)/i.test(c.hex)) ? '#222' : '#fff'"
+                  stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"
+                  style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
               </button>
-              <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:0;left:0;width:30px;height:30px;pointer-events:none;" viewBox="0 0 30 30">
-                <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
+              <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:4px;left:4px;width:34px;height:34px;pointer-events:none;" viewBox="0 0 34 34">
+                <line x1="5" y1="5" x2="29" y2="29" stroke="#ef4444" stroke-width="2" />
               </svg>
               <!-- -- 옵션 가격 delta ---------------------------------------- -->
               <span v-if="c.priceDelta" style="font-size:0.58rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1;">+{{ c.priceDelta.toLocaleString('ko-KR') }}</span>
             </div>
           </div>
-          <div v-if="colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ colorError }}</div>
+          <div v-if="uiState.colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ uiState.colorError }}</div>
         </div>
 
         <!-- -- 사이즈 (FREE면 숨김) ------------------------------------------- -->
@@ -1413,11 +1497,11 @@ window.Prod03View = {
         </div>
 
         <!-- -- 선택 요약 ---------------------------------------------------- -->
-        <div v-if="selectedColor||selectedSize"
+        <div v-if="uiState.selectedColor||uiState.selectedSize"
           style="background:var(--bg-base);border-radius:8px;padding:12px 14px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;border:1px solid var(--border);">
-          <div v-if="selectedColor"><span style="font-weight:600;color:var(--text-primary);">색상:</span> {{ selectedColor.name }}</div>
-          <div v-if="selectedSize"><span style="font-weight:600;color:var(--text-primary);">사이즈:</span> {{ selectedSize }}</div>
-          <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ qty }}개</div>
+          <div v-if="uiState.selectedColor"><span style="font-weight:600;color:var(--text-primary);">색상:</span> {{ uiState.selectedColor.name }}</div>
+          <div v-if="uiState.selectedSize"><span style="font-weight:600;color:var(--text-primary);">사이즈:</span> {{ uiState.selectedSize }}</div>
+          <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ uiState.qty }}개</div>
         </div>
       </div>
 

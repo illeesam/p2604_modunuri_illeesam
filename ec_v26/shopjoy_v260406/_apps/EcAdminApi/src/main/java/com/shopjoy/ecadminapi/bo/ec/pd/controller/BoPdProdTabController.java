@@ -119,8 +119,10 @@ public class BoPdProdTabController {
             img.setProdId(prodId);
             img.setOptItemId1(strOrNull(r.get("optItemId1")));
             img.setOptItemId2(strOrNull(r.get("optItemId2")));
-            img.setCdnImgUrl(strOrNull(r.get("previewUrl")));
-            img.setCdnThumbUrl(strOrNull(r.get("cdnThumbUrl")));
+            String imgUrl = strOrNull(r.get("previewUrl"));
+            String thumbUrl = strOrNull(r.get("cdnThumbUrl"));
+            img.setCdnImgUrl(imgUrl);
+            img.setCdnThumbUrl(thumbUrl != null ? thumbUrl : imgUrl);
             img.setImgAltText(strOrNull(r.get("imgAltText")));
             img.setSortOrd(idx + 1);
             Object isMain = r.get("isMain");
