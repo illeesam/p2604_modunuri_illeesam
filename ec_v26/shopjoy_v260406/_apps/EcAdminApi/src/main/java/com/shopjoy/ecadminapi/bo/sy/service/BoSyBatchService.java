@@ -29,18 +29,21 @@ public class BoSyBatchService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyBatchDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syBatchMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyBatchDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syBatchMapper.selectPageList(p), syBatchMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyBatchDto getById(String id) {
         SyBatchDto dto = syBatchMapper.selectById(id);
@@ -48,6 +51,7 @@ public class BoSyBatchService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SyBatch create(SyBatch body) {
         body.setBatchId("BA" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -60,6 +64,7 @@ public class BoSyBatchService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public SyBatchDto update(String id, SyBatch body) {
         SyBatch entity = syBatchRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -72,6 +77,7 @@ public class BoSyBatchService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyBatch entity = syBatchRepository.findById(id)
@@ -82,6 +88,7 @@ public class BoSyBatchService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyBatch> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -40,6 +40,7 @@ public class StErpVoucherService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<StErpVoucherDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -47,12 +48,14 @@ public class StErpVoucherService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<StErpVoucherDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stErpVoucherMapper.selectPageList(p), stErpVoucherMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(StErpVoucher entity) {
         int result = stErpVoucherMapper.updateSelective(entity);
@@ -72,6 +75,7 @@ public class StErpVoucherService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public StErpVoucher save(StErpVoucher entity) {
         if (!stErpVoucherRepository.existsById(entity.getErpVoucherId()))
@@ -82,6 +86,7 @@ public class StErpVoucherService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         StErpVoucher entity = stErpVoucherRepository.findById(id)
@@ -92,6 +97,7 @@ public class StErpVoucherService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<StErpVoucher> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

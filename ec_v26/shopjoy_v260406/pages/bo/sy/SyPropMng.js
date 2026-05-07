@@ -18,7 +18,7 @@ window.SyPropMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const cfSiteId = computed(() => boCommonFilter?.siteId || null);

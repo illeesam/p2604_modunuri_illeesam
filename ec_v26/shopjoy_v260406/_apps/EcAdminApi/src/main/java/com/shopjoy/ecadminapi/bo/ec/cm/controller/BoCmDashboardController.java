@@ -100,6 +100,7 @@ public class BoCmDashboardController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** order */
     private Map<String, Object> order(String orderId, String memberNm, long orderAmt, String statusCd) {
         return Map.of(
             "orderId",      orderId,
@@ -110,6 +111,7 @@ public class BoCmDashboardController {
         );
     }
 
+    /** day */
     private Map<String, Object> day(LocalDate date, int orderCount, long orderAmt) {
         return Map.of(
             "date",       date.toString(),

@@ -173,7 +173,7 @@ window.DpDispAreaPreview = {
       codes.disp_envs = codeStore.sgGetGrpCodes('DISP_ENV');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // 코드 주입
 

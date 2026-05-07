@@ -34,6 +34,7 @@ public class MbMemberGradeService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<MbMemberGradeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,12 +42,14 @@ public class MbMemberGradeService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<MbMemberGradeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbMemberGradeMapper.selectPageList(p), mbMemberGradeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(MbMemberGrade entity) {
         int result = mbMemberGradeMapper.updateSelective(entity);
@@ -66,6 +69,7 @@ public class MbMemberGradeService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public MbMemberGrade save(MbMemberGrade entity) {
         if (!mbMemberGradeRepository.existsById(entity.getMemberGradeId()))
@@ -76,6 +80,7 @@ public class MbMemberGradeService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!mbMemberGradeRepository.existsById(id))
@@ -83,6 +88,7 @@ public class MbMemberGradeService {
         mbMemberGradeRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<MbMemberGrade> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

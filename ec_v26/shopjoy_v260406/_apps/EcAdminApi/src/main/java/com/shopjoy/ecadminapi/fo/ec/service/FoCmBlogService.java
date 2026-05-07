@@ -40,17 +40,20 @@ public class FoCmBlogService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmBlogDto> getList(Map<String, Object> p) {
         return cmBlogMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(cmBlogMapper.selectPageList(p), cmBlogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getByIdAndIncrView — 조회 */
     @Transactional
     public CmBlogDto getByIdAndIncrView(String blogId) {
         CmBlog entity = cmBlogRepository.findById(blogId)
@@ -61,6 +64,7 @@ public class FoCmBlogService {
         return cmBlogMapper.selectById(blogId);
     }
 
+    /** create — 생성 */
     @Transactional
     public CmBlog create(CmBlog entity) {
         entity.setBlogId(CmUtil.generateId("cm_blog"));
@@ -75,6 +79,7 @@ public class FoCmBlogService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public CmBlog update(String blogId, CmBlog entity) {
         CmBlog existing = cmBlogRepository.findById(blogId)
@@ -92,6 +97,7 @@ public class FoCmBlogService {
         return saved;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String blogId) {
         CmBlog existing = cmBlogRepository.findById(blogId)

@@ -33,6 +33,7 @@ public class OdRefundMethodReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public OdRefundMethod toEntity() {
         return OdRefundMethod.builder()
                 .refundMethodId(refundMethodId)

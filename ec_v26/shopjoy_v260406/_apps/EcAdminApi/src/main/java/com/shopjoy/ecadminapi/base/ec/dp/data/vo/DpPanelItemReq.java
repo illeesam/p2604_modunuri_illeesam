@@ -37,6 +37,7 @@ public class DpPanelItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public DpPanelItem toEntity() {
         return DpPanelItem.builder()
                 .panelItemId(panelItemId)

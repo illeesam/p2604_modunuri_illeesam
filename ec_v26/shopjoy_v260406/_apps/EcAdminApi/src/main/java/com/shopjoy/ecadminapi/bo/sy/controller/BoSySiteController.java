@@ -22,6 +22,7 @@ import java.util.Map;
 public class BoSySiteController {
     private final BoSySiteService boSySiteService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SySiteDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -29,6 +30,7 @@ public class BoSySiteController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SySiteDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -36,35 +38,41 @@ public class BoSySiteController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SySiteDto>> getById(@PathVariable("id") String id) {
         SySiteDto result = boSySiteService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<SySite>> create(@RequestBody SySite body) {
         SySite result = boSySiteService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SySiteDto>> update(@PathVariable("id") String id, @RequestBody SySite body) {
         SySiteDto result = boSySiteService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SySiteDto>> upsert(@PathVariable("id") String id, @RequestBody SySite body) {
         return ResponseEntity.ok(ApiResponse.ok(boSySiteService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boSySiteService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SySite> rows) {
         boSySiteService.saveList(rows);

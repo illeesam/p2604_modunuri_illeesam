@@ -29,6 +29,7 @@ public class FoOdOrderController {
 
     private final FoOdOrderService foOdOrderService;
 
+    /** myOrders */
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdOrderDto>>> myOrders(
             @RequestParam Map<String, Object> p) {
@@ -36,6 +37,7 @@ public class FoOdOrderController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** myOrderPage */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<OdOrderDto>>> myOrderPage(
             @RequestParam Map<String, Object> p) {
@@ -43,12 +45,14 @@ public class FoOdOrderController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OdOrderDto>> getById(@PathVariable("orderId") String orderId) {
         OdOrderDto result = foOdOrderService.getById(orderId);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** placeOrder */
     @PostMapping
     public ResponseEntity<ApiResponse<OdOrder>> placeOrder(@RequestBody OdOrder entity) {
         OdOrder result = foOdOrderService.placeOrder(entity);

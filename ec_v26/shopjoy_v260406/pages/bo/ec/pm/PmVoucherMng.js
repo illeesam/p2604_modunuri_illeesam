@@ -29,7 +29,7 @@ window.PmVoucherMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     // onMounted에서 API 로드
@@ -134,7 +134,7 @@ window.PmVoucherMng = {
       }
     };
 
-    const exportExcel = () => boUtil.exportCsv(vouchers, [{label:'ID',key:'voucherId'},{label:'상품권명',key:'voucherNm'},{label:'액면가',key:'voucherAmt'},{label:'판매가',key:'salePrice'},{label:'발행매수',key:'issueQty'},{label:'판매매수',key:'soldQty'},{label:'상태',key:'voucherStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '상품권목록.csv');
+    const exportExcel = () => coUtil.exportCsv(vouchers, [{label:'ID',key:'voucherId'},{label:'상품권명',key:'voucherNm'},{label:'액면가',key:'voucherAmt'},{label:'판매가',key:'salePrice'},{label:'발행매수',key:'issueQty'},{label:'판매매수',key:'soldQty'},{label:'상태',key:'voucherStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '상품권목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 

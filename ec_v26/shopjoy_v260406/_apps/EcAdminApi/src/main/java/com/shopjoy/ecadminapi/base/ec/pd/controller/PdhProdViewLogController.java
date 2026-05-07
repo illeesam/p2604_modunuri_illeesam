@@ -18,6 +18,7 @@ public class PdhProdViewLogController {
 
     private final PdhProdViewLogService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdhProdViewLogDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -25,6 +26,7 @@ public class PdhProdViewLogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdhProdViewLogDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -32,6 +34,7 @@ public class PdhProdViewLogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdhProdViewLogDto>> getById(@PathVariable("id") String id) {
         PdhProdViewLogDto result = service.getById(id);

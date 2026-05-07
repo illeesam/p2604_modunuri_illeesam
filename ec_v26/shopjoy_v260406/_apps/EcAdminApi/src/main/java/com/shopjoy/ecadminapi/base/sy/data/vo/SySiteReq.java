@@ -36,6 +36,7 @@ public class SySiteReq {
     private LocalDateTime updDate;
     private String pathId;
 
+    /** toEntity — 변환 */
     public SySite toEntity() {
         return SySite.builder()
                 .siteId(siteId)

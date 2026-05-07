@@ -33,6 +33,7 @@ public class SyAttachReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyAttach toEntity() {
         return SyAttach.builder()
                 .attachId(attachId)

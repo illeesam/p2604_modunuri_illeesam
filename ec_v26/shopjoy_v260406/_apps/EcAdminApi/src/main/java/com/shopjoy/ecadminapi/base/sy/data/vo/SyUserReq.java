@@ -34,6 +34,7 @@ public class SyUserReq {
     private String authMethodCd;
     private LocalDateTime lastLoginDate;
 
+    /** toEntity — 변환 */
     public SyUser toEntity() {
         return SyUser.builder()
                 .userId(userId)

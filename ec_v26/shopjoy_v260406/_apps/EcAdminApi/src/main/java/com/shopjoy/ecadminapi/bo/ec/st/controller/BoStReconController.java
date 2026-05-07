@@ -21,31 +21,37 @@ import java.util.Map;
 public class BoStReconController {
     private final BoStReconService boStReconService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<StReconDto>>> list(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStReconService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StReconDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStReconService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StReconDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boStReconService.getById(id)));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<StRecon>> create(@RequestBody StRecon body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStReconService.create(body)));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StReconDto>> update(@PathVariable("id") String id, @RequestBody StRecon body) {
         return ResponseEntity.ok(ApiResponse.ok(boStReconService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boStReconService.delete(id);

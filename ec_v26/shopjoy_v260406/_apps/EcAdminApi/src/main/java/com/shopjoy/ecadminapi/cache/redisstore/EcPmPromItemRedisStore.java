@@ -37,6 +37,7 @@ public class EcPmPromItemRedisStore {
         log.info("[Cache][redis] [ec-pm-prom-item:dtl][{}] saveDetail()", itemId);
     }
 
+    /** saveList — 저장 */
     public void saveList(String promId, List<Map<String, Object>> list) {
         redis.set(CacheKey.EC_PM_PROM_ITEM_ALL + promId, list,
                 props.getTtl().getEcPmPromItemSeconds(), target());
@@ -51,6 +52,7 @@ public class EcPmPromItemRedisStore {
                 .map(m -> (Map<String, Object>) m);
     }
 
+    /** getList — 조회 */
     @SuppressWarnings("unchecked")
     public Optional<List<Map<String, Object>>> getList(String promId) {
         return redis.get(CacheKey.EC_PM_PROM_ITEM_ALL + promId, List.class, target())
@@ -63,19 +65,23 @@ public class EcPmPromItemRedisStore {
         redis.delete(CacheKey.EC_PM_PROM_ITEM_DTL + itemId, target());
     }
 
+    /** evictList */
     public void evictList(String promId) {
         redis.delete(CacheKey.EC_PM_PROM_ITEM_ALL + promId, target());
     }
 
+    /** evictAll */
     public void evictAll() {
         redis.deleteByPattern(CacheKey.EC_PM_PROM_ITEM_DTL + "*", target());
         redis.deleteByPattern(CacheKey.EC_PM_PROM_ITEM_ALL + "*", target());
     }
 
+    /** isEnabled — 여부 */
     public boolean isEnabled() {
         return redis.isEnabled();
     }
 
+    /** target */
     private RedisUtil.Target target() {
         return redis.hasSecondary() ? RedisUtil.Target.SECONDARY : RedisUtil.Target.PRIMARY;
     }

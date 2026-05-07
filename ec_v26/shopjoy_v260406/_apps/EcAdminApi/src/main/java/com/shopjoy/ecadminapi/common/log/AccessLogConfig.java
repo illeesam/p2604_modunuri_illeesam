@@ -53,6 +53,7 @@ public class AccessLogConfig {
     private final AccessLogProperties props;
     private final Environment         env;
 
+    /** accessLogFilterBean */
     @Bean
     public FilterRegistrationBean<AccessLogFilter> accessLogFilterBean() {
         String serverNm = resolveServerName();
@@ -70,6 +71,7 @@ public class AccessLogConfig {
         return bean;
     }
 
+    /** resolveServerName — 결정 */
     private String resolveServerName() {
         try {
             return InetAddress.getLocalHost().getHostName();

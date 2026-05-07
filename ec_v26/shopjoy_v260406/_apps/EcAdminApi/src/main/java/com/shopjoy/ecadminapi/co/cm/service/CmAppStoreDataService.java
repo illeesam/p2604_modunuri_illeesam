@@ -424,6 +424,7 @@ public class CmAppStoreDataService {
                 .toList();
     }
 
+    /** addParentMenus — 추가 */
     private void addParentMenus(String menuId, java.util.Set<String> menuIds) {
         // sy_menu :: select one :: menuId (재귀)
         SyMenu menu = syMenuRepository.findById(menuId).orElse(null);
@@ -433,6 +434,7 @@ public class CmAppStoreDataService {
         }
     }
 
+    /** getMenuLevel — 조회 */
     private int getMenuLevel(SyMenu menu) {
         int level = 1;
         SyMenu parent = menu;

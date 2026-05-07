@@ -39,6 +39,7 @@ public class LicenseX2VerifyMain {
     /* ── IntelliJ 직접 실행 시 여기서 수정 ── */
     private static final String JS_FILE = "./license-output/20260424_204330-licenseBo-BUYER_001.js";
 
+    /** main */
     public static void main(String[] args) throws Exception {
 
         String jsFile = JS_FILE;
@@ -176,6 +177,7 @@ public class LicenseX2VerifyMain {
         return ok;
     }
 
+    /** printResult */
     private static void printResult(boolean ok) {
         System.out.println("══════════════════════════════════════════════════════════");
         System.out.println(ok ? "  결과: ✅ 유효한 라이선스" : "  결과: ✗  유효하지 않은 라이선스");
@@ -183,13 +185,16 @@ public class LicenseX2VerifyMain {
         System.out.println();
     }
 
+    /** fail */
     private static void fail(String msg) {
         System.out.println("  ✗ " + msg);
         System.out.println();
         printResult(false);
     }
 
+    /** v */
     private static String v(String s)       { return s != null ? s : "(없음)"; }
+    /** abbrev */
     private static String abbrev(String s)  {
         if (s == null) return "(없음)";
         return s.length() > 48 ? s.substring(0, 48) + "…" : s;

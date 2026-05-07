@@ -83,7 +83,7 @@ window.SyAttachMng = {
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
     onMounted(async () => {

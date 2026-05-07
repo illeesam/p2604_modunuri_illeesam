@@ -19,6 +19,7 @@ public class StReconController {
 
     private final StReconService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<StReconDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -26,6 +27,7 @@ public class StReconController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StReconDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -33,6 +35,7 @@ public class StReconController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StReconDto>> getById(@PathVariable("id") String id) {
         StReconDto result = service.getById(id);
@@ -71,6 +74,7 @@ public class StReconController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<StRecon> rows) {
         service.saveList(rows);

@@ -33,6 +33,7 @@ public class CmChattRoomReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public CmChattRoom toEntity() {
         return CmChattRoom.builder()
                 .chattRoomId(chattRoomId)

@@ -41,6 +41,7 @@ public class SyVocService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyVocDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyVocService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyVocDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyVocService {
         return PageResult.of(syVocMapper.selectPageList(p), syVocMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyVoc entity) {
         // sy_voc :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyVocService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyVoc save(SyVoc entity) {
         if (!syVocRepository.existsById(entity.getVocId()))
@@ -88,6 +92,7 @@ public class SyVocService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyVoc entity = syVocRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyVocService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyVoc> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

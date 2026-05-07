@@ -34,6 +34,7 @@ public class SyBatchReq {
     private LocalDateTime updDate;
     private String pathId;
 
+    /** toEntity — 변환 */
     public SyBatch toEntity() {
         return SyBatch.builder()
                 .batchId(batchId)

@@ -45,6 +45,7 @@ public class MyBatisQueryInterceptor implements Interceptor {
         return s;
     }
 
+    /** intercept */
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
@@ -95,11 +96,13 @@ public class MyBatisQueryInterceptor implements Interceptor {
         return s.length() > 200 ? s.substring(0, 200) + "…" : s;
     }
 
+    /** plugin */
     @Override
     public Object plugin(Object target) {
         return Plugin.wrap(target, this);
     }
 
+    /** setProperties — 설정 */
     @Override
     public void setProperties(Properties properties) {}
 }

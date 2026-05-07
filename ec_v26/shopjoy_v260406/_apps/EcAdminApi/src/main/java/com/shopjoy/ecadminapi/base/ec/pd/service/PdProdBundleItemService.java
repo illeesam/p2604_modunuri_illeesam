@@ -36,6 +36,7 @@ public class PdProdBundleItemService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdProdBundleItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -44,6 +45,7 @@ public class PdProdBundleItemService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdProdBundleItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -51,6 +53,7 @@ public class PdProdBundleItemService {
         return PageResult.of(pdProdBundleItemMapper.selectPageList(p), pdProdBundleItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PdProdBundleItem entity) {
         // pd_prod_bundle_item :: update :: [orm:mybatis]
@@ -72,6 +75,7 @@ public class PdProdBundleItemService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PdProdBundleItem save(PdProdBundleItem entity) {
         if (!pdProdBundleItemRepository.existsById(entity.getBundleItemId()))
@@ -83,6 +87,7 @@ public class PdProdBundleItemService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pdProdBundleItemRepository.existsById(id))
@@ -90,6 +95,7 @@ public class PdProdBundleItemService {
         // pd_prod_bundle_item :: delete :: id [orm:jpa]
         pdProdBundleItemRepository.deleteById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdProdBundleItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -19,6 +19,7 @@ public class DpUiController {
 
     private final DpUiService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<DpUiDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -26,6 +27,7 @@ public class DpUiController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<DpUiDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -33,6 +35,7 @@ public class DpUiController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DpUiDto>> getById(@PathVariable("id") String id) {
         DpUiDto result = service.getById(id);
@@ -71,6 +74,7 @@ public class DpUiController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpUi> rows) {
         service.saveList(rows);

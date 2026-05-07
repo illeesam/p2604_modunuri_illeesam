@@ -35,6 +35,7 @@ public class PmPlanService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmPlanDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -42,12 +43,14 @@ public class PmPlanService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmPlanDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmPlanMapper.selectPageList(p), pmPlanMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PmPlan entity) {
         int result = pmPlanMapper.updateSelective(entity);
@@ -67,6 +70,7 @@ public class PmPlanService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PmPlan save(PmPlan entity) {
         if (!pmPlanRepository.existsById(entity.getPlanId()))
@@ -77,6 +81,7 @@ public class PmPlanService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pmPlanRepository.existsById(id))
@@ -84,6 +89,7 @@ public class PmPlanService {
         pmPlanRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmPlan> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

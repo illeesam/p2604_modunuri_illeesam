@@ -61,36 +61,43 @@ public class CmBoAppStoreDataController {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(names, CmStoreConst.BO)));
     }
 
+    /** getAuth — 조회 */
     @GetMapping("/getAuth")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_AUTH, CmStoreConst.BO)));
     }
 
+    /** getUser — 조회 */
     @GetMapping("/getUser")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getUser() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_USER, CmStoreConst.BO)));
     }
 
+    /** getRoles — 조회 */
     @GetMapping("/getRoles")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_ROLES, CmStoreConst.BO)));
     }
 
+    /** getMenus — 조회 */
     @GetMapping("/getMenus")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_MENUS, CmStoreConst.BO)));
     }
 
+    /** getCodes — 조회 */
     @GetMapping("/getCodes")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_CODES, CmStoreConst.BO)));
     }
 
+    /** getProps — 조회 */
     @GetMapping("/getProps")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getProps() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_PROPS, CmStoreConst.BO)));
     }
 
+    /** getApp — 조회 */
     @GetMapping("/getApp")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getApp() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_APP, CmStoreConst.BO)));

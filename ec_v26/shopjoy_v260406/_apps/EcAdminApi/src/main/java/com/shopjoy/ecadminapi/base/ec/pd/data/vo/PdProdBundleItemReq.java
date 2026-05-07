@@ -29,6 +29,7 @@ public class PdProdBundleItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdProdBundleItem toEntity() {
         return PdProdBundleItem.builder()
                 .bundleItemId(bundleItemId)

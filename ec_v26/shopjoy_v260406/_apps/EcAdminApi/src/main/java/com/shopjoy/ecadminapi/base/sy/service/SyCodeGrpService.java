@@ -41,6 +41,7 @@ public class SyCodeGrpService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyCodeGrpDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyCodeGrpService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyCodeGrpDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyCodeGrpService {
         return PageResult.of(syCodeGrpMapper.selectPageList(p), syCodeGrpMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyCodeGrp entity) {
         // sy_code_grp :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyCodeGrpService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyCodeGrp save(SyCodeGrp entity) {
         if (!syCodeGrpRepository.existsById(entity.getCodeGrpId()))
@@ -88,6 +92,7 @@ public class SyCodeGrpService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyCodeGrp entity = syCodeGrpRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyCodeGrpService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyCodeGrp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -30,18 +30,21 @@ public class BoPmGiftService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmGiftDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pmGiftMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmGiftDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmGiftMapper.selectPageList(p), pmGiftMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PmGiftDto getById(String id) {
         PmGiftDto dto = pmGiftMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoPmGiftService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public PmGift create(PmGift body) {
         body.setGiftId("GF" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -61,6 +65,7 @@ public class BoPmGiftService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public PmGiftDto update(String id, PmGift body) {
         PmGift entity = pmGiftRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -73,6 +78,7 @@ public class BoPmGiftService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         PmGift entity = pmGiftRepository.findById(id)
@@ -83,6 +89,7 @@ public class BoPmGiftService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public PmGiftDto changeStatus(String id, String statusCd) {
         PmGift entity = pmGiftRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -95,6 +102,7 @@ public class BoPmGiftService {
         em.flush();
         return getById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmGift> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

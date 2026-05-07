@@ -70,6 +70,7 @@ public class OdOrderReq {
     private String apprAprvUserId;
     private LocalDateTime apprAprvDate;
 
+    /** toEntity — 변환 */
     public OdOrder toEntity() {
         return OdOrder.builder()
                 .orderId(orderId)

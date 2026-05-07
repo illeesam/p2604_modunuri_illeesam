@@ -41,6 +41,7 @@ public class SyContactService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyContactDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyContactService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyContactDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyContactService {
         return PageResult.of(syContactMapper.selectPageList(p), syContactMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyContact entity) {
         // sy_contact :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyContactService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyContact save(SyContact entity) {
         if (!syContactRepository.existsById(entity.getContactId()))
@@ -88,6 +92,7 @@ public class SyContactService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyContact entity = syContactRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyContactService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyContact> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

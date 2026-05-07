@@ -24,6 +24,7 @@ public class FoPmCacheController {
 
     private final FoPmCacheService foPmCacheService;
 
+    /** balance */
     @GetMapping("/balance")
     public ResponseEntity<ApiResponse<Map<String, Long>>> balance(
             @RequestParam Map<String, Object> p) {

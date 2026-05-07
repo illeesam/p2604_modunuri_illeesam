@@ -21,37 +21,44 @@ import java.util.Map;
 public class BoStSettleConfigController {
     private final BoStSettleConfigService boStSettleConfigService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<StSettleConfigDto>>> list(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StSettleConfigDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleConfigDto>> getById(@PathVariable("id") String id) {
         StSettleConfigDto result = boStSettleConfigService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<StSettleConfig>> create(@RequestBody StSettleConfig body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStSettleConfigService.create(body)));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleConfigDto>> update(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.update(id, body)));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleConfigDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boStSettleConfigService.delete(id);

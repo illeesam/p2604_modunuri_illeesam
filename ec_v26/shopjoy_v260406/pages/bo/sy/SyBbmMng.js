@@ -44,7 +44,7 @@ window.SyBbmMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted
@@ -112,7 +112,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
-    const exportExcel = () => boUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
+    const exportExcel = () => coUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
     // -- return ---------------------------------------------------------------
 

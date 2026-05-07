@@ -30,18 +30,21 @@ public class BoSyBbsService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyBbsDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syBbsMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyBbsDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syBbsMapper.selectPageList(p), syBbsMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyBbsDto getById(String id) {
         SyBbsDto dto = syBbsMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoSyBbsService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SyBbs create(SyBbs body) {
         body.setBbsId("BS" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -61,6 +65,7 @@ public class BoSyBbsService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public SyBbsDto update(String id, SyBbs body) {
         SyBbs entity = syBbsRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -73,6 +78,7 @@ public class BoSyBbsService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyBbs entity = syBbsRepository.findById(id)
@@ -82,6 +88,7 @@ public class BoSyBbsService {
         if (syBbsRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyBbs> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -41,6 +41,7 @@ public class SyBbmService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyBbmDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyBbmService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyBbmDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyBbmService {
         return PageResult.of(syBbmMapper.selectPageList(p), syBbmMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyBbm entity) {
         // sy_bbm :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyBbmService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyBbm save(SyBbm entity) {
         if (!syBbmRepository.existsById(entity.getBbmId()))
@@ -88,6 +92,7 @@ public class SyBbmService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyBbm entity = syBbmRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyBbmService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyBbm> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

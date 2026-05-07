@@ -19,6 +19,7 @@ public class PmVoucherIssueController {
 
     private final PmVoucherIssueService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmVoucherIssueDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -26,6 +27,7 @@ public class PmVoucherIssueController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmVoucherIssueDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -33,6 +35,7 @@ public class PmVoucherIssueController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmVoucherIssueDto>> getById(@PathVariable("id") String id) {
         PmVoucherIssueDto result = service.getById(id);
@@ -71,6 +74,7 @@ public class PmVoucherIssueController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmVoucherIssue> rows) {
         service.saveList(rows);

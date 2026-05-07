@@ -30,18 +30,21 @@ public class BoDpPanelService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<DpPanelDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return dpPanelMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<DpPanelDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(dpPanelMapper.selectPageList(p), dpPanelMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public DpPanelDto getById(String id) {
         DpPanelDto dto = dpPanelMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoDpPanelService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public DpPanel create(DpPanel body) {
         if (body.getUseYn() == null) body.setUseYn("Y");
@@ -62,6 +66,7 @@ public class BoDpPanelService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public DpPanelDto update(String id, DpPanel body) {
         DpPanel entity = dpPanelRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -74,6 +79,7 @@ public class BoDpPanelService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         DpPanel entity = dpPanelRepository.findById(id)
@@ -84,6 +90,7 @@ public class BoDpPanelService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<DpPanel> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

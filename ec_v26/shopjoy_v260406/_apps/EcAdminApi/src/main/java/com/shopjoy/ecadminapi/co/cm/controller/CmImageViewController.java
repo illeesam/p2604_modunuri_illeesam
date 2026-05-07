@@ -118,6 +118,7 @@ public class CmImageViewController {
         }
     }
 
+    /** getFileExtension — 조회 */
     private String getFileExtension(String fileName) {
         if (fileName == null || !fileName.contains(".")) {
             return "";
@@ -125,6 +126,7 @@ public class CmImageViewController {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
 
+    /** getImageMediaType — 조회 */
     private MediaType getImageMediaType(String ext) {
         return switch (ext.toLowerCase()) {
             case "jpg", "jpeg" -> MediaType.IMAGE_JPEG;

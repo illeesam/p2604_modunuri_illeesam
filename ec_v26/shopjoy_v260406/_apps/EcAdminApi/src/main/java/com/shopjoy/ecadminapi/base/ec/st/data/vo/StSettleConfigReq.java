@@ -29,6 +29,7 @@ public class StSettleConfigReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public StSettleConfig toEntity() {
         return StSettleConfig.builder()
                 .settleConfigId(settleConfigId)

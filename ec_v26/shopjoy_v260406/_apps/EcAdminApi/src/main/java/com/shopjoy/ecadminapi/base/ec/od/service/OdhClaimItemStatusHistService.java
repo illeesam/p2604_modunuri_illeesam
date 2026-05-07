@@ -28,6 +28,7 @@ public class OdhClaimItemStatusHistService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdhClaimItemStatusHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -35,12 +36,14 @@ public class OdhClaimItemStatusHistService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdhClaimItemStatusHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odhClaimItemStatusHistMapper.selectPageList(p), odhClaimItemStatusHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(OdhClaimItemStatusHist entity) {
         int result = odhClaimItemStatusHistMapper.updateSelective(entity);

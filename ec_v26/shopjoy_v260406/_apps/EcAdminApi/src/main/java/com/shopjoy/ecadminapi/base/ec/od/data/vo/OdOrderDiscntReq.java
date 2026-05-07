@@ -33,6 +33,7 @@ public class OdOrderDiscntReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public OdOrderDiscnt toEntity() {
         return OdOrderDiscnt.builder()
                 .orderDiscntId(orderDiscntId)

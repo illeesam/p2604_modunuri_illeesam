@@ -34,12 +34,14 @@ public class ExtAuthRedisStore {
         log.info("[Cache][redis] [ext:auth:session][{}] saveSession()", userId);
     }
 
+    /** getSession — 조회 */
     @SuppressWarnings("unchecked")
     public Optional<Map<String, Object>> getSession(String userId) {
         return redis.get(CacheKey.EXT_AUTH_SESSION + userId, Map.class)
                 .map(m -> (Map<String, Object>) m);
     }
 
+    /** removeSession — 삭제 */
     public void removeSession(String userId) {
         redis.delete(CacheKey.EXT_AUTH_SESSION + userId);
     }
@@ -52,10 +54,12 @@ public class ExtAuthRedisStore {
         log.info("[Cache][redis] [ext:auth:blacklist] blacklistToken()— ttl={}s", remainingTtlSeconds);
     }
 
+    /** isBlacklisted — 여부 */
     public boolean isBlacklisted(String token) {
         return redis.exists(CacheKey.EXT_AUTH_BLACKLIST + token);
     }
 
+    /** isEnabled — 여부 */
     public boolean isEnabled() {
         return redis.isEnabled();
     }

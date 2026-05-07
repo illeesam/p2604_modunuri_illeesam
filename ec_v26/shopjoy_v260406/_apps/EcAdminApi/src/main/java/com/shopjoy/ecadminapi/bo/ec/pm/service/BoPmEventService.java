@@ -30,18 +30,21 @@ public class BoPmEventService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmEventDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pmEventMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmEventDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmEventMapper.selectPageList(p), pmEventMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PmEventDto getById(String id) {
         PmEventDto dto = pmEventMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoPmEventService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public PmEvent create(PmEvent body) {
         if (body.getEventStatusCd() == null) body.setEventStatusCd("DRAFT");
@@ -63,6 +67,7 @@ public class BoPmEventService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public PmEventDto update(String id, PmEvent body) {
         PmEvent entity = pmEventRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -75,6 +80,7 @@ public class BoPmEventService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         PmEvent entity = pmEventRepository.findById(id)
@@ -85,6 +91,7 @@ public class BoPmEventService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public PmEventDto changeStatus(String id, String statusCd) {
         PmEvent entity = pmEventRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -97,6 +104,7 @@ public class BoPmEventService {
         em.flush();
         return getById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmEvent> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

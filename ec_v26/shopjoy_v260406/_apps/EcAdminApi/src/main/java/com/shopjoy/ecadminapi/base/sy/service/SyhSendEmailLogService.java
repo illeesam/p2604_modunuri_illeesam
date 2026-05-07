@@ -29,6 +29,7 @@ public class SyhSendEmailLogService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyhSendEmailLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -37,6 +38,7 @@ public class SyhSendEmailLogService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyhSendEmailLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -44,6 +46,7 @@ public class SyhSendEmailLogService {
         return PageResult.of(syhSendEmailLogMapper.selectPageList(p), syhSendEmailLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyhSendEmailLog entity) {
         // syh_send_email_log :: update :: [orm:mybatis]

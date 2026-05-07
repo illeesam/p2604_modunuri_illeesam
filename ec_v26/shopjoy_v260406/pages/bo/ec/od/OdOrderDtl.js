@@ -69,7 +69,7 @@ window.OdOrderDtl = {
       codes.pay_statuses = codeStore.sgGetGrpCodes('PAY_STATUS');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];

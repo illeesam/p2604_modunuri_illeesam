@@ -31,6 +31,7 @@ public class StErpVoucherLineReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public StErpVoucherLine toEntity() {
         return StErpVoucherLine.builder()
                 .erpVoucherLineId(erpVoucherLineId)

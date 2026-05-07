@@ -30,17 +30,20 @@ public class BoSyUserRoleService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getRolesByUserId — 조회 */
     @Transactional(readOnly = true)
     public List<SyUserRoleDto> getRolesByUserId(String userId) {
         return syUserRoleMapper.selectByUserId(userId);
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyUserRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syUserRoleMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyUserRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -48,6 +51,7 @@ public class BoSyUserRoleService {
                 PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyUserRoleDto getById(String id) {
         SyUserRoleDto dto = syUserRoleMapper.selectById(id);
@@ -55,6 +59,7 @@ public class BoSyUserRoleService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SyUserRole create(SyUserRole body) {
         String authId = SecurityUtil.getAuthUser().authId();
@@ -66,6 +71,7 @@ public class BoSyUserRoleService {
         return syUserRoleRepository.save(body);
     }
 
+    /** update — 수정 */
     @Transactional
     public SyUserRoleDto update(String id, SyUserRole body) {
         String authId = SecurityUtil.getAuthUser().authId();
@@ -78,6 +84,7 @@ public class BoSyUserRoleService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyUserRole entity = syUserRoleRepository.findById(id)
@@ -87,6 +94,7 @@ public class BoSyUserRoleService {
         if (syUserRoleRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyUserRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

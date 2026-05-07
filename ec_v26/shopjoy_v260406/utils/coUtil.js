@@ -283,6 +283,146 @@
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
+  /**
+   * 공통 코드 로드 헬퍼 (FO/BO 공통)
+   * - setup() 안에서 호출. watch(isAppReady) 등록 + isAppReady computed 반환.
+   * - 무한 refresh 방지:
+   *   - fnLoadCodes 가 throw 해도 uiState.isPageCodeLoad 를 반드시 true 로 설정
+   *   - 1회 성공 후 watch 자동 stop (재마운트 시까지 재호출 차단)
+   *   - 컴포넌트 unmount 시 watch 명시 정리
+   * - 사이트 자동 판별 (FO/BO):
+   *   - useFoAppInitStore / useFoCodeStore  존재 → FO
+   *   - useBoAppInitStore / sfGetBoCodeStore 존재 → BO
+   *
+   * 사용법:
+   *   const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+   *   onMounted(() => { if (isAppReady.value) fnLoadCodes(); ... });
+   */
+  function useAppCodeReady(uiState, fnLoadCodes) {
+    const { computed, watch, onUnmounted } = Vue;
+    const isAppReady = computed(() => {
+      // FO/BO 자동 판별 — 정의된 store 만 호출
+      const i = (typeof window.useFoAppInitStore === 'function' ? window.useFoAppInitStore() : null)
+             || (typeof window.useBoAppInitStore === 'function' ? window.useBoAppInitStore() : null);
+      const c = (typeof window.useFoCodeStore   === 'function' ? window.useFoCodeStore()   : null)
+             || (typeof window.sfGetBoCodeStore === 'function' ? window.sfGetBoCodeStore() : null);
+      return !i?.svIsLoading && (c?.svCodes?.length > 0) && !uiState.isPageCodeLoad;
+    });
+    let _called = false;
+    const stop = watch(isAppReady, v => {
+      if (!v || _called) return;
+      _called = true;
+      try { fnLoadCodes(); }
+      catch (err) { console.error('[useAppCodeReady] fnLoadCodes failed:', err); }
+      finally {
+        // throw 여부와 무관하게 플래그를 세워 재트리거 차단
+        try { uiState.isPageCodeLoad = true; } catch (_) {}
+        try { stop && stop(); } catch (_) {}
+      }
+    });
+    // unmount 시 watch 정리 — 단위화면 swap 반복 시 watch 잔존/누적 방지
+    try { onUnmounted && onUnmounted(() => { try { stop && stop(); } catch(_){} }); } catch(_){}
+    return isAppReady;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+   * 공통 코드 헬퍼 (FO/BO 공통, 순수 함수)
+   * ───────────────────────────────────────────────────────────────────── */
+  function codesByGroup(config, grp) {
+    const codes = (config && config.codes) || [];
+    return codes
+      .filter(c => c.codeGrp === grp)
+      .sort((a, b) => (a.codeId || 0) - (b.codeId || 0));
+  }
+
+  function codesByGroupOrStringList(config, grp, fallbackStrings) {
+    const rows = codesByGroup(config, grp);
+    if (rows.length) return rows;
+    const list = (fallbackStrings || []).filter(x => typeof x === 'string');
+    return list.map((x, i) => ({ codeId: i + 1, codeGrp: grp, codeValue: x, codeLabel: x }));
+  }
+
+  function codesByGroupOrRows(config, grp, fallbackRows) {
+    const rows = codesByGroup(config, grp);
+    if (rows.length) return rows;
+    return (fallbackRows && fallbackRows.length) ? fallbackRows : [];
+  }
+
+  function listImgSrc(src) {
+    return typeof window.imageThumbnailSrc === 'function' ? window.imageThumbnailSrc(src) : src;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+   * CSV/엑셀 다운로드 (FO/BO 공통)
+   * columns: [{ label:'표시명', key:'필드명' } | { label:'표시명', value: row => ... }]
+   * ───────────────────────────────────────────────────────────────────── */
+  function exportCsv(rows, columns, filename) {
+    const header = columns.map(c => `"${c.label}"`).join(',');
+    const body = (rows || []).map(row =>
+      columns.map(c => {
+        const val = typeof c.value === 'function' ? c.value(row) : (row[c.key] ?? '');
+        return `"${String(val).replace(/"/g, '""')}"`;
+      }).join(',')
+    ).join('\n');
+    const bom = '﻿'; // UTF-8 BOM (한글 깨짐 방지)
+    const blob = new Blob([bom + header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename || 'export.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+   * 일반 트리 빌더 (FO/BO 공통, 순수 함수)
+   * items 배열을 부모-자식 트리로 변환. useYn !== 'N' 만 포함.
+   * ───────────────────────────────────────────────────────────────────── */
+  function buildGenericTree(items, idKey, parentKey, labelKey, sortKey) {
+    const list = (items || []).filter(x => x.useYn !== 'N');
+    const byParent = {};
+    list.forEach(x => {
+      const k = x[parentKey] == null ? '__root__' : x[parentKey];
+      (byParent[k] = byParent[k] || []).push(x);
+    });
+    const build = (pk) => (byParent[pk] || [])
+      .sort((a, b) => (a[sortKey] || 0) - (b[sortKey] || 0))
+      .map(x => ({
+        pathId: x[idKey], path: x[idKey],
+        name: x[labelKey], pathLabel: x[labelKey],
+        children: build(x[idKey]), count: 0,
+        _raw: x,
+      }));
+    const root = { pathId: null, path: null, name: '전체', pathLabel: '전체',
+                   children: build('__root__'), count: list.length };
+    const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
+    recur(root);
+    return root;
+  }
+
+  /* 트리 후손 ID Set */
+  function collectDescendantIds(items, idKey, parentKey, rootId) {
+    if (rootId == null) return null;
+    const set = new Set([rootId]);
+    let added = true;
+    while (added) {
+      added = false;
+      (items || []).forEach(x => {
+        if (set.has(x[parentKey]) && !set.has(x[idKey])) { set.add(x[idKey]); added = true; }
+      });
+    }
+    return set;
+  }
+
+  /* 트리에서 N레벨까지 펼친 pathId Set 반환 (root=null 포함) */
+  function collectExpandedToDepth(tree, maxDepth) {
+    const set = new Set([null]);
+    const walk = (n, d) => {
+      if (d >= maxDepth) return;
+      (n.children || []).forEach(ch => { set.add(ch.pathId); walk(ch, d + 1); });
+    };
+    walk(tree, 0);
+    return set;
+  }
+
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
   global.coUtil.apiHdr = global.coUtil.apiHdr || apiHdr;
@@ -292,4 +432,15 @@
   global.coUtil.chkId = global.coUtil.chkId || chkId;
   global.coUtil.chkRowIds = global.coUtil.chkRowIds || chkRowIds;
   global.coUtil.sha256 = global.coUtil.sha256 || sha256;
+  global.coUtil.useAppCodeReady = global.coUtil.useAppCodeReady || useAppCodeReady;
+  // 코드 그룹 헬퍼 (FO/BO 공통)
+  global.coUtil.codesByGroup = global.coUtil.codesByGroup || codesByGroup;
+  global.coUtil.codesByGroupOrStringList = global.coUtil.codesByGroupOrStringList || codesByGroupOrStringList;
+  global.coUtil.codesByGroupOrRows = global.coUtil.codesByGroupOrRows || codesByGroupOrRows;
+  global.coUtil.listImgSrc = global.coUtil.listImgSrc || listImgSrc;
+  // CSV/트리 헬퍼
+  global.coUtil.exportCsv = global.coUtil.exportCsv || exportCsv;
+  global.coUtil.buildGenericTree = global.coUtil.buildGenericTree || buildGenericTree;
+  global.coUtil.collectDescendantIds = global.coUtil.collectDescendantIds || collectDescendantIds;
+  global.coUtil.collectExpandedToDepth = global.coUtil.collectExpandedToDepth || collectExpandedToDepth;
 })(typeof window !== 'undefined' ? window : this);

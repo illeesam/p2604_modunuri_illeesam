@@ -39,6 +39,7 @@ public class SyDeptService {
         return syDeptMapper.selectTree();
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyDeptDto getById(String id) {
         // sy_dept :: select one :: id [orm:mybatis]
@@ -46,6 +47,7 @@ public class SyDeptService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyDeptDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -54,6 +56,7 @@ public class SyDeptService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyDeptDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -61,6 +64,7 @@ public class SyDeptService {
         return PageResult.of(syDeptMapper.selectPageList(p), syDeptMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyDept entity) {
         // sy_dept :: update :: entity [orm:mybatis]
@@ -82,6 +86,7 @@ public class SyDeptService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyDept save(SyDept entity) {
         if (!syDeptRepository.existsById(entity.getDeptId()))
@@ -93,6 +98,7 @@ public class SyDeptService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyDept entity = syDeptRepository.findById(id)
@@ -103,6 +109,7 @@ public class SyDeptService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyDept> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

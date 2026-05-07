@@ -18,6 +18,7 @@ public class SyhBatchHistController {
 
     private final SyhBatchHistService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyhBatchHistDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -25,6 +26,7 @@ public class SyhBatchHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyhBatchHistDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -32,6 +34,7 @@ public class SyhBatchHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyhBatchHistDto>> getById(@PathVariable("id") String id) {
         SyhBatchHistDto result = service.getById(id);

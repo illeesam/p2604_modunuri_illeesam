@@ -32,6 +32,7 @@ public class PmVoucherReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmVoucher toEntity() {
         return PmVoucher.builder()
                 .voucherId(voucherId)

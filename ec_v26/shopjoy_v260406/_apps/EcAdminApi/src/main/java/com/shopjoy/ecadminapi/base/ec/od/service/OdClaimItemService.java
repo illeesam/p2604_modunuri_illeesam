@@ -34,6 +34,7 @@ public class OdClaimItemService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdClaimItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,12 +42,14 @@ public class OdClaimItemService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdClaimItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odClaimItemMapper.selectPageList(p), odClaimItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(OdClaimItem entity) {
         int result = odClaimItemMapper.updateSelective(entity);
@@ -66,6 +69,7 @@ public class OdClaimItemService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public OdClaimItem save(OdClaimItem entity) {
         if (!odClaimItemRepository.existsById(entity.getClaimItemId()))
@@ -76,12 +80,14 @@ public class OdClaimItemService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!odClaimItemRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdClaimItem입니다: " + id);
         odClaimItemRepository.deleteById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<OdClaimItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

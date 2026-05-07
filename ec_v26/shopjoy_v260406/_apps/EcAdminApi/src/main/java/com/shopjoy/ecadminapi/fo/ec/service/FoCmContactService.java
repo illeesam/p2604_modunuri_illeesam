@@ -31,6 +31,7 @@ public class FoCmContactService {
     private final CmBlogRepository cmBlogRepository;
     private final CmBlogMapper cmBlogMapper;
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public CmBlogDto getById(String id) {
         CmBlogDto dto = cmBlogMapper.selectById(id);
@@ -38,6 +39,7 @@ public class FoCmContactService {
         return dto;
     }
 
+    /** submit — 제출 */
     @Transactional
     public CmBlog submit(Map<String, Object> body) {
         CmBlog entity = new CmBlog();
@@ -62,6 +64,7 @@ public class FoCmContactService {
         return saved;
     }
 
+    /** buildContent — 구성 */
     private String buildContent(Map<String, Object> body) {
         return String.format(
             "이름: %s\n이메일: %s\n연락처: %s\n주문번호: %s\n문의유형: %s\n\n%s",

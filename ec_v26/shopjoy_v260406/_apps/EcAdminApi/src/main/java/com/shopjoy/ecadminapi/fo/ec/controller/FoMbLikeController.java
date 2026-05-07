@@ -25,6 +25,7 @@ public class FoMbLikeController {
 
     private final FoMbLikeService foMbLikeService;
 
+    /** myLikes */
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbLikeDto>>> myLikes(
             @RequestParam Map<String, Object> p) {
@@ -32,6 +33,7 @@ public class FoMbLikeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** toggle — 전환 */
     @PostMapping("/{targetTypeCd}/{targetId}")
     public ResponseEntity<ApiResponse<Map<String, Boolean>>> toggle(
             @PathVariable("targetTypeCd") String targetTypeCd,
@@ -41,6 +43,7 @@ public class FoMbLikeController {
         return ResponseEntity.ok(ApiResponse.ok(Map.of("liked", liked)));
     }
 
+    /** unlike */
     @DeleteMapping("/{targetTypeCd}/{targetId}")
     public ResponseEntity<ApiResponse<Void>> unlike(
             @PathVariable("targetTypeCd") String targetTypeCd,

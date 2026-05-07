@@ -32,6 +32,7 @@ public class PdReviewReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdReview toEntity() {
         return PdReview.builder()
                 .reviewId(reviewId)

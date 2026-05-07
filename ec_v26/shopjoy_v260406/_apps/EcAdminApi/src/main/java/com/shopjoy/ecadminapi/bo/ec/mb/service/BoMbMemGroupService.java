@@ -30,18 +30,21 @@ public class BoMbMemGroupService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<MbMemberGroupDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mbMemberGroupMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<MbMemberGroupDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbMemberGroupMapper.selectPageList(p), mbMemberGroupMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public MbMemberGroupDto getById(String id) {
         MbMemberGroupDto dto = mbMemberGroupMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoMbMemGroupService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public MbMemberGroup create(MbMemberGroup body) {
         if (body.getUseYn() == null) body.setUseYn("Y");
@@ -62,6 +66,7 @@ public class BoMbMemGroupService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public MbMemberGroupDto update(String id, MbMemberGroup body) {
         MbMemberGroup entity = mbMemberGroupRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -74,6 +79,7 @@ public class BoMbMemGroupService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         MbMemberGroup entity = mbMemberGroupRepository.findById(id)
@@ -84,6 +90,7 @@ public class BoMbMemGroupService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<MbMemberGroup> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

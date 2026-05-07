@@ -19,7 +19,7 @@ window.XsSample04 = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     /* -- 회원 데이터 -- */

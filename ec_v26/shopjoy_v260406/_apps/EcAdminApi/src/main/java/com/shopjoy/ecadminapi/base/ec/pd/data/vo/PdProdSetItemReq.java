@@ -29,6 +29,7 @@ public class PdProdSetItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdProdSetItem toEntity() {
         return PdProdSetItem.builder()
                 .setItemId(setItemId)

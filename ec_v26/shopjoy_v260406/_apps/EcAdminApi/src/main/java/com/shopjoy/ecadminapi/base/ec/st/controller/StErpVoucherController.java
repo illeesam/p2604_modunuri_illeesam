@@ -19,6 +19,7 @@ public class StErpVoucherController {
 
     private final StErpVoucherService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<StErpVoucherDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -26,6 +27,7 @@ public class StErpVoucherController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StErpVoucherDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -33,6 +35,7 @@ public class StErpVoucherController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StErpVoucherDto>> getById(@PathVariable("id") String id) {
         StErpVoucherDto result = service.getById(id);
@@ -71,6 +74,7 @@ public class StErpVoucherController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<StErpVoucher> rows) {
         service.saveList(rows);

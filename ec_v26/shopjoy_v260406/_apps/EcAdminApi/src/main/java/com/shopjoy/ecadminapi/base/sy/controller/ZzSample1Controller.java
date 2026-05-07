@@ -19,6 +19,7 @@ public class ZzSample1Controller {
 
     private final ZzSample1Service service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<ZzSample1Dto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -26,6 +27,7 @@ public class ZzSample1Controller {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<ZzSample1Dto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -33,6 +35,7 @@ public class ZzSample1Controller {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ZzSample1Dto>> getById(@PathVariable("id") String id) {
         ZzSample1Dto result = service.getById(id);
@@ -40,12 +43,14 @@ public class ZzSample1Controller {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<ZzSample1>> create(@RequestBody ZzSample1 entity) {
         ZzSample1 result = service.create(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
+    /** save — 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ZzSample1>> save(
             @PathVariable("id") String id, @RequestBody ZzSample1 entity) {
@@ -54,6 +59,7 @@ public class ZzSample1Controller {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** update — 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
             @PathVariable("id") String id, @RequestBody ZzSample1 entity) {
@@ -62,6 +68,7 @@ public class ZzSample1Controller {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);

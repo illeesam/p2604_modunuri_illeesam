@@ -29,6 +29,7 @@ public class SyDeptReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyDept toEntity() {
         return SyDept.builder()
                 .deptId(deptId)

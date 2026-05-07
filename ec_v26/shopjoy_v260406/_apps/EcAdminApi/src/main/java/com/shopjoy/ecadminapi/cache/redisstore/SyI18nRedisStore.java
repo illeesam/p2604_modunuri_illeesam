@@ -35,6 +35,7 @@ public class SyI18nRedisStore {
         log.info("[Cache][redis] [sy:i18n:all] saveAll()— {}개언어", i18nMap.size());
     }
 
+    /** save — 저장 */
     public void save(String locale, String msgKey, String msgValue) {
         redis.set(CacheKey.SY_I18N_MSG + locale + ":" + msgKey, msgValue, props.getTtl().getSyI18nSeconds());
         log.info("[Cache][redis] [sy:i18n:msg][{}:{}] save()", locale, msgKey);
@@ -48,6 +49,7 @@ public class SyI18nRedisStore {
                 .map(m -> (Map<String, Map<String, String>>) m);
     }
 
+    /** get — 조회 */
     public Optional<String> get(String locale, String msgKey) {
         return redis.get(CacheKey.SY_I18N_MSG + locale + ":" + msgKey, String.class);
     }
@@ -59,6 +61,7 @@ public class SyI18nRedisStore {
         redis.deleteByPattern(CacheKey.SY_I18N_MSG + "*");
     }
 
+    /** isEnabled — 여부 */
     public boolean isEnabled() {
         return redis.isEnabled();
     }

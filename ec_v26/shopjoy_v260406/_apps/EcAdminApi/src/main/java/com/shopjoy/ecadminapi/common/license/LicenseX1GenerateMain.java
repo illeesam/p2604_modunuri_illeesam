@@ -27,6 +27,7 @@ public class LicenseX1GenerateMain {
     /* ── secret (application.yml LICENSE_SECRET 과 동일하게 유지) ── */
     private static final String SECRET = "SJ2604-LicenseSecret-X9kQm#vLpNrTzWbYd";
 
+    /** main */
     public static void main(String[] args) throws IOException {
 
         /* ── 기본값 (args 없이 IntelliJ에서 직접 실행 시 여기서 수정) ── */
@@ -101,6 +102,7 @@ public class LicenseX1GenerateMain {
         System.out.println();
     }
 
+    /** buildJs — 구성 */
     private static String buildJs(String siteType, String siteId, String siteNo,
                                    String buyerId, String expireDate, String licenseCode,
                                    String genAt, String fileName) {

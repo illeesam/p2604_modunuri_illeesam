@@ -21,43 +21,51 @@ import java.util.Map;
 public class BoPdTagController {
     private final BoPdTagService boPdTagService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdTagDto>>> list(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boPdTagService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdTagDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boPdTagService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdTagDto>> getById(@PathVariable("id") String id) {
         PdTagDto result = boPdTagService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<PdTag>> create(@RequestBody PdTag body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boPdTagService.create(body)));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdTagDto>> update(@PathVariable("id") String id, @RequestBody PdTag body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdTagService.update(id, body)));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PdTagDto>> upsert(@PathVariable("id") String id, @RequestBody PdTag body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdTagService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boPdTagService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdTag> rows) {
         boPdTagService.saveList(rows);

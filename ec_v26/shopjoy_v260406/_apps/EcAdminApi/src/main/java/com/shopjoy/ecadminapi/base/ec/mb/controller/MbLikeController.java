@@ -19,6 +19,7 @@ public class MbLikeController {
 
     private final MbLikeService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbLikeDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -26,6 +27,7 @@ public class MbLikeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<MbLikeDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -33,6 +35,7 @@ public class MbLikeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MbLikeDto>> getById(@PathVariable("id") String id) {
         MbLikeDto result = service.getById(id);
@@ -71,6 +74,7 @@ public class MbLikeController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<MbLike> rows) {
         service.saveList(rows);

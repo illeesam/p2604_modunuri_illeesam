@@ -43,6 +43,7 @@ public class PageHelper {
         return ctx != null ? ctx[1] : DEFAULT_PAGE_SIZE;
     }
 
+    /** toInt — 변환 */
     private static int toInt(Object val, int defaultVal) {
         if (val == null) return defaultVal;
         if (val instanceof Number n) return n.intValue();

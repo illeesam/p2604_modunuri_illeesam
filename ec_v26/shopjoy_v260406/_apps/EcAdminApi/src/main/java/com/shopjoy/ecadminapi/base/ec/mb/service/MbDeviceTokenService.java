@@ -34,6 +34,7 @@ public class MbDeviceTokenService {
         return mbDeviceTokenMapper.selectById(id);
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<MbDeviceTokenDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,6 +42,7 @@ public class MbDeviceTokenService {
         return mbDeviceTokenMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<MbDeviceTokenDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -48,6 +50,7 @@ public class MbDeviceTokenService {
         return PageResult.of(mbDeviceTokenMapper.selectPageList(p), mbDeviceTokenMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(MbDeviceToken entity) {
         // mb_device_token :: update :: [orm:mybatis]
@@ -67,6 +70,7 @@ public class MbDeviceTokenService {
         return mbDeviceTokenRepository.save(entity);
     }
 
+    /** save — 저장 */
     @Transactional
     public MbDeviceToken save(MbDeviceToken entity) {
         // mb_device_token :: select one :: deviceTokenId [orm:jpa]
@@ -80,6 +84,7 @@ public class MbDeviceTokenService {
         return mbDeviceTokenRepository.save(entity);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!mbDeviceTokenRepository.existsById(id))
@@ -95,6 +100,7 @@ public class MbDeviceTokenService {
         return doSaveByRowStatus(req);
     }
 
+    /** saveListByRowStatus — 저장 */
     @Transactional
     public List<MbDeviceToken> saveListByRowStatus(List<MbDeviceTokenReq> list) {
         List<MbDeviceToken> result = new ArrayList<>();
@@ -104,6 +110,7 @@ public class MbDeviceTokenService {
         return result;
     }
 
+    /** doSaveByRowStatus — 실행 */
     private MbDeviceToken doSaveByRowStatus(MbDeviceTokenReq req) {
         return switch (req.getRowStatus()) {
             case "I" -> create(req.toEntity());

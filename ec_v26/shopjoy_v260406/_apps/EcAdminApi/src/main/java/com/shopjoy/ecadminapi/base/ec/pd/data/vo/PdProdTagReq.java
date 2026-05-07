@@ -24,6 +24,7 @@ public class PdProdTagReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdProdTag toEntity() {
         return PdProdTag.builder()
                 .prodTagId(prodTagId)

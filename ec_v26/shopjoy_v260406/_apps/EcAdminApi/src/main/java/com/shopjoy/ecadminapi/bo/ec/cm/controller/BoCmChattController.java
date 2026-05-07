@@ -30,6 +30,7 @@ import java.util.Map;
 public class BoCmChattController {
     private final BoCmChattService boCmChattService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<CmChattRoomDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -38,6 +39,7 @@ public class BoCmChattController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<CmChattRoomDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -46,41 +48,48 @@ public class BoCmChattController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> getById(@PathVariable("id") String id) {
         CmChattRoomDto result = boCmChattService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<CmChattRoom>> create(@RequestBody CmChattRoom body) {
         CmChattRoom result = boCmChattService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> update(@PathVariable("id") String id, @RequestBody CmChattRoom body) {
         CmChattRoomDto result = boCmChattService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> upsert(@PathVariable("id") String id, @RequestBody CmChattRoom body) {
         return ResponseEntity.ok(ApiResponse.ok(boCmChattService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boCmChattService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /** changeStatus */
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
         CmChattRoomDto result = boCmChattService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<CmChattRoom> rows) {
         boCmChattService.saveList(rows);

@@ -35,6 +35,7 @@ public class PdProdSkuService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdProdSkuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -43,6 +44,7 @@ public class PdProdSkuService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdProdSkuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -50,6 +52,7 @@ public class PdProdSkuService {
         return PageResult.of(pdProdSkuMapper.selectPageList(p), pdProdSkuMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PdProdSku entity) {
         // pd_prod_sku :: update :: [orm:mybatis]
@@ -71,6 +74,7 @@ public class PdProdSkuService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PdProdSku save(PdProdSku entity) {
         if (!pdProdSkuRepository.existsById(entity.getSkuId()))
@@ -82,6 +86,7 @@ public class PdProdSkuService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pdProdSkuRepository.existsById(id))
@@ -89,6 +94,7 @@ public class PdProdSkuService {
         // pd_prod_sku :: delete :: id [orm:jpa]
         pdProdSkuRepository.deleteById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdProdSku> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

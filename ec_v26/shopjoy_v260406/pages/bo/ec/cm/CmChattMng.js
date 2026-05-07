@@ -28,7 +28,7 @@ window.CmChattMng = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     const _initSearchParam = () => {
       const today = new Date();
@@ -124,7 +124,7 @@ window.CmChattMng = {
       }
     };
 
-    const exportExcel = () => boUtil.exportCsv(chatts, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
+    const exportExcel = () => coUtil.exportCsv(chatts, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
     // -- return ---------------------------------------------------------------
 

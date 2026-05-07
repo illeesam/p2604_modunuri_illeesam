@@ -34,6 +34,7 @@ public class MbLikeService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<MbLikeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,12 +42,14 @@ public class MbLikeService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<MbLikeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbLikeMapper.selectPageList(p), mbLikeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(MbLike entity) {
         int result = mbLikeMapper.updateSelective(entity);
@@ -66,6 +69,7 @@ public class MbLikeService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public MbLike save(MbLike entity) {
         if (!mbLikeRepository.existsById(entity.getLikeId()))
@@ -76,6 +80,7 @@ public class MbLikeService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!mbLikeRepository.existsById(id))
@@ -83,6 +88,7 @@ public class MbLikeService {
         mbLikeRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<MbLike> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

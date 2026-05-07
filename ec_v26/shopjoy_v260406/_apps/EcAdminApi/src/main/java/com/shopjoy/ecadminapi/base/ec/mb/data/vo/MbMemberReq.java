@@ -40,6 +40,7 @@ public class MbMemberReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public MbMember toEntity() {
         return MbMember.builder()
                 .memberId(memberId)

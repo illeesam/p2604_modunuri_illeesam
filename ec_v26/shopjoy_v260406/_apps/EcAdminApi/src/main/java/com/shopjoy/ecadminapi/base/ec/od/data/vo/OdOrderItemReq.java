@@ -63,6 +63,7 @@ public class OdOrderItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public OdOrderItem toEntity() {
         return OdOrderItem.builder()
                 .orderItemId(orderItemId)

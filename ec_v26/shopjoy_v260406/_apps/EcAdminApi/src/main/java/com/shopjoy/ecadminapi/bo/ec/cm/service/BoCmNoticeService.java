@@ -30,18 +30,21 @@ public class BoCmNoticeService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyNoticeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syNoticeMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyNoticeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syNoticeMapper.selectPageList(p), syNoticeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyNoticeDto getById(String id) {
         SyNoticeDto dto = syNoticeMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoCmNoticeService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SyNotice create(SyNotice body) {
         if (body.getIsFixed() == null) body.setIsFixed("N");
@@ -63,6 +67,7 @@ public class BoCmNoticeService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public SyNoticeDto update(String id, SyNotice body) {
         SyNotice entity = syNoticeRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -74,6 +79,7 @@ public class BoCmNoticeService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyNotice entity = syNoticeRepository.findById(id)
@@ -83,6 +89,7 @@ public class BoCmNoticeService {
         if (syNoticeRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyNotice> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

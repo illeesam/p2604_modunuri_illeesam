@@ -35,6 +35,7 @@ public class OdClaimItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public OdClaimItem toEntity() {
         return OdClaimItem.builder()
                 .claimItemId(claimItemId)

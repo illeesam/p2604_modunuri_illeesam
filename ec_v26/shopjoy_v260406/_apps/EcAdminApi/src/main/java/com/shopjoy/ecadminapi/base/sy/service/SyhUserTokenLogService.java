@@ -29,6 +29,7 @@ public class SyhUserTokenLogService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyhUserTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -37,6 +38,7 @@ public class SyhUserTokenLogService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyhUserTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -44,6 +46,7 @@ public class SyhUserTokenLogService {
         return PageResult.of(syhUserTokenLogMapper.selectPageList(p), syhUserTokenLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyhUserTokenLog entity) {
         // syh_user_token_log :: update :: [orm:mybatis]
@@ -51,6 +54,7 @@ public class SyhUserTokenLogService {
         return result;
     }
 
+    /** deleteAll — 삭제 */
     @Transactional
     public void deleteAll() {
         syhUserTokenLogRepository.deleteAllBulk();

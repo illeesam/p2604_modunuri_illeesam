@@ -28,18 +28,21 @@ public class BoStSettleService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<StSettleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return stSettleMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<StSettleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stSettleMapper.selectPageList(p), stSettleMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public StSettleDto getById(String id) {
         StSettleDto dto = stSettleMapper.selectById(id);
@@ -47,6 +50,7 @@ public class BoStSettleService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public StSettle create(StSettle body) {
         body.setSettleId("ST" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -59,6 +63,7 @@ public class BoStSettleService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public StSettleDto update(String id, StSettle body) {
         StSettle entity = stSettleRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -70,6 +75,7 @@ public class BoStSettleService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         StSettle entity = stSettleRepository.findById(id)
@@ -80,6 +86,7 @@ public class BoStSettleService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public StSettleDto changeStatus(String id, String statusCd) {
         StSettle entity = stSettleRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));

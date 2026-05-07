@@ -25,6 +25,7 @@ public class PdProdRelReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdProdRel toEntity() {
         return PdProdRel.builder()
                 .prodRelId(prodRelId)

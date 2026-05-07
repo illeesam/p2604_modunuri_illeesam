@@ -79,6 +79,7 @@ public class CmUtil {
         return (value == null || value.isEmpty()) ? defaultValue : value;
     }
 
+    /** nvl */
     public static String nvl(String value) {
         return nvl(value, "");
     }
@@ -91,6 +92,7 @@ public class CmUtil {
         return (value == null) ? defaultValue : value;
     }
 
+    /** nvlList */
     public static <T> List<T> nvlList(List<T> value) {
         return nvlList(value, new ArrayList<>());
     }
@@ -103,6 +105,7 @@ public class CmUtil {
         return (value == null) ? defaultValue : value;
     }
 
+    /** nvlInt */
     public static Integer nvlInt(Integer value) {
         return nvlInt(value, 0);
     }
@@ -115,6 +118,7 @@ public class CmUtil {
         return (value == null) ? defaultValue : value;
     }
 
+    /** nvlLong */
     public static Long nvlLong(Long value) {
         return nvlLong(value, 0L);
     }
@@ -127,6 +131,7 @@ public class CmUtil {
         return (value == null) ? defaultValue : value;
     }
 
+    /** nvlBool */
     public static Boolean nvlBool(Boolean value) {
         return nvlBool(value, false);
     }
@@ -139,6 +144,7 @@ public class CmUtil {
         return (value == null) ? defaultValue : value;
     }
 
+    /** nvlMap */
     public static <K, V> Map<K, V> nvlMap(Map<K, V> value) {
         return nvlMap(value, new HashMap<>());
     }

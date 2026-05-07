@@ -37,6 +37,7 @@ public class PdDlivTmpltService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdDlivTmpltDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -45,6 +46,7 @@ public class PdDlivTmpltService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdDlivTmpltDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -52,6 +54,7 @@ public class PdDlivTmpltService {
         return PageResult.of(pdDlivTmpltMapper.selectPageList(p), pdDlivTmpltMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PdDlivTmplt entity) {
         // pd_dliv_tmplt :: update :: [orm:mybatis]
@@ -73,6 +76,7 @@ public class PdDlivTmpltService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PdDlivTmplt save(PdDlivTmplt entity) {
         if (!pdDlivTmpltRepository.existsById(entity.getDlivTmpltId()))
@@ -84,6 +88,7 @@ public class PdDlivTmpltService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pdDlivTmpltRepository.existsById(id))
@@ -92,6 +97,7 @@ public class PdDlivTmpltService {
         pdDlivTmpltRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdDlivTmplt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

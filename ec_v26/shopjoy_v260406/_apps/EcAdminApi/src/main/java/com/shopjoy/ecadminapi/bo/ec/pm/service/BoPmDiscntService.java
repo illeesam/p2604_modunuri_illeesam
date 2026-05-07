@@ -30,18 +30,21 @@ public class BoPmDiscntService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmDiscntDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pmDiscntMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmDiscntDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmDiscntMapper.selectPageList(p), pmDiscntMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PmDiscntDto getById(String id) {
         PmDiscntDto dto = pmDiscntMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoPmDiscntService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public PmDiscnt create(PmDiscnt body) {
         body.setDiscntId("DS" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -61,6 +65,7 @@ public class BoPmDiscntService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public PmDiscntDto update(String id, PmDiscnt body) {
         PmDiscnt entity = pmDiscntRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -73,6 +78,7 @@ public class BoPmDiscntService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         PmDiscnt entity = pmDiscntRepository.findById(id)
@@ -83,6 +89,7 @@ public class BoPmDiscntService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public PmDiscntDto changeStatus(String id, String statusCd) {
         PmDiscnt entity = pmDiscntRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -95,6 +102,7 @@ public class BoPmDiscntService {
         em.flush();
         return getById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmDiscnt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -41,6 +41,7 @@ public class SyAttachService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyAttachDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyAttachService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyAttachDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyAttachService {
         return PageResult.of(syAttachMapper.selectPageList(p), syAttachMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyAttach entity) {
         // sy_attach :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyAttachService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyAttach save(SyAttach entity) {
         if (!syAttachRepository.existsById(entity.getAttachId()))
@@ -88,6 +92,7 @@ public class SyAttachService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyAttach entity = syAttachRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyAttachService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyAttach> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

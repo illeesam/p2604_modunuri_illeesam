@@ -43,6 +43,7 @@ public class LicensePayload {
             .build();
     }
 
+    /** extract — 추출 */
     private static String extract(String json, String key) {
         String token = "\"" + key + "\":\"";
         int s = json.indexOf(token);
@@ -52,6 +53,7 @@ public class LicensePayload {
         return e < 0 ? "" : json.substring(s, e);
     }
 
+    /** esc */
     private static String esc(String v) {
         return v == null ? "" : v.replace("\\", "\\\\").replace("\"", "\\\"");
     }

@@ -31,6 +31,7 @@ public class CmBlogCateReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public CmBlogCate toEntity() {
         return CmBlogCate.builder()
                 .blogCateId(blogCateId)

@@ -58,6 +58,7 @@ public class OdPayReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public OdPay toEntity() {
         return OdPay.builder()
                 .payId(payId)

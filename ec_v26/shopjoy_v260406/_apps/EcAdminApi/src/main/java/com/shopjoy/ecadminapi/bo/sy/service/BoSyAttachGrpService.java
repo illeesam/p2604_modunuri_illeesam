@@ -31,12 +31,14 @@ public class BoSyAttachGrpService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyAttachGrpDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syAttachGrpMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyAttachGrpDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -44,6 +46,7 @@ public class BoSyAttachGrpService {
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyAttachGrpDto getById(String id) {
         SyAttachGrpDto dto = syAttachGrpMapper.selectById(id);
@@ -51,6 +54,7 @@ public class BoSyAttachGrpService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SyAttachGrp create(SyAttachGrp body) {
         body.setAttachGrpId(CmUtil.generateId("sy_attach_grp"));
@@ -61,6 +65,7 @@ public class BoSyAttachGrpService {
         return syAttachGrpRepository.save(body);
     }
 
+    /** update — 수정 */
     @Transactional
     public SyAttachGrpDto update(String id, SyAttachGrp body) {
         SyAttachGrp entity = syAttachGrpRepository.findById(id)
@@ -73,6 +78,7 @@ public class BoSyAttachGrpService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyAttachGrp entity = syAttachGrpRepository.findById(id)
@@ -81,6 +87,7 @@ public class BoSyAttachGrpService {
         em.flush();
         if (syAttachGrpRepository.existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyAttachGrp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

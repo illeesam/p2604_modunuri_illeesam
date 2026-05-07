@@ -55,6 +55,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
         return "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 
+    /** doFilterInternal — 실행 */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
@@ -146,22 +147,26 @@ public class AccessLogFilter extends OncePerRequestFilter {
         return v instanceof String s ? s : def;
     }
 
+    /** bodyOf */
     private static String bodyOf(byte[] bytes, int maxSize) {
         if (bytes == null || bytes.length == 0) return null;
         String body = new String(bytes, StandardCharsets.UTF_8);
         return body.length() <= maxSize ? body : body.substring(0, maxSize);
     }
 
+    /** truncate */
     private static String truncate(String s, int max) {
         if (s == null) return null;
         return s.length() <= max ? s : s.substring(0, max);
     }
 
+    /** decodeHdr — 디코딩 */
     private static String decodeHdr(String s) {
         if (s == null) return null;
         try { return java.net.URLDecoder.decode(s, StandardCharsets.UTF_8); } catch (Exception e) { return s; }
     }
 
+    /** resolveIp — 결정 */
     private static String resolveIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
@@ -172,6 +177,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
         return CmUtil.nvl(ip, "-");
     }
 
+    /** generateId — 생성 */
     private static String generateId() {
         String ts = LocalDateTime.now().format(ID_FMT);
         return "AL" + ts + String.format("%04d", (int) (Math.random() * 10000));

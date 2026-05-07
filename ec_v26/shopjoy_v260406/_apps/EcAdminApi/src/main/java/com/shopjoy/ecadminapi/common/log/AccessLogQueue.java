@@ -37,6 +37,7 @@ public class AccessLogQueue {
 
     private final AtomicLong dropCount = new AtomicLong(0);
 
+    /** init — 초기화 */
     @PostConstruct
     public void init() {
         queue = new LinkedBlockingQueue<>(queueSize);
@@ -48,6 +49,7 @@ public class AccessLogQueue {
         log.info("[AccessLog] 액세스 로그 큐 시작 — queueSize={}", queueSize);
     }
 
+    /** offer */
     public void offer(SyhAccessLog entry) {
         if (!queue.offer(entry)) {
             long n = dropCount.incrementAndGet();
@@ -57,9 +59,12 @@ public class AccessLogQueue {
         }
     }
 
+    /** size */
     public int size()         { return queue != null ? queue.size() : 0; }
+    /** getQueueSize — 조회 */
     public int getQueueSize() { return queueSize; }
 
+    /** drainLoop */
     private void drainLoop() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
@@ -73,6 +78,7 @@ public class AccessLogQueue {
         }
     }
 
+    /** save — 저장 */
     private void save(SyhAccessLog entry) {
         try {
             repository.save(entry);
@@ -81,6 +87,7 @@ public class AccessLogQueue {
         }
     }
 
+    /** shutdown */
     @PreDestroy
     public void shutdown() {
         workerThread.interrupt();

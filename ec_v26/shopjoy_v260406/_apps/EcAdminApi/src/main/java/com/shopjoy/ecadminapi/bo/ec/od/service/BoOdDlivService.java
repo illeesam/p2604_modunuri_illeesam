@@ -30,18 +30,21 @@ public class BoOdDlivService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdDlivDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return odDlivMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdDlivDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odDlivMapper.selectPageList(p), odDlivMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public OdDlivDto getById(String id) {
         OdDlivDto dto = odDlivMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoOdDlivService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public OdDliv create(OdDliv body) {
         if (body.getDlivStatusCd() == null) body.setDlivStatusCd("PENDING");
@@ -62,6 +66,7 @@ public class BoOdDlivService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public OdDlivDto update(String id, OdDliv body) {
         OdDliv entity = odDlivRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -74,6 +79,7 @@ public class BoOdDlivService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         OdDliv entity = odDlivRepository.findById(id)
@@ -84,6 +90,7 @@ public class BoOdDlivService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public OdDlivDto changeStatus(String id, String statusCd) {
         OdDliv entity = odDlivRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -97,6 +104,7 @@ public class BoOdDlivService {
         return getById(id);
     }
 
+    /** bulkStatus */
     @Transactional
     public void bulkStatus(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -116,6 +124,7 @@ public class BoOdDlivService {
         }
     }
 
+    /** bulkCourier */
     @Transactional
     public void bulkCourier(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -136,6 +145,7 @@ public class BoOdDlivService {
         }
     }
 
+    /** bulkApproval */
     @Transactional
     public void bulkApproval(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -152,6 +162,7 @@ public class BoOdDlivService {
         }
     }
 
+    /** bulkApprovalReq */
     @Transactional
     public void bulkApprovalReq(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -167,6 +178,7 @@ public class BoOdDlivService {
             });
         }
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<OdDliv> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

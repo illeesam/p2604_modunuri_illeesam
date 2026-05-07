@@ -18,6 +18,7 @@ public class OdhClaimChgHistController {
 
     private final OdhClaimChgHistService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdhClaimChgHistDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -25,6 +26,7 @@ public class OdhClaimChgHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<OdhClaimChgHistDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -32,6 +34,7 @@ public class OdhClaimChgHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OdhClaimChgHistDto>> getById(@PathVariable("id") String id) {
         OdhClaimChgHistDto result = service.getById(id);

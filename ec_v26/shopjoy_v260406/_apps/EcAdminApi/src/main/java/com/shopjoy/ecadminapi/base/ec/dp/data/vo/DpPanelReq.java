@@ -32,6 +32,7 @@ public class DpPanelReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public DpPanel toEntity() {
         return DpPanel.builder()
                 .panelId(panelId)

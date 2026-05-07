@@ -35,6 +35,7 @@ public class CmChattRoomService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmChattRoomDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -43,6 +44,7 @@ public class CmChattRoomService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmChattRoomDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -50,6 +52,7 @@ public class CmChattRoomService {
         return PageResult.of(cmChattRoomMapper.selectPageList(p), cmChattRoomMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(CmChattRoom entity) {
         // cm_chatt_room :: update :: [orm:mybatis]
@@ -71,6 +74,7 @@ public class CmChattRoomService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public CmChattRoom save(CmChattRoom entity) {
         if (!cmChattRoomRepository.existsById(entity.getChattRoomId()))
@@ -82,6 +86,7 @@ public class CmChattRoomService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!cmChattRoomRepository.existsById(id))
@@ -90,6 +95,7 @@ public class CmChattRoomService {
         cmChattRoomRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<CmChattRoom> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -40,6 +40,7 @@ public class StSettleItemService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<StSettleItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -47,12 +48,14 @@ public class StSettleItemService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<StSettleItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stSettleItemMapper.selectPageList(p), stSettleItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(StSettleItem entity) {
         int result = stSettleItemMapper.updateSelective(entity);
@@ -72,6 +75,7 @@ public class StSettleItemService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public StSettleItem save(StSettleItem entity) {
         if (!stSettleItemRepository.existsById(entity.getSettleItemId()))
@@ -82,6 +86,7 @@ public class StSettleItemService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         StSettleItem entity = stSettleItemRepository.findById(id)
@@ -92,6 +97,7 @@ public class StSettleItemService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<StSettleItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

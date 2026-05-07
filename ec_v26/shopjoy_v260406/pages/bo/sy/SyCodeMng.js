@@ -114,7 +114,7 @@ window.SyCodeMng = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     onMounted(() => {
       checkAndLoadCodes();
@@ -458,7 +458,7 @@ window.SyCodeMng = {
 
     const statusBadgeCls = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const exportExcel = () => boUtil.exportCsv(
+    const exportExcel = () => coUtil.exportCsv(
       uiState.gridRows.filter(r => r._row_status !== 'D'),
       [{ label: 'ID', key: 'codeId' }, { label: '코드그룹', key: 'codeGrp' }, { label: '코드라벨', key: 'codeLabel' },
        { label: '코드값', key: 'codeValue' }, { label: '순서', key: 'sortOrd' }, { label: '사용여부', key: 'useYn' }, { label: '비고', key: 'remark' }],

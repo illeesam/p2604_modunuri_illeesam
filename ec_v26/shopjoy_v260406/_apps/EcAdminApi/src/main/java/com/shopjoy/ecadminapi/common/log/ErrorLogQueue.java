@@ -41,6 +41,7 @@ public class ErrorLogQueue {
     /** 누적 드롭 건수 */
     private final AtomicLong dropCount = new AtomicLong(0);
 
+    /** init — 초기화 */
     @PostConstruct
     public void init() {
         queue = new LinkedBlockingQueue<>(queueSize);
@@ -90,6 +91,7 @@ public class ErrorLogQueue {
         }
     }
 
+    /** save — 저장 */
     private void save(SyhAccessErrorLog entry) {
         try {
             repository.save(entry);
@@ -98,6 +100,7 @@ public class ErrorLogQueue {
         }
     }
 
+    /** shutdown */
     @PreDestroy
     public void shutdown() {
         workerThread.interrupt();

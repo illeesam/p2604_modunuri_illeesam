@@ -26,6 +26,7 @@ public class PdReviewAttachReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdReviewAttach toEntity() {
         return PdReviewAttach.builder()
                 .reviewAttachId(reviewAttachId)

@@ -31,6 +31,7 @@ public class SyCodeReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyCode toEntity() {
         return SyCode.builder()
                 .codeId(codeId)

@@ -3529,7 +3529,7 @@ window.BizPickModal = {
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedPathId.value = id; };
     Vue.onMounted(() => {
-      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = coUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     const cfAllowedPathIds = computed(() => selectedPathId.value == null ? null : boUtil.getPathDescendants('sy_biz', selectedPathId.value));

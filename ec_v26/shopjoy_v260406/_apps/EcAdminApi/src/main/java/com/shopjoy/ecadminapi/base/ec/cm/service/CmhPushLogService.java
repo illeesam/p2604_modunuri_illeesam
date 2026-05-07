@@ -29,6 +29,7 @@ public class CmhPushLogService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmhPushLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -37,6 +38,7 @@ public class CmhPushLogService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmhPushLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -44,6 +46,7 @@ public class CmhPushLogService {
         return PageResult.of(cmhPushLogMapper.selectPageList(p), cmhPushLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(CmhPushLog entity) {
         // cmh_push_log :: update :: [orm:mybatis]

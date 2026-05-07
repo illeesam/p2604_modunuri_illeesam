@@ -21,37 +21,44 @@ import java.util.Map;
 public class BoStSettleEtcAdjController {
     private final BoStSettleEtcAdjService boStSettleEtcAdjService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<StSettleEtcAdjDto>>> list(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleEtcAdjService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StSettleEtcAdjDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleEtcAdjService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> getById(@PathVariable("id") String id) {
         StSettleEtcAdjDto result = boStSettleEtcAdjService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<StSettleEtcAdj>> create(@RequestBody StSettleEtcAdj body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStSettleEtcAdjService.create(body)));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> update(@PathVariable("id") String id, @RequestBody StSettleEtcAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleEtcAdjService.update(id, body)));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleEtcAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleEtcAdjService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boStSettleEtcAdjService.delete(id);

@@ -18,6 +18,7 @@ public class BoSyAccessLogService {
     private final SyhAccessLogMapper syhAccessLogMapper;
     private final SyhAccessLogRepository syhAccessLogRepository;
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyhAccessLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -25,6 +26,7 @@ public class BoSyAccessLogService {
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** deleteAll — 삭제 */
     @Transactional
     public void deleteAll() {
         syhAccessLogRepository.deleteAllBulk();

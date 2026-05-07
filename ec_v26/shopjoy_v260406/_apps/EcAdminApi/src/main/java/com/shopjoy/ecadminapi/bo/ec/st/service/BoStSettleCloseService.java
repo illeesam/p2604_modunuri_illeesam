@@ -28,18 +28,21 @@ public class BoStSettleCloseService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<StSettleCloseDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return stSettleCloseMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<StSettleCloseDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stSettleCloseMapper.selectPageList(p), stSettleCloseMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public StSettleCloseDto getById(String id) {
         StSettleCloseDto dto = stSettleCloseMapper.selectById(id);
@@ -47,6 +50,7 @@ public class BoStSettleCloseService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public StSettleClose create(StSettleClose body) {
         body.setSettleCloseId("CL" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -59,6 +63,7 @@ public class BoStSettleCloseService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public StSettleCloseDto update(String id, StSettleClose body) {
         StSettleClose entity = stSettleCloseRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -70,6 +75,7 @@ public class BoStSettleCloseService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         StSettleClose entity = stSettleCloseRepository.findById(id)
@@ -80,6 +86,7 @@ public class BoStSettleCloseService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** reopen */
     @Transactional
     public StSettleCloseDto reopen(String id) {
         StSettleClose entity = stSettleCloseRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));

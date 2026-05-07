@@ -30,18 +30,21 @@ public class BoOdClaimService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdClaimDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return odClaimMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdClaimDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odClaimMapper.selectPageList(p), odClaimMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public OdClaimDto getById(String id) {
         OdClaimDto dto = odClaimMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoOdClaimService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public OdClaim create(OdClaim body) {
         body.setClaimId("CL" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -61,6 +65,7 @@ public class BoOdClaimService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public OdClaimDto update(String id, OdClaim body) {
         OdClaim entity = odClaimRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -73,6 +78,7 @@ public class BoOdClaimService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         OdClaim entity = odClaimRepository.findById(id)
@@ -83,6 +89,7 @@ public class BoOdClaimService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public OdClaimDto changeStatus(String id, String statusCd) {
         OdClaim entity = odClaimRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -96,6 +103,7 @@ public class BoOdClaimService {
         return getById(id);
     }
 
+    /** bulkStatus */
     @Transactional
     public void bulkStatus(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -116,6 +124,7 @@ public class BoOdClaimService {
         }
     }
 
+    /** bulkType */
     @Transactional
     public void bulkType(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -134,6 +143,7 @@ public class BoOdClaimService {
         }
     }
 
+    /** bulkApproval */
     @Transactional
     public void bulkApproval(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -150,6 +160,7 @@ public class BoOdClaimService {
         }
     }
 
+    /** bulkApprovalReq */
     @Transactional
     public void bulkApprovalReq(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -165,6 +176,7 @@ public class BoOdClaimService {
             });
         }
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<OdClaim> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

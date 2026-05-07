@@ -25,6 +25,7 @@ public class RepositoryResultLogAspect {
     @Autowired
     private Environment environment;
 
+    /** logRepositoryResult — 로그 */
     @Around("execution(public * com.shopjoy.ecadminapi.*.*.repository.*Repository.*(..))")
     public Object logRepositoryResult(ProceedingJoinPoint joinPoint) throws Throwable {
         boolean loggingEnabled = isLoggingEnabled();
@@ -53,6 +54,7 @@ public class RepositoryResultLogAspect {
         }
     }
 
+    /** isLoggingEnabled — 여부 */
     private boolean isLoggingEnabled() {
         String[] activeProfiles = environment.getActiveProfiles();
         if (activeProfiles.length == 0) return false;
@@ -78,6 +80,7 @@ public class RepositoryResultLogAspect {
         return joinPoint.getSignature().getDeclaringType().getName();
     }
 
+    /** getCallerInfo — 조회 */
     private String getCallerInfo() {
         for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
             String cn = e.getClassName();
@@ -89,6 +92,7 @@ public class RepositoryResultLogAspect {
         return "Unknown";
     }
 
+    /** logResult — 로그 */
     private void logResult(String simpleClassName, String fullClassName, String methodName,
                            String callerInfo, Object[] args, Object result) {
         StringBuilder sb = new StringBuilder();
@@ -136,6 +140,7 @@ public class RepositoryResultLogAspect {
         log.debug("{}", sb);
     }
 
+    /** logSaveDeleteResult — 로그 */
     private void logSaveDeleteResult(String simpleClassName, String fullClassName, String methodName,
                                      String callerInfo, Object[] args, Object result) {
         StringBuilder sb = new StringBuilder();
@@ -165,6 +170,7 @@ public class RepositoryResultLogAspect {
         log.debug("{}", sb);
     }
 
+    /** formatParameters — 포맷 */
     private String formatParameters(Object[] args) {
         if (args == null || args.length == 0) return "";
         StringBuilder sb = new StringBuilder("[");
@@ -175,6 +181,7 @@ public class RepositoryResultLogAspect {
         return sb.append("]").toString();
     }
 
+    /** formatParameterValue — 포맷 */
     private String formatParameterValue(Object obj) {
         if (obj == null) return "null";
         if (obj instanceof String) return "'" + obj + "'";
@@ -184,6 +191,7 @@ public class RepositoryResultLogAspect {
         return obj.getClass().getSimpleName() + "@" + Integer.toHexString(obj.hashCode());
     }
 
+    /** formatObject — 포맷 */
     private String formatObject(Object obj) {
         if (obj == null) return "null";
         try {

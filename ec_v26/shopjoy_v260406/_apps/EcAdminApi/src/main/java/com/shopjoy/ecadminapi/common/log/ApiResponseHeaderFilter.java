@@ -27,6 +27,7 @@ public class ApiResponseHeaderFilter extends OncePerRequestFilter {
         return "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 
+    /** doFilterInternal — 실행 */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
@@ -87,16 +88,19 @@ public class ApiResponseHeaderFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
+    /** getHeader — 조회 */
     private String getHeader(HttpServletRequest request, String name) {
         String value = request.getHeader(name);
         return value != null ? value : "";
     }
 
+    /** getAttr — 조회 */
     private String getAttr(HttpServletRequest request, String name) {
         Object value = request.getAttribute(name);
         return value instanceof String ? (String) value : "";
     }
 
+    /** isEmpty — 여부 */
     private boolean isEmpty(String value) {
         return value == null || value.trim().isEmpty();
     }

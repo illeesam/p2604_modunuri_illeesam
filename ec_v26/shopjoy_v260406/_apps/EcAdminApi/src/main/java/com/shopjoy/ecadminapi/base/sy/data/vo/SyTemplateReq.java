@@ -29,6 +29,7 @@ public class SyTemplateReq {
     private LocalDateTime updDate;
     private String pathId;
 
+    /** toEntity — 변환 */
     public SyTemplate toEntity() {
         return SyTemplate.builder()
                 .templateId(templateId)

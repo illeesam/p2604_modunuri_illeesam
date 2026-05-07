@@ -88,6 +88,7 @@ public class SecurityConfig {
     private static final AuthorizationManager<RequestAuthorizationContext> EXT_ONLY =
         (supplier, ctx) -> new AuthorizationDecision(isAppType(supplier.get(), AuthPrincipal.EXT));
 
+    /** securityFilterChain */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -162,6 +163,7 @@ public class SecurityConfig {
         return chain;
     }
 
+    /** corsConfigurationSource */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -177,6 +179,7 @@ public class SecurityConfig {
         return source;
     }
 
+    /** authenticationProvider */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -185,16 +188,19 @@ public class SecurityConfig {
         return provider;
     }
 
+    /** authenticationManager */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
+    /** passwordEncoder */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /** isAppType — 여부 */
     private static boolean isAppType(Authentication auth, String type) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {

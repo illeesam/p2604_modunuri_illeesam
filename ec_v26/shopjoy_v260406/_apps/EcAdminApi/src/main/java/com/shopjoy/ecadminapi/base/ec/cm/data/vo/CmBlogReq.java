@@ -30,6 +30,7 @@ public class CmBlogReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public CmBlog toEntity() {
         return CmBlog.builder()
                 .blogId(blogId)

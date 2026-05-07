@@ -36,6 +36,7 @@ public class PmEventItemService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmEventItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -44,6 +45,7 @@ public class PmEventItemService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmEventItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -51,6 +53,7 @@ public class PmEventItemService {
         return PageResult.of(pmEventItemMapper.selectPageList(p), pmEventItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PmEventItem entity) {
         // pm_event_item :: update :: [orm:mybatis]
@@ -72,6 +75,7 @@ public class PmEventItemService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PmEventItem save(PmEventItem entity) {
         if (!pmEventItemRepository.existsById(entity.getEventItemId()))
@@ -83,6 +87,7 @@ public class PmEventItemService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pmEventItemRepository.existsById(id))
@@ -91,6 +96,7 @@ public class PmEventItemService {
         pmEventItemRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmEventItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

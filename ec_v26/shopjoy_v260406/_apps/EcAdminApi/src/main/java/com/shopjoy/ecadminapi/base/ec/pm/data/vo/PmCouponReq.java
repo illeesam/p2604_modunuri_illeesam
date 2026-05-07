@@ -50,6 +50,7 @@ public class PmCouponReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmCoupon toEntity() {
         return PmCoupon.builder()
                 .couponId(couponId)

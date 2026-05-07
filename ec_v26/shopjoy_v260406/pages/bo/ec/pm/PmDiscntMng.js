@@ -33,7 +33,7 @@ window.PmDiscntMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     // onMounted에서 API 로드
@@ -139,7 +139,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       }
     };
 
-    const exportExcel = () => boUtil.exportCsv(discounts,
+    const exportExcel = () => coUtil.exportCsv(discounts,
       [{label:'ID',key:'discntId'},{label:'할인명',key:'discntNm'},{label:'유형',key:'discntType'},{label:'할인값',key:'discntVal'},{label:'상태',key:'discntStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '할인목록.csv');
 

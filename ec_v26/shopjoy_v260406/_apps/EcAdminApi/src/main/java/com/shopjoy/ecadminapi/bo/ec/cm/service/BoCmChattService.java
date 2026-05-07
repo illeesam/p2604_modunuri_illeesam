@@ -30,18 +30,21 @@ public class BoCmChattService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmChattRoomDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return cmChattRoomMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmChattRoomDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(cmChattRoomMapper.selectPageList(p), cmChattRoomMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public CmChattRoomDto getById(String id) {
         CmChattRoomDto dto = cmChattRoomMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoCmChattService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public CmChattRoom create(CmChattRoom body) {
         if (body.getChattStatusCd() == null) body.setChattStatusCd("ACTIVE");
@@ -62,6 +66,7 @@ public class BoCmChattService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public CmChattRoomDto update(String id, CmChattRoom body) {
         CmChattRoom entity = cmChattRoomRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -74,6 +79,7 @@ public class BoCmChattService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         CmChattRoom entity = cmChattRoomRepository.findById(id)
@@ -84,6 +90,7 @@ public class BoCmChattService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public CmChattRoomDto changeStatus(String id, String statusCd) {
         CmChattRoom entity = cmChattRoomRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -95,6 +102,7 @@ public class BoCmChattService {
         em.flush();
         return getById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<CmChattRoom> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

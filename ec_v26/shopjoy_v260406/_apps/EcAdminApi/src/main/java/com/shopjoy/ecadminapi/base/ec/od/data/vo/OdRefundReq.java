@@ -37,6 +37,7 @@ public class OdRefundReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public OdRefund toEntity() {
         return OdRefund.builder()
                 .refundId(refundId)

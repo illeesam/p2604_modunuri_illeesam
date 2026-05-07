@@ -32,6 +32,7 @@ public class SyContactReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyContact toEntity() {
         return SyContact.builder()
                 .contactId(contactId)

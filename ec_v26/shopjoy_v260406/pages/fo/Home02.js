@@ -23,7 +23,7 @@ window.Home02 = {
       }
     };
 
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     function fnCategoryLabel(p) {
       if (!p) return '';

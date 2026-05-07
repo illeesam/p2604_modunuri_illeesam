@@ -57,6 +57,7 @@ public class SchBatchExecutor {
 
     private Map<String, SchBatchJobHandler> handlerMap;
 
+    /** handlerMap */
     private Map<String, SchBatchJobHandler> handlerMap() {
         if (handlerMap == null) {
             handlerMap = handlers.stream()
@@ -65,6 +66,7 @@ public class SchBatchExecutor {
         return handlerMap;
     }
 
+    /** execute — 실행 */
     public void execute(SyBatch batch) {
         String code = batch.getBatchCode();
         SchBatchJobHandler handler = handlerMap().get(code);
@@ -88,6 +90,7 @@ public class SchBatchExecutor {
         }
     }
 
+    /** updateStatus — 수정 */
     private void updateStatus(SyBatch batch, String runStatus, LocalDateTime lastRun) {
         try {
             batch.setBatchRunStatus(runStatus);
@@ -103,6 +106,7 @@ public class SchBatchExecutor {
         }
     }
 
+    /** calcNextRun */
     private LocalDateTime calcNextRun(String cronExpr, LocalDateTime from) {
         try {
             return CronExpression.parse(cronExpr).next(from);

@@ -34,6 +34,7 @@ public class MbMemberGroupService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<MbMemberGroupDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,12 +42,14 @@ public class MbMemberGroupService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<MbMemberGroupDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbMemberGroupMapper.selectPageList(p), mbMemberGroupMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(MbMemberGroup entity) {
         int result = mbMemberGroupMapper.updateSelective(entity);
@@ -66,6 +69,7 @@ public class MbMemberGroupService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public MbMemberGroup save(MbMemberGroup entity) {
         if (!mbMemberGroupRepository.existsById(entity.getMemberGroupId()))
@@ -76,6 +80,7 @@ public class MbMemberGroupService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!mbMemberGroupRepository.existsById(id))
@@ -83,6 +88,7 @@ public class MbMemberGroupService {
         mbMemberGroupRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<MbMemberGroup> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

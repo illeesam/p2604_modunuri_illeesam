@@ -87,9 +87,13 @@ public class JwtProvider {
             .compact();
     }
 
+    /** getBoAccessExpiryMinutes — 조회 */
     public long getBoAccessExpiryMinutes() { return boAccessExpiry / 60_000; }
+    /** getFoAccessExpiryMinutes — 조회 */
     public long getFoAccessExpiryMinutes() { return foAccessExpiry / 60_000; }
+    /** getBoRefreshExpiryMinutes — 조회 */
     public long getBoRefreshExpiryMinutes() { return boRefreshExpiry / 60_000; }
+    /** getFoRefreshExpiryMinutes — 조회 */
     public long getFoRefreshExpiryMinutes() { return foRefreshExpiry / 60_000; }
 
     /** 만료된 토큰 포함하여 클레임 파싱 (refresh 엔드포인트용) */
@@ -105,6 +109,7 @@ public class JwtProvider {
         }
     }
 
+    /** validate — 검증 */
     public boolean validate(String token) {
         try {
             Jwts.parser()
@@ -122,6 +127,7 @@ public class JwtProvider {
         return false;
     }
 
+    /** getClaims — 조회 */
     public Claims getClaims(String token) {
         return Jwts.parser()
             .verifyWith(secretKey)
@@ -130,6 +136,7 @@ public class JwtProvider {
             .getPayload();
     }
 
+    /** getAuthId — 조회 */
     public String getAuthId(String token) {
         return getClaims(token).getSubject();
     }
@@ -140,47 +147,58 @@ public class JwtProvider {
         return getAuthId(token);
     }
 
+    /** getTokenType — 조회 */
     public String getTokenType(String token) {
         return getClaims(token).get("type", String.class);
     }
 
+    /** getAppTypeCd — 조회 */
     public String getAppTypeCd(String token) {
         return getClaims(token).get("appTypeCd", String.class);
     }
 
+    /** getRoleId — 조회 */
     public String getRoleId(String token) {
         return getClaims(token).get("roleId", String.class);
     }
 
+    /** getRoles — 조회 */
     @SuppressWarnings("unchecked")
     public List<String> getRoles(String token) {
         return getClaims(token).get("roles", List.class);
     }
 
+    /** getLoginId — 조회 */
     public String getLoginId(String token) {
         return getClaims(token).get("loginId", String.class);
     }
 
+    /** getVendorId — 조회 */
     public String getVendorId(String token) {
         return getClaims(token).get("vendorId", String.class);
     }
 
+    /** getSiteId — 조회 */
     public String getSiteId(String token) {
         return getClaims(token).get("siteId", String.class);
     }
 
+    /** getMemberId — 조회 */
     public String getMemberId(String token) {
         return getClaims(token).get("memberId", String.class);
     }
 
+    /** getMemberGrade — 조회 */
     public String getMemberGrade(String token) {
         return getClaims(token).get("memberGrade", String.class);
     }
 
+    /** getIsStaffYn — 조회 */
     public String getIsStaffYn(String token) {
         return getClaims(token).get("isStaffYn", String.class);
     }
 
+    /** getIsAdminYn — 조회 */
     public String getIsAdminYn(String token) {
         return getClaims(token).get("isAdminYn", String.class);
     }

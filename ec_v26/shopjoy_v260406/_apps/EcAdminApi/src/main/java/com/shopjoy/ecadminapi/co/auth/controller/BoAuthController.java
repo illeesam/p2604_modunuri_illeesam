@@ -29,12 +29,14 @@ public class BoAuthController {
 
     private final BoAuthService authService;
 
+    /** login — 로그인 */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginRes>> login(@RequestBody @Valid LoginReq request) {
         LoginRes result = authService.login(request, "BO");
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** join — 결합 */
     @PostMapping("/join")
     public ResponseEntity<ApiResponse<BoJoinRes>> join(@RequestBody SyUser body) {
         BoJoinRes result = authService.join(body, "BO");
@@ -54,6 +56,7 @@ public class BoAuthController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** logout — 로그아웃 */
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
@@ -64,6 +67,7 @@ public class BoAuthController {
         return ResponseEntity.ok(ApiResponse.ok(null, "로그아웃 되었습니다."));
     }
 
+    /** changePassword */
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @RequestBody @Valid ChangePasswordReq request) {

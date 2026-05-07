@@ -16,26 +16,31 @@ public class BoPdProdHistService {
 
     private final PdProdHistMapper pdProdHistMapper;
 
+    /** getOrders — 조회 */
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getOrders(String prodId, Map<String, Object> p) {
         return pdProdHistMapper.selectOrders(prodId, p != null ? p : new HashMap<>());
     }
 
+    /** getStockHist — 조회 */
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getStockHist(String prodId, Map<String, Object> p) {
         return pdProdHistMapper.selectStockHist(prodId, p != null ? p : new HashMap<>());
     }
 
+    /** getPriceHist — 조회 */
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getPriceHist(String prodId, Map<String, Object> p) {
         return pdProdHistMapper.selectPriceHist(prodId, p != null ? p : new HashMap<>());
     }
 
+    /** getStatusHist — 조회 */
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getStatusHist(String prodId, Map<String, Object> p) {
         return pdProdHistMapper.selectStatusHist(prodId, p != null ? p : new HashMap<>());
     }
 
+    /** getChangeHist — 조회 */
     @Transactional(readOnly = true)
     public List<PdProdHistDto> getChangeHist(String prodId, Map<String, Object> p) {
         return pdProdHistMapper.selectChangeHist(prodId, p != null ? p : new HashMap<>());

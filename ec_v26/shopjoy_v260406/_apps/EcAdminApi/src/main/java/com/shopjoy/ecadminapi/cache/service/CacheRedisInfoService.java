@@ -104,6 +104,7 @@ public class CacheRedisInfoService {
         );
     }
 
+    /** domainInfo */
     private Map<String, Object> domainInfo(String domain, String repKey, long configTtl,
                                             RedisUtil.Target target, String countPattern) {
         Map<String, Object> info = new LinkedHashMap<>();

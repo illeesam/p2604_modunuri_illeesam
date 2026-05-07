@@ -25,12 +25,14 @@ public class ZzSample2Service {
     private final ZzSample2Mapper zzSample2Mapper;
     private final ZzSample2Repository zzSample2Repository;
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public ZzSample2Dto getById(String id) {
         // zz_sample2 :: select one :: id [orm:mybatis]
         return zzSample2Mapper.selectById(id);
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<ZzSample2Dto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -38,6 +40,7 @@ public class ZzSample2Service {
         return zzSample2Mapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<ZzSample2Dto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -46,12 +49,14 @@ public class ZzSample2Service {
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(ZzSample2 entity) {
         // zz_sample2 :: update :: entity [orm:mybatis]
         return zzSample2Mapper.updateSelective(entity);
     }
 
+    /** create — 생성 */
     @Transactional
     public ZzSample2 create(ZzSample2 entity) {
         entity.setSample2Id(CmUtil.generateId("zz_sample2"));
@@ -61,6 +66,7 @@ public class ZzSample2Service {
         return zzSample2Repository.save(entity);
     }
 
+    /** save — 저장 */
     @Transactional
     public ZzSample2 save(ZzSample2 entity) {
         if (!zzSample2Repository.existsById(entity.getSample2Id()))
@@ -71,6 +77,7 @@ public class ZzSample2Service {
         return zzSample2Repository.save(entity);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!zzSample2Repository.existsById(id))

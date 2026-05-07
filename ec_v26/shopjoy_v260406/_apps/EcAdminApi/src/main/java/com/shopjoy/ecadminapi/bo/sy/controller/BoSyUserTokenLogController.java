@@ -21,21 +21,25 @@ public class BoSyUserTokenLogController {
 
     private final BoSyUserTokenLogService boSyUserTokenLogService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyhUserTokenLogDto>>> list(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boSyUserTokenLogService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyhUserTokenLogDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boSyUserTokenLogService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyhUserTokenLogDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boSyUserTokenLogService.getById(id)));
     }
 
+    /** deleteAll — 삭제 */
     @DeleteMapping("/all")
     public ResponseEntity<ApiResponse<Void>> deleteAll() {
         boSyUserTokenLogService.deleteAll();

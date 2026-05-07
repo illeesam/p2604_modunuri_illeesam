@@ -41,6 +41,7 @@ public class SyCodeService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyCodeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyCodeService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyCodeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyCodeService {
         return PageResult.of(syCodeMapper.selectPageList(p), syCodeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyCode entity) {
         // sy_code :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyCodeService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyCode save(SyCode entity) {
         if (!syCodeRepository.existsById(entity.getCodeId()))
@@ -88,6 +92,7 @@ public class SyCodeService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyCode entity = syCodeRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyCodeService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyCode> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -22,6 +22,7 @@ public class FoPmCouponService {
 
     private final PmCouponIssueMapper pmCouponIssueMapper;
 
+    /** getAvailableCoupons — 조회 */
     @Transactional(readOnly = true)
     public List<PmCouponIssueDto> getAvailableCoupons(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());

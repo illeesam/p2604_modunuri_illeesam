@@ -24,11 +24,13 @@ public class FoCmContactController {
 
     private final FoCmContactService foCmContactService;
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(foCmContactService.getById(id)));
     }
 
+    /** submit — 제출 */
     @PostMapping
     public ResponseEntity<ApiResponse<CmBlog>> submit(@RequestBody Map<String, Object> body) {
         CmBlog result = foCmContactService.submit(body);

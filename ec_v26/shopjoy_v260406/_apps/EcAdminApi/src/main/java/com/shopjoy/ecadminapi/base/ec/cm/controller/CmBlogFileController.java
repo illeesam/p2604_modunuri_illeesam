@@ -21,6 +21,7 @@ public class CmBlogFileController {
 
     private final CmBlogFileService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<CmBlogFileDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -28,6 +29,7 @@ public class CmBlogFileController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<CmBlogFileDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -35,6 +37,7 @@ public class CmBlogFileController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogFileDto>> getById(@PathVariable("id") String id) {
         CmBlogFileDto result = service.getById(id);

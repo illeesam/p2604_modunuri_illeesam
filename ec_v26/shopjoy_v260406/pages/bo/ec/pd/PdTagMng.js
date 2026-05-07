@@ -23,7 +23,7 @@ window.PdTagMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     // onMounted에서 API 로드

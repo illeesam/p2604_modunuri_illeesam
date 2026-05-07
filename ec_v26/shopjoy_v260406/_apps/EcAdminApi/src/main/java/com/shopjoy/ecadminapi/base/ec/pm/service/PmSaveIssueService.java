@@ -35,6 +35,7 @@ public class PmSaveIssueService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmSaveIssueDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -42,12 +43,14 @@ public class PmSaveIssueService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmSaveIssueDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmSaveIssueMapper.selectPageList(p), pmSaveIssueMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PmSaveIssue entity) {
         int result = pmSaveIssueMapper.updateSelective(entity);
@@ -67,6 +70,7 @@ public class PmSaveIssueService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PmSaveIssue save(PmSaveIssue entity) {
         if (!pmSaveIssueRepository.existsById(entity.getSaveIssueId()))
@@ -77,6 +81,7 @@ public class PmSaveIssueService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pmSaveIssueRepository.existsById(id))
@@ -84,6 +89,7 @@ public class PmSaveIssueService {
         pmSaveIssueRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmSaveIssue> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

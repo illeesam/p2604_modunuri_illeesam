@@ -19,12 +19,14 @@ public class BoSyUserTokenLogService {
     private final SyhUserTokenLogMapper syhUserTokenLogMapper;
     private final SyhUserTokenLogRepository syhUserTokenLogRepository;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyhUserTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syhUserTokenLogMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyhUserTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -32,11 +34,13 @@ public class BoSyUserTokenLogService {
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyhUserTokenLogDto getById(String id) {
         return syhUserTokenLogMapper.selectById(id);
     }
 
+    /** deleteAll — 삭제 */
     @Transactional
     public void deleteAll() {
         syhUserTokenLogRepository.deleteAllBulk();

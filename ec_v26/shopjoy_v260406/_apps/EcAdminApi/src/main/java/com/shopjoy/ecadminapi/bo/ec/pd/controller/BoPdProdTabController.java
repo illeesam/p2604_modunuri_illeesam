@@ -51,6 +51,7 @@ public class BoPdProdTabController {
 
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
+    /** images */
     @GetMapping("/images")
     public ResponseEntity<ApiResponse<List<PdProdImgDto>>> images(
             @PathVariable("prodId") String prodId,
@@ -59,6 +60,7 @@ public class BoPdProdTabController {
         return ResponseEntity.ok(ApiResponse.ok(imgService.getList(p)));
     }
 
+    /** opts */
     @GetMapping("/opts")
     public ResponseEntity<ApiResponse<Map<String, Object>>> opts(
             @PathVariable("prodId") String prodId,
@@ -75,6 +77,7 @@ public class BoPdProdTabController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** skus */
     @GetMapping("/skus")
     public ResponseEntity<ApiResponse<List<PdProdSkuDto>>> skus(
             @PathVariable("prodId") String prodId,
@@ -253,21 +256,25 @@ public class BoPdProdTabController {
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
+    /** strOrNull */
     private static String strOrNull(Object o) {
         if (o == null) return null;
         String s = String.valueOf(o);
         return s.isEmpty() ? null : s;
     }
+    /** strOrEmpty */
     private static String strOrEmpty(Object o, String dflt) {
         if (o == null) return dflt;
         String s = String.valueOf(o);
         return s.isEmpty() ? dflt : s;
     }
+    /** toInt — 변환 */
     private static Integer toInt(Object o, int dflt) {
         if (o == null) return dflt;
         try { return Integer.parseInt(String.valueOf(o)); } catch (Exception e) { return dflt; }
     }
 
+    /** contents */
     @GetMapping("/contents")
     public ResponseEntity<ApiResponse<List<PdProdContentDto>>> contents(
             @PathVariable("prodId") String prodId,
@@ -317,6 +324,7 @@ public class BoPdProdTabController {
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
+    /** rels */
     @GetMapping("/rels")
     public ResponseEntity<ApiResponse<List<PdProdRelDto>>> rels(
             @PathVariable("prodId") String prodId,

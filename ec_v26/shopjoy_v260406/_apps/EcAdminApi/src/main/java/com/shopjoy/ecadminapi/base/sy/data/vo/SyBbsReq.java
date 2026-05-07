@@ -34,6 +34,7 @@ public class SyBbsReq {
     private LocalDateTime updDate;
     private String pathId;
 
+    /** toEntity — 변환 */
     public SyBbs toEntity() {
         return SyBbs.builder()
                 .bbsId(bbsId)

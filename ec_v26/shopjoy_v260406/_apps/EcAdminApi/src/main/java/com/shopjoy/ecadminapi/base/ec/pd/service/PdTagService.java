@@ -36,6 +36,7 @@ public class PdTagService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdTagDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -44,6 +45,7 @@ public class PdTagService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdTagDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -51,6 +53,7 @@ public class PdTagService {
         return PageResult.of(pdTagMapper.selectPageList(p), pdTagMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PdTag entity) {
         // pd_tag :: update :: [orm:mybatis]
@@ -72,6 +75,7 @@ public class PdTagService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PdTag save(PdTag entity) {
         if (!pdTagRepository.existsById(entity.getTagId()))
@@ -83,6 +87,7 @@ public class PdTagService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pdTagRepository.existsById(id))
@@ -91,6 +96,7 @@ public class PdTagService {
         pdTagRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdTag> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

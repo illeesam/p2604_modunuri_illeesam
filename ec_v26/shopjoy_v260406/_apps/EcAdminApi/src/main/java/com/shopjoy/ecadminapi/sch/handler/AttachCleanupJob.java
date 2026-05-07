@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class AttachCleanupJob implements SchBatchJobHandler {
 
+    /** batchCode */
     @Override
     public String batchCode() {
         return "ATTACH_CLEANUP";
     }
 
+    /** execute — 실행 */
     @Override
     public void execute(SyBatch batch) {
         log.info("[{}] 미사용 첨부파일 정리 시작", batchCode());

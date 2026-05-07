@@ -30,18 +30,21 @@ public class BoPmCacheService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmCacheDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pmCacheMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmCacheDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmCacheMapper.selectPageList(p), pmCacheMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PmCacheDto getById(String id) {
         PmCacheDto dto = pmCacheMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoPmCacheService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public PmCache create(PmCache body) {
         body.setCacheId("CA" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -61,6 +65,7 @@ public class BoPmCacheService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public PmCacheDto update(String id, PmCache body) {
         PmCache entity = pmCacheRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -73,6 +78,7 @@ public class BoPmCacheService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         PmCache entity = pmCacheRepository.findById(id)
@@ -82,6 +88,7 @@ public class BoPmCacheService {
         if (pmCacheRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmCache> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

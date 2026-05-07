@@ -27,6 +27,7 @@ public class SyI18nReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyI18n toEntity() {
         return SyI18n.builder()
                 .i18nId(i18nId)

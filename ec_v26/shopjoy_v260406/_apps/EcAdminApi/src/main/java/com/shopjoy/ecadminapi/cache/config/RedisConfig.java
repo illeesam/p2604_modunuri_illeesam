@@ -35,6 +35,7 @@ public class RedisConfig {
 
     private final RedisProperties props;
 
+    /** primaryRedisTemplate */
     @Bean("primaryRedisTemplate")
     public RedisTemplate<String, Object> primaryRedisTemplate() {
         RedisProperties.Node node = props.getPrimary();
@@ -42,6 +43,7 @@ public class RedisConfig {
         return buildTemplate(createFactory(node));
     }
 
+    /** secondaryRedisTemplate */
     @Bean("secondaryRedisTemplate")
     @ConditionalOnProperty(name = "app.redis.secondary.host")
     public RedisTemplate<String, Object> secondaryRedisTemplate() {
@@ -70,6 +72,7 @@ public class RedisConfig {
         return factory;
     }
 
+    /** buildTemplate — 구성 */
     private RedisTemplate<String, Object> buildTemplate(RedisConnectionFactory factory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);

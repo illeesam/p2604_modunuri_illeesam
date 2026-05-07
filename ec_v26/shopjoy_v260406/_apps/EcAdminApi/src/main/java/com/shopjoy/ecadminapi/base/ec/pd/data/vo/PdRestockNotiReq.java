@@ -26,6 +26,7 @@ public class PdRestockNotiReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdRestockNoti toEntity() {
         return PdRestockNoti.builder()
                 .restockNotiId(restockNotiId)

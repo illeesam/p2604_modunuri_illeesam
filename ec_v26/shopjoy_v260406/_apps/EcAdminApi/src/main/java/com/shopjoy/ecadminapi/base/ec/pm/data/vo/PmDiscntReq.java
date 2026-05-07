@@ -41,6 +41,7 @@ public class PmDiscntReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmDiscnt toEntity() {
         return PmDiscnt.builder()
                 .discntId(discntId)

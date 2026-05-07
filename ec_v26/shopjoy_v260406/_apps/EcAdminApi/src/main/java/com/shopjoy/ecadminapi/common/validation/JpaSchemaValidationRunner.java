@@ -60,6 +60,7 @@ public class JpaSchemaValidationRunner implements ApplicationRunner {
         this.env = env;
     }
 
+    /** run — 실행 */
     @Override
     public void run(ApplicationArguments args) {
         String schema = env.getProperty("spring.jpa.properties.hibernate.default_schema", "public");
@@ -171,12 +172,14 @@ public class JpaSchemaValidationRunner implements ApplicationRunner {
         return result;
     }
 
+    /** resolveTableName — 결정 */
     private String resolveTableName(Class<?> entityClass) {
         Table t = entityClass.getAnnotation(Table.class);
         if (t != null && !t.name().isBlank()) return t.name();
         return toSnake(entityClass.getSimpleName());
     }
 
+    /** collectAllFields — 수집 */
     private List<Field> collectAllFields(Class<?> cls) {
         List<Field> fields = new ArrayList<>();
         Class<?> c = cls;
@@ -190,6 +193,7 @@ public class JpaSchemaValidationRunner implements ApplicationRunner {
         return fields;
     }
 
+    /** toSnake — 변환 */
     private static String toSnake(String s) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
@@ -240,6 +244,7 @@ public class JpaSchemaValidationRunner implements ApplicationRunner {
         return ExpectedType.of("(unknown)", 0);
     }
 
+    /** parseLen — 파싱 */
     private static int parseLen(String def) {
         int o = def.indexOf('('), c = def.indexOf(')');
         if (o < 0 || c < 0 || c <= o) return 0;
@@ -247,6 +252,7 @@ public class JpaSchemaValidationRunner implements ApplicationRunner {
         catch (Exception e) { return 0; }
     }
 
+    /** DbColumn */
     private record DbColumn(String dataType, Integer charMaxLength) { }
 
     private static class ExpectedType {
@@ -318,6 +324,7 @@ public class JpaSchemaValidationRunner implements ApplicationRunner {
         else            log.warn("\n{}", sb);
     }
 
+    /** appendSection — 추가 */
     private static void appendSection(StringBuilder sb, String title, List<String> items) {
         sb.append("── ").append(title).append(" : ").append(items.size()).append("건\n");
         if (items.isEmpty()) {

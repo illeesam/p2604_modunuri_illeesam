@@ -24,6 +24,7 @@ public class CmBlogTagReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public CmBlogTag toEntity() {
         return CmBlogTag.builder()
                 .blogTagId(blogTagId)

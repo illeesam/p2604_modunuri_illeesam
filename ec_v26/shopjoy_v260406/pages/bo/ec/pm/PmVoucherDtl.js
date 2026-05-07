@@ -50,7 +50,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const form = reactive({

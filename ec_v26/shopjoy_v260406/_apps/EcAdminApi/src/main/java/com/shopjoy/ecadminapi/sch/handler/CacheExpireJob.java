@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class CacheExpireJob implements SchBatchJobHandler {
 
+    /** batchCode */
     @Override
     public String batchCode() {
         return "CACHE_EXPIRE";
     }
 
+    /** execute — 실행 */
     @Override
     public void execute(SyBatch batch) {
         log.info("[{}] 캐시 자동 소멸 시작", batchCode());

@@ -25,6 +25,7 @@ public class CmBlogFileReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public CmBlogFile toEntity() {
         return CmBlogFile.builder()
                 .blogImgId(blogImgId)

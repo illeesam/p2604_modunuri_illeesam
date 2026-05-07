@@ -22,6 +22,7 @@ public class CmBlogGoodReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public CmBlogGood toEntity() {
         return CmBlogGood.builder()
                 .likeId(likeId)

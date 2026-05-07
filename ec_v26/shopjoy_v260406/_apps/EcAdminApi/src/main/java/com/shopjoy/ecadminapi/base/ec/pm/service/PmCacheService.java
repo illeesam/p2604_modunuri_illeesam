@@ -36,6 +36,7 @@ public class PmCacheService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmCacheDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -44,6 +45,7 @@ public class PmCacheService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmCacheDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -51,6 +53,7 @@ public class PmCacheService {
         return PageResult.of(pmCacheMapper.selectPageList(p), pmCacheMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PmCache entity) {
         // pm_cache :: update :: [orm:mybatis]
@@ -72,6 +75,7 @@ public class PmCacheService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PmCache save(PmCache entity) {
         if (!pmCacheRepository.existsById(entity.getCacheId()))
@@ -83,6 +87,7 @@ public class PmCacheService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pmCacheRepository.existsById(id))
@@ -91,6 +96,7 @@ public class PmCacheService {
         pmCacheRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmCache> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

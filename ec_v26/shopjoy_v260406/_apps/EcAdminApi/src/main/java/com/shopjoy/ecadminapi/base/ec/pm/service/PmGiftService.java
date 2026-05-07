@@ -35,6 +35,7 @@ public class PmGiftService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmGiftDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -42,12 +43,14 @@ public class PmGiftService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmGiftDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmGiftMapper.selectPageList(p), pmGiftMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PmGift entity) {
         int result = pmGiftMapper.updateSelective(entity);
@@ -67,6 +70,7 @@ public class PmGiftService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PmGift save(PmGift entity) {
         if (!pmGiftRepository.existsById(entity.getGiftId()))
@@ -77,6 +81,7 @@ public class PmGiftService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pmGiftRepository.existsById(id))
@@ -84,6 +89,7 @@ public class PmGiftService {
         pmGiftRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmGift> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

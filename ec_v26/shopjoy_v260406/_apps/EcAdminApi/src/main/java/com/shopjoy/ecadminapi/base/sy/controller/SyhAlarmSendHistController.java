@@ -18,6 +18,7 @@ public class SyhAlarmSendHistController {
 
     private final SyhAlarmSendHistService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyhAlarmSendHistDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -25,6 +26,7 @@ public class SyhAlarmSendHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyhAlarmSendHistDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -32,6 +34,7 @@ public class SyhAlarmSendHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyhAlarmSendHistDto>> getById(@PathVariable("id") String id) {
         SyhAlarmSendHistDto result = service.getById(id);

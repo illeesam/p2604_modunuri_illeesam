@@ -41,6 +41,7 @@ public class SyBatchService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyBatchDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyBatchService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyBatchDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyBatchService {
         return PageResult.of(syBatchMapper.selectPageList(p), syBatchMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyBatch entity) {
         // sy_batch :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyBatchService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyBatch save(SyBatch entity) {
         if (!syBatchRepository.existsById(entity.getBatchId()))
@@ -88,6 +92,7 @@ public class SyBatchService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyBatch entity = syBatchRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyBatchService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyBatch> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

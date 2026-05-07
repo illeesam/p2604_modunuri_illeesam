@@ -37,6 +37,7 @@ public class EcDpDispItemRedisStore {
         log.info("[Cache][redis] [ec-dp-disp-item:dtl][{}] saveDetail()", itemId);
     }
 
+    /** saveList — 저장 */
     public void saveList(String dispId, List<Map<String, Object>> list) {
         redis.set(CacheKey.EC_DP_DISP_ITEM_ALL + dispId, list,
                 props.getTtl().getEcDpDispItemSeconds(), target());
@@ -51,6 +52,7 @@ public class EcDpDispItemRedisStore {
                 .map(m -> (Map<String, Object>) m);
     }
 
+    /** getList — 조회 */
     @SuppressWarnings("unchecked")
     public Optional<List<Map<String, Object>>> getList(String dispId) {
         return redis.get(CacheKey.EC_DP_DISP_ITEM_ALL + dispId, List.class, target())
@@ -63,19 +65,23 @@ public class EcDpDispItemRedisStore {
         redis.delete(CacheKey.EC_DP_DISP_ITEM_DTL + itemId, target());
     }
 
+    /** evictList */
     public void evictList(String dispId) {
         redis.delete(CacheKey.EC_DP_DISP_ITEM_ALL + dispId, target());
     }
 
+    /** evictAll */
     public void evictAll() {
         redis.deleteByPattern(CacheKey.EC_DP_DISP_ITEM_DTL + "*", target());
         redis.deleteByPattern(CacheKey.EC_DP_DISP_ITEM_ALL + "*", target());
     }
 
+    /** isEnabled — 여부 */
     public boolean isEnabled() {
         return redis.isEnabled();
     }
 
+    /** target */
     private RedisUtil.Target target() {
         return redis.hasSecondary() ? RedisUtil.Target.SECONDARY : RedisUtil.Target.PRIMARY;
     }

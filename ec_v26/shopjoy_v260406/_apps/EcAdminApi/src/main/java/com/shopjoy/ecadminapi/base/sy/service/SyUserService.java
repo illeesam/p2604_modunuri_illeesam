@@ -41,6 +41,7 @@ public class SyUserService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyUserDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyUserService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyUserDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyUserService {
         return PageResult.of(syUserMapper.selectPageList(p), syUserMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyUser entity) {
         // sy_user :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyUserService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyUser save(SyUser entity) {
         if (!syUserRepository.existsById(entity.getUserId()))
@@ -88,6 +92,7 @@ public class SyUserService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyUser entity = syUserRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyUserService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyUser> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

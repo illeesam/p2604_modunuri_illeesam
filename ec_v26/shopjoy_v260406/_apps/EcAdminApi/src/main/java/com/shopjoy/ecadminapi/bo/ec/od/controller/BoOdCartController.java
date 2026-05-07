@@ -24,23 +24,27 @@ import java.util.Map;
 public class BoOdCartController {
     private final BoOdCartService boOdCartService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdCartDto>>> list(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boOdCartService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<OdCartDto>>> page(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boOdCartService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OdCartDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boOdCartService.getById(id)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boOdCartService.delete(id);

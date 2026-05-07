@@ -28,6 +28,7 @@ public class MbhMemberTokenLogService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<MbhMemberTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -35,18 +36,21 @@ public class MbhMemberTokenLogService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<MbhMemberTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbhMemberTokenLogMapper.selectPageList(p), mbhMemberTokenLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(MbhMemberTokenLog entity) {
         int result = mbhMemberTokenLogMapper.updateSelective(entity);
         return result;
     }
 
+    /** deleteAll — 삭제 */
     @Transactional
     public void deleteAll() {
         mbhMemberTokenLogRepository.deleteAllBulk();

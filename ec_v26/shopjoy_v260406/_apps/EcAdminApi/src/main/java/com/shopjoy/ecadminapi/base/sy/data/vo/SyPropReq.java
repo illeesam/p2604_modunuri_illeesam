@@ -29,6 +29,7 @@ public class SyPropReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyProp toEntity() {
         return SyProp.builder()
                 .propId(propId)

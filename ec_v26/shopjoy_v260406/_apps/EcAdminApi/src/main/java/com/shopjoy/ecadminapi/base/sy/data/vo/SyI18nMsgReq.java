@@ -23,6 +23,7 @@ public class SyI18nMsgReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyI18nMsg toEntity() {
         return SyI18nMsg.builder()
                 .i18nMsgId(i18nMsgId)

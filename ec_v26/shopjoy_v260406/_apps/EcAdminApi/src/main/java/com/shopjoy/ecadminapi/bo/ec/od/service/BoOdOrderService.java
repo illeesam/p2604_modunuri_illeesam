@@ -30,18 +30,21 @@ public class BoOdOrderService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdOrderDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return odOrderMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdOrderDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odOrderMapper.selectPageList(p), odOrderMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public OdOrderDto getById(String id) {
         OdOrderDto dto = odOrderMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoOdOrderService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public OdOrder create(OdOrder body) {
         if (body.getOrderStatusCd() == null) body.setOrderStatusCd("PENDING");
@@ -62,6 +66,7 @@ public class BoOdOrderService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public OdOrderDto update(String id, OdOrder body) {
         OdOrder entity = odOrderRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -74,6 +79,7 @@ public class BoOdOrderService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         OdOrder entity = odOrderRepository.findById(id)
@@ -84,6 +90,7 @@ public class BoOdOrderService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public OdOrderDto changeStatus(String id, String statusCd) {
         OdOrder entity = odOrderRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -96,6 +103,7 @@ public class BoOdOrderService {
         em.flush();
         return getById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<OdOrder> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

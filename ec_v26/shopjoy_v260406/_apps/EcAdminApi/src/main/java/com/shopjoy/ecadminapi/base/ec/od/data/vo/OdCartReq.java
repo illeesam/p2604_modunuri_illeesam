@@ -31,6 +31,7 @@ public class OdCartReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public OdCart toEntity() {
         return OdCart.builder()
                 .cartId(cartId)

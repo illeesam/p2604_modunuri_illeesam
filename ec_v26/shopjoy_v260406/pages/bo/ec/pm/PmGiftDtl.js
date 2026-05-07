@@ -49,7 +49,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
       codes.gift_statuses = codeStore.sgGetGrpCodes('GIFT_STATUS');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const _today = new Date();

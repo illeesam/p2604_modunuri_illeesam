@@ -46,6 +46,7 @@ public class SyVendorReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyVendor toEntity() {
         return SyVendor.builder()
                 .vendorId(vendorId)

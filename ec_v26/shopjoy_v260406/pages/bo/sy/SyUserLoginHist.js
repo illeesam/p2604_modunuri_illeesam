@@ -34,7 +34,7 @@ window.SyUserLoginHist = {
       codes.token_actions   = cs?.sgGetGrpCodes('TOKEN_ACTION')   || [];
       codes.date_range_opts = cs?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // ── 페이저 ────────────────────────────────────────────────────────────
     const pager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes:[10,20,50,100], pageCond:{} });

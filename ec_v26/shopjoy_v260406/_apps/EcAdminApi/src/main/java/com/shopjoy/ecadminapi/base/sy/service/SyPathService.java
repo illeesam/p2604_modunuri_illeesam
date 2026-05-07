@@ -24,17 +24,20 @@ public class SyPathService {
     private final SyPathMapper syPathMapper;
     private final SyPathRepository syPathRepository;
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyPathDto getById(String id) {
         return syPathMapper.selectById(id);
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyPathDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syPathMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyPathDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -42,6 +45,7 @@ public class SyPathService {
                 PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** create — 생성 */
     @Transactional
     public SyPath create(SyPath entity) {
         entity.setPathId(CmUtil.generateId("sy_path"));
@@ -52,6 +56,7 @@ public class SyPathService {
         return syPathRepository.save(entity);
     }
 
+    /** save — 저장 */
     @Transactional
     public SyPath save(String id, SyPath entity) {
         if (!syPathRepository.existsById(id))
@@ -62,12 +67,14 @@ public class SyPathService {
         return syPathRepository.save(entity);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(String id, SyPath entity) {
         entity.setPathId(id);
         return syPathMapper.updateSelective(entity);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!syPathRepository.existsById(id))
@@ -75,6 +82,7 @@ public class SyPathService {
         syPathRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyPath> rows) {
         String authId = CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system");

@@ -49,7 +49,7 @@ window.SyMenuMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted
@@ -60,7 +60,7 @@ window.SyMenuMng = {
 
     const cfAllowedTreeIds = computed(() => {
       if (uiState.selectedTreeId == null) return null;
-      return boUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
+      return coUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
     });
 
 
@@ -216,7 +216,7 @@ window.SyMenuMng = {
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const fnTypeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
 
-    const exportExcel = () => boUtil.exportCsv(
+    const exportExcel = () => coUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
       '메뉴목록.csv'

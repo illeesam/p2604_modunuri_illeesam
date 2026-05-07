@@ -29,6 +29,7 @@ public class SyhApiLogService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyhApiLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -37,6 +38,7 @@ public class SyhApiLogService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyhApiLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -44,6 +46,7 @@ public class SyhApiLogService {
         return PageResult.of(syhApiLogMapper.selectPageList(p), syhApiLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyhApiLog entity) {
         // syh_api_log :: update :: [orm:mybatis]

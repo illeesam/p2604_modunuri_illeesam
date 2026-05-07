@@ -34,12 +34,14 @@ public class FoAuthRedisStore {
         log.info("[Cache][redis] [fo:auth:session][{}] saveSession()", userId);
     }
 
+    /** getSession — 조회 */
     @SuppressWarnings("unchecked")
     public Optional<Map<String, Object>> getSession(String userId) {
         return redis.get(CacheKey.FO_AUTH_SESSION + userId, Map.class)
                 .map(m -> (Map<String, Object>) m);
     }
 
+    /** removeSession — 삭제 */
     public void removeSession(String userId) {
         redis.delete(CacheKey.FO_AUTH_SESSION + userId);
     }
@@ -52,10 +54,12 @@ public class FoAuthRedisStore {
         log.info("[Cache][redis] [fo:auth:blacklist] blacklistToken()— ttl={}s", remainingTtlSeconds);
     }
 
+    /** isBlacklisted — 여부 */
     public boolean isBlacklisted(String token) {
         return redis.exists(CacheKey.FO_AUTH_BLACKLIST + token);
     }
 
+    /** isEnabled — 여부 */
     public boolean isEnabled() {
         return redis.isEnabled();
     }

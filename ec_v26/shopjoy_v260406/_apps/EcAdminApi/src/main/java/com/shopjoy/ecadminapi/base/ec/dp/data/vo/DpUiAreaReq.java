@@ -30,6 +30,7 @@ public class DpUiAreaReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public DpUiArea toEntity() {
         return DpUiArea.builder()
                 .uiAreaId(uiAreaId)

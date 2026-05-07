@@ -29,6 +29,7 @@ import java.util.Map;
 public class BoPdProdController {
     private final BoPdProdService boPdProdService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdProdDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -37,6 +38,7 @@ public class BoPdProdController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -45,34 +47,40 @@ public class BoPdProdController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdDto>> getById(@PathVariable("id") String id) {
         PdProdDto result = boPdProdService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<PdProd>> create(@RequestBody PdProd body) {
         PdProd result = boPdProdService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdDto>> update(@PathVariable("id") String id, @RequestBody PdProd body) {
         PdProdDto result = boPdProdService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdDto>> upsert(@PathVariable("id") String id, @RequestBody PdProd body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boPdProdService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdProd> rows) {
         boPdProdService.saveList(rows);

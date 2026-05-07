@@ -48,6 +48,7 @@ public class RedisUtil {
         return get(key, type, Target.PRIMARY);
     }
 
+    /** get — 조회 */
     public <T> Optional<T> get(String key, Class<T> type, Target target) {
         if (!isEnabled()) return Optional.empty();
         try {
@@ -66,6 +67,7 @@ public class RedisUtil {
         return set(key, value, ttlSeconds, Target.PRIMARY);
     }
 
+    /** set — 설정 */
     public boolean set(String key, Object value, long ttlSeconds, Target target) {
         if (!isEnabled()) return false;
         try {
@@ -96,6 +98,7 @@ public class RedisUtil {
         return delete(key, Target.PRIMARY);
     }
 
+    /** delete — 삭제 */
     public boolean delete(String key, Target target) {
         if (!isEnabled()) return false;
         try {
@@ -111,6 +114,7 @@ public class RedisUtil {
         return deleteByPattern(pattern, Target.PRIMARY);
     }
 
+    /** deleteByPattern — 삭제 */
     public long deleteByPattern(String pattern, Target target) {
         if (!isEnabled()) return 0;
         try {
@@ -131,6 +135,7 @@ public class RedisUtil {
         return getTtl(key, Target.PRIMARY);
     }
 
+    /** getTtl — 조회 */
     public long getTtl(String key, Target target) {
         if (!isEnabled()) return -2;
         try {
@@ -147,6 +152,7 @@ public class RedisUtil {
         return countKeys(pattern, Target.PRIMARY);
     }
 
+    /** countKeys — 건수 */
     public long countKeys(String pattern, Target target) {
         if (!isEnabled()) return 0;
         try {
@@ -164,6 +170,7 @@ public class RedisUtil {
         return exists(key, Target.PRIMARY);
     }
 
+    /** exists — 존재 */
     public boolean exists(String key, Target target) {
         if (!isEnabled()) return false;
         try {

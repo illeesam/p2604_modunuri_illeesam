@@ -25,6 +25,7 @@ public class SyPathReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyPath toEntity() {
         return SyPath.builder()
                 .bizCd(bizCd)

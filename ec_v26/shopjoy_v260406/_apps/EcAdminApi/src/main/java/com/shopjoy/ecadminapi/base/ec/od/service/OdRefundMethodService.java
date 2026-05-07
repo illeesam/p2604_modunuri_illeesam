@@ -35,6 +35,7 @@ public class OdRefundMethodService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdRefundMethodDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -42,12 +43,14 @@ public class OdRefundMethodService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdRefundMethodDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odRefundMethodMapper.selectPageList(p), odRefundMethodMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(OdRefundMethod entity) {
         int result = odRefundMethodMapper.updateSelective(entity);
@@ -67,6 +70,7 @@ public class OdRefundMethodService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public OdRefundMethod save(OdRefundMethod entity) {
         if (!odRefundMethodRepository.existsById(entity.getRefundMethodId()))
@@ -77,12 +81,14 @@ public class OdRefundMethodService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!odRefundMethodRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdRefundMethod입니다: " + id);
         odRefundMethodRepository.deleteById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<OdRefundMethod> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

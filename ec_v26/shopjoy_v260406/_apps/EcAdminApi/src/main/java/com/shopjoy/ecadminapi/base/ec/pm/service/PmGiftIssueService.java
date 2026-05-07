@@ -35,6 +35,7 @@ public class PmGiftIssueService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmGiftIssueDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -42,12 +43,14 @@ public class PmGiftIssueService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmGiftIssueDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmGiftIssueMapper.selectPageList(p), pmGiftIssueMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PmGiftIssue entity) {
         int result = pmGiftIssueMapper.updateSelective(entity);
@@ -67,6 +70,7 @@ public class PmGiftIssueService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PmGiftIssue save(PmGiftIssue entity) {
         if (!pmGiftIssueRepository.existsById(entity.getGiftIssueId()))
@@ -77,6 +81,7 @@ public class PmGiftIssueService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pmGiftIssueRepository.existsById(id))
@@ -84,6 +89,7 @@ public class PmGiftIssueService {
         pmGiftIssueRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmGiftIssue> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -31,6 +31,7 @@ public class PdProdImgReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdProdImg toEntity() {
         return PdProdImg.builder()
                 .prodImgId(prodImgId)

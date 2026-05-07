@@ -30,6 +30,7 @@ public class SyNoticeReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyNotice toEntity() {
         return SyNotice.builder()
                 .noticeId(noticeId)

@@ -42,6 +42,7 @@ public class SyAlarmReq {
     private LocalDateTime updDate;
     private String pathId;
 
+    /** toEntity — 변환 */
     public SyAlarm toEntity() {
         return SyAlarm.builder()
                 .alarmId(alarmId)

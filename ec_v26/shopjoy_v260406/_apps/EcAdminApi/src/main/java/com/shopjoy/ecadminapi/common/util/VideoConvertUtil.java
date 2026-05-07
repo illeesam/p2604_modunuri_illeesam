@@ -160,14 +160,17 @@ public class VideoConvertUtil {
             this.durationFormatted = durationFormatted;
         }
 
+        /** builder */
         public static VideoInfoBuilder builder() {
             return new VideoInfoBuilder();
         }
 
+        /** getDuration — 조회 */
         public Long getDuration() {
             return duration;
         }
 
+        /** getDurationFormatted — 조회 */
         public String getDurationFormatted() {
             return durationFormatted;
         }
@@ -176,16 +179,19 @@ public class VideoConvertUtil {
             private Long duration;
             private String durationFormatted;
 
+            /** duration */
             public VideoInfoBuilder duration(Long duration) {
                 this.duration = duration;
                 return this;
             }
 
+            /** durationFormatted */
             public VideoInfoBuilder durationFormatted(String durationFormatted) {
                 this.durationFormatted = durationFormatted;
                 return this;
             }
 
+            /** build — 구성 */
             public VideoInfo build() {
                 return new VideoInfo(duration, durationFormatted);
             }

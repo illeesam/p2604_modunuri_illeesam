@@ -26,6 +26,7 @@ public class FoInquiryController {
 
     private final FoCmContactService foCmContactService;
 
+    /** createInquiry — 생성 */
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Map<String, Object>>> createInquiry(@RequestBody Map<String, Object> body) {
         CmBlog result = foCmContactService.submit(body);

@@ -43,6 +43,7 @@ public class SyRoleMenuService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyRoleMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -51,6 +52,7 @@ public class SyRoleMenuService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyRoleMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -58,6 +60,7 @@ public class SyRoleMenuService {
         return PageResult.of(syRoleMenuMapper.selectPageList(p), syRoleMenuMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyRoleMenu entity) {
         // sy_role_menu :: update :: entity [orm:mybatis]
@@ -81,6 +84,7 @@ public class SyRoleMenuService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyRoleMenu save(SyRoleMenu entity) {
         if (!syRoleMenuRepository.existsById(entity.getRoleMenuId()))
@@ -93,6 +97,7 @@ public class SyRoleMenuService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyRoleMenu entity = syRoleMenuRepository.findById(id)
@@ -103,6 +108,7 @@ public class SyRoleMenuService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyRoleMenu> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

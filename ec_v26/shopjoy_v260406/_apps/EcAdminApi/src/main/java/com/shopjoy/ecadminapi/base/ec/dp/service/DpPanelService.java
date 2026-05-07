@@ -35,6 +35,7 @@ public class DpPanelService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<DpPanelDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -43,6 +44,7 @@ public class DpPanelService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<DpPanelDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -50,6 +52,7 @@ public class DpPanelService {
         return PageResult.of(dpPanelMapper.selectPageList(p), dpPanelMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(DpPanel entity) {
         // dp_panel :: update :: [orm:mybatis]
@@ -71,6 +74,7 @@ public class DpPanelService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public DpPanel save(DpPanel entity) {
         if (!dpPanelRepository.existsById(entity.getPanelId()))
@@ -82,6 +86,7 @@ public class DpPanelService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!dpPanelRepository.existsById(id))
@@ -90,6 +95,7 @@ public class DpPanelService {
         dpPanelRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<DpPanel> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

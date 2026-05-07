@@ -26,7 +26,7 @@ window.MbMemberHist = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     watch(() => props.memberId, () => {
       // 회원ID 변경시 자동으로 computed 값 갱신 (별도 로드 불필요 - 목업 데이터)

@@ -33,6 +33,7 @@ public class FoCmBlogController {
 
     private final FoCmBlogService foCmBlogService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<CmBlogDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -40,6 +41,7 @@ public class FoCmBlogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<CmBlogDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -47,18 +49,21 @@ public class FoCmBlogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{blogId}")
     public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable("blogId") String blogId) {
         CmBlogDto result = foCmBlogService.getByIdAndIncrView(blogId);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<CmBlog>> create(@RequestBody CmBlog entity) {
         CmBlog result = foCmBlogService.create(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
+    /** update — 수정 */
     @PutMapping("/{blogId}")
     public ResponseEntity<ApiResponse<CmBlog>> update(
             @PathVariable("blogId") String blogId, @RequestBody CmBlog entity) {
@@ -66,6 +71,7 @@ public class FoCmBlogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{blogId}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("blogId") String blogId) {
         foCmBlogService.delete(blogId);

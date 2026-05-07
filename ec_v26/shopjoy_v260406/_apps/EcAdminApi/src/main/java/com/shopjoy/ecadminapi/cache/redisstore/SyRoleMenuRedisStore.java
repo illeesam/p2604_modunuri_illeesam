@@ -48,10 +48,12 @@ public class SyRoleMenuRedisStore {
         redis.delete(CacheKey.SY_ROLE_MENU + roleId);
     }
 
+    /** evictAll */
     public void evictAll() {
         redis.deleteByPattern(CacheKey.SY_ROLE_MENU + "*");
     }
 
+    /** isEnabled — 여부 */
     public boolean isEnabled() {
         return redis.isEnabled();
     }

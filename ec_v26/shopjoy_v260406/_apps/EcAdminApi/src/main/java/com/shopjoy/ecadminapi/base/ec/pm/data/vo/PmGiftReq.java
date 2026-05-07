@@ -37,6 +37,7 @@ public class PmGiftReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmGift toEntity() {
         return PmGift.builder()
                 .giftId(giftId)

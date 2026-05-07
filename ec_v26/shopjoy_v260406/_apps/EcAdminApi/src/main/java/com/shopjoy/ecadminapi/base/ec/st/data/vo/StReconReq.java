@@ -36,6 +36,7 @@ public class StReconReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public StRecon toEntity() {
         return StRecon.builder()
                 .reconId(reconId)

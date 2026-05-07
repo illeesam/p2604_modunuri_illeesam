@@ -32,6 +32,7 @@ public class FoMbLikeService {
     private final MbLikeMapper     mbLikeMapper;
     private final MbLikeRepository mbLikeRepository;
 
+    /** getMyLikes — 조회 */
     @Transactional(readOnly = true)
     public List<MbLikeDto> getMyLikes(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
@@ -69,6 +70,7 @@ public class FoMbLikeService {
         }
     }
 
+    /** unlike */
     @Transactional
     public void unlike(String targetTypeCd, String targetId, Map<String, Object> p) {
         String authId = SecurityUtil.getAuthUser().authId();

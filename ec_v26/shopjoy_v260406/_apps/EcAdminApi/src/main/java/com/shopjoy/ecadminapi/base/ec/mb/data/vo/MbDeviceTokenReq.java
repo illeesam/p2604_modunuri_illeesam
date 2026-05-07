@@ -26,6 +26,7 @@ public class MbDeviceTokenReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public MbDeviceToken toEntity() {
         return MbDeviceToken.builder()
                 .deviceTokenId(deviceTokenId)

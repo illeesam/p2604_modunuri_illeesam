@@ -28,12 +28,14 @@ public class BoStReconService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<StReconDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return stReconMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<StReconDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -41,6 +43,7 @@ public class BoStReconService {
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public StReconDto getById(String id) {
         StReconDto dto = stReconMapper.selectById(id);
@@ -48,6 +51,7 @@ public class BoStReconService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public StRecon create(StRecon body) {
         body.setReconId("RC" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -60,6 +64,7 @@ public class BoStReconService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public StReconDto update(String id, StRecon body) {
         StRecon entity = stReconRepository.findById(id)
@@ -72,6 +77,7 @@ public class BoStReconService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         StRecon entity = stReconRepository.findById(id)

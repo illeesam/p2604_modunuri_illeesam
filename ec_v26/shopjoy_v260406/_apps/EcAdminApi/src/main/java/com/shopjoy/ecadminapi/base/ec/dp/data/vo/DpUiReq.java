@@ -31,6 +31,7 @@ public class DpUiReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public DpUi toEntity() {
         return DpUi.builder()
                 .uiId(uiId)

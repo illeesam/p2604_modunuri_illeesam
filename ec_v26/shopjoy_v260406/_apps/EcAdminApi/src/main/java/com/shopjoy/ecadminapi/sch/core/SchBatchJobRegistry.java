@@ -59,6 +59,7 @@ public class SchBatchJobRegistry {
 
     private final Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
 
+    /** register — 등록 */
     public void register(SyBatch batch) {
         String code = batch.getBatchCode();
 
@@ -91,6 +92,7 @@ public class SchBatchJobRegistry {
         }
     }
 
+    /** unregister — 등록해제 */
     public void unregister(String batchCode) {
         ScheduledFuture<?> existing = futures.remove(batchCode);
         if (existing != null) {
@@ -99,14 +101,17 @@ public class SchBatchJobRegistry {
         }
     }
 
+    /** unregisterAll — 등록해제 */
     public void unregisterAll() {
         futures.keySet().forEach(this::unregister);
     }
 
+    /** isRegistered — 여부 */
     public boolean isRegistered(String batchCode) {
         return futures.containsKey(batchCode);
     }
 
+    /** registeredCount */
     public int registeredCount() {
         return futures.size();
     }

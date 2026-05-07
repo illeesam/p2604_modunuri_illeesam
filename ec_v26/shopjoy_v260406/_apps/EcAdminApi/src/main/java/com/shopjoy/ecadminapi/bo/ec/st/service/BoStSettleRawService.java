@@ -27,18 +27,21 @@ public class BoStSettleRawService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<StSettleRawDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return stSettleRawMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<StSettleRawDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stSettleRawMapper.selectPageList(p), stSettleRawMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public StSettleRawDto getById(String id) {
         StSettleRawDto dto = stSettleRawMapper.selectById(id);
@@ -46,6 +49,7 @@ public class BoStSettleRawService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public StSettleRaw create(StSettleRaw body) {
         body.setSettleRawId(CmUtil.generateId("st_settle_raw"));
@@ -58,6 +62,7 @@ public class BoStSettleRawService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public StSettleRawDto update(String id, StSettleRaw body) {
         StSettleRaw entity = stSettleRawRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -69,6 +74,7 @@ public class BoStSettleRawService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         StSettleRaw entity = stSettleRawRepository.findById(id)

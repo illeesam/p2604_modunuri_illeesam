@@ -83,6 +83,7 @@ public class StSettleRawReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public StSettleRaw toEntity() {
         return StSettleRaw.builder()
                 .settleRawId(settleRawId)

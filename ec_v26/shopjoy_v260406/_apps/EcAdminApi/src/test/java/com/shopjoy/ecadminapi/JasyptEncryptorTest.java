@@ -52,6 +52,7 @@ class JasyptEncryptorTest {
     // 마스터키 — 실행 전 변경 후 사용, 커밋 금지
     private static final String MASTER_KEY = "PUT_YOUR_MASTER_KEY_HERE";
 
+    /** encryptor */
     private StandardPBEStringEncryptor encryptor() {
         StandardPBEStringEncryptor enc = new StandardPBEStringEncryptor();
         enc.setPassword(MASTER_KEY);

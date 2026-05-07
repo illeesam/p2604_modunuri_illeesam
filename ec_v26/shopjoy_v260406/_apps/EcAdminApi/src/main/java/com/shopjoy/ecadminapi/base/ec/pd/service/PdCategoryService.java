@@ -37,6 +37,7 @@ public class PdCategoryService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdCategoryDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -45,6 +46,7 @@ public class PdCategoryService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdCategoryDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -52,6 +54,7 @@ public class PdCategoryService {
         return PageResult.of(pdCategoryMapper.selectPageList(p), pdCategoryMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PdCategory entity) {
         // pd_category :: update :: [orm:mybatis]
@@ -73,6 +76,7 @@ public class PdCategoryService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PdCategory save(PdCategory entity) {
         if (!pdCategoryRepository.existsById(entity.getCategoryId()))
@@ -84,6 +88,7 @@ public class PdCategoryService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pdCategoryRepository.existsById(id))
@@ -92,6 +97,7 @@ public class PdCategoryService {
         pdCategoryRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdCategory> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

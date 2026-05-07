@@ -22,6 +22,7 @@ import java.util.Map;
 public class BoPmPlanController {
     private final BoPmPlanService boPmPlanService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmPlanDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -30,6 +31,7 @@ public class BoPmPlanController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmPlanDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -38,41 +40,48 @@ public class BoPmPlanController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmPlanDto>> getById(@PathVariable("id") String id) {
         PmPlanDto result = boPmPlanService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<PmPlan>> create(@RequestBody PmPlan body) {
         PmPlan result = boPmPlanService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmPlanDto>> update(@PathVariable("id") String id, @RequestBody PmPlan body) {
         PmPlanDto result = boPmPlanService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<PmPlanDto>> upsert(@PathVariable("id") String id, @RequestBody PmPlan body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmPlanService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boPmPlanService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /** changeStatus */
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmPlanDto>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
         PmPlanDto result = boPmPlanService.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmPlan> rows) {
         boPmPlanService.saveList(rows);

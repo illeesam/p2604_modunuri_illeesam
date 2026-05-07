@@ -57,6 +57,7 @@ public class CmVideoPlayController {
         }
     }
 
+    /** streamFullVideo */
     private ResponseEntity<?> streamFullVideo(File videoFile, long fileSize) throws IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.valueOf("video/mp4"));
@@ -72,6 +73,7 @@ public class CmVideoPlayController {
         }
     }
 
+    /** streamVideoRange */
     private ResponseEntity<?> streamVideoRange(File videoFile, long fileSize, String rangeHeader) throws IOException {
         String[] ranges = rangeHeader.replace("bytes=", "").split("-");
         long rangeStart = Long.parseLong(ranges[0]);
@@ -146,9 +148,13 @@ public class CmVideoPlayController {
             this.mimeType = mimeType;
         }
 
+        /** getFileName — 조회 */
         public String getFileName() { return fileName; }
+        /** getFileSize — 조회 */
         public long getFileSize() { return fileSize; }
+        /** getMimeType — 조회 */
         public String getMimeType() { return mimeType; }
+        /** getFileSizeMB — 조회 */
         public String getFileSizeMB() { return String.format("%.2f MB", fileSize / (1024.0 * 1024.0)); }
     }
 }

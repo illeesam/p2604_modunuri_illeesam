@@ -35,6 +35,7 @@ public class DpWidgetService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<DpWidgetDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -43,6 +44,7 @@ public class DpWidgetService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<DpWidgetDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -50,6 +52,7 @@ public class DpWidgetService {
         return PageResult.of(dpWidgetMapper.selectPageList(p), dpWidgetMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(DpWidget entity) {
         // dp_widget :: update :: [orm:mybatis]
@@ -71,6 +74,7 @@ public class DpWidgetService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public DpWidget save(DpWidget entity) {
         if (!dpWidgetRepository.existsById(entity.getWidgetId()))
@@ -82,6 +86,7 @@ public class DpWidgetService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!dpWidgetRepository.existsById(id))
@@ -90,6 +95,7 @@ public class DpWidgetService {
         dpWidgetRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<DpWidget> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

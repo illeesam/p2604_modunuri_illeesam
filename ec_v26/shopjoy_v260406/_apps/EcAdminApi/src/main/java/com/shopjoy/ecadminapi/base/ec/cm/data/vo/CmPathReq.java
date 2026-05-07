@@ -25,6 +25,7 @@ public class CmPathReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public CmPath toEntity() {
         return CmPath.builder()
                 .bizCd(bizCd)

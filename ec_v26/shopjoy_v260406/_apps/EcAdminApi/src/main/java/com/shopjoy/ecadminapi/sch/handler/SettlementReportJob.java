@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class SettlementReportJob implements SchBatchJobHandler {
 
+    /** batchCode */
     @Override
     public String batchCode() {
         return "SETTLEMENT_REPORT";
     }
 
+    /** execute — 실행 */
     @Override
     public void execute(SyBatch batch) {
         log.info("[{}] 정산 리포트 생성 시작", batchCode());

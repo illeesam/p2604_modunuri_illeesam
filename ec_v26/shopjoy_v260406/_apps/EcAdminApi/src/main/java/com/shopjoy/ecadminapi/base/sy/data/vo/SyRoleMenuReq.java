@@ -24,6 +24,7 @@ public class SyRoleMenuReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyRoleMenu toEntity() {
         return SyRoleMenu.builder()
                 .roleMenuId(roleMenuId)

@@ -27,6 +27,7 @@ public class FoOdCartController {
 
     private final FoOdCartService foOdCartService;
 
+    /** myCart */
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdCartDto>>> myCart(
             @RequestParam Map<String, Object> p) {
@@ -34,12 +35,14 @@ public class FoOdCartController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** add — 추가 */
     @PostMapping
     public ResponseEntity<ApiResponse<OdCart>> add(@RequestBody OdCart entity) {
         OdCart result = foOdCartService.addToCart(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
+    /** updateQty — 수정 */
     @PatchMapping("/{cartId}")
     public ResponseEntity<ApiResponse<OdCart>> updateQty(
             @PathVariable("cartId") String cartId,
@@ -49,6 +52,7 @@ public class FoOdCartController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** remove — 삭제 */
     @DeleteMapping("/{cartId}")
     public ResponseEntity<ApiResponse<Void>> remove(@PathVariable("cartId") String cartId) {
         foOdCartService.removeFromCart(cartId);

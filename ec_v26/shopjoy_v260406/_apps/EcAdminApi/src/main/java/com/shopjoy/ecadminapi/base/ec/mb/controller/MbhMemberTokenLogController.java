@@ -18,6 +18,7 @@ public class MbhMemberTokenLogController {
 
     private final MbhMemberTokenLogService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbhMemberTokenLogDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -25,6 +26,7 @@ public class MbhMemberTokenLogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<MbhMemberTokenLogDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -32,6 +34,7 @@ public class MbhMemberTokenLogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MbhMemberTokenLogDto>> getById(@PathVariable("id") String id) {
         MbhMemberTokenLogDto result = service.getById(id);
@@ -39,6 +42,7 @@ public class MbhMemberTokenLogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** deleteAll — 삭제 */
     @DeleteMapping("/all")
     public ResponseEntity<ApiResponse<Void>> deleteAll() {
         service.deleteAll();

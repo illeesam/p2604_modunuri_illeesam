@@ -22,6 +22,7 @@ public class CoSyUserController {
 
     private final BoSyUserService boSyUserService;
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyUserDto>>> page(
             @RequestParam Map<String, Object> p) {

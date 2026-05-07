@@ -32,12 +32,14 @@ public class FoOdOrderService {
     private final OdOrderMapper     odOrderMapper;
     private final OdOrderRepository odOrderRepository;
 
+    /** getMyOrders — 조회 */
     @Transactional(readOnly = true)
     public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return odOrderMapper.selectList(p);
     }
 
+    /** getMyOrderPage — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdOrderDto> getMyOrderPage(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
@@ -45,6 +47,7 @@ public class FoOdOrderService {
         return PageResult.of(odOrderMapper.selectPageList(p), odOrderMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public OdOrderDto getById(String orderId) {
         OdOrderDto dto = odOrderMapper.selectById(orderId);
@@ -54,6 +57,7 @@ public class FoOdOrderService {
         return dto;
     }
 
+    /** placeOrder */
     @Transactional
     public OdOrder placeOrder(OdOrder entity) {
         entity.setOrderId(CmUtil.generateId("od_order"));

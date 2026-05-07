@@ -35,6 +35,7 @@ public class CmBlogTagService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmBlogTagDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -43,6 +44,7 @@ public class CmBlogTagService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmBlogTagDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -50,6 +52,7 @@ public class CmBlogTagService {
         return PageResult.of(cmBlogTagMapper.selectPageList(p), cmBlogTagMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(CmBlogTag entity) {
         // cm_blog_tag :: update :: [orm:mybatis]
@@ -71,6 +74,7 @@ public class CmBlogTagService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public CmBlogTag save(CmBlogTag entity) {
         if (!cmBlogTagRepository.existsById(entity.getBlogTagId()))
@@ -82,6 +86,7 @@ public class CmBlogTagService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!cmBlogTagRepository.existsById(id))
@@ -90,6 +95,7 @@ public class CmBlogTagService {
         cmBlogTagRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<CmBlogTag> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

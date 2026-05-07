@@ -34,6 +34,7 @@ public class OdDlivService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdDlivDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,12 +42,14 @@ public class OdDlivService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdDlivDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odDlivMapper.selectPageList(p), odDlivMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(OdDliv entity) {
         int result = odDlivMapper.updateSelective(entity);
@@ -66,6 +69,7 @@ public class OdDlivService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public OdDliv save(OdDliv entity) {
         if (!odDlivRepository.existsById(entity.getDlivId()))
@@ -76,12 +80,14 @@ public class OdDlivService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!odDlivRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdDliv입니다: " + id);
         odDlivRepository.deleteById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<OdDliv> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

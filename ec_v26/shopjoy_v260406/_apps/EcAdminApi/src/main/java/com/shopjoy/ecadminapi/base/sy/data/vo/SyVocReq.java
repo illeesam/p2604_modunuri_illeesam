@@ -26,6 +26,7 @@ public class SyVocReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyVoc toEntity() {
         return SyVoc.builder()
                 .vocId(vocId)

@@ -34,6 +34,7 @@ public class OdPayService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdPayDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,12 +42,14 @@ public class OdPayService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdPayDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odPayMapper.selectPageList(p), odPayMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(OdPay entity) {
         int result = odPayMapper.updateSelective(entity);
@@ -66,6 +69,7 @@ public class OdPayService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public OdPay save(OdPay entity) {
         if (!odPayRepository.existsById(entity.getPayId()))
@@ -76,12 +80,14 @@ public class OdPayService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!odPayRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdPay입니다: " + id);
         odPayRepository.deleteById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<OdPay> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

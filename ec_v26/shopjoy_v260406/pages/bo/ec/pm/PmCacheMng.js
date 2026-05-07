@@ -30,7 +30,7 @@ window.PmCacheMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
 
@@ -136,7 +136,7 @@ window.PmCacheMng = {
       }
     };
 
-    const exportExcel = () => boUtil.exportCsv(caches, [{label:'ID',key:'cacheId'},{label:'회원명',key:'userNm'},{label:'유형',key:'cacheType'},{label:'금액',key:'amount'},{label:'설명',key:'description'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
+    const exportExcel = () => coUtil.exportCsv(caches, [{label:'ID',key:'cacheId'},{label:'회원명',key:'userNm'},{label:'유형',key:'cacheType'},{label:'금액',key:'amount'},{label:'설명',key:'description'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 

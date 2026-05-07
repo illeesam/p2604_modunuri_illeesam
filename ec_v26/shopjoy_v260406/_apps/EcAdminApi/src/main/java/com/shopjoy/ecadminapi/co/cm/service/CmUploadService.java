@@ -359,6 +359,7 @@ public class CmUploadService {
         syAttachService.update(entity);
     }
 
+    /** resolveAttachGrp — 결정 */
     private SyAttachGrp resolveAttachGrp(String businessCode, String grpNm, String attachGrpId) {
         if (attachGrpId != null && !attachGrpId.isBlank()) {
             var existing = syAttachGrpService.getById(attachGrpId);

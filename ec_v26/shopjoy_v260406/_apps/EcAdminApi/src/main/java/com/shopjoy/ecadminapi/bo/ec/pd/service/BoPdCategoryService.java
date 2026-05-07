@@ -33,18 +33,21 @@ public class BoPdCategoryService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdCategoryDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pdCategoryMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdCategoryDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pdCategoryMapper.selectPageList(p), pdCategoryMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PdCategoryDto getById(String id) {
         PdCategoryDto dto = pdCategoryMapper.selectById(id);
@@ -52,6 +55,7 @@ public class BoPdCategoryService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public PdCategory create(PdCategory body) {
         body.setCategoryId("CT" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -64,6 +68,7 @@ public class BoPdCategoryService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public PdCategoryDto update(String id, PdCategory body) {
         PdCategory entity = pdCategoryRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -76,6 +81,7 @@ public class BoPdCategoryService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         PdCategory entity = pdCategoryRepository.findById(id)
@@ -86,6 +92,7 @@ public class BoPdCategoryService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** updateProds — 수정 */
     @Transactional
     public void updateProds(String categoryId, String activeTypeCd, Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -116,6 +123,7 @@ public class BoPdCategoryService {
             seq++;
         }
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdCategory> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

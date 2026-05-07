@@ -41,6 +41,7 @@ public class SyMenuService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyMenuService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyMenuService {
         return PageResult.of(syMenuMapper.selectPageList(p), syMenuMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyMenu entity) {
         // sy_menu :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyMenuService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyMenu save(SyMenu entity) {
         if (!syMenuRepository.existsById(entity.getMenuId()))
@@ -88,6 +92,7 @@ public class SyMenuService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyMenu entity = syMenuRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyMenuService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyMenu> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

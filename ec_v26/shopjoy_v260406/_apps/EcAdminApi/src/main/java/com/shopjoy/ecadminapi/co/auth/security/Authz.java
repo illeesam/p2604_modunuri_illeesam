@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 @Component("authz")
 public class Authz {
 
+    /** isBo — 여부 */
     public boolean isBo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
@@ -27,6 +28,7 @@ public class Authz {
         return false;
     }
 
+    /** isFo — 여부 */
     public boolean isFo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
@@ -35,6 +37,7 @@ public class Authz {
         return false;
     }
 
+    /** isExt — 여부 */
     public boolean isExt(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
@@ -43,6 +46,7 @@ public class Authz {
         return false;
     }
 
+    /** isSo — 여부 */
     public boolean isSo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
@@ -51,6 +55,7 @@ public class Authz {
         return false;
     }
 
+    /** isBoOrFo — 여부 */
     public boolean isBoOrFo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {

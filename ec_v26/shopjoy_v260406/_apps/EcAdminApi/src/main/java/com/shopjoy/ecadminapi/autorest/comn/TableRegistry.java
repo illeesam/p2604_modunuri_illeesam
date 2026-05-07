@@ -55,6 +55,7 @@ public class TableRegistry {
     private static final java.util.regex.Pattern SAFE_IDENTIFIER =
         java.util.regex.Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$");
 
+    /** init — 초기화 */
     @PostConstruct
     public void init() {
         // ─── SY domain ───────────────────────────────────────────────
@@ -949,22 +950,27 @@ public class TableRegistry {
             .build());
     }
 
+    /** register — 등록 */
     private void register(String tableName, TableConfig config) {
         registry.put(tableName, config);
     }
 
+    /** getConfig — 조회 */
     public TableConfig getConfig(String tableName) {
         return registry.getOrDefault(tableName, getDefaultConfig(tableName));
     }
 
+    /** isAllowed — 여부 */
     public boolean isAllowed(String tableName) {
         return ALLOWED_TABLES.contains(tableName);
     }
 
+    /** isSafeIdentifier — 여부 */
     public static boolean isSafeIdentifier(String name) {
         return name != null && SAFE_IDENTIFIER.matcher(name).matches();
     }
 
+    /** getDefaultConfig — 조회 */
     private TableConfig getDefaultConfig(String tableName) {
         // Guess PK column: tableName + "_id"  (e.g. "sy_site" -> "site_id")
         String[] parts = tableName.split("_", 2);

@@ -18,6 +18,7 @@ public class OdhDlivChgHistController {
 
     private final OdhDlivChgHistService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdhDlivChgHistDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -25,6 +26,7 @@ public class OdhDlivChgHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<OdhDlivChgHistDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -32,6 +34,7 @@ public class OdhDlivChgHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OdhDlivChgHistDto>> getById(@PathVariable("id") String id) {
         OdhDlivChgHistDto result = service.getById(id);

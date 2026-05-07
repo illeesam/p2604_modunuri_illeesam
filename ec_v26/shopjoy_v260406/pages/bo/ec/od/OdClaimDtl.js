@@ -28,7 +28,7 @@ window.OdClaimDtl = {
       codes.claim_types = codeStore.sgGetGrpCodes('CLAIM_TYPE');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const form = reactive({

@@ -22,7 +22,7 @@ window.MyContact = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const { inquiries, expandedInquiry } = Pinia.storeToRefs(myStore);

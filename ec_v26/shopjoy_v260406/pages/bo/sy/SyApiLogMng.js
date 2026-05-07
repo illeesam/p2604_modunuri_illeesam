@@ -34,7 +34,7 @@ window.SyApiLogMng = {
       codes.app_types      = codeStore?.sgGetGrpCodes('APP_TYPE')      || [];
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // 기본 기간: 최근 1주일
     (() => {

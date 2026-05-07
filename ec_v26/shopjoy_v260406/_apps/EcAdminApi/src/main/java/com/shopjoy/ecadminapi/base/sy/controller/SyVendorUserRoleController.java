@@ -19,18 +19,21 @@ public class SyVendorUserRoleController {
 
     private final SyVendorUserRoleService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyVendorUserRoleDto>>> list(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyVendorUserRoleDto>>> page(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendorUserRoleDto>> getById(@PathVariable("id") String id) {
         SyVendorUserRoleDto result = service.getById(id);
@@ -38,11 +41,13 @@ public class SyVendorUserRoleController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<SyVendorUserRole>> create(@RequestBody SyVendorUserRole entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
+    /** save — 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendorUserRole>> save(
             @PathVariable("id") String id, @RequestBody SyVendorUserRole entity) {
@@ -50,6 +55,7 @@ public class SyVendorUserRoleController {
         return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
+    /** update — 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
             @PathVariable("id") String id, @RequestBody SyVendorUserRole entity) {
@@ -57,11 +63,13 @@ public class SyVendorUserRoleController {
         return ResponseEntity.ok(ApiResponse.ok(service.update(entity)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyVendorUserRole> rows) {
         service.saveList(rows);

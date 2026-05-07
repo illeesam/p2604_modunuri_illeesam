@@ -22,6 +22,7 @@ public class CoEcMbMemberController {
 
     private final BoMbMemberService boMbMemberService;
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<MbMemberDto>>> page(
             @RequestParam Map<String, Object> p) {

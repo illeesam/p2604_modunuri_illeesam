@@ -34,6 +34,7 @@ public class CmBlogFileService {
         return cmBlogFileMapper.selectById(id);
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmBlogFileDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,6 +42,7 @@ public class CmBlogFileService {
         return cmBlogFileMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmBlogFileDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -48,6 +50,7 @@ public class CmBlogFileService {
         return PageResult.of(cmBlogFileMapper.selectPageList(p), cmBlogFileMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(CmBlogFile entity) {
         // cm_blog_file :: update :: [orm:mybatis]
@@ -67,6 +70,7 @@ public class CmBlogFileService {
         return cmBlogFileRepository.save(entity);
     }
 
+    /** save — 저장 */
     @Transactional
     public CmBlogFile save(CmBlogFile entity) {
         // cm_blog_file :: select one :: blogImgId [orm:jpa]
@@ -80,6 +84,7 @@ public class CmBlogFileService {
         return cmBlogFileRepository.save(entity);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!cmBlogFileRepository.existsById(id))
@@ -105,6 +110,7 @@ public class CmBlogFileService {
         return result;
     }
 
+    /** doSaveByRowStatus — 실행 */
     private CmBlogFile doSaveByRowStatus(CmBlogFileReq req) {
         return switch (req.getRowStatus()) {
             case "I" -> create(req.toEntity());

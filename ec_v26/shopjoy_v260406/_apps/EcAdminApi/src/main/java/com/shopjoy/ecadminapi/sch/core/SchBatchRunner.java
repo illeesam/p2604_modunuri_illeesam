@@ -112,6 +112,7 @@ public class SchBatchRunner implements ApplicationRunner {
     private final SyBatchRepository batchRepository;
     private final SchBatchJobRegistry registry;
 
+    /** run — 실행 */
     @Override
     public void run(ApplicationArguments args) {
         if (!properties.isEnabled()) {

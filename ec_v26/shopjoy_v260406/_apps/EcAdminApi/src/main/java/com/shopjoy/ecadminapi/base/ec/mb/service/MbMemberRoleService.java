@@ -34,6 +34,7 @@ public class MbMemberRoleService {
         return mbMemberRoleMapper.selectById(id);
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<MbMemberRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,6 +42,7 @@ public class MbMemberRoleService {
         return mbMemberRoleMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<MbMemberRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -48,6 +50,7 @@ public class MbMemberRoleService {
         return PageResult.of(mbMemberRoleMapper.selectPageList(p), mbMemberRoleMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(MbMemberRole entity) {
         // mb_member_role :: update :: entity [orm:mybatis]
@@ -69,6 +72,7 @@ public class MbMemberRoleService {
         return mbMemberRoleRepository.save(entity);
     }
 
+    /** save — 저장 */
     @Transactional
     @SuppressWarnings("null")
     public MbMemberRole save(MbMemberRole entity) {
@@ -80,6 +84,7 @@ public class MbMemberRoleService {
         return mbMemberRoleRepository.save(entity);
     }
 
+    /** delete — 삭제 */
     @Transactional
     @SuppressWarnings("null")
     public void delete(String id) {
@@ -89,6 +94,7 @@ public class MbMemberRoleService {
         mbMemberRoleRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<MbMemberRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -22,6 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @PersistenceContext
     private EntityManager em;
 
+    /** loadUserByUsername — 로드 */
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String userIdOrLoginId) throws UsernameNotFoundException {

@@ -41,6 +41,7 @@ public class SyI18nMsgService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyI18nMsgDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyI18nMsgService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyI18nMsgDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyI18nMsgService {
         return PageResult.of(syI18nMsgMapper.selectPageList(p), syI18nMsgMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyI18nMsg entity) {
         // sy_i18n_msg :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyI18nMsgService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyI18nMsg save(SyI18nMsg entity) {
         if (!syI18nMsgRepository.existsById(entity.getI18nMsgId()))
@@ -88,6 +92,7 @@ public class SyI18nMsgService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyI18nMsg entity = syI18nMsgRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyI18nMsgService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyI18nMsg> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

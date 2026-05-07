@@ -36,18 +36,21 @@ public class SyPropService {
         return syPropMapper.selectById(id);
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyPropDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syPropMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyPropDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syPropMapper.selectPageList(p), syPropMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyProp entity) {
         return syPropMapper.updateSelective(entity);
@@ -65,6 +68,7 @@ public class SyPropService {
         return syPropRepository.save(entity);
     }
 
+    /** save — 저장 */
     @Transactional
     public SyProp save(SyProp entity) {
         if (!syPropRepository.existsById(entity.getPropId()))
@@ -74,6 +78,7 @@ public class SyPropService {
         return syPropRepository.save(entity);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyProp entity = syPropRepository.findById(id)
@@ -84,6 +89,7 @@ public class SyPropService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyProp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

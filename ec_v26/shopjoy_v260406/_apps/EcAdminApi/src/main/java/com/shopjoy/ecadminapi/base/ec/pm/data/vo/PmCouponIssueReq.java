@@ -27,6 +27,7 @@ public class PmCouponIssueReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmCouponIssue toEntity() {
         return PmCouponIssue.builder()
                 .issueId(issueId)

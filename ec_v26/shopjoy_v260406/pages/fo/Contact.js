@@ -19,13 +19,13 @@ window.Contact = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const cfInquiryCodes = computed(() =>
-      foUtil.codesByGroup(window.SITE_CONFIG || {}, 'shopjoy_contact_inquiry')
+      coUtil.codesByGroup(window.SITE_CONFIG || {}, 'shopjoy_contact_inquiry')
     );
 
     const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });

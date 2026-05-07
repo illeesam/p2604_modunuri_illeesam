@@ -21,43 +21,51 @@ import java.util.Map;
 public class BoStSettleAdjController {
     private final BoStSettleAdjService boStSettleAdjService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<StSettleAdjDto>>> list(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StSettleAdjDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleAdjDto>> getById(@PathVariable("id") String id) {
         StSettleAdjDto result = boStSettleAdjService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<StSettleAdj>> create(@RequestBody StSettleAdj body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStSettleAdjService.create(body)));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleAdjDto>> update(@PathVariable("id") String id, @RequestBody StSettleAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.update(id, body)));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleAdjDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boStSettleAdjService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /** approve — 승인 */
     @PutMapping("/{id}/approve")
     public ResponseEntity<ApiResponse<StSettleAdjDto>> approve(
             @PathVariable("id") String id, @RequestBody Map<String, Object> body) {

@@ -30,6 +30,7 @@ public class DpAreaPanelReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public DpAreaPanel toEntity() {
         return DpAreaPanel.builder()
                 .areaPanelId(areaPanelId)

@@ -62,6 +62,7 @@ public class PdProdReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdProd toEntity() {
         return PdProd.builder()
                 .prodId(prodId)

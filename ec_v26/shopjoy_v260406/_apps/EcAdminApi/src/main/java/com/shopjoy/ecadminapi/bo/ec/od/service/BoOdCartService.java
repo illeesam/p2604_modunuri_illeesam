@@ -19,12 +19,14 @@ public class BoOdCartService {
     private final OdCartMapper odCartMapper;
     private final OdCartRepository odCartRepository;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdCartDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return odCartMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdCartDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -32,6 +34,7 @@ public class BoOdCartService {
                 PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public OdCartDto getById(String id) {
         OdCartDto dto = odCartMapper.selectById(id);
@@ -39,6 +42,7 @@ public class BoOdCartService {
         return dto;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!odCartRepository.existsById(id))

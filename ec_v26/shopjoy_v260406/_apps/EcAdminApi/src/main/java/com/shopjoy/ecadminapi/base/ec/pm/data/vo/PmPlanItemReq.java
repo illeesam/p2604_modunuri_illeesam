@@ -25,6 +25,7 @@ public class PmPlanItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmPlanItem toEntity() {
         return PmPlanItem.builder()
                 .planItemId(planItemId)

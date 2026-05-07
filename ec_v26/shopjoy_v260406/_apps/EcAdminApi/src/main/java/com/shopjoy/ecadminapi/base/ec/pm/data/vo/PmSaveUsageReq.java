@@ -29,6 +29,7 @@ public class PmSaveUsageReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmSaveUsage toEntity() {
         return PmSaveUsage.builder()
                 .saveUsageId(saveUsageId)

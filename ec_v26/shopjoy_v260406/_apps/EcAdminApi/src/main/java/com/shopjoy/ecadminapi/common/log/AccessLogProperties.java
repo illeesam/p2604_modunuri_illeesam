@@ -29,6 +29,7 @@ public class AccessLogProperties {
     private static final Set<String> TYPE_TOKENS =
             Set.of("BO", "FO", "EXT", "USER", "MEMBER");
 
+    /** isMatch — 여부 */
     public boolean isMatch(String AppType, String userId) {
         if (filter == null || filter.isBlank() || "*".equals(filter.trim())) return true;
         for (String token : filter.split("\\^")) {

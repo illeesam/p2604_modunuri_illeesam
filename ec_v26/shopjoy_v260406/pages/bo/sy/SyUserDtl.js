@@ -29,7 +29,7 @@ window.SyUserDtl = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // ── watch ────────────────────────────────────────────────────────────────
 
@@ -103,8 +103,8 @@ window.SyUserDtl = {
     };
     const clearDept = () => { form.deptId = null; form.deptNm = ''; };
 
-    /* ── 현재 적용 역할 목록 ── */
-    const cfUserRoles = computed(() => []);
+    /* ── 현재 적용 역할 목록 (빈 배열 정적 — computed 불필요) ── */
+    const cfUserRoles = [];
 
     const fnRoleTypeBadge = (t) => ({
       '시스템': 'badge-purple', '업무': 'badge-blue', '기타': 'badge-gray',

@@ -44,7 +44,7 @@ window.PdProdDtl = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     // 상품설명 탭 전환 시 Quill 마운트 + 내용 재주입

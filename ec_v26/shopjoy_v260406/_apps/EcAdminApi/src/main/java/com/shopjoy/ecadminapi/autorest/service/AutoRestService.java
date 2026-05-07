@@ -191,6 +191,7 @@ public class AutoRestService {
         return result;
     }
 
+    /** doSaveByRowStatus — 실행 */
     private RowMap doSaveByRowStatus(String table, RowMap body) {
         String rowStatus = (String) body.remove("_row_status");
         if (rowStatus == null) throw new CmBizException("_row_status 값이 없습니다.");
@@ -239,6 +240,7 @@ public class AutoRestService {
                 .build();
     }
 
+    /** insertByJdbc — 저장 */
     private void insertByJdbc(String table, String pk, RowMap body) {
         List<String> cols = new ArrayList<>(body.keySet());
         String colsSql = String.join(", ", cols);
@@ -251,6 +253,7 @@ public class AutoRestService {
         q.executeUpdate();
     }
 
+    /** updateByJdbc — 수정 */
     private void updateByJdbc(String table, String pk, String id, RowMap body, boolean skipNull) {
         RowMap effective = new RowMap();
         if (skipNull) {
@@ -277,6 +280,7 @@ public class AutoRestService {
         q.executeUpdate();
     }
 
+    /** generateId — 생성 */
     private String generateId(String table) {
         String prefix = tablePrefix(table);
         String ts = LocalDateTime.now().format(ID_FMT);
@@ -303,6 +307,7 @@ public class AutoRestService {
         return sb.toString();
     }
 
+    /** validateRequired — 검증 */
     private void validateRequired(TableConfig cfg, RowMap body) {
         for (String f : cfg.getRequiredFields()) {
             Object v = body.get(f);
@@ -312,6 +317,7 @@ public class AutoRestService {
         }
     }
 
+    /** sanitizeOrderBy */
     private String sanitizeOrderBy(String orderBy) {
         if (orderBy == null || orderBy.isBlank()) return null;
         if (orderBy.matches("[a-zA-Z0-9_,\\s]+(ASC|DESC|asc|desc)?[,\\s]*[a-zA-Z0-9_,\\s]*")) {

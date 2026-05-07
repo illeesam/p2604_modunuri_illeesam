@@ -21,43 +21,51 @@ import java.util.Map;
 public class BoStSettleCloseController {
     private final BoStSettleCloseService boStSettleCloseService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<StSettleCloseDto>>> list(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleCloseService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<StSettleCloseDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleCloseService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleCloseDto>> getById(@PathVariable("id") String id) {
         StSettleCloseDto result = boStSettleCloseService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<StSettleClose>> create(@RequestBody StSettleClose body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStSettleCloseService.create(body)));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleCloseDto>> update(@PathVariable("id") String id, @RequestBody StSettleClose body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleCloseService.update(id, body)));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleCloseDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleClose body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleCloseService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boStSettleCloseService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /** reopen */
     @PutMapping("/{id}/reopen")
     public ResponseEntity<ApiResponse<StSettleCloseDto>> reopen(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleCloseService.reopen(id)));

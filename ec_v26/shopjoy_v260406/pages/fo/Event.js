@@ -42,7 +42,7 @@ window.EventPage = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     watch(() => uiState.activeTab, () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });

@@ -41,6 +41,7 @@ public class SyUserRoleService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyUserRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyUserRoleService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyUserRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyUserRoleService {
         return PageResult.of(syUserRoleMapper.selectPageList(p), syUserRoleMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyUserRole entity) {
         // sy_user_role :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyUserRoleService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyUserRole save(SyUserRole entity) {
         if (!syUserRoleRepository.existsById(entity.getUserRoleId()))
@@ -88,6 +92,7 @@ public class SyUserRoleService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyUserRole entity = syUserRoleRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyUserRoleService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyUserRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

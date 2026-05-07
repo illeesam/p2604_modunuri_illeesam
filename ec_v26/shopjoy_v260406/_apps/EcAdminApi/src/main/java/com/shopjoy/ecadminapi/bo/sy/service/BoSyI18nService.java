@@ -28,6 +28,7 @@ public class BoSyI18nService {
     private final SyI18nMsgMapper syI18nMsgMapper;
     private final SyI18nMsgRepository syI18nMsgRepository;
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyI18nDto getById(String id) {
         SyI18nDto result = syI18nService.getById(id);
@@ -35,26 +36,31 @@ public class BoSyI18nService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyI18nDto> getList(Map<String, Object> p) {
         return syI18nService.getList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyI18nDto> getPageData(Map<String, Object> p) {
         return syI18nService.getPageData(p);
     }
 
+    /** create — 생성 */
     @Transactional
     public SyI18n create(SyI18n body) {
         return syI18nService.create(body);
     }
 
+    /** save — 저장 */
     @Transactional
     public SyI18n save(SyI18n body) {
         return syI18nService.save(body);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         syI18nService.delete(id);

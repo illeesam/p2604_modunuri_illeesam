@@ -34,6 +34,7 @@ public class OdCartService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdCartDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,12 +42,14 @@ public class OdCartService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdCartDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odCartMapper.selectPageList(p), odCartMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(OdCart entity) {
         int result = odCartMapper.updateSelective(entity);
@@ -66,6 +69,7 @@ public class OdCartService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public OdCart save(OdCart entity) {
         if (!odCartRepository.existsById(entity.getCartId()))
@@ -76,6 +80,7 @@ public class OdCartService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!odCartRepository.existsById(id))
@@ -83,6 +88,7 @@ public class OdCartService {
         odCartRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<OdCart> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

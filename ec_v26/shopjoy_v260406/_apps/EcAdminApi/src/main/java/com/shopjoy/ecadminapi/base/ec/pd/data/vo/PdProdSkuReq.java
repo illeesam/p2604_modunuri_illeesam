@@ -28,6 +28,7 @@ public class PdProdSkuReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdProdSku toEntity() {
         return PdProdSku.builder()
                 .skuId(skuId)

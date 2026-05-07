@@ -18,6 +18,7 @@ public class OdhOrderStatusHistController {
 
     private final OdhOrderStatusHistService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdhOrderStatusHistDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -25,6 +26,7 @@ public class OdhOrderStatusHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<OdhOrderStatusHistDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -32,6 +34,7 @@ public class OdhOrderStatusHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OdhOrderStatusHistDto>> getById(@PathVariable("id") String id) {
         OdhOrderStatusHistDto result = service.getById(id);

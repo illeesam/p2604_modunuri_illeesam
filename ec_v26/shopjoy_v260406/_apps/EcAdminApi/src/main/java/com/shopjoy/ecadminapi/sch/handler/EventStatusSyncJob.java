@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class EventStatusSyncJob implements SchBatchJobHandler {
 
+    /** batchCode */
     @Override
     public String batchCode() {
         return "EVENT_STATUS_SYNC";
     }
 
+    /** execute — 실행 */
     @Override
     public void execute(SyBatch batch) {
         log.info("[{}] 이벤트 상태 동기화 시작", batchCode());

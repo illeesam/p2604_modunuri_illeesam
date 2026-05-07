@@ -26,6 +26,7 @@ public class StSettleAdjReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public StSettleAdj toEntity() {
         return StSettleAdj.builder()
                 .settleAdjId(settleAdjId)

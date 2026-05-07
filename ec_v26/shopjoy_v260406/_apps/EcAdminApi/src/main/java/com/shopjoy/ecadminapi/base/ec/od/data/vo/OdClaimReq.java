@@ -90,6 +90,7 @@ public class OdClaimReq {
     private String apprAprvUserId;
     private LocalDateTime apprAprvDate;
 
+    /** toEntity — 변환 */
     public OdClaim toEntity() {
         return OdClaim.builder()
                 .claimId(claimId)

@@ -25,6 +25,7 @@ public class PmCouponItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmCouponItem toEntity() {
         return PmCouponItem.builder()
                 .couponItemId(couponItemId)

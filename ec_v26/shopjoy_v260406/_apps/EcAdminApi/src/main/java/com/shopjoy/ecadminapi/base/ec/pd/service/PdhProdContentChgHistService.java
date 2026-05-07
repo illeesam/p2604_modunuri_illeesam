@@ -29,6 +29,7 @@ public class PdhProdContentChgHistService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdhProdContentChgHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -37,6 +38,7 @@ public class PdhProdContentChgHistService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdhProdContentChgHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -44,6 +46,7 @@ public class PdhProdContentChgHistService {
         return PageResult.of(pdhProdContentChgHistMapper.selectPageList(p), pdhProdContentChgHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PdhProdContentChgHist entity) {
         // pdh_prod_content_chg_hist :: update :: [orm:mybatis]

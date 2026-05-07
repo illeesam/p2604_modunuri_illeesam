@@ -29,6 +29,7 @@ public class MbMemberAddrReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public MbMemberAddr toEntity() {
         return MbMemberAddr.builder()
                 .memberAddrId(memberAddrId)

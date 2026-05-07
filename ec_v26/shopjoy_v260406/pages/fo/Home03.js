@@ -22,7 +22,7 @@ window.Home03 = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     function fnCategoryLabel(p) {

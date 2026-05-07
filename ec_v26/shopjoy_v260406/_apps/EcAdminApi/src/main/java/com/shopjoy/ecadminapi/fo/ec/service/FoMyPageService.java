@@ -52,6 +52,7 @@ public class FoMyPageService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getMyInfo — 조회 */
     @Transactional(readOnly = true)
     public MbMemberDto getMyInfo() {
         String memberId = SecurityUtil.getAuthUser().authId();
@@ -60,6 +61,7 @@ public class FoMyPageService {
         return dto;
     }
 
+    /** updateMyInfo — 수정 */
     @Transactional
     public MbMemberDto updateMyInfo(MbMember body) {
         String memberId = SecurityUtil.getAuthUser().authId();
@@ -75,6 +77,7 @@ public class FoMyPageService {
         return memberMapper.selectById(memberId);
     }
 
+    /** changePassword */
     @Transactional
     public void changePassword(String currentPassword, String newPassword) {
         String memberId = SecurityUtil.getAuthUser().authId();
@@ -92,12 +95,14 @@ public class FoMyPageService {
         em.flush();
     }
 
+    /** getMyAddrs — 조회 */
     @Transactional(readOnly = true)
     public List<MbMemberAddrDto> getMyAddrs() {
         String memberId = SecurityUtil.getAuthUser().authId();
         return addrMapper.selectList(Map.of("memberId", memberId));
     }
 
+    /** saveAddr — 저장 */
     @Transactional
     public MbMemberAddr saveAddr(MbMemberAddr body) {
         String memberId = SecurityUtil.getAuthUser().authId();
@@ -114,6 +119,7 @@ public class FoMyPageService {
         return saved;
     }
 
+    /** deleteAddr — 삭제 */
     @Transactional
     public void deleteAddr(String addrId) {
         String memberId = SecurityUtil.getAuthUser().authId();
@@ -124,24 +130,28 @@ public class FoMyPageService {
         addrRepository.delete(addr);
     }
 
+    /** getMyOrders — 조회 */
     @Transactional(readOnly = true)
     public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return orderMapper.selectList(p);
     }
 
+    /** getMyClaims — 조회 */
     @Transactional(readOnly = true)
     public List<OdClaimDto> getMyClaims(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return claimMapper.selectList(p);
     }
 
+    /** getMyCoupons — 조회 */
     @Transactional(readOnly = true)
     public List<PmCouponDto> getMyCoupons(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return couponMapper.selectList(p);
     }
 
+    /** getMyCacheHistory — 조회 */
     @Transactional(readOnly = true)
     public List<PmCacheDto> getMyCacheHistory(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());

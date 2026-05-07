@@ -30,6 +30,7 @@ public class PmSaveReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmSave toEntity() {
         return PmSave.builder()
                 .saveId(saveId)

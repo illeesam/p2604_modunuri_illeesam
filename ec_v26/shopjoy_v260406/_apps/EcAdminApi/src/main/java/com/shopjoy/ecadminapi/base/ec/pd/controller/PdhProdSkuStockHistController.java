@@ -18,6 +18,7 @@ public class PdhProdSkuStockHistController {
 
     private final PdhProdSkuStockHistService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdhProdSkuStockHistDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -25,6 +26,7 @@ public class PdhProdSkuStockHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdhProdSkuStockHistDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -32,6 +34,7 @@ public class PdhProdSkuStockHistController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdhProdSkuStockHistDto>> getById(@PathVariable("id") String id) {
         PdhProdSkuStockHistDto result = service.getById(id);

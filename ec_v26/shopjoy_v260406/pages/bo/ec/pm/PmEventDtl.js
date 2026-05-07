@@ -62,7 +62,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       codes.event_statuses = codeStore.sgGetGrpCodes('EVENT_STATUS_KR');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const _today = new Date();

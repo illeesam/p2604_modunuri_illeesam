@@ -24,11 +24,13 @@ public class SchBatchProperties {
      */
     private String allowedIps = "";
 
+    /** getAllowedIpList — 조회 */
     public List<String> getAllowedIpList() {
         if (allowedIps == null || allowedIps.isBlank()) return List.of();
         return Arrays.asList(allowedIps.split("\\^"));
     }
 
+    /** isIpAllowed — 여부 */
     public boolean isIpAllowed(String ip) {
         if ("*".equals(allowedIps != null ? allowedIps.trim() : "")) return true;
         List<String> list = getAllowedIpList();

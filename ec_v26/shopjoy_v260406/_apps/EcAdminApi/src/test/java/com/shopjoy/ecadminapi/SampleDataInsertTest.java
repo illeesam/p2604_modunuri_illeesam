@@ -70,6 +70,7 @@ class SampleDataInsertTest {
                 "node _doc/generate_sample_sql_bltn.js");
     }
 
+    /** runSqlFile — 실행 */
     private void runSqlFile(Path sqlFile, String hint) throws Exception {
         System.out.println("\n▶ SQL 파일: " + sqlFile.toAbsolutePath());
 

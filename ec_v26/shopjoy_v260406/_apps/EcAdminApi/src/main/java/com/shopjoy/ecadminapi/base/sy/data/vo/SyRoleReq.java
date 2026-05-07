@@ -30,6 +30,7 @@ public class SyRoleReq {
     private LocalDateTime updDate;
     private String pathId;
 
+    /** toEntity — 변환 */
     public SyRole toEntity() {
         return SyRole.builder()
                 .roleId(roleId)

@@ -19,18 +19,21 @@ public class PmSaveItemController {
 
     private final PmSaveItemService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmSaveItemDto>>> list(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmSaveItemDto>>> page(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmSaveItemDto>> getById(@PathVariable("id") String id) {
         PmSaveItemDto result = service.getById(id);
@@ -66,6 +69,7 @@ public class PmSaveItemController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmSaveItem> rows) {
         service.saveList(rows);

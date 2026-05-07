@@ -34,6 +34,7 @@ public class OdOrderItemDiscntService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<OdOrderItemDiscntDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -41,12 +42,14 @@ public class OdOrderItemDiscntService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<OdOrderItemDiscntDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odOrderItemDiscntMapper.selectPageList(p), odOrderItemDiscntMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(OdOrderItemDiscnt entity) {
         int result = odOrderItemDiscntMapper.updateSelective(entity);
@@ -66,6 +69,7 @@ public class OdOrderItemDiscntService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public OdOrderItemDiscnt save(OdOrderItemDiscnt entity) {
         if (!odOrderItemDiscntRepository.existsById(entity.getItemDiscntId()))
@@ -76,12 +80,14 @@ public class OdOrderItemDiscntService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!odOrderItemDiscntRepository.existsById(id))
             throw new CmBizException("존재하지 않는 OdOrderItemDiscnt입니다: " + id);
         odOrderItemDiscntRepository.deleteById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<OdOrderItemDiscnt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

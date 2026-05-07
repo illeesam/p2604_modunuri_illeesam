@@ -26,6 +26,7 @@ public class FoPmCouponController {
 
     private final FoPmCouponService foPmCouponService;
 
+    /** available */
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<PmCouponIssueDto>>> available(
             @RequestParam Map<String, Object> p) {

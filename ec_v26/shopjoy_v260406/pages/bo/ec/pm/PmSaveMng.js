@@ -31,7 +31,7 @@ window.PmSaveMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     // onMounted에서 API 로드
@@ -136,7 +136,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       }
     };
 
-    const exportExcel = () => boUtil.exportCsv(saves,
+    const exportExcel = () => coUtil.exportCsv(saves,
       [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '마일리지목록.csv');
 

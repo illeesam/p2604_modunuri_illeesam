@@ -37,6 +37,7 @@ public class EcPdCateRedisStore {
         log.info("[Cache][redis] [ec-pd-cate:dtl][{}] saveDetail()— {}건", cateId, detail.size());
     }
 
+    /** saveAll — 저장 */
     public void saveAll(List<Map<String, Object>> list) {
         redis.set(CacheKey.EC_PD_CATE_ALL, list,
                 props.getTtl().getEcPdCateSeconds(), target());
@@ -51,6 +52,7 @@ public class EcPdCateRedisStore {
                 .map(m -> (Map<String, Object>) m);
     }
 
+    /** getAll — 조회 */
     @SuppressWarnings("unchecked")
     public Optional<List<Map<String, Object>>> getAll() {
         return redis.get(CacheKey.EC_PD_CATE_ALL, List.class, target())
@@ -63,15 +65,18 @@ public class EcPdCateRedisStore {
         redis.delete(CacheKey.EC_PD_CATE_DTL + cateId, target());
     }
 
+    /** evictAll */
     public void evictAll() {
         redis.deleteByPattern(CacheKey.EC_PD_CATE_DTL + "*", target());
         redis.delete(CacheKey.EC_PD_CATE_ALL, target());
     }
 
+    /** isEnabled — 여부 */
     public boolean isEnabled() {
         return redis.isEnabled();
     }
 
+    /** target */
     private RedisUtil.Target target() {
         return redis.hasSecondary() ? RedisUtil.Target.SECONDARY : RedisUtil.Target.PRIMARY;
     }

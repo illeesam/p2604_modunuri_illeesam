@@ -35,6 +35,7 @@ public class CmBlogReplyService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmBlogReplyDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -43,6 +44,7 @@ public class CmBlogReplyService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmBlogReplyDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -50,6 +52,7 @@ public class CmBlogReplyService {
         return PageResult.of(cmBlogReplyMapper.selectPageList(p), cmBlogReplyMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(CmBlogReply entity) {
         // cm_blog_reply :: update :: [orm:mybatis]
@@ -71,6 +74,7 @@ public class CmBlogReplyService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public CmBlogReply save(CmBlogReply entity) {
         if (!cmBlogReplyRepository.existsById(entity.getCommentId()))
@@ -82,6 +86,7 @@ public class CmBlogReplyService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!cmBlogReplyRepository.existsById(id))
@@ -90,6 +95,7 @@ public class CmBlogReplyService {
         cmBlogReplyRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<CmBlogReply> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

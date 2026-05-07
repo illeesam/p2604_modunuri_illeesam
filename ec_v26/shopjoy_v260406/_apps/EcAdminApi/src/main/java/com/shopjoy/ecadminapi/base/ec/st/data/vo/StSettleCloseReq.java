@@ -27,6 +27,7 @@ public class StSettleCloseReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public StSettleClose toEntity() {
         return StSettleClose.builder()
                 .settleCloseId(settleCloseId)

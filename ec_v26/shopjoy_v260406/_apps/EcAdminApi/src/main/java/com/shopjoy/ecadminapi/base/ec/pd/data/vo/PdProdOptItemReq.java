@@ -30,6 +30,7 @@ public class PdProdOptItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdProdOptItem toEntity() {
         return PdProdOptItem.builder()
                 .optItemId(optItemId)

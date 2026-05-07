@@ -31,18 +31,21 @@ public class BoSyMenuService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syMenuMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syMenuMapper.selectPageList(p), syMenuMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyMenuDto getById(String id) {
         SyMenuDto dto = syMenuMapper.selectById(id);
@@ -50,6 +53,7 @@ public class BoSyMenuService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SyMenu create(SyMenu body) {
         body.setMenuId("MN" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -63,6 +67,7 @@ public class BoSyMenuService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public SyMenuDto update(String id, SyMenu body) {
         SyMenu entity = syMenuRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -76,6 +81,7 @@ public class BoSyMenuService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyMenu entity = syMenuRepository.findById(id)
@@ -87,6 +93,7 @@ public class BoSyMenuService {
         menuCache.evictAll();
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyMenu> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

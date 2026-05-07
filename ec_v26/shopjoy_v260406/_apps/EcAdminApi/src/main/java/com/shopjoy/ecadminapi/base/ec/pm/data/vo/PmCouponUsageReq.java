@@ -32,6 +32,7 @@ public class PmCouponUsageReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmCouponUsage toEntity() {
         return PmCouponUsage.builder()
                 .usageId(usageId)

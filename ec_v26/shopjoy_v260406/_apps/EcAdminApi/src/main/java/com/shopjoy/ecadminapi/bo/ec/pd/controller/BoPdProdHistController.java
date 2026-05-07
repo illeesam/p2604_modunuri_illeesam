@@ -25,6 +25,7 @@ public class BoPdProdHistController {
 
     private final BoPdProdHistService boPdProdHistService;
 
+    /** orders */
     @GetMapping("/orders")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> orders(
             @PathVariable("prodId") String prodId,
@@ -32,6 +33,7 @@ public class BoPdProdHistController {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getOrders(prodId, p)));
     }
 
+    /** stock */
     @GetMapping("/stock")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> stock(
             @PathVariable("prodId") String prodId,
@@ -39,6 +41,7 @@ public class BoPdProdHistController {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStockHist(prodId, p)));
     }
 
+    /** price */
     @GetMapping("/price")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> price(
             @PathVariable("prodId") String prodId,
@@ -46,6 +49,7 @@ public class BoPdProdHistController {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getPriceHist(prodId, p)));
     }
 
+    /** status */
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> status(
             @PathVariable("prodId") String prodId,
@@ -53,6 +57,7 @@ public class BoPdProdHistController {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStatusHist(prodId, p)));
     }
 
+    /** changes */
     @GetMapping("/changes")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> changes(
             @PathVariable("prodId") String prodId,

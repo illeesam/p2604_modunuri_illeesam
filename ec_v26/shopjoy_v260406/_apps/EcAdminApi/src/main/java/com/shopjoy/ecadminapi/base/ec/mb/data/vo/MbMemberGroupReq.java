@@ -24,6 +24,7 @@ public class MbMemberGroupReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public MbMemberGroup toEntity() {
         return MbMemberGroup.builder()
                 .memberGroupId(memberGroupId)

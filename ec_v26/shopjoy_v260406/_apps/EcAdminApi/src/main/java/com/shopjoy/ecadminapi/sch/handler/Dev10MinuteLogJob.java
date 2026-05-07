@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class Dev10MinuteLogJob implements SchBatchJobHandler {
 
+    /** batchCode */
     @Override
     public String batchCode() {
         return "DEV_10MINUTE_LOG";
     }
 
+    /** execute — 실행 */
     @Override
     public void execute(SyBatch batch) {
         log.info("[{}] 10분 주기 배치 실행 확인 - batchId={}", batchCode(), batch.getBatchId());

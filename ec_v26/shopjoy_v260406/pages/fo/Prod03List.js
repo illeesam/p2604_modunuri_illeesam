@@ -24,7 +24,7 @@ window.Prod03List = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     /* -- 상품 이미지 자동 할당 -- */

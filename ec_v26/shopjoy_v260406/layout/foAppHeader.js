@@ -83,12 +83,12 @@ window.foAppHeader = {
     /* ── 공통 인풋 스타일 ── */
     const IS = 'width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;';
 
-    /* ── 드롭다운 메뉴 항목 ── */
-    const cfMenuItems = computed(() => [
+    /* ── 드롭다운 메뉴 항목 (정적 배열 — computed 불필요) ── */
+    const cfMenuItems = [
       { icon: '👤', label: '마이페이지',    action: goMy,         color: 'var(--text-primary)' },
       { icon: '✏️', label: '프로필 수정',   action: openProfile,  color: 'var(--text-primary)' },
       { icon: '🔑', label: '비밀번호 변경', action: openPw,       color: 'var(--text-primary)' },
-    ]);
+    ];
 
     /* 레이어 바깥 클릭 시 닫기 (고정 오버레이는 헤더 z-index 안에 묶여 형제 요소·본문보다 아래로 가는 경우가 있음) */
     let removeUserMenuOutside = null;

@@ -36,6 +36,7 @@ public class PmDiscntService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmDiscntDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -44,6 +45,7 @@ public class PmDiscntService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmDiscntDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -51,6 +53,7 @@ public class PmDiscntService {
         return PageResult.of(pmDiscntMapper.selectPageList(p), pmDiscntMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PmDiscnt entity) {
         // pm_discnt :: update :: [orm:mybatis]
@@ -72,6 +75,7 @@ public class PmDiscntService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PmDiscnt save(PmDiscnt entity) {
         if (!pmDiscntRepository.existsById(entity.getDiscntId()))
@@ -83,6 +87,7 @@ public class PmDiscntService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pmDiscntRepository.existsById(id))
@@ -91,6 +96,7 @@ public class PmDiscntService {
         pmDiscntRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmDiscnt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

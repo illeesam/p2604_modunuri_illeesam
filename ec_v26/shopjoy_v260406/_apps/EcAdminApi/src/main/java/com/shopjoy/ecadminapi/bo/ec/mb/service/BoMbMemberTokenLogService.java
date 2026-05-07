@@ -19,12 +19,14 @@ public class BoMbMemberTokenLogService {
     private final MbhMemberTokenLogMapper mbhMemberTokenLogMapper;
     private final MbhMemberTokenLogRepository mbhMemberTokenLogRepository;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<MbhMemberTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mbhMemberTokenLogMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<MbhMemberTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -32,11 +34,13 @@ public class BoMbMemberTokenLogService {
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public MbhMemberTokenLogDto getById(String id) {
         return mbhMemberTokenLogMapper.selectById(id);
     }
 
+    /** deleteAll — 삭제 */
     @Transactional
     public void deleteAll() {
         mbhMemberTokenLogRepository.deleteAllBulk();

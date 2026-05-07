@@ -26,7 +26,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const handleSearchList = async (searchType = 'DEFAULT') => {

@@ -22,22 +22,26 @@ import java.util.Map;
 public class BoPdSetController {
     private final BoPdProdService boPdProdService;
 
+    /** page — 페이지 */
     @GetMapping("/api/bo/ec/pd/set/page")
     public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(@RequestParam Map<String, Object> p) {
         p.put("prodTypeCd", "SET");
         return ResponseEntity.ok(ApiResponse.ok(boPdProdService.getPageData(p)));
     }
 
+    /** create — 생성 */
     @PostMapping("/api/bo/ec/pd/prod-set")
     public ResponseEntity<ApiResponse<Void>> create(@RequestBody Map<String, Object> body) {
         return ResponseEntity.status(201).body(ApiResponse.ok(null, "저장되었습니다."));
     }
 
+    /** updateItems — 수정 */
     @PutMapping("/api/bo/ec/pd/prod-set/{id}/items")
     public ResponseEntity<ApiResponse<Void>> updateItems(@PathVariable("id") String id, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/api/bo/ec/pd/prod-set/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boPdProdService.delete(id);

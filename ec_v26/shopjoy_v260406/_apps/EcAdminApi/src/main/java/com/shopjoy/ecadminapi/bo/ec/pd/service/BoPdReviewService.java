@@ -30,18 +30,21 @@ public class BoPdReviewService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdReviewDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pdReviewMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdReviewDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pdReviewMapper.selectPageList(p), pdReviewMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PdReviewDto getById(String id) {
         PdReviewDto dto = pdReviewMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoPdReviewService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public PdReview create(PdReview body) {
         body.setReviewId("RV" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -61,6 +65,7 @@ public class BoPdReviewService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public PdReviewDto update(String id, PdReview body) {
         PdReview entity = pdReviewRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -73,6 +78,7 @@ public class BoPdReviewService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         PdReview entity = pdReviewRepository.findById(id)
@@ -83,6 +89,7 @@ public class BoPdReviewService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public PdReviewDto changeStatus(String id, String statusCd) {
         PdReview entity = pdReviewRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -95,6 +102,7 @@ public class BoPdReviewService {
         em.flush();
         return getById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdReview> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

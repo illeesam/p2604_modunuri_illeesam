@@ -26,6 +26,7 @@ public class PdProdContentReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdProdContent toEntity() {
         return PdProdContent.builder()
                 .prodContentId(prodContentId)

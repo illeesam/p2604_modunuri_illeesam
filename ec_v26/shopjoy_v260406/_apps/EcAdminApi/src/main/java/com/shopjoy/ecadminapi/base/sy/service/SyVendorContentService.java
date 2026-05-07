@@ -41,6 +41,7 @@ public class SyVendorContentService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyVendorContentDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyVendorContentService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyVendorContentDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyVendorContentService {
         return PageResult.of(syVendorContentMapper.selectPageList(p), syVendorContentMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyVendorContent entity) {
         // sy_vendor_content :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyVendorContentService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyVendorContent save(SyVendorContent entity) {
         if (!syVendorContentRepository.existsById(entity.getVendorContentId()))
@@ -88,6 +92,7 @@ public class SyVendorContentService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyVendorContent entity = syVendorContentRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyVendorContentService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyVendorContent> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -33,6 +33,7 @@ public class MbDeviceTokenController {
 
     private final MbDeviceTokenService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbDeviceTokenDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -40,6 +41,7 @@ public class MbDeviceTokenController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<MbDeviceTokenDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -47,6 +49,7 @@ public class MbDeviceTokenController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MbDeviceTokenDto>> getById(@PathVariable("id") String id) {
         MbDeviceTokenDto result = service.getById(id);
@@ -54,12 +57,14 @@ public class MbDeviceTokenController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<MbDeviceToken>> create(@RequestBody MbDeviceToken entity) {
         MbDeviceToken result = service.create(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
+    /** save — 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbDeviceToken>> save(
             @PathVariable("id") String id, @RequestBody MbDeviceToken entity) {
@@ -68,6 +73,7 @@ public class MbDeviceTokenController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** update — 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
             @PathVariable("id") String id, @RequestBody MbDeviceToken entity) {
@@ -76,18 +82,21 @@ public class MbDeviceTokenController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /** saveByRowStatus — 저장 */
     @PostMapping("/save")
     public ResponseEntity<ApiResponse<MbDeviceToken>> saveByRowStatus(@RequestBody @Valid MbDeviceTokenReq req) {
         MbDeviceToken result = service.saveByRowStatus(req);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** saveListByRowStatus — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<List<MbDeviceToken>>> saveListByRowStatus(@RequestBody @Valid List<MbDeviceTokenReq> list) {
         List<MbDeviceToken> result = service.saveListByRowStatus(list);

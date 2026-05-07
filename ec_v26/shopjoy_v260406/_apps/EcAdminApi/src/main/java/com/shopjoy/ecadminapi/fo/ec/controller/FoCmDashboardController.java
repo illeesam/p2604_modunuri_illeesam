@@ -88,6 +88,7 @@ public class FoCmDashboardController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** toRecentOrder — 변환 */
     private Map<String, Object> toRecentOrder(OdOrderDto o) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("orderId",       o.getOrderId());
@@ -100,15 +101,18 @@ public class FoCmDashboardController {
         return m;
     }
 
+    /** countByStatus — 건수 */
     private static long countByStatus(List<OdOrderDto> orders, String statusCd) {
         if (orders == null) return 0L;
         return orders.stream().filter(o -> statusCd.equals(o.getOrderStatusCd())).count();
     }
 
+    /** safeLong */
     private static long safeLong(java.util.function.Supplier<Long> s) {
         try { Long v = s.get(); return v != null ? v : 0L; } catch (Exception e) { return 0L; }
     }
 
+    /** safeList */
     private static <T> List<T> safeList(java.util.function.Supplier<List<T>> s) {
         try { List<T> v = s.get(); return v != null ? v : List.of(); } catch (Exception e) { return List.of(); }
     }

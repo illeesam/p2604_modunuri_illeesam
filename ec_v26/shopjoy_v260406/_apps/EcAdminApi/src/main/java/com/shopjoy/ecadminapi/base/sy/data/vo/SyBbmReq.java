@@ -33,6 +33,7 @@ public class SyBbmReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyBbm toEntity() {
         return SyBbm.builder()
                 .bbmId(bbmId)

@@ -23,18 +23,21 @@ public class CoSyPathController {
 
     private final SyPathService syPathService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyPathDto>>> list(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(syPathService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyPathDto>>> page(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(syPathService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyPathDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(syPathService.getById(id)));

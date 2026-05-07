@@ -30,7 +30,7 @@ window.PdDlivTmpltMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const _initSearchParam = () => ({ kw: '', method: '', use: '' });

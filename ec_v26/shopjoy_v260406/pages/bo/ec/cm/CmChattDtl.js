@@ -27,7 +27,7 @@ window.CmChattDtl = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     const handleSearchDetail = async () => {
       if (!props.dtlId) return;

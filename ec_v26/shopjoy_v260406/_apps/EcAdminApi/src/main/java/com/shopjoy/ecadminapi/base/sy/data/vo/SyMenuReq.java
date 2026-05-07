@@ -30,6 +30,7 @@ public class SyMenuReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyMenu toEntity() {
         return SyMenu.builder()
                 .menuId(menuId)

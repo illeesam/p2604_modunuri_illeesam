@@ -29,6 +29,7 @@ public class PdCategoryReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdCategory toEntity() {
         return PdCategory.builder()
                 .categoryId(categoryId)

@@ -29,6 +29,7 @@ import java.util.Map;
 public class BoCmNoticeController {
     private final BoCmNoticeService boCmNoticeService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyNoticeDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -37,6 +38,7 @@ public class BoCmNoticeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyNoticeDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -45,34 +47,40 @@ public class BoCmNoticeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyNoticeDto>> getById(@PathVariable("id") String id) {
         SyNoticeDto result = boCmNoticeService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<SyNotice>> create(@RequestBody SyNotice body) {
         SyNotice result = boCmNoticeService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
+    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyNoticeDto>> update(@PathVariable("id") String id, @RequestBody SyNotice body) {
         SyNoticeDto result = boCmNoticeService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyNoticeDto>> upsert(@PathVariable("id") String id, @RequestBody SyNotice body) {
         return ResponseEntity.ok(ApiResponse.ok(boCmNoticeService.update(id, body)));
     }
 
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boCmNoticeService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyNotice> rows) {
         boCmNoticeService.saveList(rows);

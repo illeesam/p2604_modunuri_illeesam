@@ -35,6 +35,7 @@ public class PmSaveIssueReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmSaveIssue toEntity() {
         return PmSaveIssue.builder()
                 .saveIssueId(saveIssueId)

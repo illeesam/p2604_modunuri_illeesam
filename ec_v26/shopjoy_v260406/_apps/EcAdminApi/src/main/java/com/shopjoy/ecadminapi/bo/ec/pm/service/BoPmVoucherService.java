@@ -32,18 +32,21 @@ public class BoPmVoucherService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmVoucherDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pmVoucherMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmVoucherDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmVoucherMapper.selectPageList(p), pmVoucherMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PmVoucherDto getById(String id) {
         PmVoucherDto dto = pmVoucherMapper.selectById(id);
@@ -51,6 +54,7 @@ public class BoPmVoucherService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public PmVoucher create(PmVoucher body) {
         body.setVoucherId("VR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -63,6 +67,7 @@ public class BoPmVoucherService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public PmVoucherDto update(String id, PmVoucher body) {
         PmVoucher entity = pmVoucherRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -75,6 +80,7 @@ public class BoPmVoucherService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         PmVoucher entity = pmVoucherRepository.findById(id)
@@ -85,11 +91,13 @@ public class BoPmVoucherService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** sendSns — 전송 */
     public void sendSns(String id, Map<String, Object> body) {
         if (!pmVoucherRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         log.info("SNS 발송 요청 - voucherId={}, channel={}", id, body.get("channel"));
     }
 
+    /** changeStatus */
     @Transactional
     public PmVoucherDto changeStatus(String id, String statusCd) {
         PmVoucher entity = pmVoucherRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -102,6 +110,7 @@ public class BoPmVoucherService {
         em.flush();
         return getById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmVoucher> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

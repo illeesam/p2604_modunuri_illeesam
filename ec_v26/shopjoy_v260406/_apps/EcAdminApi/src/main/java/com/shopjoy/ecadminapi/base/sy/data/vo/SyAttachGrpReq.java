@@ -29,6 +29,7 @@ public class SyAttachGrpReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyAttachGrp toEntity() {
         return SyAttachGrp.builder()
                 .attachGrpId(attachGrpId)

@@ -24,6 +24,7 @@ public class MbLikeReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public MbLike toEntity() {
         return MbLike.builder()
                 .likeId(likeId)

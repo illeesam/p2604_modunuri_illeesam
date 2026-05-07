@@ -38,6 +38,7 @@ public class PdDlivTmpltReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdDlivTmplt toEntity() {
         return PdDlivTmplt.builder()
                 .dlivTmpltId(dlivTmpltId)

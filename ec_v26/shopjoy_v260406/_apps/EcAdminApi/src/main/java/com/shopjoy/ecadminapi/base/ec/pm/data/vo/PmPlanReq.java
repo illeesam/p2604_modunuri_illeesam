@@ -33,6 +33,7 @@ public class PmPlanReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmPlan toEntity() {
         return PmPlan.builder()
                 .planId(planId)

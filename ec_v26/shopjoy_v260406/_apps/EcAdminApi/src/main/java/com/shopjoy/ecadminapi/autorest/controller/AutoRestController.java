@@ -173,6 +173,7 @@ public class AutoRestController {
         return ResponseEntity.ok(ApiResponse.ok(cnt, cnt + "건 삭제되었습니다."));
     }
 
+    /** checkTable — 검증 */
     private void checkTable(String table) {
         if (!TableRegistry.isSafeIdentifier(table)) {
             throw new CmBizException("유효하지 않은 테이블명입니다: " + table);

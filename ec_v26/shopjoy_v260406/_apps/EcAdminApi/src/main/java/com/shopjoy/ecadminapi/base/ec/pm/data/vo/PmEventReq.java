@@ -38,6 +38,7 @@ public class PmEventReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmEvent toEntity() {
         return PmEvent.builder()
                 .eventId(eventId)

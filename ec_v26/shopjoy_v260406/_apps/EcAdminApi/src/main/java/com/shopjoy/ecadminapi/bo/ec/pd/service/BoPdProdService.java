@@ -30,18 +30,21 @@ public class BoPdProdService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdProdDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pdProdMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdProdDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pdProdMapper.selectPageList(p), pdProdMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PdProdDto getById(String id) {
         PdProdDto dto = pdProdMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoPdProdService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public PdProd create(PdProd body) {
         body.setProdId("PD" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -61,6 +65,7 @@ public class BoPdProdService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public PdProdDto update(String id, PdProd body) {
         PdProd entity = pdProdRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -73,6 +78,7 @@ public class BoPdProdService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         PdProd entity = pdProdRepository.findById(id)
@@ -82,6 +88,7 @@ public class BoPdProdService {
         if (pdProdRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdProd> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

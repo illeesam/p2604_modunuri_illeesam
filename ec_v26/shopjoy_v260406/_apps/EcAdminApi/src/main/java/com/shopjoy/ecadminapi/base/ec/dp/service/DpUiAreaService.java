@@ -35,6 +35,7 @@ public class DpUiAreaService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<DpUiAreaDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -43,6 +44,7 @@ public class DpUiAreaService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<DpUiAreaDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -50,6 +52,7 @@ public class DpUiAreaService {
         return PageResult.of(dpUiAreaMapper.selectPageList(p), dpUiAreaMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(DpUiArea entity) {
         // dp_ui_area :: update :: [orm:mybatis]
@@ -71,6 +74,7 @@ public class DpUiAreaService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public DpUiArea save(DpUiArea entity) {
         if (!dpUiAreaRepository.existsById(entity.getUiAreaId()))
@@ -82,6 +86,7 @@ public class DpUiAreaService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!dpUiAreaRepository.existsById(id))
@@ -90,6 +95,7 @@ public class DpUiAreaService {
         dpUiAreaRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<DpUiArea> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

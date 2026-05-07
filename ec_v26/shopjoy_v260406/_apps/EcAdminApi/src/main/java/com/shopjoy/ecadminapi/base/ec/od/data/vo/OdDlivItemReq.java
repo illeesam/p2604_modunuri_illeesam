@@ -31,6 +31,7 @@ public class OdDlivItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public OdDlivItem toEntity() {
         return OdDlivItem.builder()
                 .dlivItemId(dlivItemId)

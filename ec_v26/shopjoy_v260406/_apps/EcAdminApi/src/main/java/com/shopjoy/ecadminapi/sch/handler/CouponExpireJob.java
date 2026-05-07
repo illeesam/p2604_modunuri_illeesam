@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class CouponExpireJob implements SchBatchJobHandler {
 
+    /** batchCode */
     @Override
     public String batchCode() {
         return "COUPON_EXPIRE";
     }
 
+    /** execute — 실행 */
     @Override
     public void execute(SyBatch batch) {
         log.info("[{}] 쿠폰 만료 처리 시작", batchCode());

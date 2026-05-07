@@ -28,6 +28,7 @@ public class MbMemberGradeReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public MbMemberGrade toEntity() {
         return MbMemberGrade.builder()
                 .memberGradeId(memberGradeId)

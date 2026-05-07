@@ -86,7 +86,7 @@ window.SyRoleMng = {
     /* 선택 권한 + 자손 roleId Set */
     const cfAllowedRoleIds = computed(() => {
       if (uiState.selectedPath == null) return null;
-      return boUtil.collectDescendantIds(roles, 'roleId', 'parentId', uiState.selectedPath);
+      return coUtil.collectDescendantIds(roles, 'roleId', 'parentId', uiState.selectedPath);
     });
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
@@ -99,14 +99,14 @@ window.SyRoleMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       fnLoadMenusAndUsers();
-      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = coUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       handleSearchList('DEFAULT');
     });
@@ -477,7 +477,7 @@ window.SyRoleMng = {
       return r ? r.roleNm : '';
     });
 
-    const exportExcel = () => boUtil.exportCsv(
+    const exportExcel = () => coUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
       '역할목록.csv'

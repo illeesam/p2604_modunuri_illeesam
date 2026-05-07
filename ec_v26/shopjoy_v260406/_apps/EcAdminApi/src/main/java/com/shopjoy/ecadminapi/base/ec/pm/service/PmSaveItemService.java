@@ -35,18 +35,21 @@ public class PmSaveItemService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmSaveItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pmSaveItemMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmSaveItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmSaveItemMapper.selectPageList(p), pmSaveItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PmSaveItem entity) {
         return pmSaveItemMapper.updateSelective(entity);
@@ -64,6 +67,7 @@ public class PmSaveItemService {
         return pmSaveItemRepository.save(entity);
     }
 
+    /** save — 저장 */
     @Transactional
     public PmSaveItem save(PmSaveItem entity) {
         if (!pmSaveItemRepository.existsById(entity.getSaveItemId()))
@@ -73,6 +77,7 @@ public class PmSaveItemService {
         return pmSaveItemRepository.save(entity);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pmSaveItemRepository.existsById(id))
@@ -80,6 +85,7 @@ public class PmSaveItemService {
         pmSaveItemRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmSaveItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

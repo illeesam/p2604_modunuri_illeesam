@@ -28,18 +28,21 @@ public class BoStSettleConfigService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<StSettleConfigDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return stSettleConfigMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<StSettleConfigDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stSettleConfigMapper.selectPageList(p), stSettleConfigMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public StSettleConfigDto getById(String id) {
         StSettleConfigDto dto = stSettleConfigMapper.selectById(id);
@@ -47,6 +50,7 @@ public class BoStSettleConfigService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public StSettleConfig create(StSettleConfig body) {
         body.setSettleConfigId("SC" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -59,6 +63,7 @@ public class BoStSettleConfigService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public StSettleConfigDto update(String id, StSettleConfig body) {
         StSettleConfig entity = stSettleConfigRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -70,6 +75,7 @@ public class BoStSettleConfigService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         StSettleConfig entity = stSettleConfigRepository.findById(id)

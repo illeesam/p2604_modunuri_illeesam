@@ -29,23 +29,27 @@ public class BoSyDeptService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getTree — 조회 */
     @Transactional(readOnly = true)
     public List<SyDeptDto> getTree() {
         return syDeptMapper.selectTree();
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyDeptDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syDeptMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyDeptDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syDeptMapper.selectPageList(p), syDeptMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyDeptDto getById(String id) {
         SyDeptDto dto = syDeptMapper.selectById(id);
@@ -53,6 +57,7 @@ public class BoSyDeptService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SyDept create(SyDept body) {
         body.setDeptId("DP" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -65,6 +70,7 @@ public class BoSyDeptService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public SyDeptDto update(String id, SyDept body) {
         SyDept entity = syDeptRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -77,6 +83,7 @@ public class BoSyDeptService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyDept entity = syDeptRepository.findById(id)
@@ -87,6 +94,7 @@ public class BoSyDeptService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyDept> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

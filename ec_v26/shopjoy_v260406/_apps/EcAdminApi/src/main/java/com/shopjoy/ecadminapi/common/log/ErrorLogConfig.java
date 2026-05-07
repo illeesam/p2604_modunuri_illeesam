@@ -36,6 +36,7 @@ public class ErrorLogConfig {
     private final ErrorLogQueue errorLogQueue;
     private final Environment   env;
 
+    /** registerAppender — 등록 */
     @PostConstruct
     public void registerAppender() {
         String serverNm = resolveServerName();
@@ -59,6 +60,7 @@ public class ErrorLogConfig {
                 serverNm, profile, errorLogQueue.getQueueSize());
     }
 
+    /** resolveServerName — 결정 */
     private String resolveServerName() {
         // InetAddress.getLocalHost() blocks on DNS reverse lookup (~10s on Windows dev)
         // Use OS env vars first; fall back to loopback address (instant, no DNS)

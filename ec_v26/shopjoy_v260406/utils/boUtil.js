@@ -136,24 +136,7 @@
     return site?.siteNm || 'ShopJoy';
   };
 
-  /* ── CSV/엑셀 다운로드 ──
-     columns: [{ label:'표시명', key:'필드명' } | { label:'표시명', value: row => ... }]
-  ── */
-  boUtil.exportCsv = function(rows, columns, filename) {
-    const header = columns.map(c => `"${c.label}"`).join(',');
-    const body = rows.map(row =>
-      columns.map(c => {
-        const val = typeof c.value === 'function' ? c.value(row) : (row[c.key] ?? '');
-        return `"${String(val).replace(/"/g, '""')}"`;
-      }).join(',')
-    ).join('\n');
-    const bom = '﻿'; // UTF-8 BOM (한글 깨짐 방지)
-    const blob = new Blob([bom + header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename || 'export.csv'; a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
+  /* exportCsv → coUtil.exportCsv 로 통합. 호출처에서 coUtil.exportCsv 사용. */
 
   /* ──────────────────────────────────────────────
      sy_path 기반 트리 헬퍼 (공통)
@@ -198,65 +181,19 @@
     return set;
   };
 
-  /* 일반 부모-자식 트리 빌더
-   * items: 배열, idKey: PK, parentKey: 부모 FK, labelKey: 표시명, sortKey: 정렬 (선택)
-   */
-  boUtil.buildGenericTree = function (items, idKey, parentKey, labelKey, sortKey) {
-    const list = (items || []).filter(x => x.useYn !== 'N');
-    const byParent = {};
-    list.forEach(x => {
-      const k = x[parentKey] == null ? '__root__' : x[parentKey];
-      (byParent[k] = byParent[k] || []).push(x);
-    });
-    const build = (pk) => (byParent[pk] || [])
-      .sort((a, b) => (a[sortKey] || 0) - (b[sortKey] || 0))
-      .map(x => ({
-        pathId: x[idKey], path: x[idKey],
-        name: x[labelKey], pathLabel: x[labelKey],
-        children: build(x[idKey]), count: 0,
-        _raw: x,
-      }));
-    const root = { pathId: null, path: null, name: '전체', pathLabel: '전체',
-                   children: build('__root__'), count: list.length };
-    const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
-    recur(root);
-    return root;
-  };
+  /* buildGenericTree / collectDescendantIds / collectExpandedToDepth → coUtil 로 통합.
+   * BO 전용 트리(buildDeptTree/MenuTree/RoleTree)는 BO store 의존이므로 boUtil 에 유지하되 coUtil 호출. */
   boUtil.buildDeptTree = function () {
     const depts = window.useBoDeptStore?.()?.depts || window._boCmDepts || [];
-    return boUtil.buildGenericTree(depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
+    return window.coUtil.buildGenericTree(depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
   };
   boUtil.buildMenuTree = function () {
     const menus = window.useBoMenuStore?.()?.svMenus || window._boCmMenus || [];
-    return boUtil.buildGenericTree(menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
+    return window.coUtil.buildGenericTree(menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
   };
   boUtil.buildRoleTree = function () {
     const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
-    return boUtil.buildGenericTree(roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
-  };
-  /* 일반 트리 후손 ID Set */
-  boUtil.collectDescendantIds = function (items, idKey, parentKey, rootId) {
-    if (rootId == null) return null;
-    const set = new Set([rootId]);
-    let added = true;
-    while (added) {
-      added = false;
-      (items || []).forEach(x => {
-        if (set.has(x[parentKey]) && !set.has(x[idKey])) { set.add(x[idKey]); added = true; }
-      });
-    }
-    return set;
-  };
-
-  /* 트리에서 N레벨까지 펼친 pathId Set 반환 (root=null 포함) */
-  boUtil.collectExpandedToDepth = function (tree, maxDepth) {
-    const set = new Set([null]);
-    const walk = (n, d) => {
-      if (d >= maxDepth) return;
-      (n.children || []).forEach(ch => { set.add(ch.pathId); walk(ch, d + 1); });
-    };
-    walk(tree, 0);
-    return set;
+    return window.coUtil.buildGenericTree(roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
   };
 
   boUtil.getPathLabel = function (pathId) {
@@ -269,36 +206,7 @@
     return labels.join(' > ');
   };
 
-  /* ── 공통 코드 로드 헬퍼 ──
-   * setup() 안에서 호출. watch(isAppReady) 등록 + isAppReady computed 반환.
-   * 무한 refresh 방지:
-   *   - fnLoadCodes 가 throw 해도 uiState.isPageCodeLoad 를 반드시 true 로 설정
-   *   - 1회 성공 후 watch 자동 stop (재마운트 시까지 재호출 차단)
-   * 사용법:
-   *   const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
-   *   onMounted(() => { if (isAppReady.value) fnLoadCodes(); ... });
-   */
-  boUtil.useAppCodeReady = function(uiState, fnLoadCodes) {
-    const { computed, watch } = Vue;
-    const isAppReady = computed(() => {
-      const i = window.useBoAppInitStore?.();
-      const c = window.sfGetBoCodeStore?.();
-      return !i?.svIsLoading && c?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-    let _called = false;
-    const stop = watch(isAppReady, v => {
-      if (!v || _called) return;
-      _called = true;
-      try { fnLoadCodes(); }
-      catch (err) { console.error('[useAppCodeReady] fnLoadCodes failed:', err); }
-      finally {
-        // throw 여부와 무관하게 플래그를 세워 재트리거 차단
-        try { uiState.isPageCodeLoad = true; } catch (_) {}
-        try { stop && stop(); } catch (_) {}
-      }
-    });
-    return isAppReady;
-  };
+  /* useAppCodeReady → coUtil.useAppCodeReady 로 통합. 호출처에서 coUtil 직접 호출 사용. */
 
   global.boUtil = boUtil;
   global.boCommonFilter = boCommonFilter;

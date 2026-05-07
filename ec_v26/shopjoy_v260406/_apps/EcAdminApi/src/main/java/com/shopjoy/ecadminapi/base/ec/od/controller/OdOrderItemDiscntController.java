@@ -19,6 +19,7 @@ public class OdOrderItemDiscntController {
 
     private final OdOrderItemDiscntService service;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdOrderItemDiscntDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -26,6 +27,7 @@ public class OdOrderItemDiscntController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<OdOrderItemDiscntDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -33,6 +35,7 @@ public class OdOrderItemDiscntController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OdOrderItemDiscntDto>> getById(@PathVariable("id") String id) {
         OdOrderItemDiscntDto result = service.getById(id);
@@ -71,6 +74,7 @@ public class OdOrderItemDiscntController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+    /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdOrderItemDiscnt> rows) {
         service.saveList(rows);

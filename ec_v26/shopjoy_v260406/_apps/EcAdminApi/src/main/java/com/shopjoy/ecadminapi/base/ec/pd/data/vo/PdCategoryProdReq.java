@@ -31,6 +31,7 @@ public class PdCategoryProdReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdCategoryProd toEntity() {
         return PdCategoryProd.builder()
                 .categoryProdId(categoryProdId)

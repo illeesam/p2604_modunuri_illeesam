@@ -17,6 +17,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${app.file.local.physical-root:src/main/resources/static/cdn}")
     private String physicalRoot;
 
+    /** addCorsMappings — 추가 */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
@@ -28,6 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
         log.info("[WebConfig] CORS 설정 완료 — allowedOriginPatterns=*, maxAge=7200s");
     }
 
+    /** addResourceHandlers — 추가 */
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         String absPath = Paths.get(physicalRoot).toAbsolutePath().toUri().toString();

@@ -41,6 +41,7 @@ public class SyBrandService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyBrandDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -49,6 +50,7 @@ public class SyBrandService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyBrandDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -56,6 +58,7 @@ public class SyBrandService {
         return PageResult.of(syBrandMapper.selectPageList(p), syBrandMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyBrand entity) {
         // sy_brand :: update :: entity [orm:mybatis]
@@ -77,6 +80,7 @@ public class SyBrandService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyBrand save(SyBrand entity) {
         if (!syBrandRepository.existsById(entity.getBrandId()))
@@ -88,6 +92,7 @@ public class SyBrandService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyBrand entity = syBrandRepository.findById(id)
@@ -98,6 +103,7 @@ public class SyBrandService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyBrand> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

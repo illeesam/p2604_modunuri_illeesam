@@ -35,6 +35,7 @@ public class CmPathService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmPathDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -43,6 +44,7 @@ public class CmPathService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmPathDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -50,6 +52,7 @@ public class CmPathService {
         return PageResult.of(cmPathMapper.selectPageList(p), cmPathMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(CmPath entity) {
         // cm_path :: update :: [orm:mybatis]
@@ -71,6 +74,7 @@ public class CmPathService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public CmPath save(CmPath entity) {
         if (!cmPathRepository.existsById(entity.getBizCd()))
@@ -82,6 +86,7 @@ public class CmPathService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!cmPathRepository.existsById(id))
@@ -90,6 +95,7 @@ public class CmPathService {
         cmPathRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<CmPath> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

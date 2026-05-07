@@ -20,11 +20,13 @@ public class BoSyAccessErrorLogController {
 
     private final BoSyAccessErrorLogService boSyAccessErrorLogService;
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyhAccessErrorLogDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boSyAccessErrorLogService.getPageData(p)));
     }
 
+    /** deleteAll — 삭제 */
     @DeleteMapping("/all")
     public ResponseEntity<ApiResponse<Void>> deleteAll() {
         boSyAccessErrorLogService.deleteAll();

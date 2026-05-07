@@ -33,12 +33,14 @@ public class BoSyRoleMenuService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyRoleMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syRoleMenuMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyRoleMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -46,6 +48,7 @@ public class BoSyRoleMenuService {
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyRoleMenuDto getById(String id) {
         SyRoleMenuDto dto = syRoleMenuMapper.selectById(id);
@@ -53,6 +56,7 @@ public class BoSyRoleMenuService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SyRoleMenu create(SyRoleMenu body) {
         body.setRoleMenuId(CmUtil.generateId("sy_role_menu"));
@@ -65,6 +69,7 @@ public class BoSyRoleMenuService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public SyRoleMenuDto update(String id, SyRoleMenu body) {
         SyRoleMenu entity = syRoleMenuRepository.findById(id)
@@ -81,6 +86,7 @@ public class BoSyRoleMenuService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyRoleMenu entity = syRoleMenuRepository.findById(id)
@@ -92,9 +98,11 @@ public class BoSyRoleMenuService {
         evictIfPresent(roleId);
     }
 
+    /** evictIfPresent */
     private void evictIfPresent(String roleId) {
         if (roleId != null) roleMenuCache.evict(roleId);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyRoleMenu> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

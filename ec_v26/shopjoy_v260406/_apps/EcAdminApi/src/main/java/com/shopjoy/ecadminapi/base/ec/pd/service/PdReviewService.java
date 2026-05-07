@@ -36,6 +36,7 @@ public class PdReviewService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdReviewDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -44,6 +45,7 @@ public class PdReviewService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdReviewDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -61,6 +63,7 @@ public class PdReviewService {
         return result != null ? result : new java.util.LinkedHashMap<>();
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PdReview entity) {
         // pd_review :: update :: [orm:mybatis]
@@ -82,6 +85,7 @@ public class PdReviewService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PdReview save(PdReview entity) {
         if (!pdReviewRepository.existsById(entity.getReviewId()))
@@ -93,6 +97,7 @@ public class PdReviewService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pdReviewRepository.existsById(id))
@@ -101,6 +106,7 @@ public class PdReviewService {
         pdReviewRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdReview> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

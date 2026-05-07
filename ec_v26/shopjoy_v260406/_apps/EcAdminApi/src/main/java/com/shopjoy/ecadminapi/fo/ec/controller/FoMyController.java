@@ -33,24 +33,28 @@ public class FoMyController {
 
     private final FoMyPageService foMyPageService;
 
+    /** getOrders — 조회 */
     @GetMapping("/order/list")
     public ResponseEntity<ApiResponse<List<OdOrderDto>>> getOrders(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyOrders(p)));
     }
 
+    /** getClaims — 조회 */
     @GetMapping("/claim/list")
     public ResponseEntity<ApiResponse<List<OdClaimDto>>> getClaims(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyClaims(p)));
     }
 
+    /** getCoupons — 조회 */
     @GetMapping("/coupon/list")
     public ResponseEntity<ApiResponse<List<PmCouponDto>>> getCoupons(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCoupons(p)));
     }
 
+    /** getCashInfo — 조회 */
     @GetMapping("/cash/info")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCashInfo() {
         List<PmCacheDto> history = foMyPageService.getMyCacheHistory(new HashMap<>());
@@ -60,12 +64,14 @@ public class FoMyController {
         return ResponseEntity.ok(ApiResponse.ok(cashInfo));
     }
 
+    /** getInquiries — 조회 */
     @GetMapping("/inquiry/list")
     public ResponseEntity<ApiResponse<List<Object>>> getInquiries(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(List.of()));
     }
 
+    /** getChats — 조회 */
     @GetMapping("/chat/list")
     public ResponseEntity<ApiResponse<List<Object>>> getChats(
             @RequestParam Map<String, Object> p) {

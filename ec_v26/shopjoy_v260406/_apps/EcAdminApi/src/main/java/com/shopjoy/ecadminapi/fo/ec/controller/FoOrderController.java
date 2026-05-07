@@ -26,6 +26,7 @@ public class FoOrderController {
 
     private final FoOdOrderService foOdOrderService;
 
+    /** createOrder — 생성 */
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Map<String, Object>>> createOrder(@RequestBody OdOrder entity) {
         OdOrder created = foOdOrderService.placeOrder(entity);

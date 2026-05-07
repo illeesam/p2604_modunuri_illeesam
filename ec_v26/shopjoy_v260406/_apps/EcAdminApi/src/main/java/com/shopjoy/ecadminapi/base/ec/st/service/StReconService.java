@@ -40,6 +40,7 @@ public class StReconService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<StReconDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -47,12 +48,14 @@ public class StReconService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<StReconDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stReconMapper.selectPageList(p), stReconMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(StRecon entity) {
         int result = stReconMapper.updateSelective(entity);
@@ -72,6 +75,7 @@ public class StReconService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public StRecon save(StRecon entity) {
         if (!stReconRepository.existsById(entity.getReconId()))
@@ -82,6 +86,7 @@ public class StReconService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         StRecon entity = stReconRepository.findById(id)
@@ -92,6 +97,7 @@ public class StReconService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<StRecon> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

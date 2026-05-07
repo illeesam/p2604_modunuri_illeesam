@@ -22,18 +22,21 @@ public class CoSyCodeController {
 
     private final BoSyCodeService boSyCodeService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyCodeDto>>> list(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyCodeDto>>> page(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.getPageData(p)));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyCodeDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.getById(id)));

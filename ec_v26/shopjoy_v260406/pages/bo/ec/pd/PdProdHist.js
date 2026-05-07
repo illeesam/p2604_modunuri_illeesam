@@ -31,7 +31,7 @@ window.PdProdHist = {
 
 
     const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 

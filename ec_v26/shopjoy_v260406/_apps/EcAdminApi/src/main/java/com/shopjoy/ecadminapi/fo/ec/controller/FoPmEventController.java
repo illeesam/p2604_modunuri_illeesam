@@ -26,6 +26,7 @@ public class FoPmEventController {
 
     private final FoPmEventService foPmEventService;
 
+    /** list — 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmEventDto>>> list(
             @RequestParam Map<String, Object> p) {
@@ -33,6 +34,7 @@ public class FoPmEventController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmEventDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -40,6 +42,7 @@ public class FoPmEventController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getById — 조회 */
     @GetMapping("/{eventId}")
     public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable("eventId") String eventId) {
         PmEventDto result = foPmEventService.getById(eventId);

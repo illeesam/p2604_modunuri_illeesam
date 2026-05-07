@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class StatsAggregationJob implements SchBatchJobHandler {
 
+    /** batchCode */
     @Override
     public String batchCode() {
         return "STATS_AGGREGATION";
     }
 
+    /** execute — 실행 */
     @Override
     public void execute(SyBatch batch) {
         log.info("[{}] 통계 데이터 집계 시작", batchCode());

@@ -30,18 +30,21 @@ public class BoSySiteService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SySiteDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return sySiteMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SySiteDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(sySiteMapper.selectPageList(p), sySiteMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SySiteDto getById(String id) {
         SySiteDto dto = sySiteMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoSySiteService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SySite create(SySite body) {
         body.setSiteId("SI" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -59,6 +63,7 @@ public class BoSySiteService {
         return sySiteRepository.save(body);
     }
 
+    /** update — 수정 */
     @Transactional
     public SySiteDto update(String id, SySite body) {
         SySite entity = sySiteRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -70,6 +75,7 @@ public class BoSySiteService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SySite entity = sySiteRepository.findById(id)
@@ -80,6 +86,7 @@ public class BoSySiteService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SySite> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

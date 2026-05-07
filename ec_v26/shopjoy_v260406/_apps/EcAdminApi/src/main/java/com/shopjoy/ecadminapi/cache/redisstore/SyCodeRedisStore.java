@@ -36,6 +36,7 @@ public class SyCodeRedisStore {
         log.info("[Cache][redis] [sy:code:grp][{}] saveGroup()— {}건", groupCode, codes.size());
     }
 
+    /** saveAll — 저장 */
     public void saveAll(Map<String, List<Map<String, Object>>> allCodes) {
         redis.set(CacheKey.SY_CODE_ALL, allCodes, props.getTtl().getSyCodeSeconds());
         log.info("[Cache][redis] [sy:code:all] saveAll()— {}개그룹", allCodes.size());
@@ -49,6 +50,7 @@ public class SyCodeRedisStore {
                 .map(l -> (List<Map<String, Object>>) l);
     }
 
+    /** getAll — 조회 */
     @SuppressWarnings("unchecked")
     public Optional<Map<String, List<Map<String, Object>>>> getAll() {
         return redis.get(CacheKey.SY_CODE_ALL, Map.class)
@@ -61,11 +63,13 @@ public class SyCodeRedisStore {
         redis.delete(CacheKey.SY_CODE_GRP + groupCode);
     }
 
+    /** evictAll */
     public void evictAll() {
         redis.deleteByPattern(CacheKey.SY_CODE_GRP + "*");
         redis.delete(CacheKey.SY_CODE_ALL);
     }
 
+    /** isEnabled — 여부 */
     public boolean isEnabled() {
         return redis.isEnabled();
     }

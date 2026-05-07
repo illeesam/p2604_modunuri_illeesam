@@ -31,6 +31,7 @@ public class DpAreaReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public DpArea toEntity() {
         return DpArea.builder()
                 .areaId(areaId)

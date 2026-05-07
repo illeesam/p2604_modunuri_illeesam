@@ -52,6 +52,7 @@ public class FoPdProdController {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getList(p)));
     }
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -74,12 +75,14 @@ public class FoPdProdController {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getContents(id)));
     }
 
+    /** getRels — 조회 */
     @GetMapping("/{id}/rels")
     public ResponseEntity<ApiResponse<List<PdProdRelDto>>> getRels(
             @PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getRels(id)));
     }
 
+    /** getReviews — 조회 */
     @GetMapping("/{id}/reviews")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getReviews(
             @PathVariable("id") String id,
@@ -87,12 +90,14 @@ public class FoPdProdController {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getReviews(id, p)));
     }
 
+    /** getReviewImages — 조회 */
     @GetMapping("/{id}/review-images")
     public ResponseEntity<ApiResponse<List<PdReviewAttachDto>>> getReviewImages(
             @PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getReviewImages(id)));
     }
 
+    /** getQna — 조회 */
     @GetMapping("/{id}/qna")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getQna(
             @PathVariable("id") String id,

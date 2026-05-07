@@ -28,6 +28,7 @@ public class PdReviewCommentReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PdReviewComment toEntity() {
         return PdReviewComment.builder()
                 .reviewCommentId(reviewCommentId)

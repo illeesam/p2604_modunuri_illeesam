@@ -38,6 +38,7 @@ public class SyVendorContentReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyVendorContent toEntity() {
         return SyVendorContent.builder()
                 .vendorContentId(vendorContentId)

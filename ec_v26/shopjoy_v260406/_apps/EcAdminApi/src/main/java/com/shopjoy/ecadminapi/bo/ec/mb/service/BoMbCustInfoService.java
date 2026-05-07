@@ -29,18 +29,21 @@ public class BoMbCustInfoService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<MbMemberDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mbMemberMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<MbMemberDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbMemberMapper.selectPageList(p), mbMemberMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public MbMemberDto getById(String id) {
         MbMemberDto dto = mbMemberMapper.selectById(id);
@@ -48,6 +51,7 @@ public class BoMbCustInfoService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public MbMember create(MbMember body) {
         body.setMemberId("MB" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -60,6 +64,7 @@ public class BoMbCustInfoService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public MbMemberDto update(String id, MbMember body) {
         MbMember entity = mbMemberRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -72,6 +77,7 @@ public class BoMbCustInfoService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         MbMember entity = mbMemberRepository.findById(id)

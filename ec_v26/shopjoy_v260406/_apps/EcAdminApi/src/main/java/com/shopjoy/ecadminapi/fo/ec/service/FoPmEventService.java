@@ -24,17 +24,20 @@ public class FoPmEventService {
 
     private final PmEventMapper pmEventMapper;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmEventDto> getList(Map<String, Object> p) {
         return pmEventMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmEventDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmEventMapper.selectPageList(p), pmEventMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PmEventDto getById(String eventId) {
         PmEventDto dto = pmEventMapper.selectById(eventId);

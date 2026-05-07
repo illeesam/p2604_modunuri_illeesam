@@ -142,7 +142,7 @@ window.StConfigMng = {
       }
     };
 
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 

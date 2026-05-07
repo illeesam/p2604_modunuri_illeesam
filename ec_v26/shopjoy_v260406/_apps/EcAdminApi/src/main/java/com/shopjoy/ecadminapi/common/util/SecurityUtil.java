@@ -28,6 +28,7 @@ public final class SecurityUtil {
 
     private SecurityUtil() {}
 
+    /** currentPrincipal */
     public static AuthPrincipal currentPrincipal() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getPrincipal() instanceof AuthPrincipal p) {

@@ -37,6 +37,7 @@ public class PdReviewCommentService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PdReviewCommentDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -45,6 +46,7 @@ public class PdReviewCommentService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdReviewCommentDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -52,6 +54,7 @@ public class PdReviewCommentService {
         return PageResult.of(pdReviewCommentMapper.selectPageList(p), pdReviewCommentMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PdReviewComment entity) {
         // pd_review_comment :: update :: [orm:mybatis]
@@ -73,6 +76,7 @@ public class PdReviewCommentService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PdReviewComment save(PdReviewComment entity) {
         if (!pdReviewCommentRepository.existsById(entity.getReviewCommentId()))
@@ -84,6 +88,7 @@ public class PdReviewCommentService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pdReviewCommentRepository.existsById(id))
@@ -92,6 +97,7 @@ public class PdReviewCommentService {
         pdReviewCommentRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PdReviewComment> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

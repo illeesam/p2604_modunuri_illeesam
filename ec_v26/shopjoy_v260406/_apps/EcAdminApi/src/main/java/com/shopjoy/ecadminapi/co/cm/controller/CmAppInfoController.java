@@ -158,6 +158,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildBuildInfo — 구성 */
     private Map<String, Object> buildBuildInfo() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("springBootVersion", SpringBootVersion.getVersion());
@@ -172,6 +173,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildJava — 구성 */
     private Map<String, Object> buildJava() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("version",          System.getProperty("java.version"));
@@ -184,6 +186,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildOs — 구성 */
     private Map<String, Object> buildOs() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("name",                System.getProperty("os.name"));
@@ -193,6 +196,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildResources — 구성 */
     private Map<String, Object> buildResources() {
         Map<String, Object> m = new LinkedHashMap<>();
         long mb = 1024L * 1024L;
@@ -284,6 +288,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildServer — 구성 */
     private Map<String, Object> buildServer() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("port",        serverPort);
@@ -291,6 +296,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildDb — 구성 */
     private Map<String, Object> buildDb() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("url",                  dbUrl);
@@ -302,6 +308,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildJpa — 구성 */
     private Map<String, Object> buildJpa() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("hibernateDdlAuto",  jpaHibernateDdlAuto);
@@ -310,6 +317,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildJwt — 구성 */
     private Map<String, Object> buildJwt() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("secret",          mask(jwtSecret));
@@ -320,6 +328,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildRedis — 구성 */
     private Map<String, Object> buildRedis() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("enabled",      redisProps.isEnabled());
@@ -369,6 +378,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildScheduler — 구성 */
     private Map<String, Object> buildScheduler() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("enabled",        schedulerEnabled);
@@ -377,6 +387,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildErrorLog — 구성 */
     private Map<String, Object> buildErrorLog() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("dbSave",    errorLogDbSave);
@@ -384,6 +395,7 @@ public class CmAppInfoController {
         return m;
     }
 
+    /** buildAccessLog — 구성 */
     private Map<String, Object> buildAccessLog() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("dbSave",      accessLogDbSave);
@@ -401,6 +413,7 @@ public class CmAppInfoController {
         return (value != null && !value.isBlank()) ? "****" : "";
     }
 
+    /** round2 */
     private double round2(double value) {
         return Math.round(value * 100.0) / 100.0;
     }

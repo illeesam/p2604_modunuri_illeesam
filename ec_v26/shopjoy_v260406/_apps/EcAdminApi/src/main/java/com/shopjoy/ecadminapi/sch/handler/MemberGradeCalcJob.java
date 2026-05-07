@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class MemberGradeCalcJob implements SchBatchJobHandler {
 
+    /** batchCode */
     @Override
     public String batchCode() {
         return "MEMBER_GRADE_CALC";
     }
 
+    /** execute — 실행 */
     @Override
     public void execute(SyBatch batch) {
         log.info("[{}] 회원 등급 재산정 시작", batchCode());

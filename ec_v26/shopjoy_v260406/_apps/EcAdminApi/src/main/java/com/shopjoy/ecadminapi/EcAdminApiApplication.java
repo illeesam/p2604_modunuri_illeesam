@@ -22,6 +22,7 @@ import java.sql.Connection;
 )
 public class EcAdminApiApplication {
 
+    /** main */
     public static void main(String[] args) {
         log.info("[EcAdminApi] ===== 애플리케이션 시작 중 =====");
         ConfigurableApplicationContext ctx = SpringApplication.run(EcAdminApiApplication.class, args);
@@ -34,6 +35,7 @@ public class EcAdminApiApplication {
         checkFileStorageConfiguration(ctx);
     }
 
+    /** checkDatabaseConnection — 검증 */
     private static void checkDatabaseConnection(ConfigurableApplicationContext ctx) {
         try {
             DataSource dataSource = ctx.getBean(DataSource.class);
@@ -59,6 +61,7 @@ public class EcAdminApiApplication {
         }
     }
 
+    /** extractDatabaseName — 추출 */
     private static String extractDatabaseName(String url) {
         try {
             // PostgreSQL: jdbc:postgresql://host:port/database?...
@@ -83,6 +86,7 @@ public class EcAdminApiApplication {
         }
     }
 
+    /** checkRedisConnection — 검증 */
     private static void checkRedisConnection(ConfigurableApplicationContext ctx) {
         try {
             RedisTemplate<String, Object> primaryTemplate =
@@ -154,6 +158,7 @@ public class EcAdminApiApplication {
         }
     }
 
+    /** checkFileStorageConfiguration — 검증 */
     private static void checkFileStorageConfiguration(ConfigurableApplicationContext ctx) {
         try {
             String storageType = ctx.getEnvironment().getProperty("app.file.storage-type", "LOCAL");
@@ -209,6 +214,7 @@ public class EcAdminApiApplication {
         }
     }
 
+    /** maskSecret */
     private static String maskSecret(String secret) {
         if (secret == null || secret.isEmpty()) {
             return "(not configured)";

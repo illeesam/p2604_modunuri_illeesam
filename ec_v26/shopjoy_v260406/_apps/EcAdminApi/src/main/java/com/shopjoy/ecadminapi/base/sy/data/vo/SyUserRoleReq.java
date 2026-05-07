@@ -28,6 +28,7 @@ public class SyUserRoleReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public SyUserRole toEntity() {
         return SyUserRole.builder()
                 .userRoleId(userRoleId)

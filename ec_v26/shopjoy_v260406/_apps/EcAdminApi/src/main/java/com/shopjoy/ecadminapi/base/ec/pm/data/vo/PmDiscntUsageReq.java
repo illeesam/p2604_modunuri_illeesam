@@ -33,6 +33,7 @@ public class PmDiscntUsageReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public PmDiscntUsage toEntity() {
         return PmDiscntUsage.builder()
                 .discntUsageId(discntUsageId)

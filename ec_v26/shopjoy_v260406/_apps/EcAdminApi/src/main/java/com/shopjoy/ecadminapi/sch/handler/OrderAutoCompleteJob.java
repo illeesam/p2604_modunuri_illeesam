@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrderAutoCompleteJob implements SchBatchJobHandler {
 
+    /** batchCode */
     @Override
     public String batchCode() {
         return "ORDER_AUTO_COMPLETE";
     }
 
+    /** execute — 실행 */
     @Override
     public void execute(SyBatch batch) {
         log.info("[{}] 주문 자동 완료 처리 시작", batchCode());

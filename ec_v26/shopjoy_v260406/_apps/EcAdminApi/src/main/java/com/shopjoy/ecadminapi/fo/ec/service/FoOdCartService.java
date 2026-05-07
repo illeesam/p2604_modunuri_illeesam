@@ -29,12 +29,14 @@ public class FoOdCartService {
     private final OdCartMapper     odCartMapper;
     private final OdCartRepository odCartRepository;
 
+    /** getMyCart — 조회 */
     @Transactional(readOnly = true)
     public List<OdCartDto> getMyCart(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return odCartMapper.selectList(p);
     }
 
+    /** addToCart — 추가 */
     @Transactional
     public OdCart addToCart(OdCart entity) {
         entity.setCartId(CmUtil.generateId("od_cart"));
@@ -48,6 +50,7 @@ public class FoOdCartService {
         return saved;
     }
 
+    /** updateQty — 수정 */
     @Transactional
     public OdCart updateQty(String cartId, int qty) {
         OdCart cart = odCartRepository.findById(cartId)
@@ -62,6 +65,7 @@ public class FoOdCartService {
         return saved;
     }
 
+    /** removeFromCart — 삭제 */
     @Transactional
     public void removeFromCart(String cartId) {
         OdCart cart = odCartRepository.findById(cartId)

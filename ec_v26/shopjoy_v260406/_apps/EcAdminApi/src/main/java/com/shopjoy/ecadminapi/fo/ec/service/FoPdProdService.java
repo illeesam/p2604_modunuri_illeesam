@@ -59,6 +59,7 @@ public class FoPdProdService {
         return pdProdMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PdProdDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -101,6 +102,7 @@ public class FoPdProdService {
         return pdProdContentService.getList(p);
     }
 
+    /** getRels — 조회 */
     @Transactional(readOnly = true)
     public List<PdProdRelDto> getRels(String prodId) {
         Map<String, Object> p = new HashMap<>();

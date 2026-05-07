@@ -30,18 +30,21 @@ public class BoCmBlogService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmBlogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return cmBlogMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(cmBlogMapper.selectPageList(p), cmBlogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public CmBlogDto getById(String id) {
         CmBlogDto dto = cmBlogMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoCmBlogService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public CmBlog create(CmBlog body) {
         if (body.getUseYn() == null) body.setUseYn("Y");
@@ -62,6 +66,7 @@ public class BoCmBlogService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public CmBlogDto update(String id, CmBlog body) {
         CmBlog entity = cmBlogRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -74,6 +79,7 @@ public class BoCmBlogService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         CmBlog entity = cmBlogRepository.findById(id)
@@ -84,6 +90,7 @@ public class BoCmBlogService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** toggleUse — 전환 */
     @Transactional
     public CmBlogDto toggleUse(String id, Map<String, Object> body) {
         CmBlog entity = cmBlogRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -95,6 +102,7 @@ public class BoCmBlogService {
         em.flush();
         return getById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<CmBlog> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

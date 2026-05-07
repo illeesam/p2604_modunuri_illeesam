@@ -36,6 +36,7 @@ public class PmCouponService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmCouponDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -44,6 +45,7 @@ public class PmCouponService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmCouponDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -51,6 +53,7 @@ public class PmCouponService {
         return PageResult.of(pmCouponMapper.selectPageList(p), pmCouponMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(PmCoupon entity) {
         // pm_coupon :: update :: [orm:mybatis]
@@ -72,6 +75,7 @@ public class PmCouponService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public PmCoupon save(PmCoupon entity) {
         if (!pmCouponRepository.existsById(entity.getCouponId()))
@@ -83,6 +87,7 @@ public class PmCouponService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!pmCouponRepository.existsById(id))
@@ -91,6 +96,7 @@ public class PmCouponService {
         pmCouponRepository.deleteById(id);
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmCoupon> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

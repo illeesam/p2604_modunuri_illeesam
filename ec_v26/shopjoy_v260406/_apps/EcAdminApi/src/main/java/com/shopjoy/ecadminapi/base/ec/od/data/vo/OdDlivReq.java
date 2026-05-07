@@ -58,6 +58,7 @@ public class OdDlivReq {
     private String apprAprvUserId;
     private LocalDateTime apprAprvDate;
 
+    /** toEntity — 변환 */
     public OdDliv toEntity() {
         return OdDliv.builder()
                 .dlivId(dlivId)

@@ -22,6 +22,7 @@ public class BoPdCategoryProdController {
 
     private final BoPdCategoryProdService boPdCategoryProdService;
 
+    /** page — 페이지 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdCategoryProdDto>>> page(
             @RequestParam Map<String, Object> p) {
@@ -29,6 +30,7 @@ public class BoPdCategoryProdController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** saveProds — 저장 */
     @PutMapping
     public ResponseEntity<ApiResponse<Void>> saveProds(@RequestBody Map<String, Object> body) {
         boPdCategoryProdService.saveProds(body);

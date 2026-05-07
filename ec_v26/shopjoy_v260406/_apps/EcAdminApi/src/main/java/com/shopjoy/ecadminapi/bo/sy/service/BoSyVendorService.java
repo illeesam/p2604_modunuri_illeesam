@@ -30,18 +30,21 @@ public class BoSyVendorService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyVendorDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syVendorMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyVendorDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syVendorMapper.selectPageList(p), syVendorMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public SyVendorDto getById(String id) {
         SyVendorDto dto = syVendorMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoSyVendorService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public SyVendor create(SyVendor body) {
         body.setVendorId("VD" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -59,6 +63,7 @@ public class BoSyVendorService {
         return syVendorRepository.save(body);
     }
 
+    /** update — 수정 */
     @Transactional
     public SyVendorDto update(String id, SyVendor body) {
         SyVendor entity = syVendorRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -70,6 +75,7 @@ public class BoSyVendorService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyVendor entity = syVendorRepository.findById(id)
@@ -80,6 +86,7 @@ public class BoSyVendorService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<SyVendor> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

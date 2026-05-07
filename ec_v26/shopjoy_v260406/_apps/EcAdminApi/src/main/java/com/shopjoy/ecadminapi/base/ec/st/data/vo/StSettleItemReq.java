@@ -36,6 +36,7 @@ public class StSettleItemReq {
     private String updBy;
     private LocalDateTime updDate;
 
+    /** toEntity — 변환 */
     public StSettleItem toEntity() {
         return StSettleItem.builder()
                 .settleItemId(settleItemId)

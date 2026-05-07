@@ -39,6 +39,7 @@ public class SyAlarmService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyAlarmDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -47,6 +48,7 @@ public class SyAlarmService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyAlarmDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -54,6 +56,7 @@ public class SyAlarmService {
         return PageResult.of(syAlarmMapper.selectPageList(p), syAlarmMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyAlarm entity) {
         // sy_alarm :: update :: entity [orm:mybatis]
@@ -75,6 +78,7 @@ public class SyAlarmService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public SyAlarm save(SyAlarm entity) {
         if (!syAlarmRepository.existsById(entity.getAlarmId())) {
@@ -87,6 +91,7 @@ public class SyAlarmService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         SyAlarm entity = syAlarmRepository.findById(id)
@@ -115,6 +120,7 @@ public class SyAlarmService {
         return result;
     }
 
+    /** doSaveByRowStatus — 실행 */
     private SyAlarm doSaveByRowStatus(SyAlarmReq req) {
         return switch (req.getRowStatus()) {
             case "I" -> create(req.toEntity());

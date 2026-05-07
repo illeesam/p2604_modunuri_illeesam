@@ -44,6 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 
+    /** doFilterInternal — 실행 */
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -177,6 +178,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
     }
 
+    /** resolveClientIp — 결정 */
     private static String resolveClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
@@ -188,6 +190,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return ip != null ? ip : "-";
     }
 
+    /** mdcAnonymous */
     private static void mdcAnonymous(HttpServletRequest request) {
         MDC.put("siteId",   "-");
         MDC.put("authId",   "-");
@@ -204,6 +207,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         request.setAttribute(AccessLogFilter.ATTR_VENDOR_ID, null);
     }
 
+    /** extractToken — 추출 */
     private String extractToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {

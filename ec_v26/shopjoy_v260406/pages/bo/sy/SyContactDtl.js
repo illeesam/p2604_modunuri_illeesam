@@ -34,7 +34,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       codes.contact_statuses = codeStore.sgGetGrpCodes('CONTACT_STATUS_KR');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
     const form = reactive({

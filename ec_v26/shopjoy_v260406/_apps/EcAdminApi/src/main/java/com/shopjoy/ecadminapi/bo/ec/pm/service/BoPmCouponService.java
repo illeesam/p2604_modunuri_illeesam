@@ -30,18 +30,21 @@ public class BoPmCouponService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<PmCouponDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pmCouponMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<PmCouponDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmCouponMapper.selectPageList(p), pmCouponMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public PmCouponDto getById(String id) {
         PmCouponDto dto = pmCouponMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoPmCouponService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public PmCoupon create(PmCoupon body) {
         body.setCouponId("CP" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
@@ -61,6 +65,7 @@ public class BoPmCouponService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public PmCouponDto update(String id, PmCoupon body) {
         PmCoupon entity = pmCouponRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -73,6 +78,7 @@ public class BoPmCouponService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         PmCoupon entity = pmCouponRepository.findById(id)
@@ -83,6 +89,7 @@ public class BoPmCouponService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** changeStatus */
     @Transactional
     public PmCouponDto changeStatus(String id, String statusCd) {
         PmCoupon entity = pmCouponRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
@@ -95,6 +102,7 @@ public class BoPmCouponService {
         em.flush();
         return getById(id);
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<PmCoupon> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

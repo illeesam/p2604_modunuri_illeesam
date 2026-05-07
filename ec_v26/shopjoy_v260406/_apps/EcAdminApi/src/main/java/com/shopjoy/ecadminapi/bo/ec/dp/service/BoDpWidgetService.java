@@ -30,18 +30,21 @@ public class BoDpWidgetService {
     @PersistenceContext
     private EntityManager em;
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<DpWidgetDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return dpWidgetMapper.selectList(p);
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<DpWidgetDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(dpWidgetMapper.selectPageList(p), dpWidgetMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** getById — 조회 */
     @Transactional(readOnly = true)
     public DpWidgetDto getById(String id) {
         DpWidgetDto dto = dpWidgetMapper.selectById(id);
@@ -49,6 +52,7 @@ public class BoDpWidgetService {
         return dto;
     }
 
+    /** create — 생성 */
     @Transactional
     public DpWidget create(DpWidget body) {
         if (body.getUseYn() == null) body.setUseYn("Y");
@@ -62,6 +66,7 @@ public class BoDpWidgetService {
         return saved;
     }
 
+    /** update — 수정 */
     @Transactional
     public DpWidgetDto update(String id, DpWidget body) {
         DpWidget entity = dpWidgetRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
@@ -74,6 +79,7 @@ public class BoDpWidgetService {
         return getById(id);
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         DpWidget entity = dpWidgetRepository.findById(id)
@@ -83,6 +89,7 @@ public class BoDpWidgetService {
         if (dpWidgetRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+    /** saveList — 저장 */
     @Transactional
     public void saveList(List<DpWidget> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

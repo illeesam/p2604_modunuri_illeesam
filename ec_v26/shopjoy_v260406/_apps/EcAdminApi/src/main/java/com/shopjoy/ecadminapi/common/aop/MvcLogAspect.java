@@ -57,21 +57,27 @@ public class MvcLogAspect {
         }
     }
 
+    /** controllerLayer */
     @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Controller.*(..))")
     private void controllerLayer() {}
 
+    /** clientLayer */
     @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Client.*(..))")
     private void clientLayer() {}
 
+    /** serviceLayer */
     @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Service*.*(..))")
     private void serviceLayer() {}
 
+    /** repositoryLayer */
     @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Repository.*(..))")
     private void repositoryLayer() {}
 
+    /** mapperLayer */
     @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Mapper.*(..))")
     private void mapperLayer() {}
 
+    /** logging */
     @Around("controllerLayer() || clientLayer() || serviceLayer() || repositoryLayer() || mapperLayer()")
     public Object logging(ProceedingJoinPoint pjp) throws Throwable {
         // local/dev profile일 때만 로깅
@@ -123,6 +129,7 @@ public class MvcLogAspect {
         return "local".equalsIgnoreCase(activeProfile) || "dev".equalsIgnoreCase(activeProfile);
     }
 
+    /** getComponentName — 조회 */
     private String getComponentName(ProceedingJoinPoint pjp) {
         Object target = pjp.getTarget();
         if (target == null) return pjp.getSignature().getDeclaringType().getSimpleName();
@@ -134,6 +141,7 @@ public class MvcLogAspect {
         return name;
     }
 
+    /** formatInputParams — 포맷 */
     private String formatInputParams(ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
         if (args == null || args.length == 0) return "";
@@ -158,6 +166,7 @@ public class MvcLogAspect {
         return result;
     }
 
+    /** extractRequestInfo — 추출 */
     private String extractRequestInfo(ProceedingJoinPoint pjp) {
         // args 중 HttpServletRequest 우선, 없으면 RequestContextHolder에서 조회
         HttpServletRequest req = null;
@@ -186,14 +195,17 @@ public class MvcLogAspect {
         return sb.toString();
     }
 
+    /** nvl */
     private static String nvl(String s) { return s != null ? s : ""; }
 
+    /** decode — 디코딩 */
     private static String decode(String s) {
         if (s == null || s.isEmpty()) return s;
         try { return java.net.URLDecoder.decode(s, "UTF-8"); }
         catch (Exception e) { return s; }
     }
 
+    /** logMethodIn — 로그 */
     private void logMethodIn(ComponentType type, String className, String methodName,
                              String params, String reqInfo) {
         if (className.toUpperCase().contains("TOKENSERVICE")) {
@@ -210,6 +222,7 @@ public class MvcLogAspect {
         logger.info(msg);
     }
 
+    /** logMethodOut — 로그 */
     private void logMethodOut(ComponentType type, String className, String methodName,
                               String outObjName, String strOutParams, String reqInfo) {
         if (className.toUpperCase().contains("TOKENSERVICE")) {
@@ -227,6 +240,7 @@ public class MvcLogAspect {
         logger.info(msg);
     }
 
+    /** truncateOutput */
     private String truncateOutput(String output) {
         if (output == null || output.isEmpty()) {
             return output;
@@ -236,6 +250,7 @@ public class MvcLogAspect {
                 : output;
     }
 
+    /** logMethodError — 로그 */
     private void logMethodError(ComponentType type, String className, String methodName,
                                 Throwable ex, String reqInfo) {
         if (className.toUpperCase().contains("TOKENSERVICE")) {

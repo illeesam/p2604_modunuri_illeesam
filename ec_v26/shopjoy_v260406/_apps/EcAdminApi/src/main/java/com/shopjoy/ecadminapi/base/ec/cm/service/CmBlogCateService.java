@@ -35,6 +35,7 @@ public class CmBlogCateService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<CmBlogCateDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -43,6 +44,7 @@ public class CmBlogCateService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<CmBlogCateDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -50,6 +52,7 @@ public class CmBlogCateService {
         return PageResult.of(cmBlogCateMapper.selectPageList(p), cmBlogCateMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(CmBlogCate entity) {
         // cm_blog_cate :: update :: [orm:mybatis]
@@ -71,6 +74,7 @@ public class CmBlogCateService {
         return result;
     }
 
+    /** save — 저장 */
     @Transactional
     public CmBlogCate save(CmBlogCate entity) {
         if (!cmBlogCateRepository.existsById(entity.getBlogCateId())) {
@@ -83,6 +87,7 @@ public class CmBlogCateService {
         return result;
     }
 
+    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         if (!cmBlogCateRepository.existsById(id)) {
@@ -110,6 +115,7 @@ public class CmBlogCateService {
         return result;
     }
 
+    /** doSaveByRowStatus — 실행 */
     private CmBlogCate doSaveByRowStatus(CmBlogCateReq req) {
         return switch (req.getRowStatus()) {
             case "I" -> create(req.toEntity());

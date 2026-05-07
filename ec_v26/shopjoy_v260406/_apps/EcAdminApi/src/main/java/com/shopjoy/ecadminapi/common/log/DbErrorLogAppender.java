@@ -32,12 +32,14 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
     private static volatile String        serverNm;
     private static volatile String        activeProfile;
 
+    /** bind */
     public static void bind(ErrorLogQueue queue, String server, String profile) {
         errorLogQueue  = queue;
         serverNm       = server;
         activeProfile  = profile;
     }
 
+    /** append — 추가 */
     @Override
     protected void append(ILoggingEvent event) {
         if (errorLogQueue == null) return;
@@ -99,17 +101,20 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         return "EL" + ts + String.format("%04d", (int) (Math.random() * 10000));
     }
 
+    /** toLocalDateTime — 변환 */
     private static LocalDateTime toLocalDateTime(long epochMillis) {
         return Instant.ofEpochMilli(epochMillis)
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
     }
 
+    /** extractErrorType — 추출 */
     private static String extractErrorType(ILoggingEvent event) {
         IThrowableProxy proxy = event.getThrowableProxy();
         return proxy != null ? proxy.getClassName() : null;
     }
 
+    /** formatStackTrace — 포맷 */
     private static String formatStackTrace(IThrowableProxy proxy) {
         if (proxy == null) return null;
         StringBuilder sb = new StringBuilder();
@@ -130,6 +135,7 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         return sb.toString();
     }
 
+    /** resolveElapsedMs — 결정 */
     private static Long resolveElapsedMs(Map<String, String> mdc, long eventTs) {
         String startMs = mdc.get("reqStartMs");
         if (startMs == null || startMs.isBlank()) return null;
@@ -141,6 +147,7 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         }
     }
 
+    /** truncate */
     private static String truncate(String s, int max) {
         if (s == null) return null;
         return s.length() <= max ? s : s.substring(0, max);

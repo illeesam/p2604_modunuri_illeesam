@@ -29,6 +29,7 @@ public class SyhAlarmSendHistService {
         return result;
     }
 
+    /** getList — 조회 */
     @Transactional(readOnly = true)
     public List<SyhAlarmSendHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
@@ -37,6 +38,7 @@ public class SyhAlarmSendHistService {
         return result;
     }
 
+    /** getPageData — 조회 */
     @Transactional(readOnly = true)
     public PageResult<SyhAlarmSendHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
@@ -44,6 +46,7 @@ public class SyhAlarmSendHistService {
         return PageResult.of(syhAlarmSendHistMapper.selectPageList(p), syhAlarmSendHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /** update — 수정 */
     @Transactional
     public int update(SyhAlarmSendHist entity) {
         // syh_alarm_send_hist :: update :: [orm:mybatis]
