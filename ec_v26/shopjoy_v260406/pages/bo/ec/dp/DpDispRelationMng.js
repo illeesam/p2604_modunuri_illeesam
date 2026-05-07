@@ -46,8 +46,7 @@ window.DpDispRelationMng = {
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
-    });
+      handleSearchData('DEFAULT');    });
 
     /* 검색 */
   const searchParam = reactive(_initSearchParam());

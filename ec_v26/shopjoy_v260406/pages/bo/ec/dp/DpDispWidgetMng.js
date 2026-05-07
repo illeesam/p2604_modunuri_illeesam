@@ -79,8 +79,7 @@ window.DpDispWidgetMng = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
-    });
+      handleSearchData('DEFAULT');    });
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfSiteNm = computed(() => boUtil.getSiteNm());

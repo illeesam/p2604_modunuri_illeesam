@@ -74,8 +74,7 @@ window.PmGiftMng = {
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    });
+      handleSearchList('DEFAULT');    });
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;

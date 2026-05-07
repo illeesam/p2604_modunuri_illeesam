@@ -70,8 +70,7 @@ window.PdQnaMng = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    });
+      handleSearchList('DEFAULT');    });
 const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };

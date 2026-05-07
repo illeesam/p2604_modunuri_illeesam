@@ -263,8 +263,17 @@
   showToast(msg, 'error', 0, details);
   return;
   }
-  if (st === 401) { errorMessage.value = msg; page.value = 'error401'; }
-  else if (st >= 500 || st === 0) { errorMessage.value = msg; page.value = 'error500'; }
+  if (st === 401) {
+    errorMessage.value = msg;
+    page.value = 'error401';
+    // hash 동기화 — 미동기화 시 readHash 가 다시 원래 페이지로 복원하면서 무한 마운트 루프 발생
+    try { window.history.replaceState(null, '', '#page=error401'); } catch (_) {}
+  }
+  else if (st >= 500 || st === 0) {
+    errorMessage.value = msg;
+    page.value = 'error500';
+    try { window.history.replaceState(null, '', '#page=error500'); } catch (_) {}
+  }
   });
   const dtlId = ref(null);
 
@@ -471,7 +480,12 @@
   const p2 = new URLSearchParams();
   p2.set('page', pg);
   if (opts.id != null) p2.set('id', opts.id);
-  window.location.hash = p2.toString();
+  // 동일 hash 재설정 시 hashchange 이벤트 재발화로 인한 무한 마운트 루프 방지
+  const newHash = p2.toString();
+  const curHash = String(window.location.hash || '').replace(/^#/, '');
+  if (curHash !== newHash) {
+    window.location.hash = newHash;
+  }
   window.scrollTo(0, 0);
   };
 

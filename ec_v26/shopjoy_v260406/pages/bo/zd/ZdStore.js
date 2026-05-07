@@ -167,8 +167,10 @@ window.ZdStore = {
 };
 
     onMounted(() => {
-      if (storeList.length > 0 && !uiState.selectedStore) {
-        selectStore(storeList[0].name);
+      // storeList 는 computed 이므로 .value 필요. 잘못된 .length 검사가 무한 호출 유발 가능 → 안전 가드.
+      const list = storeList.value || [];
+      if (list.length > 0 && !uiState.selectedStore) {
+        selectStore(list[0].name);
       }
       loadAllStoreData();
     });

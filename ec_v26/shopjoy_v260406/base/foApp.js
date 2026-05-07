@@ -152,8 +152,16 @@
         showToast(msg, 'error', 0, details);
         return;
       }
-      if (st === 401) { errorMessage.value = msg; page.value = 'error401'; }
-      else if (st >= 500 || st === 0) { errorMessage.value = msg; page.value = 'error500'; }
+      if (st === 401) {
+        errorMessage.value = msg;
+        page.value = 'error401';
+        try { window.history.replaceState(null, '', '#page=error401'); } catch (_) {}
+      }
+      else if (st >= 500 || st === 0) {
+        errorMessage.value = msg;
+        page.value = 'error500';
+        try { window.history.replaceState(null, '', '#page=error500'); } catch (_) {}
+      }
     });
     const sidebarOpen = ref(true);
     const uiState = reactive({ mobileOpen: false, showLogin: false });
