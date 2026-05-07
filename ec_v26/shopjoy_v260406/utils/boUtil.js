@@ -271,7 +271,9 @@
 
   /* ── 공통 코드 로드 헬퍼 ──
    * setup() 안에서 호출. watch(isAppReady) 등록 + isAppReady computed 반환.
-   * onMounted의 초기 체크는 각 페이지에서 반환값으로 직접 처리.
+   * 무한 refresh 방지:
+   *   - fnLoadCodes 가 throw 해도 uiState.isPageCodeLoad 를 반드시 true 로 설정
+   *   - 1회 성공 후 watch 자동 stop (재마운트 시까지 재호출 차단)
    * 사용법:
    *   const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
    *   onMounted(() => { if (isAppReady.value) fnLoadCodes(); ... });
@@ -283,7 +285,18 @@
       const c = window.sfGetBoCodeStore?.();
       return !i?.svIsLoading && c?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
-    watch(isAppReady, v => { if (v) fnLoadCodes(); });
+    let _called = false;
+    const stop = watch(isAppReady, v => {
+      if (!v || _called) return;
+      _called = true;
+      try { fnLoadCodes(); }
+      catch (err) { console.error('[useAppCodeReady] fnLoadCodes failed:', err); }
+      finally {
+        // throw 여부와 무관하게 플래그를 세워 재트리거 차단
+        try { uiState.isPageCodeLoad = true; } catch (_) {}
+        try { stop && stop(); } catch (_) {}
+      }
+    });
     return isAppReady;
   };
 

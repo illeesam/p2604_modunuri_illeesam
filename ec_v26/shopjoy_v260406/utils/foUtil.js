@@ -40,6 +40,9 @@
 
   /* ── 공통 코드 로드 헬퍼 ──
    * setup() 안에서 호출. watch(isAppReady) 등록 + isAppReady computed 반환.
+   * 무한 refresh 방지:
+   *   - fnLoadCodes 가 throw 해도 uiState.isPageCodeLoad 를 반드시 true 로 설정
+   *   - 1회 성공 후 watch 자동 stop (재마운트 시까지 재호출 차단)
    * 사용법:
    *   const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
    *   onMounted(() => { if (isAppReady.value) fnLoadCodes(); ... });
@@ -51,7 +54,17 @@
       var c = window.useFoCodeStore?.();
       return !i?.svIsLoading && c?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
-    watch(isAppReady, function(v) { if (v) fnLoadCodes(); });
+    var _called = false;
+    var stop = watch(isAppReady, function(v) {
+      if (!v || _called) return;
+      _called = true;
+      try { fnLoadCodes(); }
+      catch (err) { console.error('[useAppCodeReady] fnLoadCodes failed:', err); }
+      finally {
+        try { uiState.isPageCodeLoad = true; } catch (_) {}
+        try { if (stop) stop(); } catch (_) {}
+      }
+    });
     return isAppReady;
   };
 })(typeof window !== 'undefined' ? window : globalThis);
