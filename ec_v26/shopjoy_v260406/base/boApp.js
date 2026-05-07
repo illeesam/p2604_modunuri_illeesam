@@ -452,15 +452,18 @@
   const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
   if (!isLoggedIn && pg !== 'dashboard') {
   if (showNotification) showToast('로그인이 필요합니다.', 'error');
-  page.value = 'dashboard';
+  if (page.value !== 'dashboard') page.value = 'dashboard';
   return;
   }
-  page.value = pg;
-  if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
+  // 동일 값 set 으로 인한 reactive 무한 갱신 방지
+  if (page.value !== pg) page.value = pg;
+  const newTop = PAGE_TO_TOP[pg];
+  if (newTop && activeTop.value !== newTop) activeTop.value = newTop;
   addTab(toTabId(pg));
   }
   const id = p.get('id');
-  dtlId.value = id !== null ? (isNaN(id) ? id : Number(id)) : null;
+  const newDtlId = id !== null ? (isNaN(id) ? id : Number(id)) : null;
+  if (dtlId.value !== newDtlId) dtlId.value = newDtlId;
   };
   readHash(false);
 
@@ -813,8 +816,11 @@
   const _syncCurrentAuthUser = () => {
   try {
   const u = _boAuthStore?.svAuthUser;
-  if (u && u.authId) Object.assign(currentAuthUser, u);
-  else Object.assign(currentAuthUser, _defaultBoAuthUser());
+  const target = (u && u.authId) ? u : _defaultBoAuthUser();
+  // 동일 값 set 으로 인한 reactive 무한 갱신 방지 — 변경된 키만 set
+  for (const k in target) {
+  if (currentAuthUser[k] !== target[k]) currentAuthUser[k] = target[k];
+  }
   } catch(e) {}
   };
 
@@ -856,10 +862,15 @@
   // 별도 API 호출 없이 store 데이터에서 사용자 역할만 매핑한다.
   //   - 사용자 역할 ID 목록   : boAuthStore.svTempAuthInfo['authUser-roles']  (← syAuth.tempAuthInfo)
   //   - 시스템 전체 역할 정보 : boRoleStore.svRoles                          (← syRoles)
+  const _rolesEqual = (a, b) => {
+  if (!a || !b || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i]?.roleId !== b[i]?.roleId) return false;
+  return true;
+  };
   const updateCurrentUserRoles = () => {
   try {
   if (!currentAuthUser?.authId) {
-  currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
+  if (currentAuthUserRoles.length) currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
   return;
   }
   const allRoles = window.sfGetBoRoleStore?.()?.svRoles || [];
@@ -867,14 +878,18 @@
   const userRoleEntries = tempAuthInfo['authUser-roles'] || [];
   const roleMap = Object.fromEntries(allRoles.map(r => [r?.roleId, r]));
   const result = userRoleEntries.map(ur => roleMap[ur?.roleId]).filter(Boolean);
+  // 결과가 동일하면 splice 스킵 — reactive 무한 갱신 방지
+  if (!_rolesEqual(currentAuthUserRoles, result)) {
   currentAuthUserRoles.splice(0, currentAuthUserRoles.length, ...result);
+  }
   } catch (e) {
   console.error('currentAuthUserRoles error:', e);
-  currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
+  if (currentAuthUserRoles.length) currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
   }
   };
   updateCurrentUserRoles();
-  watch(currentAuthUser, updateCurrentUserRoles);
+  // currentAuthUser 객체 deep watch 시 매번 fire → authId 변화에만 반응 (로그인 상태 변화 트래킹)
+  watch(() => currentAuthUser?.authId || '', updateCurrentUserRoles);
   // getInitData 비동기 완료 시점에도 재계산 — store 데이터 도착 후 역할 매핑
   watch(boInitReady, (v) => { if (v) updateCurrentUserRoles(); });
   const rolePath = (r, uid) => {
@@ -951,19 +966,21 @@
     userRoles.splice(0, userRoles.length, ...roles);
   }
   });
-  watch(currentAuthUser, (u) => {
+  // currentAuthUser 객체 deep watch 시 매번 fire → userId 변화에만 반응
+  watch(() => currentAuthUser?.userId || '', (uid) => {
   try {
-  if (u && u.userId) {
+  if (uid) {
   const roles = currentAuthUserRoles || [];
   if (!roles.find(r => r?.roleId === activeRoleId.value)) {
-  activeRoleId.value = (roles && roles.length) ? roles[0]?.roleId : null;
+  const newRoleId = (roles && roles.length) ? roles[0]?.roleId : null;
+  if (activeRoleId.value !== newRoleId) activeRoleId.value = newRoleId;
   }
   } else {
-  activeRoleId.value = null;
+  if (activeRoleId.value !== null) activeRoleId.value = null;
   }
   } catch (e) {
   console.error('watch currentAuthUser error:', e);
-  activeRoleId.value = null;
+  if (activeRoleId.value !== null) activeRoleId.value = null;
   }
   }, { immediate: true });
   const loginModal  = reactive({ show: false, tab: 'login' });
@@ -1187,11 +1204,13 @@
   _syncCurrentAuthUser();
   }
   });
-  /* 같은 탭 DevTools 변경 감지 — FO의 syncFromStorage + _sync() 패턴 동일 적용 */
-  setInterval(() => {
+  /* 같은 탭 DevTools 변경 감지 — FO의 syncFromStorage + _sync() 패턴 동일 적용 (가드: 중복 setInterval 방지) */
+  if (!window._boAuthSyncTimer) {
+  window._boAuthSyncTimer = setInterval(() => {
   _boAuthStore?.saSyncFromStorage?.();
   _syncCurrentAuthUser();
-  }, 1000);
+  }, 3000);
+  }
 
   const doRegister = async () => {
   loginError.value = '';

@@ -132,17 +132,24 @@
 
       saSyncFromStorage() {
         try {
-          const token        = localStorage.getItem('modu-fo-accessToken');
-          const refreshToken = localStorage.getItem('modu-fo-refreshToken');
-          const authUserJson = localStorage.getItem('modu-fo-authUser');
+          const token        = localStorage.getItem('modu-fo-accessToken') || '';
+          const refreshToken = localStorage.getItem('modu-fo-refreshToken') || '';
+          const authUserJson = localStorage.getItem('modu-fo-authUser')   || '';
+          // 이전 값과 동일하면 reactive 갱신 스킵 (1초 폴링 시 매번 svAuthUser 객체 갱신으로 인한 무한 리렌더 방지)
+          if (this.svAccessToken === token
+              && this.svRefreshToken === refreshToken
+              && this._lastAuthUserJson === authUserJson) {
+            return !!token;
+          }
+          this._lastAuthUserJson = authUserJson;
           if (token) {
-            this.svAccessToken = token;
-            if (refreshToken) this.svRefreshToken = refreshToken;
+            if (this.svAccessToken !== token) this.svAccessToken = token;
+            if (refreshToken && this.svRefreshToken !== refreshToken) this.svRefreshToken = refreshToken;
             if (authUserJson) this.svAuthUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
             else this.svAuthUser = _defaultAuthUser();
           } else {
-            this.svAccessToken = '';
-            this.svRefreshToken = '';
+            if (this.svAccessToken)  this.svAccessToken = '';
+            if (this.svRefreshToken) this.svRefreshToken = '';
             this.svAuthUser = _defaultAuthUser();
           }
           return !!token;

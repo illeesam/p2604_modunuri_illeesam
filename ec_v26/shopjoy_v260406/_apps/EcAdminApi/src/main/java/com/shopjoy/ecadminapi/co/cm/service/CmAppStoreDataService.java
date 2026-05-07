@@ -503,21 +503,95 @@ public class CmAppStoreDataService {
         String[] activeProfiles = environment.getActiveProfiles();
         String active = (activeProfiles != null && activeProfiles.length > 0) ? activeProfiles[0] : "-";
 
-        if (AuthPrincipal.BO.equals(appTypeCd)) {
-            return StoreApp.builder()
-                    .boSiteNo("01")
-                    .foSiteNo("01")
-                    .appVersion("2.6.0")
-                    .lastUpdateDate(java.time.LocalDate.now().toString())
-                    .active(active)
-                    .build();
-        }
-        return StoreApp.builder()
-                .foSiteNo(System.getProperty("fo.site.no", "01"))
+        // ── 외부 SDK / 서비스 연동 키 (현재 모두 더미값. 추후 sy_prop 등에서 조회 예정) ──
+        // 소셜 로그인
+        String googleClientId   = "DEMO_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+        String kakaoJsKey       = "demo_kakao_javascript_app_key";
+        String naverClientId    = "DEMO_NAVER_CLIENT_ID";
+        String naverCallbackUrl = "http://127.0.0.1:5502/ec_v26/shopjoy_v260406/";
+        String facebookAppId    = "DEMO_FACEBOOK_APP_ID";
+        String appleClientId    = "com.shopjoy.demo.signin";
+        // 결제
+        String tossClientKey    = "test_ck_DEMO_toss_client_key";
+        String kakaoPayCid      = "TC0ONETIME";
+        String naverPayClientId = "DEMO_NAVER_PAY_CLIENT_ID";
+        String inicisMid        = "INIpayTest";
+        String kcpSiteCd        = "T0000";
+        // 지도
+        String naverMapClientId = "DEMO_NAVER_MAP_CLIENT_ID";
+        String kakaoMapJsKey    = "demo_kakao_map_javascript_key";
+        String googleMapApiKey  = "DEMO_GOOGLE_MAP_API_KEY";
+        // AWS
+        String awsRegion        = "ap-northeast-2";
+        String awsS3Bucket      = "shopjoy-demo-bucket";
+        String awsS3PublicUrl   = "https://demo-cdn.shopjoy.example/";
+        String awsCognitoIdentityPoolId = "ap-northeast-2:DEMO-COGNITO-POOL-ID";
+        // 알림/메시징
+        String kakaoAlimtalkSenderKey = "DEMO_ALIMTALK_SENDER_KEY";
+        String nhnCloudSmsAppKey      = "DEMO_NHN_SMS_APP_KEY";
+        String ncloudSensServiceId    = "ncp:sms:kr:DEMO:shopjoy";
+        // 본인인증
+        String niceClientId     = "DEMO_NICE_CLIENT_ID";
+        String passClientId     = "DEMO_PASS_CLIENT_ID";
+        // 보안/분석
+        String recaptchaSiteKey = "6LcDEMO_RECAPTCHA_SITE_KEY";
+        String gaTrackingId     = "G-DEMOXXXXXX";
+        String naverAnalyticsId = "demo_naver_analytics_id";
+        String facebookPixelId  = "0000000000000000";
+        // 채팅/CS
+        String channelTalkPluginKey = "demo-channeltalk-plugin-key";
+        // 기타
+        String daumPostcodeUrl  = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+
+        StoreApp.StoreAppBuilder b = StoreApp.builder()
                 .appVersion("2.6.0")
                 .lastUpdateDate(java.time.LocalDate.now().toString())
                 .active(active)
-                .build();
+                // 소셜
+                .googleClientId(googleClientId)
+                .kakaoJsKey(kakaoJsKey)
+                .naverClientId(naverClientId)
+                .naverCallbackUrl(naverCallbackUrl)
+                .facebookAppId(facebookAppId)
+                .appleClientId(appleClientId)
+                // 결제
+                .tossClientKey(tossClientKey)
+                .kakaoPayCid(kakaoPayCid)
+                .naverPayClientId(naverPayClientId)
+                .inicisMid(inicisMid)
+                .kcpSiteCd(kcpSiteCd)
+                // 지도
+                .naverMapClientId(naverMapClientId)
+                .kakaoMapJsKey(kakaoMapJsKey)
+                .googleMapApiKey(googleMapApiKey)
+                // AWS
+                .awsRegion(awsRegion)
+                .awsS3Bucket(awsS3Bucket)
+                .awsS3PublicUrl(awsS3PublicUrl)
+                .awsCognitoIdentityPoolId(awsCognitoIdentityPoolId)
+                // 알림/메시징
+                .kakaoAlimtalkSenderKey(kakaoAlimtalkSenderKey)
+                .nhnCloudSmsAppKey(nhnCloudSmsAppKey)
+                .ncloudSensServiceId(ncloudSensServiceId)
+                // 본인인증
+                .niceClientId(niceClientId)
+                .passClientId(passClientId)
+                // 보안/분석
+                .recaptchaSiteKey(recaptchaSiteKey)
+                .gaTrackingId(gaTrackingId)
+                .naverAnalyticsId(naverAnalyticsId)
+                .facebookPixelId(facebookPixelId)
+                // 채팅/CS
+                .channelTalkPluginKey(channelTalkPluginKey)
+                // 기타
+                .daumPostcodeUrl(daumPostcodeUrl);
+
+        if (AuthPrincipal.BO.equals(appTypeCd)) {
+            b.boSiteNo("01").foSiteNo("01");
+        } else {
+            b.foSiteNo(System.getProperty("fo.site.no", "01"));
+        }
+        return b.build();
     }
 
 

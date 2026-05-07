@@ -506,8 +506,9 @@
       if (MY_PAGES.includes(page.value)) page.value = 'home';
     };
     /* modu-fo-accessToken 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
-    watch(() => auth.user, u => {
-      if (!u && MY_PAGES.includes(page.value)) page.value = 'home';
+    /* auth.user 가 새 객체로 갱신되면 watch 가 매번 fire 되므로 authId 만 비교 (로그인 상태 변화만 트래킹) */
+    watch(() => auth.user?.authId || '', authId => {
+      if (!authId && MY_PAGES.includes(page.value) && page.value !== 'home') page.value = 'home';
     });
 
     /* ── URL state ── */
@@ -557,25 +558,31 @@
         const rawHash = String(window.location.hash || '').replace(/^#/, '');
         const params = new URLSearchParams(rawHash);
         const hPage = params.get('page');
-        if (hPage && validPages.includes(hPage)) page.value = hPage;
-        else if (hPage && !validPages.includes(hPage)) page.value = 'notFound';
+        // 동일 값 set 으로 인한 reactive 무한 갱신 방지
+        if (hPage && validPages.includes(hPage) && page.value !== hPage) page.value = hPage;
+        else if (hPage && !validPages.includes(hPage) && page.value !== 'notFound') page.value = 'notFound';
         if (hPage === 'order') {
           instantOrder.value = _instantOrderFromParams(params);
           const cids = params.get('cartIds');
-          cartIds.splice(0, cartIds.length, ...(cids ? cids.split(',').filter(Boolean) : []));
+          const newCids = cids ? cids.split(',').filter(Boolean) : [];
+          // 동일 배열이면 splice 스킵
+          const same = newCids.length === cartIds.length && newCids.every((v, i) => v === cartIds[i]);
+          if (!same) cartIds.splice(0, cartIds.length, ...newCids);
         } else if (hPage && hPage !== 'order') {
-          instantOrder.value = null;
-          cartIds.splice(0, cartIds.length);
+          if (instantOrder.value !== null) instantOrder.value = null;
+          if (cartIds.length) cartIds.splice(0, cartIds.length);
         }
         const hpid = params.get('prodid') || '';
         if (hpid) {
           const f = prods.find(x => String(x.prodId) === hpid);
-          if (f) selectedProd.value = f;
+          if (f && selectedProd.value !== f) selectedProd.value = f;
         }
         const hEventId = params.get('eventId');
         const hEditId  = params.get('dtlId');
-        if (hEventId) viewEditId.value = Number(hEventId) || hEventId;
-        else if (hEditId) viewEditId.value = Number(hEditId) || hEditId;
+        const newViewId = hEventId ? (Number(hEventId) || hEventId)
+                        : hEditId  ? (Number(hEditId)  || hEditId)
+                        : viewEditId.value;
+        if (newViewId !== viewEditId.value) viewEditId.value = newViewId;
       } catch(e) {}
       setTimeout(() => { syncingFromHash = false; }, 0);
     };
@@ -603,6 +610,9 @@
       }
       const hash = params.toString();
       const url = window.location.pathname + window.location.search + '#' + hash;
+      // 동일 hash 재설정 시 hashchange 이벤트 재발화로 인한 무한 마운트 루프 방지
+      const curHash = String(window.location.hash || '').replace(/^#/, '');
+      if (curHash === hash) return;
       if (replaceNextHash) {
         replaceNextHash = false;
         try { history.replaceState(null, '', url); } catch (e) { window.location.hash = hash; }

@@ -84,18 +84,57 @@ window.Login = {
       await doLogin();
     };
 
-    /* 소셜 로그인 (기존 회원) vs 소셜 회원가입 분기 */
-    const doSocial = provider => {
-      // 로그인 탭에서 클릭 → 바로 로그인
-      window.foAuth.loginSocial(provider);
-      props.showToast(window.foAuth.state.user.memberNm + '님, 환영합니다!', 'success');
-      emit('close');
+    /* 소셜 SDK 호출 헬퍼 (provider → Promise<{provider, accessToken, profile}>) */
+    const _callSocialSdk = async (provider) => {
+      if (!window.coExtSdk) throw new Error('coExtSdk 헬퍼가 로드되지 않았습니다.');
+      if (provider === 'google') return await window.coExtSdk.loginGoogle();
+      if (provider === 'kakao')  return await window.coExtSdk.loginKakao();
+      if (provider === 'naver')  return await window.coExtSdk.loginNaver();
+      throw new Error('알 수 없는 provider: ' + provider);
     };
 
-    /* 소셜 회원가입 버튼 → 약관 → sns-signup 폼 */
-    const startSnsSignup = provider => {
-      uiState.snsProvider = provider;
-      uiState.step = 'terms';
+    /* 소셜 로그인 (기존 회원) — SDK 호출 → 인증 시도 → 데모 폴백 */
+    const doSocial = async (provider) => {
+      uiState.loginErr = '';
+      try {
+        const res = await _callSocialSdk(provider);
+        console.log('[doSocial] SDK 응답:', res);
+        // 추후: 서버에 res.accessToken / res.profile 전달하여 회원 매칭/세션 발급
+        // 지금은 데모 흐름 유지 (foAuth.loginSocial 호출)
+        window.foAuth.loginSocial(provider);
+        const userNm = window.foAuth.state.user?.memberNm || (res.profile?.nickname || res.profile?.name || provider);
+        props.showToast(userNm + '님, 환영합니다!', 'success');
+        emit('close');
+      } catch (e) {
+        console.error('[doSocial] error:', e);
+        uiState.loginErr = e.message || (provider + ' 로그인 실패');
+        props.showToast(uiState.loginErr, 'error');
+      }
+    };
+
+    /* 소셜 회원가입 — SDK 호출 → 약관 → sns-signup 폼으로 이동 (프로필 미리 채움) */
+    const startSnsSignup = async (provider) => {
+      uiState.snsErr = '';
+      try {
+        const res = await _callSocialSdk(provider);
+        console.log('[startSnsSignup] SDK 응답:', res);
+        uiState.snsProvider = provider;
+        // 프로필이 있으면 닉네임 미리 채움
+        const p = res.profile || {};
+        // Kakao: p.kakao_account?.profile?.nickname / p.properties?.nickname
+        // Naver: p.name / p.nickname
+        // Google: p.name / p.given_name
+        const nm = p.name || p.nickname
+          || p.kakao_account?.profile?.nickname
+          || p.properties?.nickname
+          || '';
+        if (nm) uiState.snsNickname = nm;
+        uiState.step = 'terms';
+      } catch (e) {
+        console.error('[startSnsSignup] error:', e);
+        uiState.snsErr = e.message || (provider + ' 인증 실패');
+        props.showToast(uiState.snsErr, 'error');
+      }
     };
 
     /* -- 약관 -- */

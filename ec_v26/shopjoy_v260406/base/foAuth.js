@@ -65,8 +65,10 @@
       })();
     }
 
-    /* 1초마다 localStorage 폴링 → DevTools 에서 토큰 삭제 시 즉시 로그아웃 */
-    setInterval(() => { _store.saSyncFromStorage(); }, 1000);
+    /* 폴링 주기 — DevTools 에서 토큰 삭제 시 자동 로그아웃 (가드: 중복 setInterval 방지) */
+    if (!window._foAuthSyncTimer) {
+      window._foAuthSyncTimer = setInterval(() => { _store.saSyncFromStorage(); }, 3000);
+    }
 
     /* 다른 탭에서 localStorage 변경 시 즉시 동기화 */
     window.addEventListener('storage', e => {

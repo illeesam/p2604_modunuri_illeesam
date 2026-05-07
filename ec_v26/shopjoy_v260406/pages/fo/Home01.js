@@ -76,15 +76,18 @@ window.Home01 = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      const s = document.createElement('style');
-      s.id = 'home-grid-styles';
-      s.textContent = `
-      .home-cat-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
-      .home-prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-      .home-sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-      .home-blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
-      `;
-      document.head.appendChild(s);
+      // 컴포넌트 remount 시 동일 ID style 누적 방지
+      if (!document.getElementById('home-grid-styles')) {
+        const s = document.createElement('style');
+        s.id = 'home-grid-styles';
+        s.textContent = `
+        .home-cat-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+        .home-prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+        .home-sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+        .home-blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+        `;
+        document.head.appendChild(s);
+      }
       startBannerTimer();
     });
     onBeforeUnmount(() => clearInterval(bannerTimer));

@@ -244,20 +244,26 @@
         return false;
       },
 
-      // FO syncFromStorage와 동일: 토큰 없으면 리셋, 있으면 복원
+      // FO syncFromStorage와 동일: 토큰 없으면 리셋, 있으면 복원 (이전 값과 동일하면 reactive 갱신 스킵)
       saSyncFromStorage() {
         try {
-          const token        = localStorage.getItem('modu-bo-accessToken');
-          const refreshToken = localStorage.getItem('modu-bo-refreshToken');
-          const authUserJson = localStorage.getItem('modu-bo-authUser');
+          const token        = localStorage.getItem('modu-bo-accessToken')  || '';
+          const refreshToken = localStorage.getItem('modu-bo-refreshToken') || '';
+          const authUserJson = localStorage.getItem('modu-bo-authUser')     || '';
+          if (this.svAccessToken === token
+              && this.svRefreshToken === refreshToken
+              && this._lastAuthUserJson === authUserJson) {
+            return !!token;
+          }
+          this._lastAuthUserJson = authUserJson;
           if (token) {
-            this.svAccessToken = token;
-            if (refreshToken) this.svRefreshToken = refreshToken;
+            if (this.svAccessToken !== token) this.svAccessToken = token;
+            if (refreshToken && this.svRefreshToken !== refreshToken) this.svRefreshToken = refreshToken;
             if (authUserJson) this.svAuthUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
             else this.svAuthUser = _defaultAuthUser();
           } else {
-            this.svAccessToken = '';
-            this.svRefreshToken = '';
+            if (this.svAccessToken)  this.svAccessToken = '';
+            if (this.svRefreshToken) this.svRefreshToken = '';
             this.svAuthUser = _defaultAuthUser();
           }
           return !!token;
