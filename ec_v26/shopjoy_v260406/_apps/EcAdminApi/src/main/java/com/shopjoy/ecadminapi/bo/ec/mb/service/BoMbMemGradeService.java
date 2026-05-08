@@ -23,6 +23,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoMbMemGradeService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final MbMemberGradeMapper mbMemberGradeMapper;
@@ -31,21 +32,18 @@ public class BoMbMemGradeService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<MbMemberGradeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mbMemberGradeMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<MbMemberGradeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbMemberGradeMapper.selectPageList(p), mbMemberGradeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public MbMemberGradeDto getById(String id) {
         MbMemberGradeDto dto = mbMemberGradeMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

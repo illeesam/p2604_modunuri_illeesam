@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MbMemberSnsService {
 
     private final MbMemberSnsMapper mbMemberSnsMapper;
@@ -28,14 +29,12 @@ public class MbMemberSnsService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public MbMemberSnsDto getById(String id) {
         MbMemberSnsDto result = mbMemberSnsMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<MbMemberSnsDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<MbMemberSnsDto> result = mbMemberSnsMapper.selectList(p);
@@ -43,7 +42,6 @@ public class MbMemberSnsService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<MbMemberSnsDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbMemberSnsMapper.selectPageList(p), mbMemberSnsMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

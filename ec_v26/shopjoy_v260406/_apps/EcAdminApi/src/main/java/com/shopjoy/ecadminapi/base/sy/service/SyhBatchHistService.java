@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyhBatchHistService {
 
     private final SyhBatchHistMapper syhBatchHistMapper;
@@ -22,7 +23,6 @@ public class SyhBatchHistService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyhBatchHistDto getById(String id) {
         // syh_batch_hist :: select one :: id [orm:mybatis]
         SyhBatchHistDto result = syhBatchHistMapper.selectById(id);
@@ -30,7 +30,6 @@ public class SyhBatchHistService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyhBatchHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // syh_batch_hist :: select list :: p [orm:mybatis]
@@ -39,7 +38,6 @@ public class SyhBatchHistService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyhBatchHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // syh_batch_hist :: select page :: [orm:mybatis]

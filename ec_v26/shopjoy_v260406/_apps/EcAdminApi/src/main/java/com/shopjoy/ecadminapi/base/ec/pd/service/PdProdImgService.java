@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PdProdImgService {
 
     private final PdProdImgMapper pdProdImgMapper;
@@ -28,7 +29,6 @@ public class PdProdImgService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PdProdImgDto getById(String id) {
         // pd_prod_img :: select one :: id [orm:mybatis]
         PdProdImgDto result = pdProdImgMapper.selectById(id);
@@ -36,7 +36,6 @@ public class PdProdImgService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PdProdImgDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_prod_img :: select list :: p [orm:mybatis]
@@ -45,7 +44,6 @@ public class PdProdImgService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdProdImgDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_prod_img :: select page :: [orm:mybatis]

@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OdDlivItemService {
 
     private final OdDlivItemMapper odDlivItemMapper;
@@ -28,14 +29,12 @@ public class OdDlivItemService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public OdDlivItemDto getById(String id) {
         OdDlivItemDto result = odDlivItemMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<OdDlivItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<OdDlivItemDto> result = odDlivItemMapper.selectList(p);
@@ -43,7 +42,6 @@ public class OdDlivItemService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<OdDlivItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odDlivItemMapper.selectPageList(p), odDlivItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

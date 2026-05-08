@@ -23,6 +23,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyBatchService {
 
 
@@ -34,7 +35,6 @@ public class SyBatchService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyBatchDto getById(String id) {
         // sy_batch :: select one :: id [orm:mybatis]
         SyBatchDto result = syBatchMapper.selectById(id);
@@ -42,7 +42,6 @@ public class SyBatchService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyBatchDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_batch :: select list :: p [orm:mybatis]
@@ -51,7 +50,6 @@ public class SyBatchService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyBatchDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_batch :: select page :: p [orm:mybatis]

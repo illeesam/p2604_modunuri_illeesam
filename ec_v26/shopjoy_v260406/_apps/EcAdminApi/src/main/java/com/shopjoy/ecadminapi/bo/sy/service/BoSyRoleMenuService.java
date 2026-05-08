@@ -24,6 +24,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoSyRoleMenuService {
 
     private final SyRoleMenuMapper     syRoleMenuMapper;
@@ -34,14 +35,12 @@ public class BoSyRoleMenuService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyRoleMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syRoleMenuMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyRoleMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syRoleMenuMapper.selectPageList(p), syRoleMenuMapper.selectPageCount(p),
@@ -49,7 +48,6 @@ public class BoSyRoleMenuService {
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public SyRoleMenuDto getById(String id) {
         SyRoleMenuDto dto = syRoleMenuMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

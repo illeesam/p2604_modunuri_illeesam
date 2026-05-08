@@ -23,6 +23,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class StSettleItemService {
 
 
@@ -34,14 +35,12 @@ public class StSettleItemService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public StSettleItemDto getById(String id) {
         StSettleItemDto result = stSettleItemMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<StSettleItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<StSettleItemDto> result = stSettleItemMapper.selectList(p);
@@ -49,7 +48,6 @@ public class StSettleItemService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<StSettleItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stSettleItemMapper.selectPageList(p), stSettleItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

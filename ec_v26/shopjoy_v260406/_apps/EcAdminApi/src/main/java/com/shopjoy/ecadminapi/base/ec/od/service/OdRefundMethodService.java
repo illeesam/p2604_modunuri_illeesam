@@ -22,6 +22,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OdRefundMethodService {
 
     private final OdRefundMethodMapper odRefundMethodMapper;
@@ -29,14 +30,12 @@ public class OdRefundMethodService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public OdRefundMethodDto getById(String id) {
         OdRefundMethodDto result = odRefundMethodMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<OdRefundMethodDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<OdRefundMethodDto> result = odRefundMethodMapper.selectList(p);
@@ -44,7 +43,6 @@ public class OdRefundMethodService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<OdRefundMethodDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odRefundMethodMapper.selectPageList(p), odRefundMethodMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

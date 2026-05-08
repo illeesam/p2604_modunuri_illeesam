@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoStSettleEtcAdjService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final StSettleEtcAdjMapper stSettleEtcAdjMapper;
@@ -29,21 +30,18 @@ public class BoStSettleEtcAdjService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<StSettleEtcAdjDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return stSettleEtcAdjMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<StSettleEtcAdjDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stSettleEtcAdjMapper.selectPageList(p), stSettleEtcAdjMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public StSettleEtcAdjDto getById(String id) {
         StSettleEtcAdjDto dto = stSettleEtcAdjMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoStSettleRawService {
     private final StSettleRawMapper stSettleRawMapper;
     private final StSettleRawRepository stSettleRawRepository;
@@ -28,21 +29,18 @@ public class BoStSettleRawService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<StSettleRawDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return stSettleRawMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<StSettleRawDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stSettleRawMapper.selectPageList(p), stSettleRawMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public StSettleRawDto getById(String id) {
         StSettleRawDto dto = stSettleRawMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

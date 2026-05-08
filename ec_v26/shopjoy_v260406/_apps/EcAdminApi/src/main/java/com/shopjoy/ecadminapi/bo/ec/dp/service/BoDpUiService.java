@@ -23,6 +23,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoDpUiService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final DpUiMapper dpUiMapper;
@@ -31,21 +32,18 @@ public class BoDpUiService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<DpUiDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return dpUiMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<DpUiDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(dpUiMapper.selectPageList(p), dpUiMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public DpUiDto getById(String id) {
         DpUiDto dto = dpUiMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

@@ -18,12 +18,12 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FoPmCouponService {
 
     private final PmCouponIssueMapper pmCouponIssueMapper;
 
     /** getAvailableCoupons — 조회 */
-    @Transactional(readOnly = true)
     public List<PmCouponIssueDto> getAvailableCoupons(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         p.put("useYn", "N");

@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoStReconService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final StReconMapper stReconMapper;
@@ -29,14 +30,12 @@ public class BoStReconService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<StReconDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return stReconMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<StReconDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stReconMapper.selectPageList(p), stReconMapper.selectPageCount(p),
@@ -44,7 +43,6 @@ public class BoStReconService {
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public StReconDto getById(String id) {
         StReconDto dto = stReconMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

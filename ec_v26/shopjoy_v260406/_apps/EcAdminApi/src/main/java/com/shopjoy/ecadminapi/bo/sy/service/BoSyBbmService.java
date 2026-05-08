@@ -23,6 +23,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoSyBbmService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final SyBbmMapper syBbmMapper;
@@ -31,21 +32,18 @@ public class BoSyBbmService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyBbmDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syBbmMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyBbmDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syBbmMapper.selectPageList(p), syBbmMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public SyBbmDto getById(String id) {
         SyBbmDto dto = syBbmMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

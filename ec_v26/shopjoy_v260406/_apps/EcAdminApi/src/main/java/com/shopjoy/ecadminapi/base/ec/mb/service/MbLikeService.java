@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MbLikeService {
 
     private final MbLikeMapper mbLikeMapper;
@@ -28,14 +29,12 @@ public class MbLikeService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public MbLikeDto getById(String id) {
         MbLikeDto result = mbLikeMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<MbLikeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<MbLikeDto> result = mbLikeMapper.selectList(p);
@@ -43,7 +42,6 @@ public class MbLikeService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<MbLikeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbLikeMapper.selectPageList(p), mbLikeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

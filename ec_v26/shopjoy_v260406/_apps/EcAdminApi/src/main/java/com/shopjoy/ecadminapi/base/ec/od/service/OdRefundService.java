@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OdRefundService {
 
     private final OdRefundMapper odRefundMapper;
@@ -28,14 +29,12 @@ public class OdRefundService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public OdRefundDto getById(String id) {
         OdRefundDto result = odRefundMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<OdRefundDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<OdRefundDto> result = odRefundMapper.selectList(p);
@@ -43,7 +42,6 @@ public class OdRefundService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<OdRefundDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odRefundMapper.selectPageList(p), odRefundMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

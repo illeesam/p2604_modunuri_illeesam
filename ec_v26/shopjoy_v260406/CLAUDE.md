@@ -763,26 +763,36 @@ public ResponseEntity<ApiResponse<XxxEntity>> create(@RequestBody XxxEntity enti
 
 ### Service 규칙
 
+**트랜잭션 어노테이션 표준 (2026-05-08)**: `@Transactional(readOnly = true)`는 **클래스 레벨 1회**만 선언한다. 조회 메서드는 어노테이션 없이 클래스 레벨을 상속받고, 변경 메서드만 `@Transactional`을 명시해 오버라이드한다.
+
 ```java
-// getList: pageSize 포함 시 자동 페이징 지원
-@Transactional(readOnly = true)
-public List<XxxDto> getList(Map<String, Object> p) {
-    if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-    return mapper.selectList(p);
-}
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)   // ← 클래스 디폴트
+public class XxxService {
 
-// getPageData: PageHelper로 페이징
-@Transactional(readOnly = true)
-public PageResult<XxxDto> getPageData(Map<String, Object> p) {
-    PageHelper.addPaging(p);
-    return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
-        PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-}
+    // getList: pageSize 포함 시 자동 페이징 지원 — 클래스 readOnly 상속
+    public List<XxxDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        return mapper.selectList(p);
+    }
 
-// FO 서비스: memberId는 SecurityUtil로 주입 후 mapper 전달
-public List<XxxDto> getMyXxx(Map<String, Object> p) {
-    p.put("memberId", SecurityUtil.currentUserId());
-    return mapper.selectList(p);
+    // getPageData: PageHelper로 페이징 — 클래스 readOnly 상속
+    public PageResult<XxxDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+            PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    }
+
+    // FO 서비스: memberId는 SecurityUtil로 주입 후 mapper 전달
+    public List<XxxDto> getMyXxx(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
+        return mapper.selectList(p);
+    }
+
+    // 변경 메서드만 @Transactional 명시 (readOnly=false 로 오버라이드)
+    @Transactional
+    public Xxx create(Xxx body) { ... }
 }
 ```
 

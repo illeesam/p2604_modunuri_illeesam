@@ -24,6 +24,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyRoleMenuService {
 
 
@@ -36,7 +37,6 @@ public class SyRoleMenuService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyRoleMenuDto getById(String id) {
         // sy_role_menu :: select one :: id [orm:mybatis]
         SyRoleMenuDto result = syRoleMenuMapper.selectById(id);
@@ -44,7 +44,6 @@ public class SyRoleMenuService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyRoleMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_role_menu :: select list :: p [orm:mybatis]
@@ -53,7 +52,6 @@ public class SyRoleMenuService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyRoleMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_role_menu :: select page :: p [orm:mybatis]

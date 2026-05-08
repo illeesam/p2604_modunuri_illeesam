@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CmBlogCateService {
 
     private final CmBlogCateMapper cmBlogCateMapper;
@@ -28,7 +29,6 @@ public class CmBlogCateService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public CmBlogCateDto getById(String id) {
         // cm_blog_cate :: select one :: id [orm:mybatis]
         CmBlogCateDto result = cmBlogCateMapper.selectById(id);
@@ -36,7 +36,6 @@ public class CmBlogCateService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<CmBlogCateDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_blog_cate :: select list :: p [orm:mybatis]
@@ -45,7 +44,6 @@ public class CmBlogCateService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<CmBlogCateDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_blog_cate :: select page :: [orm:mybatis]

@@ -23,6 +23,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyAlarmService {
 
     private final SyAlarmMapper syAlarmMapper;
@@ -32,7 +33,6 @@ public class SyAlarmService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyAlarmDto getById(String id) {
         // sy_alarm :: select one :: id [orm:mybatis]
         SyAlarmDto result = syAlarmMapper.selectById(id);
@@ -40,7 +40,6 @@ public class SyAlarmService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyAlarmDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_alarm :: select list :: p [orm:mybatis]
@@ -49,7 +48,6 @@ public class SyAlarmService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyAlarmDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_alarm :: select page :: p [orm:mybatis]

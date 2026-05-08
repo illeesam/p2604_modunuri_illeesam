@@ -25,6 +25,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoPmVoucherService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final PmVoucherMapper pmVoucherMapper;
@@ -33,21 +34,18 @@ public class BoPmVoucherService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PmVoucherDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pmVoucherMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PmVoucherDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmVoucherMapper.selectPageList(p), pmVoucherMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public PmVoucherDto getById(String id) {
         PmVoucherDto dto = pmVoucherMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

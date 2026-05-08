@@ -23,6 +23,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoPmSaveService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final PmSaveMapper pmSaveMapper;
@@ -31,21 +32,18 @@ public class BoPmSaveService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PmSaveDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return pmSaveMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PmSaveDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmSaveMapper.selectPageList(p), pmSaveMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public PmSaveDto getById(String id) {
         PmSaveDto dto = pmSaveMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

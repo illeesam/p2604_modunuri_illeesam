@@ -22,6 +22,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoSyI18nService {
 
     private final SyI18nService syI18nService;
@@ -29,7 +30,6 @@ public class BoSyI18nService {
     private final SyI18nMsgRepository syI18nMsgRepository;
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public SyI18nDto getById(String id) {
         SyI18nDto result = syI18nService.getById(id);
         if (result == null) throw new CmBizException("존재하지 않는 다국어 키입니다: " + id);
@@ -37,13 +37,11 @@ public class BoSyI18nService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyI18nDto> getList(Map<String, Object> p) {
         return syI18nService.getList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyI18nDto> getPageData(Map<String, Object> p) {
         return syI18nService.getPageData(p);
     }

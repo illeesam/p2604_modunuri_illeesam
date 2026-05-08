@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PmPlanItemService {
 
 
@@ -29,14 +30,12 @@ public class PmPlanItemService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PmPlanItemDto getById(String id) {
         PmPlanItemDto result = pmPlanItemMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PmPlanItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<PmPlanItemDto> result = pmPlanItemMapper.selectList(p);
@@ -44,7 +43,6 @@ public class PmPlanItemService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PmPlanItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmPlanItemMapper.selectPageList(p), pmPlanItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

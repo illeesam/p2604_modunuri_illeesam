@@ -35,6 +35,7 @@ import java.util.Map;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FoPdProdService {
 
     private final PdProdMapper          pdProdMapper;
@@ -54,13 +55,11 @@ public class FoPdProdService {
 
     /* ── 목록 ────────────────────────────────────────────────── */
 
-    @Transactional(readOnly = true)
     public List<PdProdDto> getList(Map<String, Object> p) {
         return pdProdMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdProdDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pdProdMapper.selectPageList(p), pdProdMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
@@ -68,7 +67,6 @@ public class FoPdProdService {
 
     /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
 
-    @Transactional(readOnly = true)
     public Map<String, Object> getDetail(String prodId) {
         PdProdDto prod = pdProdMapper.selectById(prodId);
         if (prod == null) throw new CmBizException("존재하지 않는 상품입니다: " + prodId);
@@ -95,7 +93,6 @@ public class FoPdProdService {
 
     /* ── Tier 2: lazy load ──────────────────────────────────── */
 
-    @Transactional(readOnly = true)
     public List<PdProdContentDto> getContents(String prodId) {
         Map<String, Object> p = new HashMap<>();
         p.put("prodId", prodId);
@@ -103,7 +100,6 @@ public class FoPdProdService {
     }
 
     /** getRels — 조회 */
-    @Transactional(readOnly = true)
     public List<PdProdRelDto> getRels(String prodId) {
         Map<String, Object> p = new HashMap<>();
         p.put("prodId", prodId);
@@ -116,7 +112,6 @@ public class FoPdProdService {
      * 상품별 리뷰 목록 + 평점 집계 요약 + 상단 이미지 모음.
      * 응답: { summary, attachImages, reviewPage: PageResult }
      */
-    @Transactional(readOnly = true)
     public Map<String, Object> getReviews(String prodId, Map<String, Object> p) {
         Map<String, Object> param = (p != null) ? new HashMap<>(p) : new HashMap<>();
         param.put("prodId", prodId);
@@ -139,7 +134,6 @@ public class FoPdProdService {
     /**
      * 상품별 리뷰 첨부이미지 전체 — 모아보기 팝업용.
      */
-    @Transactional(readOnly = true)
     public List<PdReviewAttachDto> getReviewImages(String prodId) {
         Map<String, Object> p = new HashMap<>();
         p.put("prodId", prodId);
@@ -150,7 +144,6 @@ public class FoPdProdService {
      * 상품별 Q&A 목록.
      * 응답: { qnaPage: PageResult }
      */
-    @Transactional(readOnly = true)
     public Map<String, Object> getQna(String prodId, Map<String, Object> p) {
         Map<String, Object> param = (p != null) ? new HashMap<>(p) : new HashMap<>();
         param.put("prodId", prodId);
@@ -173,7 +166,6 @@ public class FoPdProdService {
      *
      * 정밀 매핑 (예: pm_coupon_item.prod_id 로 특정 상품 한정) 은 화면 디자인 확정 후 보강.
      */
-    @Transactional(readOnly = true)
     public Map<String, Object> getPromotions(String prodId) {
         PdProdDto prod = pdProdMapper.selectById(prodId);
         Map<String, Object> p = new HashMap<>();

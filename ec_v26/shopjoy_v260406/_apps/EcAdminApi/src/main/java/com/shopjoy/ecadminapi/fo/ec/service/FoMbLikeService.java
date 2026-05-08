@@ -26,6 +26,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FoMbLikeService {
 
 
@@ -33,7 +34,6 @@ public class FoMbLikeService {
     private final MbLikeRepository mbLikeRepository;
 
     /** getMyLikes — 조회 */
-    @Transactional(readOnly = true)
     public List<MbLikeDto> getMyLikes(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return mbLikeMapper.selectList(p);

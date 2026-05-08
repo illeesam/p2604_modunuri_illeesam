@@ -23,6 +23,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PmVoucherService {
 
 
@@ -34,14 +35,12 @@ public class PmVoucherService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PmVoucherDto getById(String id) {
         PmVoucherDto result = pmVoucherMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PmVoucherDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<PmVoucherDto> result = pmVoucherMapper.selectList(p);
@@ -49,7 +48,6 @@ public class PmVoucherService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PmVoucherDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(pmVoucherMapper.selectPageList(p), pmVoucherMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

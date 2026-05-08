@@ -28,6 +28,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CmUploadService {
 
     private final FileUploadUtil fileUploadUtil;
@@ -321,7 +322,6 @@ public class CmUploadService {
     }
 
     /** 첨부 그룹 ID로 파일 목록 조회 (CDN URL 보정 포함) */
-    @Transactional(readOnly = true)
     public List<SyAttachDto> getAttachGrpFiles(String attachGrpId) {
         String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
         List<SyAttachDto> files = syAttachService.getList(Map.of("attachGrpId", attachGrpId));

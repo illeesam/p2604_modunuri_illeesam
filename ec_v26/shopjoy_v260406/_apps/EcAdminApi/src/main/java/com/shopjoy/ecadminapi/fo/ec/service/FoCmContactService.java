@@ -24,6 +24,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FoCmContactService {
 
     private static final String CONTACT_CATE = "CONTACT";
@@ -32,7 +33,6 @@ public class FoCmContactService {
     private final CmBlogMapper cmBlogMapper;
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public CmBlogDto getById(String id) {
         CmBlogDto dto = cmBlogMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 문의입니다: " + id);

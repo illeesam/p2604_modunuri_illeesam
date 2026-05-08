@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyhUserTokenLogService {
 
     private final SyhUserTokenLogMapper syhUserTokenLogMapper;
@@ -22,7 +23,6 @@ public class SyhUserTokenLogService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyhUserTokenLogDto getById(String id) {
         // syh_user_token_log :: select one :: id [orm:mybatis]
         SyhUserTokenLogDto result = syhUserTokenLogMapper.selectById(id);
@@ -30,7 +30,6 @@ public class SyhUserTokenLogService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyhUserTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // syh_user_token_log :: select list :: p [orm:mybatis]
@@ -39,7 +38,6 @@ public class SyhUserTokenLogService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyhUserTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // syh_user_token_log :: select page :: [orm:mybatis]

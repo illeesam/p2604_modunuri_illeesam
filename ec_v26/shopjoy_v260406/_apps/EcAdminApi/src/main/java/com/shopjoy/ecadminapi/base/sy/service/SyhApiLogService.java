@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyhApiLogService {
 
     private final SyhApiLogMapper syhApiLogMapper;
@@ -22,7 +23,6 @@ public class SyhApiLogService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyhApiLogDto getById(String id) {
         // syh_api_log :: select one :: id [orm:mybatis]
         SyhApiLogDto result = syhApiLogMapper.selectById(id);
@@ -30,7 +30,6 @@ public class SyhApiLogService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyhApiLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // syh_api_log :: select list :: p [orm:mybatis]
@@ -39,7 +38,6 @@ public class SyhApiLogService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyhApiLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // syh_api_log :: select page :: [orm:mybatis]

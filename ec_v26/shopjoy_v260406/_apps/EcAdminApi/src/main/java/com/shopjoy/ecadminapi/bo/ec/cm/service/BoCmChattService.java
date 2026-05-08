@@ -23,6 +23,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoCmChattService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final CmChattRoomMapper cmChattRoomMapper;
@@ -31,21 +32,18 @@ public class BoCmChattService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<CmChattRoomDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return cmChattRoomMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<CmChattRoomDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(cmChattRoomMapper.selectPageList(p), cmChattRoomMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public CmChattRoomDto getById(String id) {
         CmChattRoomDto dto = cmChattRoomMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

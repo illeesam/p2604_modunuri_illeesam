@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyhAlarmSendHistService {
 
     private final SyhAlarmSendHistMapper syhAlarmSendHistMapper;
@@ -22,7 +23,6 @@ public class SyhAlarmSendHistService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyhAlarmSendHistDto getById(String id) {
         // syh_alarm_send_hist :: select one :: id [orm:mybatis]
         SyhAlarmSendHistDto result = syhAlarmSendHistMapper.selectById(id);
@@ -30,7 +30,6 @@ public class SyhAlarmSendHistService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyhAlarmSendHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // syh_alarm_send_hist :: select list :: p [orm:mybatis]
@@ -39,7 +38,6 @@ public class SyhAlarmSendHistService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyhAlarmSendHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // syh_alarm_send_hist :: select page :: [orm:mybatis]

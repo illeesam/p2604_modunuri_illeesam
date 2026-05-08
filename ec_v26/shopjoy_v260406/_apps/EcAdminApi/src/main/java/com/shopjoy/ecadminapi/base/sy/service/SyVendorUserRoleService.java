@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyVendorUserRoleService {
 
 
@@ -29,14 +30,12 @@ public class SyVendorUserRoleService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyVendorUserRoleDto getById(String id) {
         // sy_vendor_user_role :: select one :: id [orm:mybatis]
         return syVendorUserRoleMapper.selectById(id);
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyVendorUserRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_vendor_user_role :: select list :: p [orm:mybatis]
@@ -44,7 +43,6 @@ public class SyVendorUserRoleService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyVendorUserRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_vendor_user_role :: select page :: p [orm:mybatis]

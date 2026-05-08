@@ -23,6 +23,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoSyUserRoleService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final SyUserRoleMapper syUserRoleMapper;
@@ -31,20 +32,17 @@ public class BoSyUserRoleService {
     private EntityManager em;
 
     /** getRolesByUserId — 조회 */
-    @Transactional(readOnly = true)
     public List<SyUserRoleDto> getRolesByUserId(String userId) {
         return syUserRoleMapper.selectByUserId(userId);
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyUserRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syUserRoleMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyUserRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syUserRoleMapper.selectPageList(p), syUserRoleMapper.selectPageCount(p),
@@ -52,7 +50,6 @@ public class BoSyUserRoleService {
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public SyUserRoleDto getById(String id) {
         SyUserRoleDto dto = syUserRoleMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

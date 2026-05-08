@@ -19,26 +19,24 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyPathService {
 
     private final SyPathMapper syPathMapper;
     private final SyPathRepository syPathRepository;
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public SyPathDto getById(String id) {
         return syPathMapper.selectById(id);
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyPathDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syPathMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyPathDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syPathMapper.selectPageList(p), syPathMapper.selectPageCount(p),

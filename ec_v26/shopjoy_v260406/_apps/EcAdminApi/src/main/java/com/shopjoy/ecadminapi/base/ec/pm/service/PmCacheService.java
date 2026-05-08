@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PmCacheService {
 
 
@@ -29,7 +30,6 @@ public class PmCacheService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PmCacheDto getById(String id) {
         // pm_cache :: select one :: id [orm:mybatis]
         PmCacheDto result = pmCacheMapper.selectById(id);
@@ -37,7 +37,6 @@ public class PmCacheService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PmCacheDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pm_cache :: select list :: p [orm:mybatis]
@@ -46,7 +45,6 @@ public class PmCacheService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PmCacheDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pm_cache :: select page :: [orm:mybatis]

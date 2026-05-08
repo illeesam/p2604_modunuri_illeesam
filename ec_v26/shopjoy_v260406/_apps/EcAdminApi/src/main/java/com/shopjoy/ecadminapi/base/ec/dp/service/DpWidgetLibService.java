@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DpWidgetLibService {
 
     private final DpWidgetLibMapper dpWidgetLibMapper;
@@ -28,7 +29,6 @@ public class DpWidgetLibService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public DpWidgetLibDto getById(String id) {
         // dp_widget_lib :: select one :: id [orm:mybatis]
         DpWidgetLibDto result = dpWidgetLibMapper.selectById(id);
@@ -36,7 +36,6 @@ public class DpWidgetLibService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<DpWidgetLibDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // dp_widget_lib :: select list :: p [orm:mybatis]
@@ -45,7 +44,6 @@ public class DpWidgetLibService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<DpWidgetLibDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // dp_widget_lib :: select page :: [orm:mybatis]

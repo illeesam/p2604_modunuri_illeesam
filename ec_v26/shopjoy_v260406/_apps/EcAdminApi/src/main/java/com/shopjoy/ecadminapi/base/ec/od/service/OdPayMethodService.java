@@ -22,6 +22,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OdPayMethodService {
 
     private final OdPayMethodMapper odPayMethodMapper;
@@ -29,14 +30,12 @@ public class OdPayMethodService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public OdPayMethodDto getById(String id) {
         OdPayMethodDto result = odPayMethodMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<OdPayMethodDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<OdPayMethodDto> result = odPayMethodMapper.selectList(p);
@@ -44,7 +43,6 @@ public class OdPayMethodService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<OdPayMethodDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odPayMethodMapper.selectPageList(p), odPayMethodMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

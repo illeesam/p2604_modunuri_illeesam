@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyPropService {
 
     private final SyPropMapper syPropMapper;
@@ -31,20 +32,17 @@ public class SyPropService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyPropDto getById(String id) {
         return syPropMapper.selectById(id);
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyPropDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syPropMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyPropDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syPropMapper.selectPageList(p), syPropMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

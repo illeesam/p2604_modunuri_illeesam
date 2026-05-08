@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CmChattMsgService {
 
     private final CmChattMsgMapper cmChattMsgMapper;
@@ -28,7 +29,6 @@ public class CmChattMsgService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public CmChattMsgDto getById(String id) {
         // cm_chatt_msg :: select one :: id [orm:mybatis]
         CmChattMsgDto result = cmChattMsgMapper.selectById(id);
@@ -36,7 +36,6 @@ public class CmChattMsgService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<CmChattMsgDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_chatt_msg :: select list :: p [orm:mybatis]
@@ -45,7 +44,6 @@ public class CmChattMsgService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<CmChattMsgDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_chatt_msg :: select page :: [orm:mybatis]

@@ -23,6 +23,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class StErpVoucherLineService {
 
 
@@ -34,14 +35,12 @@ public class StErpVoucherLineService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public StErpVoucherLineDto getById(String id) {
         StErpVoucherLineDto result = stErpVoucherLineMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<StErpVoucherLineDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<StErpVoucherLineDto> result = stErpVoucherLineMapper.selectList(p);
@@ -49,7 +48,6 @@ public class StErpVoucherLineService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<StErpVoucherLineDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stErpVoucherLineMapper.selectPageList(p), stErpVoucherLineMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

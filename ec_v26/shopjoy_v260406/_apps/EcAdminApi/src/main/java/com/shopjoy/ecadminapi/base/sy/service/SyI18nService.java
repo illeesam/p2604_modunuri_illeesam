@@ -23,6 +23,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyI18nService {
 
 
@@ -34,7 +35,6 @@ public class SyI18nService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyI18nDto getById(String id) {
         // sy_i18n :: select one :: id [orm:mybatis]
         SyI18nDto result = syI18nMapper.selectById(id);
@@ -42,7 +42,6 @@ public class SyI18nService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyI18nDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_i18n :: select list :: p [orm:mybatis]
@@ -51,7 +50,6 @@ public class SyI18nService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyI18nDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_i18n :: select page :: p [orm:mybatis]

@@ -23,6 +23,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyCodeGrpService {
 
 
@@ -34,7 +35,6 @@ public class SyCodeGrpService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyCodeGrpDto getById(String id) {
         // sy_code_grp :: select one :: id [orm:mybatis]
         SyCodeGrpDto result = syCodeGrpMapper.selectById(id);
@@ -42,7 +42,6 @@ public class SyCodeGrpService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyCodeGrpDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // sy_code_grp :: select list :: p [orm:mybatis]
@@ -51,7 +50,6 @@ public class SyCodeGrpService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyCodeGrpDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // sy_code_grp :: select page :: p [orm:mybatis]

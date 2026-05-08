@@ -22,6 +22,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoSyDeptService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final SyDeptMapper syDeptMapper;
@@ -30,27 +31,23 @@ public class BoSyDeptService {
     private EntityManager em;
 
     /** getTree — 조회 */
-    @Transactional(readOnly = true)
     public List<SyDeptDto> getTree() {
         return syDeptMapper.selectTree();
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyDeptDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syDeptMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyDeptDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syDeptMapper.selectPageList(p), syDeptMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public SyDeptDto getById(String id) {
         SyDeptDto dto = syDeptMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

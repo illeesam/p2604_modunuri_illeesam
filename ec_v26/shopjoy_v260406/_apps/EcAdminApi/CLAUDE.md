@@ -73,28 +73,40 @@ public ResponseEntity<ApiResponse<XxxEntity>> create(@RequestBody XxxEntity enti
 
 ## Service 패턴
 
+**트랜잭션 어노테이션 표준 (2026-05-08)**: `@Transactional(readOnly = true)`는 **클래스 레벨 1회**만 선언한다. 조회 메서드는 어노테이션 없이 클래스 레벨을 상속받고, 변경(쓰기) 메서드만 `@Transactional`을 명시해 클래스 디폴트를 오버라이드한다.
+
 ```java
-// 목록 (pageSize 포함 시 자동 페이징)
-@Transactional(readOnly = true)
-public List<XxxDto> getList(Map<String, Object> p) {
-    if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-    return mapper.selectList(p);
-}
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)   // ← 클래스 디폴트
+public class XxxService {
 
-// 페이징
-@Transactional(readOnly = true)
-public PageResult<XxxDto> getPageData(Map<String, Object> p) {
-    PageHelper.addPaging(p);
-    return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
-        PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-}
+    // 목록 (pageSize 포함 시 자동 페이징) — 클래스 readOnly 상속
+    public List<XxxDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        return mapper.selectList(p);
+    }
 
-// FO 서비스: memberId는 SecurityUtil로 주입
-public List<XxxDto> getMyXxx(Map<String, Object> p) {
-    p.put("memberId", SecurityUtil.currentUserId());
-    return mapper.selectList(p);
+    // 페이징 — 클래스 readOnly 상속
+    public PageResult<XxxDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+            PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    }
+
+    // FO 서비스: memberId는 SecurityUtil로 주입
+    public List<XxxDto> getMyXxx(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
+        return mapper.selectList(p);
+    }
+
+    // 변경 메서드는 @Transactional 명시 (readOnly=false 로 오버라이드)
+    @Transactional
+    public Xxx create(Xxx body) { ... }
 }
 ```
+
+**금지**: 조회 메서드에 `@Transactional(readOnly = true)`를 또 다시 붙이는 것 — 클래스 레벨과 중복이며 가독성을 해친다.
 
 ---
 
@@ -104,8 +116,9 @@ public List<XxxDto> getMyXxx(Map<String, Object> p) {
 
 ### getById / getById - 필수 검증
 
+> 클래스에 `@Transactional(readOnly = true)`가 선언되어 있으므로 조회 메서드에는 어노테이션을 붙이지 않는다.
+
 ```java
-@Transactional(readOnly = true)
 public XxxDto getById(String id) {
     XxxDto dto = mapper.selectById(id);
     if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
@@ -289,8 +302,9 @@ VoUtil.voCopyIncludeExclude(body, entity,
 
 ### getById / getMyXxx - 필수 검증
 
+> 클래스에 `@Transactional(readOnly = true)`가 선언되어 있으므로 조회 메서드에는 어노테이션을 붙이지 않는다.
+
 ```java
-@Transactional(readOnly = true)
 public XxxDto getById(String id) {
     XxxDto dto = mapper.selectById(id);
     if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
@@ -298,7 +312,6 @@ public XxxDto getById(String id) {
 }
 
 // FO 조회: memberId는 SecurityUtil로 주입 + 권한 검증
-@Transactional(readOnly = true)
 public List<XxxDto> getMyXxx(Map<String, Object> p) {
     String memberId = SecurityUtil.getAuthUser().authId();
     p.put("memberId", memberId);

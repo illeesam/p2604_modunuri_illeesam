@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DpUiAreaService {
 
     private final DpUiAreaMapper dpUiAreaMapper;
@@ -28,7 +29,6 @@ public class DpUiAreaService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public DpUiAreaDto getById(String id) {
         // dp_ui_area :: select one :: id [orm:mybatis]
         DpUiAreaDto result = dpUiAreaMapper.selectById(id);
@@ -36,7 +36,6 @@ public class DpUiAreaService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<DpUiAreaDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // dp_ui_area :: select list :: p [orm:mybatis]
@@ -45,7 +44,6 @@ public class DpUiAreaService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<DpUiAreaDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // dp_ui_area :: select page :: [orm:mybatis]

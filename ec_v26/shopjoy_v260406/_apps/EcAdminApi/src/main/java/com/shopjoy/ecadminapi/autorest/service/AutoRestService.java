@@ -26,6 +26,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AutoRestService {
 
     private final TableRegistry registry;
@@ -38,14 +39,12 @@ public class AutoRestService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     /* ── 목록 (전체, 최대 1000건) ── */
-    @Transactional(readOnly = true)
     public List<RowMap> getList(String table, SearchReq search) {
         QueryParam p = buildParams(table, search, 1000, 0);
         return mapper.selectList(p);
     }
 
     /* ── 페이지 ── */
-    @Transactional(readOnly = true)
     public PageResult<RowMap> getPageData(String table, SearchReq search) {
         int size = Math.min(search.getPageSize(), 500);
         int offset = (search.getPageNo() - 1) * search.getPageSize();
@@ -56,14 +55,12 @@ public class AutoRestService {
     }
 
     /* ── 건수 ── */
-    @Transactional(readOnly = true)
     public long count(String table, SearchReq search) {
         QueryParam p = buildParams(table, search, 0, 0);
         return mapper.selectCount(p);
     }
 
     /* ── 단건 ── */
-    @Transactional(readOnly = true)
     public RowMap getById(String table, String id) {
         TableConfig cfg = registry.getConfig(table);
         QueryParam p = QueryParam.builder()

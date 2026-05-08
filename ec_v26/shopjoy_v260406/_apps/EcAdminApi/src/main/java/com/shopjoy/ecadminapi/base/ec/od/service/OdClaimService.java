@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OdClaimService {
 
     private final OdClaimMapper odClaimMapper;
@@ -28,14 +29,12 @@ public class OdClaimService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public OdClaimDto getById(String id) {
         OdClaimDto result = odClaimMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<OdClaimDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<OdClaimDto> result = odClaimMapper.selectList(p);
@@ -43,7 +42,6 @@ public class OdClaimService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<OdClaimDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odClaimMapper.selectPageList(p), odClaimMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

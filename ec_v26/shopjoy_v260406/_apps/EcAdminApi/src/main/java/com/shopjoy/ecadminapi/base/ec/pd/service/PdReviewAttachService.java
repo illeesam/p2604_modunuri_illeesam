@@ -22,6 +22,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PdReviewAttachService {
 
 
@@ -30,7 +31,6 @@ public class PdReviewAttachService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PdReviewAttachDto getById(String id) {
         // pd_review_attach :: select one :: id [orm:mybatis]
         PdReviewAttachDto result = pdReviewAttachMapper.selectById(id);
@@ -38,7 +38,6 @@ public class PdReviewAttachService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PdReviewAttachDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_review_attach :: select list :: p [orm:mybatis]
@@ -47,7 +46,6 @@ public class PdReviewAttachService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdReviewAttachDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_review_attach :: select page :: [orm:mybatis]

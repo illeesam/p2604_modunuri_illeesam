@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OdhOrderItemChgHistService {
 
     private final OdhOrderItemChgHistMapper odhOrderItemChgHistMapper;
@@ -22,14 +23,12 @@ public class OdhOrderItemChgHistService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public OdhOrderItemChgHistDto getById(String id) {
         OdhOrderItemChgHistDto result = odhOrderItemChgHistMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<OdhOrderItemChgHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<OdhOrderItemChgHistDto> result = odhOrderItemChgHistMapper.selectList(p);
@@ -37,7 +36,6 @@ public class OdhOrderItemChgHistService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<OdhOrderItemChgHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odhOrderItemChgHistMapper.selectPageList(p), odhOrderItemChgHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

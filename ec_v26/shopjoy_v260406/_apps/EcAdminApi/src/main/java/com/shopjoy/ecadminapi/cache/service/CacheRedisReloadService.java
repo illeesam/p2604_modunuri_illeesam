@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CacheRedisReloadService {
 
     // ── SY CacheStore ─────────────────────────────────────────────
@@ -83,7 +84,6 @@ public class CacheRedisReloadService {
     //  전체 재조회
     // ════════════════════════════════════════════════════════════
 
-    @Transactional(readOnly = true)
     public Map<String, Integer> reloadAll() {
         Map<String, Integer> result = new LinkedHashMap<>();
         // SY: 건수 소 → DB 즉시 재적재
@@ -110,7 +110,6 @@ public class CacheRedisReloadService {
     // ════════════════════════════════════════════════════════════
 
     /** sy-code: codeGrp 기준으로 그룹핑하여 저장 */
-    @Transactional(readOnly = true)
     public int reloadCode() {
         if (!redis.isEnabled()) return 0;
         codeCache.evictAll();
@@ -127,7 +126,6 @@ public class CacheRedisReloadService {
     }
 
     /** sy-menu: 전체 목록 저장 */
-    @Transactional(readOnly = true)
     public int reloadMenu() {
         if (!redis.isEnabled()) return 0;
         menuCache.evictAll();
@@ -138,7 +136,6 @@ public class CacheRedisReloadService {
     }
 
     /** sy-role: 전체 목록 저장 */
-    @Transactional(readOnly = true)
     public int reloadRole() {
         if (!redis.isEnabled()) return 0;
         roleCache.evictAll();
@@ -149,7 +146,6 @@ public class CacheRedisReloadService {
     }
 
     /** sy-role-menu: roleId 기준으로 그룹핑하여 menuId 목록 저장 */
-    @Transactional(readOnly = true)
     public int reloadRoleMenu() {
         if (!redis.isEnabled()) return 0;
         roleMenuCache.evictAll();
@@ -165,7 +161,6 @@ public class CacheRedisReloadService {
     }
 
     /** sy-prop: propKey → propValue 맵으로 저장 */
-    @Transactional(readOnly = true)
     public int reloadProp() {
         if (!redis.isEnabled()) return 0;
         propCache.evictAll();
@@ -184,7 +179,6 @@ public class CacheRedisReloadService {
     }
 
     /** sy-i18n: langCd → (i18nId → i18nMsg) 중첩 맵으로 저장 */
-    @Transactional(readOnly = true)
     public int reloadI18n() {
         if (!redis.isEnabled()) return 0;
         i18nCache.evictAll();
@@ -207,7 +201,6 @@ public class CacheRedisReloadService {
     }
 
     /** ec-pd-cate: 카테고리 전체 목록 reload */
-    @Transactional(readOnly = true)
     public int reloadEcPdCate() {
         if (!redis.isEnabled()) return 0;
         ecPdCateCache.evictAll();
@@ -251,7 +244,6 @@ public class CacheRedisReloadService {
     // ════════════════════════════════════════════════════════════
 
     /** "sy-code^sy-menu" 형식으로 여러 도메인 재조회 */
-    @Transactional(readOnly = true)
     public Map<String, Integer> reloadMulti(String domains) {
         Map<String, Integer> result = new LinkedHashMap<>();
         Arrays.stream(domains.split("\\^"))
@@ -270,7 +262,6 @@ public class CacheRedisReloadService {
     }
 
     /** 단일 도메인 reload (switch 위임) */
-    @Transactional(readOnly = true)
     public int reloadOne(String domain) {
         return switch (domain) {
             case "sy-code"         -> reloadCode();

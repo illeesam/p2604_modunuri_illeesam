@@ -38,6 +38,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FoMyPageService {
 
     private final MbMemberRepository    memberRepository;
@@ -53,7 +54,6 @@ public class FoMyPageService {
     private EntityManager em;
 
     /** getMyInfo — 조회 */
-    @Transactional(readOnly = true)
     public MbMemberDto getMyInfo() {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMemberDto dto = memberMapper.selectById(memberId);
@@ -96,7 +96,6 @@ public class FoMyPageService {
     }
 
     /** getMyAddrs — 조회 */
-    @Transactional(readOnly = true)
     public List<MbMemberAddrDto> getMyAddrs() {
         String memberId = SecurityUtil.getAuthUser().authId();
         return addrMapper.selectList(Map.of("memberId", memberId));
@@ -131,28 +130,24 @@ public class FoMyPageService {
     }
 
     /** getMyOrders — 조회 */
-    @Transactional(readOnly = true)
     public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return orderMapper.selectList(p);
     }
 
     /** getMyClaims — 조회 */
-    @Transactional(readOnly = true)
     public List<OdClaimDto> getMyClaims(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return claimMapper.selectList(p);
     }
 
     /** getMyCoupons — 조회 */
-    @Transactional(readOnly = true)
     public List<PmCouponDto> getMyCoupons(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return couponMapper.selectList(p);
     }
 
     /** getMyCacheHistory — 조회 */
-    @Transactional(readOnly = true)
     public List<PmCacheDto> getMyCacheHistory(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return cacheMapper.selectList(p);

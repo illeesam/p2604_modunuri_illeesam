@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SyhUserLoginLogService {
 
     private final SyhUserLoginLogMapper syhUserLoginLogMapper;
@@ -22,7 +23,6 @@ public class SyhUserLoginLogService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public SyhUserLoginLogDto getById(String id) {
         // syh_user_login_log :: select one :: id [orm:mybatis]
         SyhUserLoginLogDto result = syhUserLoginLogMapper.selectById(id);
@@ -30,7 +30,6 @@ public class SyhUserLoginLogService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyhUserLoginLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // syh_user_login_log :: select list :: p [orm:mybatis]
@@ -39,7 +38,6 @@ public class SyhUserLoginLogService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyhUserLoginLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // syh_user_login_log :: select page :: [orm:mybatis]

@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PmCouponService {
 
 
@@ -29,7 +30,6 @@ public class PmCouponService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PmCouponDto getById(String id) {
         // pm_coupon :: select one :: id [orm:mybatis]
         PmCouponDto result = pmCouponMapper.selectById(id);
@@ -37,7 +37,6 @@ public class PmCouponService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PmCouponDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pm_coupon :: select list :: p [orm:mybatis]
@@ -46,7 +45,6 @@ public class PmCouponService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PmCouponDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pm_coupon :: select page :: [orm:mybatis]

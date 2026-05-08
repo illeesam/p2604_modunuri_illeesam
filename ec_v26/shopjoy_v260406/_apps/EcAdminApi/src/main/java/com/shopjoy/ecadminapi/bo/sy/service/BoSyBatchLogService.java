@@ -13,19 +13,18 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoSyBatchLogService {
 
     private final SyhBatchLogMapper syhBatchLogMapper;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyhBatchLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syhBatchLogMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyhBatchLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syhBatchLogMapper.selectPageList(p), syhBatchLogMapper.selectPageCount(p),
@@ -33,7 +32,6 @@ public class BoSyBatchLogService {
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public SyhBatchLogDto getById(String id) {
         return syhBatchLogMapper.selectById(id);
     }

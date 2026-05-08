@@ -23,6 +23,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoSyAttachGrpService {
 
     private final SyAttachGrpMapper     syAttachGrpMapper;
@@ -32,14 +33,12 @@ public class BoSyAttachGrpService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyAttachGrpDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syAttachGrpMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyAttachGrpDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syAttachGrpMapper.selectPageList(p), syAttachGrpMapper.selectPageCount(p),
@@ -47,7 +46,6 @@ public class BoSyAttachGrpService {
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public SyAttachGrpDto getById(String id) {
         SyAttachGrpDto dto = syAttachGrpMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

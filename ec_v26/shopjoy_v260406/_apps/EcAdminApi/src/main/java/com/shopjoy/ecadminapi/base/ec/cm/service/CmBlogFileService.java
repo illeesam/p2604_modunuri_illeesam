@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CmBlogFileService {
 
     private final CmBlogFileMapper cmBlogFileMapper;
@@ -28,14 +29,12 @@ public class CmBlogFileService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public CmBlogFileDto getById(String id) {
         // cm_blog_file :: select one :: id [orm:mybatis]
         return cmBlogFileMapper.selectById(id);
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<CmBlogFileDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_blog_file :: select list :: p [orm:mybatis]
@@ -43,7 +42,6 @@ public class CmBlogFileService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<CmBlogFileDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_blog_file :: select page :: [orm:mybatis]

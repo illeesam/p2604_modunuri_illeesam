@@ -23,6 +23,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoDpWidgetLibService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final DpWidgetLibMapper dpWidgetLibMapper;
@@ -31,21 +32,18 @@ public class BoDpWidgetLibService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<DpWidgetLibDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return dpWidgetLibMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<DpWidgetLibDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(dpWidgetLibMapper.selectPageList(p), dpWidgetLibMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public DpWidgetLibDto getById(String id) {
         DpWidgetLibDto dto = dpWidgetLibMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

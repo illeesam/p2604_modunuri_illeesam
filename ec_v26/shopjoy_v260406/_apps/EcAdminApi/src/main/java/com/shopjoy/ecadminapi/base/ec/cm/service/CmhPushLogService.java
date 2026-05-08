@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CmhPushLogService {
 
     private final CmhPushLogMapper cmhPushLogMapper;
@@ -22,7 +23,6 @@ public class CmhPushLogService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public CmhPushLogDto getById(String id) {
         // cmh_push_log :: select one :: id [orm:mybatis]
         CmhPushLogDto result = cmhPushLogMapper.selectById(id);
@@ -30,7 +30,6 @@ public class CmhPushLogService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<CmhPushLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cmh_push_log :: select list :: p [orm:mybatis]
@@ -39,7 +38,6 @@ public class CmhPushLogService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<CmhPushLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cmh_push_log :: select page :: [orm:mybatis]

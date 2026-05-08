@@ -14,20 +14,19 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoMbMemberTokenLogService {
 
     private final MbhMemberTokenLogMapper mbhMemberTokenLogMapper;
     private final MbhMemberTokenLogRepository mbhMemberTokenLogRepository;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<MbhMemberTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mbhMemberTokenLogMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<MbhMemberTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbhMemberTokenLogMapper.selectPageList(p), mbhMemberTokenLogMapper.selectPageCount(p),
@@ -35,7 +34,6 @@ public class BoMbMemberTokenLogService {
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public MbhMemberTokenLogDto getById(String id) {
         return mbhMemberTokenLogMapper.selectById(id);
     }

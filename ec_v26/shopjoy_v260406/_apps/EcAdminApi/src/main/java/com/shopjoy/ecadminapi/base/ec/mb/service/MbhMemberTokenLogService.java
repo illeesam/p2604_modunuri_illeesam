@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MbhMemberTokenLogService {
 
     private final MbhMemberTokenLogMapper mbhMemberTokenLogMapper;
@@ -22,14 +23,12 @@ public class MbhMemberTokenLogService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public MbhMemberTokenLogDto getById(String id) {
         MbhMemberTokenLogDto result = mbhMemberTokenLogMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<MbhMemberTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<MbhMemberTokenLogDto> result = mbhMemberTokenLogMapper.selectList(p);
@@ -37,7 +36,6 @@ public class MbhMemberTokenLogService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<MbhMemberTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mbhMemberTokenLogMapper.selectPageList(p), mbhMemberTokenLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

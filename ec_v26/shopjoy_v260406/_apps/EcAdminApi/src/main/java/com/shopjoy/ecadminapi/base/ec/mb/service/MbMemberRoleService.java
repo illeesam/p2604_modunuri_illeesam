@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MbMemberRoleService {
 
     private final MbMemberRoleMapper mbMemberRoleMapper;
@@ -28,14 +29,12 @@ public class MbMemberRoleService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public MbMemberRoleDto getById(String id) {
         // mb_member_role :: select one :: id [orm:mybatis]
         return mbMemberRoleMapper.selectById(id);
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<MbMemberRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // mb_member_role :: select list :: p [orm:mybatis]
@@ -43,7 +42,6 @@ public class MbMemberRoleService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<MbMemberRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // mb_member_role :: select page :: p [orm:mybatis]

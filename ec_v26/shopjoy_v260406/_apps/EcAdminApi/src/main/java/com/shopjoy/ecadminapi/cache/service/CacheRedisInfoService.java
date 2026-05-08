@@ -26,6 +26,7 @@ import java.util.Map;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CacheRedisInfoService {
 
     private final RedisUtil        redis;

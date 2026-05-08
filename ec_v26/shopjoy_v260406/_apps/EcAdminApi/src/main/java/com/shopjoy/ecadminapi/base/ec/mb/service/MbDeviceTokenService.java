@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MbDeviceTokenService {
 
     private final MbDeviceTokenMapper mbDeviceTokenMapper;
@@ -28,14 +29,12 @@ public class MbDeviceTokenService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public MbDeviceTokenDto getById(String id) {
         // mb_device_token :: select one :: id [orm:mybatis]
         return mbDeviceTokenMapper.selectById(id);
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<MbDeviceTokenDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // mb_device_token :: select list :: p [orm:mybatis]
@@ -43,7 +42,6 @@ public class MbDeviceTokenService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<MbDeviceTokenDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // mb_device_token :: select page :: [orm:mybatis]

@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PdTagService {
 
 
@@ -29,7 +30,6 @@ public class PdTagService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PdTagDto getById(String id) {
         // pd_tag :: select one :: id [orm:mybatis]
         PdTagDto result = pdTagMapper.selectById(id);
@@ -37,7 +37,6 @@ public class PdTagService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PdTagDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_tag :: select list :: p [orm:mybatis]
@@ -46,7 +45,6 @@ public class PdTagService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdTagDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_tag :: select page :: [orm:mybatis]

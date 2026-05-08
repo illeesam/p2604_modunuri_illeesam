@@ -23,6 +23,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FoOdCartService {
 
 
@@ -30,7 +31,6 @@ public class FoOdCartService {
     private final OdCartRepository odCartRepository;
 
     /** getMyCart — 조회 */
-    @Transactional(readOnly = true)
     public List<OdCartDto> getMyCart(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return odCartMapper.selectList(p);

@@ -21,6 +21,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoStErpService {
 
     private final StErpVoucherService stErpVoucherService;
@@ -28,19 +29,16 @@ public class BoStErpService {
     private final StReconService stReconService;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<StErpVoucherDto> getList(Map<String, Object> p) {
         return stErpVoucherService.getList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<StErpVoucherDto> getPageData(Map<String, Object> p) {
         return stErpVoucherService.getPageData(p);
     }
 
     /** getReconPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<StReconDto> getReconPageData(Map<String, Object> p) {
         return stReconService.getPageData(p);
     }

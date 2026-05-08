@@ -15,19 +15,18 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoOdCartService {
     private final OdCartMapper odCartMapper;
     private final OdCartRepository odCartRepository;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<OdCartDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return odCartMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<OdCartDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odCartMapper.selectPageList(p), odCartMapper.selectPageCount(p),
@@ -35,7 +34,6 @@ public class BoOdCartService {
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public OdCartDto getById(String id) {
         OdCartDto dto = odCartMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);

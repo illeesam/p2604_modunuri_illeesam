@@ -23,6 +23,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class StSettleCloseService {
 
 
@@ -34,14 +35,12 @@ public class StSettleCloseService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public StSettleCloseDto getById(String id) {
         StSettleCloseDto result = stSettleCloseMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<StSettleCloseDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<StSettleCloseDto> result = stSettleCloseMapper.selectList(p);
@@ -49,7 +48,6 @@ public class StSettleCloseService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<StSettleCloseDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(stSettleCloseMapper.selectPageList(p), stSettleCloseMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

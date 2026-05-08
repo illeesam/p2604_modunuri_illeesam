@@ -14,20 +14,19 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoSyUserLoginLogService {
 
     private final SyhUserLoginLogMapper syhUserLoginLogMapper;
     private final SyhUserLoginLogRepository syhUserLoginLogRepository;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<SyhUserLoginLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return syhUserLoginLogMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyhUserLoginLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syhUserLoginLogMapper.selectPageList(p), syhUserLoginLogMapper.selectPageCount(p),
@@ -35,7 +34,6 @@ public class BoSyUserLoginLogService {
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public SyhUserLoginLogDto getById(String id) {
         return syhUserLoginLogMapper.selectById(id);
     }

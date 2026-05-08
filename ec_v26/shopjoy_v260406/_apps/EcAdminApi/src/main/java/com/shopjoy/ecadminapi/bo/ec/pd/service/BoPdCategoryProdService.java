@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoPdCategoryProdService {
 
     private final PdCategoryProdMapper pdCategoryProdMapper;
@@ -29,7 +30,6 @@ public class BoPdCategoryProdService {
     private EntityManager em;
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdCategoryProdDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(

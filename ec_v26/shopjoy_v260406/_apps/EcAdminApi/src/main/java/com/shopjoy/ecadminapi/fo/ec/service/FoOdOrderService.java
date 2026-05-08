@@ -26,6 +26,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FoOdOrderService {
 
 
@@ -33,14 +34,12 @@ public class FoOdOrderService {
     private final OdOrderRepository odOrderRepository;
 
     /** getMyOrders — 조회 */
-    @Transactional(readOnly = true)
     public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         return odOrderMapper.selectList(p);
     }
 
     /** getMyOrderPage — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<OdOrderDto> getMyOrderPage(Map<String, Object> p) {
         p.put("memberId", SecurityUtil.getAuthUser().authId());
         PageHelper.addPaging(p);
@@ -48,7 +47,6 @@ public class FoOdOrderService {
     }
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public OdOrderDto getById(String orderId) {
         OdOrderDto dto = odOrderMapper.selectById(orderId);
         if (dto == null) throw new CmBizException("존재하지 않는 주문입니다: " + orderId);

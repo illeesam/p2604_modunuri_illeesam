@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PdhProdSkuChgHistService {
 
     private final PdhProdSkuChgHistMapper pdhProdSkuChgHistMapper;
@@ -22,7 +23,6 @@ public class PdhProdSkuChgHistService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PdhProdSkuChgHistDto getById(String id) {
         // pdh_prod_sku_chg_hist :: select one :: id [orm:mybatis]
         PdhProdSkuChgHistDto result = pdhProdSkuChgHistMapper.selectById(id);
@@ -30,7 +30,6 @@ public class PdhProdSkuChgHistService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PdhProdSkuChgHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pdh_prod_sku_chg_hist :: select list :: p [orm:mybatis]
@@ -39,7 +38,6 @@ public class PdhProdSkuChgHistService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdhProdSkuChgHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pdh_prod_sku_chg_hist :: select page :: [orm:mybatis]

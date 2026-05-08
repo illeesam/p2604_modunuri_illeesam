@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OdhClaimChgHistService {
 
     private final OdhClaimChgHistMapper odhClaimChgHistMapper;
@@ -22,14 +23,12 @@ public class OdhClaimChgHistService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public OdhClaimChgHistDto getById(String id) {
         OdhClaimChgHistDto result = odhClaimChgHistMapper.selectById(id);
         return result;
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<OdhClaimChgHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<OdhClaimChgHistDto> result = odhClaimChgHistMapper.selectList(p);
@@ -37,7 +36,6 @@ public class OdhClaimChgHistService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<OdhClaimChgHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(odhClaimChgHistMapper.selectPageList(p), odhClaimChgHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

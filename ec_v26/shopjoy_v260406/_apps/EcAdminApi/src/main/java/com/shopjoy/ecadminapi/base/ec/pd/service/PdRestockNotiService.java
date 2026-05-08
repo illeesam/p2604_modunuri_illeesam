@@ -22,6 +22,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PdRestockNotiService {
 
 
@@ -30,7 +31,6 @@ public class PdRestockNotiService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PdRestockNotiDto getById(String id) {
         // pd_restock_noti :: select one :: id [orm:mybatis]
         PdRestockNotiDto result = pdRestockNotiMapper.selectById(id);
@@ -38,7 +38,6 @@ public class PdRestockNotiService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PdRestockNotiDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_restock_noti :: select list :: p [orm:mybatis]
@@ -47,7 +46,6 @@ public class PdRestockNotiService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdRestockNotiDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_restock_noti :: select page :: [orm:mybatis]

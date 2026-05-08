@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CmBlogTagService {
 
     private final CmBlogTagMapper cmBlogTagMapper;
@@ -28,7 +29,6 @@ public class CmBlogTagService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public CmBlogTagDto getById(String id) {
         // cm_blog_tag :: select one :: id [orm:mybatis]
         CmBlogTagDto result = cmBlogTagMapper.selectById(id);
@@ -36,7 +36,6 @@ public class CmBlogTagService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<CmBlogTagDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_blog_tag :: select list :: p [orm:mybatis]
@@ -45,7 +44,6 @@ public class CmBlogTagService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<CmBlogTagDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_blog_tag :: select page :: [orm:mybatis]

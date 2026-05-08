@@ -32,6 +32,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FoCmBlogService {
 
 
@@ -41,13 +42,11 @@ public class FoCmBlogService {
     private EntityManager em;
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<CmBlogDto> getList(Map<String, Object> p) {
         return cmBlogMapper.selectList(p);
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(cmBlogMapper.selectPageList(p), cmBlogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);

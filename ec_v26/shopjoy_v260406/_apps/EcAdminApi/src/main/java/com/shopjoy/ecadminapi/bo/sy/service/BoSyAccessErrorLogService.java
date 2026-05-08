@@ -13,13 +13,13 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoSyAccessErrorLogService {
 
     private final SyhAccessErrorLogMapper syhAccessErrorLogMapper;
     private final SyhAccessErrorLogRepository syhAccessErrorLogRepository;
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<SyhAccessErrorLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(syhAccessErrorLogMapper.selectPageList(p), syhAccessErrorLogMapper.selectPageCount(p),

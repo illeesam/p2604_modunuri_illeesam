@@ -22,6 +22,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PdDlivTmpltService {
 
 
@@ -30,7 +31,6 @@ public class PdDlivTmpltService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PdDlivTmpltDto getById(String id) {
         // pd_dliv_tmplt :: select one :: id [orm:mybatis]
         PdDlivTmpltDto result = pdDlivTmpltMapper.selectById(id);
@@ -38,7 +38,6 @@ public class PdDlivTmpltService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PdDlivTmpltDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_dliv_tmplt :: select list :: p [orm:mybatis]
@@ -47,7 +46,6 @@ public class PdDlivTmpltService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdDlivTmpltDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_dliv_tmplt :: select page :: [orm:mybatis]

@@ -22,6 +22,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PdProdContentService {
 
     private final PdProdContentMapper pdProdContentMapper;
@@ -29,7 +30,6 @@ public class PdProdContentService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PdProdContentDto getById(String id) {
         // pd_prod_content :: select one :: id [orm:mybatis]
         PdProdContentDto result = pdProdContentMapper.selectById(id);
@@ -37,7 +37,6 @@ public class PdProdContentService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PdProdContentDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_prod_content :: select list :: p [orm:mybatis]
@@ -46,7 +45,6 @@ public class PdProdContentService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdProdContentDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_prod_content :: select page :: [orm:mybatis]

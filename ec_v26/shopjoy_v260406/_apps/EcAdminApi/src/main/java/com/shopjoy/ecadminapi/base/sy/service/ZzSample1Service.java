@@ -19,6 +19,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ZzSample1Service {
 
 
@@ -26,14 +27,12 @@ public class ZzSample1Service {
     private final ZzSample1Repository zzSample1Repository;
 
     /** getById — 조회 */
-    @Transactional(readOnly = true)
     public ZzSample1Dto getById(String id) {
         // zz_sample1 :: select one :: id [orm:mybatis]
         return zzSample1Mapper.selectById(id);
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<ZzSample1Dto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // zz_sample1 :: select list :: p [orm:mybatis]
@@ -41,7 +40,6 @@ public class ZzSample1Service {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<ZzSample1Dto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // zz_sample1 :: select page :: p [orm:mybatis]

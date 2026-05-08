@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PdReviewService {
 
 
@@ -29,7 +30,6 @@ public class PdReviewService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public PdReviewDto getById(String id) {
         // pd_review :: select one :: id [orm:mybatis]
         PdReviewDto result = pdReviewMapper.selectById(id);
@@ -37,7 +37,6 @@ public class PdReviewService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<PdReviewDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // pd_review :: select list :: p [orm:mybatis]
@@ -46,7 +45,6 @@ public class PdReviewService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<PdReviewDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // pd_review :: select page :: [orm:mybatis]
@@ -57,7 +55,6 @@ public class PdReviewService {
      * 상품별 평점 집계 — FO 상품상세 리뷰 요약(summary) 영역용
      * 반환: { total, avgRating, rate5, rate4, rate3, rate2, rate1 }
      */
-    @Transactional(readOnly = true)
     public Map<String, Object> getRatingSummary(String prodId) {
         Map<String, Object> result = pdReviewMapper.selectRatingSummary(prodId);
         return result != null ? result : new java.util.LinkedHashMap<>();

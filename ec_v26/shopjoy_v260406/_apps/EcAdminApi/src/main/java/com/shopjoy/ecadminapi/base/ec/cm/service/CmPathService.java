@@ -21,6 +21,7 @@ import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CmPathService {
 
     private final CmPathMapper cmPathMapper;
@@ -28,7 +29,6 @@ public class CmPathService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
     public CmPathDto getById(String id) {
         // cm_path :: select one :: id [orm:mybatis]
         CmPathDto result = cmPathMapper.selectById(id);
@@ -36,7 +36,6 @@ public class CmPathService {
     }
 
     /** getList — 조회 */
-    @Transactional(readOnly = true)
     public List<CmPathDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         // cm_path :: select list :: p [orm:mybatis]
@@ -45,7 +44,6 @@ public class CmPathService {
     }
 
     /** getPageData — 조회 */
-    @Transactional(readOnly = true)
     public PageResult<CmPathDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         // cm_path :: select page :: [orm:mybatis]
