@@ -19,7 +19,7 @@ window.OdOrderDtl = {
     const vendors = reactive([]);
     const deliveries = reactive([]);
     const claims = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odOrderDtlState?.activeTab || 'info', tabMode2: window._odOrderDtlState.tabMode || 'tab', memoEl: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odOrderDtlState?.activeTab || 'info', tabMode2: window._odOrderDtlState.tabMode || 'tab' });
     const tab = Vue.toRef(uiState, 'tab');
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
@@ -88,26 +88,10 @@ window.OdOrderDtl = {
     }[s] || 'badge-gray');
     const errors = reactive({});
 
-        let _qMemo = null;
-
     const schema = yup.object({
       orderId: yup.string().required('주문ID를 입력해주세요.'),
       userId: yup.string().required('회원ID를 입력해주세요.'),
     });
-
-    const handleInitQuill = async () => {
-      await nextTick();
-      if (uiState.memoEl) {
-        _qMemo = new Quill(uiState.memoEl, {
-          theme: 'snow',
-          placeholder: '내용을 입력하세요...',
-          modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
-        });
-        if (form.memo) _qMemo.root.innerHTML = form.memo;
-        _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
-      }
-    };
-    onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const cfCurrentStepIdx = computed(() => {
       const idx = ORDER_STEPS.indexOf(form.statusCd);
@@ -177,14 +161,13 @@ window.OdOrderDtl = {
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleSearchDetail();
-      await handleInitQuill();
       await initItems();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) return;
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      await handleLoadDetail();
+      await handleSearchDetail();
     });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
@@ -289,16 +272,12 @@ window.OdOrderDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
-    const memoEl = ref(null);
-
-    watch(memoEl, (el) => { uiState.memoEl = el; });
-
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, memoEl, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_FALLBACK, fnPayStatusBadge, cfDtlMode, tabMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes };
+    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_FALLBACK, fnPayStatusBadge, cfDtlMode, tabMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes };
   },
   template: /* html */`
 <div>

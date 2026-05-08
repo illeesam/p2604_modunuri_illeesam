@@ -16,7 +16,7 @@ window.PmCouponDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, memoEl: null});
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({
@@ -75,8 +75,6 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     });
     const errors = reactive({});
 
-        let _qMemo = null;
-
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
@@ -89,20 +87,10 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       endDate: yup.string().required('만료일을 입력해주세요.'),
     });
 
-    const handleInitForm = async () => {
+    const handleInitForm = () => {
       if (cfIsNew.value) {
         if (!form.startDate) form.startDate = DEFAULT_START;
         if (!form.endDate) form.endDate = DEFAULT_END;
-      }
-      await nextTick();
-      if (uiState.memoEl && typeof Quill !== 'undefined') {
-        _qMemo = new Quill(uiState.memoEl, {
-          theme: 'snow',
-          placeholder: '쿠폰 관련 메모를 입력하세요...',
-          modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
-        });
-        if (form.memo) _qMemo.root.innerHTML = form.memo;
-        _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
 
@@ -116,10 +104,9 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) return;
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      await handleLoadDetail();
+      await handleSearchDetail();
+      handleInitForm();
     });
-
-    onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
@@ -257,8 +244,6 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       } catch (err) { _afterApiErr(err); }
     };
 
-    const memoEl = Vue.ref(null);
-    Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
     const barcodeContainer = Vue.toRef(uiState, 'barcodeContainer');
     const previewTab = Vue.toRef(uiState, 'previewTab');
     const qrcodeContainer = Vue.toRef(uiState, 'qrcodeContainer');
@@ -266,7 +251,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, tabMode2, handleSave, memoEl, onTabChange,
+    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, tabMode2, handleSave, onTabChange,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       cfSelectedVendorNm, selectVendor,
     };

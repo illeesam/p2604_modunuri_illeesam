@@ -16,7 +16,7 @@ window.OdDlivDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', tabMode2: window._odDlivDtlState.tabMode || 'tab', memoEl: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', tabMode2: window._odDlivDtlState.tabMode || 'tab' });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ dliv_statuses: [] });
@@ -42,8 +42,6 @@ window.OdDlivDtl = {
       address: '', phone: '', courierCd: '', trackingNo: '', statusCd: '준비중', regDate: '', memo: '',
     });
     const errors = reactive({});
-
-        let _qMemo = null;
 
     const schema = yup.object({
       dlivId: yup.string().required('배송ID를 입력해주세요.'),
@@ -76,20 +74,6 @@ window.OdDlivDtl = {
         uiState.loading = false;
       }
     };
-
-    const handleInitQuill = async () => {
-      await nextTick();
-      if (uiState.memoEl) {
-        _qMemo = new Quill(uiState.memoEl, {
-          theme: 'snow',
-          placeholder: '내용을 입력하세요...',
-          modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
-        });
-        if (form.memo) _qMemo.root.innerHTML = form.memo;
-        _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
-      }
-    };
-    onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
     const cfFirstClaim = computed(() => relatedClaims[0] || null);
@@ -152,14 +136,13 @@ window.OdDlivDtl = {
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleSearchDetail();
-      await handleInitQuill();
       await initItems();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) return;
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      await handleLoadDetail();
+      await handleSearchDetail();
     });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
@@ -209,15 +192,12 @@ window.OdDlivDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
-    const memoEl = Vue.ref(null);
-    Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
-
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, tab, form, errors, handleSave, memoEl, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes };
+    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes };
   },
   template: /* html */`
 <div>

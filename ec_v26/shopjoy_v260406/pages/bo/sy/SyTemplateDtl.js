@@ -17,7 +17,7 @@ window.SyTemplateDtl = {
     const setApiRes    = window.boApp.setApiRes;
 
     /* 미리보기 / 발송 모달 */
-    const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false, quillEditorEl: null});
+    const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false });
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
@@ -25,45 +25,8 @@ window.SyTemplateDtl = {
     });
     const errors = reactive({});
 
-    /* -- Quill (메일, 시스템알림) -- */
+    /* -- HTML 에디터 사용 여부 (메일, 시스템알림) -- */
     const cfUseHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateTypeCd));
-        let _quill = null;
-
-    const initQuill = () => {
-      if (!uiState.quillEditorEl || _quill) return;
-      _quill = new Quill(uiState.quillEditorEl, {
-        theme: 'snow',
-        placeholder: '내용을 입력하세요...',
-        modules: {
-          toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline'],
-            [{ color: [] }, { background: [] }],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'blockquote', 'clean'],
-          ]
-        }
-      });
-      _quill.root.innerHTML = form.content || '';
-      _quill.on('text-change', () => { form.content = _quill.root.innerHTML; });
-    };
-
-    const destroyQuill = () => {
-      if (_quill) { form.content = _quill.root.innerHTML; _quill = null; }
-    };
-
-    /* 타입 변경 시 에디터 전환 — post-flush: DOM 업데이트 후 실행 */
-
-    // -- watch ----------------------------------------------------------------
-
-    watch(cfUseHtmlEditor, (isHtml) => {
-      if (isHtml && !props.tabMode) initQuill();
-      else destroyQuill();
-    }, { flush: 'post' });
-
-    const handleInitForm = async () => {
-      if (cfUseHtmlEditor.value && !props.tabMode) { await nextTick(); initQuill(); }
-    };
 
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
@@ -73,7 +36,6 @@ window.SyTemplateDtl = {
         const data = res.data?.data;
         if (data) Object.assign(form, { sampleParams: '{}', ...data });
         uiState.error = null;
-        await handleInitForm();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -92,8 +54,6 @@ window.SyTemplateDtl = {
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleLoadDetail();
     });
-
-    onBeforeUnmount(() => destroyQuill());
 
     const schema = yup.object({
       templateCode: yup.string().required('템플릿코드를 입력해주세요.'),
@@ -147,15 +107,13 @@ window.SyTemplateDtl = {
       }
     };
 
-    const quillEditorEl = Vue.toRef(uiState, 'quillEditorEl');
-
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // -- return ---------------------------------------------------------------
 
     return { uiState, cfIsNew, form, errors, codes, handleSave, cfNeedSubject, cfIsLongContent,
-             cfUseHtmlEditor, quillEditorEl, cfSiteNm, cfDtlMode };
+             cfUseHtmlEditor, cfSiteNm, cfDtlMode };
   },
   template: /* html */`
 <div>

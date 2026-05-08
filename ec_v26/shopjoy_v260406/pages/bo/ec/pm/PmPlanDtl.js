@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 기획전관리 상세/등록 (Quill HTML Editor + 배너이미지) */
+/* ShopJoy Admin - 기획전관리 상세/등록 (Toast UI HTML Editor + 배너이미지) */
 window._ecPlanDtlState = window._ecPlanDtlState || { tab: 'info', tabMode: 'tab' };
 window.PmPlanDtl = {
   name: 'PmPlanDtl',
@@ -11,7 +11,7 @@ window.PmPlanDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch, onUnmounted  } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
@@ -96,57 +96,21 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       category: yup.string().required('카테고리를 선택해주세요.'),
     });
 
-    /* Quill 인스턴스 4개 (배너+콘텐츠3) */
-    const quillers = {};
-    
-    const initQuill = (id, key) => {
-      const el = document.getElementById(id);
-      if (!el || typeof Quill === 'undefined') return;
-      if (quillers[key]) return;
-      quillers[key] = new Quill(el, {
-        theme: 'snow',
-        modules: {
-          toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ color: [] }, { background: [] }],
-            [{ align: [] }],
-            ['blockquote'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'image'],
-            ['clean'],
-          ],
-        },
-      });
-      quillers[key].on('text-change', () => { form[key] = quillers[key].root.innerHTML; });
-      if (form[key]) quillers[key].root.innerHTML = form[key];
-    };
-
-    const syncToQuill = () => {
-      for (let i = 1; i <= 3; i++) {
-        const key = 'content' + i;
-        if (quillers[key]) quillers[key].root.innerHTML = form[key] || '';
-      }
-    };
-
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
-      if (newTab === 'banner') {
-        setTimeout(() => { initQuill('quill-banner', 'bannerImage'); }, 50);
-      } else if (newTab === 'content') {
-        setTimeout(() => {
-          for (let i = 1; i <= 3; i++) initQuill('quill-content' + i, 'content' + i);
-          syncToQuill();
-        }, 50);
-      }
     };
 
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
     });
-
-    onUnmounted(() => { Object.keys(quillers).forEach(k => { delete quillers[k]; }); });
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      if (typeof handleLoadDetail === 'function') await handleLoadDetail();
+      else if (typeof handleSearchDetail === 'function') await handleSearchDetail();
+    });
 
     /* 대상 상품 팝업 */
         const cfFilteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {

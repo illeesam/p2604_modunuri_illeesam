@@ -10,7 +10,7 @@ window.SyBbsDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
-    const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
+    const { reactive, computed, onMounted, ref, watch } = Vue;
     const showToast    = window.boApp.showToast;
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
@@ -65,18 +65,6 @@ window.SyBbsDtl = {
       form.statusCd    = '게시';
       form.attachGrpId = null;
       form.contentHtml = '';
-      /* Quill 내용 초기화 */
-      if (quill) quill.root.innerHTML = '';
-    };
-
-    /* ── Quill 에디터 ── */
-    let quill = null;
-    const initQuill = () => {
-      if (typeof Quill === 'undefined') return;
-      if (quill) return;
-      quill = new Quill('#bbs-editor', { theme: 'snow', placeholder: '게시글 내용을 입력하세요.' });
-      if (form.contentHtml) quill.root.innerHTML = form.contentHtml;
-      quill.on('text-change', () => { form.contentHtml = quill.root.innerHTML; });
     };
 
     /* 게시판 contentType 에 따른 내용 입력 방식 */
@@ -108,10 +96,6 @@ window.SyBbsDtl = {
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
-      /* htmleditor 초기화는 selectedBbm 결정 후 — cfDtlMode 일 때는 초기화 불필요 */
-      if (!props.tabMode && cfContentType.value === 'htmleditor') {
-        Vue.nextTick(() => { initQuill(); });
-      }
     });
 
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
@@ -120,18 +104,6 @@ window.SyBbsDtl = {
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleLoadDetail();
     });
-
-    /* cfContentType 변화 감지 → Quill 초기화 */
-
-    watch(cfContentType, (val) => {
-      if (!props.tabMode && val === 'htmleditor') {
-        nextTick(() => { initQuill(); });
-      } else {
-        quill = null;
-      }
-    });
-
-    onBeforeUnmount(() => { quill = null; });
 
     /* ── 첨부 허용 개수 ── */
     const cfAttachMaxCount = computed(() => {

@@ -101,8 +101,8 @@
             <if test="widgetLibDesc != null">widget_lib_desc = #{widgetLibDesc},</if>
             <if test="pathId != null">path_id = #{pathId},</if>
             <if test="thumbnailUrl != null">thumbnail_url = #{thumbnailUrl},</if>
-            <if test="templateHtml != null">template_html = #{templateHtml},</if>
-            <if test="configSchema != null">config_schema = #{configSchema},</if>
+            <if test="widgetContent != null">widget_content = #{widgetContent},</if>
+            <if test="widgetConfigJson != null">widget_config_json = #{widgetConfigJson},</if>
             <if test="isSystem != null">is_system = #{isSystem},</if>
             <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
             <if test="useYn != null">use_yn = #{useYn},</if>

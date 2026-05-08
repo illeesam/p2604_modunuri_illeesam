@@ -17,7 +17,7 @@ window.SyContactDtl = {
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', tabMode2: window._syContactDtlState.tabMode || 'tab', contentEl: null, answerEl: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', tabMode2: window._syContactDtlState.tabMode || 'tab' });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ contact_categories: [], contact_statuses: [] });
@@ -44,36 +44,10 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     });
     const errors = reactive({});
 
-        let _qContent = null;
-        let _qAnswer = null;
-
     const schema = yup.object({
       title: yup.string().required('제목을 입력해주세요.'),
       content: yup.string().required('문의 내용을 입력해주세요.'),
     });
-
-    const handleInitForm = async () => {
-      await nextTick();
-      const fullToolbar = [[{header:[1,2,3,false]}],['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','blockquote','clean']];
-      if (uiState.contentEl) {
-        _qContent = new Quill(uiState.contentEl, {
-          theme: 'snow',
-          placeholder: '내용을 입력하세요...',
-          modules: { toolbar: fullToolbar }
-        });
-        if (form.content) _qContent.root.innerHTML = form.content;
-        _qContent.on('text-change', () => { form.content = _qContent.root.innerHTML; });
-      }
-      if (uiState.answerEl) {
-        _qAnswer = new Quill(uiState.answerEl, {
-          theme: 'snow',
-          placeholder: '고객에게 전달할 답변을 입력하세요.',
-          modules: { toolbar: fullToolbar }
-        });
-        if (form.answer) _qAnswer.root.innerHTML = form.answer;
-        _qAnswer.on('text-change', () => { form.answer = _qAnswer.root.innerHTML; });
-      }
-    };
 
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
@@ -98,18 +72,12 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
-      handleInitForm();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) return;
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleLoadDetail();
-    });
-
-    onBeforeUnmount(() => {
-      if (_qContent) { form.content = _qContent.root.innerHTML; _qContent = null; }
-      if (_qAnswer) { form.answer = _qAnswer.root.innerHTML; _qAnswer = null; }
     });
 
     const onUserIdChange = () => {
@@ -186,15 +154,12 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       } catch (err) { _afterApiErr(err); }
     };
 
-    const answerEl = Vue.toRef(uiState, 'answerEl');
-    const contentEl = Vue.toRef(uiState, 'contentEl');
-
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
+    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm };
   },
   template: /* html */`
 <div>

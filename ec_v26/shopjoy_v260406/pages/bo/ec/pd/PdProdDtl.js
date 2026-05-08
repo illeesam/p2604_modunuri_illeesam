@@ -48,13 +48,6 @@ window.PdProdDtl = {
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
-    // 상품설명 탭 전환 시 Quill 마운트 + 내용 재주입
-    watch(() => uiState.topTab, async (tab) => {
-      if (tab !== 'content') return;
-      await nextTick();
-      fnMountQuills();
-    });
-
     // -- 탭별 페이징 상태
     const tabPage = reactive({
       images:  { pageNo: 1, pageSize: 10, totalCount: 0 },
@@ -559,43 +552,11 @@ window.PdProdDtl = {
     // -- 상품설명 블록 (contentBlocks)
     const contentBlocks = reactive([]);
     let _blockSeq = 1;
-    const _blockQuills = {};
     const addContentBlock = (type) => {
       contentBlocks.push({ _id: _blockSeq++, type, content: '', fileName: '' });
-      if (type === 'html') {
-        nextTick(() => {
-          const el = document.getElementById('quill-block-' + (contentBlocks.at(-1)._id));
-          if (el && !_blockQuills[contentBlocks.at(-1)._id]) {
-            const block = contentBlocks.at(-1);
-            const q = new Quill(el, { theme: 'snow', placeholder: '내용을 입력해주세요.',
-              modules: { toolbar: [[{ header: [1,2,3,false] }], ['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','image','clean']] } });
-            _blockQuills[block._id] = q;
-            q.on('text-change', () => { block.content = q.root.innerHTML; });
-          }
-        });
-      }
-    };
-    const QUILL_TOOLBAR = [[{ header: [1,2,3,false] }], ['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','image','clean']];
-    const fnMountQuills = () => {
-      safeFilter(contentBlocks, b => b.type === 'html').forEach(block => {
-        const el = document.getElementById('quill-block-' + block._id);
-        if (!el) return;
-        if (!_blockQuills[block._id]) {
-          const q = new Quill(el, { theme: 'snow', placeholder: '내용을 입력해주세요.', modules: { toolbar: QUILL_TOOLBAR } });
-          _blockQuills[block._id] = q;
-          q.on('text-change', () => { block.content = q.root.innerHTML; });
-        }
-        // content가 있으면 항상 주입 (dangerouslyPasteHTML로 delta 동기화)
-        const q = _blockQuills[block._id];
-        if (block.content && q.root.innerHTML.replace(/<p><br><\/p>/g,'') === '') {
-          q.clipboard.dangerouslyPasteHTML(block.content);
-        }
-      });
     };
 
     const removeContentBlock = (idx) => {
-      const block = contentBlocks[idx];
-      delete _blockQuills[block._id];
       contentBlocks.splice(idx, 1);
     };
     const onBlockFileChange = (block, e) => {
@@ -867,7 +828,6 @@ window.PdProdDtl = {
         }
       }
       await nextTick();
-      fnMountQuills();
       // 스플릿 패널 divider 마우스 리스너
       _divMoveH = (e) => {
         if (!uiState.isDraggingDivider || !contentSplitRef.value) return;
@@ -1058,7 +1018,7 @@ window.PdProdDtl = {
       onCodeDragStart, onCodeDragOver, onCodeDrop,
       salePlans, cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked, planRowStyle,
       cfMarginRateCalc, cfDiscountRate, cfPlatformFee, cfPlatformFeeDisp, cfNetRevenueDisp,
-      contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange, fnMountQuills,
+      contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
       onBlockDragStart, onBlockDragOver, onBlockDrop,
       contentSplitRef, onDividerMousedown,
       prodOptCategoryTypeCd, openHelp,

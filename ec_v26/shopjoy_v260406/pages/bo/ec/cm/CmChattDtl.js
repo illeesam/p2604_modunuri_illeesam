@@ -91,6 +91,13 @@ window.CmChattDtl = {
         uiState.tab = 'new';
       }
     });
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      if (typeof handleLoadDetail === 'function') await handleLoadDetail();
+      else if (typeof handleSearchDetail === 'function') await handleSearchDetail();
+    });
 
     /* 회원의 다른 채팅 이력 */
     const cfMemberChats = computed(() => {

@@ -16,7 +16,7 @@ window.DpDispPanelDtl = {
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
     const panels = reactive([]);
-    const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy', htmlDescEl: null, htmlContentEl: null });
+    const uiState = reactive({ libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy' });
     const tab = Vue.toRef(uiState, 'tab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
     const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], disp_areas: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
@@ -250,7 +250,7 @@ window.DpDispPanelDtl = {
     const updateFileItem = (idx, field, val) =>
       _saveFileList(cfFileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
-    /* cfDisplayRows — html_editor는 Quill로 별도 렌더하므로 제외 */
+    /* cfDisplayRows — html_editor는 Toast UI로 별도 렌더하므로 제외 */
     const cfDisplayRows = computed(() => {
       if (!cfActiveRow.value) return [];
       if (cfIsImage.value)       return [
@@ -290,7 +290,7 @@ window.DpDispPanelDtl = {
         { key: 'couponCode', label: '쿠폰 코드', type: 'input', ph: 'COUPON_CODE' },
         { key: 'couponDesc', label: '쿠폰 설명', type: 'input', ph: '쿠폰 안내 문구' },
       ];
-      if (cfIsHtmlEditor.value)  return [];   /* Quill로 별도 처리 */
+      if (cfIsHtmlEditor.value)  return [];   /* Toast UI로 별도 처리 */
       if (cfIsTextarea.value)    return [
         { key: 'textareaContent', label: '텍스트 내용', type: 'textarea', ph: '텍스트를 입력하세요...' },
       ];
@@ -380,66 +380,6 @@ window.DpDispPanelDtl = {
       return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null;
     });
 
-    /* -- Quill 에디터 -- */
-    const htmlDescEl    = ref(null);
-        let quillDesc    = null;
-    let quillContent = null;
-
-    const toggleHtmlSource = async () => {
-      if (!cfActiveRow.value) return;
-      if (!uiState.htmlSourceMode) {
-        /* WYSIWYG → 소스: Quill 최신값 저장 후 소스 모드 ON */
-        if (quillContent) cfActiveRow.value.htmlContent = quillContent.root.innerHTML;
-        uiState.htmlSourceMode = true;
-      } else {
-        /* 소스 → WYSIWYG: quillContent 재생성 없이 내용만 동기화 */
-        uiState.htmlSourceMode = false;
-        await nextTick();
-        if (quillContent) {
-          bindQuillContent();   // 기존 인스턴스에 textarea 값 반영
-        } else {
-          initQuillContent();   // 최초 1회만 생성
-        }
-      }
-    };
-
-    const QUILL_OPTS = {
-      theme: 'snow',
-      modules: { toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ color: [] }, { background: [] }],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'image'],
-        ['clean'],
-      ]},
-    };
-
-    const initQuillDesc = () => {
-      if (props.tabMode || !uiState.htmlDescEl || quillDesc) return;
-      quillDesc = new Quill(uiState.htmlDescEl, QUILL_OPTS);
-      quillDesc.root.innerHTML = form.htmlDesc || '';
-      quillDesc.on('text-change', () => { form.htmlDesc = quillDesc.root.innerHTML; });
-    };
-
-    const bindQuillContent = () => {
-      if (!quillContent || !cfActiveRow.value) return;
-      quillContent.off('text-change');
-      const html = cfActiveRow.value.htmlContent || '';
-      if (quillContent.root.innerHTML !== html) quillContent.root.innerHTML = html;
-      quillContent.on('text-change', () => {
-        if (cfActiveRow.value) cfActiveRow.value.htmlContent = quillContent.root.innerHTML;
-      });
-    };
-
-    const initQuillContent = () => {
-      if (props.tabMode || !uiState.htmlContentEl) return;
-      if (!quillContent) {
-        quillContent = new Quill(uiState.htmlContentEl, QUILL_OPTS);
-      }
-      bindQuillContent();
-    };
-
     const handleInitForm = async () => {
       await nextTick();
       if (cfIsNew.value) {
@@ -448,8 +388,6 @@ window.DpDispPanelDtl = {
         const p = n => String(n).padStart(2, '0');
         form.dispCode = `DP_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
       }
-      /* Quill 초기화 (기본정보 탭이 기본) */
-      initQuillDesc();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -465,34 +403,6 @@ window.DpDispPanelDtl = {
       if (n === o || n === 0) return;
       await handleLoadDetail();
       handleInitForm();
-    });
-
-    /* 탭 전환 시 Quill 초기화/싱크 */
-
-    watch(() => uiState.tab, async (newTab) => {
-      await nextTick();
-      if (newTab === 'info') {
-        initQuillDesc();
-      } else if (cfIsHtmlEditor.value) {
-        initQuillContent();
-      }
-    });
-
-    /* 위젯 유형이 html_editor로 바뀔 때 */
-
-    watch(cfIsHtmlEditor, async (val) => {
-      if (!val) return;
-      await nextTick();
-      initQuillContent();
-    });
-
-    /* 행 전환 시 Quill 내용 싱크 */
-
-    watch(cfActiveRowIdx, async () => {
-      if (!cfIsHtmlEditor.value) return;
-      await nextTick();
-      if (quillContent) bindQuillContent();
-      else initQuillContent();
     });
 
     const handleSave = async () => {
@@ -685,8 +595,6 @@ window.DpDispPanelDtl = {
       }
     };
 
-    const htmlContentEl = Vue.toRef(uiState, 'htmlContentEl');
-    const htmlSourceMode = Vue.toRef(uiState, 'htmlSourceMode');
     const libPickMode = Vue.toRef(uiState, 'libPickMode');
     const libPickOpen = Vue.toRef(uiState, 'libPickOpen');
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
@@ -701,7 +609,7 @@ window.DpDispPanelDtl = {
 
     return { uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       libPickMode, libPickOpen, openLibPick, onLibPicked,
-      onRowCopy, rowCopyOpen, viewAll, htmlSourceMode, showComponentTooltip, showRefModal,
+      onRowCopy, rowCopyOpen, viewAll, showComponentTooltip, showRefModal,
       cfVisibilityOptions, hasVisibility, toggleVisibility,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
       hasPanelDispEnv, togglePanelDispEnv, hasPanelVisibility, togglePanelVisibility,
@@ -713,7 +621,6 @@ window.DpDispPanelDtl = {
       cfIsCoupon, cfIsHtmlEditor, cfIsEventBanner, cfIsCacheBanner, cfIsWidgetEmbed, cfIsCondProduct,
       cfDisplayRows, cfRelatedEvent, handleSave,
       cfFileListItems, addFileItem, removeFileItem, updateFileItem,
-      htmlDescEl, htmlContentEl, toggleHtmlSource,
       preview, openPreview, closePreview, cfPreviewWidget,
       cardPreview, openCardPreview, closeCardPreview, cfCurrentAreaLabel, fnWLabel,
       expandedSections, toggleSection, isSectionExpanded,
@@ -1493,7 +1400,7 @@ window.DpDispPanelDtl = {
                 <span v-if="r.htmlContent" v-html="r.htmlContent"></span>
                 <span v-else style="color:#bbb;">내용 없음</span>
               </div>
-              <textarea v-else class="form-control" v-model="r.htmlContent" rows="6" style="font-family:monospace;font-size:12px;" placeholder="HTML 코드를 입력하세요 (탭 모드에서 Quill 에디터 사용 가능)"></textarea>
+              <textarea v-else class="form-control" v-model="r.htmlContent" rows="6" style="font-family:monospace;font-size:12px;" placeholder="HTML 코드를 입력하세요 (탭 모드에서 HTML 에디터 사용 가능)"></textarea>
             </div>
             <!-- -- 파일목록 ------------------------------------------------- -->
             <div v-else-if="fnRowIsFileList(r)" style="margin-bottom:20px;">

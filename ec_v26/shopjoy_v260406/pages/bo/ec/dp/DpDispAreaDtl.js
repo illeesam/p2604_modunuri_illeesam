@@ -16,7 +16,7 @@ window.DpDispAreaDtl = {
     const codes = reactive({ disp_areas: [], layout_types: [], use_yn: [] });
     const areas = reactive([]);
     const panels = reactive([]);
-    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickKw: '', activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, htmlDescEl: null });
+    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickKw: '', activeTab: 'base', previewMode: 'default', previewPaneWidth: 520 });
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
@@ -101,8 +101,6 @@ window.DpDispAreaDtl = {
         /* 자동 코드: DA_YYMMDD_HHMMSS */
         form.codeValue = `DA_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
       }
-      await nextTick();
-      initQuillDesc();
     };
 
     // ★ onMounted
@@ -311,30 +309,6 @@ window.DpDispAreaDtl = {
       cfActivePanel.value.areaDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
-    /* -- Quill (영역코멘트) -- */
-        let quillDesc = null;
-    const QUILL_OPTS = {
-      theme: 'snow',
-      modules: { toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ color: [] }, { background: [] }],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'image'],
-        ['clean'],
-      ]},
-    };
-    const initQuillDesc = () => {
-      if (!uiState.htmlDescEl || quillDesc) return;
-      quillDesc = new Quill(uiState.htmlDescEl, QUILL_OPTS);
-      quillDesc.root.innerHTML = form.htmlDesc || '';
-      quillDesc.on('text-change', () => { form.htmlDesc = quillDesc.root.innerHTML; });
-    };
-
-    watch(() => uiState.activeTab, async (t) => {
-      if (t === 'base') { await nextTick(); initQuillDesc(); }
-    });
-
     /* -- 영역 레벨 dispEnv/visibility 토글 -- */
     const areaBaseDispEnvOptions = [
       { code: 'PLAN', label: '준비/계획' },
@@ -359,7 +333,6 @@ window.DpDispAreaDtl = {
       form.areaBaseVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
-    const htmlDescEl = Vue.toRef(uiState, 'htmlDescEl');
     const pickOpen = Vue.toRef(uiState, 'pickOpen');
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
@@ -375,7 +348,7 @@ window.DpDispAreaDtl = {
       openPanelPreview, openWidgetPreview, addPanelShortcut, fnWLabel,
       cfVisibilityOptions, hasPanelVisibility, togglePanelVisibility,
       areaDispEnvOptions, hasAreaDispEnv, toggleAreaDispEnv,
-      htmlDescEl, pickOpen, showComponentTooltip,
+      pickOpen, showComponentTooltip,
       areaBaseDispEnvOptions, hasAreaBaseDispEnv, toggleAreaBaseDispEnv,
       hasAreaBaseVisibility, toggleAreaBaseVisibility,
     };

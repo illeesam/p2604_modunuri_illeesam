@@ -77,6 +77,13 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
     });
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      if (typeof handleLoadDetail === 'function') await handleLoadDetail();
+      else if (typeof handleSearchDetail === 'function') await handleSearchDetail();
+    });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
     const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);

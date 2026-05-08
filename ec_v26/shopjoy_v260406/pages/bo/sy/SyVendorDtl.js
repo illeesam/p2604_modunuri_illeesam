@@ -16,7 +16,7 @@ window.SyVendorDtl = {
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, memoEl: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ active_statuses: [], vendor_type_kr: [] });
 
     const fnLoadCodes = () => {
@@ -46,25 +46,10 @@ window.SyVendorDtl = {
     const errors = reactive({});
     const addrDetailRef = ref(null);
 
-        let _qMemo = null;
-
     const schema = yup.object({
       vendorNm: yup.string().required('업체명을 입력해주세요.'),
       bizNo: yup.string().required('사업자등록번호를 입력해주세요.'),
     });
-
-    const handleInitForm = async () => {
-      await nextTick();
-      if (uiState.memoEl) {
-        _qMemo = new Quill(uiState.memoEl, {
-          theme: 'snow',
-          placeholder: '내용을 입력하세요...',
-          modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
-        });
-        if (form.memo) _qMemo.root.innerHTML = form.memo;
-        _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
-      }
-    };
 
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
@@ -86,7 +71,6 @@ window.SyVendorDtl = {
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
-      handleInitForm();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -94,8 +78,6 @@ window.SyVendorDtl = {
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleLoadDetail();
     });
-
-    onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     /* ── 카카오 주소 검색 ── */
     const openKakaoPostcode = () => {
@@ -140,15 +122,12 @@ window.SyVendorDtl = {
       }
     };
 
-    const memoEl = Vue.ref(null);
-    Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
-
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, addrDetailRef, openKakaoPostcode, memoEl };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, addrDetailRef, openKakaoPostcode };
   },
   template: /* html */`
 <div>

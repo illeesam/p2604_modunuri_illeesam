@@ -28,6 +28,13 @@ window.MbMemberDtl = {
       codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
       codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
     });
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      if (typeof handleLoadDetail === 'function') await handleLoadDetail();
+      else if (typeof handleSearchDetail === 'function') await handleSearchDetail();
+    });
 
     return { currentId, codes };
   },

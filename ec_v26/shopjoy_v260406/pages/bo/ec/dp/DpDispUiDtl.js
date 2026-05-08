@@ -15,7 +15,7 @@ window.DpDispUiDtl = {
     const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_ui_types: [], use_yn: [] });
     const displays = reactive([]);
-    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickKw: '', htmlDescEl: null });
+    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickKw: '' });
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
@@ -91,8 +91,6 @@ window.DpDispUiDtl = {
         /* 자동 코드: DU_YYMMDD_HHMMSS */
         form.codeValue = `DU_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
       }
-      await nextTick();
-      initQuillDesc();
     };
 
     // ★ onMounted
@@ -284,32 +282,7 @@ window.DpDispUiDtl = {
     };
     const doCancel = () => { props.navigate('dpDispUiMng'); };
 
-    /* -- Quill (UI코멘트) -- */
-        let quillDesc = null;
-    const QUILL_OPTS = {
-      theme: 'snow',
-      modules: { toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ color: [] }, { background: [] }],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'image'],
-        ['clean'],
-      ]},
-    };
-    const initQuillDesc = () => {
-      if (!uiState.htmlDescEl || quillDesc) return;
-      quillDesc = new Quill(uiState.htmlDescEl, QUILL_OPTS);
-      quillDesc.root.innerHTML = form.htmlDesc || '';
-      quillDesc.on('text-change', () => { form.htmlDesc = quillDesc.root.innerHTML; });
-    };
-
-    watch(() => uiState.activeTab, async (t) => {
-      if (t === 'base') { await nextTick(); initQuillDesc(); }
-    });
-
     const expanded = Vue.toRef(uiState, 'expanded');
-    const htmlDescEl = Vue.toRef(uiState, 'htmlDescEl');
     const pickOpen = Vue.toRef(uiState, 'pickOpen');
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
@@ -324,7 +297,6 @@ window.DpDispUiDtl = {
       openUiPreview, openAreaPreview,
       cfVisibilityOptions, hasAreaVisibility, toggleAreaVisibility,
       uiDispEnvOptions, hasUiDispEnv, toggleUiDispEnv,
-      htmlDescEl,
     };
   },
   template: /* html */`

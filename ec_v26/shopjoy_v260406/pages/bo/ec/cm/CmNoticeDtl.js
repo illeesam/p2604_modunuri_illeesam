@@ -10,7 +10,7 @@ window.CmNoticeDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
-    const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
@@ -40,7 +40,6 @@ window.CmNoticeDtl = {
     const schema = yup.object({
       noticeTitle: yup.string().required('제목을 입력해주세요.'),
     });
-    let quill = null;
 
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
@@ -63,7 +62,6 @@ window.CmNoticeDtl = {
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       if (typeof handleSearchDetail === 'function') await handleSearchDetail();
     });
-    onBeforeUnmount(() => { quill = null; });
 
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);

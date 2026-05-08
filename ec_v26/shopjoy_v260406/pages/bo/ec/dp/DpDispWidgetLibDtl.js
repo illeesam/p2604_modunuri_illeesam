@@ -15,7 +15,7 @@ window.DpDispWidgetLibDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
-    const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, htmlContentEl: null, libPickOpen: false, htmlSourceMode: false, showComponentTooltip: false, jsonCopied: false });
+    const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickOpen: false, showComponentTooltip: false, jsonCopied: false });
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
     const fnLoadCodes = () => {
@@ -163,52 +163,6 @@ window.DpDispWidgetLibDtl = {
         uiState.loading = false;
       }
 
-      /* HTML 에디터는 Quill 미사용 (textarea + 라이브 렌더 방식으로 변경) → 별도 init 불필요 */
-    };
-
-    /* form.htmlContent 의 현재 값을 Quill 에 주입 (인스턴스 없으면 init 후 주입)
-     * 동시에 여러 곳에서 호출되어도 한 번만 실행되도록 락 사용 */
-    let _injecting = false;
-    const _injectHtmlToQuill = async () => {
-      if (uiState.htmlSourceMode) return; /* HTML 소스 모드면 textarea v-model 이 처리 */
-      if (_injecting) return;             /* 이미 inject 진행 중 → 중복 호출 차단 */
-      _injecting = true;
-      try {
-        /* 1) DOM 마운트 대기 */
-        let el = htmlContentEl.value;
-        for (let i = 0; i < 12 && !el; i++) {
-          await nextTick();
-          if (!htmlContentEl.value) await new Promise(r => setTimeout(r, 25));
-          el = htmlContentEl.value;
-        }
-        if (!el) return; /* DOM 못 찾음 */
-
-        const html = form.htmlContent || '';
-        /* 2) 이미 인스턴스가 있으면 innerHTML 만 갱신 */
-        if (quillInst) {
-          try { quillInst.off('text-change'); } catch (_) {}
-          quillInst.root.innerHTML = html;
-          quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
-          return;
-        }
-        /* 3) 인스턴스 없음 → 잔여 정리 후 새로 생성 */
-        _cleanQuillDomLeftover();
-        quillInst = new Quill(el, QUILL_OPTS);
-        quillInst.root.innerHTML = html;
-        quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
-      } finally {
-        _injecting = false;
-      }
-    };
-
-    /* DOM 잔재 (toolbar 형제 요소 + ql-* 클래스) 청소 */
-    const _cleanQuillDomLeftover = () => {
-      const el = htmlContentEl.value;
-      if (!el) return;
-      const parent = el.parentNode;
-      if (parent) Array.from(parent.querySelectorAll('.ql-toolbar')).forEach(n => n.remove());
-      el.className = el.className.replace(/\bql-\S+/g, '').trim();
-      el.innerHTML = '';
     };
 
     /* Lib코드 자동 생성: DL_YYMMDD_HHMMSS */
@@ -522,84 +476,6 @@ window.DpDispWidgetLibDtl = {
       }
     };
 
-    /* ⚠️ 기존 Quill 코드 잔존 (호출 안 됨) — 호환을 위해 유지 */
-    const htmlContentEl  = ref(null);
-    let quillInst = null;
-
-    const QUILL_OPTS = {
-      theme: 'snow',
-      modules: { toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ color: [] }, { background: [] }],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'image'],
-        ['clean'],
-      ]},
-    };
-
-    const initQuill = () => {
-      const el = htmlContentEl.value;
-      if (!el) return;
-      if (quillInst) {
-        /* 이미 인스턴스가 있으면 내용만 동기화 */
-        quillInst.off('text-change');
-        quillInst.root.innerHTML = form.htmlContent || '';
-        quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
-        return;
-      }
-      quillInst = new Quill(el, QUILL_OPTS);
-      quillInst.root.innerHTML = form.htmlContent || '';
-      quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
-    };
-
-    /* 외부에서 form.htmlContent 가 새로 로드된 경우 Quill 에 반영 */
-    const syncQuillFromForm = () => {
-      if (!quillInst || uiState.htmlSourceMode) return;
-      if (quillInst.root.innerHTML !== (form.htmlContent || '')) {
-        quillInst.off('text-change');
-        quillInst.root.innerHTML = form.htmlContent || '';
-        quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
-      }
-    };
-
-    const toggleHtmlSource = async () => {
-      if (!uiState.htmlSourceMode) {
-        /* WYSIWYG → HTML 소스 모드 전환:
-         *  - 현재 Quill 의 innerHTML 을 form.htmlContent 에 저장
-         *  - Quill 인스턴스/DOM 잔재 정리 (textarea 와 같은 div 를 재활용 안 하므로 필수)
-         *  - htmlSourceMode = true 로 textarea v-if 노출 */
-        if (quillInst) {
-          try { form.htmlContent = quillInst.root.innerHTML; } catch (_) {}
-        }
-        _disposeQuill();
-        uiState.htmlSourceMode = true;
-      } else {
-        /* HTML 소스 → WYSIWYG (디자인 모드) 전환:
-         *  - htmlSourceMode = false 로 변경 → v-show 의 ref div 노출
-         *  - DOM 마운트 후 Quill 새로 생성 + form.htmlContent 주입 */
-        uiState.htmlSourceMode = false;
-        _disposeQuill();
-        await _injectHtmlToQuill();
-      }
-    };
-
-    /* DOM ref 가 잡힐 때까지 짧게 폴링한 뒤 init/sync */
-    const _waitElAndInit = async (maxTries = 8) => {
-      for (let i = 0; i < maxTries; i++) {
-        await nextTick();
-        if (htmlContentEl.value) { initQuill(); return; }
-        await new Promise(r => setTimeout(r, 30));
-      }
-    };
-
-    /* Quill 인스턴스 + DOM 완전 정리 */
-    const _disposeQuill = () => {
-      if (quillInst) { try { quillInst.off('text-change'); } catch (_) {} }
-      quillInst = null;
-      _cleanQuillDomLeftover();
-    };
-
     /* ============================================================
      * Toast UI Editor 라이프사이클
      * ============================================================ */
@@ -731,7 +607,6 @@ window.DpDispWidgetLibDtl = {
 
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
     const libPickOpen = Vue.toRef(uiState, 'libPickOpen');
-    const htmlSourceMode = Vue.toRef(uiState, 'htmlSourceMode');
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
     const jsonCopied = Vue.toRef(uiState, 'jsonCopied');
 
@@ -742,7 +617,7 @@ window.DpDispWidgetLibDtl = {
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      uiState, libPickOpen, htmlSourceMode, showComponentTooltip, jsonCopied,
+      uiState, libPickOpen, showComponentTooltip, jsonCopied,
       openLibPick, onLibPicked,
       cfDtlMode, cfIsNew, form, errors, codes,
       cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,
@@ -750,7 +625,6 @@ window.DpDispWidgetLibDtl = {
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
       cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
-      htmlContentEl, toggleHtmlSource,
       tuiEditorEl, htmlEditMode,
     };
   },

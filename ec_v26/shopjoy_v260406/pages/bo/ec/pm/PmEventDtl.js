@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 이벤트관리 상세/등록 (Quill HTML Editor) */
+/* ShopJoy Admin - 이벤트관리 상세/등록 (Toast UI HTML Editor) */
 window._ecEventDtlState = window._ecEventDtlState || { tab: 'info', tabMode: 'tab' };
 window.PmEventDtl = {
   name: 'PmEventDtl',
@@ -12,7 +12,7 @@ window.PmEventDtl = {
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
-    const { ref, reactive, computed, onMounted, watch, onUnmounted  } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
@@ -83,57 +83,21 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       title: yup.string().required('이벤트 제목을 입력해주세요.'),
     });
 
-    /* Quill 인스턴스 5개 */
-    const quillers = {};
-    
-    const initQuill = (id, key) => {
-      const el = document.getElementById(id);
-      if (!el || typeof Quill === 'undefined') return;
-      if (quillers[key]) return;
-      quillers[key] = new Quill(el, {
-        theme: 'snow',
-        modules: {
-          toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ color: [] }, { background: [] }],
-            [{ align: [] }],
-            ['blockquote'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'image'],
-            ['clean'],
-          ],
-        },
-      });
-      quillers[key].on('text-change', () => { form[key] = quillers[key].root.innerHTML; });
-      if (form[key]) quillers[key].root.innerHTML = form[key];
-    };
-
-    const syncToQuill = () => {
-      for (let i = 1; i <= 5; i++) {
-        const key = 'content' + i;
-        if (quillers[key]) quillers[key].root.innerHTML = form[key] || '';
-      }
-    };
-
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
-      if (newTab === 'banner') {
-        setTimeout(() => { initQuill('quill-banner', 'bannerImage'); }, 50);
-      } else if (newTab === 'content') {
-        setTimeout(() => {
-          for (let i = 1; i <= 5; i++) initQuill('quill-content' + i, 'content' + i);
-          syncToQuill();
-        }, 50);
-      }
     };
 
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
     });
-
-    onUnmounted(() => { Object.keys(quillers).forEach(k => { delete quillers[k]; }); });
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      if (typeof handleLoadDetail === 'function') await handleLoadDetail();
+      else if (typeof handleSearchDetail === 'function') await handleSearchDetail();
+    });
 
     /* 대상 상품 팝업 */
         const cfFilteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {

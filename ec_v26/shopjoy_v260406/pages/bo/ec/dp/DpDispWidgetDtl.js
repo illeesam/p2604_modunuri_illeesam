@@ -15,7 +15,7 @@ window.DpDispWidgetDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
-    const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', libPickOpen: false, htmlSourceMode: false, htmlContentEl: null, showComponentTooltip: false, jsonCopied: false });
+    const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', libPickOpen: false, showComponentTooltip: false, jsonCopied: false });
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
     const fnLoadCodes = () => {
@@ -169,7 +169,6 @@ window.DpDispWidgetDtl = {
       } finally {
         uiState.loading = false;
       }
-      /* HTML 에디터는 Quill 미사용 (textarea + 라이브 렌더) → 별도 init 불필요 */
     };
 
     /* 위젯코드 자동 생성: DW_YYMMDD_HHMMSS */
@@ -467,48 +466,6 @@ window.DpDispWidgetDtl = {
       finally { setTimeout(() => { tuiSyncing = false; }, 30); }
     };
 
-    /* ⚠️ 기존 Quill 코드 잔존 (호출 안 됨) — 호환을 위해 유지 */
-    const htmlContentEl  = ref(null);
-    let quillInst = null;
-
-    const QUILL_OPTS = {
-      theme: 'snow',
-      modules: { toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ color: [] }, { background: [] }],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'image'],
-        ['clean'],
-      ]},
-    };
-
-    const initQuill = () => {
-      if (!uiState.htmlContentEl || quillInst) return;
-      quillInst = new Quill(uiState.htmlContentEl, QUILL_OPTS);
-      quillInst.root.innerHTML = form.htmlContent || '';
-      quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
-    };
-
-    const toggleHtmlSource = async () => {
-      if (!uiState.htmlSourceMode) {
-        /* WYSIWYG → 소스 */
-        if (quillInst) form.htmlContent = quillInst.root.innerHTML;
-        uiState.htmlSourceMode = true;
-      } else {
-        /* 소스 → WYSIWYG */
-        uiState.htmlSourceMode = false;
-        await nextTick();
-        if (quillInst) {
-          quillInst.off('text-change');
-          quillInst.root.innerHTML = form.htmlContent || '';
-          quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
-        } else {
-          initQuill();
-        }
-      }
-    };
-
     /* Toast UI Editor 라이프사이클 */
     watch(cfIsHtmlEditor, async (val) => {
       if (!val) { _disposeTui(); return; }
@@ -646,7 +603,6 @@ window.DpDispWidgetDtl = {
 
     const libPickMode = Vue.toRef(uiState, 'libPickMode');
     const libPickOpen = Vue.toRef(uiState, 'libPickOpen');
-    const htmlSourceMode = Vue.toRef(uiState, 'htmlSourceMode');
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
     const jsonCopied = Vue.toRef(uiState, 'jsonCopied');
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
@@ -658,7 +614,7 @@ window.DpDispWidgetDtl = {
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      uiState, libPickMode, libPickOpen, htmlSourceMode, showComponentTooltip, jsonCopied,
+      uiState, libPickMode, libPickOpen, showComponentTooltip, jsonCopied,
       openLibPick, onLibPicked,
       cfDtlMode, cfIsNew, form, errors, codes,
       cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,
@@ -666,7 +622,6 @@ window.DpDispWidgetDtl = {
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
       cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
-      htmlContentEl, toggleHtmlSource,
       tuiEditorEl, htmlEditMode,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
     };
