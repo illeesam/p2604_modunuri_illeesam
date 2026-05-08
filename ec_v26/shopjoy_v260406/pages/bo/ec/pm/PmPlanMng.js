@@ -251,7 +251,9 @@ const CATEGORIES = [
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
     
-    `n      :reload-trigger="uiStateDetail.reloadTrigger":on-list-reload="handleSearchList"
+    
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      :on-list-reload="handleSearchList"
   />
   </div>
 </div>

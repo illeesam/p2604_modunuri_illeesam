@@ -255,7 +255,9 @@ const detailModal = reactive({
     </div>
     <sy-site-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
       :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" 
-      `n      :reload-trigger="uiStateDetail.reloadTrigger":on-list-reload="handleSearchList"
+      
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      :on-list-reload="handleSearchList"
     />
   </div>
 

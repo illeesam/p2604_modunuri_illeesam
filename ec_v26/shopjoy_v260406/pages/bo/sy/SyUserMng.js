@@ -256,7 +256,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </div>
     <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" 
-      `n      :reload-trigger="uiStateDetail.reloadTrigger":on-list-reload="handleSearchData"
+      
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      :on-list-reload="handleSearchData"
     />
   </div>
 </div>

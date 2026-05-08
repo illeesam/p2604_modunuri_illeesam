@@ -936,7 +936,7 @@ window.DpDispPanelDtl = {
               <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
               <span v-else style="color:#bbb;">내용 없음</span>
             </div>
-            <div v-else ref="htmlDescEl"></div>
+            <tui-html-editor v-else v-model="form.htmlDesc" height="280px" />
           </div><!-- -- /내용 -------------------------------------------------------------- -->
 
           <div class="form-actions" v-if="!cfDtlMode">
@@ -1107,25 +1107,14 @@ window.DpDispPanelDtl = {
               </span>
             </div>
 
-            <!-- -- HTML 에디터 (Quill) ------------------------------------- -->
+            <!-- -- HTML 에디터 (Toast UI) ----------------------------------- -->
             <div v-if="cfIsHtmlEditor" style="margin-bottom:20px;">
               <div v-if="cfDtlMode"
                 style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
                 <span v-if="cfActiveRow.htmlContent" v-html="cfActiveRow.htmlContent"></span>
                 <span v-else style="color:#bbb;">내용 없음</span>
               </div>
-              <template v-else>
-                <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
-                  <button @click="toggleHtmlSource"
-                    :style="htmlSourceMode ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#f5f5f5;color:#555;border-color:#d0d0d0;'"
-                    style="font-size:11px;padding:3px 10px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">
-                    {{ htmlSourceMode ? '&#x2713; 디자인' : '&lt;/&gt; HTML' }}
-                  </button>
-                </div>
-                <div v-show="!htmlSourceMode" ref="htmlContentEl"></div>
-                <textarea v-if="htmlSourceMode" v-model="cfActiveRow.htmlContent"
-                  style="width:100%;min-height:180px;padding:10px 12px;border:1px solid #d0d0d0;border-radius:6px;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;"></textarea>
-              </template>
+              <tui-html-editor v-else v-model="cfActiveRow.htmlContent" height="280px" />
             </div>
 
             <!-- -- 파일목록 ------------------------------------------------- -->
@@ -1454,7 +1443,7 @@ window.DpDispPanelDtl = {
               <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
               <span v-else style="color:#bbb;">내용 없음</span>
             </div>
-            <div v-else ref="htmlDescEl" style="margin-bottom:16px;"></div>
+            <div v-else v-model="form.htmlDesc" is="tui-html-editor" height="280px" style="margin-bottom:16px;"></div>
             <div class="form-actions" v-if="!cfDtlMode">
               <template v-if="cfDtlMode">
                 <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>

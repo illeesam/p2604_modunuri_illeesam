@@ -6,7 +6,8 @@ window.CmNoticeDtl = {
     dtlId:       { type: String, default: null }, // 수정 대상 ID
     tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    onListReload: { type: Function, default: () => {} },
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
@@ -55,13 +56,12 @@ window.CmNoticeDtl = {
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleSearchDetail();
-      if (typeof Quill !== 'undefined' && !props.tabMode && document.getElementById('notice-editor')) {
-      try {
-      quill = new Quill('#notice-editor', { theme: 'snow', placeholder: '공지 내용을 입력하세요.' });
-      if (form.contentHtml) quill.root.innerHTML = form.contentHtml;
-      quill.on('text-change', () => { form.contentHtml = quill.root.innerHTML; });
-      } catch (e) { console.warn('[Quill init]', e); }
-      }
+    });
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      if (typeof handleSearchDetail === 'function') await handleSearchDetail();
     });
     onBeforeUnmount(() => { quill = null; });
 
@@ -147,7 +147,7 @@ window.CmNoticeDtl = {
     <div class="form-group">
       <label class="form-label">내용</label>
       <div v-if="cfDtlMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
-      <div v-else id="notice-editor" style="min-height:200px;background:#fff;"></div>
+      <tui-html-editor v-else v-model="form.contentHtml" height="280px" />
     </div>
     <div class="form-group">
       <label class="form-label">첨부파일

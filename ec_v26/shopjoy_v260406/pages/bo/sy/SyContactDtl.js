@@ -7,7 +7,8 @@ window.SyContactDtl = {
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    onListReload: { type: Function, default: () => {} },
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
@@ -98,6 +99,12 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
       handleInitForm();
+    });
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleLoadDetail();
     });
 
     onBeforeUnmount(() => {
@@ -253,7 +260,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       <div class="form-group">
         <label class="form-label">문의 내용 <span v-if="!cfDtlMode" class="req">*</span></label>
         <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
-        <div v-else ref="contentEl" style="min-height:150px;background:#fff;" :class="errors.content ? 'is-invalid' : ''"></div>
+        <tui-html-editor v-else v-model="form.content" height="220px" />
         <span v-if="errors.content" class="field-error">{{ errors.content }}</span>
       </div>
       <div class="form-actions">
@@ -279,7 +286,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       <div class="form-group">
         <label class="form-label">답변 내용 <span v-if="!form.answer" class="badge badge-orange" style="margin-left:4px;">미답변</span></label>
         <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.answer || '<span style=color:#bbb>-</span>'"></div>
-        <div v-else ref="answerEl" style="min-height:180px;background:#fff;"></div>
+        <tui-html-editor v-else v-model="form.answer" height="240px" />
       </div>
       <div class="form-actions">
         <template v-if="cfDtlMode">

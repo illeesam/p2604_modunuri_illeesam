@@ -603,7 +603,7 @@ window.DpDispAreaDtl = {
             내용
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📝 영역코멘트</div>
-          <div ref="htmlDescEl"></div>
+          <tui-html-editor v-model="form.htmlDesc" height="280px" />
         </div><!-- -- /내용 -------------------------------------------------------------- -->
 
       </div>

@@ -300,7 +300,9 @@ window.CmNoticeMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      `n      :reload-trigger="uiStateDetail.reloadTrigger":tab-mode="cfIsViewMode"
+      
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      :tab-mode="cfIsViewMode"
     
     :on-list-reload="handleSearchList"
   />

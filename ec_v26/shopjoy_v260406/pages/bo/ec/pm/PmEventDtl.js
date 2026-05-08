@@ -7,7 +7,8 @@ window.PmEventDtl = {
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    onListReload: { type: Function, default: () => {} },
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -281,7 +282,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
       <div style="margin-bottom:12px;">
         <div style="font-size:12px;color:#888;margin-bottom:6px;">💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.</div>
-        <div id="quill-banner" style="min-height:300px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;"></div>
+        <tui-html-editor v-model="form.bannerImage" height="320px" />
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
@@ -419,9 +420,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           <span style="font-size:12px;color:#888;">로그인 회원에게만 표시됩니다</span>
         </div>
         <div v-if="cfDtlMode" class="form-control" style="min-height:160px;line-height:1.6;" v-html="form['content'+n] || '<span style=color:#bbb>-</span>'"></div>
-        <div v-else class="quill-wrap">
-          <div :id="'quill-content'+n" style="min-height:160px;"></div>
-        </div>
+        <tui-html-editor v-else :model-value="form['content'+n]" @update:model-value="v => form['content'+n] = v" height="220px" />
       </div>
       <div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
         <template v-if="cfDtlMode">

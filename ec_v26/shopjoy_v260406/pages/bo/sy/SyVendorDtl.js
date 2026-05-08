@@ -6,7 +6,8 @@ window.SyVendorDtl = {
     dtlId:       { type: String, default: null }, // 수정 대상 ID
     tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    onListReload: { type: Function, default: () => {} },
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
@@ -86,6 +87,12 @@ window.SyVendorDtl = {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
       handleInitForm();
+    });
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleLoadDetail();
     });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
@@ -219,7 +226,7 @@ window.SyVendorDtl = {
       <div class="form-group" style="flex:1">
         <label class="form-label">메모</label>
         <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
-        <div v-else ref="memoEl" style="min-height:90px;background:#fff;"></div>
+        <tui-html-editor v-else v-model="form.memo" height="180px" />
       </div>
     </div>
     <div class="form-actions" v-if="!cfDtlMode">

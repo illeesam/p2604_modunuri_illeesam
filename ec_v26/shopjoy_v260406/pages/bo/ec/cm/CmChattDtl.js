@@ -7,7 +7,8 @@ window.CmChattDtl = {
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    onListReload: { type: Function, default: () => {} },
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };

@@ -198,7 +198,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
     
-    `n      :reload-trigger="uiStateDetail.reloadTrigger":on-list-reload="handleSearchList"
+    
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      :on-list-reload="handleSearchList"
   />
   </div>
 </div>

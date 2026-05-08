@@ -7,7 +7,8 @@ window.PdProdDtl = {
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    onListReload: { type: Function, default: () => {} },
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -885,6 +886,12 @@ window.PdProdDtl = {
       await handleLoadData();
       await handleInitForm();
     });
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleLoadDetail();
+    });
     onBeforeUnmount(() => {
       if (_divMoveH) document.removeEventListener('mousemove', _divMoveH);
       if (_divUpH)   document.removeEventListener('mouseup',  _divUpH);
@@ -1584,9 +1591,9 @@ window.PdProdDtl = {
             </div>
           </div>
 
-          <!-- -- HTML 에디터 방식 -------------------------------------------- -->
+          <!-- -- HTML 에디터 방식 (Toast UI) ------------------------------------ -->
           <div v-else-if="block.type==='html'" style="padding:12px;">
-            <div :id="'quill-block-'+block._id" style="min-height:180px;background:#fff;"></div>
+            <tui-html-editor v-model="block.content" height="240px" />
           </div>
         </div>
       </div>

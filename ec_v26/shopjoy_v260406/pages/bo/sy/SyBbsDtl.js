@@ -6,7 +6,8 @@ window.SyBbsDtl = {
     dtlId:       { type: String, default: null }, // 수정 대상 ID
     tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    onListReload: { type: Function, default: () => {} },
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
@@ -111,6 +112,13 @@ window.SyBbsDtl = {
       if (!props.tabMode && cfContentType.value === 'htmleditor') {
         Vue.nextTick(() => { initQuill(); });
       }
+    });
+
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleLoadDetail();
     });
 
     /* cfContentType 변화 감지 → Quill 초기화 */
@@ -242,7 +250,7 @@ window.SyBbsDtl = {
     <div v-else-if="cfContentType==='htmleditor'" class="form-group">
       <label class="form-label">내용</label>
       <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
-      <div v-else id="bbs-editor" style="min-height:300px;background:#fff;"></div>
+      <tui-html-editor v-else v-model="form.contentHtml" height="320px" />
     </div>
 
     <!-- ── 첨부파일 ───────────────────────────────────────────────────────── -->

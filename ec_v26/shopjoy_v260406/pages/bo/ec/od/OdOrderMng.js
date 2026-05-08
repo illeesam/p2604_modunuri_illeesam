@@ -409,7 +409,9 @@ window.OdOrderMng = {
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
     
-    `n      :reload-trigger="uiStateDetail.reloadTrigger":on-list-reload="handleSearchData"
+    
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      :on-list-reload="handleSearchData"
   />
   </div>
 

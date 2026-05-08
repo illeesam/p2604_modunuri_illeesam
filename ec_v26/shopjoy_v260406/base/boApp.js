@@ -2433,6 +2433,7 @@
   .component('PathTree',  window.PathTree)
   .component('PathTreeNode',  window.PathTreeNode)
   .component('CategoryTree',  window.CategoryTree)
+  .component('TuiHtmlEditor', window.TuiHtmlEditor)
   .component('PathParentSelector',  window.PathParentSelector)
   .component('PathPickModal',  window.PathPickModal)
   .component('BizPickModal',  window.BizPickModal)
