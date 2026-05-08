@@ -134,7 +134,57 @@ window.DispX04Widget = {
       catch { return [{ role: '담당자', name: '' }, { role: '팀장', name: '' }, { role: '부서장', name: '' }]; }
     };
 
-    return { uiState, codes, widget: props.widgetItem, cfVisible, handleClick, nameGrad, cfChartBars, chartColors, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine };
+    /* 백엔드 DTO(widgetTypeCd / widgetNm / useYn / widgetContent / widgetConfigJson)
+     * → 템플릿이 사용하는 옛 필드명(widgetType / name / status / textContent / 분리 필드들) 으로 정규화
+     * 매번 reactive 변경 감지를 위해 computed 로 매핑
+     */
+    const widget = computed(() => {
+      const src = props.widgetItem || {};
+      const tryParse = (s) => { try { return JSON.parse(s); } catch (_) { return null; } };
+      const cfg = tryParse(src.widgetConfigJson) || tryParse(src.widgetConfigJson) || {};
+      const fromCfg = (k1, k2) => cfg[k1] != null ? cfg[k1] : (k2 != null && cfg[k2] != null ? cfg[k2] : undefined);
+
+      return {
+        ...src,
+        /* 핵심 정규화 */
+        widgetType:    src.widgetType    || src.widgetTypeCd || '',
+        name:          src.name          || src.widgetNm     || src.widgetTitle || '',
+        status:        src.status        || (src.useYn === 'Y' ? '활성' : (src.useYn === 'N' ? '비활성' : '활성')),
+        title:         src.title         || src.widgetTitle  || '',
+        titleYn:       src.titleYn       || src.titleShowYn  || 'N',
+        widgetLibRefYn: src.widgetLibRefYn || 'N',
+        useYn:         src.useYn         || 'Y',
+        /* 콘텐츠 / 설정값 (JSON 우선, 별칭 fallback) */
+        imageUrl:      src.imageUrl      || fromCfg('img_url', 'imageUrl') || src.previewImgUrl || src.thumbnailUrl || '',
+        altText:       src.altText       || fromCfg('alt') || '',
+        linkUrl:       src.linkUrl       || fromCfg('link_url', 'linkUrl') || '',
+        textContent:   src.textContent   || fromCfg('text') || src.widgetContent || '',
+        bgColor:       src.bgColor       || fromCfg('bg_color', 'bgColor') || '',
+        textColor:     src.textColor     || fromCfg('text_color', 'textColor') || '',
+        infoTitle:     src.infoTitle     || fromCfg('title') || src.widgetTitle || '',
+        infoBody:      src.infoBody      || fromCfg('content') || src.widgetContent || '',
+        couponCode:    src.couponCode    || fromCfg('coupon_id', 'couponCode') || '',
+        couponDesc:    src.couponDesc    || fromCfg('btn_label', 'desc') || '',
+        htmlContent:   src.htmlContent   || fromCfg('html') || src.widgetContent || '',
+        textareaContent: src.textareaContent || fromCfg('text') || src.widgetContent || '',
+        markdownContent: src.markdownContent || fromCfg('markdown') || src.widgetContent || '',
+        codeValue:     src.codeValue     || fromCfg('value') || '',
+        videoUrl:      src.videoUrl      || fromCfg('video_url', 'videoUrl') || '',
+        countdownTitle: src.countdownTitle || fromCfg('label') || '',
+        countdownTarget: src.countdownTarget || fromCfg('target_datetime', 'targetDatetime') || '',
+        embedCode:     src.embedCode     || fromCfg('embed_widget_id') || '',
+        fileUrl:       src.fileUrl       || fromCfg('file_url') || '',
+        fileLabel:     src.fileLabel     || fromCfg('btn_label') || '',
+        chartTitle:    src.chartTitle    || fromCfg('title') || '',
+        chartLabels:   src.chartLabels   || (Array.isArray(cfg.labels) ? cfg.labels.join(',') : ''),
+        chartValues:   src.chartValues   || (Array.isArray(cfg.values) ? cfg.values.join(',') : ''),
+        payAmount:     src.payAmount     || fromCfg('amount') || 0,
+        approvalDocType: src.approvalDocType || fromCfg('doc_type') || '',
+        approvalLine:  src.approvalLine  || fromCfg('approval_line') || '',
+      };
+    });
+
+    return { uiState, codes, widget, cfVisible, handleClick, nameGrad, cfChartBars, chartColors, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine };
   },
   template: /* html */`
 <div v-if="cfVisible" class="disp-widget" :style="{ cursor: widget.clickAction && widget.clickAction !== 'none' ? 'pointer' : 'default' }" @click="handleClick">

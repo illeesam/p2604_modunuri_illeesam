@@ -92,11 +92,12 @@ window.DpDispPanelMng = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-/* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
-    const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
-    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
-    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+/* 하단 상세
+ * 정책: 행상세/행수정 클릭 시 항상 상세 API 재조회. 같은 id 재클릭이어도 닫지 않고 reloadTrigger 만 ++ */
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const loadView         = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    const openNew     = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispPanelMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
@@ -105,7 +106,8 @@ window.DpDispPanelMng = {
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
+    /* key 는 'open' / 'closed' 두 값만 — id 가 바뀌어도 컴포넌트 remount 안 함, reloadTrigger watch 로 내용만 교체 */
+    const cfDetailKey = computed(() => uiStateDetail.selectedId === null ? 'closed' : 'open');
 
     /* 패널미리보기 */
     const previewDisp = (d) => {
@@ -607,7 +609,7 @@ window.DpDispPanelMng = {
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <dp-disp-panel-dtl
-      :key="uiStateDetail.selectedId"
+      :key="cfDetailKey"
       :navigate="inlineNavigate"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
@@ -615,9 +617,9 @@ window.DpDispPanelMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    
-    :on-list-reload="handleSearchData"
-  />
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      :on-list-reload="handleSearchData"
+    />
   </div>
 
   <!-- -- 패널미리보기 오버레이 ---------------------------------------------------- -->

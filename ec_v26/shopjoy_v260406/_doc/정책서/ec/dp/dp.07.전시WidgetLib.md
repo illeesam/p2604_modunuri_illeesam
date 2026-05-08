@@ -3,7 +3,7 @@
 ## 1. 목적
 
 전시 Widget 라이브러리(dp_widget_lib)는 여러 패널에서 공통으로 재사용 가능한 위젯 템플릿을 등록·관리한다.
-`widget_code`로 프런트에서 참조하며, `template_html`과 `config_schema`로 위젯 구조와 관리자 입력 폼을 정의한다.
+`widget_code`로 프런트에서 참조하며, `widget_content`과 `widget_config_json`로 위젯 구조와 관리자 입력 폼을 정의한다.
 `is_system = 'Y'`인 시스템 기본 위젯은 삭제·구조 수정이 제한되며, 플랫폼 전반의 표준 위젯으로 활용된다.
 dp_panel_item에서 `widget_lib_ref_yn = 'Y'`로 라이브러리를 참조하면, 라이브러리 수정 시 연결된 모든 패널에 즉시 반영된다.
 
@@ -14,8 +14,8 @@ dp_panel_item에서 `widget_lib_ref_yn = 'Y'`로 라이브러리를 참조하면
 | 역할 | 관계 |
 |---|---|
 | 관리자 | 라이브러리 등록·수정·삭제 (is_system=Y는 삭제 제한) |
-| 개발자 | `template_html`, `config_schema` 초기 정의 및 구조 설계 |
-| 프런트 | `widget_code`로 라이브러리 조회 → `template_html` + 설정값으로 위젯 렌더링 |
+| 개발자 | `widget_content`, `widget_config_json` 초기 정의 및 구조 설계 |
+| 프런트 | `widget_code`로 라이브러리 조회 → `widget_content` + 설정값으로 위젯 렌더링 |
 | 배치 | `use_yn` 기반 라이브러리 활성 여부 필터링 |
 
 ---
@@ -42,8 +42,8 @@ dp_panel_item에서 `widget_lib_ref_yn = 'Y'`로 라이브러리를 참조하면
 | `widget_lib_desc` | TEXT | 위젯 설명 (관리자 화면 안내용) |
 | `disp_path` | VARCHAR(500) | 사용 가능 경로 (콤마 구분 다중 경로) |
 | `thumbnail_url` | VARCHAR(500) | 관리자 라이브러리 선택 화면 썸네일 |
-| `template_html` | TEXT | 위젯 기본 HTML 뼈대 (변수는 `{{변수명}}` 치환) |
-| `config_schema` | TEXT | 관리자 입력 폼 정의 JSON Schema |
+| `widget_content` | TEXT | 위젯 기본 HTML 뼈대 (변수는 `{{변수명}}` 치환) |
+| `widget_config_json` | TEXT | 관리자 입력 폼 정의 JSON Schema |
 | `is_system` | CHAR(1) | 시스템 기본 제공 위젯 여부 (Y: 삭제 제한) |
 | `sort_ord` | INTEGER | 라이브러리 목록 정렬 순서 |
 | `use_yn` | CHAR(1) | 사용여부 (Y/N) |
@@ -66,7 +66,7 @@ COMMON_COUNTDOWN      공통 카운트다운 위젯
 
 ---
 
-## 6. config_schema 구조
+## 6. widget_config_json 구조
 
 관리자가 위젯 설정 시 입력해야 할 필드를 JSON Schema로 정의.
 프런트 관리자 UI에서 이 스키마를 파싱하여 동적 입력 폼을 렌더링한다.
@@ -104,9 +104,9 @@ COMMON_COUNTDOWN      공통 카운트다운 위젯
 
 ---
 
-## 7. template_html 치환 변수 규칙
+## 7. widget_content 치환 변수 규칙
 
-`template_html` 내 `{{변수명}}` 형태로 config_schema 필드값이 치환된다.
+`widget_content` 내 `{{변수명}}` 형태로 widget_config_json 필드값이 치환된다.
 
 ```html
 <!-- 이미지 배너 템플릿 예시 -->
@@ -123,7 +123,7 @@ COMMON_COUNTDOWN      공통 카운트다운 위젯
 
 | is_system | 의미 | 제약 |
 |---|---|---|
-| `Y` | 플랫폼 기본 제공 위젯 | 관리자 UI에서 삭제 버튼 비활성화. `widget_code` · `template_html` · `config_schema` 수정은 개발자만 가능 |
+| `Y` | 플랫폼 기본 제공 위젯 | 관리자 UI에서 삭제 버튼 비활성화. `widget_code` · `widget_content` · `widget_config_json` 수정은 개발자만 가능 |
 | `N` | 운영자/관리자가 생성한 커스텀 위젯 | 일반 수정·삭제 가능. 단, dp_panel_item 참조 중인 경우 삭제 전 해제 필요 |
 
 ---
@@ -165,7 +165,7 @@ is_system      = 'Y'
 sort_ord       = 1
 disp_path      = NULL  ← 모든 경로 사용 가능
 
-config_schema = {
+widget_config_json = {
   "properties": {
     "title":      {"type": "string",  "title": "슬라이더 제목"},
     "category_id": {"type": "string", "title": "카테고리 ID"},
@@ -174,7 +174,7 @@ config_schema = {
   }
 }
 
-template_html = '
+widget_content = '
 <div class="prod-slider" data-category="{{category_id}}" data-count="{{slide_count}}">
   <h3 class="slider-title">{{title}}</h3>
   <div class="slider-track"><!-- JS에서 상품 카드 동적 삽입 --></div>
@@ -190,7 +190,7 @@ is_system      = 'N'
 site_id        = 'SITE01'
 disp_path      = 'FRONT.모바일메인,FRONT.PC메인,FRONT.마이페이지'
 
-config_schema = {
+widget_config_json = {
   "properties": {
     "coupon_id":  {"type": "string", "title": "쿠폰 ID", "required": true},
     "btn_label":  {"type": "string", "title": "버튼 텍스트", "default": "VIP 쿠폰 받기"},
@@ -208,7 +208,7 @@ widget_nm      = '공통 카운트다운 타이머'
 widget_type_cd = 'countdown'
 is_system      = 'Y'
 
-config_schema = {
+widget_config_json = {
   "properties": {
     "target_datetime": {"type": "string", "title": "종료 일시 (ISO 8601)", "required": true},
     "label":           {"type": "string", "title": "라벨 텍스트", "default": "행사 종료까지"},
@@ -217,7 +217,7 @@ config_schema = {
   }
 }
 
-template_html = '
+widget_content = '
 <div class="countdown-widget" data-target="{{target_datetime}}">
   <p class="countdown-label">{{label}}</p>
   <div class="countdown-timer"><!-- JS 동적 렌더 --></div>
@@ -228,7 +228,7 @@ template_html = '
 
 ### 예시 4. 라이브러리 수정 → 전체 반영 시나리오
 ```
-1. STD_PROD_SLIDER template_html에 "리뷰 별점" 표시 추가
+1. STD_PROD_SLIDER widget_content에 "리뷰 별점" 표시 추가
 2. 저장 즉시 해당 라이브러리를 참조하는
    모든 dp_panel_item(widget_lib_ref_yn='Y')에서 별점 자동 노출
 3. 개별 패널 수정 불필요
@@ -241,7 +241,7 @@ widget_nm      = '관리자 매출 차트'
 widget_type_cd = 'chart_bar'
 disp_path      = 'ADMIN.대시보드'
 
-config_schema = {
+widget_config_json = {
   "properties": {
     "period": {"type": "string", "title": "기간", "enum": ["7D", "30D", "90D"], "default": "30D"},
     "chart_title": {"type": "string", "title": "차트 제목"}
@@ -257,8 +257,8 @@ config_schema = {
 1. `widget_code` 전역 UNIQUE — 사이트 구분 없이 중복 불가
 2. `is_system = 'Y'` 위젯은 관리자 UI에서 삭제 버튼 비활성화
 3. 라이브러리 삭제 시 `dp_panel_item.widget_lib_id` 참조 중인 레코드 선 해제 필요 (FK 제약)
-4. `config_schema`는 유효한 JSON 형식이어야 함 — 파싱 실패 시 관리자 입력 폼 렌더링 불가
-5. `template_html` 내 `{{변수명}}`은 `config_schema.properties` 키와 반드시 일치
+4. `widget_config_json`는 유효한 JSON 형식이어야 함 — 파싱 실패 시 관리자 입력 폼 렌더링 불가
+5. `widget_content` 내 `{{변수명}}`은 `widget_config_json.properties` 키와 반드시 일치
 6. `widget_type_cd`는 공통코드 `WIDGET_TYPE` 기준 — 임의 코드 입력 금지
 7. `site_id = NULL`은 전 사이트 공통 라이브러리로 처리 — 모든 사이트에서 참조 가능
 8. `use_yn = 'N'`이면 dp_panel_item에서 라이브러리 신규 참조 불가 (기존 참조는 유지)

@@ -41,11 +41,11 @@ public class DpWidgetLib extends BaseEntity {
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;
 
-    @Column(name = "template_html", columnDefinition = "TEXT")
-    private String templateHtml;
+    @Column(name = "widget_content", columnDefinition = "TEXT")
+    private String widgetContent;
 
-    @Column(name = "config_schema", columnDefinition = "TEXT")
-    private String configSchema;
+    @Column(name = "widget_config_json", columnDefinition = "TEXT")
+    private String widgetConfigJson;
 
     @Column(name = "is_system", length = 1)
     private String isSystem;

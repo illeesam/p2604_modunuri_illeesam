@@ -70,8 +70,11 @@
 
   /* ── dp: 전시위젯 ───────────────────────────────────────────── */
   boApiSvc.dpWidget = {
-    getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/ec/dp/widget/page', { params, ...hdr(uiNm, cmdNm) }); },
-    remove(_id, uiNm, cmdNm)     { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/dp/widget/${_id}`, hdr(uiNm, cmdNm)); },
+    getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/dp/widget/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/dp/widget/${_id}`, hdr(uiNm, cmdNm)); },
+    create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/dp/widget', body, hdr(uiNm, cmdNm)); },
+    update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/dp/widget/${_id}`, body, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/dp/widget/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── dp: 전시연관자원 ───────────────────────────────────────── */

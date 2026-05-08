@@ -6667,8 +6667,8 @@ CREATE TABLE IF NOT EXISTS dp_widget_lib (
     widget_lib_desc TEXT,
     disp_path       VARCHAR(500),                            -- 점(.) 구분 표시경로(다중: 콤마 구분)
     thumbnail_url   VARCHAR(500),
-    template_html   TEXT,                                   -- 위젯 기본 HTML 템플릿
-    config_schema   TEXT,                                   -- 설정 스키마 (JSON)
+    widget_content     TEXT,                                -- 위젯내용 (HTML 에디터, 3개 테이블 통일)
+    widget_config_json TEXT,                                -- 위젯설정 (JSON, 3개 테이블 통일)
     is_system       CHAR(1)         DEFAULT 'N',            -- 시스템 기본 위젯 Y/N
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
@@ -6688,8 +6688,8 @@ COMMENT ON COLUMN dp_widget_lib.widget_nm      IS '위젯명';
 COMMENT ON COLUMN dp_widget_lib.widget_type_cd IS '위젯유형 (코드: WIDGET_TYPE — BANNER/PRODUCT/CATEGORY/HTML/SLIDER)';
 COMMENT ON COLUMN dp_widget_lib.widget_lib_desc IS '위젯라이브러리설명';
 COMMENT ON COLUMN dp_widget_lib.thumbnail_url  IS '미리보기 썸네일URL';
-COMMENT ON COLUMN dp_widget_lib.template_html  IS '위젯 HTML 템플릿';
-COMMENT ON COLUMN dp_widget_lib.config_schema  IS '설정 스키마 (JSON)';
+COMMENT ON COLUMN dp_widget_lib.widget_content     IS '위젯내용 (HTML 에디터, 3개 테이블 통일)';
+COMMENT ON COLUMN dp_widget_lib.widget_config_json IS '위젯설정 (JSON, 3개 테이블 통일)';
 COMMENT ON COLUMN dp_widget_lib.is_system      IS '시스템기본위젯 Y/N';
 COMMENT ON COLUMN dp_widget_lib.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN dp_widget_lib.use_yn         IS '사용여부 Y/N';

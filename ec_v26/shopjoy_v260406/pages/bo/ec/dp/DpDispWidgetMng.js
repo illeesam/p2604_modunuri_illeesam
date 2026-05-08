@@ -27,6 +27,13 @@ window.DpDispWidgetMng = {
 
     const _initSearchParam = () => ({ kw: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
+    /* applied: 결과에 실제 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
+    const applied = reactive({ kw: '', type: '', status: '' });
+    const cfFilterDirty = computed(() =>
+      searchParam.kw !== applied.kw ||
+      searchParam.type !== applied.type ||
+      searchParam.status !== applied.status
+    );
 
     const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
     const getSortParam = () => {
@@ -48,25 +55,31 @@ window.DpDispWidgetMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const { type, kw, ...restParam } = searchParam;
-        const libParams = {
+        const { type, status, kw } = searchParam;
+        /* dp_widget (실제 배치된 위젯 인스턴스) — 메인 데이터 */
+        const widgetParams = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
-          ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
-          ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
-          ...(kw   ? { kw: kw.trim() }      : {}),
-          ...(type ? { widgetType: type }    : {}),
+          ...(kw     ? { kw: kw.trim() } : {}),
+          ...(type   ? { typeCd: type }  : {}),
+          ...(status ? { useYn: status } : {}),
         };
         const [res, resLibs] = await Promise.all([
-          boApiSvc.dpWidget.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '조회'),
-          boApiSvc.dpWidgetLib.getPage(libParams, '전시위젯관리', '조회'),
+          boApiSvc.dpWidget.getPage(widgetParams, '전시위젯관리', '조회'),
+          /* widgetLib 은 라이브러리 참조 표시(widget_lib_nm)용으로 함께 로드 (path 트리는 widget_lib 의 path_id 기준이라 lib 도 필요) */
+          boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '라이브러리조회'),
         ]);
-        widgets.splice(0, widgets.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
+        const dW = res.data?.data;
+        widgets.splice(0, widgets.length, ...(dW?.pageList || dW?.list || []));
         const dLibs = resLibs.data?.data;
         widgetLibs.splice(0, widgetLibs.length, ...(dLibs?.pageList || dLibs?.list || []));
-        pager.pageTotalCount = dLibs?.pageTotalCount || 0;
-        pager.pageTotalPage  = dLibs?.pageTotalPage  || 1;
+        pager.pageTotalCount = dW?.pageTotalCount || 0;
+        pager.pageTotalPage  = dW?.pageTotalPage  || 1;
         fnBuildPagerNums();
+        /* 결과에 반영된 조건 기록 */
+        applied.kw     = searchParam.kw;
+        applied.type   = searchParam.type;
+        applied.status = searchParam.status;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -110,9 +123,14 @@ window.DpDispWidgetMng = {
     };
   
 
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
-    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
-    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    /* 정책: 수정 클릭 시 항상 상세 API 호출. 같은 id 재클릭이어도 닫지 않고 reload 만 트리거 */
+    const handleLoadDetail = (id) => {
+      uiStateDetail.selectedId = id;
+      uiStateDetail.openMode = 'edit';
+      uiStateDetail.reloadTrigger++;
+    };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispWidgetMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
@@ -120,11 +138,13 @@ window.DpDispWidgetMng = {
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
-    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
+    /* key 는 'open' / 'closed' 두 값만 사용 — id 가 바뀌어도 컴포넌트 remount 하지 않고 props.dtlId / reloadTrigger watch 로 내용만 교체 */
+    const cfDetailKey = computed(() => uiStateDetail.selectedId === null ? 'closed' : 'open');
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-    const fnStatusCls = (v) => ({ '활성':'badge-green', '비활성':'badge-gray' }[v] || 'badge-gray');
-    const contentSummary = (d) => d?.contents || d?.desc || '';
+    const fnStatusCls = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
+    const fnStatusLabel = (v) => v === 'Y' ? '활성' : '비활성';
+    const contentSummary = (d) => d?.widgetLibDesc || d?.contents || d?.desc || '';
 
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
@@ -132,10 +152,10 @@ window.DpDispWidgetMng = {
     /* -- 표시경로 트리 -- */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(); };
     const handleDelete = async (d) => {
-      const ok = await showConfirm('삭제', '삭제하시겠습니까?');
+      const ok = await showConfirm('삭제', `[${d.widgetNm || d.widgetId}] 위젯을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        await boApiSvc.dpWidget.remove(d.libId, '전시위젯관리', '삭제');
+        await boApiSvc.dpWidget.remove(d.widgetId, '전시위젯관리', '삭제');
         showToast('삭제되었습니다.', 'success');
         handleSearchData();
       } catch (err) {
@@ -147,7 +167,7 @@ window.DpDispWidgetMng = {
 
     return { widgets, widgetLibs, uiState, pathLabel,
       codes, wTypeLabel, wIcon,
-      searchParam, pager,
+      searchParam, applied, cfFilterDirty, pager,
       onSearch, onReset,
       cfSiteNm,
       setPage, onSizeChange,
@@ -155,7 +175,7 @@ window.DpDispWidgetMng = {
       handleLoadDetail, openNew, closeDetail, inlineNavigate,
       cfDetailEditId, cfDetailKey,
       selectNode,
-      fnStatusCls, contentSummary, handleDelete, onSort, sortIcon,
+      fnStatusCls, fnStatusLabel, contentSummary, handleDelete, onSort, sortIcon,
     };
   },
   template: /* html */`
@@ -188,9 +208,10 @@ window.DpDispWidgetMng = {
           <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
-      <button @click="onSearch" class="btn btn-primary" style="height:36px;padding:0 20px;">조회</button>
+      <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;align-self:center;">변경됨 →</span>
+      <button @click="onSearch" class="btn btn-primary" style="height:36px;padding:0 20px;"
+        :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);' : ''">조회</button>
       <button @click="onReset"  class="btn btn-outline" style="height:36px;padding:0 16px;">초기화</button>
-      <button @click="openNew"  class="btn btn-primary" style="height:36px;padding:0 18px;margin-left:auto;">+ 신규등록</button>
     </div>
   </div>
 
@@ -209,63 +230,72 @@ window.DpDispWidgetMng = {
   </div>
 
   <!-- -- 우측 목록 ---------------------------------------------------------- -->
-  <div style="flex:1;min-width:0;">
+  <div style="flex:1;min-width:0;width:100%;">
   <!-- -- 목록 ------------------------------------------------------------- -->
   <div class="card" style="padding:0;">
-    <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;">
+    <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:13px;color:#555;">총 <b>{{ pager.pageTotalCount }}</b>건</span>
       <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;">#{{ uiState.selectedPath }}</span>
+      <!-- 적용 중인 필터 뱃지 -->
+      <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
+        <span v-if="!applied.kw && !applied.type && !applied.status" style="color:#bbb;">필터 없음</span>
+        <span v-if="applied.kw" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">검색: {{ applied.kw }}</span>
+        <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">유형: {{ wTypeLabel(applied.type) }}</span>
+        <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}</span>
+      </div>
+      <button @click="openNew" class="btn btn-primary btn-sm" style="margin-left:auto;height:30px;padding:0 14px;">+ 신규등록</button>
     </div>
 
-    <table class="bo-table">
+    <table class="bo-table" style="table-layout:fixed;width:100%;">
+      <colgroup>
+        <col style="width:56px;">
+        <col>
+        <col style="width:120px;">
+      </colgroup>
       <thead>
         <tr>
-          <th style="width:56px;">ID</th>
+          <th>ID</th>
           <th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">위젯 정보 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-          <th style="width:120px;text-align:right;">관리</th>
+          <th style="text-align:right;">관리</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-if="widgetLibs.length===0">
-          <td colspan="3" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯 리소스가 없습니다.</td>
+        <tr v-if="widgets.length===0">
+          <td colspan="3" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯이 없습니다.</td>
         </tr>
-        <tr v-else v-for="(d, idx) in widgetLibs" :key="d?.libId"
-          :style="selectedId===d.libId ? 'background:#fff8f8;' : ''">
-          <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ String(d.libId).padStart(4,'0') }}</td>
-          <td style="padding:10px 12px;">
-            <div style="margin-bottom:6px;">
-              <span style="font-size:15px;margin-right:4px;">{{ wIcon(d.widgetType) }}</span>
-              <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ wTypeLabel(d.widgetType) }}</span>
-              <span class="title-link" @click="handleLoadDetail(d.libId)"
-                :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===d.libId?'color:#e8587a;':'color:#222;')">{{ d.name }}</span>
-              <span class="badge" :class="fnStatusCls(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
+        <tr v-else v-for="(d, idx) in widgets" :key="d?.widgetId"
+          :style="(selectedId===d.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;'">
+          <td style="color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;width:56px;font-family:monospace;">{{ d.widgetId ? '#'+String(d.widgetId).slice(-6) : '-' }}</td>
+          <td style="padding:10px 12px;vertical-align:top;">
+            <div style="margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              <span style="font-size:15px;margin-right:4px;">{{ wIcon(d.widgetTypeCd) }}</span>
+              <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ wTypeLabel(d.widgetTypeCd) }}</span>
+              <span class="title-link" @click="handleLoadDetail(d.widgetId)"
+                :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===d.widgetId?'color:#e8587a;':'color:#222;')">{{ d.widgetNm }}</span>
+              <span class="badge" :class="fnStatusCls(d.useYn)" style="font-size:11px;margin-left:8px;">{{ fnStatusLabel(d.useYn) }}</span>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
-              <span><b style="color:#888;">내용:</b> {{ contentSummary(d) || '-' }}</span>
-              <span><b style="color:#888;">타이틀:</b>
-                {{ d.titleYn==='Y' ? (d.title || '표시') : '미표시' }}
+            <div style="display:flex;flex-wrap:nowrap;gap:14px;font-size:11px;color:#555;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              <span style="flex-shrink:0;overflow:hidden;text-overflow:ellipsis;max-width:240px;"><b style="color:#888;">타이틀:</b> {{ d.widgetTitle || '-' }}</span>
+              <span style="flex-shrink:0;overflow:hidden;text-overflow:ellipsis;max-width:280px;"><b style="color:#888;">설명:</b> {{ d.widgetDesc || '-' }}</span>
+              <span style="flex-shrink:0;"><b style="color:#888;">라이브러리:</b>
+                <span v-if="d.widgetLibRefYn === 'Y'" style="display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;font-family:monospace;">{{ d.widgetLibNm || ('#'+String(d.widgetLibId||'').slice(-6)) }}</span>
+                <span v-else style="color:#999;font-size:11px;">직접 작성</span>
               </span>
-              <span><b style="color:#888;">표시경로:</b>
-                <span v-if="d.displayPath" style="display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;font-family:monospace;">{{ d.displayPath }}</span>
-                <template v-else-if="d.usedPaths && d.usedPaths.length">
-                  <span v-for="(p,pi) in d.usedPaths" :key="pi"
-                    style="display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ p }}</span>
-                </template>
-                <span v-else style="color:#ccc;">미등록</span>
+              <span style="flex-shrink:0;"><b style="color:#888;">정렬:</b>
+                <span style="background:#dbeafe;color:#1d4ed8;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:3px;">{{ d.sortOrd || 0 }}</span>
               </span>
-              <span><b style="color:#888;">적용수:</b>
-                <span style="background:#dbeafe;color:#1d4ed8;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:3px;">{{ (d.usedPaths||[]).length }}</span>
+              <span style="flex-shrink:0;"><b style="color:#888;">환경:</b>
+                <span style="font-family:monospace;font-size:10px;color:#666;">{{ d.dispEnv || '^PROD^' }}</span>
               </span>
-              <span v-if="d.tags"><b style="color:#888;">태그:</b> {{ d.tags }}</span>
-              <span><b style="color:#888;">등록일:</b> {{ d.regDate || '-' }}</span>
-              <span><b style="color:#888;">사이트:</b>
+              <span style="flex-shrink:0;"><b style="color:#888;">등록일:</b> {{ d.regDate ? String(d.regDate).slice(0,10) : '-' }}</span>
+              <span style="flex-shrink:0;"><b style="color:#888;">사이트:</b>
                 <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ cfSiteNm }}</span>
               </span>
             </div>
           </td>
-          <td style="vertical-align:top;padding-top:10px;">
+          <td style="vertical-align:top;padding-top:10px;width:120px;">
             <div class="actions" style="justify-content:flex-end;">
-              <button @click.stop="handleLoadDetail(d.libId)" class="btn btn-blue btn-sm">수정</button>
+              <button @click.stop="handleLoadDetail(d.widgetId)" class="btn btn-blue btn-sm">수정</button>
               <button @click.stop="handleDelete(d)" class="btn btn-danger btn-sm">삭제</button>
             </div>
           </td>
@@ -290,10 +320,10 @@ window.DpDispWidgetMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="uiStateDetail.reloadTrigger"
       @close="closeDetail"
-    
-    :on-list-reload="handleSearchData"
-  />
+      :on-list-reload="handleSearchData"
+    />
   </div>
 </div>
 `

@@ -4,7 +4,7 @@
 
   /* ── 공통 필터 전역 상태 (boCommonFilter) ── */
   const boCommonFilter = reactive({
-    siteId:   null,   // sy_site.siteId
+    siteId:   '2604010000000001',  // sy_site.siteId — default: ShopJoy 메인몰
     vendorId: null,   // sy_vendor.vendorId (판매업체)
     dlivVendorId: null, // sy_vendor.vendorId (배송업체)
     userId:   null,   // sy_user.userId (관리자)
@@ -12,7 +12,7 @@
     orderId:  null,   // ec_order.orderId
   });
 
-  /* 기본값: 첫 번째 사이트는 로그인 후 boAppInitStore에서 설정 */
+  /* 기본값: siteId 는 hard-coded default ('2604010000000001'). 로그인 후 boAppInitStore 가 실제 첫 사이트로 갱신 */
 
   /* ── 등록기간 옵션 ── */
   const DATE_RANGE_OPTIONS = [

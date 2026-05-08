@@ -2,10 +2,11 @@
 window.DpDispUiDtl = {
   name: 'DpDispUiDtl',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
-    dtlId:        { type: String, default: null }, // 수정 대상 ID
-    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    navigate:      { type: Function, required: true }, // 페이지 이동
+    dtlId:         { type: String, default: null }, // 수정 대상 ID
+    dtlMode:       { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    onListReload:  { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
@@ -97,6 +98,14 @@ window.DpDispUiDtl = {
     // ★ onMounted
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
+      await handleLoadData();
+      handleInitForm();
+    });
+
+    /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      Object.keys(errors).forEach(k => delete errors[k]);
       await handleLoadData();
       handleInitForm();
     });

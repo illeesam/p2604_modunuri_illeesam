@@ -2,14 +2,15 @@
 window.DpDispWidgetLibDtl = {
   name: 'DpDispWidgetLibDtl',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
-    dtlId:        { type: String, default: null }, // 수정 대상 ID
-    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    navigate:      { type: Function, required: true }, // 페이지 이동
+    dtlId:         { type: String, default: null }, // 수정 대상 ID
+    dtlMode:       { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    onListReload:  { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   emits: ['close'],
   setup(props, { emit }) {
-    const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
+    const { reactive, computed, ref, onMounted, onBeforeUnmount, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;
     const showConfirm  = window.boApp.showConfirm;
     const setApiRes    = window.boApp.setApiRes;
@@ -95,14 +96,65 @@ window.DpDispWidgetLibDtl = {
     const form   = reactive(makeForm());
     const errors = reactive({});
 
-    /* -- 기존 데이터 로드 -- */
+    /* -- 기존 데이터 로드 (정책: 수정 클릭 시 항상 호출) -- */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
         const res = await boApiSvc.dpWidgetLib.getById(props.dtlId, '전시위젯라이브러리', '상세조회');
         const data = res.data?.data;
-        if (data) Object.assign(form, data);
+        if (data) {
+          /* 1) form 초기화 후 백엔드 데이터 적용 (이전 행의 사용자 잔여 입력값 제거) */
+          Object.assign(form, makeForm(), data);
+
+          /* 2) 백엔드 DTO 필드 → 폼이 사용하는 UI 별칭으로 동기화 */
+          form.libId       = data.widgetLibId   ?? form.libId;
+          form.libCode     = data.widgetCode    ?? form.libCode;
+          form.name        = data.widgetNm      ?? form.name;
+          form.widgetType  = data.widgetTypeCd  ?? form.widgetType;
+          form.desc        = data.widgetLibDesc ?? form.desc;
+          form.status      = data.useYn === 'Y' ? '활성' : (data.useYn === 'N' ? '비활성' : form.status);
+
+          /* 3) widgetConfigJson(JSON Schema) 의 default 값 → 폼 콘텐츠 필드 채우기 */
+          let cfg = null;
+          try { const parsed = JSON.parse(data.widgetConfigJson || '{}');
+            cfg = parsed.properties ? Object.fromEntries(Object.entries(parsed.properties).map(([k,v]) => [k, v?.default])) : parsed;
+          } catch (_) { cfg = {}; }
+          if (cfg) {
+            const pick = (k1, k2) => cfg[k1] != null ? cfg[k1] : (k2 != null ? cfg[k2] : undefined);
+            const setVal = (key, val) => { if (val !== undefined) form[key] = val; };
+            setVal('imageUrl',        pick('img_url', 'imageUrl'));
+            setVal('linkUrl',         pick('link_url', 'linkUrl'));
+            setVal('altText',         pick('alt'));
+            setVal('textContent',     pick('text'));
+            setVal('bgColor',         pick('bg_color', 'bgColor'));
+            setVal('textColor',       pick('text_color', 'textColor'));
+            setVal('infoTitle',       pick('title'));
+            setVal('infoBody',        pick('content'));
+            setVal('couponCode',      pick('coupon_id'));
+            setVal('couponDesc',      pick('btn_label'));
+            setVal('htmlContent',     pick('html'));
+            setVal('textareaContent', pick('text'));
+            setVal('markdownContent', pick('markdown'));
+            setVal('codeValue',       pick('value'));
+            setVal('videoUrl',        pick('video_url', 'videoUrl'));
+            setVal('countdownTitle',  pick('label'));
+            setVal('countdownTarget', pick('target_datetime', 'targetDatetime'));
+            setVal('fileUrl',         pick('file_url'));
+            setVal('fileLabel',       pick('btn_label'));
+            setVal('chartTitle',      pick('title'));
+            setVal('chartLabels',     Array.isArray(cfg.labels) ? cfg.labels.join(',') : undefined);
+            setVal('chartValues',     Array.isArray(cfg.values) ? cfg.values.join(',') : undefined);
+            setVal('payAmount',       pick('amount'));
+          }
+          /* 4) html_editor: 콘텐츠 폴백 우선순위
+           *    widgetContent(사용자 편집/시드 저장처) > widgetConfigJson.html.default(스키마 default) */
+          if (form.widgetType === 'html_editor') {
+            const tplHtml    = data.widgetContent || '';
+            const schemaHtml = (cfg && typeof cfg.html === 'string') ? cfg.html : '';
+            form.htmlContent = tplHtml || schemaHtml || form.htmlContent || '';
+          }
+        }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -110,23 +162,81 @@ window.DpDispWidgetLibDtl = {
       } finally {
         uiState.loading = false;
       }
-      if (form.widgetType === 'html_editor') {
-        await nextTick();
-        initQuill();
+
+      /* HTML 에디터는 Quill 미사용 (textarea + 라이브 렌더 방식으로 변경) → 별도 init 불필요 */
+    };
+
+    /* form.htmlContent 의 현재 값을 Quill 에 주입 (인스턴스 없으면 init 후 주입)
+     * 동시에 여러 곳에서 호출되어도 한 번만 실행되도록 락 사용 */
+    let _injecting = false;
+    const _injectHtmlToQuill = async () => {
+      if (uiState.htmlSourceMode) return; /* HTML 소스 모드면 textarea v-model 이 처리 */
+      if (_injecting) return;             /* 이미 inject 진행 중 → 중복 호출 차단 */
+      _injecting = true;
+      try {
+        /* 1) DOM 마운트 대기 */
+        let el = htmlContentEl.value;
+        for (let i = 0; i < 12 && !el; i++) {
+          await nextTick();
+          if (!htmlContentEl.value) await new Promise(r => setTimeout(r, 25));
+          el = htmlContentEl.value;
+        }
+        if (!el) return; /* DOM 못 찾음 */
+
+        const html = form.htmlContent || '';
+        /* 2) 이미 인스턴스가 있으면 innerHTML 만 갱신 */
+        if (quillInst) {
+          try { quillInst.off('text-change'); } catch (_) {}
+          quillInst.root.innerHTML = html;
+          quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
+          return;
+        }
+        /* 3) 인스턴스 없음 → 잔여 정리 후 새로 생성 */
+        _cleanQuillDomLeftover();
+        quillInst = new Quill(el, QUILL_OPTS);
+        quillInst.root.innerHTML = html;
+        quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
+      } finally {
+        _injecting = false;
       }
     };
 
-    const handleInitNewForm = () => {
-      if (!cfIsNew.value) return;
-      /* 신규: Lib코드 자동 생성 DL_YYMMDD_HHMMSS */
+    /* DOM 잔재 (toolbar 형제 요소 + ql-* 클래스) 청소 */
+    const _cleanQuillDomLeftover = () => {
+      const el = htmlContentEl.value;
+      if (!el) return;
+      const parent = el.parentNode;
+      if (parent) Array.from(parent.querySelectorAll('.ql-toolbar')).forEach(n => n.remove());
+      el.className = el.className.replace(/\bql-\S+/g, '').trim();
+      el.innerHTML = '';
+    };
+
+    /* Lib코드 자동 생성: DL_YYMMDD_HHMMSS */
+    const fnGenLibCode = () => {
       const t = new Date();
       const p = n => String(n).padStart(2, '0');
-      form.libCode = `DL_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
+      return `DL_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
+    };
+    const handleInitNewForm = () => {
+      if (!cfIsNew.value) return;
+      form.libCode = fnGenLibCode();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
+      await handleLoadDetail();
+      handleInitNewForm();
+    });
+
+    /* 컴포넌트 unmount 시 Toast UI Editor 인스턴스 정리 */
+    onBeforeUnmount(() => { _disposeTui(); });
+
+    /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      Object.keys(errors).forEach(k => delete errors[k]);
+      Object.assign(form, makeForm());
       await handleLoadDetail();
       handleInitNewForm();
     });
@@ -345,7 +455,74 @@ window.DpDispWidgetLibDtl = {
       authGrade: '',
     }));
 
-    /* -- Quill 에디터 (HTML 에디터 유형) -- */
+    /* -- Toast UI Editor (HTML 에디터 유형용) ------------------------------------
+     * - tuiEditorEl: ref div (WYSIWYG 마운트 위치)
+     * - htmlEditMode: 'wysiwyg' | 'source' (탭 전환)
+     * - tuiInst: Toast UI Editor 인스턴스
+     * 이미지: URL/업로드/클립보드/드래그앤드롭 모두 Base64 로 자동 변환
+     * 한국어 IME / 한글 입력 안정 지원 (NHN 제작)
+     * -------------------------------------------------------------------------- */
+    const tuiEditorEl = ref(null);
+    const htmlEditMode = ref('wysiwyg');
+    let tuiInst = null;
+    let tuiSyncing = false; /* 외부 setHTML 시 change 이벤트 무한루프 방지 */
+
+    const _disposeTui = () => {
+      if (tuiInst) { try { tuiInst.destroy(); } catch (_) {} tuiInst = null; }
+    };
+
+    const _initTui = async () => {
+      if (tuiInst) return;
+      const el = tuiEditorEl.value;
+      if (!el) return;
+      const Editor = (window.toastui && window.toastui.Editor) || window.Editor;
+      if (!Editor) { console.warn('[TuiEditor] not loaded'); return; }
+      tuiInst = new Editor({
+        el,
+        height: '320px',
+        initialEditType: 'wysiwyg',
+        previewStyle: 'vertical',
+        hideModeSwitch: true,
+        language: 'ko-KR',
+        usageStatistics: false,
+        initialValue: form.htmlContent || '',
+        toolbarItems: [
+          ['heading', 'bold', 'italic', 'strike'],
+          ['hr', 'quote'],
+          ['ul', 'ol', 'task'],
+          ['table', 'image', 'link'],
+          ['code', 'codeblock'],
+        ],
+        hooks: {
+          /* 이미지 업로드: Base64 인라인 (서버 업로드 없이 즉시 미리보기) */
+          addImageBlobHook: (blob, callback) => {
+            const reader = new FileReader();
+            reader.onload = (e) => callback(e.target.result, blob.name || '이미지');
+            reader.readAsDataURL(blob);
+          },
+        },
+      });
+      /* WYSIWYG 변경 → form.htmlContent 동기화 (무한루프 차단) */
+      tuiInst.on('change', () => {
+        if (tuiSyncing) return;
+        try { form.htmlContent = tuiInst.getHTML(); } catch (_) {}
+      });
+    };
+
+    /* form.htmlContent 가 외부에서 (API 재로드, 소스 모드 편집) 바뀌면 Tui 에 반영 */
+    const _syncTuiFromForm = () => {
+      if (!tuiInst) return;
+      const cur = (() => { try { return tuiInst.getHTML(); } catch (_) { return ''; } })();
+      const next = form.htmlContent || '';
+      if (cur === next) return;
+      tuiSyncing = true;
+      try { tuiInst.setHTML(next, false); } finally {
+        /* setHTML 직후 change 이벤트가 한 번 발생할 수 있어 macrotask 후 해제 */
+        setTimeout(() => { tuiSyncing = false; }, 30);
+      }
+    };
+
+    /* ⚠️ 기존 Quill 코드 잔존 (호출 안 됨) — 호환을 위해 유지 */
     const htmlContentEl  = ref(null);
     let quillInst = null;
 
@@ -362,37 +539,99 @@ window.DpDispWidgetLibDtl = {
     };
 
     const initQuill = () => {
-      if (!uiState.htmlContentEl || quillInst) return;
-      quillInst = new Quill(uiState.htmlContentEl, QUILL_OPTS);
+      const el = htmlContentEl.value;
+      if (!el) return;
+      if (quillInst) {
+        /* 이미 인스턴스가 있으면 내용만 동기화 */
+        quillInst.off('text-change');
+        quillInst.root.innerHTML = form.htmlContent || '';
+        quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
+        return;
+      }
+      quillInst = new Quill(el, QUILL_OPTS);
       quillInst.root.innerHTML = form.htmlContent || '';
       quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
     };
 
-    const toggleHtmlSource = async () => {
-      if (!uiState.htmlSourceMode) {
-        /* WYSIWYG → 소스 */
-        if (quillInst) form.htmlContent = quillInst.root.innerHTML;
-        uiState.htmlSourceMode = true;
-      } else {
-        /* 소스 → WYSIWYG */
-        uiState.htmlSourceMode = false;
-        await nextTick();
-        if (quillInst) {
-          quillInst.off('text-change');
-          quillInst.root.innerHTML = form.htmlContent || '';
-          quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
-        } else {
-          initQuill();
-        }
+    /* 외부에서 form.htmlContent 가 새로 로드된 경우 Quill 에 반영 */
+    const syncQuillFromForm = () => {
+      if (!quillInst || uiState.htmlSourceMode) return;
+      if (quillInst.root.innerHTML !== (form.htmlContent || '')) {
+        quillInst.off('text-change');
+        quillInst.root.innerHTML = form.htmlContent || '';
+        quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
       }
     };
 
-    watch(cfIsHtmlEditor, async (val) => {
-      if (!val) return;
-      uiState.htmlSourceMode = false;
+    const toggleHtmlSource = async () => {
+      if (!uiState.htmlSourceMode) {
+        /* WYSIWYG → HTML 소스 모드 전환:
+         *  - 현재 Quill 의 innerHTML 을 form.htmlContent 에 저장
+         *  - Quill 인스턴스/DOM 잔재 정리 (textarea 와 같은 div 를 재활용 안 하므로 필수)
+         *  - htmlSourceMode = true 로 textarea v-if 노출 */
+        if (quillInst) {
+          try { form.htmlContent = quillInst.root.innerHTML; } catch (_) {}
+        }
+        _disposeQuill();
+        uiState.htmlSourceMode = true;
+      } else {
+        /* HTML 소스 → WYSIWYG (디자인 모드) 전환:
+         *  - htmlSourceMode = false 로 변경 → v-show 의 ref div 노출
+         *  - DOM 마운트 후 Quill 새로 생성 + form.htmlContent 주입 */
+        uiState.htmlSourceMode = false;
+        _disposeQuill();
+        await _injectHtmlToQuill();
+      }
+    };
+
+    /* DOM ref 가 잡힐 때까지 짧게 폴링한 뒤 init/sync */
+    const _waitElAndInit = async (maxTries = 8) => {
+      for (let i = 0; i < maxTries; i++) {
+        await nextTick();
+        if (htmlContentEl.value) { initQuill(); return; }
+        await new Promise(r => setTimeout(r, 30));
+      }
+    };
+
+    /* Quill 인스턴스 + DOM 완전 정리 */
+    const _disposeQuill = () => {
+      if (quillInst) { try { quillInst.off('text-change'); } catch (_) {} }
       quillInst = null;
+      _cleanQuillDomLeftover();
+    };
+
+    /* ============================================================
+     * Toast UI Editor 라이프사이클
+     * ============================================================ */
+    /* 1) cfIsHtmlEditor 가 true 가 되면 init / false 가 되면 dispose */
+    watch(cfIsHtmlEditor, async (val) => {
+      if (!val) { _disposeTui(); return; }
+      htmlEditMode.value = 'wysiwyg';
       await nextTick();
-      initQuill();
+      /* DOM 마운트 대기 (v-if 통과 후 ref 잡힘) */
+      for (let i = 0; i < 8 && !tuiEditorEl.value; i++) {
+        await new Promise(r => setTimeout(r, 25));
+      }
+      _initTui();
+    }, { immediate: true });
+
+    /* 2) ref div 가 마운트되는 순간에도 init 시도 (cfIsHtmlEditor true 인 채로 첫 렌더) */
+    watch(tuiEditorEl, (el) => {
+      if (!el) return;
+      if (cfIsHtmlEditor.value && !tuiInst && htmlEditMode.value === 'wysiwyg') _initTui();
+    });
+
+    /* 3) form.htmlContent 외부 변경 (API 재로드, 소스 모드 편집) → Tui 동기화 */
+    watch(() => form.htmlContent, () => {
+      if (cfIsHtmlEditor.value && tuiInst) _syncTuiFromForm();
+    });
+
+    /* 4) 모드 토글 (소스 → WYSIWYG 복귀 시 Tui 가 form.htmlContent 를 다시 보여주도록) */
+    watch(htmlEditMode, async (m) => {
+      if (m !== 'wysiwyg') return;
+      await nextTick();
+      if (!tuiInst) _initTui();
+      else _syncTuiFromForm();
     });
 
     /* -- Yup 유효성 -- */
@@ -402,9 +641,44 @@ window.DpDispWidgetLibDtl = {
       widgetType: window.yup.string().required('위젯 유형을 선택하세요.'),
     });
 
+    /* form (UI 별칭 포함) → 백엔드 DTO 필드 매핑 */
+    const _toApiBody = () => {
+      const body = { ...form };
+      /* UI 별칭 → 백엔드 필드 */
+      body.widgetLibId   = form.widgetLibId   || form.libId;
+      body.widgetCode    = form.widgetCode    || form.libCode;
+      body.widgetNm      = form.widgetNm      || form.name;
+      body.widgetTypeCd  = form.widgetTypeCd  || form.widgetType;
+      body.widgetLibDesc = form.widgetLibDesc || form.desc;
+      body.useYn         = form.status === '활성' ? 'Y' : (form.status === '비활성' ? 'N' : (form.useYn || 'Y'));
+      /* html_editor 의 작성 콘텐츠는 widget_content 컬럼에 저장 (3개 테이블 통일) */
+      if (form.widgetType === 'html_editor' || form.widgetTypeCd === 'html_editor') {
+        body.widgetContent = form.htmlContent || '';
+        /* widgetConfigJson 의 html.default 도 동기화 (미리보기 어댑터 호환) */
+        try {
+          const schema = JSON.parse(form.widgetConfigJson || '{}');
+          if (!schema.properties) schema.properties = {};
+          if (!schema.properties.html) schema.properties.html = { type: 'string' };
+          schema.properties.html.default = form.htmlContent || '';
+          body.widgetConfigJson = JSON.stringify(schema);
+        } catch (_) {
+          body.widgetConfigJson = JSON.stringify({
+            type: 'object',
+            properties: { html: { type: 'string', default: form.htmlContent || '' } },
+          });
+        }
+      }
+      /* UI 전용 별칭은 백엔드에 보내지 않아도 무방하지만 호환을 위해 그대로 둠 */
+      return body;
+    };
+
     /* -- 저장 -- */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
+      /* Lib코드 비어있거나 placeholder 그대로면 자동 생성 (검증 전) */
+      if (!form.libCode || form.libCode.trim() === '' || form.libCode === 'DL_YYMMDD_HHMMSS') {
+        form.libCode = fnGenLibCode();
+      }
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
@@ -412,7 +686,11 @@ window.DpDispWidgetLibDtl = {
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (isNewLib ? boApiSvc.dpWidgetLib.create({ ...form }, '전시위젯라이브러리', '등록') : boApiSvc.dpWidgetLib.update(form.libId, { ...form }, '전시위젯라이브러리', '저장'));
+        const body = _toApiBody();
+        const id = body.widgetLibId;
+        const res = await (isNewLib
+          ? boApiSvc.dpWidgetLib.create(body, '전시위젯라이브러리', '등록')
+          : boApiSvc.dpWidgetLib.update(id, body, '전시위젯라이브러리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispWidgetLibMng', { reload: true });
@@ -473,6 +751,7 @@ window.DpDispWidgetLibDtl = {
       cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
       htmlContentEl, toggleHtmlSource,
+      tuiEditorEl, htmlEditMode,
     };
   },
   template: /* html */`
@@ -510,7 +789,7 @@ window.DpDispWidgetLibDtl = {
         <div class="form-row" style="margin-bottom:8px;">
           <div class="form-group">
             <label class="form-label">Lib코드 <span style="color:#e8587a;">*</span></label>
-            <input v-model="form.libCode" class="form-control" :class="{'is-invalid':errors.libCode}" placeholder="DL_YYMMDD_HHMMSS" style="margin:0;font-family:monospace;" />
+            <input v-model="form.libCode" class="form-control" :class="{'is-invalid':errors.libCode}" placeholder="비워두면 자동 생성 (예: DL_260508_191415)" style="margin:0;font-family:monospace;" />
             <div v-if="errors.libCode" class="field-error">{{ errors.libCode }}</div>
           </div>
           <div class="form-group">
@@ -620,20 +899,27 @@ window.DpDispWidgetLibDtl = {
           </div>
         </div>
 
-        <!-- -- HTML 에디터 ------------------------------------------------- -->
+        <!-- -- HTML 에디터 (Toast UI Editor + HTML 소스 토글) ----------------- -->
         <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
-          <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
-            <button @click="toggleHtmlSource"
-              :style="htmlSourceMode ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#f5f5f5;color:#555;border-color:#d0d0d0;'"
-              style="font-size:11px;padding:3px 10px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">
-              {{ htmlSourceMode ? '✓ 디자인' : '</> HTML' }}
-            </button>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="display:flex;gap:4px;">
+              <button type="button" @click="htmlEditMode = 'wysiwyg'"
+                :style="htmlEditMode === 'wysiwyg' ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
+                style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;transition:all .15s;">디자인</button>
+              <button type="button" @click="htmlEditMode = 'source'"
+                :style="htmlEditMode === 'source' ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
+                style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">&lt;/&gt; HTML</button>
+            </div>
+            <button type="button" @click="form.htmlContent = ''"
+              style="font-size:11px;padding:3px 10px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;">비우기</button>
           </div>
-          <div style="background:#fff;border:1px solid #d9d9d9;border-radius:6px;overflow:hidden;">
-            <div v-show="!htmlSourceMode" ref="htmlContentEl"></div>
-            <textarea v-if="htmlSourceMode" v-model="form.htmlContent"
-              style="width:100%;min-height:180px;padding:10px 12px;border:none;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;margin:0;background:#fff;outline:none;"></textarea>
-          </div>
+          <!-- WYSIWYG: Toast UI Editor 마운트 영역 -->
+          <div v-show="htmlEditMode === 'wysiwyg'" ref="tuiEditorEl" style="background:#fff;border-radius:6px;"></div>
+          <!-- HTML 소스 -->
+          <textarea v-show="htmlEditMode === 'source'" v-model="form.htmlContent"
+            spellcheck="false"
+            style="width:100%;min-height:260px;padding:12px 14px;border:1px solid #d9d9d9;border-radius:6px;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;margin:0;background:#fafafa;outline:none;"
+            placeholder="&lt;section style='padding:16px;background:#f9f9f9'&gt;&#10;  &lt;h3&gt;제목&lt;/h3&gt;&#10;  &lt;p&gt;내용&lt;/p&gt;&#10;&lt;/section&gt;"></textarea>
         </div>
 
         <!-- -- 파일목록 ----------------------------------------------------- -->

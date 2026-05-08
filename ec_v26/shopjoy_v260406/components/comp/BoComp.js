@@ -194,12 +194,15 @@ window.CategoryTree = {
     showCount:  { type: Function, default: null },      // tree mode: 카운트 표시 fn(categoryId)→number
     show:       { type: Boolean,  default: false },     // picker mode: 모달 표시
     excludeIds: { type: Object,   default: () => new Set() }, // picker mode: 제외할 categoryId Set
+    siteId:     { type: String,   default: null },      // 사이트 ID (없으면 boCommonFilter.siteId 사용)
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
-    const _cache = (window._categoryTreeCache = window._categoryTreeCache || { list: null });
+    // siteId별로 캐시 분리 (사이트 전환 시 즉시 정확한 트리 표시)
+    const _cacheStore = (window._categoryTreeCache = window._categoryTreeCache || { list: null, bySite: {} });
+    const cfSiteId = computed(() => props.siteId || (window.boCommonFilter && window.boCommonFilter.siteId) || null);
 
     const categories = reactive([]);
     const expandedSet = reactive(new Set());
@@ -210,16 +213,21 @@ window.CategoryTree = {
     const DEPTH_BULLET = d => ['●','○','▪'][d] || '·';
 
     const load = async () => {
-      if (_cache.list) {
-        categories.splice(0, categories.length, ..._cache.list);
+      const key = cfSiteId.value || '__all__';
+      const cached = _cacheStore.bySite[key];
+      if (cached) {
+        categories.splice(0, categories.length, ...cached);
         _initExpanded();
         return;
       }
       loading.value = true;
       try {
-        const res = await boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리', '조회');
+        const params = { pageNo: 1, pageSize: 10000 };
+        if (cfSiteId.value) params.siteId = cfSiteId.value;
+        const res = await boApiSvc.pdCategory.getPage(params, '카테고리', '조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        _cache.list = list;
+        _cacheStore.bySite[key] = list;
+        _cacheStore.list = list; // 호환용 (저장 후 부모가 list=null 로 전체 무효화하는 패턴 유지)
         categories.splice(0, categories.length, ...list);
         _initExpanded();
       } catch (e) {
@@ -228,6 +236,9 @@ window.CategoryTree = {
         loading.value = false;
       }
     };
+
+    // siteId 변경 시 재로드
+    watch(cfSiteId, () => { load(); });
 
     const _initExpanded = () => {
       expandedSet.clear();

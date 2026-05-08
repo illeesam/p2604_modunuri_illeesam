@@ -11,6 +11,7 @@ window.PdCategoryMng = {
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
     const categories = reactive([]);
+    const sites = computed(() => window._boCmSites || []);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null, descOpen: false});
     const codes = reactive({
       category_depths: [],
@@ -32,18 +33,27 @@ window.PdCategoryMng = {
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
-    /* -- 검색 파라미터 -- */
-    const _initSearchParam = () => ({ kw: '', categoryDepth: '', categoryStatusCd: '' });
+    /* -- 검색 파라미터 -- (siteId는 필수, 기본값 우선순위: boCommonFilter > boAppStore.svBoSiteId > _boCmSites[0] > '2604010000000001') */
+    const _initSearchParam = () => ({
+      siteId: (window.boCommonFilter && window.boCommonFilter.siteId)
+              || window.sfGetBoAppStore?.()?.svBoSiteId
+              || (window._boCmSites?.[0]?.siteId)
+              || '2604010000000001',
+      kw: '', categoryDepth: '', categoryStatusCd: ''
+    });
     const searchParam = reactive(_initSearchParam());
 
     /* 좌측 트리용 전체 카테고리 조회 (그리드/트리 캐시 갱신) */
     const handleSearchList = async () => {
       try {
-        const res = await boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리관리', '목록조회');
+        const res = await boApiSvc.pdCategory.getPage({ siteId: searchParam.siteId, pageNo: 1, pageSize: 10000 }, '카테고리관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         categories.splice(0, categories.length, ...list);
         // CategoryTree 컴포넌트 캐시 무효화 → 저장 후 트리 갱신
-        if (window._categoryTreeCache) window._categoryTreeCache.list = null;
+        if (window._categoryTreeCache) {
+          window._categoryTreeCache.list = null;
+          window._categoryTreeCache.bySite = {};
+        }
       } catch (e) {
         console.error('[handleSearchList]', e);
       }
@@ -68,6 +78,15 @@ window.PdCategoryMng = {
       } catch (e) {
         console.error('[handleGridSearch]', e);
       }
+    };
+
+    /* 사이트 변경 시: 선택된 카테고리 해제 + 트리/그리드 재조회 */
+    const onSiteChange = async () => {
+      uiState.selectedCatId = null;
+      // boCommonFilter 동기화 (다른 화면 이동 시 일관성 유지)
+      if (window.boCommonFilter) window.boCommonFilter.siteId = searchParam.siteId;
+      await handleSearchList();
+      await handleGridSearch();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -128,6 +147,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.selectedCatId = null;
+      await handleSearchList();
       await handleGridSearch();
     };
     const catPickerModal = reactive({ show: false, search: '', forCategoryId: null, forRowIdx: null });
@@ -189,6 +210,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       const categoryDepth = parent ? ((parent.categoryDepth || 0) + 1) : 1;
       gridRows.unshift({
         categoryId: _tempId--,
+        siteId: searchParam.siteId,
         categoryNm: '',
         parentCategoryId,
         sortOrd: 0,
@@ -205,6 +227,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       const categoryDepth = (row.categoryDepth || 1) + 1;
       gridRows.splice(idx + 1, 0, {
         categoryId: _tempId--,
+        siteId: row.siteId || searchParam.siteId,
         categoryNm: '',
         parentCategoryId: row.categoryId,
         sortOrd: 0,
@@ -302,7 +325,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     // -- return ---------------------------------------------------------------
 
     return {
-      codes, uiState,
+      codes, uiState, sites, onSiteChange,
       selectNode, handleGridSearch,
       searchParam,
       gridRows, pager, setPage, onSizeChange, getRealIdx,
@@ -332,6 +355,10 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
+      <label class="search-label">사이트 <span style="color:#e8587a">*</span></label>
+      <select class="form-control" v-model="searchParam.siteId" @change="onSiteChange" style="width:160px">
+        <option v-for="s in sites" :key="s.siteId" :value="s.siteId">{{ s.siteId }} {{ s.siteNm }}</option>
+      </select>
       <label class="search-label">카테고리명</label>
       <input class="form-control" v-model="searchParam.kw" placeholder="카테고리명 검색" style="max-width:240px" @keyup.enter="() => onSearch?.()">
       <label class="search-label">단계</label>
@@ -360,7 +387,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
         <div v-if="uiState.selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectNode(null)">전체보기</div>
       </div>
-      <category-tree mode="tree" :selected="uiState.selectedCatId" @select="selectNode" />
+      <category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" @select="selectNode" />
     </div>
 
     <!-- -- 우측: 카테고리 그리드 ------------------------------------------------- -->

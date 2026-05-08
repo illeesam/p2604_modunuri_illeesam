@@ -239,7 +239,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </div>
     <sy-alarm-dtl :key="detailModal.dtlId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
       :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" 
-      :on-list-reload="handleSearchList"
+      `n      :reload-trigger="uiStateDetail.reloadTrigger":on-list-reload="handleSearchList"
     />
   </div>
 

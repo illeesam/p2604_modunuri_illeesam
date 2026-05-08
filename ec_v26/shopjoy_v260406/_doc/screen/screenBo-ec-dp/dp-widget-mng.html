@@ -404,7 +404,7 @@
     <div class="form-group">
       <label class="form-label">위젯 설정 (widget_config_json)</label>
       <textarea class="form-control" style="min-height:56px;font-family:monospace;font-size:12px">{"images":[{"url":"/api/images/spring-banner-1.jpg","link":"/event/spring","alt":"봄 이벤트"}],"autoplay":true,"interval":4000}</textarea>
-      <span class="form-hint">위젯 유형별 JSON 스키마. widget_lib_ref_yn=Y 시 라이브러리 config_schema 우선 적용.</span>
+      <span class="form-hint">위젯 유형별 JSON 스키마. widget_lib_ref_yn=Y 시 라이브러리 widget_config_json 우선 적용.</span>
     </div>
     <div class="json-preview">
       {<br>
@@ -446,7 +446,7 @@
     <div class="ddl-ref">
       <strong>관련 DDL:</strong> dp_widget (widget_id PK · site_id+widget_nm UNIQUE · widget_lib_id FK) · dp_widget_lib (widget_lib_id PK · widget_code UNIQUE)<br>
       <strong>위젯 19종:</strong> image_banner · product_slider · product · cond_product · chart_bar/line/pie · text_banner · info_card · popup · file · file_list · coupon · html_editor · event_banner · cache_banner · widget_embed · barcode · countdown<br>
-      <strong>핵심 컬럼:</strong> widget_lib_ref_yn(Y=Lib참조/N=직접) · widget_config_json(JSON설정) · disp_env(^PROD^캐럿) · template_html(lib) · config_schema(lib)
+      <strong>핵심 컬럼:</strong> widget_lib_ref_yn(Y=Lib참조/N=직접) · widget_config_json(JSON설정) · disp_env(^PROD^캐럿) · widget_content(lib) · widget_config_json(lib)
     </div>
 
     <div class="form-actions">
@@ -462,7 +462,7 @@
       <button class="btn btn-primary btn-sm">+ 라이브러리 등록</button>
     </div>
     <div class="hierarchy-info">
-      dp_widget_lib: 여러 dp_widget 인스턴스가 공유하는 <strong>재사용 가능한 위젯 정의</strong>. template_html + config_schema 포함. is_system=Y 시 시스템 기본 제공.
+      dp_widget_lib: 여러 dp_widget 인스턴스가 공유하는 <strong>재사용 가능한 위젯 정의</strong>. widget_content + widget_config_json 포함. is_system=Y 시 시스템 기본 제공.
     </div>
     <div class="table-card" style="margin-top:12px">
       <table>
@@ -527,7 +527,7 @@
       </table>
     </div>
     <div class="ddl-ref" style="margin-top:12px">
-      <strong>dp_widget_lib 주요 컬럼:</strong> widget_code UNIQUE · widget_type_cd · template_html(HTML템플릿) · config_schema(JSON스키마) · is_system(Y=시스템기본) · disp_path(콤마구분 다중경로) · thumbnail_url
+      <strong>dp_widget_lib 주요 컬럼:</strong> widget_code UNIQUE · widget_type_cd · widget_content(HTML템플릿) · widget_config_json(JSON스키마) · is_system(Y=시스템기본) · disp_path(콤마구분 다중경로) · thumbnail_url
     </div>
   </div>
 

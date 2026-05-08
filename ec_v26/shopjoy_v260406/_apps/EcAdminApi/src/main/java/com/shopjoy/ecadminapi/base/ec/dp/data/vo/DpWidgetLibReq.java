@@ -22,8 +22,8 @@ public class DpWidgetLibReq {
     private String widgetLibDesc;
     private String pathId;
     private String thumbnailUrl;
-    private String templateHtml;
-    private String configSchema;
+    private String widgetContent;
+    private String widgetConfigJson;
     private String isSystem;
     private Integer sortOrd;
     private String useYn;
@@ -43,8 +43,8 @@ public class DpWidgetLibReq {
                 .widgetLibDesc(widgetLibDesc)
                 .pathId(pathId)
                 .thumbnailUrl(thumbnailUrl)
-                .templateHtml(templateHtml)
-                .configSchema(configSchema)
+                .widgetContent(widgetContent)
+                .widgetConfigJson(widgetConfigJson)
                 .isSystem(isSystem)
                 .sortOrd(sortOrd)
                 .useYn(useYn)

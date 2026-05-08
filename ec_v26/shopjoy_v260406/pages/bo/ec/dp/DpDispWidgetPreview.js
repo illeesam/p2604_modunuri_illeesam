@@ -1,154 +1,362 @@
 /* ShopJoy Admin - 전시위젯미리보기 (#page=ecDispWidgetLibPreview) */
 
-/* -- 위젯미리보기 서브컴포넌트 (grid · dashboard 공용) -- */
+/* -- 위젯미리보기 서브컴포넌트 (grid · dashboard 공용)
+ * 백엔드 DTO 필드(widgetTypeCd / widgetNm / widgetDesc / widgetConfigJson / thumbnailUrl 등) 기준
+ * + UI 호환 별칭(widgetType / name) 도 함께 인식
+ * + dp_widget 의 widgetConfigJson 도 파싱하여 콘텐츠 추출
+ * 23종 위젯 유형 모두 분기 처리
+ */
 const _WP_DispWidgetPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
-    const { ref, reactive, computed, watchEffect, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const { reactive, computed } = Vue;
     const codes = reactive({ disp_widget_types: [] });
-    const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
-    const tab = Vue.toRef(uiState, 'tab');
+    const uiState = reactive({ isPageCodeLoad: false });
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
 
     const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      uiState.isPageCodeLoad = true;
+      const codeStore = window.sfGetBoCodeStore?.();
+      if (codeStore) {
+        codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE') || [];
+        uiState.isPageCodeLoad = true;
+      }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // 코드 주입
-
-    const cfChartBars = computed(() => {
-      const w = props.lib;
-      if (!w || !w.chartValues) return [];
-      const values = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
-      const labels = w.chartLabels ? w.chartLabels.split(',').map(l => l.trim()) : values.map((_,i)=>String(i+1));
-      const max = Math.max(...values, 1);
-      return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
+    /* -- 위젯 유형 (DTO / UI 호환 별칭 모두 지원) -- */
+    const cfType = computed(() => {
+      const w = props.lib || {};
+      return w.widgetTypeCd || w.widgetType || '';
     });
-    const selectedLibId = Vue.toRef(uiState, 'selectedLibId');
 
-    // -- return ---------------------------------------------------------------
+    /* -- 위젯명 -- */
+    const cfName = computed(() => {
+      const w = props.lib || {};
+      return w.widgetNm || w.name || w.widgetTitle || '';
+    });
 
-    return { cfChartBars };
+    /* -- 설명 -- */
+    const cfDesc = computed(() => {
+      const w = props.lib || {};
+      return w.widgetLibDesc || w.widgetDesc || w.desc || '';
+    });
+
+    /* -- 콘텐츠 (dp_widget.widget_content) -- */
+    const cfContent = computed(() => (props.lib || {}).widgetContent || '');
+
+    /* -- config: widgetConfigJson 단일 컬럼으로 통일됨 (3개 테이블 모두) -- */
+    const cfConfig = computed(() => {
+      const w = props.lib || {};
+      const tryParse = (s) => { try { return JSON.parse(s); } catch (_) { return null; } };
+      const cfgJson  = tryParse(w.widgetConfigJson);
+      if (!cfgJson) return {};
+      /* JSON Schema 인 경우 properties 의 default 값을 평탄화 */
+      if (cfgJson.properties) {
+        const out = {};
+        Object.keys(cfgJson.properties).forEach(k => {
+          const p = cfgJson.properties[k];
+          if (p && 'default' in p) out[k] = p.default;
+        });
+        return out;
+      }
+      /* 실데이터 객체인 경우 그대로 사용 */
+      return cfgJson;
+    });
+
+    /* 썸네일 / 미리보기 이미지 */
+    const cfImg = computed(() => {
+      const w = props.lib || {};
+      return cfConfig.value.img_url || cfConfig.value.imageUrl
+          || w.previewImgUrl || w.thumbnailUrl || w.imageUrl || '';
+    });
+
+    /* 차트 막대 데이터 */
+    const cfChartBars = computed(() => {
+      /* 1. configJson 에 values 있으면 사용 */
+      const cfg = cfConfig.value;
+      let values = null, labels = null;
+      if (Array.isArray(cfg.values)) values = cfg.values.map(Number);
+      else if (typeof cfg.chartValues === 'string') values = cfg.chartValues.split(',').map(v => Number(v.trim()) || 0);
+      else if (typeof (props.lib || {}).chartValues === 'string') {
+        values = (props.lib.chartValues || '').split(',').map(v => Number(v.trim()) || 0);
+      }
+      /* 2. 데이터 없으면 더미 (차트 미리보기 항상 보여주기) */
+      if (!values || !values.length) values = [40, 65, 30, 80, 55, 70, 45];
+      if (Array.isArray(cfg.labels)) labels = cfg.labels;
+      else if (typeof cfg.chartLabels === 'string') labels = cfg.chartLabels.split(',').map(l => l.trim());
+      else if (typeof (props.lib || {}).chartLabels === 'string') {
+        labels = (props.lib.chartLabels || '').split(',').map(l => l.trim());
+      }
+      if (!labels || !labels.length) labels = ['월','화','수','목','금','토','일'];
+      const max = Math.max(...values, 1);
+      return values.map((v,i) => ({ v, label: labels[i] || '', pct: Math.round((v/max)*100), color: chartColors[i % chartColors.length] }));
+    });
+
+    /* 파이 차트 segments */
+    const cfPie = computed(() => {
+      const bars = cfChartBars.value;
+      const total = bars.reduce((s,b)=>s+b.v,0) || 1;
+      let acc = 0;
+      return bars.map(b => {
+        const start = acc / total * 360;
+        acc += b.v;
+        const end = acc / total * 360;
+        return { ...b, start, end, ratio: Math.round(b.v / total * 100) };
+      });
+    });
+    const cfPieGradient = computed(() => {
+      const segs = cfPie.value;
+      return 'conic-gradient(' + segs.map(s => `${s.color} ${s.start}deg ${s.end}deg`).join(',') + ')';
+    });
+
+    return { cfType, cfName, cfDesc, cfContent, cfConfig, cfImg, cfChartBars, cfPie, cfPieGradient };
   },
   template: /* html */`
 <div style="padding:10px;">
-  <!-- -- 이미지 배너 --------------------------------------------------------- -->
-  <template v-if="lib.widgetType==='image_banner'">
+
+  <!-- -- 1) 이미지 배너 ---------------------------------------------------- -->
+  <template v-if="cfType==='image_banner'">
     <div style="border-radius:6px;overflow:hidden;background:#f0f0f0;">
-      <img v-if="lib.imageUrl" :src="lib.imageUrl" style="width:100%;display:block;max-height:130px;object-fit:cover;" />
+      <img v-if="cfImg" :src="cfImg" style="width:100%;display:block;max-height:130px;object-fit:cover;" @error="$event.target.style.display='none'" />
       <div v-else style="height:80px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:12px;">🖼 이미지 배너</div>
     </div>
-    <div v-if="lib.linkUrl" style="font-size:10px;color:#aaa;margin-top:4px;">🔗 {{ lib.linkUrl }}</div>
+    <div style="font-size:11px;color:#444;margin-top:6px;font-weight:600;">{{ cfName }}</div>
+    <div v-if="cfConfig.alt" style="font-size:10px;color:#888;margin-top:2px;">{{ cfConfig.alt }}</div>
   </template>
 
-  <!-- -- 상품 슬라이더 / 상품 --------------------------------------------------- -->
-  <template v-else-if="lib.widgetType==='product_slider'||lib.widgetType==='product'">
-    <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:7px;">{{ lib.name }}</div>
-    <div style="display:flex;gap:6px;overflow-x:auto;">
-      <div v-for="i in 4" :key="Math.random()" style="flex-shrink:0;width:64px;text-align:center;">
-        <div style="height:56px;background:#f5f5f5;border-radius:5px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;font-size:16px;">👗</div>
-        <div style="font-size:10px;color:#888;">상품{{ i }}</div>
+  <!-- -- 2) 텍스트 배너 ---------------------------------------------------- -->
+  <template v-else-if="cfType==='text_banner'">
+    <div :style="{background:cfConfig.bg_color||cfConfig.bgColor||'#fff0f4',color:cfConfig.text_color||cfConfig.textColor||'#c0396a',padding:'14px',borderRadius:'6px',border:'1px solid #ffe4ec',fontSize:'13px',fontWeight:600,textAlign:'center'}">
+      <span v-if="cfConfig.icon" style="margin-right:6px;">{{ cfConfig.icon }}</span>
+      <span>{{ cfConfig.text || cfContent || cfName }}</span>
+    </div>
+  </template>
+
+  <!-- -- 3) 정보 카드 ----------------------------------------------------- -->
+  <template v-else-if="cfType==='info_card'">
+    <div style="background:#f0f9ff;border-radius:6px;padding:12px;border:1px solid #bae6fd;display:flex;gap:10px;align-items:flex-start;">
+      <span style="font-size:24px;flex-shrink:0;">{{ cfConfig.icon || '📦' }}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:700;color:#0369a1;margin-bottom:3px;">{{ cfConfig.title || cfName || '카드 제목' }}</div>
+        <div style="font-size:11px;color:#0c4a6e;line-height:1.5;">{{ cfConfig.content || cfDesc || '카드 내용' }}</div>
       </div>
     </div>
   </template>
 
-  <!-- -- 차트 ------------------------------------------------------------- -->
-  <template v-else-if="lib.widgetType&&lib.widgetType.startsWith('chart_')">
-    <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">{{ lib.chartTitle||lib.name }}</div>
-    <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
-      <div v-for="(bar,i) in cfChartBars" :key="Math.random()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
-        <div :style="{height:bar.pct+'%',background:bar.color,borderRadius:'3px 3px 0 0',width:'100%',minHeight:'3px'}"></div>
-        <div style="font-size:9px;color:#aaa;">{{ bar.label }}</div>
+  <!-- -- 4) 텍스트 영역 ---------------------------------------------------- -->
+  <template v-else-if="cfType==='textarea'">
+    <div style="font-size:11px;color:#374151;line-height:1.6;white-space:pre-wrap;background:#f9fafb;padding:10px;border-radius:5px;border:1px solid #e5e7eb;max-height:120px;overflow:hidden;">{{ cfConfig.text || cfContent || cfName }}</div>
+  </template>
+
+  <!-- -- 5) Markdown ----------------------------------------------------- -->
+  <template v-else-if="cfType==='markdown'">
+    <div style="font-size:11px;color:#374151;line-height:1.6;white-space:pre-wrap;font-family:monospace;background:#f3f4f6;padding:10px;border-radius:5px;border:1px solid #d1d5db;max-height:120px;overflow:hidden;">{{ cfConfig.markdown || cfContent || ('## ' + cfName + '\\n- 항목1\\n- 항목2') }}</div>
+  </template>
+
+  <!-- -- 6) HTML 에디터 --------------------------------------------------- -->
+  <template v-else-if="cfType==='html_editor'">
+    <div v-if="cfContent || cfConfig.html" v-html="cfContent || cfConfig.html" style="font-size:12px;overflow:hidden;max-height:120px;border:1px solid #eee;border-radius:5px;padding:8px;background:#fff;"></div>
+    <div v-else style="color:#bbb;font-size:11px;padding:14px;background:#fafafa;border-radius:5px;border:1px dashed #d1d5db;text-align:center;">HTML 콘텐츠 없음</div>
+  </template>
+
+  <!-- -- 7) 팝업 ---------------------------------------------------------- -->
+  <template v-else-if="cfType==='popup'">
+    <div style="border:2px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+      <div style="background:#1e293b;color:#fff;padding:6px 12px;font-size:11px;display:flex;justify-content:space-between;align-items:center;">
+        <span>{{ cfConfig.title || cfName || '공지 팝업' }}</span><span style="cursor:pointer;">✕</span>
       </div>
-    </div>
-    <div v-else style="height:50px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:11px;">데이터 없음</div>
-  </template>
-
-  <!-- -- 텍스트 배너 --------------------------------------------------------- -->
-  <template v-else-if="lib.widgetType==='text_banner'">
-    <div :style="{background:lib.bgColor||'#fff',color:lib.textColor||'#222',padding:'10px',borderRadius:'5px',border:'1px solid #eee',fontSize:'12px'}">
-      <span v-if="lib.textContent" v-html="lib.textContent"></span>
-      <span v-else style="color:#ccc;">텍스트 배너</span>
-    </div>
-  </template>
-
-  <!-- -- 정보 카드 ---------------------------------------------------------- -->
-  <template v-else-if="lib.widgetType==='info_card'">
-    <div style="background:#f8f9fa;border-radius:5px;padding:10px;border:1px solid #eee;">
-      <div style="font-size:12px;font-weight:700;margin-bottom:4px;">{{ lib.infoTitle||'카드 제목' }}</div>
-      <div style="font-size:11px;color:#666;white-space:pre-line;">{{ (lib.infoBody||'카드 내용').slice(0,100) }}</div>
-    </div>
-  </template>
-
-  <!-- -- 쿠폰 ------------------------------------------------------------- -->
-  <template v-else-if="lib.widgetType==='coupon'">
-    <div style="background:linear-gradient(135deg,#e8587a,#f97316);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <div>
-        <div style="font-size:10px;opacity:.8;">쿠폰</div>
-        <div style="font-size:14px;font-weight:700;">{{ lib.couponCode||'CODE' }}</div>
-        <div v-if="lib.couponDesc" style="font-size:10px;opacity:.8;">{{ lib.couponDesc }}</div>
-      </div>
-      <span style="font-size:22px;">🎟</span>
-      <div style="border:2px dashed rgba(255,255,255,.5);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">쿠폰 발기</div>
-    </div>
-  </template>
-
-  <!-- -- 캐시 배너 ---------------------------------------------------------- -->
-  <template v-else-if="lib.widgetType==='cache_banner'">
-    <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;gap:10px;">
-      <span style="font-size:22px;">💰</span>
-      <div>
-        <div style="font-size:10px;opacity:.8;">적립 캐시</div>
-        <div style="font-size:16px;font-weight:800;">{{ lib.cacheAmount ? lib.cacheAmount.toLocaleString()+'원' : '-' }}</div>
-        <div v-if="lib.cacheDesc" style="font-size:10px;opacity:.8;">{{ lib.cacheDesc }}</div>
+      <div style="padding:12px;text-align:center;">
+        <img v-if="cfImg" :src="cfImg" style="max-width:100%;max-height:80px;border-radius:4px;" @error="$event.target.style.display='none'" />
+        <div v-else style="height:60px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px;">팝업 이미지</div>
+        <div style="font-size:10px;color:#64748b;margin-top:6px;">오늘 하루 안 보기</div>
       </div>
     </div>
   </template>
 
-  <!-- -- HTML 에디터 ------------------------------------------------------- -->
-  <template v-else-if="lib.widgetType==='html_editor'">
-    <div v-if="lib.htmlContent" v-html="lib.htmlContent" style="font-size:12px;overflow:hidden;max-height:120px;"></div>
-    <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">HTML 미리보기</div>
-  </template>
-
-  <!-- -- 위젯 임베드 --------------------------------------------------------- -->
-  <template v-else-if="lib.widgetType==='widget_embed'">
-    <div v-if="lib.embedCode" v-html="lib.embedCode" style="overflow:hidden;max-height:140px;"></div>
-    <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">임베드 미리보기</div>
-  </template>
-
-  <!-- -- 팝업 ------------------------------------------------------------- -->
-  <template v-else-if="lib.widgetType==='popup'">
-    <div style="border:2px solid #e0e0e0;border-radius:6px;overflow:hidden;">
-      <div style="background:#444;color:#fff;padding:5px 10px;font-size:11px;display:flex;justify-content:space-between;"><span>팝업</span><span>✕</span></div>
-      <div style="height:60px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px;">{{ lib.popupWidth||600 }}×{{ lib.popupHeight||400 }}</div>
+  <!-- -- 8) 파일 다운로드 --------------------------------------------------- -->
+  <template v-else-if="cfType==='file'">
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;">
+      <span style="font-size:24px;">📎</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;color:#222;">{{ cfConfig.btn_label || cfName || '파일 다운로드' }}</div>
+        <div style="font-size:10px;color:#666;margin-top:2px;">{{ cfConfig.file_size || '1.2MB' }} · {{ (cfConfig.file_url || '').split('/').pop() || cfName + '.pdf' }}</div>
+      </div>
+      <button style="font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid #1677ff;background:#fff;color:#1677ff;cursor:pointer;">⬇</button>
     </div>
   </template>
 
-  <!-- -- 파일 ------------------------------------------------------------- -->
-  <template v-else-if="lib.widgetType==='file'">
-    <div style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;">
-      <span style="font-size:20px;">📎</span>
-      <div>
-        <div style="font-size:12px;font-weight:600;color:#222;">{{ lib.fileLabel||'파일 다운로드' }}</div>
-        <div v-if="lib.fileUrl" style="font-size:10px;color:#aaa;">{{ lib.fileUrl.split('/').pop() }}</div>
+  <!-- -- 9) 파일 목록 ----------------------------------------------------- -->
+  <template v-else-if="cfType==='file_list'">
+    <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+      <div v-for="(f,i) in (Array.isArray(cfConfig.files) && cfConfig.files.length ? cfConfig.files : [{nm:'카탈로그.pdf'},{nm:'가격표.pdf'},{nm:'사용자매뉴얼.pdf'}])" :key="i"
+           style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;border-bottom:1px solid #f0f0f0;background:#fff;">
+        <span>📄</span><span style="flex:1;color:#374151;">{{ f.nm || f.name || ('파일 ' + (i+1)) }}</span>
+        <span style="color:#1677ff;cursor:pointer;font-size:10px;">⬇</span>
+      </div>
+    </div>
+  </template>
+
+  <!-- -- 10) 동영상 플레이어 ------------------------------------------------ -->
+  <template v-else-if="cfType==='video_player'">
+    <div style="position:relative;background:#000;border-radius:6px;overflow:hidden;">
+      <img v-if="cfImg || cfConfig.poster_url" :src="cfImg || cfConfig.poster_url" style="width:100%;display:block;height:120px;object-fit:cover;opacity:.85;" @error="$event.target.style.display='none'" />
+      <div v-else style="height:120px;background:linear-gradient(135deg,#1e293b,#0f172a);"></div>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <span style="font-size:36px;color:#fff;background:rgba(0,0,0,0.4);width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;">▶</span>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);color:#fff;padding:14px 10px 6px;font-size:11px;font-weight:600;">{{ cfName }}</div>
+    </div>
+  </template>
+
+  <!-- -- 11~12) 상품 슬라이더 / 그리드 -------------------------------------- -->
+  <template v-else-if="cfType==='product_slider' || cfType==='product'">
+    <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+      <span>{{ cfType==='product_slider' ? '🛒 슬라이더' : '📦 상품 그리드' }}</span>
+      <span style="font-size:10px;color:#888;font-weight:400;">{{ cfConfig.category_id || cfName }}</span>
+    </div>
+    <div :style="{display:'grid',gridTemplateColumns: cfType==='product_slider' ? 'repeat(4, 1fr)' : 'repeat(2, 1fr)',gap:'5px'}">
+      <div v-for="i in 4" :key="i" style="text-align:center;">
+        <div style="aspect-ratio:1;background:linear-gradient(135deg,#fce7f3,#fbcfe8);border-radius:5px;margin-bottom:3px;display:flex;align-items:center;justify-content:center;font-size:18px;">{{ ['👗','👔','👜','👟'][i-1] }}</div>
+        <div style="font-size:9px;color:#374151;">상품{{ i }}</div>
+        <div style="font-size:9px;color:#e8587a;font-weight:700;">₩29,900</div>
+      </div>
+    </div>
+  </template>
+
+  <!-- -- 13) 조건상품 ----------------------------------------------------- -->
+  <template v-else-if="cfType==='cond_product'">
+    <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;">🔍 {{ cfConfig.condition || 'BEST_SELLER' }}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;">
+      <div v-for="i in 3" :key="i" style="aspect-ratio:1;background:linear-gradient(135deg,#dcfce7,#bbf7d0);border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#15803d;font-weight:600;gap:2px;">
+        <span style="font-size:18px;">{{ ['🥇','🥈','🥉'][i-1] }}</span><span>BEST {{ i }}</span>
+      </div>
+    </div>
+  </template>
+
+  <!-- -- 14) 쿠폰 --------------------------------------------------------- -->
+  <template v-else-if="cfType==='coupon'">
+    <div style="background:linear-gradient(135deg,#e8587a,#f97316);border-radius:8px;padding:14px;color:#fff;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:28px;">🎟</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;opacity:.9;">{{ cfConfig.coupon_id || '쿠폰' }}</div>
+        <div style="font-size:14px;font-weight:800;">{{ cfConfig.btn_label || cfName }}</div>
+      </div>
+      <div style="border:2px dashed rgba(255,255,255,.6);border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">발급</div>
+    </div>
+  </template>
+
+  <!-- -- 15) 카운트다운 --------------------------------------------------- -->
+  <template v-else-if="cfType==='countdown'">
+    <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:8px;padding:12px;color:#fff;text-align:center;">
+      <div style="font-size:11px;opacity:.8;margin-bottom:6px;">⏱ {{ cfConfig.label || cfName || '이벤트 종료까지' }}</div>
+      <div style="display:flex;justify-content:center;gap:6px;">
+        <div v-for="(v,i) in [12,23,45,30]" :key="i" style="background:rgba(255,255,255,0.15);border-radius:4px;padding:4px 8px;min-width:32px;">
+          <div style="font-size:14px;font-weight:800;">{{ String(v).padStart(2,'0') }}</div>
+          <div style="font-size:8px;opacity:.7;">{{ ['DAY','HR','MIN','SEC'][i] }}</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- -- 16) 막대 차트 ---------------------------------------------------- -->
+  <template v-else-if="cfType==='chart_bar'">
+    <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;">📊 {{ cfConfig.title || cfName }}</div>
+    <div style="display:flex;align-items:flex-end;gap:3px;height:80px;background:#fafafa;border-radius:5px;padding:8px;">
+      <div v-for="(bar,i) in cfChartBars" :key="i" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <div :style="{height:bar.pct+'%',background:bar.color,borderRadius:'2px 2px 0 0',width:'100%',minHeight:'4px'}"></div>
+        <div style="font-size:8px;color:#888;">{{ bar.label }}</div>
+      </div>
+    </div>
+  </template>
+
+  <!-- -- 17) 라인 차트 ---------------------------------------------------- -->
+  <template v-else-if="cfType==='chart_line'">
+    <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;">📈 {{ cfConfig.title || cfName }}</div>
+    <div style="position:relative;height:80px;background:#fafafa;border-radius:5px;padding:8px;">
+      <svg viewBox="0 0 100 50" preserveAspectRatio="none" style="width:100%;height:100%;">
+        <polyline :points="cfChartBars.map((b,i) => (i*(100/(cfChartBars.length-1||1))) + ',' + (50-b.pct/2)).join(' ')"
+                  fill="none" stroke="#1677ff" stroke-width="1.5" />
+        <circle v-for="(b,i) in cfChartBars" :key="i"
+                :cx="i*(100/(cfChartBars.length-1||1))" :cy="50-b.pct/2" r="1.2" fill="#1677ff" />
+      </svg>
+    </div>
+  </template>
+
+  <!-- -- 18) 파이 차트 ---------------------------------------------------- -->
+  <template v-else-if="cfType==='chart_pie'">
+    <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;">🥧 {{ cfConfig.title || cfName }}</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div :style="{width:'70px',height:'70px',borderRadius:'50%',background:cfPieGradient,flexShrink:0}"></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+        <div v-for="(s,i) in cfPie.slice(0,5)" :key="i" style="display:flex;align-items:center;gap:5px;font-size:10px;">
+          <span :style="{width:'10px',height:'10px',background:s.color,borderRadius:'2px'}"></span>
+          <span style="flex:1;color:#555;">{{ s.label }}</span>
+          <span style="color:#888;">{{ s.ratio }}%</span>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- -- 19) 바코드 ------------------------------------------------------- -->
+  <template v-else-if="cfType==='barcode'">
+    <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:14px;text-align:center;">
+      <div style="font-family:monospace;font-size:36px;letter-spacing:-2px;color:#000;line-height:1;font-weight:900;">||‖|‖‖|||‖|‖|||‖||‖|||</div>
+      <div style="font-family:monospace;font-size:10px;color:#666;margin-top:5px;letter-spacing:2px;">{{ cfConfig.value || cfName || 'BC-001' }}</div>
+    </div>
+  </template>
+
+  <!-- -- 20) QR 코드 ------------------------------------------------------ -->
+  <template v-else-if="cfType==='qrcode'">
+    <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:12px;text-align:center;">
+      <div style="display:inline-block;padding:6px;background:#fff;border:2px solid #000;font-family:monospace;font-size:7px;line-height:0.9;color:#000;font-weight:900;letter-spacing:0;white-space:pre;">{{
+'■■■ ■ ■ ■■■\\n■   ■■■   ■\\n■ ■  ■  ■ ■\\n  ■ ■■■ ■  \\n■ ■ ■   ■ ■\\n  ■■■ ■■■  \\n■■■   ■ ■■■'
+      }}</div>
+      <div style="font-size:10px;color:#666;margin-top:5px;">{{ cfConfig.value || cfName }}</div>
+    </div>
+  </template>
+
+  <!-- -- 21) 바코드 + QR -------------------------------------------------- -->
+  <template v-else-if="cfType==='barcode_qrcode'">
+    <div style="display:flex;gap:10px;align-items:center;background:#fff;border:1px solid #ddd;border-radius:6px;padding:10px;">
+      <div style="flex:1;text-align:center;">
+        <div style="font-family:monospace;font-size:22px;letter-spacing:-2px;font-weight:900;">||‖|‖‖|||‖|‖||</div>
+        <div style="font-family:monospace;font-size:9px;color:#666;margin-top:3px;">{{ cfConfig.barcode_value || 'BC-001' }}</div>
+      </div>
+      <div style="width:50px;height:50px;background:#000;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;">QR</div>
+    </div>
+  </template>
+
+  <!-- -- 22) 결제위젯 ----------------------------------------------------- -->
+  <template v-else-if="cfType==='payment_widget'">
+    <div style="background:linear-gradient(135deg,#3b82f6,#1e40af);border-radius:8px;padding:14px;color:#fff;">
+      <div style="font-size:10px;opacity:.8;">💳 결제 금액</div>
+      <div style="font-size:20px;font-weight:800;margin:4px 0;">₩{{ (cfConfig.amount || 29900).toLocaleString() }}</div>
+      <div style="display:flex;gap:4px;margin-top:8px;">
+        <div v-for="m in ['카드','토스','카카오']" :key="m" style="flex:1;background:rgba(255,255,255,0.2);border-radius:4px;padding:4px 0;text-align:center;font-size:10px;font-weight:600;">{{ m }}</div>
+      </div>
+    </div>
+  </template>
+
+  <!-- -- 23) 전자결재 ----------------------------------------------------- -->
+  <template v-else-if="cfType==='approval_widget'">
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px;">
+      <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:8px;">✅ {{ cfName || '전자결재' }}</div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;">
+        <div v-for="(s,i) in ['담당자','팀장','부서장']" :key="i" style="text-align:center;flex:1;">
+          <div :style="{width:'34px',height:'34px',margin:'0 auto 4px',borderRadius:'50%',background:i<2?'#22c55e':'#e5e7eb',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px'}">{{ i<2 ? '✓' : '?' }}</div>
+          <div style="color:#555;">{{ s }}</div>
+        </div>
       </div>
     </div>
   </template>
 
   <!-- -- 기타 ------------------------------------------------------------- -->
   <template v-else>
-    <div style="background:#f5f5f5;border-radius:6px;padding:16px;text-align:center;color:#bbb;">
+    <div style="background:#f5f5f5;border-radius:6px;padding:16px;text-align:center;color:#9ca3af;">
       <div style="font-size:24px;margin-bottom:4px;">▪</div>
-      <div style="font-size:11px;">{{ lib.name }}</div>
+      <div style="font-size:11px;font-weight:600;">{{ cfName || '미리보기' }}</div>
+      <div v-if="cfType" style="font-size:10px;color:#bbb;margin-top:2px;">{{ cfType }}</div>
     </div>
   </template>
 </div>
@@ -192,6 +400,8 @@ window.DpDispWidgetPreview = {
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
       } catch (_) {}
     };
+
+    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
     onMounted(() => {
@@ -238,39 +448,57 @@ window.DpDispWidgetPreview = {
       Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
     };
 
+    /* DTO / UI 호환 필드 헬퍼 */
+    const _getType = (lib) => lib.widgetTypeCd || lib.widgetType || '';
+    const _getName = (lib) => lib.widgetNm || lib.name || '';
+    const _getDesc = (lib) => lib.widgetLibDesc || lib.desc || '';
+    const _getStatus = (lib) => lib.useYn === 'Y' ? '활성' : (lib.useYn === 'N' ? '비활성' : (lib.status || '활성'));
+    const _getPath = (lib) => lib.pathId || (Array.isArray(lib.usedPaths) && lib.usedPaths[0]) || '';
+    const _getId   = (lib) => lib.widgetLibId || lib.libId || '';
+
     const cfFilteredLibs = computed(() => {
-      const kw = applied.kw;
+      const kw = (applied.kw || '').toLowerCase();
       return (widgetLibs || []).filter(lib => {
-        if (applied.type   && lib.widgetType !== applied.type) return false;
-        if (applied.status && lib.status     !== applied.status) return false;
+        if (applied.type   && _getType(lib)   !== applied.type) return false;
+        if (applied.status && _getStatus(lib) !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
-        if (kw && !lib.name.toLowerCase().includes(kw) &&
+        if (kw &&
+            !_getName(lib).toLowerCase().includes(kw) &&
             !(lib.tags||'').toLowerCase().includes(kw) &&
-            !(lib.desc||'').toLowerCase().includes(kw)) return false;
+            !_getDesc(lib).toLowerCase().includes(kw)) return false;
         return true;
       });
     });
 
     /* -- 트리 선택 -- */
-        const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
+    const onTreeSelect = (lib) => { uiState.selectedLibId = _getId(lib); };
 
-    /* -- 트리 상태 -- */
+    /* -- 트리 상태 (path_id 기준: 'Common.Banner' / 'Product>Slider' 모두 지원) -- */
+    const _splitPath = (pathStr) => {
+      if (!pathStr) return [];
+      return String(pathStr).split(/[.\->]+/).map(s => s.trim()).filter(Boolean);
+    };
     const cfTree = computed(() => {
       const map = {};
       const addToPath = (lib, pathStr) => {
-        const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
-        if (!parts.length) return;
-        const top = window.safeArrayUtils.safeGet(parts, 0);
-        const rest = parts.slice(1).join(' > ') || '(루트)';
+        const parts = _splitPath(pathStr);
+        if (!parts.length) {
+          parts.push('(미등록)', '(미등록)');
+        } else if (parts.length === 1) {
+          parts.push('(루트)');
+        }
+        const top  = parts[0];
+        const sub  = parts.slice(1).join(' > ');
         if (!map[top]) map[top] = {};
-        if (!map[top][rest]) map[top][rest] = [];
-        map[top][rest].push(lib);
+        if (!map[top][sub]) map[top][sub] = [];
+        map[top][sub].push(lib);
       };
-      window.safeArrayUtils.safeForEach(cfFilteredLibs, lib => {
-        if (!lib.usedPaths || !lib.usedPaths.length) {
-          addToPath(lib, '(미등록) > (미등록)');
+      (cfFilteredLibs.value || []).forEach(lib => {
+        const path = _getPath(lib);
+        if (Array.isArray(lib.usedPaths) && lib.usedPaths.length) {
+          lib.usedPaths.forEach(p => addToPath(lib, p));
         } else {
-          window.safeArrayUtils.safeForEach(lib.usedPaths, p => addToPath(lib, p));
+          addToPath(lib, path);
         }
       });
       return Object.keys(map).sort().map(top => ({
@@ -311,12 +539,12 @@ window.DpDispWidgetPreview = {
       window._dragWidgetLib  = lib;
       window._dragWidgetLibs = null;
       e.dataTransfer.effectAllowed = 'copy';
-      e.dataTransfer.setData('text/plain', lib.libId);
+      e.dataTransfer.setData('text/plain', _getId(lib));
     };
     const onItemDragEnd = () => { window._dragWidgetLib = null; };
     const dedupeLibs = (arr) => {
       const seen = new Set();
-      return window.safeArrayUtils.safeFilter(arr, lib => { if (seen.has(lib.libId)) return false; seen.add(lib.libId); return true; });
+      return (arr || []).filter(lib => { const id = _getId(lib); if (seen.has(id)) return false; seen.add(id); return true; });
     };
     const onNodeDragStart = (e, allLibs) => {
       const libs = dedupeLibs(allLibs);
@@ -670,18 +898,17 @@ window.DpDispWidgetPreview = {
                 <span style="margin-left:auto;font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:0 5px;">{{ sub.libs.length }}</span>
               </div>
               <template v-if="isOpen(node.label+'_'+sub.label)">
-                <div v-for="lib in sub.libs" :key="lib?.libId"
+                <div v-for="lib in sub.libs" :key="lib.widgetLibId || lib.libId"
                   draggable="true"
                   @dragstart="onItemDragStart($event, lib)"
                   @dragend="onItemDragEnd"
                   @click="onTreeSelect(lib)"
                   style="display:flex;align-items:center;gap:7px;padding:5px 10px 5px 42px;cursor:grab;font-size:11px;border-radius:4px;margin:1px 4px;transition:background .15s;"
-                  :style="uiState.selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
+                  :style="uiState.selectedLibId===(lib.widgetLibId||lib.libId) ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
                   <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">⠿</span>
-                  <span style="font-size:13px;flex-shrink:0;">{{ wIcon(lib.widgetType) }}</span>
-                  <span style="font-size:9px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:3px;padding:0 4px;white-space:nowrap;flex-shrink:0;">{{ lib.widgetType ? lib.widgetType.replace('_',' ') : '-' }}</span>
-                  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ lib.name }}</span>
-                  <span style="font-size:9px;color:#9ca3af;flex-shrink:0;">#{{ String(lib.libId).padStart(4,'0') }}</span>
+                  <span style="font-size:13px;flex-shrink:0;">{{ wIcon(lib.widgetTypeCd || lib.widgetType) }}</span>
+                  <span style="font-size:9px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:3px;padding:0 4px;white-space:nowrap;flex-shrink:0;">{{ wTypeLabel(lib.widgetTypeCd || lib.widgetType) }}</span>
+                  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ lib.widgetNm || lib.name }}</span>
                 </div>
               </template>
             </div>
@@ -788,9 +1015,9 @@ window.DpDispWidgetPreview = {
                 <template v-else-if="slot">
                   <!-- -- 슬롯 헤더 (실제컨텐츠 OFF) ------------------------------ -->
                   <div v-if="!gridState.showRealContent" style="display:flex;align-items:center;gap:5px;padding:6px 10px 5px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
-                    <span style="font-size:12px;">{{ wIcon(slot.widgetType) }}</span>
-                    <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">{{ wTypeLabel(slot.widgetType) }}</span>
-                    <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.name }}</span>
+                    <span style="font-size:12px;">{{ wIcon(slot.widgetTypeCd || slot.widgetType) }}</span>
+                    <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">{{ wTypeLabel(slot.widgetTypeCd || slot.widgetType) }}</span>
+                    <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.widgetNm || slot.name }}</span>
                     <!-- -- span 설정 아이콘 ---------------------------------- -->
                     <button @click="toggleSpanPopup($event, idx)"
                       :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
@@ -891,9 +1118,9 @@ window.DpDispWidgetPreview = {
               @mousedown="startItemMove($event, item)"
               style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;border-radius:8px 8px 0 0;cursor:move;">
               <span style="font-size:10px;color:#c4c4c4;letter-spacing:1px;">⠿⠿</span>
-              <span style="font-size:12px;">{{ wIcon(item.lib.widgetType) }}</span>
-              <span style="font-size:11px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;flex-shrink:0;">{{ wTypeLabel(item.lib.widgetType) }}</span>
-              <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">{{ item.lib.name }}</span>
+              <span style="font-size:12px;">{{ wIcon(item.lib.widgetTypeCd || item.lib.widgetType) }}</span>
+              <span style="font-size:11px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;flex-shrink:0;">{{ wTypeLabel(item.lib.widgetTypeCd || item.lib.widgetType) }}</span>
+              <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">{{ item.lib.widgetNm || item.lib.name }}</span>
               <button @mousedown.stop @click="removeDashItem(item.id)"
                 style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
             </div>

@@ -18,8 +18,8 @@ public class DpWidgetLibDto {
     private String widgetLibDesc;
     private String pathId;
     private String thumbnailUrl;
-    private String templateHtml;
-    private String configSchema;
+    private String widgetContent;
+    private String widgetConfigJson;
     private String isSystem;
     private Integer sortOrd;
     private String useYn;

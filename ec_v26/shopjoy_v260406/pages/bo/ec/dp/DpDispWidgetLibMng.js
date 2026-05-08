@@ -27,6 +27,13 @@ window.DpDispWidgetLibMng = {
     /* -- 검색 -- */
     const _initSearchParam = () => ({ kw: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
+    /* applied: 현재 결과에 실제로 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
+    const applied = reactive({ kw: '', type: '', status: '' });
+    const cfFilterDirty = computed(() =>
+      searchParam.kw !== applied.kw ||
+      searchParam.type !== applied.type ||
+      searchParam.status !== applied.status
+    );
 
     const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
     const getSortParam = () => {
@@ -48,13 +55,14 @@ window.DpDispWidgetLibMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const { type, kw, ...restParam } = searchParam;
+        const { type, status, kw, ...restParam } = searchParam;
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
-          ...(kw   ? { kw: kw.trim() }       : {}),
-          ...(type ? { widgetType: type }     : {}),
+          ...(kw     ? { kw: kw.trim() } : {}),
+          ...(type   ? { typeCd: type }  : {}),  /* mapper 는 typeCd 파라미터를 받음 */
+          ...(status ? { useYn: status } : {}),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
         const res = await boApiSvc.dpWidgetLib.getPage(params, '전시위젯라이브러리', '조회');
@@ -63,6 +71,10 @@ window.DpDispWidgetLibMng = {
         pager.pageTotalCount = d?.pageTotalCount || 0;
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
         fnBuildPagerNums();
+        /* 결과에 반영된 조건 기록 */
+        applied.kw     = searchParam.kw;
+        applied.type   = searchParam.type;
+        applied.status = searchParam.status;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -111,26 +123,32 @@ window.DpDispWidgetLibMng = {
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* -- 하단 인라인 Dtl -- */
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
-    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id) { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
-    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    /* -- 하단 인라인 Dtl --
+     * 정책: 행상세/행수정 클릭 시 항상 상세 API 재조회. 같은 id 재클릭이어도 닫지 않고 reloadTrigger 만 ++ */
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    const openNew     = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispWidgetLibMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
+    /* key 는 'open' / 'closed' 두 값만 — id 가 바뀌어도 컴포넌트 remount 안 함 */
+    const cfDetailKey = computed(() => uiStateDetail.selectedId === null ? 'closed' : 'open');
     const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+    const fnStatusCls   = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
+    const fnStatusLabel = (v) => v === 'Y' ? '활성' : '비활성';
+
     const handleDelete = async (lib) => {
-      const ok = await showConfirm('삭제', `[${lib.name}]을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${lib.widgetNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = widgetLibs.findIndex(x => x.libId === lib.libId);
+      const idx = widgetLibs.findIndex(x => x.widgetLibId === lib.widgetLibId);
       if (idx !== -1) widgetLibs.splice(idx, 1);
-      if (uiStateDetail.selectedId === lib.libId) { uiStateDetail.selectedId = null; }
+      if (uiStateDetail.selectedId === lib.widgetLibId) { uiStateDetail.selectedId = null; }
       try {
-        const res = await boApiSvc.dpWidgetLib.remove(lib.libId, '전시위젯라이브러리', '삭제');
+        const res = await boApiSvc.dpWidgetLib.remove(lib.widgetLibId, '전시위젯라이브러리', '삭제');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -141,16 +159,17 @@ window.DpDispWidgetLibMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { widgetLibs, uiState, codes, searchParam, pager,
+    return { widgetLibs, uiState, codes, searchParam, applied, cfFilterDirty, pager,
       onSearch, onReset, setPage, onSizeChange,
       selectNode,
       fnBuildPagerNums,
       wIcon, wTypeLabel,
-      uiStateDetail, cfDetailEditId, handleLoadDetail, openNew, closeDetail, inlineNavigate,
-      handleDelete, onSort, sortIcon };
+      uiStateDetail, cfDetailEditId, cfDetailKey, handleLoadDetail, openNew, closeDetail, inlineNavigate,
+      handleDelete, fnStatusCls, fnStatusLabel, onSort, sortIcon };
   },
   template: /* html */`
 <div>
+  <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}</style>
   <div class="page-title">위젯라이브러리관리</div>
   <div class="card">
     <div class="search-bar">
@@ -163,8 +182,10 @@ window.DpDispWidgetLibMng = {
         <option value="">상태 전체</option>
         <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
+      <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
+        <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">변경됨 →</span>
+        <button class="btn btn-primary" @click="onSearch"
+          :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);animation:pulse 1.2s ease-in-out infinite;' : ''">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
@@ -181,21 +202,28 @@ window.DpDispWidgetLibMng = {
     </div>
     <div>
       <div class="card">
-        <div class="toolbar">
+        <div class="toolbar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span class="list-title">위젯라이브러리 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
-          <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+          <!-- -- 적용 중인 필터 표시 ------------------------------------------- -->
+          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
+            <span v-if="!applied.kw && !applied.type && !applied.status" style="color:#999;">필터 없음</span>
+            <span v-if="applied.kw" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">검색: {{ applied.kw }}</span>
+            <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">유형: {{ wTypeLabel(applied.type) }}</span>
+            <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}</span>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-left:auto;" @click="openNew">+ 신규</button>
         </div>
         <table class="bo-table">
           <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">이름 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>타입</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
           <tbody>
             <tr v-if="widgetLibs.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-else v-for="(lib, idx) in widgetLibs" :key="lib.libId">
+            <tr v-else v-for="(lib, idx) in widgetLibs" :key="lib.widgetLibId">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-              <td><span class="title-link" @click="handleLoadDetail(lib.libId)">{{ wIcon(lib.widgetType) }} {{ lib.name }}</span></td>
-              <td><span class="tag">{{ wTypeLabel(lib.widgetType) }}</span></td>
-              <td><span class="badge" :class="lib.status==='활성'?'badge-green':'badge-gray'">{{ lib.status }}</span></td>
+              <td><span class="title-link" @click="handleLoadDetail(lib.widgetLibId)">{{ wIcon(lib.widgetTypeCd) }} {{ lib.widgetNm }}</span></td>
+              <td><span class="tag">{{ wTypeLabel(lib.widgetTypeCd) }}</span></td>
+              <td><span class="badge" :class="fnStatusCls(lib.useYn)">{{ fnStatusLabel(lib.useYn) }}</span></td>
               <td><div class="actions">
-                <button class="btn btn-blue btn-sm" @click="handleLoadDetail(lib.libId)">수정</button>
+                <button class="btn btn-blue btn-sm" @click="handleLoadDetail(lib.widgetLibId)">수정</button>
                 <button class="btn btn-danger btn-sm" @click="handleDelete(lib)">삭제</button>
               </div></td>
             </tr>
@@ -210,14 +238,14 @@ window.DpDispWidgetLibMng = {
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <dp-disp-widget-lib-dtl
-      :key="uiStateDetail.selectedId"
+      :key="cfDetailKey"
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    
-    :on-list-reload="handleSearchList"
-  />
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      :on-list-reload="handleSearchList"
+    />
   </div>
 </div>
 `

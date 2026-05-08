@@ -2,11 +2,12 @@
 window.DpDispPanelDtl = {
   name: 'DpDispPanelDtl',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
-    dtlId:        { type: String, default: null }, // 수정 대상 ID
-    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
-    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    navigate:      { type: Function, required: true }, // 페이지 이동
+    dtlId:         { type: String, default: null }, // 수정 대상 ID
+    tabMode:       { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:       { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    onListReload:  { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
@@ -456,6 +457,13 @@ window.DpDispPanelDtl = {
       if (isAppReady.value) fnLoadCodes();
       await handleLoadDetail();
       handleLoadData();
+      handleInitForm();
+    });
+
+    /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) return;
+      await handleLoadDetail();
       handleInitForm();
     });
 

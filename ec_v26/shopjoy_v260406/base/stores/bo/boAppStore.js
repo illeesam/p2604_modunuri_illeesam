@@ -31,6 +31,8 @@ const _boEmptyExt = () => _BO_EXT_KEYS.reduce((acc, k) => { acc[_boSvKey(k)] = '
 window.useBoAppStore = Pinia.defineStore('boApp', {
   state: () => ({
     svBoSiteNo: '01',
+    svBoSiteId: '2604010000000001',
+    svBoSiteNm: 'ShopJoy 메인몰',
     svAppVersion: '2.6.0',
     svLastUpdateDate: '',
     svActive: '-',
@@ -40,6 +42,8 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
   getters: {
     sgGetAppVersion: (s) => s.svAppVersion,            // 앱 버전
     sgGetBoSiteNo:   (s) => s.svBoSiteNo,              // BO 사이트 번호
+    sgGetBoSiteId:   (s) => s.svBoSiteId,              // BO 사이트 ID
+    sgGetBoSiteNm:   (s) => s.svBoSiteNm,              // BO 사이트 이름
     sgGetLastUpdateDate: (s) => s.svLastUpdateDate,    // 마지막 업데이트 날짜
     sgGetActive:     (s) => s.svActive,                // 활성 환경 (local/dev/prod)
     sgGetExtKey:     (s) => (key) => s[_boSvKey(key)] || '',
@@ -49,6 +53,8 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
     saSetApp(appData) {
       if (!appData) return;
       this.svBoSiteNo       = appData.boSiteNo       || '01';
+      this.svBoSiteId       = appData.boSiteId       || '2604010000000001';
+      this.svBoSiteNm       = appData.boSiteNm       || 'ShopJoy 메인몰';
       this.svAppVersion     = appData.appVersion     || '2.6.0';
       this.svLastUpdateDate = appData.lastUpdateDate || '';
       this.svActive         = appData.active         || '-';
@@ -57,10 +63,14 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
 
     saSetAppVersion(version) { if (version) this.svAppVersion = version; },
     saSetBoSiteNo(siteNo)    { if (siteNo) this.svBoSiteNo = siteNo; },
+    saSetBoSiteId(siteId)    { if (siteId) this.svBoSiteId = siteId; },
+    saSetBoSiteNm(siteNm)    { if (siteNm) this.svBoSiteNm = siteNm; },
     saSetLastUpdateDate(d)   { if (d) this.svLastUpdateDate = d; },
 
     saClear() {
       this.svBoSiteNo = '01';
+      this.svBoSiteId = '2604010000000001';
+      this.svBoSiteNm = 'ShopJoy 메인몰';
       this.svAppVersion = '2.6.0';
       this.svLastUpdateDate = '';
       this.svActive = '-';
@@ -77,5 +87,13 @@ window.sfGetBoAppStore = () => {
   } catch (e) {
     console.error('[sfGetBoAppStore] error:', e);
   }
-  return { svBoSiteNo: '01', svAppVersion: '2.6.0', svLastUpdateDate: '', svActive: '-', ..._boEmptyExt() };
+  return {
+    svBoSiteNo: '01',
+    svBoSiteId: '2604010000000001',
+    svBoSiteNm: 'ShopJoy 메인몰',
+    svAppVersion: '2.6.0',
+    svLastUpdateDate: '',
+    svActive: '-',
+    ..._boEmptyExt(),
+  };
 };

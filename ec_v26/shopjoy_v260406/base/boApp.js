@@ -619,11 +619,26 @@
   /* ── 공통 필터 & 선택 모달 ── */
   const rightPanelOpen = ref(true);
   const commonFilter  = boCommonFilter;
+
+  /* 사이트 필터 default 적용: store(svBoSiteId)가 있으면 그 값을 commonFilter.siteId 기본으로 세팅 */
+  if (!commonFilter.siteId) {
+    const _appStore = window.sfGetBoAppStore?.();
+    commonFilter.siteId = _appStore?.svBoSiteId || '2604010000000001';
+  }
+
   const selectModal  = reactive({ type: '', show: false });
   const openSelectModal  = (type) => { selectModal.type = type; selectModal.show = true; };
   const closeSelectModal = () => { selectModal.show = false; selectModal.type = ''; };
   const onSelectItem  = (type, item) => {
-  if  (type === 'site')  commonFilter.siteId  = item?.siteId  ?? null;
+  if  (type === 'site') {
+    commonFilter.siteId  = item?.siteId  ?? null;
+    /* boAppStore 의 svBoSiteId / svBoSiteNm 동기화 */
+    const _appStore = window.useBoAppStore?.();
+    if (_appStore && item) {
+      _appStore.saSetBoSiteId?.(item.siteId);
+      _appStore.saSetBoSiteNm?.(item.siteNm);
+    }
+  }
   else if (type === 'vendor')  commonFilter.vendorId = item?.vendorId  ?? null;
   else if (type === 'dlivVendor') commonFilter.dlivVendorId = item?.vendorId ?? null;
   else if (type === 'boUser') commonFilter.userId  = item?.boUserId ?? null;
@@ -632,15 +647,28 @@
   selectModal.show = false;
   };
   const clearFilter  = (type) => {
-  if  (type === 'site')  commonFilter.siteId  = null;
+  if  (type === 'site')  commonFilter.siteId  = null;   /* 사이트는 필수이지만 사용자가 직접 비우는 경우에만 */
   else if (type === 'vendor')  commonFilter.vendorId = null;
   else if (type === 'dlivVendor') commonFilter.dlivVendorId = null;
   else if (type === 'boUser') commonFilter.userId  = null;
   else if (type === 'member')  commonFilter.memberId = null;
   else if (type === 'order')  commonFilter.orderId  = null;
   };
-  /* 공통 필터 표시용 헬퍼 (미구현 — 항상 null) */
-  const filterSite = null, filterVendor = null, cfFilterDlivVendor = null;
+
+  /* 공통 필터 표시용 — _boCmSites 에서 siteId 매칭. 매칭 실패 시 boAppStore 의 svBoSiteId/svBoSiteNm fallback */
+  const filterSite = computed(() => {
+    if (!commonFilter.siteId) return null;
+    const sites = window._boCmSites || [];
+    const found = sites.find(s => s.siteId === commonFilter.siteId);
+    if (found) return found;
+    /* sites 가 아직 로드되지 않은 경우, store 값으로 임시 표시 */
+    const _appStore = window.sfGetBoAppStore?.();
+    if (_appStore && commonFilter.siteId === _appStore.svBoSiteId) {
+      return { siteId: _appStore.svBoSiteId, siteNm: _appStore.svBoSiteNm, siteCode: '' };
+    }
+    return { siteId: commonFilter.siteId, siteNm: '', siteCode: '' };
+  });
+  const filterVendor = null, cfFilterDlivVendor = null;
   const cfFilterBoUser = null, filterMember = null, filterOrder = null;
 
   /* ── API 로그 (최대 10건, localStorage 저장) ── */
@@ -1314,6 +1342,7 @@
   refModal, showRefModal, closeRefModal,
   helpModal, showHelp,
   rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
+  filterSite, filterVendor, cfFilterDlivVendor, cfFilterBoUser, filterMember, filterOrder,
   apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, onApiLogEnter, onApiLogLeave, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
   tabBarRef, scrollTabs,
   boInitReady, cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
@@ -1713,10 +1742,10 @@
   title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
   </div>
   <div class="popup-sel-row" @click="openSelectModal('site')">
-  <span v-if="filterSite" style="font-family:monospace;font-size:11px;color:#e8587a;font-weight:700;margin-right:6px;">{{ String(filterSite.siteId).padStart(2,'0') }}</span>
-  <span v-if="filterSite" class="popup-sel-name">{{ filterSite.siteNm }}</span>
+  <span v-if="filterSite" style="font-family:monospace;font-size:11px;color:#e8587a;font-weight:700;margin-right:6px;">{{ filterSite.siteNo || String(filterSite.siteId).slice(-2) }}</span>
+  <span v-if="filterSite" class="popup-sel-name">{{ filterSite.siteNm || '-' }}</span>
   <span v-else class="popup-sel-placeholder">선택하세요</span>
-  <span v-if="filterSite" class="popup-sel-id">{{ filterSite.siteCode }}</span>
+  <span v-if="filterSite" class="popup-sel-id">{{ filterSite.siteCode || '' }}</span>
   <span class="popup-sel-btn">🔍</span>
   </div>
   </div>

@@ -15,7 +15,7 @@ window.CmNoticeMng = {
 
     const notices       = reactive([]);                                              // 공지사항 목록
     const uiState       = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' }); // 로딩·에러·코드로드 상태
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });         // 하단 상세 패널 상태 (선택ID, view|edit)
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });         // 하단 상세 패널 상태 (선택ID, view|edit)
     const codes         = reactive({ noticeTypes: [], noticeStatuses: [], date_range_opts: [] });         // 공통코드 (유형·상태)
     const pager         = reactive({
       pageType: 'PAGE', pageNo: 1, pageSize: 10,
@@ -153,21 +153,13 @@ window.CmNoticeMng = {
     };
 
     // 조회 모드로 하단 상세 열기 (같은 행 재클릭 시 닫힘)
-    const loadView = (id) => {
-      if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; }
-      uiStateDetail.selectedId = id;
-      uiStateDetail.openMode = 'view';
-    };
+    const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
 
     // 수정 모드로 하단 상세 열기 (같은 행 재클릭 시 닫힘)
-    const handleLoadDetail = (id) => {
-      if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; }
-      uiStateDetail.selectedId = id;
-      uiStateDetail.openMode = 'edit';
-    };
+    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
     // 신규 등록 폼 열기
-    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
     // 하단 상세 패널 닫기
     const closeDetail = () => { uiStateDetail.selectedId = null; };
@@ -308,7 +300,7 @@ window.CmNoticeMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :tab-mode="cfIsViewMode"
+      `n      :reload-trigger="uiStateDetail.reloadTrigger":tab-mode="cfIsViewMode"
     
     :on-list-reload="handleSearchList"
   />
