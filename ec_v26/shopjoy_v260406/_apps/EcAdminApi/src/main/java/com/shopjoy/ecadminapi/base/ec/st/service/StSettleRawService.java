@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleRaw;
 import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleRawMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleRawRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StSettleRawService {
-
 
     private final StSettleRawMapper stSettleRawMapper;
     private final StSettleRawRepository stSettleRawRepository;
@@ -33,91 +30,137 @@ public class StSettleRawService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public StSettleRawDto getById(String id) {
-        StSettleRawDto result = stSettleRawMapper.selectById(id);
-        return result;
+    public StSettleRawDto.Item getById(String id) {
+        StSettleRawDto.Item dto = stSettleRawMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<StSettleRawDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StSettleRawDto> result = stSettleRawMapper.selectList(p);
-        return result;
+    public StSettleRaw findById(String id) {
+        return stSettleRawRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<StSettleRawDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(stSettleRawMapper.selectPageList(p), stSettleRawMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return stSettleRawRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<StSettleRawDto.Item> getList(StSettleRawDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return stSettleRawMapper.selectList(req);
+    }
+
+    public StSettleRawDto.PageResponse getPageData(StSettleRawDto.Request req) {
+        PageHelper.addPaging(req);
+        StSettleRawDto.PageResponse res = new StSettleRawDto.PageResponse();
+        List<StSettleRawDto.Item> list = stSettleRawMapper.selectPageList(req);
+        long count = stSettleRawMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(StSettleRaw entity) {
-        int result = stSettleRawMapper.updateSelective(entity);
-        return result;
+    public StSettleRaw create(StSettleRaw body) {
+        body.setSettleRawId(CmUtil.generateId("st_settle_raw"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        StSettleRaw saved = stSettleRawRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSettleRawId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public StSettleRaw create(StSettleRaw entity) {
-        entity.setSettleRawId(CmUtil.generateId("st_settle_raw"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        StSettleRaw result = stSettleRawRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public StSettleRaw save(StSettleRaw entity) {
-        if (!stSettleRawRepository.existsById(entity.getSettleRawId()))
+        if (!existsById(entity.getSettleRawId()))
             throw new CmBizException("존재하지 않는 StSettleRaw입니다: " + entity.getSettleRawId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleRaw result = stSettleRawRepository.save(entity);
-        return result;
+        StSettleRaw saved = stSettleRawRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSettleRawId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public StSettleRaw update(String id, StSettleRaw body) {
+        StSettleRaw entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "settleRawId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        StSettleRaw saved = stSettleRawRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public StSettleRaw updatePartial(StSettleRaw entity) {
+        if (entity.getSettleRawId() == null) throw new CmBizException("settleRawId 가 필요합니다.");
+        if (!existsById(entity.getSettleRawId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleRawId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = stSettleRawMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getSettleRawId());
+    }
+
     @Transactional
     public void delete(String id) {
-        StSettleRaw entity = stSettleRawRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettleRaw entity = findById(id);
         stSettleRawRepository.delete(entity);
         em.flush();
-        if (stSettleRawRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<StSettleRaw> rows) {
+    public List<StSettleRaw> saveList(List<StSettleRaw> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (StSettleRaw row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setSettleRawId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_settle_raw"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                stSettleRawRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSettleRawId(), "settleRawId must not be null");
-                StSettleRaw entity = stSettleRawRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "settleRawId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                stSettleRawRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSettleRawId(), "settleRawId must not be null");
-                if (stSettleRawRepository.existsById(id)) stSettleRawRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getSettleRawId() != null)
+            .map(StSettleRaw::getSettleRawId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            stSettleRawRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<StSettleRaw> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getSettleRawId() != null)
+            .toList();
+        for (StSettleRaw row : updateRows) {
+            StSettleRaw entity = findById(row.getSettleRawId());
+            VoUtil.voCopyExclude(row, entity, "settleRawId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            stSettleRawRepository.save(entity);
+            upsertedIds.add(entity.getSettleRawId());
         }
         em.flush();
+
+        List<StSettleRaw> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (StSettleRaw row : insertRows) {
+            row.setSettleRawId(CmUtil.generateId("st_settle_raw"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            stSettleRawRepository.save(row);
+            upsertedIds.add(row.getSettleRawId());
+        }
+        em.flush();
+        em.clear();
+
+        List<StSettleRaw> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

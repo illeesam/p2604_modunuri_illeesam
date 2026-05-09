@@ -3,6 +3,10 @@ package com.shopjoy.ecadminapi.fo.ec.service;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.*;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.*;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmCouponService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventService;
@@ -164,17 +168,22 @@ public class FoPdProdService {
      */
     public Map<String, Object> getPromotions(String prodId) {
         PdProdDto.Item prod = pdProdMapper.selectById(prodId);
-        Map<String, Object> p = new HashMap<>();
-        if (prod != null && prod.getSiteId() != null) {
-            p.put("siteId", prod.getSiteId());
-        }
-        p.put("useYn", "Y");
+        String siteId = prod != null ? prod.getSiteId() : null;
+
+        PmCouponDto.Request couponReq = new PmCouponDto.Request();
+        couponReq.setSiteId(siteId); couponReq.setUseYn("Y");
+        PmDiscntDto.Request discntReq = new PmDiscntDto.Request();
+        discntReq.setSiteId(siteId); discntReq.setUseYn("Y");
+        PmGiftDto.Request giftReq = new PmGiftDto.Request();
+        giftReq.setSiteId(siteId); giftReq.setUseYn("Y");
+        PmEventDto.Request eventReq = new PmEventDto.Request();
+        eventReq.setSiteId(siteId); eventReq.setUseYn("Y");
 
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("coupons", pmCouponService.getList(new HashMap<>(p)));
-        result.put("discnts", pmDiscntService.getList(new HashMap<>(p)));
-        result.put("gifts",   pmGiftService.getList(new HashMap<>(p)));
-        result.put("events",  pmEventService.getList(new HashMap<>(p)));
+        result.put("coupons", pmCouponService.getList(couponReq));
+        result.put("discnts", pmDiscntService.getList(discntReq));
+        result.put("gifts",   pmGiftService.getList(giftReq));
+        result.put("events",  pmEventService.getList(eventReq));
         return result;
     }
 }

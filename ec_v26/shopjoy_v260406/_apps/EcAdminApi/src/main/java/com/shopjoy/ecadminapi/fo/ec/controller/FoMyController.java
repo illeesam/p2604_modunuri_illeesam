@@ -47,15 +47,14 @@ public class FoMyController {
 
     /** getCoupons — 조회 */
     @GetMapping("/coupon/list")
-    public ResponseEntity<ApiResponse<List<PmCouponDto>>> getCoupons(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCoupons(p)));
+    public ResponseEntity<ApiResponse<List<PmCouponDto.Item>>> getCoupons(@jakarta.validation.Valid @ModelAttribute PmCouponDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCoupons(req)));
     }
 
     /** getCashInfo — 조회 */
     @GetMapping("/cash/info")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCashInfo() {
-        List<PmCacheDto> history = foMyPageService.getMyCacheHistory(new HashMap<>());
+        List<PmCacheDto.Item> history = foMyPageService.getMyCacheHistory(new PmCacheDto.Request());
         Map<String, Object> cashInfo = new HashMap<>();
         cashInfo.put("balance", 0);
         cashInfo.put("history", history);

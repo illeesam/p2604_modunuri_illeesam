@@ -70,10 +70,9 @@ public class BoPmGiftController {
 
     /** changeStatus */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<PmGiftDto>> changeStatus(
+    public ResponseEntity<ApiResponse<PmGiftDto.Item>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        PmGiftDto result = boPmGiftService.changeStatus(id, body.get("statusCd"));
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(boPmGiftService.changeStatus(id, body.get("statusCd"))));
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")

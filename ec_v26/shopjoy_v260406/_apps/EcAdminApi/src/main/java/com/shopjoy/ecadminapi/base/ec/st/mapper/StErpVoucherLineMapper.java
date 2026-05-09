@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface StErpVoucherLineMapper {
 
-    StErpVoucherLineDto selectById(@Param("id") String id);
+    StErpVoucherLineDto.Item selectById(@Param("id") String id);
 
-    List<StErpVoucherLineDto> selectList(Map<String, Object> p);
+    List<StErpVoucherLineDto.Item> selectList(StErpVoucherLineDto.Request req);
 
-    List<StErpVoucherLineDto> selectPageList(Map<String, Object> p);
+    List<StErpVoucherLineDto.Item> selectPageList(StErpVoucherLineDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(StErpVoucherLineDto.Request req);
 
     int updateSelective(StErpVoucherLine entity);
 }

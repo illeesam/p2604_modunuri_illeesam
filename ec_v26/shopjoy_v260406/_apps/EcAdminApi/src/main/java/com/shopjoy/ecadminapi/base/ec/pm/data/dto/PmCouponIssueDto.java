@@ -18,6 +18,7 @@ public class PmCouponIssueDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String issueId;
+        @Size(max = 21) private String memberId;
     }
 
     @Getter @Setter @NoArgsConstructor

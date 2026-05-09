@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.fo.ec.service.FoPmCacheService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -26,9 +28,8 @@ public class FoPmCacheController {
 
     /** balance */
     @GetMapping("/balance")
-    public ResponseEntity<ApiResponse<Map<String, Long>>> balance(
-            @RequestParam Map<String, Object> p) {
-        long bal = foPmCacheService.getBalance(p);
+    public ResponseEntity<ApiResponse<Map<String, Long>>> balance(@Valid @ModelAttribute PmCacheDto.Request req) {
+        long bal = foPmCacheService.getBalance(req);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("balance", bal)));
     }
 }

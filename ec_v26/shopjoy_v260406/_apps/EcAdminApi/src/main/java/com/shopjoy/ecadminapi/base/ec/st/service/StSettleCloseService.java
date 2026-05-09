@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
 import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleCloseMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleCloseRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StSettleCloseService {
-
 
     private final StSettleCloseMapper stSettleCloseMapper;
     private final StSettleCloseRepository stSettleCloseRepository;
@@ -33,91 +30,137 @@ public class StSettleCloseService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public StSettleCloseDto getById(String id) {
-        StSettleCloseDto result = stSettleCloseMapper.selectById(id);
-        return result;
+    public StSettleCloseDto.Item getById(String id) {
+        StSettleCloseDto.Item dto = stSettleCloseMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<StSettleCloseDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StSettleCloseDto> result = stSettleCloseMapper.selectList(p);
-        return result;
+    public StSettleClose findById(String id) {
+        return stSettleCloseRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<StSettleCloseDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(stSettleCloseMapper.selectPageList(p), stSettleCloseMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return stSettleCloseRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<StSettleCloseDto.Item> getList(StSettleCloseDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return stSettleCloseMapper.selectList(req);
+    }
+
+    public StSettleCloseDto.PageResponse getPageData(StSettleCloseDto.Request req) {
+        PageHelper.addPaging(req);
+        StSettleCloseDto.PageResponse res = new StSettleCloseDto.PageResponse();
+        List<StSettleCloseDto.Item> list = stSettleCloseMapper.selectPageList(req);
+        long count = stSettleCloseMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(StSettleClose entity) {
-        int result = stSettleCloseMapper.updateSelective(entity);
-        return result;
+    public StSettleClose create(StSettleClose body) {
+        body.setSettleCloseId(CmUtil.generateId("st_settle_close"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        StSettleClose saved = stSettleCloseRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSettleCloseId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public StSettleClose create(StSettleClose entity) {
-        entity.setSettleCloseId(CmUtil.generateId("st_settle_close"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        StSettleClose result = stSettleCloseRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public StSettleClose save(StSettleClose entity) {
-        if (!stSettleCloseRepository.existsById(entity.getSettleCloseId()))
+        if (!existsById(entity.getSettleCloseId()))
             throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettleClose result = stSettleCloseRepository.save(entity);
-        return result;
+        StSettleClose saved = stSettleCloseRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSettleCloseId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public StSettleClose update(String id, StSettleClose body) {
+        StSettleClose entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "settleCloseId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        StSettleClose saved = stSettleCloseRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public StSettleClose updatePartial(StSettleClose entity) {
+        if (entity.getSettleCloseId() == null) throw new CmBizException("settleCloseId 가 필요합니다.");
+        if (!existsById(entity.getSettleCloseId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleCloseId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = stSettleCloseMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getSettleCloseId());
+    }
+
     @Transactional
     public void delete(String id) {
-        StSettleClose entity = stSettleCloseRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettleClose entity = findById(id);
         stSettleCloseRepository.delete(entity);
         em.flush();
-        if (stSettleCloseRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<StSettleClose> rows) {
+    public List<StSettleClose> saveList(List<StSettleClose> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (StSettleClose row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setSettleCloseId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_settle_close"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                stSettleCloseRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSettleCloseId(), "settleCloseId must not be null");
-                StSettleClose entity = stSettleCloseRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "settleCloseId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                stSettleCloseRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSettleCloseId(), "settleCloseId must not be null");
-                if (stSettleCloseRepository.existsById(id)) stSettleCloseRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getSettleCloseId() != null)
+            .map(StSettleClose::getSettleCloseId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            stSettleCloseRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<StSettleClose> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getSettleCloseId() != null)
+            .toList();
+        for (StSettleClose row : updateRows) {
+            StSettleClose entity = findById(row.getSettleCloseId());
+            VoUtil.voCopyExclude(row, entity, "settleCloseId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            stSettleCloseRepository.save(entity);
+            upsertedIds.add(entity.getSettleCloseId());
         }
         em.flush();
+
+        List<StSettleClose> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (StSettleClose row : insertRows) {
+            row.setSettleCloseId(CmUtil.generateId("st_settle_close"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            stSettleCloseRepository.save(row);
+            upsertedIds.add(row.getSettleCloseId());
+        }
+        em.flush();
+        em.clear();
+
+        List<StSettleClose> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

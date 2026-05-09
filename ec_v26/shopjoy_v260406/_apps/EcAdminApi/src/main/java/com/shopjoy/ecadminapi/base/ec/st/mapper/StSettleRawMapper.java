@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface StSettleRawMapper {
 
-    StSettleRawDto selectById(@Param("id") String id);
+    StSettleRawDto.Item selectById(@Param("id") String id);
 
-    List<StSettleRawDto> selectList(Map<String, Object> p);
+    List<StSettleRawDto.Item> selectList(StSettleRawDto.Request req);
 
-    List<StSettleRawDto> selectPageList(Map<String, Object> p);
+    List<StSettleRawDto.Item> selectPageList(StSettleRawDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(StSettleRawDto.Request req);
 
     int updateSelective(StSettleRaw entity);
 }

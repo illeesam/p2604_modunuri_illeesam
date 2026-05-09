@@ -4,12 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.fo.ec.service.FoPmEventService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * FO 이벤트 API — 사용자 화면용 이벤트 목록 / 상세
@@ -28,24 +28,19 @@ public class FoPmEventController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PmEventDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<PmEventDto> result = foPmEventService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PmEventDto.Item>>> list(@Valid @ModelAttribute PmEventDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foPmEventService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PmEventDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<PmEventDto> result = foPmEventService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PageResult<PmEventDto.Item>>> page(@Valid @ModelAttribute PmEventDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foPmEventService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{eventId}")
-    public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable("eventId") String eventId) {
-        PmEventDto result = foPmEventService.getById(eventId);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PmEventDto.Item>> getById(@PathVariable("eventId") String eventId) {
+        return ResponseEntity.ok(ApiResponse.ok(foPmEventService.getById(eventId)));
     }
 }

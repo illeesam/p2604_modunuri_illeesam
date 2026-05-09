@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleConfig;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStSettleConfigService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-
 /**
  * BO 정산설정 API — /api/bo/ec/st/config
  */
@@ -23,20 +21,20 @@ public class BoStSettleConfigController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<StSettleConfigDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.getList(p)));
+    public ResponseEntity<ApiResponse<List<StSettleConfigDto.Item>>> list(@Valid @ModelAttribute StSettleConfigDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<StSettleConfigDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.getPageData(p)));
+    public ResponseEntity<ApiResponse<StSettleConfigDto.PageResponse>> page(@Valid @ModelAttribute StSettleConfigDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleConfigDto>> getById(@PathVariable("id") String id) {
-        StSettleConfigDto result = boStSettleConfigService.getById(id);
+    public ResponseEntity<ApiResponse<StSettleConfigDto.Item>> getById(@PathVariable("id") String id) {
+        StSettleConfigDto.Item result = boStSettleConfigService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -48,13 +46,13 @@ public class BoStSettleConfigController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleConfigDto>> update(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
+    public ResponseEntity<ApiResponse<StSettleConfig>> update(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleConfigDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
+    public ResponseEntity<ApiResponse<StSettleConfig>> upsert(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.update(id, body)));
     }
 

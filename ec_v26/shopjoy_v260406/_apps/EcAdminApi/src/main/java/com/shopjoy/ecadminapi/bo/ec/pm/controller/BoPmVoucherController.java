@@ -70,10 +70,9 @@ public class BoPmVoucherController {
 
     /** changeStatus */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<PmVoucherDto>> changeStatus(
+    public ResponseEntity<ApiResponse<PmVoucherDto.Item>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        PmVoucherDto result = boPmVoucherService.changeStatus(id, body.get("statusCd"));
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(boPmVoucherService.changeStatus(id, body.get("statusCd"))));
     }
 
     /** sendSns — 전송 */

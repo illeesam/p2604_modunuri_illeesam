@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.fo.ec.controller;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -51,10 +52,10 @@ public class FoCmDashboardController {
         p.put("memberId", memberId);
 
         // 1) 캐시 잔액
-        long cashBalance = safeLong(() -> cacheService.getBalance(new HashMap<>(p)));
+        long cashBalance = safeLong(() -> cacheService.getBalance(new PmCacheDto.Request()));
 
         // 2) 사용 가능 쿠폰 수
-        List<PmCouponIssueDto> coupons = safeList(() -> couponService.getAvailableCoupons(new HashMap<>(p)));
+        List<PmCouponIssueDto.Item> coupons = safeList(() -> couponService.getAvailableCoupons(new PmCouponIssueDto.Request()));
         int couponCount = coupons != null ? coupons.size() : 0;
 
         // 3) 찜 상품 수

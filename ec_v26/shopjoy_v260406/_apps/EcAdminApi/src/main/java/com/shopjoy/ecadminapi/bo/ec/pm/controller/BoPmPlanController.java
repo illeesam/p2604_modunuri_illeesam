@@ -70,10 +70,9 @@ public class BoPmPlanController {
 
     /** changeStatus */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<PmPlanDto>> changeStatus(
+    public ResponseEntity<ApiResponse<PmPlanDto.Item>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        PmPlanDto result = boPmPlanService.changeStatus(id, body.get("statusCd"));
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(boPmPlanService.changeStatus(id, body.get("statusCd"))));
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")

@@ -146,14 +146,16 @@ public class FoMyPageService {
     }
 
     /** getMyCoupons — 조회 */
-    public List<PmCouponDto> getMyCoupons(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return couponMapper.selectList(p);
+    public List<PmCouponDto.Item> getMyCoupons(PmCouponDto.Request req) {
+        if (req == null) req = new PmCouponDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return couponMapper.selectList(req);
     }
 
     /** getMyCacheHistory — 조회 */
-    public List<PmCacheDto> getMyCacheHistory(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return cacheMapper.selectList(p);
+    public List<PmCacheDto.Item> getMyCacheHistory(PmCacheDto.Request req) {
+        if (req == null) req = new PmCacheDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return cacheMapper.selectList(req);
     }
 }

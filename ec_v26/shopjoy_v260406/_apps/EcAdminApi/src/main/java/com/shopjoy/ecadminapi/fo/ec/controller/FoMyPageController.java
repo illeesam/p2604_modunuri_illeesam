@@ -92,17 +92,13 @@ public class FoMyPageController {
 
     /** getMyCoupons — 조회 */
     @GetMapping("/coupon")
-    public ResponseEntity<ApiResponse<List<PmCouponDto>>> getMyCoupons(
-            @RequestParam Map<String, Object> p) {
-        List<PmCouponDto> result = foMyPageService.getMyCoupons(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PmCouponDto.Item>>> getMyCoupons(@jakarta.validation.Valid @ModelAttribute PmCouponDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCoupons(req)));
     }
 
     /** getMyCacheHistory — 조회 */
     @GetMapping("/cache")
-    public ResponseEntity<ApiResponse<List<PmCacheDto>>> getMyCacheHistory(
-            @RequestParam Map<String, Object> p) {
-        List<PmCacheDto> result = foMyPageService.getMyCacheHistory(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PmCacheDto.Item>>> getMyCacheHistory(@jakarta.validation.Valid @ModelAttribute PmCacheDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCacheHistory(req)));
     }
 }

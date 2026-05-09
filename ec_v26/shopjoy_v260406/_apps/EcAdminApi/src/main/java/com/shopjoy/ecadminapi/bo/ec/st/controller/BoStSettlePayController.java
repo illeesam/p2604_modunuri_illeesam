@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettlePay;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStSettlePayService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-
 /**
  * BO 정산지급 API — /api/bo/ec/st/pay
  */
@@ -23,20 +21,20 @@ public class BoStSettlePayController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<StSettlePayDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.getList(p)));
+    public ResponseEntity<ApiResponse<List<StSettlePayDto.Item>>> list(@Valid @ModelAttribute StSettlePayDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<StSettlePayDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.getPageData(p)));
+    public ResponseEntity<ApiResponse<StSettlePayDto.PageResponse>> page(@Valid @ModelAttribute StSettlePayDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettlePayDto>> getById(@PathVariable("id") String id) {
-        StSettlePayDto result = boStSettlePayService.getById(id);
+    public ResponseEntity<ApiResponse<StSettlePayDto.Item>> getById(@PathVariable("id") String id) {
+        StSettlePayDto.Item result = boStSettlePayService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -48,13 +46,13 @@ public class BoStSettlePayController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettlePayDto>> update(@PathVariable("id") String id, @RequestBody StSettlePay body) {
+    public ResponseEntity<ApiResponse<StSettlePay>> update(@PathVariable("id") String id, @RequestBody StSettlePay body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettlePayDto>> upsert(@PathVariable("id") String id, @RequestBody StSettlePay body) {
+    public ResponseEntity<ApiResponse<StSettlePay>> upsert(@PathVariable("id") String id, @RequestBody StSettlePay body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.update(id, body)));
     }
 

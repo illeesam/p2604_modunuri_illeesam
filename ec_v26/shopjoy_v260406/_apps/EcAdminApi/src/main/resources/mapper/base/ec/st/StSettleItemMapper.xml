@@ -32,7 +32,7 @@
     </sql>
 
     <!-- 정산 항목 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleItemDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleItemDto$Item">
         SELECT  /* base.ec.st :: StSettleItem :: selectById */
               i.*
             , ord.member_nm AS order_nm
@@ -48,7 +48,7 @@
     </select>
 
     <!-- 정산 항목 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleItemDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleItemDto$Item">
         SELECT  /* base.ec.st :: StSettleItem :: selectList */
               i.*
             , ord.member_nm AS order_nm
@@ -66,7 +66,7 @@
     </select>
 
     <!-- 정산 항목 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleItemDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleItemDto$Item">
         SELECT  /* base.ec.st :: StSettleItem :: selectPageList */
               i.*
             , ord.member_nm AS order_nm

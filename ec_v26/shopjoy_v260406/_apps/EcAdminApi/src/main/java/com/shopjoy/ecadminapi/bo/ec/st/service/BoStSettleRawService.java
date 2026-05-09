@@ -2,84 +2,29 @@ package com.shopjoy.ecadminapi.bo.ec.st.service;
 
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleRawDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleRaw;
-import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleRawMapper;
-import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleRawRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.shopjoy.ecadminapi.base.ec.st.service.StSettleRawService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * BO StSettleRaw 서비스 — base StSettleRawService 위임 (thin wrapper).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoStSettleRawService {
-    private final StSettleRawMapper stSettleRawMapper;
-    private final StSettleRawRepository stSettleRawRepository;
-    @PersistenceContext
-    private EntityManager em;
 
-    /** getList — 조회 */
-    public List<StSettleRawDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return stSettleRawMapper.selectList(p);
-    }
+    private final StSettleRawService stSettleRawService;
 
-    /** getPageData — 조회 */
-    public PageResult<StSettleRawDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(stSettleRawMapper.selectPageList(p), stSettleRawMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-    }
+    public StSettleRawDto.Item getById(String id) { return stSettleRawService.getById(id); }
+    public List<StSettleRawDto.Item> getList(StSettleRawDto.Request req) { return stSettleRawService.getList(req); }
+    public StSettleRawDto.PageResponse getPageData(StSettleRawDto.Request req) { return stSettleRawService.getPageData(req); }
 
-    /** getById — 조회 */
-    public StSettleRawDto getById(String id) {
-        StSettleRawDto dto = stSettleRawMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        return dto;
-    }
-
-    /** create — 생성 */
-    @Transactional
-    public StSettleRaw create(StSettleRaw body) {
-        body.setSettleRawId(CmUtil.generateId("st_settle_raw"));
-        body.setRegBy(SecurityUtil.getAuthUser().authId());
-        body.setRegDate(LocalDateTime.now());
-        body.setUpdBy(SecurityUtil.getAuthUser().authId());
-        body.setUpdDate(LocalDateTime.now());
-        StSettleRaw saved = stSettleRawRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        return saved;
-    }
-
-    /** update — 수정 */
-    @Transactional
-    public StSettleRawDto update(String id, StSettleRaw body) {
-        StSettleRaw entity = stSettleRawRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        StSettleRaw saved = stSettleRawRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        em.flush();
-        return getById(id);
-    }
-
-    /** delete — 삭제 */
-    @Transactional
-    public void delete(String id) {
-        StSettleRaw entity = stSettleRawRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        stSettleRawRepository.delete(entity);
-        em.flush();
-        if (stSettleRawRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
-    }
+    @Transactional public StSettleRaw create(StSettleRaw body) { return stSettleRawService.create(body); }
+    @Transactional public StSettleRaw update(String id, StSettleRaw body) { return stSettleRawService.update(id, body); }
+    @Transactional public void delete(String id) { stSettleRawService.delete(id); }
+    @Transactional public List<StSettleRaw> saveList(List<StSettleRaw> rows) { return stSettleRawService.saveList(rows); }
 }

@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStSettleAdjService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,20 +23,20 @@ public class BoStSettleAdjController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<StSettleAdjDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.getList(p)));
+    public ResponseEntity<ApiResponse<List<StSettleAdjDto.Item>>> list(@Valid @ModelAttribute StSettleAdjDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<StSettleAdjDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.getPageData(p)));
+    public ResponseEntity<ApiResponse<StSettleAdjDto.PageResponse>> page(@Valid @ModelAttribute StSettleAdjDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleAdjDto>> getById(@PathVariable("id") String id) {
-        StSettleAdjDto result = boStSettleAdjService.getById(id);
+    public ResponseEntity<ApiResponse<StSettleAdjDto.Item>> getById(@PathVariable("id") String id) {
+        StSettleAdjDto.Item result = boStSettleAdjService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -48,13 +48,13 @@ public class BoStSettleAdjController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleAdjDto>> update(@PathVariable("id") String id, @RequestBody StSettleAdj body) {
+    public ResponseEntity<ApiResponse<StSettleAdj>> update(@PathVariable("id") String id, @RequestBody StSettleAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleAdjDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleAdj body) {
+    public ResponseEntity<ApiResponse<StSettleAdj>> upsert(@PathVariable("id") String id, @RequestBody StSettleAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.update(id, body)));
     }
 

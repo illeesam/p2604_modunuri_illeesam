@@ -30,7 +30,7 @@
     </sql>
 
     <!-- 정산 설정 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto$Item">
         SELECT  /* base.ec.st :: StSettleConfig :: selectById */
               c.*
             , ste.site_nm AS site_nm
@@ -46,7 +46,7 @@
     </select>
 
     <!-- 정산 설정 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto$Item">
         SELECT  /* base.ec.st :: StSettleConfig :: selectList */
               c.*
             , ste.site_nm AS site_nm
@@ -64,7 +64,7 @@
     </select>
 
     <!-- 정산 설정 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto$Item">
         SELECT  /* base.ec.st :: StSettleConfig :: selectPageList */
               c.*
             , ste.site_nm AS site_nm

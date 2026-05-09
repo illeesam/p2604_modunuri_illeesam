@@ -16,6 +16,7 @@ public class PmCacheDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String cacheId;
+        @Size(max = 21) private String memberId;
     }
 
     @Getter @Setter @NoArgsConstructor

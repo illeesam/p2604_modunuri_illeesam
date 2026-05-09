@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettlePay;
 import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettlePayMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettlePayRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StSettlePayService {
-
 
     private final StSettlePayMapper stSettlePayMapper;
     private final StSettlePayRepository stSettlePayRepository;
@@ -33,91 +30,137 @@ public class StSettlePayService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public StSettlePayDto getById(String id) {
-        StSettlePayDto result = stSettlePayMapper.selectById(id);
-        return result;
+    public StSettlePayDto.Item getById(String id) {
+        StSettlePayDto.Item dto = stSettlePayMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<StSettlePayDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<StSettlePayDto> result = stSettlePayMapper.selectList(p);
-        return result;
+    public StSettlePay findById(String id) {
+        return stSettlePayRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<StSettlePayDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(stSettlePayMapper.selectPageList(p), stSettlePayMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return stSettlePayRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<StSettlePayDto.Item> getList(StSettlePayDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return stSettlePayMapper.selectList(req);
+    }
+
+    public StSettlePayDto.PageResponse getPageData(StSettlePayDto.Request req) {
+        PageHelper.addPaging(req);
+        StSettlePayDto.PageResponse res = new StSettlePayDto.PageResponse();
+        List<StSettlePayDto.Item> list = stSettlePayMapper.selectPageList(req);
+        long count = stSettlePayMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(StSettlePay entity) {
-        int result = stSettlePayMapper.updateSelective(entity);
-        return result;
+    public StSettlePay create(StSettlePay body) {
+        body.setSettlePayId(CmUtil.generateId("st_settle_pay"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        StSettlePay saved = stSettlePayRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSettlePayId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public StSettlePay create(StSettlePay entity) {
-        entity.setSettlePayId(CmUtil.generateId("st_settle_pay"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        StSettlePay result = stSettlePayRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public StSettlePay save(StSettlePay entity) {
-        if (!stSettlePayRepository.existsById(entity.getSettlePayId()))
+        if (!existsById(entity.getSettlePayId()))
             throw new CmBizException("존재하지 않는 StSettlePay입니다: " + entity.getSettlePayId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        StSettlePay result = stSettlePayRepository.save(entity);
-        return result;
+        StSettlePay saved = stSettlePayRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSettlePayId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public StSettlePay update(String id, StSettlePay body) {
+        StSettlePay entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "settlePayId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        StSettlePay saved = stSettlePayRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public StSettlePay updatePartial(StSettlePay entity) {
+        if (entity.getSettlePayId() == null) throw new CmBizException("settlePayId 가 필요합니다.");
+        if (!existsById(entity.getSettlePayId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettlePayId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = stSettlePayMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getSettlePayId());
+    }
+
     @Transactional
     public void delete(String id) {
-        StSettlePay entity = stSettlePayRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        StSettlePay entity = findById(id);
         stSettlePayRepository.delete(entity);
         em.flush();
-        if (stSettlePayRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<StSettlePay> rows) {
+    public List<StSettlePay> saveList(List<StSettlePay> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (StSettlePay row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setSettlePayId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("st_settle_pay"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                stSettlePayRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSettlePayId(), "settlePayId must not be null");
-                StSettlePay entity = stSettlePayRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "settlePayId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                stSettlePayRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSettlePayId(), "settlePayId must not be null");
-                if (stSettlePayRepository.existsById(id)) stSettlePayRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getSettlePayId() != null)
+            .map(StSettlePay::getSettlePayId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            stSettlePayRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<StSettlePay> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getSettlePayId() != null)
+            .toList();
+        for (StSettlePay row : updateRows) {
+            StSettlePay entity = findById(row.getSettlePayId());
+            VoUtil.voCopyExclude(row, entity, "settlePayId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            stSettlePayRepository.save(entity);
+            upsertedIds.add(entity.getSettlePayId());
         }
         em.flush();
+
+        List<StSettlePay> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (StSettlePay row : insertRows) {
+            row.setSettlePayId(CmUtil.generateId("st_settle_pay"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            stSettlePayRepository.save(row);
+            upsertedIds.add(row.getSettlePayId());
+        }
+        em.flush();
+        em.clear();
+
+        List<StSettlePay> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }
