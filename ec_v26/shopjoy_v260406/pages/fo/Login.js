@@ -53,14 +53,19 @@ window.Login = {
     };
 
     /* -- 회원선택 모달 (개발용) -- */
-    const memberPick = reactive({ show: false, searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, totalPage: 1 });
+    const memberPick = reactive({ show: false, searchTypes: '', searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, totalPage: 1 });
     const PICK_SIZE = 20;
 
     const _loadMemberPick = async () => {
       memberPick.loading = true;
       try {
+        const params = { searchValue: memberPick.searchValue, searchTypes: memberPick.searchTypes, pageNo: memberPick.pageNo, pageSize: PICK_SIZE };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_loginId,def_phone';
+        }
         const res = await coApiSvc.mbMember.getPage(
-          { searchValue: memberPick.searchValue, pageNo: memberPick.pageNo, pageSize: PICK_SIZE },
+          params,
           '로그인', '회원선택',
         );
         const d = res.data?.data || {};

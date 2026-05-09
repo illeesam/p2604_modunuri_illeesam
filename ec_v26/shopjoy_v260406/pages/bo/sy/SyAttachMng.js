@@ -12,6 +12,7 @@ window.SyAttachMng = {
     const attachGrps = reactive([]);
     const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null });
     const codes = reactive({ attach_type: [], active_statuses: [], date_range_opts: [] });
+    const grpSearchTypes = ref('');
     const grpSearchValue = ref('');
     const pager = reactive({
       pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
@@ -21,10 +22,13 @@ window.SyAttachMng = {
     const cfFilteredGrps = computed(() => {
       const searchVal = grpSearchValue.value.trim().toLowerCase();
       if (!searchVal) return attachGrps;
-      return attachGrps.filter(g =>
-        (g.grpNm || '').toLowerCase().includes(searchVal) ||
-        (g.grpCode || '').toLowerCase().includes(searchVal)
-      );
+      const types = grpSearchTypes.value || 'def_grpNm,def_grpCode';
+      return attachGrps.filter(g => {
+        const hits = [];
+        if (types.includes('def_grpNm'))   hits.push((g.grpNm   || '').toLowerCase().includes(searchVal));
+        if (types.includes('def_grpCode')) hits.push((g.grpCode || '').toLowerCase().includes(searchVal));
+        return hits.some(Boolean);
+      });
     });
 
     const fnBuildPageNums = () => {
@@ -218,7 +222,7 @@ window.SyAttachMng = {
     // -- return ---------------------------------------------------------------
     return {
       attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
-      attachGrps, cfFilteredGrps, grpSearchValue, grpForm, pager,
+      attachGrps, cfFilteredGrps, grpSearchTypes, grpSearchValue, grpForm, pager,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
@@ -237,7 +241,16 @@ window.SyAttachMng = {
           <button class="btn btn-primary btn-sm" @click="openGrpNew">+ 신규</button>
         </div>
         <div style="padding:0 0 10px 0;">
-          <input v-model="grpSearchValue" placeholder="그룹명 / 코드 검색" style="width:100%;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" />
+          <multi-check-select
+            v-model="grpSearchTypes"
+            :options="[
+              { value: 'def_grpNm',   label: '그룹명' },
+              { value: 'def_grpCode', label: '코드' },
+            ]"
+            placeholder="검색대상 전체"
+            all-label="전체 선택"
+            min-width="100%" />
+          <input v-model="grpSearchValue" placeholder="검색어 입력" style="width:100%;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;margin-top:4px;" />
         </div>
 
         <!-- 그룹 폼 -->

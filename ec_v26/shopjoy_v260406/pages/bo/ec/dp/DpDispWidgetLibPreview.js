@@ -192,7 +192,7 @@ window.DpDispWidgetLibPreview = {
     const wTypeLabel = (v) => cfDispWidgetTypes.value.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* -- 조회 조건 -- */
-    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: ''});
+    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: '', searchTypes: '', searchValue: ''});
     const searchParam = reactive(_initSearchParam());
 
     const onReset = () => {
@@ -200,13 +200,18 @@ window.DpDispWidgetLibPreview = {
     };
 
     const cfFilteredLibs = computed(() => {
-      const searchVal = searchParam.searchValue.trim().toLowerCase();
+      const searchVal = (searchParam.searchValue || '').trim().toLowerCase();
+      const types = searchParam.searchTypes || 'def_nm,def_tag,def_desc';
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (searchParam.filterType   && lib.widgetType !== searchParam.filterType) return false;
         if (searchParam.filterStatus && lib.status     !== searchParam.filterStatus) return false;
-        if (searchVal && !lib.name.toLowerCase().includes(searchVal) &&
-            !(lib.tags||'').toLowerCase().includes(searchVal) &&
-            !(lib.desc||'').toLowerCase().includes(searchVal)) return false;
+        if (searchVal) {
+          const hits = [];
+          if (types.includes('def_nm'))   hits.push((lib.name || '').toLowerCase().includes(searchVal));
+          if (types.includes('def_tag'))  hits.push((lib.tags || '').toLowerCase().includes(searchVal));
+          if (types.includes('def_desc')) hits.push((lib.desc || '').toLowerCase().includes(searchVal));
+          if (!hits.some(Boolean)) return false;
+        }
         return true;
       });
     });
@@ -568,7 +573,17 @@ window.DpDispWidgetLibPreview = {
           <option v-for="t in cfDispWidgetTypes" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
-      <input v-model="searchParam.searchValue" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm',   label: '이름' },
+          { value: 'def_tag',  label: '태그' },
+          { value: 'def_desc', label: '설명' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="130px" />
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
       <button @click="onReset" style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#666;">초기화</button>
     </div>

@@ -428,24 +428,25 @@ window.DpDispWidgetPreview = {
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* -- 조회 조건 -- */
-    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', dashCanvas: null });
+    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', dashCanvas: null, searchTypes: '', searchValue: '' });
     const searchParam = reactive(_initSearchParam());
 
-    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', visibility: '' });
+    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchTypes: '', searchValue: '' });
 
     const onSearch = () => {
       Object.assign(applied, {
         type:       searchParam.filterType,
         status:     searchParam.filterStatus,
         dispEnv:    searchParam.filterDispEnv,
-        searchValue: searchParam.searchValue.trim().toLowerCase(),
+        searchTypes: searchParam.searchTypes,
+        searchValue: (searchParam.searchValue || '').trim().toLowerCase(),
         visibility: searchParam.filterVisibility,
       });
     };
 
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
-      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', visibility: '' });
+      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchTypes: '', searchValue: '' });
     };
 
     /* DTO / UI 호환 필드 헬퍼 */
@@ -458,14 +459,18 @@ window.DpDispWidgetPreview = {
 
     const cfFilteredLibs = computed(() => {
       const searchVal = (applied.searchValue || '').toLowerCase();
+      const types = applied.searchTypes || 'def_nm,def_tag,def_desc';
       return (widgetLibs || []).filter(lib => {
         if (applied.type   && _getType(lib)   !== applied.type) return false;
         if (applied.status && _getStatus(lib) !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
-        if (searchVal &&
-            !_getName(lib).toLowerCase().includes(searchVal) &&
-            !(lib.tags||'').toLowerCase().includes(searchVal) &&
-            !_getDesc(lib).toLowerCase().includes(searchVal)) return false;
+        if (searchVal) {
+          const hits = [];
+          if (types.includes('def_nm'))   hits.push(_getName(lib).toLowerCase().includes(searchVal));
+          if (types.includes('def_tag'))  hits.push((lib.tags || '').toLowerCase().includes(searchVal));
+          if (types.includes('def_desc')) hits.push(_getDesc(lib).toLowerCase().includes(searchVal));
+          if (!hits.some(Boolean)) return false;
+        }
         return true;
       });
     });
@@ -828,7 +833,17 @@ window.DpDispWidgetPreview = {
           <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
-      <input v-model="searchParam.searchValue" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm',   label: '이름' },
+          { value: 'def_tag',  label: '태그' },
+          { value: 'def_desc', label: '설명' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="130px" />
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="onSearch" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
       <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
         <button @click="onSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
