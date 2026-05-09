@@ -12,9 +12,17 @@
             <if test="payId != null and payId != ''">AND m.pay_id = #{payId}</if>
             <if test="orderId != null and orderId != ''">AND m.order_id = #{orderId}</if>
             <if test="status != null and status != ''">AND m.refund_status_cd = #{status}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND m.reg_date &gt;= #{dateStart}::DATE
-                AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND m.reg_date &gt;= #{dateStart}::DATE
+                        AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND m.upd_date &gt;= #{dateStart}::DATE
+                        AND m.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

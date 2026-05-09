@@ -10,9 +10,17 @@
             <if test="prodId != null and prodId != ''">AND s.prod_id = #{prodId}</if>
             <if test="siteId != null and siteId != ''">AND s.site_id = #{siteId}</if>
             <if test="skuId != null and skuId != ''">AND s.sku_id = #{skuId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND s.reg_date &gt;= #{dateStart}::DATE
-                AND s.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND s.reg_date &gt;= #{dateStart}::DATE
+                        AND s.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND s.upd_date &gt;= #{dateStart}::DATE
+                        AND s.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -11,13 +11,23 @@
             <if test="attachId != null and attachId != ''">AND a.attach_id = #{attachId}</if>
             <if test="attachGrpId != null and attachGrpId != ''">AND a.attach_grp_id = #{attachGrpId}</if>
             <if test="typeCd != null and typeCd != ''">AND a.mime_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (a.file_nm ILIKE '%' || #{kw} || '%'
-                  OR a.stored_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_file_nm')">OR a.file_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_stored_nm')">OR a.stored_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND a.reg_date &gt;= #{dateStart}::DATE
-                AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND a.reg_date &gt;= #{dateStart}::DATE
+                        AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND a.upd_date &gt;= #{dateStart}::DATE
+                        AND a.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

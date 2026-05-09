@@ -11,12 +11,22 @@
             <if test="setItemId != null and setItemId != ''">AND i.set_item_id = #{setItemId}</if>
             <if test="setProdId != null and setProdId != ''">AND i.set_prod_id = #{setProdId}</if>
             <if test="itemProdId != null and itemProdId != ''">AND i.item_prod_id = #{itemProdId}</if>
-            <if test="kw != null and kw != ''">
-                AND (i.item_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_item_nm')">OR i.item_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND i.reg_date &gt;= #{dateStart}::DATE
-                AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND i.reg_date &gt;= #{dateStart}::DATE
+                        AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND i.upd_date &gt;= #{dateStart}::DATE
+                        AND i.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

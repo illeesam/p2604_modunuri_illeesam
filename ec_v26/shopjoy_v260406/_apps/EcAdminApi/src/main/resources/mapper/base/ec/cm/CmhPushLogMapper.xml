@@ -11,12 +11,26 @@
             <if test="logId != null and logId != ''">AND l.log_id = #{logId}</if>
             <if test="templateId != null and templateId != ''">AND l.template_id = #{templateId}</if>
             <if test="typeCd != null and typeCd != ''">AND l.ref_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (l.push_log_title ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_push_log_title')">OR l.push_log_title ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND l.send_date &gt;= #{dateStart}::DATE
-                AND l.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'send_date'">
+                        AND l.send_date &gt;= #{dateStart}::DATE
+                        AND l.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND l.reg_date &gt;= #{dateStart}::DATE
+                        AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND l.upd_date &gt;= #{dateStart}::DATE
+                        AND l.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

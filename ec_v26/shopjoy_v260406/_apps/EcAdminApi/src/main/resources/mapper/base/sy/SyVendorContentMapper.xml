@@ -12,12 +12,22 @@
             <if test="vendorId != null and vendorId != ''">AND c.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND c.vendor_content_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND c.content_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (c.vendor_content_title ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_vendor_content_title')">OR c.vendor_content_title ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND c.reg_date &gt;= #{dateStart}::DATE
-                AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND c.reg_date &gt;= #{dateStart}::DATE
+                        AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND c.upd_date &gt;= #{dateStart}::DATE
+                        AND c.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

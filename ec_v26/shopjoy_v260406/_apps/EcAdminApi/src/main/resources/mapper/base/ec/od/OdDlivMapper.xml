@@ -15,13 +15,6 @@
             <if test="orderId != null and orderId != ''">AND d.order_id = #{orderId}</if>
             <if test="vendorId != null and vendorId != ''">AND d.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND d.dliv_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (d.order_id::TEXT       ILIKE '%' || #{kw} || '%'
-                  OR d.outbound_tracking_no ILIKE '%' || #{kw} || '%'
-                  OR d.recv_nm              ILIKE '%' || #{kw} || '%'
-                  OR d.recv_phone           ILIKE '%' || #{kw} || '%'
-                  OR o.member_nm            ILIKE '%' || #{kw} || '%')
-            </if>
             <if test="searchValue != null and searchValue != ''">
                 AND (1=0
                     <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_dliv_id')">    OR d.dliv_id::TEXT       ILIKE '%' || #{searchValue} || '%'</if>

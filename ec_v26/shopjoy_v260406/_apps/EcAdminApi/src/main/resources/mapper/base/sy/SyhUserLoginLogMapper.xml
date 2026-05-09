@@ -9,19 +9,23 @@
             <if test="siteId    != null and siteId    != ''">AND l.site_id    = #{siteId}</if>
             <if test="logId != null and logId != ''">AND l.log_id = #{logId}</if>
             <if test="userId != null and userId != ''">AND l.user_id = #{userId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND l.reg_date  &gt;= #{dateStart}::DATE
-                AND l.reg_date  &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
-            </if>
             <if test="resultCd  != null and resultCd  != ''">AND l.result_cd  = #{resultCd}</if>
             <if test="ip        != null and ip        != ''">AND l.ip        LIKE '%'||#{ip}||'%'</if>
             <if test="uiNm      != null and uiNm      != ''">AND l.ui_nm     LIKE '%'||#{uiNm}||'%'</if>
             <if test="traceId   != null and traceId   != ''">AND l.trace_id  LIKE '%'||#{traceId}||'%'</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_userId')"> OR l.user_id  LIKE '%'||#{searchValue}||'%'</if>
-                    <if test="searchTypes.contains('def_loginId')">OR l.login_id LIKE '%'||#{searchValue}||'%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_userId')"> OR l.user_id  LIKE '%'||#{searchValue}||'%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_loginId')">OR l.login_id LIKE '%'||#{searchValue}||'%'</if>
                 )
+            </if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND l.reg_date &gt;= #{dateStart}::DATE
+                        AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

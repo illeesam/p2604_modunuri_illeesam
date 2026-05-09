@@ -16,12 +16,6 @@
             <if test="orderId != null and orderId != ''">AND c.order_id = #{orderId}</if>
             <if test="status != null and status != ''">AND c.claim_status_cd = #{status}</if>
             <if test="claimType != null and claimType != ''">AND c.claim_type_cd = #{claimType}</if>
-            <if test="kw != null and kw != ''">
-                AND (c.order_id::TEXT  ILIKE '%' || #{kw} || '%'
-                  OR c.member_nm       ILIKE '%' || #{kw} || '%'
-                  OR c.prod_nm         ILIKE '%' || #{kw} || '%'
-                  OR m.login_id        ILIKE '%' || #{kw} || '%')
-            </if>
             <if test="searchValue != null and searchValue != ''">
                 AND (1=0
                     <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_claim_id')">  OR c.claim_id::TEXT ILIKE '%' || #{searchValue} || '%'</if>

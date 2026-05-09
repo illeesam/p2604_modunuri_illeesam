@@ -11,13 +11,27 @@
             <if test="userId != null and userId != ''">AND u.user_id = #{userId}</if>
             <if test="vendorId != null and vendorId != ''">AND u.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND u.vendor_user_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (u.member_nm ILIKE '%' || #{kw} || '%'
-                  OR u.vendor_user_dept_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member_nm')">OR u.member_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_vendor_user_dept_nm')">OR u.vendor_user_dept_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND u.join_date &gt;= #{dateStart}::DATE
-                AND u.join_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'join_date'">
+                        AND u.join_date &gt;= #{dateStart}::DATE
+                        AND u.join_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND u.reg_date &gt;= #{dateStart}::DATE
+                        AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND u.upd_date &gt;= #{dateStart}::DATE
+                        AND u.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

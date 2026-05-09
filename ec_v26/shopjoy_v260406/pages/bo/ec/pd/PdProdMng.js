@@ -54,7 +54,7 @@ window.PdProdMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, cate: '', status: '' };
+      return { kw: '', searchTypes: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, cate: '', status: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -113,6 +113,10 @@ window.PdProdMng = {
 
     const fnStatusBadge = s => ({ 'ON_SALE': 'badge-green', 'SOLD_OUT': 'badge-red', 'SUSPENDED': 'badge-gray', 'DRAFT': 'badge-blue', 'REVIEW': 'badge-orange', '판매중': 'badge-green', '품절': 'badge-red', '판매중지': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = async () => {
+      if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
+        props.showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
+        return;
+      }
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
@@ -172,7 +176,13 @@ window.PdProdMng = {
   </div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="상품명 / ID 검색" @keyup.enter="onSearch" />
+      <multi-check-select v-model="searchParam.searchTypes" :options="[
+          { value: 'def_prod_id',   label: '상품ID' },
+          { value: 'def_prod_nm',   label: '상품명' },
+          { value: 'def_prod_code', label: '상품코드' },
+          { value: 'def_brand_nm',  label: '브랜드명' },
+        ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <div style="display:flex;align-items:center;gap:4px;">
         <input class="form-control" v-model="searchParam.cate" placeholder="카테고리 선택" readonly
           style="width:120px;cursor:pointer;background:#fafafa;" @click="openCatModal" />
@@ -180,7 +190,7 @@ window.PdProdMng = {
         <button v-if="searchParam.cate" type="button" class="btn btn-secondary btn-sm" @click="clearCate">✕</button>
       </div>
       <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.product_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
+      <select v-model="searchParam.dateType"><option value="reg_date">등록일자</option><option value="upd_date">수정일자</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

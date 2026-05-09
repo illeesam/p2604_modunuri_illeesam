@@ -15,7 +15,11 @@
             <if test="depth != null">AND c.category_depth = #{depth}</if>
             <if test="parentCategoryId != null and parentCategoryId != ''">AND c.parent_category_id = #{parentCategoryId}</if>
             <if test="status != null and status != ''">AND c.category_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">AND c.category_nm ILIKE '%' || #{kw} || '%'</if>
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_category_nm')">OR c.category_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
+            </if>
         </where>
     </sql>
 

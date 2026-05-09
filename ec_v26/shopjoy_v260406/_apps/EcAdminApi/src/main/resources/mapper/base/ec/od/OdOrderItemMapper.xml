@@ -15,13 +15,23 @@
             <if test="prodId != null and prodId != ''">AND oi.prod_id = #{prodId}</if>
             <if test="skuId != null and skuId != ''">AND oi.sku_id = #{skuId}</if>
             <if test="status != null and status != ''">AND oi.order_item_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (oi.order_id::TEXT ILIKE '%' || #{kw} || '%'
-                  OR oi.prod_nm        ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_order_id')">OR oi.order_id::TEXT ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_prod_nm')">OR oi.prod_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND oi.reg_date &gt;= #{dateStart}::DATE
-                AND oi.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND oi.reg_date &gt;= #{dateStart}::DATE
+                        AND oi.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND oi.upd_date &gt;= #{dateStart}::DATE
+                        AND oi.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

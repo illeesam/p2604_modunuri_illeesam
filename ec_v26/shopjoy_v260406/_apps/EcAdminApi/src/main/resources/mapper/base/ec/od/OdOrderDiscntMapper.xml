@@ -12,9 +12,17 @@
             <if test="couponId != null and couponId != ''">AND d.coupon_id = #{couponId}</if>
             <if test="orderId != null and orderId != ''">AND d.order_id = #{orderId}</if>
             <if test="typeCd != null and typeCd != ''">AND d.discnt_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND d.reg_date &gt;= #{dateStart}::DATE
-                AND d.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND d.reg_date &gt;= #{dateStart}::DATE
+                        AND d.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND d.upd_date &gt;= #{dateStart}::DATE
+                        AND d.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

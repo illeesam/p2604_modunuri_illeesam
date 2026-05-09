@@ -59,7 +59,7 @@ window.OdDlivMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { kw: '', memberId: '', memberNm: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { kw: '', searchTypes: '', searchValue: '', memberId: '', memberNm: '', status: '', dateType: 'dliv_ship_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -120,6 +120,10 @@ window.OdDlivMng = {
     }[s] || 'badge-gray');
 
     const onSearch = async () => {
+      if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
+        props.showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
+        return;
+      }
       pager.pageNo = 1;
       await handleSearchData('DEFAULT');
     };
@@ -340,7 +344,15 @@ window.OdDlivMng = {
   <div class="page-title">배송관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="배송ID / 주문ID / 수령인 검색" @keyup.enter="onSearch" />
+      <multi-check-select v-model="searchParam.searchTypes" :options="[
+          { value: 'def_dliv_id',     label: '배송ID' },
+          { value: 'def_order_id',    label: '주문ID' },
+          { value: 'def_tracking',    label: '운송장번호' },
+          { value: 'def_recv_nm',     label: '수령인' },
+          { value: 'def_recv_phone',  label: '수령연락처' },
+          { value: 'def_member_nm',   label: '회원명' },
+        ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <span class="search-label">회원</span>
       <div style="display:inline-flex;align-items:center;gap:4px;">
         <input :value="searchParam.memberNm || searchParam.memberId" readonly placeholder="회원 선택"
@@ -353,7 +365,7 @@ window.OdDlivMng = {
         <option value="">상태 전체</option>
         <option v-for="c in codes.dliv_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
+      <select v-model="searchParam.dateType"><option value="dliv_ship_date">출고일자</option><option value="dliv_date">배송완료일</option><option value="reg_date">등록일자</option><option value="upd_date">수정일자</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

@@ -7,13 +7,21 @@
     <!-- 전시 UI-영역 매핑 조회 조건 -->
     <sql id="dpUiAreaCond">
         <where>
-                        <if test="uiAreaId != null and uiAreaId != ''">AND a.ui_area_id = #{uiAreaId}</if>
-<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-    AND a.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="uiAreaId != null and uiAreaId != ''">AND a.ui_area_id = #{uiAreaId}</if>
             <if test="areaId != null and areaId != ''">AND a.area_id = #{areaId}</if>
-            <if test="uiId != null and uiId != ''">AND a.ui_id = #{uiId}
-    AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
-</if>
+            <if test="uiId != null and uiId != ''">AND a.ui_id = #{uiId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND a.reg_date &gt;= #{dateStart}::DATE
+                        AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND a.upd_date &gt;= #{dateStart}::DATE
+                        AND a.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
+            </if>
         </where>
     </sql>
 

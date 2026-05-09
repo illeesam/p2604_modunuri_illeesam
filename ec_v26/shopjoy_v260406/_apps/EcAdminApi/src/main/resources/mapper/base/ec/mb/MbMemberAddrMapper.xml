@@ -10,13 +10,23 @@
             <if test="siteId != null and siteId != ''">AND a.site_id = #{siteId}</if>
             <if test="memberAddrId != null and memberAddrId != ''">AND a.member_addr_id = #{memberAddrId}</if>
             <if test="memberId != null and memberId != ''">AND a.member_id = #{memberId}</if>
-            <if test="kw != null and kw != ''">
-                AND (a.addr_nm ILIKE '%' || #{kw} || '%'
-                  OR a.recv_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_addr_nm')">OR a.addr_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_recv_nm')">OR a.recv_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND a.reg_date &gt;= #{dateStart}::DATE
-                AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND a.reg_date &gt;= #{dateStart}::DATE
+                        AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND a.upd_date &gt;= #{dateStart}::DATE
+                        AND a.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

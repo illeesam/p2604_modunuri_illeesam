@@ -6,14 +6,22 @@
 
     <sql id="syUserRoleCond">
         <where>
-                        <if test="userRoleId != null and userRoleId != ''">AND r.user_role_id = #{userRoleId}</if>
-<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-    AND r.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="userRoleId != null and userRoleId != ''">AND r.user_role_id = #{userRoleId}</if>
             <if test="grantUserId != null and grantUserId != ''">AND r.grant_user_id = #{grantUserId}</if>
             <if test="roleId != null and roleId != ''">AND r.role_id = #{roleId}</if>
-            <if test="userId != null and userId != ''">AND r.user_id = #{userId}
-    AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
-</if>
+            <if test="userId != null and userId != ''">AND r.user_id = #{userId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND r.reg_date &gt;= #{dateStart}::DATE
+                        AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND r.upd_date &gt;= #{dateStart}::DATE
+                        AND r.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
+            </if>
         </where>
     </sql>
 

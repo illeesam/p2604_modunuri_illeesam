@@ -13,9 +13,17 @@
                     <if test="searchTypes.contains('def_batchNm')">OR h.batch_nm ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND h.reg_date &gt;= #{dateStart}::DATE
-                AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND h.reg_date &gt;= #{dateStart}::DATE
+                        AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND h.upd_date &gt;= #{dateStart}::DATE
+                        AND h.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

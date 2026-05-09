@@ -9,9 +9,17 @@
             <if test="siteId != null and siteId != ''">AND t.site_id = #{siteId}</if>
             <if test="deviceTokenId != null and deviceTokenId != ''">AND t.device_token_id = #{deviceTokenId}</if>
             <if test="memberId != null and memberId != ''">AND t.member_id = #{memberId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND t.reg_date &gt;= #{dateStart}::DATE
-                AND t.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND t.reg_date &gt;= #{dateStart}::DATE
+                        AND t.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND t.upd_date &gt;= #{dateStart}::DATE
+                        AND t.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

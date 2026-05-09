@@ -7,12 +7,20 @@
     <!-- 게시물 좋아요 조회 조건 -->
     <sql id="cmBlogGoodCond">
         <where>
-                        <if test="likeId != null and likeId != ''">AND g.like_id = #{likeId}</if>
-<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-    AND g.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="blogId != null and blogId != ''">AND g.blog_id = #{blogId}
-    AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
-</if>
+            <if test="likeId != null and likeId != ''">AND g.like_id = #{likeId}</if>
+            <if test="blogId != null and blogId != ''">AND g.blog_id = #{blogId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND g.reg_date &gt;= #{dateStart}::DATE
+                        AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND g.upd_date &gt;= #{dateStart}::DATE
+                        AND g.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
+            </if>
         </where>
     </sql>
 

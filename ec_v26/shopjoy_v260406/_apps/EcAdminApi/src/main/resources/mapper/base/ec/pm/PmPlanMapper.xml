@@ -11,13 +11,23 @@
             <if test="planId != null and planId != ''">AND p.plan_id = #{planId}</if>
             <if test="status != null and status != ''">AND p.plan_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND p.plan_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (p.plan_nm ILIKE '%' || #{kw} || '%'
-                  OR p.plan_title ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_plan_nm')">OR p.plan_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_plan_title')">OR p.plan_title ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND p.reg_date &gt;= #{dateStart}::DATE
-                AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND p.reg_date &gt;= #{dateStart}::DATE
+                        AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND p.upd_date &gt;= #{dateStart}::DATE
+                        AND p.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

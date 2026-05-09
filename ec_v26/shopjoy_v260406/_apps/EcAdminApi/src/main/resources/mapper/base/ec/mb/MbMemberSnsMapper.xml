@@ -7,12 +7,20 @@
     <!-- SNS 연동 회원 조회 조건 -->
     <sql id="mbMemberSnsCond">
         <where>
-                        <if test="memberSnsId != null and memberSnsId != ''">AND m.member_sns_id = #{memberSnsId}</if>
-<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-    AND m.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="memberId != null and memberId != ''">AND m.member_id = #{memberId}
-    AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
-</if>
+            <if test="memberSnsId != null and memberSnsId != ''">AND m.member_sns_id = #{memberSnsId}</if>
+            <if test="memberId != null and memberId != ''">AND m.member_id = #{memberId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND m.reg_date &gt;= #{dateStart}::DATE
+                        AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND m.upd_date &gt;= #{dateStart}::DATE
+                        AND m.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
+            </if>
         </where>
     </sql>
 

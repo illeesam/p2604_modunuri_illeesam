@@ -25,13 +25,27 @@
             <if test="vendorId != null and vendorId != ''">AND r.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND r.raw_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND r.raw_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (r.prod_nm ILIKE '%' || #{kw} || '%'
-                  OR r.brand_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_prod_nm')">OR r.prod_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_brand_nm')">OR r.brand_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND r.order_date &gt;= #{dateStart}::DATE
-                AND r.order_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'order_date'">
+                        AND r.order_date &gt;= #{dateStart}::DATE
+                        AND r.order_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND r.reg_date &gt;= #{dateStart}::DATE
+                        AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND r.upd_date &gt;= #{dateStart}::DATE
+                        AND r.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

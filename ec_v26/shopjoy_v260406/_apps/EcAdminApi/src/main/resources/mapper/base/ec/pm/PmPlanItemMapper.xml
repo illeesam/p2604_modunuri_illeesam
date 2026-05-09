@@ -11,9 +11,17 @@
             <if test="planItemId != null and planItemId != ''">AND i.plan_item_id = #{planItemId}</if>
             <if test="prodId != null and prodId != ''">AND i.prod_id = #{prodId}</if>
             <if test="planId != null and planId != ''">AND i.plan_id = #{planId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND i.reg_date &gt;= #{dateStart}::DATE
-                AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND i.reg_date &gt;= #{dateStart}::DATE
+                        AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND i.upd_date &gt;= #{dateStart}::DATE
+                        AND i.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

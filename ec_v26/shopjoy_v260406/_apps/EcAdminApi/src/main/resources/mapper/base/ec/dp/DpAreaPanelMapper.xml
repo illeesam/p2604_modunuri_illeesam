@@ -7,13 +7,21 @@
     <!-- 전시 영역-패널 매핑 조회 조건 -->
     <sql id="dpAreaPanelCond">
         <where>
-                        <if test="areaPanelId != null and areaPanelId != ''">AND p.area_panel_id = #{areaPanelId}</if>
-<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-    AND p.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="areaPanelId != null and areaPanelId != ''">AND p.area_panel_id = #{areaPanelId}</if>
             <if test="panelId != null and panelId != ''">AND p.panel_id = #{panelId}</if>
-            <if test="areaId != null and areaId != ''">AND p.area_id = #{areaId}
-    AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
-</if>
+            <if test="areaId != null and areaId != ''">AND p.area_id = #{areaId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND p.reg_date &gt;= #{dateStart}::DATE
+                        AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND p.upd_date &gt;= #{dateStart}::DATE
+                        AND p.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
+            </if>
         </where>
     </sql>
 

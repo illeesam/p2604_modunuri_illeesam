@@ -10,15 +10,24 @@
             <if test="siteId    != null and siteId    != ''">AND l.site_id    = #{siteId}</if>
             <if test="logId != null and logId != ''">AND l.log_id = #{logId}</if>
             <if test="memberId != null and memberId != ''">AND l.member_id = #{memberId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND l.reg_date  &gt;= #{dateStart}::DATE
-                AND l.reg_date  &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND l.reg_date &gt;= #{dateStart}::DATE
+                        AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
             <if test="resultCd  != null and resultCd  != ''">AND l.result_cd  = #{resultCd}</if>
             <if test="ip        != null and ip        != ''">AND l.ip        LIKE '%'||#{ip}||'%'</if>
             <if test="uiNm      != null and uiNm      != ''">AND l.ui_nm     LIKE '%'||#{uiNm}||'%'</if>
             <if test="traceId   != null and traceId   != ''">AND l.trace_id  LIKE '%'||#{traceId}||'%'</if>
-            <if test="kw        != null and kw        != ''">AND (l.member_id LIKE '%'||#{kw}||'%' OR l.login_id LIKE '%'||#{kw}||'%')</if>
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member_id')">OR l.member_id ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_login_id')"> OR l.login_id  ILIKE '%' || #{searchValue} || '%'</if>
+                )
+            </if>
         </where>
     </sql>
 

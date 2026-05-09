@@ -13,12 +13,22 @@
             <if test="siteId != null and siteId != ''">AND i.site_id = #{siteId}</if>
             <if test="optItemId != null and optItemId != ''">AND i.opt_item_id = #{optItemId}</if>
             <if test="typeCd != null and typeCd != ''">AND i.opt_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (i.opt_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_opt_nm')">OR i.opt_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND i.reg_date &gt;= #{dateStart}::DATE
-                AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND i.reg_date &gt;= #{dateStart}::DATE
+                        AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND i.upd_date &gt;= #{dateStart}::DATE
+                        AND i.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

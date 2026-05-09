@@ -14,14 +14,29 @@
             <if test="memberId != null and memberId != ''">AND m.member_id = #{memberId}</if>
             <if test="status != null and status != ''">AND m.member_status_cd = #{status}</if>
             <if test="grade != null and grade != ''">AND m.grade_cd = #{grade}</if>
-            <if test="kw != null and kw != ''">
-                AND (m.member_nm    ILIKE '%' || #{kw} || '%'
-                  OR m.login_id ILIKE '%' || #{kw} || '%'
-                  OR m.member_phone ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member_id')">  OR m.member_id    ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member_nm')">  OR m.member_nm    ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_login_id')">   OR m.login_id     ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member_phone')">OR m.member_phone ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND m.join_date &gt;= #{dateStart}::DATE
-                AND m.join_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'join_date'">
+                        AND m.join_date &gt;= #{dateStart}::DATE
+                        AND m.join_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND m.reg_date &gt;= #{dateStart}::DATE
+                        AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND m.upd_date &gt;= #{dateStart}::DATE
+                        AND m.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

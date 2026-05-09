@@ -10,9 +10,17 @@
             <if test="siteId != null and siteId != ''">AND a.site_id = #{siteId}</if>
             <if test="settleAdjId != null and settleAdjId != ''">AND a.settle_adj_id = #{settleAdjId}</if>
             <if test="typeCd != null and typeCd != ''">AND a.adj_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND a.reg_date &gt;= #{dateStart}::DATE
-                AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND a.reg_date &gt;= #{dateStart}::DATE
+                        AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND a.upd_date &gt;= #{dateStart}::DATE
+                        AND a.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

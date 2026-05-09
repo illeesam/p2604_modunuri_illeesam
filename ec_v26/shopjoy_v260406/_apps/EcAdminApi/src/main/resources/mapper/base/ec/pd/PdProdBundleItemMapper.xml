@@ -11,9 +11,17 @@
             <if test="bundleItemId != null and bundleItemId != ''">AND i.bundle_item_id = #{bundleItemId}</if>
             <if test="itemProdId != null and itemProdId != ''">AND i.item_prod_id = #{itemProdId}</if>
             <if test="bundleProdId != null and bundleProdId != ''">AND i.bundle_prod_id = #{bundleProdId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND i.reg_date &gt;= #{dateStart}::DATE
-                AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND i.reg_date &gt;= #{dateStart}::DATE
+                        AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND i.upd_date &gt;= #{dateStart}::DATE
+                        AND i.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -25,9 +25,17 @@
                     <if test="searchTypes.contains('def_ceo')"> OR v.ceo_nm ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND v.reg_date &gt;= #{dateStart}::DATE
-                AND v.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND v.reg_date &gt;= #{dateStart}::DATE
+                        AND v.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND v.upd_date &gt;= #{dateStart}::DATE
+                        AND v.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

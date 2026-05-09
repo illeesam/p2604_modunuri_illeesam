@@ -15,15 +15,29 @@
             <if test="memberId != null and memberId != ''">AND ci.member_id = #{memberId}</if>
             <if test="useYn != null and useYn != ''">AND ci.use_yn = #{useYn}</if>
             <if test="couponId != null and couponId != ''">AND ci.coupon_id = #{couponId}</if>
-            <if test="kw != null and kw != ''">
-                AND (m.member_nm    ILIKE '%' || #{kw} || '%'
-                  OR m.login_id                 ILIKE '%' || #{kw} || '%'
-                  OR c.coupon_nm    ILIKE '%' || #{kw} || '%'
-                  OR c.coupon_cd    ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member_nm')">OR m.member_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_login_id')">OR m.login_id ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_coupon_nm')">OR c.coupon_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_coupon_cd')">OR c.coupon_cd ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND ci.issue_date &gt;= #{dateStart}::DATE
-                AND ci.issue_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'issue_date'">
+                        AND ci.issue_date &gt;= #{dateStart}::DATE
+                        AND ci.issue_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND ci.reg_date &gt;= #{dateStart}::DATE
+                        AND ci.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND ci.upd_date &gt;= #{dateStart}::DATE
+                        AND ci.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -11,12 +11,22 @@
             <if test="dlivTmpltId != null and dlivTmpltId != ''">AND t.dliv_tmplt_id = #{dlivTmpltId}</if>
             <if test="vendorId != null and vendorId != ''">AND t.vendor_id = #{vendorId}</if>
             <if test="typeCd != null and typeCd != ''">AND t.dliv_pay_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (t.dliv_tmplt_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_dliv_tmplt_nm')">OR t.dliv_tmplt_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND t.reg_date &gt;= #{dateStart}::DATE
-                AND t.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND t.reg_date &gt;= #{dateStart}::DATE
+                        AND t.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND t.upd_date &gt;= #{dateStart}::DATE
+                        AND t.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

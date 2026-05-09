@@ -19,13 +19,23 @@
                 )
             </if>
             <if test="typeCd != null and typeCd != ''">AND l.widget_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (l.widget_nm ILIKE '%' || #{kw} || '%'
-                  OR l.widget_code ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_widget_nm')">OR l.widget_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_widget_code')">OR l.widget_code ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND l.reg_date &gt;= #{dateStart}::DATE
-                AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND l.reg_date &gt;= #{dateStart}::DATE
+                        AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND l.upd_date &gt;= #{dateStart}::DATE
+                        AND l.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

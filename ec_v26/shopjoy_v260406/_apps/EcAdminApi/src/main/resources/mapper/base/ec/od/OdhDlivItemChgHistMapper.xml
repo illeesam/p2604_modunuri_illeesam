@@ -10,9 +10,13 @@
             <if test="dlivItemChgHistId != null and dlivItemChgHistId != ''">AND h.dliv_item_chg_hist_id = #{dlivItemChgHistId}</if>
             <if test="chgUserId != null and chgUserId != ''">AND h.chg_user_id = #{chgUserId}</if>
             <if test="typeCd != null and typeCd != ''">AND h.chg_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND h.reg_date &gt;= #{dateStart}::DATE
-                AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND h.reg_date &gt;= #{dateStart}::DATE
+                        AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -18,13 +18,6 @@
             <if test="couponId != null and couponId != ''">AND o.coupon_id = #{couponId}</if>
             <if test="memberId != null and memberId != ''">AND o.member_id = #{memberId}</if>
             <if test="status != null and status != ''">AND o.order_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (o.order_id::TEXT ILIKE '%' || #{kw} || '%'
-                  OR o.member_nm      ILIKE '%' || #{kw} || '%'
-                  OR m.login_id       ILIKE '%' || #{kw} || '%'
-                  OR o.recv_nm        ILIKE '%' || #{kw} || '%'
-                  OR o.recv_phone     ILIKE '%' || #{kw} || '%')
-            </if>
             <if test="searchValue != null and searchValue != ''">
                 AND (1=0
                     <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_order_id')">    OR o.order_id::TEXT ILIKE '%' || #{searchValue} || '%'</if>

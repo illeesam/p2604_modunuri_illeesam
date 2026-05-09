@@ -11,9 +11,17 @@
             <if test="saveId != null and saveId != ''">AND s.save_id = #{saveId}</if>
             <if test="memberId != null and memberId != ''">AND s.member_id = #{memberId}</if>
             <if test="typeCd != null and typeCd != ''">AND s.save_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND s.reg_date &gt;= #{dateStart}::DATE
-                AND s.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND s.reg_date &gt;= #{dateStart}::DATE
+                        AND s.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND s.upd_date &gt;= #{dateStart}::DATE
+                        AND s.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -14,13 +14,28 @@
             <if test="useYn != null and useYn != ''">AND c.use_yn = #{useYn}</if>
             <if test="status != null and status != ''">AND c.coupon_status_cd = #{status}</if>
             <if test="couponType != null and couponType != ''">AND c.coupon_type_cd = #{couponType}</if>
-            <if test="kw != null and kw != ''">
-                AND (c.coupon_nm ILIKE '%' || #{kw} || '%'
-                  OR c.coupon_cd ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_coupon_id')">OR c.coupon_id ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_coupon_nm')">OR c.coupon_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_coupon_cd')">OR c.coupon_cd ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND c.valid_from &gt;= #{dateStart}::DATE
-                AND c.valid_to   &lt;= #{dateEnd}::DATE
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'valid_period'">
+                        AND c.valid_from &gt;= #{dateStart}::DATE
+                        AND c.valid_to   &lt;= #{dateEnd}::DATE
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND c.reg_date &gt;= #{dateStart}::DATE
+                        AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND c.upd_date &gt;= #{dateStart}::DATE
+                        AND c.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

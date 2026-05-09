@@ -9,9 +9,21 @@
             <if test="siteId != null and siteId != ''">AND h.site_id = #{siteId}</if>
             <if test="sendHistId != null and sendHistId != ''">AND h.send_hist_id = #{sendHistId}</if>
             <if test="status != null and status != ''">AND h.send_hist_status_cd = #{status}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND h.send_date &gt;= #{dateStart}::DATE
-                AND h.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'send_date'">
+                        AND h.send_date &gt;= #{dateStart}::DATE
+                        AND h.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND h.reg_date &gt;= #{dateStart}::DATE
+                        AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND h.upd_date &gt;= #{dateStart}::DATE
+                        AND h.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

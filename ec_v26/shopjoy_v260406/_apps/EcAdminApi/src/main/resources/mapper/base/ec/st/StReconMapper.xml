@@ -13,9 +13,17 @@
             <if test="vendorId != null and vendorId != ''">AND r.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND r.recon_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND r.recon_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND r.reg_date &gt;= #{dateStart}::DATE
-                AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND r.reg_date &gt;= #{dateStart}::DATE
+                        AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND r.upd_date &gt;= #{dateStart}::DATE
+                        AND r.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

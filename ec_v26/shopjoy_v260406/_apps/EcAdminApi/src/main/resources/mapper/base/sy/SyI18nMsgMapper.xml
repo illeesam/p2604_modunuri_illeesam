@@ -7,11 +7,19 @@
     <!-- 다국어 메시지 조회 조건 -->
     <sql id="syI18nMsgCond">
         <where>
-                        <if test="i18nMsgId != null and i18nMsgId != ''">AND m.i18n_msg_id = #{i18nMsgId}</if>
-<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-    AND m.reg_date &gt;= #{dateStart}::DATE
-    AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
-</if>
+            <if test="i18nMsgId != null and i18nMsgId != ''">AND m.i18n_msg_id = #{i18nMsgId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND m.reg_date &gt;= #{dateStart}::DATE
+                        AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND m.upd_date &gt;= #{dateStart}::DATE
+                        AND m.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
+            </if>
         </where>
     </sql>
 

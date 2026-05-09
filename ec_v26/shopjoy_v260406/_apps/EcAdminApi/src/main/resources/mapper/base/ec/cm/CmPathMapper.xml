@@ -7,11 +7,19 @@
     <!-- 경로(메뉴/URL) 조회 조건 -->
     <sql id="cmPathCond">
         <where>
-                        <if test="pathId != null and pathId != ''">AND p.path_id = #{pathId}</if>
-<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-    AND p.reg_date &gt;= #{dateStart}::DATE
-    AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
-</if>
+            <if test="pathId != null and pathId != ''">AND p.path_id = #{pathId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND p.reg_date &gt;= #{dateStart}::DATE
+                        AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND p.upd_date &gt;= #{dateStart}::DATE
+                        AND p.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
+            </if>
         </where>
     </sql>
 

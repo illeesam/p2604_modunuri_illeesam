@@ -11,9 +11,17 @@
             <if test="restockNotiId != null and restockNotiId != ''">AND n.restock_noti_id = #{restockNotiId}</if>
             <if test="prodId != null and prodId != ''">AND n.prod_id = #{prodId}</if>
             <if test="memberId != null and memberId != ''">AND n.member_id = #{memberId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND n.reg_date &gt;= #{dateStart}::DATE
-                AND n.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND n.reg_date &gt;= #{dateStart}::DATE
+                        AND n.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND n.upd_date &gt;= #{dateStart}::DATE
+                        AND n.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

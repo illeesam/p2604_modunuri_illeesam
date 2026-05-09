@@ -11,9 +11,17 @@
 <if test="prodId != null and prodId != ''">AND r.prod_id = #{prodId}</if>
             <if test="relProdId != null and relProdId != ''">AND r.rel_prod_id = #{relProdId}</if>
             <if test="typeCd != null and typeCd != ''">AND r.prod_rel_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND r.reg_date &gt;= #{dateStart}::DATE
-                AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND r.reg_date &gt;= #{dateStart}::DATE
+                        AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND r.upd_date &gt;= #{dateStart}::DATE
+                        AND r.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -15,12 +15,22 @@
             <if test="orderId != null and orderId != ''">AND u.order_id = #{orderId}</if>
             <if test="memberId != null and memberId != ''">AND u.member_id = #{memberId}</if>
             <if test="typeCd != null and typeCd != ''">AND u.discnt_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (u.discnt_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_discnt_nm')">OR u.discnt_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND u.reg_date &gt;= #{dateStart}::DATE
-                AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND u.reg_date &gt;= #{dateStart}::DATE
+                        AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND u.upd_date &gt;= #{dateStart}::DATE
+                        AND u.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

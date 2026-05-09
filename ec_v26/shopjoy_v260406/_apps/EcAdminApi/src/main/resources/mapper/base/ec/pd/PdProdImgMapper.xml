@@ -11,9 +11,17 @@
             <if test="attachId != null and attachId != ''">AND i.attach_id = #{attachId}</if>
             <if test="siteId != null and siteId != ''">AND i.site_id = #{siteId}</if>
             <if test="prodImgId != null and prodImgId != ''">AND i.prod_img_id = #{prodImgId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND i.reg_date &gt;= #{dateStart}::DATE
-                AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND i.reg_date &gt;= #{dateStart}::DATE
+                        AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND i.upd_date &gt;= #{dateStart}::DATE
+                        AND i.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

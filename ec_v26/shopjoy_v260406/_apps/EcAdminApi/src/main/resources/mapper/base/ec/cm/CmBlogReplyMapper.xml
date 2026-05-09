@@ -12,12 +12,22 @@
             <if test="parentCommentId != null and parentCommentId != ''">AND r.parent_comment_id = #{parentCommentId}</if>
             <if test="writerId != null and writerId != ''">AND r.writer_id = #{writerId}</if>
             <if test="status != null and status != ''">AND r.comment_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (r.writer_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_writer_nm')">OR r.writer_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND r.reg_date &gt;= #{dateStart}::DATE
-                AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND r.reg_date &gt;= #{dateStart}::DATE
+                        AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND r.upd_date &gt;= #{dateStart}::DATE
+                        AND r.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -13,12 +13,22 @@
             <if test="useYn != null and useYn != ''">AND g.use_yn = #{useYn}</if>
             <if test="status != null and status != ''">AND g.gift_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND g.gift_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (g.gift_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_gift_nm')">OR g.gift_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND g.reg_date &gt;= #{dateStart}::DATE
-                AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND g.reg_date &gt;= #{dateStart}::DATE
+                        AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND g.upd_date &gt;= #{dateStart}::DATE
+                        AND g.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -9,12 +9,22 @@
         <where>
             <if test="siteId != null and siteId != ''">AND g.site_id = #{siteId}</if>
             <if test="memberGroupId != null and memberGroupId != ''">AND g.member_group_id = #{memberGroupId}</if>
-            <if test="kw != null and kw != ''">
-                AND (g.group_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_group_nm')">OR g.group_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND g.reg_date &gt;= #{dateStart}::DATE
-                AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND g.reg_date &gt;= #{dateStart}::DATE
+                        AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND g.upd_date &gt;= #{dateStart}::DATE
+                        AND g.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

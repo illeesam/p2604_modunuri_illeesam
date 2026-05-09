@@ -14,7 +14,7 @@ window.OdCartMng = {
     /* ── 목록 상태 ── */
     const rows   = reactive([]);
     const pager  = reactive({ pageNo: 1, pageSize: 20, totalCount: 0, totalPage: 1 });
-    const search = reactive({ siteId: '', memberId: '', memberNm: '', kw: '', dateStart: '', dateEnd: '' });
+    const search = reactive({ siteId: '', memberId: '', memberNm: '', kw: '', searchTypes: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
     const uiState = reactive({ loading: false, selectedIds: [] });
     const codes = reactive({ sites: [] });
 
@@ -85,9 +85,12 @@ window.OdCartMng = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...(search.siteId    && { siteId:    search.siteId }),
           ...(search.memberId  && { memberId:  search.memberId }),
-          ...(search.kw        && { kw:        search.kw }),
-          ...(search.dateStart && { dateStart: search.dateStart }),
-          ...(search.dateEnd   && { dateEnd:   search.dateEnd }),
+          ...(search.kw          && { kw:          search.kw }),
+          ...(search.searchTypes && { searchTypes: search.searchTypes }),
+          ...(search.searchValue && { searchValue: search.searchValue }),
+          ...(search.dateType    && { dateType:    search.dateType }),
+          ...(search.dateStart   && { dateStart:   search.dateStart }),
+          ...(search.dateEnd     && { dateEnd:     search.dateEnd }),
         };
         const res = await boApiSvc.odCart.getPage(params, '장바구니관리', '조회');
         const d = res.data?.data || {};
@@ -101,10 +104,17 @@ window.OdCartMng = {
       }
     };
 
-    const onSearch    = () => { pager.pageNo = 1; handleSearchList(); };
+    const onSearch    = () => {
+      if ((search.dateStart || search.dateEnd) && !search.dateType) {
+        showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
+        return;
+      }
+      pager.pageNo = 1; handleSearchList();
+    };
     const onReset     = () => {
       search.siteId = ''; search.memberId = ''; search.memberNm = '';
-      search.kw = ''; search.dateStart = ''; search.dateEnd = '';
+      search.kw = ''; search.searchTypes = ''; search.searchValue = '';
+      search.dateType = 'reg_date'; search.dateStart = ''; search.dateEnd = '';
       onSearch();
     };
     const onPageChange = (no) => { pager.pageNo = no; handleSearchList(); };
@@ -191,11 +201,21 @@ window.OdCartMng = {
         <button v-if="search.memberId" class="btn btn-sm" style="padding:2px 6px;font-size:11px;color:#999;background:none;border:1px solid #ddd;" @click="onClearMember">✕</button>
       </div>
 
-      <label class="search-label">검색어</label>
-      <input v-model="search.kw" class="form-control" style="width:180px;" placeholder="상품명 / 회원명"
+      <label class="search-label">검색</label>
+      <multi-check-select v-model="search.searchTypes" :options="[
+          { value: 'def_member_nm', label: '회원명' },
+          { value: 'def_member_id', label: '회원ID' },
+          { value: 'def_prod_id',   label: '상품ID' },
+          { value: 'def_prod_nm',   label: '상품명' },
+        ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
+      <input v-model="search.searchValue" class="form-control" style="width:180px;" placeholder="검색어 입력"
              @keyup.enter="onSearch" />
 
-      <label class="search-label">등록일</label>
+      <label class="search-label">기간</label>
+      <select v-model="search.dateType" class="form-control" style="width:110px;">
+        <option value="reg_date">등록일자</option>
+        <option value="upd_date">수정일자</option>
+      </select>
       <input v-model="search.dateStart" type="date" class="form-control" style="width:136px;" />
       <span style="margin:0 2px;color:#999;">~</span>
       <input v-model="search.dateEnd" type="date" class="form-control" style="width:136px;" />

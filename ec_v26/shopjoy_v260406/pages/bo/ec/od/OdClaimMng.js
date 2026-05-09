@@ -359,7 +359,13 @@ window.OdClaimMng = {
   <div class="page-title">클레임관리</div>
   <div class="card">
     <div class="search-bar">
-      <select v-model="searchParam.searchTypes"><option value="">검색대상 전체</option><option value="def_claim_id">클레임ID</option><option value="def_order_id">주문ID</option><option value="def_member_nm">회원명</option><option value="def_prod_nm">상품명</option><option value="def_login_id">로그인ID</option></select>
+      <multi-check-select v-model="searchParam.searchTypes" :options="[
+          { value: 'def_claim_id',    label: '클레임ID' },
+          { value: 'def_order_id',    label: '주문ID' },
+          { value: 'def_member_nm',   label: '회원명' },
+          { value: 'def_prod_nm',     label: '상품명' },
+          { value: 'def_login_id',    label: '로그인ID' },
+        ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
       <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <span class="search-label">회원</span>
       <div style="display:inline-flex;align-items:center;gap:4px;">

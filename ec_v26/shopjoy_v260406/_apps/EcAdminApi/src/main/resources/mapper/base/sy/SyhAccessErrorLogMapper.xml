@@ -6,9 +6,17 @@
 
     <sql id="syhAccessErrorLogCond">
         <where>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND l.reg_date &gt;= #{dateStart}::DATE
-                AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND l.reg_date &gt;= #{dateStart}::DATE
+                        AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND l.upd_date &gt;= #{dateStart}::DATE
+                        AND l.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
             <if test="method    != null and method    != ''">AND l.req_method = #{method}</if>
             <if test="path      != null and path      != ''">AND l.req_path LIKE '%'||#{path}||'%'</if>

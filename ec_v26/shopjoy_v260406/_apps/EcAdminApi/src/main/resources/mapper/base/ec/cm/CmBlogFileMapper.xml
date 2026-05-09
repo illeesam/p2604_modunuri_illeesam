@@ -7,12 +7,20 @@
     <!-- 게시물 첨부파일 조회 조건 -->
     <sql id="cmBlogFileCond">
         <where>
-                        <if test="blogImgId != null and blogImgId != ''">AND f.blog_img_id = #{blogImgId}</if>
-<if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-    AND f.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="blogId != null and blogId != ''">AND f.blog_id = #{blogId}
-    AND f.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
-</if>
+            <if test="blogImgId != null and blogImgId != ''">AND f.blog_img_id = #{blogImgId}</if>
+            <if test="blogId != null and blogId != ''">AND f.blog_id = #{blogId}</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND f.reg_date &gt;= #{dateStart}::DATE
+                        AND f.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND f.upd_date &gt;= #{dateStart}::DATE
+                        AND f.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
+            </if>
         </where>
     </sql>
 

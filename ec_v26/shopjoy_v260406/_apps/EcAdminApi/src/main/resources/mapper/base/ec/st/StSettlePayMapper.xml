@@ -11,12 +11,22 @@
             <if test="settlePayId != null and settlePayId != ''">AND p.settle_pay_id = #{settlePayId}</if>
             <if test="vendorId != null and vendorId != ''">AND p.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND p.pay_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (p.bank_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_bank_nm')">OR p.bank_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND p.reg_date &gt;= #{dateStart}::DATE
-                AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND p.reg_date &gt;= #{dateStart}::DATE
+                        AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND p.upd_date &gt;= #{dateStart}::DATE
+                        AND p.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

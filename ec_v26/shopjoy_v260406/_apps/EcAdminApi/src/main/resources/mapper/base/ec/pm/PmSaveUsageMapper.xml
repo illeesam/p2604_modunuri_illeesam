@@ -13,9 +13,17 @@
             <if test="orderItemId != null and orderItemId != ''">AND u.order_item_id = #{orderItemId}</if>
             <if test="orderId != null and orderId != ''">AND u.order_id = #{orderId}</if>
             <if test="prodId != null and prodId != ''">AND u.prod_id = #{prodId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND u.reg_date &gt;= #{dateStart}::DATE
-                AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND u.reg_date &gt;= #{dateStart}::DATE
+                        AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND u.upd_date &gt;= #{dateStart}::DATE
+                        AND u.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

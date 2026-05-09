@@ -8,12 +8,22 @@
     <sql id="syAttachGrpCond">
         <where>
                         <if test="attachGrpId != null and attachGrpId != ''">AND g.attach_grp_id = #{attachGrpId}</if>
-<if test="kw != null and kw != ''">
-                AND (g.attach_grp_nm ILIKE '%' || #{kw} || '%')
-            </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND g.reg_date &gt;= #{dateStart}::DATE
-                AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+<if test="searchValue != null and searchValue != ''">
+    AND (1=0
+        <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_attach_grp_nm')">OR g.attach_grp_nm ILIKE '%' || #{searchValue} || '%'</if>
+    )
+</if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND g.reg_date &gt;= #{dateStart}::DATE
+                        AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND g.upd_date &gt;= #{dateStart}::DATE
+                        AND g.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

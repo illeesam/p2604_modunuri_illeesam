@@ -14,9 +14,13 @@
             <if test="chgUserId != null and chgUserId != ''">AND h.chg_user_id = #{chgUserId}</if>
             <if test="orderItemId != null and orderItemId != ''">AND h.order_item_id = #{orderItemId}</if>
             <if test="status != null and status != ''">AND h.claim_item_status_cd = #{status}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND h.reg_date &gt;= #{dateStart}::DATE
-                AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND h.reg_date &gt;= #{dateStart}::DATE
+                        AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

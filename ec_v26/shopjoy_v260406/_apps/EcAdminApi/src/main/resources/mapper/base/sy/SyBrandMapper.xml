@@ -25,9 +25,17 @@
                     <if test="searchTypes.contains('def_enName')">OR b.brand_en_nm ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND b.reg_date &gt;= #{dateStart}::DATE
-                AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND b.reg_date &gt;= #{dateStart}::DATE
+                        AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND b.upd_date &gt;= #{dateStart}::DATE
+                        AND b.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

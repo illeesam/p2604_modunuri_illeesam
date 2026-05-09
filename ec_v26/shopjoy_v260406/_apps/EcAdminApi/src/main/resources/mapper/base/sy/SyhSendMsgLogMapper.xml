@@ -11,9 +11,21 @@
             <if test="userId != null and userId != ''">AND l.user_id = #{userId}</if>
             <if test="templateId != null and templateId != ''">AND l.template_id = #{templateId}</if>
             <if test="typeCd != null and typeCd != ''">AND l.ref_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND l.send_date &gt;= #{dateStart}::DATE
-                AND l.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'send_date'">
+                        AND l.send_date &gt;= #{dateStart}::DATE
+                        AND l.send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND l.reg_date &gt;= #{dateStart}::DATE
+                        AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND l.upd_date &gt;= #{dateStart}::DATE
+                        AND l.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

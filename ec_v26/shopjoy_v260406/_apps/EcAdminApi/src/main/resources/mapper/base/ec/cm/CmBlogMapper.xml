@@ -11,13 +11,23 @@
             <if test="blogId != null and blogId != ''">AND b.blog_id = #{blogId}</if>
             <if test="blogCateId != null and blogCateId != ''">AND b.blog_cate_id = #{blogCateId}</if>
             <if test="prodId != null and prodId != ''">AND b.prod_id = #{prodId}</if>
-            <if test="kw != null and kw != ''">
-                AND (b.blog_title ILIKE '%' || #{kw} || '%'
-                  OR b.blog_author ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_blog_title')">OR b.blog_title ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_blog_author')">OR b.blog_author ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND b.reg_date &gt;= #{dateStart}::DATE
-                AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND b.reg_date &gt;= #{dateStart}::DATE
+                        AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND b.upd_date &gt;= #{dateStart}::DATE
+                        AND b.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

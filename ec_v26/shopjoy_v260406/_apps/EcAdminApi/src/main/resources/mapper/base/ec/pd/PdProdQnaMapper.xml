@@ -15,12 +15,22 @@
             <if test="memberId != null and memberId != ''">AND q.member_id = #{memberId}</if>
             <if test="typeCd != null and typeCd != ''">AND q.qna_type_cd = #{typeCd}</if>
             <if test="answYn != null and answYn != ''">AND q.answ_yn = #{answYn}</if>
-            <if test="kw != null and kw != ''">
-                AND (q.qna_title ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_qna_title')">OR q.qna_title ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND q.reg_date &gt;= #{dateStart}::DATE
-                AND q.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND q.reg_date &gt;= #{dateStart}::DATE
+                        AND q.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND q.upd_date &gt;= #{dateStart}::DATE
+                        AND q.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -14,15 +14,28 @@
             <if test="payId != null and payId != ''">AND p.pay_id = #{payId}</if>
             <if test="orderId != null and orderId != ''">AND p.order_id = #{orderId}</if>
             <if test="status != null and status != ''">AND p.pay_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (p.order_id::TEXT    ILIKE '%' || #{kw} || '%'
-                  OR pg_transaction_id ILIKE '%' || #{kw} || '%'
-                  OR m.login_id                      ILIKE '%' || #{kw} || '%'
-                  OR o.member_nm         ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_order_id')">OR p.order_id::TEXT ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_login_id')">OR m.login_id ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member_nm')">OR o.member_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND p.pay_date &gt;= #{dateStart}::DATE
-                AND p.pay_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'pay_date'">
+                        AND p.pay_date &gt;= #{dateStart}::DATE
+                        AND p.pay_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND p.reg_date &gt;= #{dateStart}::DATE
+                        AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND p.upd_date &gt;= #{dateStart}::DATE
+                        AND p.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

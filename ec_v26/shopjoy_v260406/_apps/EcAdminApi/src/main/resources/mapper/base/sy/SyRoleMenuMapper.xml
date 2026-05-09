@@ -8,9 +8,17 @@
         <where>
             <if test="siteId != null and siteId != ''">AND m.site_id = #{siteId}</if>
             <if test="roleMenuId != null and roleMenuId != ''">AND m.role_menu_id = #{roleMenuId}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND m.reg_date &gt;= #{dateStart}::DATE
-                AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND m.reg_date &gt;= #{dateStart}::DATE
+                        AND m.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND m.upd_date &gt;= #{dateStart}::DATE
+                        AND m.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

@@ -12,9 +12,21 @@
             <if test="orderId != null and orderId != ''">AND i.order_id = #{orderId}</if>
             <if test="voucherId != null and voucherId != ''">AND i.voucher_id = #{voucherId}</if>
             <if test="status != null and status != ''">AND i.voucher_issue_status_cd = #{status}</if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND i.issue_date &gt;= #{dateStart}::DATE
-                AND i.issue_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'issue_date'">
+                        AND i.issue_date &gt;= #{dateStart}::DATE
+                        AND i.issue_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND i.reg_date &gt;= #{dateStart}::DATE
+                        AND i.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND i.upd_date &gt;= #{dateStart}::DATE
+                        AND i.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

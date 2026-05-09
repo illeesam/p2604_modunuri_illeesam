@@ -26,9 +26,21 @@
                     <if test="searchTypes.contains('def_typeCd')">OR a.alarm_type_cd ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND a.alarm_send_date &gt;= #{dateStart}::DATE
-                AND a.alarm_send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'alarm_send_date'">
+                        AND a.alarm_send_date &gt;= #{dateStart}::DATE
+                        AND a.alarm_send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND a.reg_date &gt;= #{dateStart}::DATE
+                        AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND a.upd_date &gt;= #{dateStart}::DATE
+                        AND a.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>
