@@ -17,7 +17,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syUserRoleSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY r.user_role_id ASC</when>
@@ -28,7 +28,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto$Item">
         SELECT  /* base.sy :: SyUserRole :: selectById */
               r.*
             , usr.user_nm AS user_nm
@@ -41,7 +41,7 @@
         WHERE r.user_role_id = #{id}
     </select>
 
-    <select id="selectByUserId" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
+    <select id="selectByUserId" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto$Item">
         SELECT  /* base.sy :: SyUserRole :: selectByUserId */
               r.*
             , rol.role_nm  AS role_nm
@@ -54,7 +54,7 @@
         ORDER BY r.grant_date DESC
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto$Item">
         SELECT  /* base.sy :: SyUserRole :: selectList */
               r.*
             , usr.user_nm AS user_nm
@@ -69,7 +69,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto$Item">
         SELECT  /* base.sy :: SyUserRole :: selectPageList */
               r.*
             , usr.user_nm AS user_nm
@@ -107,3 +107,4 @@
     </update>
 
 </mapper>
+

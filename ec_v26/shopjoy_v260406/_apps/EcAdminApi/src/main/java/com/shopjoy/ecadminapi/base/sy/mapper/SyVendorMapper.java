@@ -6,18 +6,22 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyVendorMapper {
 
-    SyVendorDto selectById(@Param("id") String id);
+    /** 단건조회 */
+    SyVendorDto.Item selectById(@Param("id") String id);
 
-    List<SyVendorDto> selectList(Map<String, Object> p);
+    /** 목록조회 */
+    List<SyVendorDto.Item> selectList(SyVendorDto.Request req);
 
-    List<SyVendorDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyVendorDto.Item> selectPageList(SyVendorDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyVendorDto.Request req);
 
+    /** 수정 */
     int updateSelective(SyVendor entity);
 }

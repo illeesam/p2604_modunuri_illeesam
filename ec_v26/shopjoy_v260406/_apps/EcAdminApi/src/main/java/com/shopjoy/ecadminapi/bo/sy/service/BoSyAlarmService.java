@@ -2,13 +2,11 @@ package com.shopjoy.ecadminapi.bo.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyAlarmMapper;
-import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
+import com.shopjoy.ecadminapi.base.sy.service.SyAlarmService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import com.shopjoy.ecadminapi.common.util.VoUtil;
+import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,83 +14,35 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
+/**
+ * BO 알람 서비스 — base SyAlarmService 위임 + saveList(List<SyAlarm>) 보존.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoSyAlarmService {
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyAlarmMapper syAlarmMapper;
+
+    private final SyAlarmService syAlarmService;
     private final SyAlarmRepository syAlarmRepository;
     @PersistenceContext
     private EntityManager em;
 
-    /** getList — 조회 */
-    public List<SyAlarmDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return syAlarmMapper.selectList(p);
-    }
+    public SyAlarmDto.Item getById(String id) { return syAlarmService.getById(id); }
+    public List<SyAlarmDto.Item> getList(SyAlarmDto.Request req) { return syAlarmService.getList(req); }
+    public SyAlarmDto.PageResponse getPageData(SyAlarmDto.Request req) { return syAlarmService.getPageData(req); }
 
-    /** getPageData — 조회 */
-    public PageResult<SyAlarmDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(syAlarmMapper.selectPageList(p), syAlarmMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-    }
+    @Transactional public SyAlarm create(SyAlarm body) { return syAlarmService.create(body); }
+    @Transactional public SyAlarm update(String id, SyAlarm body) { return syAlarmService.update(id, body); }
+    @Transactional public void delete(String id) { syAlarmService.delete(id); }
 
-    /** getById — 조회 */
-    public SyAlarmDto getById(String id) {
-        SyAlarmDto dto = syAlarmMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        return dto;
-    }
-
-    /** create — 생성 */
-    @Transactional
-    public SyAlarm create(SyAlarm body) {
-        body.setAlarmId("AL" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getAuthUser().authId());
-        body.setRegDate(LocalDateTime.now());
-        body.setUpdBy(SecurityUtil.getAuthUser().authId());
-        body.setUpdDate(LocalDateTime.now());
-        SyAlarm saved = syAlarmRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        return saved;
-    }
-
-    /** update — 수정 */
-    @Transactional
-    public SyAlarmDto update(String id, SyAlarm body) {
-        SyAlarm entity = syAlarmRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        VoUtil.voCopyExclude(body, entity, "alarmId^regBy^regDate");
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        SyAlarm saved = syAlarmRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        em.flush();
-        return getById(id);
-    }
-
-    /** delete — 삭제 */
-    @Transactional
-    public void delete(String id) {
-        SyAlarm entity = syAlarmRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        syAlarmRepository.delete(entity);
-        em.flush();
-        if (syAlarmRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
-    }
-    /** saveList — 저장 */
+    /** saveList — DELETE / UPDATE / INSERT 단계별 일괄 저장 */
     @Transactional
     public void saveList(List<SyAlarm> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
-        // 1단계: DELETE 일괄 처리
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()) && r.getAlarmId() != null)
             .map(SyAlarm::getAlarmId)
@@ -103,28 +53,22 @@ public class BoSyAlarmService {
             em.clear();
         }
 
-        // 2단계: UPDATE 처리
         List<SyAlarm> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getAlarmId() != null)
             .toList();
         for (SyAlarm row : updateRows) {
-            SyAlarm entity = syAlarmRepository.findById(row.getAlarmId())
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getAlarmId()));
+            SyAlarm entity = syAlarmService.findById(row.getAlarmId());
             VoUtil.voCopyExclude(row, entity, "alarmId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syAlarmRepository.save(entity);
         }
         em.flush();
 
-        // 3단계: INSERT 처리
         List<SyAlarm> insertRows = rows.stream()
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (SyAlarm row : insertRows) {
-            row.setAlarmId("AL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            syAlarmRepository.save(row);
+            syAlarmService.create(row);
         }
         em.flush();
         em.clear();

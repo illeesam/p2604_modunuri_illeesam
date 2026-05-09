@@ -19,9 +19,11 @@
                 )
             </if>
             <if test="typeCd != null and typeCd != ''">AND b.bbm_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (b.bbm_nm ILIKE '%' || #{kw} || '%'
-                  OR b.bbm_code ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_name')">OR b.bbm_nm   ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_code')">OR b.bbm_code ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND b.reg_date &gt;= #{dateStart}::DATE
@@ -30,7 +32,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syBbmSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY b.bbm_id ASC</when>
@@ -44,7 +46,7 @@
     </sql>
 
     <!-- 게시판 마스터 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto$Item">
         SELECT  /* base.sy :: SyBbm :: selectById */
               b.*
             , ste.site_nm AS site_nm
@@ -60,7 +62,7 @@
     </select>
 
     <!-- 게시판 마스터 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto$Item">
         SELECT  /* base.sy :: SyBbm :: selectList */
               b.*
             , ste.site_nm AS site_nm
@@ -78,7 +80,7 @@
     </select>
 
     <!-- 게시판 마스터 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto$Item">
         SELECT  /* base.sy :: SyBbm :: selectPageList */
               b.*
             , ste.site_nm AS site_nm

@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyBbmMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBbmRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyBbmService {
-
 
     private final SyBbmMapper syBbmMapper;
     private final SyBbmRepository syBbmRepository;
@@ -33,97 +30,137 @@ public class SyBbmService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyBbmDto getById(String id) {
-        // sy_bbm :: select one :: id [orm:mybatis]
-        SyBbmDto result = syBbmMapper.selectById(id);
-        return result;
+    public SyBbmDto.Item getById(String id) {
+        SyBbmDto.Item dto = syBbmMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyBbmDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_bbm :: select list :: p [orm:mybatis]
-        List<SyBbmDto> result = syBbmMapper.selectList(p);
-        return result;
+    public SyBbm findById(String id) {
+        return syBbmRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyBbmDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_bbm :: select page :: p [orm:mybatis]
-        return PageResult.of(syBbmMapper.selectPageList(p), syBbmMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syBbmRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(SyBbm entity) {
-        // sy_bbm :: update :: entity [orm:mybatis]
-        int result = syBbmMapper.updateSelective(entity);
-        return result;
+    public List<SyBbmDto.Item> getList(SyBbmDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syBbmMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public SyBbmDto.PageResponse getPageData(SyBbmDto.Request req) {
+        PageHelper.addPaging(req);
+        SyBbmDto.PageResponse res = new SyBbmDto.PageResponse();
+        List<SyBbmDto.Item> list = syBbmMapper.selectPageList(req);
+        long count = syBbmMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public SyBbm create(SyBbm entity) {
-        entity.setBbmId(CmUtil.generateId("sy_bbm"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_bbm :: insert or update :: [orm:jpa]
-        SyBbm result = syBbmRepository.save(entity);
-        return result;
+    public SyBbm create(SyBbm body) {
+        body.setBbmId(CmUtil.generateId("sy_bbm"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyBbm saved = syBbmRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getBbmId());
     }
 
-    /** save — 저장 */
     @Transactional
     public SyBbm save(SyBbm entity) {
-        if (!syBbmRepository.existsById(entity.getBbmId()))
+        if (!existsById(entity.getBbmId()))
             throw new CmBizException("존재하지 않는 SyBbm입니다: " + entity.getBbmId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_bbm :: insert or update :: [orm:jpa]
-        SyBbm result = syBbmRepository.save(entity);
-        return result;
+        SyBbm saved = syBbmRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getBbmId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyBbm update(String id, SyBbm body) {
+        SyBbm entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "bbmId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyBbm saved = syBbmRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyBbm updatePartial(SyBbm entity) {
+        if (entity.getBbmId() == null) throw new CmBizException("bbmId 가 필요합니다.");
+        if (!existsById(entity.getBbmId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBbmId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syBbmMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getBbmId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyBbm entity = syBbmRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyBbm entity = findById(id);
         syBbmRepository.delete(entity);
         em.flush();
-        if (syBbmRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyBbm> rows) {
+    public List<SyBbm> saveList(List<SyBbm> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyBbm row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setBbmId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_bbm"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syBbmRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getBbmId(), "bbmId must not be null");
-                SyBbm entity = syBbmRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "bbmId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syBbmRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getBbmId(), "bbmId must not be null");
-                if (syBbmRepository.existsById(id)) syBbmRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getBbmId() != null)
+            .map(SyBbm::getBbmId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syBbmRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyBbm> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getBbmId() != null)
+            .toList();
+        for (SyBbm row : updateRows) {
+            SyBbm entity = findById(row.getBbmId());
+            VoUtil.voCopyExclude(row, entity, "bbmId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syBbmRepository.save(entity);
+            upsertedIds.add(entity.getBbmId());
         }
         em.flush();
+
+        List<SyBbm> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyBbm row : insertRows) {
+            row.setBbmId(CmUtil.generateId("sy_bbm"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syBbmRepository.save(row);
+            upsertedIds.add(row.getBbmId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SyBbm> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

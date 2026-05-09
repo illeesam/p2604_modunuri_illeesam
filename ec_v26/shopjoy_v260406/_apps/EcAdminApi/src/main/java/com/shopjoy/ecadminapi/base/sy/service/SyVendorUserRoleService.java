@@ -5,114 +5,164 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUserRole;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyVendorUserRoleMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorUserRoleRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyVendorUserRoleService {
 
-
     private final SyVendorUserRoleMapper syVendorUserRoleMapper;
     private final SyVendorUserRoleRepository syVendorUserRoleRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public SyVendorUserRoleDto getById(String id) {
-        // sy_vendor_user_role :: select one :: id [orm:mybatis]
-        return syVendorUserRoleMapper.selectById(id);
+    public SyVendorUserRoleDto.Item getById(String id) {
+        SyVendorUserRoleDto.Item dto = syVendorUserRoleMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyVendorUserRoleDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_vendor_user_role :: select list :: p [orm:mybatis]
-        return syVendorUserRoleMapper.selectList(p);
+    public SyVendorUserRole findById(String id) {
+        return syVendorUserRoleRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyVendorUserRoleDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_vendor_user_role :: select page :: p [orm:mybatis]
-        return PageResult.of(syVendorUserRoleMapper.selectPageList(p), syVendorUserRoleMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syVendorUserRoleRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<SyVendorUserRoleDto.Item> getList(SyVendorUserRoleDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syVendorUserRoleMapper.selectList(req);
+    }
+
+    public SyVendorUserRoleDto.PageResponse getPageData(SyVendorUserRoleDto.Request req) {
+        PageHelper.addPaging(req);
+        SyVendorUserRoleDto.PageResponse res = new SyVendorUserRoleDto.PageResponse();
+        List<SyVendorUserRoleDto.Item> list = syVendorUserRoleMapper.selectPageList(req);
+        long count = syVendorUserRoleMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(SyVendorUserRole entity) {
-        // sy_vendor_user_role :: update :: entity [orm:mybatis]
-        return syVendorUserRoleMapper.updateSelective(entity);
-    }
-
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public SyVendorUserRole create(SyVendorUserRole entity) {
+    public SyVendorUserRole create(SyVendorUserRole body) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        entity.setVendorUserRoleId(CmUtil.generateId("sy_vendor_user_role"));
-        entity.setGrantUserId(authId);
-        entity.setGrantDate(now);
-        entity.setRegBy(authId);
-        entity.setRegDate(now);
-        // sy_vendor_user_role :: insert or update :: [orm:jpa]
-        return syVendorUserRoleRepository.save(entity);
+        body.setVendorUserRoleId(CmUtil.generateId("sy_vendor_user_role"));
+        body.setGrantUserId(authId);
+        body.setGrantDate(now);
+        body.setRegBy(authId);
+        body.setRegDate(now);
+        SyVendorUserRole saved = syVendorUserRoleRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getVendorUserRoleId());
     }
 
-    /** save — 저장 */
     @Transactional
     public SyVendorUserRole save(SyVendorUserRole entity) {
-        if (!syVendorUserRoleRepository.existsById(entity.getVendorUserRoleId()))
+        if (!existsById(entity.getVendorUserRoleId()))
             throw new CmBizException("존재하지 않는 SyVendorUserRole입니다: " + entity.getVendorUserRoleId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId()); // nullable — intentional
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_vendor_user_role :: insert or update :: [orm:jpa]
-        return syVendorUserRoleRepository.save(entity);
+        SyVendorUserRole saved = syVendorUserRoleRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getVendorUserRoleId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyVendorUserRole update(String id, SyVendorUserRole body) {
+        SyVendorUserRole entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "vendorUserRoleId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyVendorUserRole saved = syVendorUserRoleRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyVendorUserRole updatePartial(SyVendorUserRole entity) {
+        if (entity.getVendorUserRoleId() == null) throw new CmBizException("vendorUserRoleId 가 필요합니다.");
+        if (!existsById(entity.getVendorUserRoleId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorUserRoleId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syVendorUserRoleMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getVendorUserRoleId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!syVendorUserRoleRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 SyVendorUserRole입니다: " + id);
-        // sy_vendor_user_role :: delete :: id [orm:jpa]
-        syVendorUserRoleRepository.deleteById(id);
+        SyVendorUserRole entity = findById(id);
+        syVendorUserRoleRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyVendorUserRole> rows) {
+    public List<SyVendorUserRole> saveList(List<SyVendorUserRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyVendorUserRole row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setVendorUserRoleId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_vendor_user_role"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syVendorUserRoleRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getVendorUserRoleId(), "vendorUserRoleId must not be null");
-                SyVendorUserRole entity = syVendorUserRoleRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "vendorUserRoleId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syVendorUserRoleRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getVendorUserRoleId(), "vendorUserRoleId must not be null");
-                if (syVendorUserRoleRepository.existsById(id)) syVendorUserRoleRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getVendorUserRoleId() != null)
+            .map(SyVendorUserRole::getVendorUserRoleId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syVendorUserRoleRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyVendorUserRole> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorUserRoleId() != null)
+            .toList();
+        for (SyVendorUserRole row : updateRows) {
+            SyVendorUserRole entity = findById(row.getVendorUserRoleId());
+            VoUtil.voCopyExclude(row, entity, "vendorUserRoleId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syVendorUserRoleRepository.save(entity);
+            upsertedIds.add(entity.getVendorUserRoleId());
+        }
+        em.flush();
+
+        List<SyVendorUserRole> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyVendorUserRole row : insertRows) {
+            row.setVendorUserRoleId(CmUtil.generateId("sy_vendor_user_role"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syVendorUserRoleRepository.save(row);
+            upsertedIds.add(row.getVendorUserRoleId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SyVendorUserRole> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

@@ -5,20 +5,18 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.base.sy.data.vo.SyAlarmReq;
 import com.shopjoy.ecadminapi.base.sy.service.SyAlarmService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 알람 API
+ * GET    /api/base/sy/alarm/{id}      — 단건 조회
  * GET    /api/base/sy/alarm           — 전체 목록
  * GET    /api/base/sy/alarm/page      — 페이징 목록
- * GET    /api/base/sy/alarm/{id}      — 단건 조회
  * POST   /api/base/sy/alarm           — 등록 (JPA)
  * PUT    /api/base/sy/alarm/{id}      — 전체 수정 (JPA)
  * PATCH  /api/base/sy/alarm/{id}      — 선택 필드 수정 (MyBatis)
@@ -33,75 +31,51 @@ public class SyAlarmController {
 
     private final SyAlarmService service;
 
-    /* ── 전체 목록 ── */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SyAlarmDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<SyAlarmDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /* ── 페이징 목록 ── */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyAlarmDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<SyAlarmDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /* ── 단건 조회 ── */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAlarmDto>> getById(@PathVariable("id") String id) {
-        SyAlarmDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<SyAlarmDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
-    /* ── 등록 (JPA) ── */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SyAlarmDto.Item>>> list(@Valid @ModelAttribute SyAlarmDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SyAlarmDto.PageResponse>> page(@Valid @ModelAttribute SyAlarmDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyAlarm>> create(@RequestBody SyAlarm entity) {
-        SyAlarm result = service.create(entity);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
-    /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAlarm>> save(
-            @PathVariable("id") String id,
-            @RequestBody SyAlarm entity) {
+    public ResponseEntity<ApiResponse<SyAlarm>> save(@PathVariable("id") String id, @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
-        SyAlarm result = service.save(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
-    /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable("id") String id,
-            @RequestBody SyAlarm entity) {
+    public ResponseEntity<ApiResponse<SyAlarm>> updatePartial(@PathVariable("id") String id, @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
-        int result = service.update(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
     }
 
-    /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /* ── _row_status 단건 저장 ── */
     @PostMapping("/save")
     public ResponseEntity<ApiResponse<SyAlarm>> saveByRowStatus(@RequestBody @Valid SyAlarmReq req) {
-        SyAlarm result = service.saveByRowStatus(req);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.saveByRowStatus(req)));
     }
 
-    /* ── _row_status 목록 저장 ── */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<List<SyAlarm>>> saveListByRowStatus(@RequestBody @Valid List<SyAlarmReq> list) {
-        List<SyAlarm> result = service.saveListByRowStatus(list);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.saveListByRowStatus(list)));
     }
 }

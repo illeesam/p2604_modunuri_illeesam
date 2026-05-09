@@ -23,7 +23,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="pmGiftSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY g.gift_id ASC</when>

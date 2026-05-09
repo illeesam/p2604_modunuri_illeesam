@@ -2,136 +2,30 @@ package com.shopjoy.ecadminapi.bo.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserRole;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyUserRoleMapper;
-import com.shopjoy.ecadminapi.base.sy.repository.SyUserRoleRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.shopjoy.ecadminapi.base.sy.service.SyUserRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
-import java.util.Map;
 
+/**
+ * BO 사용자권한 서비스 — base SyUserRoleService 위임 (thin wrapper).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoSyUserRoleService {
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyUserRoleMapper syUserRoleMapper;
-    private final SyUserRoleRepository syUserRoleRepository;
-    @PersistenceContext
-    private EntityManager em;
 
-    /** getRolesByUserId — 조회 */
-    public List<SyUserRoleDto> getRolesByUserId(String userId) {
-        return syUserRoleMapper.selectByUserId(userId);
-    }
+    private final SyUserRoleService syUserRoleService;
 
-    /** getList — 조회 */
-    public List<SyUserRoleDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return syUserRoleMapper.selectList(p);
-    }
+    public SyUserRoleDto.Item getById(String id) { return syUserRoleService.getById(id); }
+    public List<SyUserRoleDto.Item> getList(SyUserRoleDto.Request req) { return syUserRoleService.getList(req); }
+    public SyUserRoleDto.PageResponse getPageData(SyUserRoleDto.Request req) { return syUserRoleService.getPageData(req); }
+    public List<SyUserRoleDto.Item> getRolesByUserId(String userId) { return syUserRoleService.getRolesByUserId(userId); }
 
-    /** getPageData — 조회 */
-    public PageResult<SyUserRoleDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(syUserRoleMapper.selectPageList(p), syUserRoleMapper.selectPageCount(p),
-                PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-    }
-
-    /** getById — 조회 */
-    public SyUserRoleDto getById(String id) {
-        SyUserRoleDto dto = syUserRoleMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        return dto;
-    }
-
-    /** create — 생성 */
-    @Transactional
-    public SyUserRole create(SyUserRole body) {
-        String authId = SecurityUtil.getAuthUser().authId();
-        body.setUserRoleId("UR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(authId);
-        body.setRegDate(LocalDateTime.now());
-        body.setUpdBy(authId);
-        body.setUpdDate(LocalDateTime.now());
-        return syUserRoleRepository.save(body);
-    }
-
-    /** update — 수정 */
-    @Transactional
-    public SyUserRoleDto update(String id, SyUserRole body) {
-        String authId = SecurityUtil.getAuthUser().authId();
-        SyUserRole entity = syUserRoleRepository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(authId);
-        entity.setUpdDate(LocalDateTime.now());
-        syUserRoleRepository.save(entity);
-        em.flush();
-        return getById(id);
-    }
-
-    /** delete — 삭제 */
-    @Transactional
-    public void delete(String id) {
-        SyUserRole entity = syUserRoleRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        syUserRoleRepository.delete(entity);
-        em.flush();
-        if (syUserRoleRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
-    }
-    /** saveList — 저장 */
-    @Transactional
-    public void saveList(List<SyUserRole> rows) {
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
-
-        // 1단계: DELETE 일괄 처리
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getUserRoleId() != null)
-            .map(SyUserRole::getUserRoleId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            syUserRoleRepository.deleteAllById(deleteIds);
-            em.flush();
-            em.clear();
-        }
-
-        // 2단계: UPDATE 처리
-        List<SyUserRole> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getUserRoleId() != null)
-            .toList();
-        for (SyUserRole row : updateRows) {
-            SyUserRole entity = syUserRoleRepository.findById(row.getUserRoleId())
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getUserRoleId()));
-            VoUtil.voCopyExclude(row, entity, "userRoleId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            syUserRoleRepository.save(entity);
-        }
-        em.flush();
-
-        // 3단계: INSERT 처리
-        List<SyUserRole> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (SyUserRole row : insertRows) {
-            row.setUserRoleId("UR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            syUserRoleRepository.save(row);
-        }
-        em.flush();
-        em.clear();
-    }
+    @Transactional public SyUserRole create(SyUserRole body) { return syUserRoleService.create(body); }
+    @Transactional public SyUserRole update(String id, SyUserRole body) { return syUserRoleService.update(id, body); }
+    @Transactional public void delete(String id) { syUserRoleService.delete(id); }
+    @Transactional public List<SyUserRole> saveList(List<SyUserRole> rows) { return syUserRoleService.saveList(rows); }
 }

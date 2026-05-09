@@ -6,18 +6,22 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyVendorUserRoleMapper {
 
-    SyVendorUserRoleDto selectById(@Param("id") String id);
+    /** 단건조회 */
+    SyVendorUserRoleDto.Item selectById(@Param("id") String id);
 
-    List<SyVendorUserRoleDto> selectList(Map<String, Object> p);
+    /** 목록조회 */
+    List<SyVendorUserRoleDto.Item> selectList(SyVendorUserRoleDto.Request req);
 
-    List<SyVendorUserRoleDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyVendorUserRoleDto.Item> selectPageList(SyVendorUserRoleDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyVendorUserRoleDto.Request req);
 
+    /** 수정 */
     int updateSelective(SyVendorUserRole entity);
 }

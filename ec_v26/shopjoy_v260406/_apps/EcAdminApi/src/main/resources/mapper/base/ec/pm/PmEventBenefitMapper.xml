@@ -20,7 +20,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="pmEventBenefitSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY b.benefit_id ASC</when>

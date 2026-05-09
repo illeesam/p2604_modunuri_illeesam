@@ -3,13 +3,12 @@ package com.shopjoy.ecadminapi.base.sy.controller;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto;
 import com.shopjoy.ecadminapi.base.sy.service.SyhSendEmailLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/sy/send-email-log")
@@ -18,27 +17,23 @@ public class SyhSendEmailLogController {
 
     private final SyhSendEmailLogService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SyhSendEmailLogDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<SyhSendEmailLogDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyhSendEmailLogDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<SyhSendEmailLogDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
+    /** getById — 단건조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyhSendEmailLogDto>> getById(@PathVariable("id") String id) {
-        SyhSendEmailLogDto result = service.getById(id);
+    public ResponseEntity<ApiResponse<SyhSendEmailLogDto.Item>> getById(@PathVariable("id") String id) {
+        SyhSendEmailLogDto.Item result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /** list — 목록조회 */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SyhSendEmailLogDto.Item>>> list(@Valid @ModelAttribute SyhSendEmailLogDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    /** page — 페이징조회 */
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SyhSendEmailLogDto.PageResponse>> page(@Valid @ModelAttribute SyhSendEmailLogDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 }

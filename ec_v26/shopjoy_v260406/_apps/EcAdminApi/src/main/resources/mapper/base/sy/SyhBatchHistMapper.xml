@@ -8,8 +8,10 @@
         <where>
             <if test="siteId != null and siteId != ''">AND h.site_id = #{siteId}</if>
             <if test="batchHistId != null and batchHistId != ''">AND h.batch_hist_id = #{batchHistId}</if>
-            <if test="kw != null and kw != ''">
-                AND (h.batch_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_batchNm')">OR h.batch_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND h.reg_date &gt;= #{dateStart}::DATE
@@ -18,7 +20,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syhBatchHistSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY h.batch_hist_id ASC</when>
@@ -31,7 +33,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto$Item">
         SELECT  /* base.sy :: SyhBatchHist :: selectById */
               h.*
             , ste.site_nm AS site_nm
@@ -40,7 +42,7 @@
         WHERE h.batch_hist_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto$Item">
         SELECT  /* base.sy :: SyhBatchHist :: selectList */
               h.*
             , ste.site_nm AS site_nm
@@ -51,7 +53,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto$Item">
         SELECT  /* base.sy :: SyhBatchHist :: selectPageList */
               h.*
             , ste.site_nm AS site_nm

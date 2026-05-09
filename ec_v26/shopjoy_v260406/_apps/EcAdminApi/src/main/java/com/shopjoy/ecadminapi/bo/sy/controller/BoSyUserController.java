@@ -76,7 +76,7 @@ public class BoSyUserController {
 
     /** getRoles — 조회 */
     @GetMapping("/{userId}/roles")
-    public ResponseEntity<ApiResponse<List<SyUserRoleDto>>> getRoles(@PathVariable("userId") String userId) {
+    public ResponseEntity<ApiResponse<List<SyUserRoleDto.Item>>> getRoles(@PathVariable("userId") String userId) {
         return ResponseEntity.ok(ApiResponse.ok(userRoleService.getRolesByUserId(userId)));
     }
     /** saveList — 저장 */

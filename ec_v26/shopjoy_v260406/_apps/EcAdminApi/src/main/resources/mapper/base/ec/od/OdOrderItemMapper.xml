@@ -26,7 +26,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="odOrderItemSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY oi.order_item_id ASC</when>

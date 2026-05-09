@@ -22,7 +22,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syVendorUserSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY u.vendor_user_id ASC</when>
@@ -35,7 +35,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto$Item">
         SELECT  /* base.sy :: SyVendorUser :: selectById */
               u.*
             , ste.site_nm AS site_nm
@@ -52,7 +52,7 @@
         WHERE u.vendor_user_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto$Item">
         SELECT  /* base.sy :: SyVendorUser :: selectList */
               u.*
             , ste.site_nm AS site_nm
@@ -71,7 +71,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto$Item">
         SELECT  /* base.sy :: SyVendorUser :: selectPageList */
               u.*
             , ste.site_nm AS site_nm
@@ -122,3 +122,4 @@
     </update>
 
 </mapper>
+

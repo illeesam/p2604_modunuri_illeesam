@@ -16,7 +16,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="cmChattMsgSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY m.chatt_msg_id ASC</when>

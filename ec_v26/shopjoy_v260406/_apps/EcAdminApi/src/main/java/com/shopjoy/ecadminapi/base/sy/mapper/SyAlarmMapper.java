@@ -6,18 +6,22 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyAlarmMapper {
 
-    SyAlarmDto selectById(@Param("id") String id);
+    /** 단건조회 */
+    SyAlarmDto.Item selectById(@Param("id") String id);
 
-    List<SyAlarmDto> selectList(Map<String, Object> p);
+    /** 목록조회 */
+    List<SyAlarmDto.Item> selectList(SyAlarmDto.Request req);
 
-    List<SyAlarmDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyAlarmDto.Item> selectPageList(SyAlarmDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyAlarmDto.Request req);
 
+    /** 수정 */
     int updateSelective(SyAlarm entity);
 }

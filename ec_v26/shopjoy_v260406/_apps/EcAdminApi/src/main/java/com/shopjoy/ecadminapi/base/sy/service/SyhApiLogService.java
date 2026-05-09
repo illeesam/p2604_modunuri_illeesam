@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhApiLog;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyhApiLogMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhApiLogRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -23,33 +21,30 @@ public class SyhApiLogService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    public SyhApiLogDto getById(String id) {
-        // syh_api_log :: select one :: id [orm:mybatis]
-        SyhApiLogDto result = syhApiLogMapper.selectById(id);
-        return result;
+    /** getById — 단건조회 */
+    public SyhApiLogDto.Item getById(String id) {
+        return syhApiLogMapper.selectById(id);
     }
 
-    /** getList — 조회 */
-    public List<SyhApiLogDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // syh_api_log :: select list :: p [orm:mybatis]
-        List<SyhApiLogDto> result = syhApiLogMapper.selectList(p);
-        return result;
+    /** getList — 목록조회 */
+    public List<SyhApiLogDto.Item> getList(SyhApiLogDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syhApiLogMapper.selectList(req);
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyhApiLogDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // syh_api_log :: select page :: [orm:mybatis]
-        return PageResult.of(syhApiLogMapper.selectPageList(p), syhApiLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    /** getPageData — 페이징조회 */
+    public SyhApiLogDto.PageResponse getPageData(SyhApiLogDto.Request req) {
+        PageHelper.addPaging(req);
+        SyhApiLogDto.PageResponse res = new SyhApiLogDto.PageResponse();
+        List<SyhApiLogDto.Item> list = syhApiLogMapper.selectPageList(req);
+        long count = syhApiLogMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
     /** update — 수정 */
     @Transactional
     public int update(SyhApiLog entity) {
-        // syh_api_log :: update :: [orm:mybatis]
-        int result = syhApiLogMapper.updateSelective(entity);
-        return result;
+        return syhApiLogMapper.updateSelective(entity);
     }
 
 }

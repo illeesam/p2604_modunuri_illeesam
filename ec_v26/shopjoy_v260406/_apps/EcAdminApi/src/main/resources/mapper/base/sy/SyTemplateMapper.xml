@@ -17,10 +17,13 @@
                     ) SELECT path_id FROM sub
                 )
             </if>
-            <if test="typeCd != null and typeCd != ''">AND t.template_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (t.template_nm ILIKE '%' || #{kw} || '%'
-                  OR t.template_code ILIKE '%' || #{kw} || '%')
+            <if test="templateTypeCd != null and templateTypeCd != ''">AND t.template_type_cd = #{templateTypeCd}</if>
+            <if test="useYn != null and useYn != ''">AND t.use_yn = #{useYn}</if>
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_nm')">OR t.template_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_code')"> OR t.template_code ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND t.reg_date &gt;= #{dateStart}::DATE
@@ -29,7 +32,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syTemplateSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY t.template_id ASC</when>
@@ -42,7 +45,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto$Item">
         SELECT  /* base.sy :: SyTemplate :: selectById */
               t.*
             , ste.site_nm AS site_nm
@@ -53,7 +56,7 @@
         WHERE t.template_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto$Item">
         SELECT  /* base.sy :: SyTemplate :: selectList */
               t.*
             , ste.site_nm AS site_nm
@@ -66,7 +69,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto$Item">
         SELECT  /* base.sy :: SyTemplate :: selectPageList */
               t.*
             , ste.site_nm AS site_nm
@@ -104,3 +107,4 @@
     </update>
 
 </mapper>
+

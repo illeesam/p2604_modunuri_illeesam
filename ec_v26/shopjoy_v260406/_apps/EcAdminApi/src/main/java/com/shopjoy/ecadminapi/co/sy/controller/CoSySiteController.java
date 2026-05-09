@@ -3,13 +3,12 @@ package com.shopjoy.ecadminapi.co.sy.controller;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSySiteService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 사이트 공용 API — /api/co/sy/site
@@ -22,23 +21,21 @@ public class CoSySiteController {
 
     private final BoSySiteService boSySiteService;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SySiteDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getList(p)));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SySiteDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getPageData(p)));
-    }
-
-    /** getById — 조회 */
+    /** getById — 단건조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SySiteDto>> getById(@PathVariable("id") String id) {
+    public ResponseEntity<ApiResponse<SySiteDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getById(id)));
+    }
+
+    /** list — 목록조회 */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SySiteDto.Item>>> list(@Valid @ModelAttribute SySiteDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getList(req)));
+    }
+
+    /** page — 페이징조회 */
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SySiteDto.PageResponse>> page(@Valid @ModelAttribute SySiteDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getPageData(req)));
     }
 }

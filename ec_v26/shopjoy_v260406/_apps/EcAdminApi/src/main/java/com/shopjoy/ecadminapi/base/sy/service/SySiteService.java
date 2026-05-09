@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 import com.shopjoy.ecadminapi.base.sy.mapper.SySiteMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SySiteService {
-
 
     private final SySiteMapper sySiteMapper;
     private final SySiteRepository sySiteRepository;
@@ -35,95 +33,152 @@ public class SySiteService {
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
-    public SySiteDto getById(String id) {
-        // sy_site :: select one :: id [orm:mybatis]
-        SySiteDto result = sySiteMapper.selectById(id);
-        return result;
+    /** getById — 단건조회 (MyBatis, JOIN 필드 포함) */
+    public SySiteDto.Item getById(String id) {
+        SySiteDto.Item dto = sySiteMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SySiteDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_site :: select list :: p [orm:mybatis]
-        List<SySiteDto> result = sySiteMapper.selectList(p);
-        return result;
+    /** findById — 단건조회 (JPA) */
+    public SySite findById(String id) {
+        return sySiteRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SySiteDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_site :: select page :: p [orm:mybatis]
-        return PageResult.of(sySiteMapper.selectPageList(p), sySiteMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    /** existsById — 존재 여부 확인 (JPA) */
+    public boolean existsById(String id) {
+        return sySiteRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    /** getList — 목록조회 */
+    public List<SySiteDto.Item> getList(SySiteDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return sySiteMapper.selectList(req);
+    }
+
+    /** getPageData — 페이징조회 */
+    public SySiteDto.PageResponse getPageData(SySiteDto.Request req) {
+        PageHelper.addPaging(req);
+        SySiteDto.PageResponse res = new SySiteDto.PageResponse();
+        List<SySiteDto.Item> list = sySiteMapper.selectPageList(req);
+        long count = sySiteMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
+    // ── 변경 ────────────────────────────────────────────────────
+
+    /** create — 생성 (JPA) */
     @Transactional
-    public int update(SySite entity) {
-        // sy_site :: update :: entity [orm:mybatis]
-        int result = sySiteMapper.updateSelective(entity);
-        return result;
+    public SySite create(SySite body) {
+        body.setSiteId(CmUtil.generateId("sy_site"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SySite saved = sySiteRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSiteId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public SySite create(SySite entity) {
-        entity.setSiteId(CmUtil.generateId("sy_site"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_site :: insert or update :: [orm:jpa]
-        SySite result = sySiteRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
+    /** save — 전체 저장 (ID 존재 검증) */
     @Transactional
     public SySite save(SySite entity) {
-        if (!sySiteRepository.existsById(entity.getSiteId()))
+        if (!existsById(entity.getSiteId()))
             throw new CmBizException("존재하지 않는 SySite입니다: " + entity.getSiteId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_site :: insert or update :: [orm:jpa]
-        SySite result = sySiteRepository.save(entity);
-        return result;
+        SySite saved = sySiteRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSiteId());
     }
 
-    /** delete — 삭제 */
+    /** update — 선택 필드 수정 (JPA + VoUtil voCopyExclude) */
+    @Transactional
+    public SySite update(String id, SySite body) {
+        SySite entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "siteId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SySite saved = sySiteRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    /** updatePartial — 선택 필드 수정 (MyBatis selective UPDATE) */
+    @Transactional
+    public SySite updatePartial(SySite entity) {
+        if (entity.getSiteId() == null)
+            throw new CmBizException("siteId 가 필요합니다.");
+        if (!existsById(entity.getSiteId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSiteId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = sySiteMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getSiteId());
+    }
+
+    /** delete — 삭제 (JPA) */
     @Transactional
     public void delete(String id) {
-        SySite entity = sySiteRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SySite entity = findById(id);
         sySiteRepository.delete(entity);
         em.flush();
-        if (sySiteRepository.existsById(id))
+        if (existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
+    /** saveList — 일괄 저장 */
     @Transactional
-    public void saveList(List<SySite> rows) {
+    public List<SySite> saveList(List<SySite> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SySite row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setSiteId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_site"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                sySiteRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSiteId(), "siteId must not be null");
-                SySite entity = sySiteRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "siteId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                sySiteRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSiteId(), "siteId must not be null");
-                if (sySiteRepository.existsById(id)) sySiteRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getSiteId() != null)
+            .map(SySite::getSiteId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            sySiteRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SySite> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getSiteId() != null)
+            .toList();
+        for (SySite row : updateRows) {
+            SySite entity = findById(row.getSiteId());
+            VoUtil.voCopyExclude(row, entity, "siteId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            sySiteRepository.save(entity);
+            upsertedIds.add(entity.getSiteId());
         }
         em.flush();
+
+        List<SySite> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SySite row : insertRows) {
+            row.setSiteId(CmUtil.generateId("sy_site"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            sySiteRepository.save(row);
+            upsertedIds.add(row.getSiteId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SySite> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

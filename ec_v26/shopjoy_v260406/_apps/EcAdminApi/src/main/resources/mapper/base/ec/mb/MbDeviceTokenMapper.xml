@@ -16,7 +16,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="mbDeviceTokenSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY t.device_token_id ASC</when>

@@ -9,8 +9,10 @@
             <if test="siteId != null and siteId != ''">AND l.site_id = #{siteId}</if>
             <if test="logId != null and logId != ''">AND l.log_id = #{logId}</if>
             <if test="typeCd != null and typeCd != ''">AND l.api_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (l.api_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_apiNm')">OR l.api_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND l.reg_date &gt;= #{dateStart}::DATE
@@ -19,7 +21,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syhApiLogSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
@@ -32,7 +34,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto$Item">
         SELECT  /* base.sy :: SyhApiLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
@@ -41,7 +43,7 @@
         WHERE l.log_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto$Item">
         SELECT  /* base.sy :: SyhApiLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
@@ -52,7 +54,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto$Item">
         SELECT  /* base.sy :: SyhApiLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm

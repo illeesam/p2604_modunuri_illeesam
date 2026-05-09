@@ -8,8 +8,10 @@
         <where>
             <if test="siteId != null and siteId != ''">AND l.site_id = #{siteId}</if>
             <if test="batchLogId != null and batchLogId != ''">AND l.batch_log_id = #{batchLogId}</if>
-            <if test="kw != null and kw != ''">
-                AND (l.batch_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_batchNm')">OR l.batch_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND l.reg_date &gt;= #{dateStart}::DATE
@@ -18,7 +20,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syhBatchLogSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY l.batch_log_id ASC</when>
@@ -31,7 +33,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto$Item">
         SELECT  /* base.sy :: SyhBatchLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
@@ -40,7 +42,7 @@
         WHERE l.batch_log_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto$Item">
         SELECT  /* base.sy :: SyhBatchLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
@@ -51,7 +53,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto$Item">
         SELECT  /* base.sy :: SyhBatchLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm

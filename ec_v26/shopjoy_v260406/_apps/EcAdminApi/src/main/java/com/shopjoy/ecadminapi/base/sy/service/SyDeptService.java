@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyDept;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyDeptMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyDeptRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyDeptService {
-
 
     private final SyDeptMapper syDeptMapper;
     private final SyDeptRepository syDeptRepository;
@@ -33,102 +30,147 @@ public class SyDeptService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public List<SyDeptDto> getTree() {
+    /** getTree — 트리조회 */
+    public List<SyDeptDto.Item> getTree() {
         return syDeptMapper.selectTree();
     }
 
-    /** getById — 조회 */
-    public SyDeptDto getById(String id) {
-        // sy_dept :: select one :: id [orm:mybatis]
-        SyDeptDto result = syDeptMapper.selectById(id);
-        return result;
+    /** getById — 단건조회 */
+    public SyDeptDto.Item getById(String id) {
+        SyDeptDto.Item dto = syDeptMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyDeptDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_dept :: select list :: p [orm:mybatis]
-        List<SyDeptDto> result = syDeptMapper.selectList(p);
-        return result;
+    /** findById — 단건조회 (JPA) */
+    public SyDept findById(String id) {
+        return syDeptRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyDeptDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_dept :: select page :: p [orm:mybatis]
-        return PageResult.of(syDeptMapper.selectPageList(p), syDeptMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    /** existsById — 존재 여부 확인 */
+    public boolean existsById(String id) {
+        return syDeptRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    /** getList — 목록조회 */
+    public List<SyDeptDto.Item> getList(SyDeptDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syDeptMapper.selectList(req);
+    }
+
+    /** getPageData — 페이징조회 */
+    public SyDeptDto.PageResponse getPageData(SyDeptDto.Request req) {
+        PageHelper.addPaging(req);
+        SyDeptDto.PageResponse res = new SyDeptDto.PageResponse();
+        List<SyDeptDto.Item> list = syDeptMapper.selectPageList(req);
+        long count = syDeptMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(SyDept entity) {
-        // sy_dept :: update :: entity [orm:mybatis]
-        int result = syDeptMapper.updateSelective(entity);
-        return result;
+    public SyDept create(SyDept body) {
+        body.setDeptId(CmUtil.generateId("sy_dept"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyDept saved = syDeptRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getDeptId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public SyDept create(SyDept entity) {
-        entity.setDeptId(CmUtil.generateId("sy_dept"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_dept :: insert or update :: [orm:jpa]
-        SyDept result = syDeptRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public SyDept save(SyDept entity) {
-        if (!syDeptRepository.existsById(entity.getDeptId()))
+        if (!existsById(entity.getDeptId()))
             throw new CmBizException("존재하지 않는 SyDept입니다: " + entity.getDeptId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_dept :: insert or update :: [orm:jpa]
-        SyDept result = syDeptRepository.save(entity);
-        return result;
+        SyDept saved = syDeptRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getDeptId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyDept update(String id, SyDept body) {
+        SyDept entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "deptId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyDept saved = syDeptRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyDept updatePartial(SyDept entity) {
+        if (entity.getDeptId() == null) throw new CmBizException("deptId 가 필요합니다.");
+        if (!existsById(entity.getDeptId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDeptId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syDeptMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getDeptId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyDept entity = syDeptRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyDept entity = findById(id);
         syDeptRepository.delete(entity);
         em.flush();
-        if (syDeptRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyDept> rows) {
+    public List<SyDept> saveList(List<SyDept> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyDept row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setDeptId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_dept"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syDeptRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getDeptId(), "deptId must not be null");
-                SyDept entity = syDeptRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "deptId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syDeptRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getDeptId(), "deptId must not be null");
-                if (syDeptRepository.existsById(id)) syDeptRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getDeptId() != null)
+            .map(SyDept::getDeptId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syDeptRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyDept> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getDeptId() != null)
+            .toList();
+        for (SyDept row : updateRows) {
+            SyDept entity = findById(row.getDeptId());
+            VoUtil.voCopyExclude(row, entity, "deptId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syDeptRepository.save(entity);
+            upsertedIds.add(entity.getDeptId());
         }
         em.flush();
+
+        List<SyDept> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyDept row : insertRows) {
+            row.setDeptId(CmUtil.generateId("sy_dept"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syDeptRepository.save(row);
+            upsertedIds.add(row.getDeptId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SyDept> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

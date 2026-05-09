@@ -19,7 +19,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="mbMemberGroupSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY g.member_group_id ASC</when>

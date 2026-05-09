@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAlarmSendHist;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyhAlarmSendHistMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhAlarmSendHistRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,35 +19,29 @@ public class SyhAlarmSendHistService {
     private final SyhAlarmSendHistMapper syhAlarmSendHistMapper;
     private final SyhAlarmSendHistRepository syhAlarmSendHistRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyhAlarmSendHistDto getById(String id) {
-        // syh_alarm_send_hist :: select one :: id [orm:mybatis]
-        SyhAlarmSendHistDto result = syhAlarmSendHistMapper.selectById(id);
-        return result;
+    /** getById — 단건조회 */
+    public SyhAlarmSendHistDto.Item getById(String id) {
+        return syhAlarmSendHistMapper.selectById(id);
     }
 
-    /** getList — 조회 */
-    public List<SyhAlarmSendHistDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // syh_alarm_send_hist :: select list :: p [orm:mybatis]
-        List<SyhAlarmSendHistDto> result = syhAlarmSendHistMapper.selectList(p);
-        return result;
+    /** getList — 목록조회 */
+    public List<SyhAlarmSendHistDto.Item> getList(SyhAlarmSendHistDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syhAlarmSendHistMapper.selectList(req);
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyhAlarmSendHistDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // syh_alarm_send_hist :: select page :: [orm:mybatis]
-        return PageResult.of(syhAlarmSendHistMapper.selectPageList(p), syhAlarmSendHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    /** getPageData — 페이징조회 */
+    public SyhAlarmSendHistDto.PageResponse getPageData(SyhAlarmSendHistDto.Request req) {
+        PageHelper.addPaging(req);
+        SyhAlarmSendHistDto.PageResponse res = new SyhAlarmSendHistDto.PageResponse();
+        List<SyhAlarmSendHistDto.Item> list = syhAlarmSendHistMapper.selectPageList(req);
+        long count = syhAlarmSendHistMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
     /** update — 수정 */
     @Transactional
     public int update(SyhAlarmSendHist entity) {
-        // syh_alarm_send_hist :: update :: [orm:mybatis]
-        int result = syhAlarmSendHistMapper.updateSelective(entity);
-        return result;
+        return syhAlarmSendHistMapper.updateSelective(entity);
     }
-
 }

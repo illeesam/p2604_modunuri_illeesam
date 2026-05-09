@@ -6,18 +6,22 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyhAlarmSendHistMapper {
 
-    SyhAlarmSendHistDto selectById(@Param("id") String id);
+    /** 단건조회 */
+    SyhAlarmSendHistDto.Item selectById(@Param("id") String id);
 
-    List<SyhAlarmSendHistDto> selectList(Map<String, Object> p);
+    /** 목록조회 */
+    List<SyhAlarmSendHistDto.Item> selectList(SyhAlarmSendHistDto.Request req);
 
-    List<SyhAlarmSendHistDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyhAlarmSendHistDto.Item> selectPageList(SyhAlarmSendHistDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyhAlarmSendHistDto.Request req);
 
+    /** 수정 */
     int updateSelective(SyhAlarmSendHist entity);
 }

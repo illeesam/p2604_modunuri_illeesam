@@ -17,7 +17,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="odhDlivItemChgHistSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY h.dliv_item_chg_hist_id ASC</when>

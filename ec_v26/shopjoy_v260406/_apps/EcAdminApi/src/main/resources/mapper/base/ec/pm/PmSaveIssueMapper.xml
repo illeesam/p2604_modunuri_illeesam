@@ -22,7 +22,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="pmSaveIssueSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY i.save_issue_id ASC</when>

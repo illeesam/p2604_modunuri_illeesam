@@ -6,10 +6,10 @@ import com.shopjoy.ecadminapi.base.sy.data.vo.SyAlarmReq;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyAlarmMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -31,84 +30,99 @@ public class SyAlarmService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyAlarmDto getById(String id) {
-        // sy_alarm :: select one :: id [orm:mybatis]
-        SyAlarmDto result = syAlarmMapper.selectById(id);
-        return result;
+    public SyAlarmDto.Item getById(String id) {
+        SyAlarmDto.Item dto = syAlarmMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyAlarmDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_alarm :: select list :: p [orm:mybatis]
-        List<SyAlarmDto> result = syAlarmMapper.selectList(p);
-        return result;
+    public SyAlarm findById(String id) {
+        return syAlarmRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyAlarmDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_alarm :: select page :: p [orm:mybatis]
-        return PageResult.of(syAlarmMapper.selectPageList(p), syAlarmMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syAlarmRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(SyAlarm entity) {
-        // sy_alarm :: update :: entity [orm:mybatis]
-        int result = syAlarmMapper.updateSelective(entity);
-        return result;
+    public List<SyAlarmDto.Item> getList(SyAlarmDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syAlarmMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public SyAlarmDto.PageResponse getPageData(SyAlarmDto.Request req) {
+        PageHelper.addPaging(req);
+        SyAlarmDto.PageResponse res = new SyAlarmDto.PageResponse();
+        List<SyAlarmDto.Item> list = syAlarmMapper.selectPageList(req);
+        long count = syAlarmMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public SyAlarm create(SyAlarm entity) {
-        entity.setAlarmId(CmUtil.generateId("sy_alarm"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_alarm :: insert or update :: [orm:jpa]
-        SyAlarm result = syAlarmRepository.save(entity);
-        return result;
+    public SyAlarm create(SyAlarm body) {
+        body.setAlarmId(CmUtil.generateId("sy_alarm"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyAlarm saved = syAlarmRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getAlarmId());
     }
 
-    /** save — 저장 */
     @Transactional
     public SyAlarm save(SyAlarm entity) {
-        if (!syAlarmRepository.existsById(entity.getAlarmId())) {
+        if (!existsById(entity.getAlarmId()))
             throw new CmBizException("존재하지 않는 알람입니다: " + entity.getAlarmId());
-        }
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_alarm :: insert or update :: [orm:jpa]
-        SyAlarm result = syAlarmRepository.save(entity);
-        return result;
+        SyAlarm saved = syAlarmRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getAlarmId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyAlarm update(String id, SyAlarm body) {
+        SyAlarm entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "alarmId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyAlarm saved = syAlarmRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyAlarm updatePartial(SyAlarm entity) {
+        if (entity.getAlarmId() == null) throw new CmBizException("alarmId 가 필요합니다.");
+        if (!existsById(entity.getAlarmId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAlarmId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syAlarmMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getAlarmId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyAlarm entity = syAlarmRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyAlarm entity = findById(id);
         syAlarmRepository.delete(entity);
         em.flush();
-        if (syAlarmRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    // ── _row_status 기반 저장 ────────────────────────────────────
+    // ── _row_status 기반 저장 (기존 호환) ────────────────────────────
 
     @Transactional
     public SyAlarm saveByRowStatus(SyAlarmReq req) {
-        SyAlarm result = doSaveByRowStatus(req);
-        return result;
+        return doSaveByRowStatus(req);
     }
 
-    // D → U → I 순서로 처리: 삭제 후 수정, 마지막에 신규 등록하여 유니크 제약 충돌 방지
     @Transactional
     public List<SyAlarm> saveListByRowStatus(List<SyAlarmReq> list) {
         List<SyAlarm> result = new ArrayList<>();
@@ -118,35 +132,21 @@ public class SyAlarmService {
         return result;
     }
 
-    /** doSaveByRowStatus — 실행 */
     private SyAlarm doSaveByRowStatus(SyAlarmReq req) {
         return switch (req.getRowStatus()) {
             case "I" -> create(req.toEntity());
             case "U" -> {
-                if (!syAlarmRepository.existsById(req.getAlarmId()))
+                if (!existsById(req.getAlarmId()))
                     throw new CmBizException("존재하지 않는 알람입니다: " + req.getAlarmId());
                 yield save(req.toEntity());
             }
             case "D" -> {
-                if (!syAlarmRepository.existsById(req.getAlarmId()))
+                if (!existsById(req.getAlarmId()))
                     throw new CmBizException("존재하지 않는 알람입니다: " + req.getAlarmId());
-                // sy_alarm :: delete :: alarmId [orm:jpa]
                 syAlarmRepository.deleteById(req.getAlarmId());
                 yield null;
             }
             default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus());
         };
     }
-
-    /**
-     * ID 생성 규칙: {테이블prefix}{yyMMddHHmmss}{rand4}
-     *
-     * 테이블 prefix 산출 방법 (도메인 세그먼트 제외, 대문자):
-     *   1. 첫 번째 세그먼트(도메인: cm/od/sy 등) 제외
-     *   2. 두 번째 세그먼트(엔티티명) 앞 2자
-     *   3. 세 번째 이후 세그먼트의 첫 글자
-     *
-     * 예시:
-     *   sy_alarm → AL(alarm) = AL
-     */
 }

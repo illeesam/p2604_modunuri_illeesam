@@ -4,13 +4,12 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSySiteService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 사이트 API — /api/bo/sy/site
@@ -22,27 +21,22 @@ import java.util.Map;
 public class BoSySiteController {
     private final BoSySiteService boSySiteService;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SySiteDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<SySiteDto> result = boSySiteService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SySiteDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<SySiteDto> result = boSySiteService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
+    /** getById — 단건조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SySiteDto>> getById(@PathVariable("id") String id) {
-        SySiteDto result = boSySiteService.getById(id);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<SySiteDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getById(id)));
+    }
+
+    /** list — 목록조회 */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SySiteDto.Item>>> list(@Valid @ModelAttribute SySiteDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getList(req)));
+    }
+
+    /** page — 페이징조회 */
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SySiteDto.PageResponse>> page(@Valid @ModelAttribute SySiteDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getPageData(req)));
     }
 
     /** create — 생성 */
@@ -54,14 +48,14 @@ public class BoSySiteController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SySiteDto>> update(@PathVariable("id") String id, @RequestBody SySite body) {
-        SySiteDto result = boSySiteService.update(id, body);
+    public ResponseEntity<ApiResponse<SySite>> update(@PathVariable("id") String id, @RequestBody SySite body) {
+        SySite result = boSySiteService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SySiteDto>> upsert(@PathVariable("id") String id, @RequestBody SySite body) {
+    public ResponseEntity<ApiResponse<SySite>> upsert(@PathVariable("id") String id, @RequestBody SySite body) {
         return ResponseEntity.ok(ApiResponse.ok(boSySiteService.update(id, body)));
     }
 
@@ -72,10 +66,9 @@ public class BoSySiteController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /** saveList — 저장 */
+    /** saveList — 일괄 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SySite> rows) {
-        boSySiteService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<SySite>>> saveList(@RequestBody List<SySite> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.saveList(rows), "저장되었습니다."));
     }
 }

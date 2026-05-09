@@ -2,15 +2,14 @@ package com.shopjoy.ecadminapi.bo.sy.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUser;
-import com.shopjoy.ecadminapi.base.sy.service.SyVendorUserService;
+import com.shopjoy.ecadminapi.bo.sy.service.BoSyVendorUserService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 업체사용자 API — /api/bo/sy/vendor-user
@@ -21,59 +20,46 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyVendorUserController {
 
-    private final SyVendorUserService syVendorUserService;
+    private final BoSyVendorUserService boSyVendorUserService;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SyVendorUserDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(syVendorUserService.getList(p)));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyVendorUserDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(syVendorUserService.getPageData(p)));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorUserDto>> getById(@PathVariable("id") String id) {
-        SyVendorUserDto result = syVendorUserService.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<SyVendorUserDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserService.getById(id)));
     }
 
-    /** create — 생성 */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SyVendorUserDto.Item>>> list(@Valid @ModelAttribute SyVendorUserDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserService.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SyVendorUserDto.PageResponse>> page(@Valid @ModelAttribute SyVendorUserDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserService.getPageData(req)));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyVendorUser>> create(@RequestBody SyVendorUser body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(syVendorUserService.create(body)));
+        return ResponseEntity.status(201).body(ApiResponse.created(boSyVendorUserService.create(body)));
     }
 
-    /** save — 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorUser>> save(@PathVariable("id") String id, @RequestBody SyVendorUser body) {
-        body.setVendorUserId(id);
-        return ResponseEntity.ok(ApiResponse.ok(syVendorUserService.save(body)));
+    public ResponseEntity<ApiResponse<SyVendorUser>> update(@PathVariable("id") String id, @RequestBody SyVendorUser body) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserService.update(id, body)));
     }
 
-    /** update — 수정 */
-    @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> update(@PathVariable("id") String id, @RequestBody SyVendorUser body) {
-        body.setVendorUserId(id);
-        return ResponseEntity.ok(ApiResponse.ok(syVendorUserService.update(body)));
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyVendorUser>> upsert(@PathVariable("id") String id, @RequestBody SyVendorUser body) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserService.update(id, body)));
     }
 
-    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        syVendorUserService.delete(id);
+        boSyVendorUserService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyVendorUser> rows) {
-        syVendorUserService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<SyVendorUser>>> saveList(@RequestBody List<SyVendorUser> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserService.saveList(rows), "저장되었습니다."));
     }
 }

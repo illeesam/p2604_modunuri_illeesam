@@ -1,34 +1,29 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessErrorLogDto;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyhAccessErrorLogMapper;
-import com.shopjoy.ecadminapi.base.sy.repository.SyhAccessErrorLogRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecadminapi.base.sy.service.SyhAccessErrorLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
-
+/**
+ * BO 오류 로그 서비스 — base SyhAccessErrorLogService 위임 (thin wrapper).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoSyAccessErrorLogService {
 
-    private final SyhAccessErrorLogMapper syhAccessErrorLogMapper;
-    private final SyhAccessErrorLogRepository syhAccessErrorLogRepository;
+    private final SyhAccessErrorLogService syhAccessErrorLogService;
 
-    /** getPageData — 조회 */
-    public PageResult<SyhAccessErrorLogDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(syhAccessErrorLogMapper.selectPageList(p), syhAccessErrorLogMapper.selectPageCount(p),
-            PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    /** getPageData — 페이징조회 */
+    public SyhAccessErrorLogDto.PageResponse getPageData(SyhAccessErrorLogDto.Request req) {
+        return syhAccessErrorLogService.getPageData(req);
     }
 
     /** deleteAll — 삭제 */
     @Transactional
     public void deleteAll() {
-        syhAccessErrorLogRepository.deleteAllBulk();
+        syhAccessErrorLogService.deleteAll();
     }
 }

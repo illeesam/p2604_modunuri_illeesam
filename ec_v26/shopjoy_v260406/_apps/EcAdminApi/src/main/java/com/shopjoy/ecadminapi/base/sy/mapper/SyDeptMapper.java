@@ -6,20 +6,25 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyDeptMapper {
 
-    SyDeptDto selectById(@Param("id") String id);
+    /** 단건조회 */
+    SyDeptDto.Item selectById(@Param("id") String id);
 
-    List<SyDeptDto> selectTree();
+    /** 트리조회 */
+    List<SyDeptDto.Item> selectTree();
 
-    List<SyDeptDto> selectList(Map<String, Object> p);
+    /** 목록조회 */
+    List<SyDeptDto.Item> selectList(SyDeptDto.Request req);
 
-    List<SyDeptDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyDeptDto.Item> selectPageList(SyDeptDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyDeptDto.Request req);
 
+    /** 수정 */
     int updateSelective(SyDept entity);
 }

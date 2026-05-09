@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchLog;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyhBatchLogMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhBatchLogRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,35 +19,29 @@ public class SyhBatchLogService {
     private final SyhBatchLogMapper syhBatchLogMapper;
     private final SyhBatchLogRepository syhBatchLogRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyhBatchLogDto getById(String id) {
-        // syh_batch_log :: select one :: id [orm:mybatis]
-        SyhBatchLogDto result = syhBatchLogMapper.selectById(id);
-        return result;
+    /** getById — 단건조회 */
+    public SyhBatchLogDto.Item getById(String id) {
+        return syhBatchLogMapper.selectById(id);
     }
 
-    /** getList — 조회 */
-    public List<SyhBatchLogDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // syh_batch_log :: select list :: p [orm:mybatis]
-        List<SyhBatchLogDto> result = syhBatchLogMapper.selectList(p);
-        return result;
+    /** getList — 목록조회 */
+    public List<SyhBatchLogDto.Item> getList(SyhBatchLogDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syhBatchLogMapper.selectList(req);
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyhBatchLogDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // syh_batch_log :: select page :: [orm:mybatis]
-        return PageResult.of(syhBatchLogMapper.selectPageList(p), syhBatchLogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    /** getPageData — 페이징조회 */
+    public SyhBatchLogDto.PageResponse getPageData(SyhBatchLogDto.Request req) {
+        PageHelper.addPaging(req);
+        SyhBatchLogDto.PageResponse res = new SyhBatchLogDto.PageResponse();
+        List<SyhBatchLogDto.Item> list = syhBatchLogMapper.selectPageList(req);
+        long count = syhBatchLogMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
     /** update — 수정 */
     @Transactional
     public int update(SyhBatchLog entity) {
-        // syh_batch_log :: update :: [orm:mybatis]
-        int result = syhBatchLogMapper.updateSelective(entity);
-        return result;
+        return syhBatchLogMapper.updateSelective(entity);
     }
-
 }

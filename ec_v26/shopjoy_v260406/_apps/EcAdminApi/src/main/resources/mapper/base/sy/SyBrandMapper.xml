@@ -19,9 +19,11 @@
                 )
             </if>
             <if test="vendorId != null and vendorId != ''">AND b.vendor_id = #{vendorId}</if>
-            <if test="kw != null and kw != ''">
-                AND (b.brand_nm ILIKE '%' || #{kw} || '%'
-                  OR b.brand_en_nm ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_name')">  OR b.brand_nm    ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_enName')">OR b.brand_en_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND b.reg_date &gt;= #{dateStart}::DATE
@@ -30,7 +32,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syBrandSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY b.brand_id ASC</when>
@@ -44,7 +46,7 @@
     </sql>
 
     <!-- 브랜드 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto$Item">
         SELECT  /* base.sy :: SyBrand :: selectById */
               b.*
             , ste.site_nm AS site_nm
@@ -54,7 +56,7 @@
     </select>
 
     <!-- 브랜드 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto$Item">
         SELECT  /* base.sy :: SyBrand :: selectList */
               b.*
             , ste.site_nm AS site_nm
@@ -66,7 +68,7 @@
     </select>
 
     <!-- 브랜드 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto$Item">
         SELECT  /* base.sy :: SyBrand :: selectPageList */
               b.*
             , ste.site_nm AS site_nm

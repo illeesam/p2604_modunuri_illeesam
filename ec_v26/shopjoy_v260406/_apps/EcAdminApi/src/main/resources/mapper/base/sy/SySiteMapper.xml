@@ -19,9 +19,11 @@
             </if>
             <if test="status != null and status != ''">AND s.site_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND s.site_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (s.site_nm ILIKE '%' || #{kw} || '%'
-                  OR s.site_id ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_id')">  OR s.site_id ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_name')">OR s.site_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND s.reg_date &gt;= #{dateStart}::DATE
@@ -30,7 +32,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="sySiteSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY s.site_id ASC</when>
@@ -44,7 +46,7 @@
     </sql>
 
     <!-- 사이트 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto$Item">
         SELECT  /* base.sy :: SySite :: selectById */
               s.*
             , cd_st.code_label AS site_type_cd_nm
@@ -56,7 +58,7 @@
     </select>
 
     <!-- 사이트 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto$Item">
         SELECT  /* base.sy :: SySite :: selectList */
               s.*
             , cd_st.code_label AS site_type_cd_nm
@@ -70,7 +72,7 @@
     </select>
 
     <!-- 사이트 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto$Item">
         SELECT  /* base.sy :: SySite :: selectPageList */
               s.*
             , cd_st.code_label AS site_type_cd_nm

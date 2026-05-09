@@ -1,46 +1,41 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyhUserTokenLogMapper;
-import com.shopjoy.ecadminapi.base.sy.repository.SyhUserTokenLogRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecadminapi.base.sy.service.SyhUserTokenLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
+/**
+ * BO 사용자 토큰 이력 서비스 — base SyhUserTokenLogService 위임 (thin wrapper).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoSyUserTokenLogService {
 
-    private final SyhUserTokenLogMapper syhUserTokenLogMapper;
-    private final SyhUserTokenLogRepository syhUserTokenLogRepository;
+    private final SyhUserTokenLogService syhUserTokenLogService;
 
-    /** getList — 조회 */
-    public List<SyhUserTokenLogDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return syhUserTokenLogMapper.selectList(p);
+    /** getById — 단건조회 */
+    public SyhUserTokenLogDto.Item getById(String id) {
+        return syhUserTokenLogService.getById(id);
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyhUserTokenLogDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(syhUserTokenLogMapper.selectPageList(p), syhUserTokenLogMapper.selectPageCount(p),
-            PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    /** getList — 목록조회 */
+    public List<SyhUserTokenLogDto.Item> getList(SyhUserTokenLogDto.Request req) {
+        return syhUserTokenLogService.getList(req);
     }
 
-    /** getById — 조회 */
-    public SyhUserTokenLogDto getById(String id) {
-        return syhUserTokenLogMapper.selectById(id);
+    /** getPageData — 페이징조회 */
+    public SyhUserTokenLogDto.PageResponse getPageData(SyhUserTokenLogDto.Request req) {
+        return syhUserTokenLogService.getPageData(req);
     }
 
     /** deleteAll — 삭제 */
     @Transactional
     public void deleteAll() {
-        syhUserTokenLogRepository.deleteAllBulk();
+        syhUserTokenLogService.deleteAll();
     }
 }

@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchHist;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyhBatchHistMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhBatchHistRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,35 +19,29 @@ public class SyhBatchHistService {
     private final SyhBatchHistMapper syhBatchHistMapper;
     private final SyhBatchHistRepository syhBatchHistRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyhBatchHistDto getById(String id) {
-        // syh_batch_hist :: select one :: id [orm:mybatis]
-        SyhBatchHistDto result = syhBatchHistMapper.selectById(id);
-        return result;
+    /** getById — 단건조회 */
+    public SyhBatchHistDto.Item getById(String id) {
+        return syhBatchHistMapper.selectById(id);
     }
 
-    /** getList — 조회 */
-    public List<SyhBatchHistDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // syh_batch_hist :: select list :: p [orm:mybatis]
-        List<SyhBatchHistDto> result = syhBatchHistMapper.selectList(p);
-        return result;
+    /** getList — 목록조회 */
+    public List<SyhBatchHistDto.Item> getList(SyhBatchHistDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syhBatchHistMapper.selectList(req);
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyhBatchHistDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // syh_batch_hist :: select page :: [orm:mybatis]
-        return PageResult.of(syhBatchHistMapper.selectPageList(p), syhBatchHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    /** getPageData — 페이징조회 */
+    public SyhBatchHistDto.PageResponse getPageData(SyhBatchHistDto.Request req) {
+        PageHelper.addPaging(req);
+        SyhBatchHistDto.PageResponse res = new SyhBatchHistDto.PageResponse();
+        List<SyhBatchHistDto.Item> list = syhBatchHistMapper.selectPageList(req);
+        long count = syhBatchHistMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
     /** update — 수정 */
     @Transactional
     public int update(SyhBatchHist entity) {
-        // syh_batch_hist :: update :: [orm:mybatis]
-        int result = syhBatchHistMapper.updateSelective(entity);
-        return result;
+        return syhBatchHistMapper.updateSelective(entity);
     }
-
 }

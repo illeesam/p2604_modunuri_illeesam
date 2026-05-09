@@ -17,11 +17,16 @@
             <if test="ip        != null and ip        != ''">AND l.ip        LIKE '%'||#{ip}||'%'</if>
             <if test="uiNm      != null and uiNm      != ''">AND l.ui_nm     LIKE '%'||#{uiNm}||'%'</if>
             <if test="traceId   != null and traceId   != ''">AND l.trace_id  LIKE '%'||#{traceId}||'%'</if>
-            <if test="kw        != null and kw        != ''">AND (l.user_id  LIKE '%'||#{kw}||'%' OR l.login_id LIKE '%'||#{kw}||'%')</if>
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_userId')"> OR l.user_id  LIKE '%'||#{searchValue}||'%'</if>
+                    <if test="searchTypes.contains('def_loginId')">OR l.login_id LIKE '%'||#{searchValue}||'%'</if>
+                )
+            </if>
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syhUserLoginLogSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
@@ -32,7 +37,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto$Item">
         SELECT  /* base.sy :: SyhUserLoginLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
@@ -45,7 +50,7 @@
         WHERE l.log_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto$Item">
         SELECT  /* base.sy :: SyhUserLoginLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
@@ -60,7 +65,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto$Item">
         SELECT  /* base.sy :: SyhUserLoginLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm

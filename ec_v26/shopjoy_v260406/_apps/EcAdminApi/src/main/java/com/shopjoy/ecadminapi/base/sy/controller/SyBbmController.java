@@ -4,13 +4,12 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.base.sy.service.SyBbmService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/sy/bbm")
@@ -19,65 +18,46 @@ public class SyBbmController {
 
     private final SyBbmService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SyBbmDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<SyBbmDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyBbmDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<SyBbmDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBbmDto>> getById(@PathVariable("id") String id) {
-        SyBbmDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<SyBbmDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
-    /* ── 등록 (JPA) ── */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SyBbmDto.Item>>> list(@Valid @ModelAttribute SyBbmDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SyBbmDto.PageResponse>> page(@Valid @ModelAttribute SyBbmDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyBbm>> create(@RequestBody SyBbm entity) {
-        SyBbm result = service.create(entity);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
-    /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBbm>> save(
-            @PathVariable("id") String id, @RequestBody SyBbm entity) {
+    public ResponseEntity<ApiResponse<SyBbm>> save(@PathVariable("id") String id, @RequestBody SyBbm entity) {
         entity.setBbmId(id);
-        SyBbm result = service.save(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
-    /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable("id") String id, @RequestBody SyBbm entity) {
+    public ResponseEntity<ApiResponse<SyBbm>> updatePartial(@PathVariable("id") String id, @RequestBody SyBbm entity) {
         entity.setBbmId(id);
-        int result = service.update(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
     }
 
-    /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
-    /** saveList — 저장 */
+
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyBbm> rows) {
-        service.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<SyBbm>>> saveList(@RequestBody List<SyBbm> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

@@ -3,12 +3,10 @@ package com.shopjoy.ecadminapi.bo.sy.controller;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyAccessLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * BO API 요청로그 API — /api/bo/sy/access-log
@@ -20,10 +18,10 @@ public class BoSyAccessLogController {
 
     private final BoSyAccessLogService boSyAccessLogService;
 
-    /** page — 페이지 */
+    /** page — 페이징조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyhAccessLogDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyAccessLogService.getPageData(p)));
+    public ResponseEntity<ApiResponse<SyhAccessLogDto.PageResponse>> page(@Valid @ModelAttribute SyhAccessLogDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyAccessLogService.getPageData(req)));
     }
 
     /** deleteAll — 삭제 */

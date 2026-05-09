@@ -18,7 +18,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syhSendMsgLogSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY l.log_id ASC</when>
@@ -29,7 +29,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto$Item">
         SELECT  /* base.sy :: SyhSendMsgLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
@@ -46,7 +46,7 @@
         WHERE l.log_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto$Item">
         SELECT  /* base.sy :: SyhSendMsgLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
@@ -65,7 +65,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto$Item">
         SELECT  /* base.sy :: SyhSendMsgLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm

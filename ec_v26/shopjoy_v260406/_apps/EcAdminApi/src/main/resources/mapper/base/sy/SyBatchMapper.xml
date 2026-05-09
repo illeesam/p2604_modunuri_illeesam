@@ -19,9 +19,11 @@
                 )
             </if>
             <if test="status != null and status != ''">AND b.batch_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (b.batch_nm ILIKE '%' || #{kw} || '%'
-                  OR b.batch_code ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_name')">OR b.batch_nm   ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_code')">OR b.batch_code ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND b.reg_date &gt;= #{dateStart}::DATE
@@ -30,7 +32,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syBatchSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY b.batch_id ASC</when>
@@ -44,7 +46,7 @@
     </sql>
 
     <!-- 배치 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto$Item">
         SELECT  /* base.sy :: SyBatch :: selectById */
               b.*
             , ste.site_nm AS site_nm
@@ -58,7 +60,7 @@
     </select>
 
     <!-- 배치 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto$Item">
         SELECT  /* base.sy :: SyBatch :: selectList */
               b.*
             , ste.site_nm AS site_nm
@@ -74,7 +76,7 @@
     </select>
 
     <!-- 배치 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto$Item">
         SELECT  /* base.sy :: SyBatch :: selectPageList */
               b.*
             , ste.site_nm AS site_nm

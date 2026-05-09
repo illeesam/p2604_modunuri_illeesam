@@ -19,7 +19,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="odRefundMethodSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY m.refund_method_id ASC</when>

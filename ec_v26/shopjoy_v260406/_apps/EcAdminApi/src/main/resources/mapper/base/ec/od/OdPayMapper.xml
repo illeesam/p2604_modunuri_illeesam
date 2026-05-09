@@ -27,7 +27,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="odPaySort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY p.pay_id ASC</when>

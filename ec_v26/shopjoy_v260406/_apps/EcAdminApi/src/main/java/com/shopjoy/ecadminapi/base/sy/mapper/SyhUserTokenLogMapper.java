@@ -6,18 +6,22 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyhUserTokenLogMapper {
 
-    SyhUserTokenLogDto selectById(@Param("id") String id);
+    /** 단건조회 */
+    SyhUserTokenLogDto.Item selectById(@Param("id") String id);
 
-    List<SyhUserTokenLogDto> selectList(Map<String, Object> p);
+    /** 목록조회 */
+    List<SyhUserTokenLogDto.Item> selectList(SyhUserTokenLogDto.Request req);
 
-    List<SyhUserTokenLogDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyhUserTokenLogDto.Item> selectPageList(SyhUserTokenLogDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyhUserTokenLogDto.Request req);
 
+    /** 수정 */
     int updateSelective(SyhUserTokenLog entity);
 }

@@ -6,18 +6,22 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyVendorBrandMapper {
 
-    SyVendorBrandDto selectById(@Param("id") String id);
+    /** 단건조회 */
+    SyVendorBrandDto.Item selectById(@Param("id") String id);
 
-    List<SyVendorBrandDto> selectList(Map<String, Object> p);
+    /** 목록조회 */
+    List<SyVendorBrandDto.Item> selectList(SyVendorBrandDto.Request req);
 
-    List<SyVendorBrandDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyVendorBrandDto.Item> selectPageList(SyVendorBrandDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyVendorBrandDto.Request req);
 
+    /** 수정 */
     int updateSelective(SyVendorBrand entity);
 }

@@ -29,7 +29,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="odClaimSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY c.claim_id ASC</when>

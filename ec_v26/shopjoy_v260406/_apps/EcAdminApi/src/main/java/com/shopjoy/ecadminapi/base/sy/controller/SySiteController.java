@@ -4,13 +4,12 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 import com.shopjoy.ecadminapi.base.sy.service.SySiteService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/sy/site")
@@ -19,38 +18,33 @@ public class SySiteController {
 
     private final SySiteService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SySiteDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<SySiteDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SySiteDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<SySiteDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
+    /** getById — 단건조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SySiteDto>> getById(@PathVariable("id") String id) {
-        SySiteDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<SySiteDto.Item>> getById(@PathVariable("id") String id) {
+        SySiteDto.Item result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    /* ── 등록 (JPA) ── */
+    /** list — 목록조회 */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SySiteDto.Item>>> list(@Valid @ModelAttribute SySiteDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    /** page — 페이징조회 */
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SySiteDto.PageResponse>> page(@Valid @ModelAttribute SySiteDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
+    }
+
+    /** create — 생성 (JPA) */
     @PostMapping
     public ResponseEntity<ApiResponse<SySite>> create(@RequestBody SySite entity) {
         SySite result = service.create(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
-    /* ── 전체 수정 (JPA) ── */
+    /** save — 전체 수정 (JPA) */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SySite>> save(
             @PathVariable("id") String id, @RequestBody SySite entity) {
@@ -59,25 +53,25 @@ public class SySiteController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    /* ── 선택 필드 수정 (MyBatis) ── */
+    /** updatePartial — 선택 필드 수정 (MyBatis selective) */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> update(
+    public ResponseEntity<ApiResponse<SySite>> updatePartial(
             @PathVariable("id") String id, @RequestBody SySite entity) {
         entity.setSiteId(id);
-        int result = service.update(entity);
+        SySite result = service.updatePartial(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    /* ── 삭제 (JPA) ── */
+    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
-    /** saveList — 저장 */
+
+    /** saveList — 일괄 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SySite> rows) {
-        service.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<SySite>>> saveList(@RequestBody List<SySite> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

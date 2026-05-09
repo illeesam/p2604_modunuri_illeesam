@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyVendorMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyVendorService {
-
 
     private final SyVendorMapper syVendorMapper;
     private final SyVendorRepository syVendorRepository;
@@ -33,97 +30,137 @@ public class SyVendorService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyVendorDto getById(String id) {
-        // sy_vendor :: select one :: id [orm:mybatis]
-        SyVendorDto result = syVendorMapper.selectById(id);
-        return result;
+    public SyVendorDto.Item getById(String id) {
+        SyVendorDto.Item dto = syVendorMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyVendorDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_vendor :: select list :: p [orm:mybatis]
-        List<SyVendorDto> result = syVendorMapper.selectList(p);
-        return result;
+    public SyVendor findById(String id) {
+        return syVendorRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyVendorDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_vendor :: select page :: p [orm:mybatis]
-        return PageResult.of(syVendorMapper.selectPageList(p), syVendorMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syVendorRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(SyVendor entity) {
-        // sy_vendor :: update :: entity [orm:mybatis]
-        int result = syVendorMapper.updateSelective(entity);
-        return result;
+    public List<SyVendorDto.Item> getList(SyVendorDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syVendorMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public SyVendorDto.PageResponse getPageData(SyVendorDto.Request req) {
+        PageHelper.addPaging(req);
+        SyVendorDto.PageResponse res = new SyVendorDto.PageResponse();
+        List<SyVendorDto.Item> list = syVendorMapper.selectPageList(req);
+        long count = syVendorMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public SyVendor create(SyVendor entity) {
-        entity.setVendorId(CmUtil.generateId("sy_vendor"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_vendor :: insert or update :: [orm:jpa]
-        SyVendor result = syVendorRepository.save(entity);
-        return result;
+    public SyVendor create(SyVendor body) {
+        body.setVendorId(CmUtil.generateId("sy_vendor"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyVendor saved = syVendorRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getVendorId());
     }
 
-    /** save — 저장 */
     @Transactional
     public SyVendor save(SyVendor entity) {
-        if (!syVendorRepository.existsById(entity.getVendorId()))
+        if (!existsById(entity.getVendorId()))
             throw new CmBizException("존재하지 않는 SyVendor입니다: " + entity.getVendorId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_vendor :: insert or update :: [orm:jpa]
-        SyVendor result = syVendorRepository.save(entity);
-        return result;
+        SyVendor saved = syVendorRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getVendorId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyVendor update(String id, SyVendor body) {
+        SyVendor entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "vendorId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyVendor saved = syVendorRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyVendor updatePartial(SyVendor entity) {
+        if (entity.getVendorId() == null) throw new CmBizException("vendorId 가 필요합니다.");
+        if (!existsById(entity.getVendorId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syVendorMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getVendorId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyVendor entity = syVendorRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyVendor entity = findById(id);
         syVendorRepository.delete(entity);
         em.flush();
-        if (syVendorRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyVendor> rows) {
+    public List<SyVendor> saveList(List<SyVendor> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyVendor row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setVendorId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_vendor"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syVendorRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getVendorId(), "vendorId must not be null");
-                SyVendor entity = syVendorRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "vendorId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syVendorRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getVendorId(), "vendorId must not be null");
-                if (syVendorRepository.existsById(id)) syVendorRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getVendorId() != null)
+            .map(SyVendor::getVendorId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syVendorRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyVendor> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorId() != null)
+            .toList();
+        for (SyVendor row : updateRows) {
+            SyVendor entity = findById(row.getVendorId());
+            VoUtil.voCopyExclude(row, entity, "vendorId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syVendorRepository.save(entity);
+            upsertedIds.add(entity.getVendorId());
         }
         em.flush();
+
+        List<SyVendor> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyVendor row : insertRows) {
+            row.setVendorId(CmUtil.generateId("sy_vendor"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syVendorRepository.save(row);
+            upsertedIds.add(row.getVendorId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SyVendor> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

@@ -3,13 +3,12 @@ package com.shopjoy.ecadminapi.co.sy.controller;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPathDto;
 import com.shopjoy.ecadminapi.base.sy.service.SyPathService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 표시경로 공용 API — /api/co/sy/path
@@ -23,23 +22,18 @@ public class CoSyPathController {
 
     private final SyPathService syPathService;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SyPathDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(syPathService.getList(p)));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyPathDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(syPathService.getPageData(p)));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyPathDto>> getById(@PathVariable("id") String id) {
+    public ResponseEntity<ApiResponse<SyPathDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(syPathService.getById(id)));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SyPathDto.Item>>> list(@Valid @ModelAttribute SyPathDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(syPathService.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SyPathDto.PageResponse>> page(@Valid @ModelAttribute SyPathDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(syPathService.getPageData(req)));
     }
 }

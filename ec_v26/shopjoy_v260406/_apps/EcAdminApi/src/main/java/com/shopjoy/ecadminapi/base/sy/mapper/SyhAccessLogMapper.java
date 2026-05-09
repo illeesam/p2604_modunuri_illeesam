@@ -4,12 +4,13 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyhAccessLogMapper {
 
-    List<SyhAccessLogDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyhAccessLogDto.Item> selectPageList(SyhAccessLogDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyhAccessLogDto.Request req);
 }

@@ -20,9 +20,11 @@
             </if>
             <if test="status != null and status != ''">AND a.alarm_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND a.alarm_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (a.alarm_title ILIKE '%' || #{kw} || '%'
-                  OR a.alarm_type_cd ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_title')"> OR a.alarm_title   ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_typeCd')">OR a.alarm_type_cd ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND a.alarm_send_date &gt;= #{dateStart}::DATE
@@ -31,7 +33,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syAlarmSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY a.alarm_id ASC</when>
@@ -45,7 +47,7 @@
     </sql>
 
     <!-- 알람 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto$Item">
         SELECT  /* base.sy :: SyAlarm :: selectById */
               a.*
             , ste.site_nm AS site_nm
@@ -61,7 +63,7 @@
     </select>
 
     <!-- 알람 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto$Item">
         SELECT  /* base.sy :: SyAlarm :: selectList */
               a.*
             , ste.site_nm AS site_nm
@@ -79,7 +81,7 @@
     </select>
 
     <!-- 알람 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto$Item">
         SELECT  /* base.sy :: SyAlarm :: selectPageList */
               a.*
             , ste.site_nm AS site_nm

@@ -18,7 +18,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="pmEventItemSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY i.event_item_id ASC</when>

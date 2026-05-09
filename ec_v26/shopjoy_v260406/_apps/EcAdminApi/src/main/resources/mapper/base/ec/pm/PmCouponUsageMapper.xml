@@ -25,7 +25,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="pmCouponUsageSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY u.usage_id ASC</when>

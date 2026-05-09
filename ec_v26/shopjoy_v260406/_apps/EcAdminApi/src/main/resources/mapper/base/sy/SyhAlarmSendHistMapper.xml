@@ -16,7 +16,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syhAlarmSendHistSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY h.send_hist_id ASC</when>
@@ -27,7 +27,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto$Item">
         SELECT  /* base.sy :: SyhAlarmSendHist :: selectById */
               h.*
             , ste.site_nm AS site_nm
@@ -36,7 +36,7 @@
         WHERE h.send_hist_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto$Item">
         SELECT  /* base.sy :: SyhAlarmSendHist :: selectList */
               h.*
             , ste.site_nm AS site_nm
@@ -47,7 +47,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto$Item">
         SELECT  /* base.sy :: SyhAlarmSendHist :: selectPageList */
               h.*
             , ste.site_nm AS site_nm

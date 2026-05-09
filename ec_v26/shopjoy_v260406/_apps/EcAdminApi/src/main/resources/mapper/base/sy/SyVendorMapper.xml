@@ -18,9 +18,12 @@
             </if>
             <if test="vendorId != null and vendorId != ''">AND v.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND v.vendor_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (v.vendor_nm ILIKE '%' || #{kw} || '%'
-                  OR v.ceo_nm ILIKE '%' || #{kw} || '%')
+            <if test="vendorClassCd != null and vendorClassCd != ''">AND v.vendor_class_cd = #{vendorClassCd}</if>
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_nm')">OR v.vendor_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_ceo')"> OR v.ceo_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND v.reg_date &gt;= #{dateStart}::DATE
@@ -29,7 +32,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syVendorSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY v.vendor_id ASC</when>
@@ -42,7 +45,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto$Item">
         SELECT  /* base.sy :: SyVendor :: selectById */
               v.*
             , ste.site_nm AS site_nm
@@ -55,7 +58,7 @@
         WHERE v.vendor_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto$Item">
         SELECT  /* base.sy :: SyVendor :: selectList */
               v.*
             , ste.site_nm AS site_nm
@@ -70,7 +73,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto$Item">
         SELECT  /* base.sy :: SyVendor :: selectPageList */
               v.*
             , ste.site_nm AS site_nm
@@ -126,3 +129,4 @@
     </update>
 
 </mapper>
+

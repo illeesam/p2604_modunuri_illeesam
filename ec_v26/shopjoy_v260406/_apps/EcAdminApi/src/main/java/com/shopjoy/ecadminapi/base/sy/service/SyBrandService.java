@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyBrand;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyBrandMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBrandRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyBrandService {
-
 
     private final SyBrandMapper syBrandMapper;
     private final SyBrandRepository syBrandRepository;
@@ -33,97 +30,137 @@ public class SyBrandService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyBrandDto getById(String id) {
-        // sy_brand :: select one :: id [orm:mybatis]
-        SyBrandDto result = syBrandMapper.selectById(id);
-        return result;
+    public SyBrandDto.Item getById(String id) {
+        SyBrandDto.Item dto = syBrandMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyBrandDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_brand :: select list :: p [orm:mybatis]
-        List<SyBrandDto> result = syBrandMapper.selectList(p);
-        return result;
+    public SyBrand findById(String id) {
+        return syBrandRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyBrandDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_brand :: select page :: p [orm:mybatis]
-        return PageResult.of(syBrandMapper.selectPageList(p), syBrandMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syBrandRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(SyBrand entity) {
-        // sy_brand :: update :: entity [orm:mybatis]
-        int result = syBrandMapper.updateSelective(entity);
-        return result;
+    public List<SyBrandDto.Item> getList(SyBrandDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syBrandMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public SyBrandDto.PageResponse getPageData(SyBrandDto.Request req) {
+        PageHelper.addPaging(req);
+        SyBrandDto.PageResponse res = new SyBrandDto.PageResponse();
+        List<SyBrandDto.Item> list = syBrandMapper.selectPageList(req);
+        long count = syBrandMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public SyBrand create(SyBrand entity) {
-        entity.setBrandId(CmUtil.generateId("sy_brand"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_brand :: insert or update :: [orm:jpa]
-        SyBrand result = syBrandRepository.save(entity);
-        return result;
+    public SyBrand create(SyBrand body) {
+        body.setBrandId(CmUtil.generateId("sy_brand"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyBrand saved = syBrandRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getBrandId());
     }
 
-    /** save — 저장 */
     @Transactional
     public SyBrand save(SyBrand entity) {
-        if (!syBrandRepository.existsById(entity.getBrandId()))
+        if (!existsById(entity.getBrandId()))
             throw new CmBizException("존재하지 않는 SyBrand입니다: " + entity.getBrandId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_brand :: insert or update :: [orm:jpa]
-        SyBrand result = syBrandRepository.save(entity);
-        return result;
+        SyBrand saved = syBrandRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getBrandId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyBrand update(String id, SyBrand body) {
+        SyBrand entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "brandId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyBrand saved = syBrandRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyBrand updatePartial(SyBrand entity) {
+        if (entity.getBrandId() == null) throw new CmBizException("brandId 가 필요합니다.");
+        if (!existsById(entity.getBrandId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBrandId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syBrandMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getBrandId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyBrand entity = syBrandRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyBrand entity = findById(id);
         syBrandRepository.delete(entity);
         em.flush();
-        if (syBrandRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyBrand> rows) {
+    public List<SyBrand> saveList(List<SyBrand> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyBrand row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setBrandId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_brand"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syBrandRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getBrandId(), "brandId must not be null");
-                SyBrand entity = syBrandRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "brandId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syBrandRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getBrandId(), "brandId must not be null");
-                if (syBrandRepository.existsById(id)) syBrandRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getBrandId() != null)
+            .map(SyBrand::getBrandId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syBrandRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyBrand> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getBrandId() != null)
+            .toList();
+        for (SyBrand row : updateRows) {
+            SyBrand entity = findById(row.getBrandId());
+            VoUtil.voCopyExclude(row, entity, "brandId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syBrandRepository.save(entity);
+            upsertedIds.add(entity.getBrandId());
         }
         em.flush();
+
+        List<SyBrand> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyBrand row : insertRows) {
+            row.setBrandId(CmUtil.generateId("sy_brand"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syBrandRepository.save(row);
+            upsertedIds.add(row.getBrandId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SyBrand> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

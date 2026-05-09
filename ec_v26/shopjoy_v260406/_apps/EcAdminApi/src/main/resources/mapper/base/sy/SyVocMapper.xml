@@ -18,7 +18,7 @@
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syVocSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY v.voc_id ASC</when>

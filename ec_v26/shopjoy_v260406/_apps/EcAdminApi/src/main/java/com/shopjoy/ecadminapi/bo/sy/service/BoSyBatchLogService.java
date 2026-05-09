@@ -1,38 +1,35 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyhBatchLogMapper;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecadminapi.base.sy.service.SyhBatchLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
+/**
+ * BO 배치 로그 서비스 — base SyhBatchLogService 위임 (thin wrapper).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoSyBatchLogService {
 
-    private final SyhBatchLogMapper syhBatchLogMapper;
+    private final SyhBatchLogService syhBatchLogService;
 
-    /** getList — 조회 */
-    public List<SyhBatchLogDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return syhBatchLogMapper.selectList(p);
+    /** getById — 단건조회 */
+    public SyhBatchLogDto.Item getById(String id) {
+        return syhBatchLogService.getById(id);
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyhBatchLogDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(syhBatchLogMapper.selectPageList(p), syhBatchLogMapper.selectPageCount(p),
-            PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    /** getList — 목록조회 */
+    public List<SyhBatchLogDto.Item> getList(SyhBatchLogDto.Request req) {
+        return syhBatchLogService.getList(req);
     }
 
-    /** getById — 조회 */
-    public SyhBatchLogDto getById(String id) {
-        return syhBatchLogMapper.selectById(id);
+    /** getPageData — 페이징조회 */
+    public SyhBatchLogDto.PageResponse getPageData(SyhBatchLogDto.Request req) {
+        return syhBatchLogService.getPageData(req);
     }
 }
