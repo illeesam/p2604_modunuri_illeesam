@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 상품 이력 API
@@ -30,39 +29,39 @@ public class BoPdProdHistController {
     @GetMapping("/orders")
     public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> orders(
             @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getOrders(prodId, p)));
+            @Valid @ModelAttribute PdProdHistDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getOrders(prodId, req)));
     }
 
     /** stock */
     @GetMapping("/stock")
     public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> stock(
             @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStockHist(prodId, p)));
+            @Valid @ModelAttribute PdProdHistDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStockHist(prodId, req)));
     }
 
     /** price */
     @GetMapping("/price")
     public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> price(
             @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getPriceHist(prodId, p)));
+            @Valid @ModelAttribute PdProdHistDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getPriceHist(prodId, req)));
     }
 
     /** status */
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> status(
             @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStatusHist(prodId, p)));
+            @Valid @ModelAttribute PdProdHistDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStatusHist(prodId, req)));
     }
 
     /** changes */
     @GetMapping("/changes")
     public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> changes(
             @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getChangeHist(prodId, p)));
+            @Valid @ModelAttribute PdProdHistDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getChangeHist(prodId, req)));
     }
 }

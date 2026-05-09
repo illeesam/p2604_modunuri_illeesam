@@ -36,8 +36,8 @@ public class FoMbLikeController {
     public ResponseEntity<ApiResponse<Map<String, Boolean>>> toggle(
             @PathVariable("targetTypeCd") String targetTypeCd,
             @PathVariable("targetId") String targetId,
-            @RequestParam Map<String, Object> p) {
-        boolean liked = foMbLikeService.toggle(targetTypeCd, targetId, p);
+            @RequestParam(value = "siteId", required = false) String siteId) {
+        boolean liked = foMbLikeService.toggle(targetTypeCd, targetId, siteId);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("liked", liked)));
     }
 
@@ -45,9 +45,8 @@ public class FoMbLikeController {
     @DeleteMapping("/{targetTypeCd}/{targetId}")
     public ResponseEntity<ApiResponse<Void>> unlike(
             @PathVariable("targetTypeCd") String targetTypeCd,
-            @PathVariable("targetId") String targetId,
-            @RequestParam Map<String, Object> p) {
-        foMbLikeService.unlike(targetTypeCd, targetId, p);
+            @PathVariable("targetId") String targetId) {
+        foMbLikeService.unlike(targetTypeCd, targetId);
         return ResponseEntity.ok(ApiResponse.ok(null, "찜이 취소되었습니다."));
     }
 }

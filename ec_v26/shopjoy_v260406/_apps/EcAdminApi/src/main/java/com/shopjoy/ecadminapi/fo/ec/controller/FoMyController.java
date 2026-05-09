@@ -63,15 +63,13 @@ public class FoMyController {
 
     /** getInquiries — 조회 */
     @GetMapping("/inquiry/list")
-    public ResponseEntity<ApiResponse<List<Object>>> getInquiries(
-            @RequestParam Map<String, Object> p) {
+    public ResponseEntity<ApiResponse<List<Object>>> getInquiries() {
         return ResponseEntity.ok(ApiResponse.ok(List.of()));
     }
 
     /** getChats — 조회 */
     @GetMapping("/chat/list")
-    public ResponseEntity<ApiResponse<List<Object>>> getChats(
-            @RequestParam Map<String, Object> p) {
+    public ResponseEntity<ApiResponse<List<Object>>> getChats() {
         return ResponseEntity.ok(ApiResponse.ok(List.of()));
     }
 }

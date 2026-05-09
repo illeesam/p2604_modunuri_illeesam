@@ -6,9 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -18,27 +16,37 @@ public class BoPdProdHistService {
     private final PdProdHistMapper pdProdHistMapper;
 
     /** getOrders — 조회 */
-    public List<PdProdHistDto.Item> getOrders(String prodId, Map<String, Object> p) {
-        return pdProdHistMapper.selectOrders(prodId, p != null ? p : new HashMap<>());
+    public List<PdProdHistDto.Item> getOrders(String prodId, PdProdHistDto.Request req) {
+        if (req == null) req = new PdProdHistDto.Request();
+        req.setProdId(prodId);
+        return pdProdHistMapper.selectOrders(req);
     }
 
     /** getStockHist — 조회 */
-    public List<PdProdHistDto.Item> getStockHist(String prodId, Map<String, Object> p) {
-        return pdProdHistMapper.selectStockHist(prodId, p != null ? p : new HashMap<>());
+    public List<PdProdHistDto.Item> getStockHist(String prodId, PdProdHistDto.Request req) {
+        if (req == null) req = new PdProdHistDto.Request();
+        req.setProdId(prodId);
+        return pdProdHistMapper.selectStockHist(req);
     }
 
     /** getPriceHist — 조회 */
-    public List<PdProdHistDto.Item> getPriceHist(String prodId, Map<String, Object> p) {
-        return pdProdHistMapper.selectPriceHist(prodId, p != null ? p : new HashMap<>());
+    public List<PdProdHistDto.Item> getPriceHist(String prodId, PdProdHistDto.Request req) {
+        if (req == null) req = new PdProdHistDto.Request();
+        req.setProdId(prodId);
+        return pdProdHistMapper.selectPriceHist(req);
     }
 
     /** getStatusHist — 조회 */
-    public List<PdProdHistDto.Item> getStatusHist(String prodId, Map<String, Object> p) {
-        return pdProdHistMapper.selectStatusHist(prodId, p != null ? p : new HashMap<>());
+    public List<PdProdHistDto.Item> getStatusHist(String prodId, PdProdHistDto.Request req) {
+        if (req == null) req = new PdProdHistDto.Request();
+        req.setProdId(prodId);
+        return pdProdHistMapper.selectStatusHist(req);
     }
 
     /** getChangeHist — 조회 */
-    public List<PdProdHistDto.Item> getChangeHist(String prodId, Map<String, Object> p) {
-        return pdProdHistMapper.selectChangeHist(prodId, p != null ? p : new HashMap<>());
+    public List<PdProdHistDto.Item> getChangeHist(String prodId, PdProdHistDto.Request req) {
+        if (req == null) req = new PdProdHistDto.Request();
+        req.setProdId(prodId);
+        return pdProdHistMapper.selectChangeHist(req);
     }
 }

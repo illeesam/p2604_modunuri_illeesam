@@ -14,6 +14,8 @@ public class PdProdHistDto {
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
         @Size(max = 21) private String histId;
+        @Size(max = 21) private String prodId;
+        @Size(max = 21) private String siteId;
     }
 
     @Getter @Setter @NoArgsConstructor
