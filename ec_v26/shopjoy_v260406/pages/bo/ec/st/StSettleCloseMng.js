@@ -42,7 +42,7 @@ window.StSettleCloseMng = {
           boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
           boApiSvc.stSettleClose.getPage({
-            kw: searchKw.value, status: searchStatus.value, pageNo: 1, pageSize: 100
+            searchValue: searchKw.value, status: searchStatus.value, pageNo: 1, pageSize: 100
           }, '정산마감관리', '이력조회'),
         ]);
         orders.splice(0, orders.length, ...(resO.data?.data?.list || []));

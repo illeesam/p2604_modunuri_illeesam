@@ -20,7 +20,7 @@ window.refDefaults = (() => {
     }),
 
     errorObj: () => ({}),
-    appliedFilter: () => ({ kw: '', status: '' }),
+    appliedFilter: () => ({ searchValue: '', status: '' }),
     pagerState: () => ({ page: 1, size: 10 }),
     modalState: () => ({ show: false, type: '', id: null, data: null }),
 

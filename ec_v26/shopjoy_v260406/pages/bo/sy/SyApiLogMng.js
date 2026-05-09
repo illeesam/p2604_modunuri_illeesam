@@ -83,7 +83,7 @@ window.SyApiLogMng = {
       pageSize:    pager.pageSize,
       dateStart:   uiState.dateStart       || undefined,
       dateEnd:     uiState.dateEnd         || undefined,
-      kw:          uiState.searchKw        || undefined,
+      searchValue: uiState.searchKw        || undefined,
       method:      uiState.searchMethod    || undefined,
       status:      uiState.searchStatus    || undefined,
       path:        uiState.searchPath      || undefined,

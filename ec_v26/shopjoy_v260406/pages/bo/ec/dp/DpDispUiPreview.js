@@ -220,7 +220,7 @@ window.DpDispUiPreview = {
       filterStatus: '활성',
       filterVisibility: '',
       filterDispEnv: 'PROD',
-      searchKw: ''});
+      searchValue: ''});
 
     const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', searchValue: '', visibility: '' });
 
@@ -229,7 +229,7 @@ window.DpDispUiPreview = {
         type:       searchParam.filterType,
         status:     searchParam.filterStatus,
         dispEnv:    searchParam.filterDispEnv,
-        kw:         searchParam.searchKw.trim().toLowerCase(),
+        searchValue: searchParam.searchValue.trim().toLowerCase(),
         visibility: searchParam.filterVisibility,
       });
     };
@@ -241,8 +241,8 @@ window.DpDispUiPreview = {
       searchParam.filterStatus = '활성';
       searchParam.filterDispEnv = 'PROD';
       searchParam.filterVisibility = '';
-      searchParam.searchKw = '';
-      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
+      searchParam.searchValue = '';
+      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', searchValue: '', visibility: '' });
     };
 
     const cfFilteredLibs = computed(() => {
@@ -604,7 +604,7 @@ window.DpDispUiPreview = {
           <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
-      <input v-model="searchParam.searchKw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
       <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
         <button @click="onSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>

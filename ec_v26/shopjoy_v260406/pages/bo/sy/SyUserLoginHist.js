@@ -68,7 +68,7 @@ window.SyUserLoginHist = {
       ip:         uiState.searchIp     || undefined,
       uiNm:       uiState.searchUiNm   || undefined,
       traceId:    uiState.searchTraceId || undefined,
-      kw:         uiState.searchKw     || undefined,
+      searchValue: uiState.searchKw    || undefined,
     });
 
     const handleSearchLog = async () => {
