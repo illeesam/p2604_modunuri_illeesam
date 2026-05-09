@@ -25,7 +25,7 @@ const searchVisibility = ref('');
 
 // ✅ After: consolidated reactive
 const searchParam = reactive({
-  kw: '',
+  searchValue: '',
   type: '',
   status: '',
   dateStart: '',
@@ -41,7 +41,7 @@ const searchParam = reactive({
   visibility: '',
 });
 const searchParamOrg = reactive({
-  kw: '',
+  searchValue: '',
   type: '',
   status: '',
   dateStart: '',
@@ -67,7 +67,7 @@ const onReset = () => {
 ```
 
 **필드 포함**:
-- 키워드 검색: kw
+- 키워드 검색: searchValue (멀티 컬럼 검색 시 searchTypes 병행)
 - 타입/카테고리: type, cate, category
 - 상태: status, useYn, statusCd
 - 날짜: dateStart, dateEnd, dateRange

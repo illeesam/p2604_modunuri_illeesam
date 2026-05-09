@@ -801,7 +801,7 @@ public class XxxService {
 `getPageData()` API 응답의 `data` 필드는 `PageResult` 구조다. **필드명을 정확히 사용해야 한다.**
 
 ```js
-const res = await boApiSvc.mbMember.getPage({ kw, pageNo, pageSize });
+const res = await boApiSvc.mbMember.getPage({ searchValue, pageNo, pageSize });
 const d = res.data?.data || {};
 
 // ✅ 올바른 필드명
@@ -826,7 +826,7 @@ const totalPage = d.pageTotalPage  || 1;   // 전체 페이지 수
 <!-- p에 없는 키는 WHERE 조건에서 자동 제외 -->
 <where>
   <if test="siteId != null">AND site_id = #{siteId}</if>
-  <if test="kw != null">AND (title LIKE '%'||#{kw}||'%')</if>
+  <if test="searchValue != null">AND (title LIKE '%'||#{searchValue}||'%')</if>
   <if test="dateStart != null">AND reg_date >= #{dateStart}</if>
 </where>
 ```

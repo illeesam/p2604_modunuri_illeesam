@@ -1046,9 +1046,9 @@
   };
   /* 로컬(QUICK_USERS) 페이징 — 로그인 전 fallback */
   const cfLocalFiltered = Vue.computed(() => {
-  const kw = (userPickModal.searchValue || '').toLowerCase();
-  return kw ? QUICK_USERS.filter(u =>
-    u.label.toLowerCase().includes(kw) || u.loginId.toLowerCase().includes(kw) || (u.userNm||'').toLowerCase().includes(kw)
+  const searchVal = (userPickModal.searchValue || '').toLowerCase();
+  return searchVal ? QUICK_USERS.filter(u =>
+    u.label.toLowerCase().includes(searchVal) || u.loginId.toLowerCase().includes(searchVal) || (u.userNm||'').toLowerCase().includes(searchVal)
   ) : QUICK_USERS;
   });
   const cfLocalPage = Vue.computed(() => {

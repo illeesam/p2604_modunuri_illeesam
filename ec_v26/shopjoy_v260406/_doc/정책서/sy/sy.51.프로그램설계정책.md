@@ -75,7 +75,7 @@ UI/영역/패널 추가 시:
 | 사용여부(useYn) | `Y` | 운영 중인 데이터 위주로 조회하는 것이 일반적 |
 | 등록일 시작(dateStart) | 3년 전 1월 1일 | 최근 운영 데이터 범위 확보 |
 | 등록일 종료(dateEnd) | 올해 12월 31일 | 올해 등록 데이터까지 포함 |
-| 키워드(kw) | 빈값 | 전체 조회가 기본 |
+| 키워드(searchValue) | 빈값 | 전체 조회가 기본 |
 
 **구현 패턴**: 기본값 함수를 별도로 분리하여 페이지 진입·초기화 버튼 모두에서 동일하게 사용
 
@@ -85,7 +85,7 @@ const _initSearchParam = () => {
   const today = new Date();
   const thisYear = today.getFullYear();
   return {
-    kw: '', useYn: 'Y', dateRange: '',
+    searchValue: '', useYn: 'Y', dateRange: '',
     dateStart: `${thisYear - 3}-01-01`,
     dateEnd:   `${thisYear}-12-31`,
   };

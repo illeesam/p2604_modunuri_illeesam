@@ -43,7 +43,7 @@ const searchParam = reactive({
   filterStatus: '활성',
   filterVisibility: '',
   filterDispEnv: 'PROD',
-  kw: '',
+  searchValue: '',
   status: '활성',
   visibility: '',
 });
@@ -55,7 +55,7 @@ const searchParamOrg = reactive({
   filterStatus: '활성',
   filterVisibility: '',
   filterDispEnv: 'PROD',
-  kw: '',
+  searchValue: '',
   status: '활성',
   visibility: '',
 });

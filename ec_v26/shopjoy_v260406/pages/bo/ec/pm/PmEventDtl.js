@@ -101,8 +101,8 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     /* 대상 상품 팝업 */
         const cfFilteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
-      const kw = prodSearch.value.trim().toLowerCase();
-      return !kw || p.prodNm.toLowerCase().includes(kw);
+      const searchVal = prodSearch.value.trim().toLowerCase();
+      return !searchVal || p.prodNm.toLowerCase().includes(searchVal);
     }));
     const toggleProduct = (pid) => {
       const idx = form.targetProducts.indexOf(pid);

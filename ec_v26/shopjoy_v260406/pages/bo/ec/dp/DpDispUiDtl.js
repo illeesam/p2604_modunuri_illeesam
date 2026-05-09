@@ -161,10 +161,10 @@ window.DpDispUiDtl = {
     /* 영역 선택 팝업 */
     const cfAvailableAreas = computed(() => {
       const all = areas.filter(c => c.codeGrp === 'DISP_AREA');
-      const kw  = uiState.pickSearchValue.trim().toLowerCase();
+      const searchVal  = uiState.pickSearchValue.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, a => {
         if (a.uiCode === form.codeValue) return false;
-        if (kw && !(a.codeLabel||'').toLowerCase().includes(kw) && !(a.codeValue||'').toLowerCase().includes(kw)) return false;
+        if (searchVal && !(a.codeLabel||'').toLowerCase().includes(searchVal) && !(a.codeValue||'').toLowerCase().includes(searchVal)) return false;
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });

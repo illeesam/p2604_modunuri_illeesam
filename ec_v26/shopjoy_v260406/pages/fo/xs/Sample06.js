@@ -51,8 +51,8 @@ window.XsSample06 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
-        const kw = searchParam.searchValue.toLowerCase();
-        if (kw && !String(d.couponNm || '').toLowerCase().includes(kw)) return false;
+        const searchVal = searchParam.searchValue.toLowerCase();
+        if (searchVal && !String(d.couponNm || '').toLowerCase().includes(searchVal)) return false;
         if (searchParam.discountType && d.discountType !== searchParam.discountType) return false;
         if (searchParam.useYn        && d.useYn        !== searchParam.useYn)        return false;
         return true;
@@ -94,8 +94,8 @@ window.XsSample06 = {
         allData.splice(0, allData.length, ...list.map(toRow));
         gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
-          const kw = searchParam.searchValue.toLowerCase();
-          if (kw && !String(d.couponNm || '').toLowerCase().includes(kw)) return false;
+          const searchVal = searchParam.searchValue.toLowerCase();
+          if (searchVal && !String(d.couponNm || '').toLowerCase().includes(searchVal)) return false;
           if (searchParam.discountType && d.discountType !== searchParam.discountType) return false;
           if (searchParam.useYn        && d.useYn        !== searchParam.useYn)        return false;
           return true;

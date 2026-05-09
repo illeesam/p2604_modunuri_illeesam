@@ -127,11 +127,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const orderPager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfOrderRows = computed(() => {
-      const kw = uiState.orderSearchValue.trim().toLowerCase();
+      const searchVal = uiState.orderSearchValue.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(orderList, o => {
         if (!inRange(o.orderDate)) return false;
         if (uiState.orderSearchStatus && o.status !== uiState.orderSearchStatus) return false;
-        if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
+        if (searchVal && !o.orderId.toLowerCase().includes(searchVal) && !o.userNm.toLowerCase().includes(searchVal) && !o.prodNm.toLowerCase().includes(searchVal)) return false;
         return true;
       }).map(o => {
         const vendor = cfVendors.value.find(v => v.vendorId === o.vendorId);
@@ -195,7 +195,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const promoPager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfPromoRows = computed(() => {
-      const kw = uiState.promoSearchValue.trim().toLowerCase();
+      const searchVal = uiState.promoSearchValue.trim().toLowerCase();
       const couponRows = couponList.map(c => {
         const discountAmt = c.discountType === 'amount' ? c.discountValue * c.useCount
           : c.discountType === 'rate' ? Math.round(50000 * (c.discountValue / 100) * c.useCount) // 평균 주문금액 가정
@@ -216,7 +216,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       const allRows = [...couponRows, ...cacheRows];
       return allRows.filter(r => {
         if (uiState.promoSearchType && r.promoType !== uiState.promoSearchType) return false;
-        if (kw && !r.promoNm.toLowerCase().includes(kw) && !r.promoType.toLowerCase().includes(kw)) return false;
+        if (searchVal && !r.promoNm.toLowerCase().includes(searchVal) && !r.promoType.toLowerCase().includes(searchVal)) return false;
         return true;
       });
     });

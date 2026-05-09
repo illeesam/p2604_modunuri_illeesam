@@ -26,7 +26,7 @@ public class QueryParam {
     private final String dateField;
 
     // ── SearchRequest 매핑 ──
-    private final String kw;
+    private final String searchValue;
     private final String dateStart;
     private final String dateEnd;
     private final String siteId;

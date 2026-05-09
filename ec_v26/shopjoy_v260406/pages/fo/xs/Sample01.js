@@ -87,8 +87,8 @@ window.XsSample01 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
-        const kw = searchParam.searchValue.toLowerCase();
-        if (kw && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
+        const searchVal = searchParam.searchValue.toLowerCase();
+        if (searchVal && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
         if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
         if (searchParam.status && d.status !== searchParam.status) return false;
         return true;
@@ -160,8 +160,8 @@ window.XsSample01 = {
         allData.splice(0, allData.length, ...list.map(toRow));
         gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
-          const kw = searchParam.searchValue.toLowerCase();
-          if (kw && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
+          const searchVal = searchParam.searchValue.toLowerCase();
+          if (searchVal && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
           if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
           if (searchParam.status && d.status !== searchParam.status) return false;
           return true;

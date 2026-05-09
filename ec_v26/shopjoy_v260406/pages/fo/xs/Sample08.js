@@ -48,8 +48,8 @@ window.XsSample08 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
-        const kw = searchParam.searchValue.toLowerCase();
-        if (kw && !['categoryNm', 'parentNm'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
+        const searchVal = searchParam.searchValue.toLowerCase();
+        if (searchVal && !['categoryNm', 'parentNm'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
         if (searchParam.useYn && d.useYn !== searchParam.useYn) return false;
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
@@ -90,8 +90,8 @@ window.XsSample08 = {
         allData.splice(0, allData.length, ...list.map(toRow));
         gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
-          const kw = searchParam.searchValue.toLowerCase();
-          if (kw && !['categoryNm', 'parentNm'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
+          const searchVal = searchParam.searchValue.toLowerCase();
+          if (searchVal && !['categoryNm', 'parentNm'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
           if (searchParam.useYn && d.useYn !== searchParam.useYn) return false;
           return true;
         }).forEach(d => gridRows.push(makeRow(d)));

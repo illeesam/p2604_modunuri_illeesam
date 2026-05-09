@@ -716,9 +716,9 @@ window.BoUserSelectModal = {
       return result;
     };
     const cfFlatDeptTree = computed(() => {
-      const kw = uiState.deptSearchValue.trim().toLowerCase();
-      const base = kw
-        ? depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
+      const searchVal = uiState.deptSearchValue.trim().toLowerCase();
+      const base = searchVal
+        ? depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(searchVal))
         : depts;
       return fnFlattenDept(fnBuildDeptTree(base, null, 1));
     });
@@ -2418,10 +2418,10 @@ window.RowPickModal = {
     });
 
     const cfFiltered = computed(() => cfAllRows.value.filter(o => {
-      const kw = searchValue.value.trim().toLowerCase();
-      if (kw && !(o.row.widgetNm||'').toLowerCase().includes(kw)
-           && !(o.__panelName||'').toLowerCase().includes(kw)
-           && !(o.row.widgetType||'').toLowerCase().includes(kw)) return false;
+      const searchVal = searchValue.value.trim().toLowerCase();
+      if (searchVal && !(o.row.widgetNm||'').toLowerCase().includes(searchVal)
+           && !(o.__panelName||'').toLowerCase().includes(searchVal)
+           && !(o.row.widgetType||'').toLowerCase().includes(searchVal)) return false;
       if (searchStatus.value && o.__status !== searchStatus.value) return false;
       if (selectedTreeKey.value) {
         const top = (o.__area || '').split('_')[0];
@@ -2623,8 +2623,8 @@ window.AreaPickModal = {
 
     const cfFiltered = computed(() => (props.areas || []).filter(a => {
       if (props.excludeUi && a.uiCode === props.excludeUi) return false;
-      const kw = searchParam.searchValue.trim().toLowerCase();
-      if (kw && !(a.codeValue||'').toLowerCase().includes(kw) && !(a.codeLabel||'').toLowerCase().includes(kw)) return false;
+      const searchVal = searchParam.searchValue.trim().toLowerCase();
+      if (searchVal && !(a.codeValue||'').toLowerCase().includes(searchVal) && !(a.codeLabel||'').toLowerCase().includes(searchVal)) return false;
       if (searchParam.useYn && a.useYn !== searchParam.useYn) return false;
       if (selectedTreeKey.value) {
         const top = (a.codeValue || '').split('_')[0];
@@ -2825,8 +2825,8 @@ window.PanelPickModal = {
 
     const cfFiltered = computed(() => (props.displays || []).filter(p => {
       if (props.excludeArea && p.area === props.excludeArea) return false;
-      const kw = searchParam.searchValue.trim().toLowerCase();
-      if (kw && !(p.name||'').toLowerCase().includes(kw) && !(p.area||'').toLowerCase().includes(kw)) return false;
+      const searchVal = searchParam.searchValue.trim().toLowerCase();
+      if (searchVal && !(p.name||'').toLowerCase().includes(searchVal) && !(p.area||'').toLowerCase().includes(searchVal)) return false;
       if (searchParam.status && p.status !== searchParam.status) return false;
       if (selectedTreeKey.value) {
         const top = (p.area || '').split('_')[0];
@@ -3014,8 +3014,8 @@ window.WidgetLibPickModal = {
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
 
     const cfFiltered = computed(() => (props.widgetLibs || []).filter(d => {
-      const kw = searchParam.searchValue.trim().toLowerCase();
-      if (kw && !(d.name||'').toLowerCase().includes(kw) && !(d.desc||'').toLowerCase().includes(kw) && !(d.tags||'').toLowerCase().includes(kw)) return false;
+      const searchVal = searchParam.searchValue.trim().toLowerCase();
+      if (searchVal && !(d.name||'').toLowerCase().includes(searchVal) && !(d.desc||'').toLowerCase().includes(searchVal) && !(d.tags||'').toLowerCase().includes(searchVal)) return false;
       if (searchParam.type && d.widgetType !== searchParam.type) return false;
       if (searchParam.status && d.status !== searchParam.status) return false;
       return true;

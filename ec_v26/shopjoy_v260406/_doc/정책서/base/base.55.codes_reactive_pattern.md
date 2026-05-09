@@ -109,7 +109,7 @@ window.DpDispUiMng = {
     
     const displays = reactive([]);
     const searchParam = reactive({
-      kw: '',
+      searchValue: '',
       uiType: '',
       useYn: '',
       dateStart: '',

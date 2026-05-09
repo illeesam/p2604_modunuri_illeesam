@@ -235,7 +235,7 @@ getters: {
 ```js
 // ✅ 올바른 패턴
 const searchParam = reactive({
-  kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+  searchValue: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
 });
 
 // ❌ 피할 패턴
@@ -249,7 +249,7 @@ const searchUseYn = ref('');
 
 ```js
 const searchParamOrg = reactive({
-  kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+  searchValue: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
 });
 
 onMounted(() => {
@@ -330,7 +330,7 @@ const handleLoadGrid = () => {
 ```js
 // ✅ 올바른 패턴
 const searchParam = reactive({
-  kw: '',
+  searchValue: '',
   type: '',
   useYn: '',
   dateStart: '',
@@ -372,7 +372,7 @@ const loading = ref(false);
 // ✅ 올바른 패턴
 const modalsState = reactive({
   // 사이트 선택 모달
-  siteModal: { kw: '', list: [], loading: false },
+  siteModal: { searchValue: '', list: [], loading: false },
   // 사용자 선택 모달
   userModal: { 
     selectedDeptId: null, deptKw: '', selectedIds: new Set(), 
@@ -380,11 +380,11 @@ const modalsState = reactive({
   },
   // 템플릿 발송 모달
   templateSend: { 
-    targetType: 'member', kw: '', selected: [], loading: false 
+    targetType: 'member', searchValue: '', selected: [], loading: false 
   }
 });
 
-// 사용: v-model="modalsState.siteModal.kw"
+// 사용: v-model="modalsState.siteModal.searchValue"
 // return { ...modalsState, ... }
 
 // ❌ 피할 패턴
@@ -477,8 +477,8 @@ const cfTotalPages = computed(() =>
 
 ```js
 // ✅ 올바른 패턴
-const searchParam = reactive({ kw: '', type: '', useYn: '' });
-const searchParamOrg = reactive({ kw: '', type: '', useYn: '' });
+const searchParam = reactive({ searchValue: '', type: '', useYn: '' });
+const searchParamOrg = reactive({ searchValue: '', type: '', useYn: '' });
 
 onMounted(() => {
   handleSearchList();
@@ -566,19 +566,19 @@ const handleCancel = () => {
 ```js
 // ✅ 올바른 패턴
 const userModals = reactive({
-  siteModal: { kw: '', list: [], loading: false },
+  siteModal: { searchValue: '', list: [], loading: false },
   userModal: { selectedDeptId: null, userKw: '', loading: false }
 });
 
 // 단일 모달만 초기화
 const resetSiteModal = () => {
-  Object.assign(userModals.siteModal, { kw: '', list: [], loading: false });
+  Object.assign(userModals.siteModal, { searchValue: '', list: [], loading: false });
 };
 
 // 전체 모달 초기화
 const resetAllModals = () => {
   Object.assign(userModals, {
-    siteModal: { kw: '', list: [], loading: false },
+    siteModal: { searchValue: '', list: [], loading: false },
     userModal: { selectedDeptId: null, userKw: '', loading: false }
   });
 };
@@ -601,7 +601,7 @@ const searchCat = ref('');
 
 // ✅ 리팩토링 후
 const searchParam = reactive({
-  kw: '',
+  searchValue: '',
   type: '',
   status: '',
   cat: ''

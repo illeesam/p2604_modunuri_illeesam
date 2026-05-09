@@ -601,9 +601,9 @@ window.DpDispUiSimul = {
     /* 사이트 모달 */
         const dispUiSiteSearch    = ref('');
     const cfDispUiSiteList = computed(() => {
-      const kw = searchParam.dispUiSiteSearch.trim().toLowerCase();
+      const searchVal = searchParam.dispUiSiteSearch.trim().toLowerCase();
       return (Array.isArray(sites) ? sites : []).filter(s =>
-        !kw || s.siteNm.toLowerCase().includes(kw) || (s.domain||'').toLowerCase().includes(kw)
+        !searchVal || s.siteNm.toLowerCase().includes(searchVal) || (s.domain||'').toLowerCase().includes(searchVal)
       );
     });
     const selectDispUiSite = (site) => {
@@ -615,9 +615,9 @@ window.DpDispUiSimul = {
     /* 회원 모달 */
         const dispUiMemberSearch    = ref('');
     const cfDispUiMemberList = computed(() => {
-      const kw = searchParam.dispUiMemberSearch.trim().toLowerCase();
+      const searchVal = searchParam.dispUiMemberSearch.trim().toLowerCase();
       return (Array.isArray(members) ? members : []).filter(m =>
-        !kw || (m.memberNm||'').toLowerCase().includes(kw) || (m.email||'').toLowerCase().includes(kw)
+        !searchVal || (m.memberNm||'').toLowerCase().includes(searchVal) || (m.email||'').toLowerCase().includes(searchVal)
       ).slice(0, 30);
     });
     const selectDispUiMember = (m) => {

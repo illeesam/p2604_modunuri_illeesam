@@ -19,7 +19,7 @@
 **적용 패턴**:
 ```javascript
 const searchParam = reactive({
-  kw: '', type: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
+  searchValue: '', type: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
 });
 const searchParamOrg = reactive({...});
 Object.assign(searchParamOrg, searchParam); // onMounted
@@ -110,7 +110,7 @@ const customerModal = ref(false);
 
 ### After (consolidated reactive)
 ```javascript
-const searchParam = reactive({ kw: '', type: '' });
+const searchParam = reactive({ searchValue: '', type: '' });
 const detailModal = reactive({ dtlId: null, isNew: false, form: {} });
 const productModal = reactive({ show: false, product: null });
 const customerModal = reactive({ show: false, customer: null });

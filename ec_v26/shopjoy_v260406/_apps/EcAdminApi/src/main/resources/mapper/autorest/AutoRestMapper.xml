@@ -9,10 +9,10 @@
          ============================================================ -->
     <sql id="commonWhere">
         <where>
-            <if test="kw != null and kw != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (
                 <foreach collection="p.searchFields" item="col" separator=" OR ">
-                    t.${col}::TEXT ILIKE '%' || #{kw} || '%'
+                    t.${col}::TEXT ILIKE '%' || #{searchValue} || '%'
                 </foreach>
                 )
             </if>

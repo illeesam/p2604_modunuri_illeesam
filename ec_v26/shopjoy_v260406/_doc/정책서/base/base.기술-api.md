@@ -380,7 +380,7 @@ src/main/java/com/shopjoy/ecadminapi/common/config/
 **프론트에서 올바르게 읽는 방법**:
 
 ```js
-const res = await boApiSvc.mbMember.getPage({ kw, pageNo, pageSize });
+const res = await boApiSvc.mbMember.getPage({ searchValue, pageNo, pageSize });
 const d = res.data?.data || {};
 
 // ✅ 올바른 필드명

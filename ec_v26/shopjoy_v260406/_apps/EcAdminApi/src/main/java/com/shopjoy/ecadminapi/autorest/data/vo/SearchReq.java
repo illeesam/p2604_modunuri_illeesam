@@ -7,7 +7,7 @@ import java.util.Map;
 
 @Data
 public class SearchReq {
-    private String kw;
+    private String searchValue;
     private Map<String, Object> filters = new HashMap<>();
     private String dateField;
     private String dateStart;

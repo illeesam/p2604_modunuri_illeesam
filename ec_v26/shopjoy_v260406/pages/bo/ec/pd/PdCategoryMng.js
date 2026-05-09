@@ -152,8 +152,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     };
     const catPickerModal = reactive({ show: false, search: '', forCategoryId: null, forRowIdx: null });
     const cfCatPickerList = computed(() => {
-      const kw = (catPickerModal.search || '').toLowerCase();
-      return (categories || []).filter(c => !kw || (c.categoryNm || '').toLowerCase().includes(kw));
+      const searchVal = (catPickerModal.search || '').toLowerCase();
+      return (categories || []).filter(c => !searchVal || (c.categoryNm || '').toLowerCase().includes(searchVal));
     });
     const onParentSelect = (c) => {
       const idx = catPickerModal.forRowIdx;

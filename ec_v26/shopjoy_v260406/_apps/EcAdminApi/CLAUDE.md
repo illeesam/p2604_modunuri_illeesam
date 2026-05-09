@@ -394,7 +394,7 @@ public void delete(String id) {
 ```xml
 <where>
   <if test="siteId != null">AND site_id = #{siteId}</if>
-  <if test="kw != null">AND (title LIKE '%'||#{kw}||'%')</if>
+  <if test="searchValue != null">AND (title LIKE '%'||#{searchValue}||'%')</if>
   <if test="dateStart != null">AND reg_date >= #{dateStart}</if>
 </where>
 ```

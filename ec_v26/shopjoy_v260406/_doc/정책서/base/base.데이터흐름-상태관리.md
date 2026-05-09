@@ -54,7 +54,7 @@ items.value.splice(idx, 1);
 ### 3-1. 검색 [조회] 버튼
 
 ```js
-const searchParam = reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
+const searchParam = reactive({ searchValue: '', status: '', dateStart: '', dateEnd: '' });
 
 const onSearch = async () => {
   pager.page = 1;

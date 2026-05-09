@@ -50,11 +50,11 @@ const searchKw    = ref('');
 const searchType  = ref('');
 const searchUseYn = ref('');
 const searchCat   = ref('');
-const applied     = reactive({ kw: '', type: '', useYn: '', cat: '' });
+const applied     = reactive({ searchValue: '', type: '', useYn: '', cat: '' });
 
 // ✅ After: 하나의 reactive로 통합
 const searchParam = reactive({
-  kw: '',
+  searchValue: '',
   type: '',
   useYn: '',
   cat: ''
@@ -62,7 +62,7 @@ const searchParam = reactive({
 
 // 초기값 저장 (onMounted)
 const searchParamOrg = reactive({
-  kw: '',
+  searchValue: '',
   type: '',
   useYn: '',
   cat: ''
@@ -192,7 +192,7 @@ const modalLoading = ref(false);
 // ✅ After
 const modalState = reactive({
   show: false,
-  kw: '',
+  searchValue: '',
   list: [],
   loading: false
 });

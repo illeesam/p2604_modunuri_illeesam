@@ -231,14 +231,14 @@ window.DpDispAreaPreview = {
     };
 
     const cfFilteredLibs = computed(() => {
-      const kw = applied.searchValue;
+      const searchVal = applied.searchValue;
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
-        if (kw && !lib.name.toLowerCase().includes(kw) &&
-            !(lib.tags||'').toLowerCase().includes(kw) &&
-            !(lib.desc||'').toLowerCase().includes(kw)) return false;
+        if (searchVal && !lib.name.toLowerCase().includes(searchVal) &&
+            !(lib.tags||'').toLowerCase().includes(searchVal) &&
+            !(lib.desc||'').toLowerCase().includes(searchVal)) return false;
         return true;
       });
     });

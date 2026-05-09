@@ -46,7 +46,7 @@ com.shopjoy.ecadminapi
 │   ├─ TableConfig.java                테이블별 메타 설정 VO
 │   ├─ TableRegistry.java              테이블 화이트리스트 + 설정 저장소
 │   └─ dto/
-│       ├─ SearchRequest.java          검색 파라미터 (kw, filters, date, siteId, status, page, size …)
+│       ├─ SearchRequest.java          검색 파라미터 (searchValue, filters, date, siteId, status, page, size …)
 │       ├─ QueryParam.java             MyBatis 파라미터 VO (빌더 패턴)
 │       ├─ RowMap.java                 DB 결과 행 / 요청 바디 (LinkedHashMap 상속)
 │       └─ BulkDeleteRequest.java      일괄 삭제 요청 VO
@@ -170,7 +170,7 @@ OPTIONS /**           (CORS preflight)
 
 | 파라미터 | 타입 | 설명 |
 |---|---|---|
-| `kw` | String | 키워드 (searchFields 대상 ILIKE) |
+| `searchValue` | String | 키워드 (searchFields 대상 ILIKE) |
 | `dateStart` / `dateEnd` | String | 날짜 범위 (dateField 기준) |
 | `siteId` | String | 사이트 필터 |
 | `status` | String | 상태 코드 필터 |
@@ -503,10 +503,10 @@ sy_code_grp (code_grp VARCHAR PK)
         ON cd_status.code_grp = 'MEMBER_STATUS'
        AND cd_status.code_value = t.member_status_cd
   <where>
-    <if test="p.kw != null and p.kw != ''">
-      AND (t.member_nm    ILIKE '%' || #{p.kw} || '%'
-        OR t.member_email ILIKE '%' || #{p.kw} || '%'
-        OR t.member_phone ILIKE '%' || #{p.kw} || '%')
+    <if test="p.searchValue != null and p.searchValue != ''">
+      AND (t.member_nm    ILIKE '%' || #{p.searchValue} || '%'
+        OR t.member_email ILIKE '%' || #{p.searchValue} || '%'
+        OR t.member_phone ILIKE '%' || #{p.searchValue} || '%')
     </if>
     <if test="p.siteId != null and p.siteId != ''">
       AND t.site_id = #{p.siteId}
@@ -567,9 +567,9 @@ FK 컬럼(`*_id`)은 참조 테이블과 LEFT JOIN 하여 핵심 컬럼(이름·
         ON cd_status.code_grp = 'PROD_STATUS'
        AND cd_status.code_value = t.prod_status_cd
   <where>
-    <if test="p.kw != null and p.kw != ''">
-      AND (t.prod_nm ILIKE '%' || #{p.kw} || '%'
-        OR t.prod_cd ILIKE '%' || #{p.kw} || '%')
+    <if test="p.searchValue != null and p.searchValue != ''">
+      AND (t.prod_nm ILIKE '%' || #{p.searchValue} || '%'
+        OR t.prod_cd ILIKE '%' || #{p.searchValue} || '%')
     </if>
     <if test="p.siteId != null and p.siteId != ''">
       AND t.site_id = #{p.siteId}
@@ -757,10 +757,10 @@ GET /api/od/order/{orderId}
     <where>
       <if test="p.siteId != null and p.siteId != ''">AND o.site_id = #{p.siteId}</if>
       <if test="p.status != null and p.status != ''">AND o.order_status_cd = #{p.status}</if>
-      <if test="p.kw != null and p.kw != ''">
-        AND (o.order_id::TEXT ILIKE '%' || #{p.kw} || '%'
-          OR m.member_nm    ILIKE '%' || #{p.kw} || '%'
-          OR m.member_email ILIKE '%' || #{p.kw} || '%')
+      <if test="p.searchValue != null and p.searchValue != ''">
+        AND (o.order_id::TEXT ILIKE '%' || #{p.searchValue} || '%'
+          OR m.member_nm    ILIKE '%' || #{p.searchValue} || '%'
+          OR m.member_email ILIKE '%' || #{p.searchValue} || '%')
       </if>
       <if test="p.dateStart != null and p.dateStart != ''">AND o.reg_date &gt;= #{p.dateStart}::DATE</if>
       <if test="p.dateEnd   != null and p.dateEnd   != ''">AND o.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
@@ -776,9 +776,9 @@ GET /api/od/order/{orderId}
     <where>
       <if test="p.siteId != null and p.siteId != ''">AND o.site_id = #{p.siteId}</if>
       <if test="p.status != null and p.status != ''">AND o.order_status_cd = #{p.status}</if>
-      <if test="p.kw != null and p.kw != ''">
-        AND (o.order_id::TEXT ILIKE '%' || #{p.kw} || '%'
-          OR m.member_nm ILIKE '%' || #{p.kw} || '%')
+      <if test="p.searchValue != null and p.searchValue != ''">
+        AND (o.order_id::TEXT ILIKE '%' || #{p.searchValue} || '%'
+          OR m.member_nm ILIKE '%' || #{p.searchValue} || '%')
       </if>
       <if test="p.dateStart != null and p.dateStart != ''">AND o.reg_date &gt;= #{p.dateStart}::DATE</if>
       <if test="p.dateEnd   != null and p.dateEnd   != ''">AND o.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>

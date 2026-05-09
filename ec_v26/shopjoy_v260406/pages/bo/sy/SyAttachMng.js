@@ -19,11 +19,11 @@ window.SyAttachMng = {
     });
 
     const cfFilteredGrps = computed(() => {
-      const kw = grpSearchValue.value.trim().toLowerCase();
-      if (!kw) return attachGrps;
+      const searchVal = grpSearchValue.value.trim().toLowerCase();
+      if (!searchVal) return attachGrps;
       return attachGrps.filter(g =>
-        (g.grpNm || '').toLowerCase().includes(kw) ||
-        (g.grpCode || '').toLowerCase().includes(kw)
+        (g.grpNm || '').toLowerCase().includes(searchVal) ||
+        (g.grpCode || '').toLowerCase().includes(searchVal)
       );
     });
 

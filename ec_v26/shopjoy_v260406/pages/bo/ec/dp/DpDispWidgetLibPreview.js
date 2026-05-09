@@ -200,13 +200,13 @@ window.DpDispWidgetLibPreview = {
     };
 
     const cfFilteredLibs = computed(() => {
-      const kw = searchParam.searchValue.trim().toLowerCase();
+      const searchVal = searchParam.searchValue.trim().toLowerCase();
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (searchParam.filterType   && lib.widgetType !== searchParam.filterType) return false;
         if (searchParam.filterStatus && lib.status     !== searchParam.filterStatus) return false;
-        if (kw && !lib.name.toLowerCase().includes(kw) &&
-            !(lib.tags||'').toLowerCase().includes(kw) &&
-            !(lib.desc||'').toLowerCase().includes(kw)) return false;
+        if (searchVal && !lib.name.toLowerCase().includes(searchVal) &&
+            !(lib.tags||'').toLowerCase().includes(searchVal) &&
+            !(lib.desc||'').toLowerCase().includes(searchVal)) return false;
         return true;
       });
     });

@@ -235,7 +235,7 @@ MyBatis XML 매퍼의 SQL 쿼리에서 JOIN 조건과 WHERE 절의 컬럼 참조
    <sql id="pdProdCond">
        <where>
            <if test="status != null">AND p.prod_status_cd = #{status}</if>
-           <if test="kw != null">AND p.prod_nm ILIKE '%' || #{kw} || '%'</if>
+           <if test="searchValue != null">AND p.prod_nm ILIKE '%' || #{searchValue} || '%'</if>
        </where>
    </sql>
    
@@ -243,7 +243,7 @@ MyBatis XML 매퍼의 SQL 쿼리에서 JOIN 조건과 WHERE 절의 컬럼 참조
    <sql id="pdProdCond">
        <where>
            <if test="status != null">AND prod_status_cd = #{status}</if>
-           <if test="kw != null">AND prod_nm ILIKE '%' || #{kw} || '%'</if>
+           <if test="searchValue != null">AND prod_nm ILIKE '%' || #{searchValue} || '%'</if>
        </where>
    </sql>
    ```
@@ -409,7 +409,7 @@ LEFT JOIN sy_code cd_ps
 <sql id="pdProdCond">
     <where>
         <if test="status != null">AND prod_status_cd = #{status}</if>
-        <if test="kw != null">AND prod_nm ILIKE '%' || #{kw} || '%'</if>
+        <if test="searchValue != null">AND prod_nm ILIKE '%' || #{searchValue} || '%'</if>
         <if test="dateStart != null">AND reg_date >= #{dateStart}</if>
     </where>
 </sql>
@@ -418,7 +418,7 @@ LEFT JOIN sy_code cd_ps
 <sql id="pdProdCond">
     <where>
         <if test="status != null">AND p.prod_status_cd = #{status}</if>
-        <if test="kw != null">AND p.prod_nm ILIKE '%' || #{kw} || '%'</if>
+        <if test="searchValue != null">AND p.prod_nm ILIKE '%' || #{searchValue} || '%'</if>
         <if test="dateStart != null">AND p.reg_date >= #{dateStart}</if>
     </where>
 </sql>

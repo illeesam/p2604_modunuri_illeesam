@@ -134,12 +134,12 @@ window.XsSample07 = {
 
     const flattenTree = (nodes, depth = 0) => {
       const result = [];
-      const kw = treeSearch.value.toLowerCase();
+      const searchVal = treeSearch.value.toLowerCase();
       for (const n of nodes) {
         if (n.type === 'app' && !appFilter[n.appId]) continue;
-        if (kw && n.type === 'req' && !n.label.toLowerCase().includes(kw) && !n.url.toLowerCase().includes(kw)) continue;
+        if (searchVal && n.type === 'req' && !n.label.toLowerCase().includes(searchVal) && !n.url.toLowerCase().includes(searchVal)) continue;
         result.push({ n, depth });
-        if (n.type !== 'req' && (n.open || kw)) {
+        if (n.type !== 'req' && (n.open || searchVal)) {
           flattenTree(n.children || [], depth + 1).forEach(x => result.push(x));
         }
       }

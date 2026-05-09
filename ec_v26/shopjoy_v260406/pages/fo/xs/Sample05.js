@@ -51,8 +51,8 @@ window.XsSample05 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
-        const kw = searchParam.searchValue.toLowerCase();
-        if (kw && !['title', 'author'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
+        const searchVal = searchParam.searchValue.toLowerCase();
+        if (searchVal && !['title', 'author'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
         if (searchParam.category && d.category !== searchParam.category) return false;
         if (searchParam.status   && d.status   !== searchParam.status)   return false;
         return true;
@@ -94,8 +94,8 @@ window.XsSample05 = {
         allData.splice(0, allData.length, ...list.map(toRow));
         gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
-          const kw = searchParam.searchValue.toLowerCase();
-          if (kw && !['title', 'author'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
+          const searchVal = searchParam.searchValue.toLowerCase();
+          if (searchVal && !['title', 'author'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
           if (searchParam.category && d.category !== searchParam.category) return false;
           if (searchParam.status   && d.status   !== searchParam.status)   return false;
           return true;

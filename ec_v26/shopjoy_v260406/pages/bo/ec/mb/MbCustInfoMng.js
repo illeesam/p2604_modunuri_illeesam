@@ -240,10 +240,10 @@
         memberModal.show = true;
       };
       const searchMemberModal = () => {
-        const kw = memberModal.keyword.trim().toLowerCase();
-        memberModal.list = kw
+        const searchVal = memberModal.keyword.trim().toLowerCase();
+        memberModal.list = searchVal
           ? members.filter(m =>
-              m.memberNm.includes(kw) || m.email.toLowerCase().includes(kw) || (m.phone || '').includes(kw))
+              m.memberNm.includes(searchVal) || m.email.toLowerCase().includes(searchVal) || (m.phone || '').includes(searchVal))
           : [...members];
       };
       const selectMember = (m) => {

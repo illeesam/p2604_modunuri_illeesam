@@ -402,9 +402,9 @@ window.SyRoleMng = {
       return result;
     };
     const cfMenuTree = computed(() => {
-      const kw = (uiState.menuSearchValue || '').trim().toLowerCase();
+      const searchVal = (uiState.menuSearchValue || '').trim().toLowerCase();
       const all = menus || [];
-      const list = kw ? all.filter(m => m.menuNm.toLowerCase().includes(kw) || m.menuCode.toLowerCase().includes(kw)) : all;
+      const list = searchVal ? all.filter(m => m.menuNm.toLowerCase().includes(searchVal) || m.menuCode.toLowerCase().includes(searchVal)) : all;
       return flatMenuTree(buildMenuTree(list, null, 0));
     });
 

@@ -143,7 +143,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const setList = reactive([]);
 
     const fnBuildSetList = () => {
-      const kw = searchParam.nm.toLowerCase();
+      const searchVal = searchParam.nm.toLowerCase();
       const ids = [...new Set((sets || []).map(s => s.setProdId))];
       const result = ids
         .map(id => {
@@ -152,7 +152,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           return { setProdId: id, prodNm: getProdNm(id), prod: getProd(id), items, itemCount: items.length };
         })
-        .filter(g => !kw || g.prodNm.toLowerCase().includes(kw));
+        .filter(g => !searchVal || g.prodNm.toLowerCase().includes(searchVal));
       setList.splice(0, setList.length, ...result);
       pager.pageTotalCount = setList.length;
       pager.pageTotalPage  = Math.max(1, Math.ceil(setList.length / pager.pageSize));

@@ -457,15 +457,15 @@ window.DpDispWidgetPreview = {
     const _getId   = (lib) => lib.widgetLibId || lib.libId || '';
 
     const cfFilteredLibs = computed(() => {
-      const kw = (applied.searchValue || '').toLowerCase();
+      const searchVal = (applied.searchValue || '').toLowerCase();
       return (widgetLibs || []).filter(lib => {
         if (applied.type   && _getType(lib)   !== applied.type) return false;
         if (applied.status && _getStatus(lib) !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
-        if (kw &&
-            !_getName(lib).toLowerCase().includes(kw) &&
-            !(lib.tags||'').toLowerCase().includes(kw) &&
-            !_getDesc(lib).toLowerCase().includes(kw)) return false;
+        if (searchVal &&
+            !_getName(lib).toLowerCase().includes(searchVal) &&
+            !(lib.tags||'').toLowerCase().includes(searchVal) &&
+            !_getDesc(lib).toLowerCase().includes(searchVal)) return false;
         return true;
       });
     });

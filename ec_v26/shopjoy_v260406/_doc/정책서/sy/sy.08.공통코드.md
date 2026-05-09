@@ -1403,17 +1403,17 @@ OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참
 | 사용여부(useYn) | `Y` (사용) | 운영 중인 코드 위주로 조회하는 것이 일반적 |
 | 등록일 시작(dateStart) | 3년 전 1월 1일 (`YYYY-01-01`) | 최근 운영 데이터 범위 확보 |
 | 등록일 종료(dateEnd) | 올해 12월 31일 (`YYYY-12-31`) | 올해 등록된 코드까지 포함 |
-| 키워드(kw) | 빈값 | - |
+| 키워드(searchValue) | 빈값 | - |
 
 - 초기화 버튼 클릭 시 위 기본값으로 리셋
 - `_initSearchParam()` 함수로 기본값 일원화 관리 (페이지 진입·초기화 모두 동일 함수 사용)
 
 ### 검색 방식
 
-- 키워드 입력(`kw`): **코드그룹값(`code_grp`) + 그룹명(`grp_nm`) 동시 ILIKE 검색**
+- 키워드 입력(`searchValue`): **코드그룹값(`code_grp`) + 그룹명(`grp_nm`) 동시 ILIKE 검색**
   ```sql
-  AND (g.grp_nm ILIKE '%' || #{kw} || '%'
-    OR g.code_grp ILIKE '%' || #{kw} || '%')
+  AND (g.grp_nm ILIKE '%' || #{searchValue} || '%'
+    OR g.code_grp ILIKE '%' || #{searchValue} || '%')
   ```
 - Enter 키 입력 → [조회] 버튼과 동일하게 `onSearch()` 호출
 - 드롭다운·날짜 변경은 [조회] 버튼 클릭 시에만 API 호출 (자동 조회 금지)
@@ -1470,7 +1470,7 @@ OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참
 ## 변경이력
 - 2026-05-02: 공통코드관리 화면(syCodeMng) UX 정책 추가
   - 검색 영역 기본값: useYn=Y, dateStart=3년전 1월1일, dateEnd=올해 12월31일
-  - kw 검색: code_grp + grp_nm 동시 ILIKE (단일 필드 검색에서 확장)
+  - searchValue 검색: code_grp + grp_nm 동시 ILIKE (단일 필드 검색에서 확장)
   - Enter 키 → 조회 버튼 동일 동작
   - v-if/v-else 목록 렌더링 규칙 (동시 렌더 버그 방지)
   - 모달 목록 API 호출 전 pageList 즉시 초기화 규칙

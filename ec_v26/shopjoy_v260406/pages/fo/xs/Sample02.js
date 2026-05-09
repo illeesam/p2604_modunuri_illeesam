@@ -89,8 +89,8 @@ window.XsSample02 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; uiState.visibleCount = 10;
       allData.filter(d => {
-        const kw = searchParam.searchValue.toLowerCase();
-        if (kw && !String(d.productNm || '').toLowerCase().includes(kw)) return false;
+        const searchVal = searchParam.searchValue.toLowerCase();
+        if (searchVal && !String(d.productNm || '').toLowerCase().includes(searchVal)) return false;
         if (searchParam.category && d.category !== searchParam.category) return false;
         if (searchParam.status   && d.status   !== searchParam.status)   return false;
         return true;
@@ -177,8 +177,8 @@ window.XsSample02 = {
         allData.splice(0, allData.length, ...list.map(toRow));
         gridRows.splice(0); uiState.focusedIdx = null; uiState.visibleCount = 10;
         allData.filter(d => {
-          const kw = searchParam.searchValue.toLowerCase();
-          if (kw && !String(d.productNm || '').toLowerCase().includes(kw)) return false;
+          const searchVal = searchParam.searchValue.toLowerCase();
+          if (searchVal && !String(d.productNm || '').toLowerCase().includes(searchVal)) return false;
           if (searchParam.category && d.category !== searchParam.category) return false;
           if (searchParam.status   && d.status   !== searchParam.status)   return false;
           return true;

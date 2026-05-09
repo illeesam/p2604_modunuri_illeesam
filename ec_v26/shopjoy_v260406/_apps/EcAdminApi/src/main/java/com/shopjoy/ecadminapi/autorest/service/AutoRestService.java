@@ -225,7 +225,7 @@ public class AutoRestService {
                 .cdFields(cfg.getCdFields())
                 .fkFields(cfg.getFkFields())
                 .dateField(cfg.getDateField() != null ? cfg.getDateField() : "reg_date")
-                .kw(search.getKw())
+                .searchValue(search.getSearchValue())
                 .dateStart(search.getDateStart())
                 .dateEnd(search.getDateEnd())
                 .siteId(search.getSiteId())
