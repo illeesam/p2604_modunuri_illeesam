@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.od.service;
 
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivBulkDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdDlivRepository;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 배송 서비스 — base OdDlivService 위임 (thin wrapper) + 일괄 처리 메서드.
@@ -59,13 +59,11 @@ public class BoOdDlivService {
 
     /** bulkStatus — 다건 상태 변경 */
     @Transactional
-    public void bulkStatus(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<String> ids = (List<String>) body.get("ids");
-        String status = (String) body.get("status");
-        if (ids == null || status == null) return;
+    public void bulkStatus(OdDlivBulkDto.Request req) {
+        if (req == null || req.getIds() == null || req.getStatus() == null) return;
+        String status = req.getStatus();
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : ids) {
+        for (String id : req.getIds()) {
             odDlivRepository.findById(id).ifPresent(e -> {
                 e.setDlivStatusCdBefore(e.getDlivStatusCd());
                 e.setDlivStatusCd(status);
@@ -79,14 +77,12 @@ public class BoOdDlivService {
 
     /** bulkCourier — 다건 택배사/송장 변경 */
     @Transactional
-    public void bulkCourier(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<String> ids = (List<String>) body.get("ids");
-        String courier = (String) body.get("courier");
-        String trackingNo = (String) body.get("trackingNo");
-        if (ids == null) return;
+    public void bulkCourier(OdDlivBulkDto.Request req) {
+        if (req == null || req.getIds() == null) return;
+        String courier = req.getCourier();
+        String trackingNo = req.getTrackingNo();
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : ids) {
+        for (String id : req.getIds()) {
             odDlivRepository.findById(id).ifPresent(e -> {
                 if (courier != null) e.setOutboundCourierCd(courier);
                 if (trackingNo != null) e.setOutboundTrackingNo(trackingNo);
@@ -100,12 +96,10 @@ public class BoOdDlivService {
 
     /** bulkApproval — 다건 결재 처리 */
     @Transactional
-    public void bulkApproval(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<String> ids = (List<String>) body.get("ids");
-        if (ids == null) return;
+    public void bulkApproval(OdDlivBulkDto.Request req) {
+        if (req == null || req.getIds() == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : ids) {
+        for (String id : req.getIds()) {
             odDlivRepository.findById(id).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
@@ -117,12 +111,10 @@ public class BoOdDlivService {
 
     /** bulkApprovalReq — 다건 결재 요청 */
     @Transactional
-    public void bulkApprovalReq(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<String> ids = (List<String>) body.get("ids");
-        if (ids == null) return;
+    public void bulkApprovalReq(OdDlivBulkDto.Request req) {
+        if (req == null || req.getIds() == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : ids) {
+        for (String id : req.getIds()) {
             odDlivRepository.findById(id).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());

@@ -64,7 +64,7 @@ window.OdOrderMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { kw: '', memberId: '', memberNm: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+      return { kw: '', searchTypes: '', searchValue: '', memberId: '', memberNm: '', dateType: 'order_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -123,6 +123,10 @@ window.OdOrderMng = {
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
     }[s] || 'badge-gray');
     const onSearch = async () => {
+      if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
+        props.showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
+        return;
+      }
       pager.pageNo = 1;
       await handleSearchData('DEFAULT');
     };
@@ -307,7 +311,8 @@ window.OdOrderMng = {
   <div class="page-title">주문관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="주문ID / 상품명 검색" @keyup.enter="onSearch" />
+      <select v-model="searchParam.searchTypes"><option value="">검색대상 전체</option><option value="def_order_id">주문ID</option><option value="def_member_nm">회원명</option><option value="def_login_id">로그인ID</option><option value="def_recv_nm">수령인</option><option value="def_recv_phone">수령연락처</option></select>
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <span class="search-label">회원</span>
       <div style="display:inline-flex;align-items:center;gap:4px;">
         <input :value="searchParam.memberNm || searchParam.memberId" readonly placeholder="회원 선택"
@@ -320,7 +325,7 @@ window.OdOrderMng = {
         <option value="">상태 전체</option>
         <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
+      <select v-model="searchParam.dateType"><option value="order_date">주문일자</option><option value="pay_date">결제일자</option><option value="dliv_ship_date">출고일자</option><option value="reg_date">등록일자</option><option value="upd_date">수정일자</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

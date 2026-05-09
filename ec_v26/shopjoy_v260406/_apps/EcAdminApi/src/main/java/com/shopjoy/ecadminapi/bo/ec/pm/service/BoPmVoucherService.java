@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.service;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherSendSnsDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmVoucherRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmVoucherService;
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 상품권 서비스 — base PmVoucherService 위임 (thin wrapper) + changeStatus + sendSns.
@@ -42,9 +42,9 @@ public class BoPmVoucherService {
     @Transactional public void saveList(List<PmVoucher> rows) { pmVoucherService.saveList(rows); }
 
     /** sendSns — 전송 */
-    public void sendSns(String id, Map<String, Object> body) {
+    public void sendSns(String id, PmVoucherSendSnsDto.Request req) {
         if (!pmVoucherRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        log.info("SNS 발송 요청 - voucherId={}, channel={}", id, body.get("channel"));
+        log.info("SNS 발송 요청 - voucherId={}, channel={}", id, req.getChannel());
     }
 
     /** changeStatus — voucherStatusCd 변경 (이력 보존) */

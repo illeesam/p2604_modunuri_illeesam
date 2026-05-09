@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryUpdateProdsDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryProdRepository;
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 카테고리 서비스 — base PdCategoryService 위임 (thin wrapper) + updateProds.
@@ -43,27 +43,24 @@ public class BoPdCategoryService {
 
     /** updateProds — 카테고리에 상품 일괄 매핑 */
     @Transactional
-    public void updateProds(String categoryId, String activeTypeCd, Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> prods = (List<Map<String, Object>>) body.get("prods");
-        if (prods == null) return;
+    public void updateProds(String categoryId, String activeTypeCd, PdCategoryUpdateProdsDto.Request req) {
+        if (req == null || req.getProds() == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
         categoryProdRepository.deleteByCategoryIdAndCategoryProdTypeCd(categoryId, activeTypeCd);
         em.flush();
         int seq = 1;
-        for (Map<String, Object> row : prods) {
+        for (PdCategoryUpdateProdsDto.Row row : req.getProds()) {
             PdCategoryProd cp = new PdCategoryProd();
-            String cpId = (String) row.get("categoryProdId");
+            String cpId = row.getCategoryProdId();
             if (cpId == null || cpId.startsWith("CP_")) {
                 cpId = "CP" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000));
             }
             cp.setCategoryProdId(cpId);
             cp.setCategoryId(categoryId);
-            cp.setProdId((String) row.get("prodId"));
+            cp.setProdId(row.getProdId());
             cp.setCategoryProdTypeCd(activeTypeCd);
-            Object sortOrdObj = row.get("sortOrd");
-            cp.setSortOrd(sortOrdObj != null ? ((Number) sortOrdObj).intValue() : seq);
-            cp.setDispYn(row.get("dispYn") != null ? (String) row.get("dispYn") : "Y");
+            cp.setSortOrd(row.getSortOrd() != null ? row.getSortOrd() : seq);
+            cp.setDispYn(row.getDispYn() != null ? row.getDispYn() : "Y");
             cp.setRegBy(updBy);
             cp.setRegDate(LocalDateTime.now());
             cp.setUpdBy(updBy);

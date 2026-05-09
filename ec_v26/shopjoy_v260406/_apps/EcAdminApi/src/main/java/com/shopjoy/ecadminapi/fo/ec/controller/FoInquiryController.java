@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmContactSubmitDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.fo.ec.service.FoCmContactService;
@@ -28,8 +29,8 @@ public class FoInquiryController {
 
     /** createInquiry — 생성 */
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> createInquiry(@RequestBody Map<String, Object> body) {
-        CmBlog result = foCmContactService.submit(body);
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createInquiry(@RequestBody CmContactSubmitDto.Request req) {
+        CmBlog result = foCmContactService.submit(req);
         Map<String, Object> response = new HashMap<>();
         response.put("data", result);
         return ResponseEntity.status(201).body(ApiResponse.created(response));

@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto;
+import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherGenDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStErpService;
@@ -51,11 +52,8 @@ public class BoStErpController {
 
     /** gen */
     @PostMapping("/gen")
-    public ResponseEntity<ApiResponse<StErpVoucher>> gen(@RequestBody Map<String, Object> body) {
-        StErpVoucher result = boStErpService.gen(
-            (String) body.get("targetMon"),
-            (String) body.get("slipType")
-        );
+    public ResponseEntity<ApiResponse<StErpVoucher>> gen(@RequestBody StErpVoucherGenDto.Request req) {
+        StErpVoucher result = boStErpService.gen(req.getTargetMon(), req.getSlipType());
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 

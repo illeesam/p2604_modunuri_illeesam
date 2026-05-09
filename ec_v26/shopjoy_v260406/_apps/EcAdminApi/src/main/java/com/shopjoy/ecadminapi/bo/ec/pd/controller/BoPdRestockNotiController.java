@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiSendDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdRestockNotiService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -67,8 +68,8 @@ public class BoPdRestockNotiController {
 
     /** send — 전송 */
     @PostMapping("/send")
-    public ResponseEntity<ApiResponse<Void>> send(@RequestBody Map<String, Object> body) {
-        boPdRestockNotiService.send(body);
+    public ResponseEntity<ApiResponse<Void>> send(@RequestBody PdRestockNotiSendDto.Request req) {
+        boPdRestockNotiService.send(req);
         return ResponseEntity.ok(ApiResponse.ok(null, "발송되었습니다."));
     }
     /** saveList — 저장 */

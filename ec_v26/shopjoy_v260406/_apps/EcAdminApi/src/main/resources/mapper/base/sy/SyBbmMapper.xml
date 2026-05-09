@@ -19,15 +19,23 @@
                 )
             </if>
             <if test="typeCd != null and typeCd != ''">AND b.bbm_type_cd = #{typeCd}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_name')">OR b.bbm_nm   ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_code')">OR b.bbm_code ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_name')">OR b.bbm_nm   ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_code')">OR b.bbm_code ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND b.reg_date &gt;= #{dateStart}::DATE
-                AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND b.reg_date &gt;= #{dateStart}::DATE
+                        AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND b.upd_date &gt;= #{dateStart}::DATE
+                        AND b.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

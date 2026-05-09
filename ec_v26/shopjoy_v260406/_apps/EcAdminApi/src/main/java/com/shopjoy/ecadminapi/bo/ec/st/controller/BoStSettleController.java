@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleDto;
+import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettle;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStSettleService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -79,7 +80,7 @@ public class BoStSettleController {
     /** changeStatus */
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<StSettleDto.Item>> changeStatus(
-            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boStSettleService.changeStatus(id, body.get("statusCd"))));
+            @PathVariable("id") String id, @RequestBody StSettleChangeStatusDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleService.changeStatus(id, req.getStatusCd())));
     }
 }

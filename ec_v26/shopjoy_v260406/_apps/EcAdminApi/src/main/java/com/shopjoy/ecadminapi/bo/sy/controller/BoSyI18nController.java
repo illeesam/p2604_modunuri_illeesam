@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nSaveMsgsDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyI18nService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -61,11 +62,9 @@ public class BoSyI18nController {
     /** saveMsgs — 다국어 메시지 일괄 저장 */
     @PutMapping("/{id}/msgs")
     public ResponseEntity<ApiResponse<Void>> saveMsgs(
-            @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        Map<String, String> msgs = (Map<String, String>) body.get("msgs");
-        if (msgs == null) return ResponseEntity.ok(ApiResponse.ok(null));
-        boSyI18nService.saveMsgs(id, msgs);
+            @PathVariable("id") String id, @RequestBody SyI18nSaveMsgsDto.Request req) {
+        if (req == null || req.getMsgs() == null) return ResponseEntity.ok(ApiResponse.ok(null));
+        boSyI18nService.saveMsgs(id, req.getMsgs());
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

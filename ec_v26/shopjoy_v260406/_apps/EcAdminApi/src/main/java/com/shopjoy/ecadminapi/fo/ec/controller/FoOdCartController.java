@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartUpdateQtyDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.fo.ec.service.FoOdCartService;
@@ -9,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * FO 장바구니 API — 현재 로그인 회원 전용
@@ -44,8 +44,8 @@ public class FoOdCartController {
     @PatchMapping("/{cartId}")
     public ResponseEntity<ApiResponse<OdCart>> updateQty(
             @PathVariable("cartId") String cartId,
-            @RequestBody Map<String, Integer> body) {
-        int qty = body.getOrDefault("qty", 1);
+            @RequestBody OdCartUpdateQtyDto.Request req) {
+        int qty = req != null && req.getQty() != null ? req.getQty() : 1;
         OdCart result = foOdCartService.updateQty(cartId, qty);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

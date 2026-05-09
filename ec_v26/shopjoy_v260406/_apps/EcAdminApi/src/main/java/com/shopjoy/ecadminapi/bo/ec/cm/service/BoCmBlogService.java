@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogToggleUseDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogService;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO CmBlog 서비스 — base CmBlogService 위임 (thin wrapper) + toggleUse.
@@ -44,10 +44,10 @@ public class BoCmBlogService {
 
     /** toggleUse — useYn 전환 */
     @Transactional
-    public CmBlogDto.Item toggleUse(String id, Map<String, Object> body) {
+    public CmBlogDto.Item toggleUse(String id, CmBlogToggleUseDto.Request req) {
         CmBlog entity = cmBlogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUseYn((String) body.get("useYn"));
+        entity.setUseYn(req.getUseYn());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlog saved = cmBlogRepository.save(entity);

@@ -22,9 +22,42 @@
                   OR c.prod_nm         ILIKE '%' || #{kw} || '%'
                   OR m.login_id        ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND c.request_date &gt;= #{dateStart}::DATE
-                AND c.request_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_claim_id')">  OR c.claim_id::TEXT ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_order_id')">  OR c.order_id::TEXT ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member_nm')"> OR c.member_nm      ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_prod_nm')">   OR c.prod_nm        ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_login_id')">  OR m.login_id       ILIKE '%' || #{searchValue} || '%'</if>
+                )
+            </if>
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'request_date'">
+                        AND c.request_date &gt;= #{dateStart}::DATE
+                        AND c.request_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'proc_date'">
+                        AND c.proc_date &gt;= #{dateStart}::DATE
+                        AND c.proc_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'claim_cancel_date'">
+                        AND c.claim_cancel_date &gt;= #{dateStart}::DATE
+                        AND c.claim_cancel_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'collect_schd_date'">
+                        AND c.collect_schd_date &gt;= #{dateStart}::DATE
+                        AND c.collect_schd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'reg_date'">
+                        AND c.reg_date &gt;= #{dateStart}::DATE
+                        AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND c.upd_date &gt;= #{dateStart}::DATE
+                        AND c.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>

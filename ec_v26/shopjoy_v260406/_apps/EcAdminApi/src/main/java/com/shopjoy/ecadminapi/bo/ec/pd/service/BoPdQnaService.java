@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaAnswerDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdQnaRepository;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 상품 Q&A 서비스 — base PdProdQnaService 위임 (thin wrapper) + saveAnswer.
@@ -41,10 +41,10 @@ public class BoPdQnaService {
 
     /** saveAnswer — Q&A 답변 저장 */
     @Transactional
-    public PdProdQnaDto.Item saveAnswer(String id, Map<String, Object> body) {
+    public PdProdQnaDto.Item saveAnswer(String id, PdProdQnaAnswerDto.Request req) {
         PdProdQna entity = pdProdQnaRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setAnswContent((String) body.get("answContent"));
+        entity.setAnswContent(req.getAnswContent());
         entity.setAnswDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());

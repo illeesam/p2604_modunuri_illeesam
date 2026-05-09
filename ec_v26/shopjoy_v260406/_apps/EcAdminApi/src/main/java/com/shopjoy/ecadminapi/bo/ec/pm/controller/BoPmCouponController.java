@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmCouponService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -71,8 +72,8 @@ public class BoPmCouponController {
     /** changeStatus */
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmCouponDto.Item>> changeStatus(
-            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boPmCouponService.changeStatus(id, body.get("statusCd"))));
+            @PathVariable("id") String id, @RequestBody PmCouponChangeStatusDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmCouponService.changeStatus(id, req.getStatusCd())));
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")

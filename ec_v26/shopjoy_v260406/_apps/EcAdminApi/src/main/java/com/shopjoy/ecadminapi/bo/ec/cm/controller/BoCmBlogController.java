@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogToggleUseDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmBlogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 게시글(블로그/BBS) API — /api/bo/ec/cm/blog
@@ -59,8 +59,8 @@ public class BoCmBlogController {
     }
 
     @PutMapping("/{id}/use")
-    public ResponseEntity<ApiResponse<CmBlogDto.Item>> toggleUse(@PathVariable("id") String id, @RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boCmBlogService.toggleUse(id, body)));
+    public ResponseEntity<ApiResponse<CmBlogDto.Item>> toggleUse(@PathVariable("id") String id, @RequestBody CmBlogToggleUseDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmBlogService.toggleUse(id, req)));
     }
 
     @PostMapping("/save-list")

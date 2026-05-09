@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.od.service;
 
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimBulkDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimRepository;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 클레임 서비스 — base OdClaimService 위임 (thin wrapper) + 일괄 처리 메서드.
@@ -54,19 +54,15 @@ public class BoOdClaimService {
         return odClaimService.getById(id);
     }
 
-    /** bulkStatus — 다건 상태 변경 */
+    /** bulkStatus — 다건 상태 변경 (행별로 다른 statusCd 적용) */
     @Transactional
-    public void bulkStatus(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> changes = (List<Map<String, Object>>) body.get("changes");
-        if (changes == null) return;
+    public void bulkStatus(OdClaimBulkDto.Request req) {
+        if (req == null || req.getChanges() == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (Map<String, Object> c : changes) {
-            String id = (String) c.get("id");
-            String statusCd = (String) c.get("statusCd");
-            odClaimRepository.findById(id).ifPresent(e -> {
+        for (OdClaimBulkDto.Change c : req.getChanges()) {
+            odClaimRepository.findById(c.getId()).ifPresent(e -> {
                 e.setClaimStatusCdBefore(e.getClaimStatusCd());
-                e.setClaimStatusCd(statusCd);
+                e.setClaimStatusCd(c.getStatusCd());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);
@@ -77,15 +73,12 @@ public class BoOdClaimService {
 
     /** bulkType — 다건 유형 변경 */
     @Transactional
-    public void bulkType(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<String> ids = (List<String>) body.get("ids");
-        String type = (String) body.get("type");
-        if (ids == null || type == null) return;
+    public void bulkType(OdClaimBulkDto.Request req) {
+        if (req == null || req.getIds() == null || req.getType() == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : ids) {
+        for (String id : req.getIds()) {
             odClaimRepository.findById(id).ifPresent(e -> {
-                e.setClaimTypeCd(type);
+                e.setClaimTypeCd(req.getType());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);
@@ -96,12 +89,10 @@ public class BoOdClaimService {
 
     /** bulkApproval — 다건 결재 처리 */
     @Transactional
-    public void bulkApproval(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<String> ids = (List<String>) body.get("ids");
-        if (ids == null) return;
+    public void bulkApproval(OdClaimBulkDto.Request req) {
+        if (req == null || req.getIds() == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : ids) {
+        for (String id : req.getIds()) {
             odClaimRepository.findById(id).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
@@ -113,12 +104,10 @@ public class BoOdClaimService {
 
     /** bulkApprovalReq — 다건 결재 요청 */
     @Transactional
-    public void bulkApprovalReq(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<String> ids = (List<String>) body.get("ids");
-        if (ids == null) return;
+    public void bulkApprovalReq(OdClaimBulkDto.Request req) {
+        if (req == null || req.getIds() == null) return;
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : ids) {
+        for (String id : req.getIds()) {
             odClaimRepository.findById(id).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());

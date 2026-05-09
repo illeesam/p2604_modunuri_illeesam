@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachSortDto;
 import com.shopjoy.ecadminapi.co.cm.service.CmUploadService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -49,10 +50,10 @@ public class CmUploadMultiController {
     @PatchMapping("/attach/{attachId}/sort")
     public ResponseEntity<ApiResponse<Void>> updateAttachSort(
             @PathVariable("attachId") String attachId,
-            @RequestBody Map<String, Object> body) {
-        Integer sortOrd = body.get("sortOrd") instanceof Number n ? n.intValue() : null;
-        if (sortOrd == null) throw new com.shopjoy.ecadminapi.common.exception.CmBizException("sortOrd 값이 필요합니다.");
-        cmUploadService.updateAttachSort(attachId, sortOrd);
+            @RequestBody SyAttachSortDto.Request req) {
+        if (req == null || req.getSortOrd() == null)
+            throw new com.shopjoy.ecadminapi.common.exception.CmBizException("sortOrd 값이 필요합니다.");
+        cmUploadService.updateAttachSort(attachId, req.getSortOrd());
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

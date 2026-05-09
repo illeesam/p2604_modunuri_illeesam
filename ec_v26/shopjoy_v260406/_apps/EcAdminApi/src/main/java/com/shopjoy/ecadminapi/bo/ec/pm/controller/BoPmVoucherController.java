@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherChangeStatusDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherSendSnsDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmVoucherService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -71,15 +73,15 @@ public class BoPmVoucherController {
     /** changeStatus */
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmVoucherDto.Item>> changeStatus(
-            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boPmVoucherService.changeStatus(id, body.get("statusCd"))));
+            @PathVariable("id") String id, @RequestBody PmVoucherChangeStatusDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmVoucherService.changeStatus(id, req.getStatusCd())));
     }
 
     /** sendSns — 전송 */
     @PostMapping("/{id}/send-sns")
     public ResponseEntity<ApiResponse<Void>> sendSns(
-            @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
-        boPmVoucherService.sendSns(id, body);
+            @PathVariable("id") String id, @RequestBody PmVoucherSendSnsDto.Request req) {
+        boPmVoucherService.sendSns(id, req);
         return ResponseEntity.ok(ApiResponse.ok(null, "발송되었습니다."));
     }
     /** saveList — 저장 */

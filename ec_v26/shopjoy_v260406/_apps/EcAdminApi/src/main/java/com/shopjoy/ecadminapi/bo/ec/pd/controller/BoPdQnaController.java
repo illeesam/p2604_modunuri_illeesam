@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaAnswerDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdQnaService;
@@ -75,8 +76,8 @@ public class BoPdQnaController {
     /** answer */
     @PutMapping("/{id}/answer")
     public ResponseEntity<ApiResponse<PdProdQnaDto.Item>> answer(
-            @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.saveAnswer(id, body)));
+            @PathVariable("id") String id, @RequestBody PdProdQnaAnswerDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.saveAnswer(id, req)));
     }
 
     /** saveList — 저장 */

@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiSendDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdRestockNotiService;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 재입고알림 서비스 — base PdRestockNotiService 위임 (thin wrapper) + send.
@@ -32,10 +32,8 @@ public class BoPdRestockNotiService {
     @Transactional public void saveList(List<PdRestockNoti> rows) { pdRestockNotiService.saveList(rows); }
 
     /** send — 재입고 알림 발송 */
-    public void send(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<String> ids = (List<String>) body.get("ids");
-        if (ids == null || ids.isEmpty()) return;
-        log.info("재입고알림 발송 요청 - ids={}", ids);
+    public void send(PdRestockNotiSendDto.Request req) {
+        if (req == null || req.getIds() == null || req.getIds().isEmpty()) return;
+        log.info("재입고알림 발송 요청 - ids={}", req.getIds());
     }
 }

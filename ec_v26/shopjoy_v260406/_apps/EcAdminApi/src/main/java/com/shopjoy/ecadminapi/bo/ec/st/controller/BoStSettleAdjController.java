@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
+import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjApproveDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStSettleAdjService;
@@ -68,7 +69,7 @@ public class BoStSettleAdjController {
     /** approve — 승인 */
     @PutMapping("/{id}/approve")
     public ResponseEntity<ApiResponse<StSettleAdjDto.Item>> approve(
-            @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.approve(id, body)));
+            @PathVariable("id") String id, @RequestBody StSettleAdjApproveDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.approve(id, req)));
     }
 }

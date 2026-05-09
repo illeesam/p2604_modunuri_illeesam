@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdReviewService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -78,8 +79,8 @@ public class BoPdReviewController {
     /** changeStatus */
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PdReviewDto.Item>> changeStatus(
-            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.changeStatus(id, body.get("reviewStatusCd"))));
+            @PathVariable("id") String id, @RequestBody PdReviewChangeStatusDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.changeStatus(id, req.getReviewStatusCd())));
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")

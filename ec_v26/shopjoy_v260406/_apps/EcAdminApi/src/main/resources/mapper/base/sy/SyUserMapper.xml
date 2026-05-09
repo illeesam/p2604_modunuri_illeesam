@@ -14,12 +14,12 @@
             <if test="siteId != null and siteId != ''">AND u.site_id = #{siteId}</if>
             <if test="deptId != null and deptId != ''">AND u.dept_id = #{deptId}</if>
             <if test="status != null and status != ''">AND u.user_status_cd = #{status}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_id')">    OR u.user_id    ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_login')"> OR u.login_id   ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_name')">  OR u.user_nm    ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_email')"> OR u.user_email ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_id')">    OR u.user_id    ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_login')"> OR u.login_id   ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_name')">  OR u.user_nm    ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_email')"> OR u.user_email ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

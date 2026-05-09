@@ -1,19 +1,18 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmContactSubmitDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 /**
  * FO 문의(Contact) 서비스 — 1:1 문의 / 고객 문의 폼 접수
@@ -40,18 +39,17 @@ public class FoCmContactService {
 
     /** submit — 제출 */
     @Transactional
-    public CmBlog submit(Map<String, Object> body) {
+    public CmBlog submit(CmContactSubmitDto.Request req) {
+        if (req == null) throw new CmBizException("요청 데이터가 비어있습니다.");
         CmBlog entity = new CmBlog();
         entity.setBlogId(CmUtil.generateId("fo_contact"));
         entity.setBlogCateId(CONTACT_CATE);
-        entity.setBlogTitle("[문의] " + body.getOrDefault("inquiryType", "일반"));
-        entity.setBlogContent(buildContent(body));
+        entity.setBlogTitle("[문의] " + (req.getInquiryType() != null ? req.getInquiryType() : "일반"));
+        entity.setBlogContent(buildContent(req));
+        entity.setSiteId(req.getSiteId());
+        entity.setBlogAuthor(req.getBlogAuthor());
         entity.setUseYn("Y");
         entity.setViewCount(0);
-
-        // Map의 동적 필드 자동 복사 (siteId, blogAuthor 등)
-        // regBy, regDate, updBy, updDate는 제외하고 나머지는 자동 복사
-        VoUtil.mapCopy(body, entity, "blogId", "blogCateId", "blogTitle", "blogContent", "useYn", "viewCount", "regBy", "regDate", "updBy", "updDate");
 
         String authId = SecurityUtil.getAuthIdOrGuest();
         entity.setRegBy(authId);
@@ -64,15 +62,15 @@ public class FoCmContactService {
     }
 
     /** buildContent — 구성 */
-    private String buildContent(Map<String, Object> body) {
+    private String buildContent(CmContactSubmitDto.Request req) {
         return String.format(
             "이름: %s\n이메일: %s\n연락처: %s\n주문번호: %s\n문의유형: %s\n\n%s",
-            body.getOrDefault("name",        ""),
-            body.getOrDefault("email",       ""),
-            body.getOrDefault("tel",         ""),
-            body.getOrDefault("orderNo",     ""),
-            body.getOrDefault("inquiryType", ""),
-            body.getOrDefault("desc",        "")
+            req.getName()        != null ? req.getName()        : "",
+            req.getEmail()       != null ? req.getEmail()       : "",
+            req.getTel()         != null ? req.getTel()         : "",
+            req.getOrderNo()     != null ? req.getOrderNo()     : "",
+            req.getInquiryType() != null ? req.getInquiryType() : "",
+            req.getMessage()     != null ? req.getMessage()     : ""
         );
     }
 

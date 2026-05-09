@@ -1,14 +1,13 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSetSaveDto;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdProdService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * BO 세트상품 API
@@ -30,13 +29,13 @@ public class BoPdSetController {
 
     /** create — 생성 */
     @PostMapping("/api/bo/ec/pd/prod-set")
-    public ResponseEntity<ApiResponse<Void>> create(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<ApiResponse<Void>> create(@RequestBody PdProdSetSaveDto.CreateRequest req) {
         return ResponseEntity.status(201).body(ApiResponse.ok(null, "저장되었습니다."));
     }
 
     /** updateItems — 수정 */
     @PutMapping("/api/bo/ec/pd/prod-set/{id}/items")
-    public ResponseEntity<ApiResponse<Void>> updateItems(@PathVariable("id") String id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<ApiResponse<Void>> updateItems(@PathVariable("id") String id, @RequestBody PdProdSetSaveDto.UpdateItemsRequest req) {
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 

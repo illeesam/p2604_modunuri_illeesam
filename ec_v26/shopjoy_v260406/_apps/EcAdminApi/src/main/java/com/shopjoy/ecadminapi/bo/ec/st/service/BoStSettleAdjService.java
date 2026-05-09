@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.service;
 
+import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjApproveDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleAdjRepository;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * BO 정산조정 서비스 — base StSettleAdjService 위임 (thin wrapper) + approve.
@@ -41,10 +41,10 @@ public class BoStSettleAdjService {
 
     /** approve — 승인 */
     @Transactional
-    public StSettleAdjDto.Item approve(String id, Map<String, Object> body) {
+    public StSettleAdjDto.Item approve(String id, StSettleAdjApproveDto.Request req) {
         StSettleAdj entity = stSettleAdjRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setAprvStatusCd((String) body.getOrDefault("aprvStatusCd", "승인"));
+        entity.setAprvStatusCd(req.getAprvStatusCd() != null ? req.getAprvStatusCd() : "승인");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleAdj saved = stSettleAdjRepository.save(entity);

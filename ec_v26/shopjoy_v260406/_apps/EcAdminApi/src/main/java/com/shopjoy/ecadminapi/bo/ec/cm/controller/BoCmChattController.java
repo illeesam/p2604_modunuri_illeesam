@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattRoom;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmChattService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -60,8 +61,8 @@ public class BoCmChattController {
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<CmChattRoomDto.Item>> changeStatus(
-            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boCmChattService.changeStatus(id, body.get("statusCd"))));
+            @PathVariable("id") String id, @RequestBody CmChattChangeStatusDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmChattService.changeStatus(id, req.getStatusCd())));
     }
 
     @PostMapping("/save-list")

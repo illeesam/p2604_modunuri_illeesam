@@ -1,5 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.od.controller;
 
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivBulkDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdDlivService;
@@ -79,35 +81,35 @@ public class BoOdDlivController {
     /** changeStatus */
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<OdDlivDto.Item>> changeStatus(
-            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boOdDlivService.changeStatus(id, body.get("statusCd"))));
+            @PathVariable("id") String id, @RequestBody OdDlivChangeStatusDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdDlivService.changeStatus(id, req.getStatusCd())));
     }
 
     /** bulkStatus */
     @PutMapping("/bulk-status")
-    public ResponseEntity<ApiResponse<Void>> bulkStatus(@RequestBody Map<String, Object> body) {
-        boOdDlivService.bulkStatus(body);
+    public ResponseEntity<ApiResponse<Void>> bulkStatus(@RequestBody OdDlivBulkDto.Request req) {
+        boOdDlivService.bulkStatus(req);
         return ResponseEntity.ok(ApiResponse.ok(null, "상태가 변경되었습니다."));
     }
 
     /** bulkCourier */
     @PutMapping("/bulk-courier")
-    public ResponseEntity<ApiResponse<Void>> bulkCourier(@RequestBody Map<String, Object> body) {
-        boOdDlivService.bulkCourier(body);
+    public ResponseEntity<ApiResponse<Void>> bulkCourier(@RequestBody OdDlivBulkDto.Request req) {
+        boOdDlivService.bulkCourier(req);
         return ResponseEntity.ok(ApiResponse.ok(null, "택배정보가 변경되었습니다."));
     }
 
     /** bulkApproval */
     @PutMapping("/bulk-approval")
-    public ResponseEntity<ApiResponse<Void>> bulkApproval(@RequestBody Map<String, Object> body) {
-        boOdDlivService.bulkApproval(body);
+    public ResponseEntity<ApiResponse<Void>> bulkApproval(@RequestBody OdDlivBulkDto.Request req) {
+        boOdDlivService.bulkApproval(req);
         return ResponseEntity.ok(ApiResponse.ok(null, "결재 처리되었습니다."));
     }
 
     /** bulkApprovalReq */
     @PutMapping("/bulk-approvalReq")
-    public ResponseEntity<ApiResponse<Void>> bulkApprovalReq(@RequestBody Map<String, Object> body) {
-        boOdDlivService.bulkApprovalReq(body);
+    public ResponseEntity<ApiResponse<Void>> bulkApprovalReq(@RequestBody OdDlivBulkDto.Request req) {
+        boOdDlivService.bulkApprovalReq(req);
         return ResponseEntity.ok(ApiResponse.ok(null, "추가결재가 요청되었습니다."));
     }
     /** saveList — 저장 */

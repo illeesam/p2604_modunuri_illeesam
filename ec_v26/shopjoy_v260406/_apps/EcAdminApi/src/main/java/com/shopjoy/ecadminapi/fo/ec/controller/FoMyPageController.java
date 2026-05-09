@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto;
+import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberChangePasswordDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberAddr;
@@ -53,8 +54,8 @@ public class FoMyPageController {
 
     /** changePassword */
     @PostMapping("/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody Map<String, String> body) {
-        foMyPageService.changePassword(body.get("currentPassword"), body.get("newPassword"));
+    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody MbMemberChangePasswordDto.Request req) {
+        foMyPageService.changePassword(req.getCurrentPassword(), req.getNewPassword());
         return ResponseEntity.ok(ApiResponse.ok(null, "비밀번호가 변경되었습니다."));
     }
 

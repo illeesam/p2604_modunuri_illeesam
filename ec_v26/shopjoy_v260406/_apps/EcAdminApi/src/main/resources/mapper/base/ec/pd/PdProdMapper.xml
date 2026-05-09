@@ -158,7 +158,7 @@
          ================================================================ -->
 
     <!-- 상품ID별 SKU 목록 조회 -->
-    <select id="selectSkusByProdId" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto">
+    <select id="selectSkusByProdId" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto$Item">
         SELECT  /* base.ec.pd :: PdProd :: selectSkusByProdId */
               sk.*
             , oi1.opt_item_nm AS opt_item_nm_1
@@ -171,7 +171,7 @@
     </select>
 
     <!-- 상품ID별 옵션 목록 조회 -->
-    <select id="selectOptsByProdId" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptDto">
+    <select id="selectOptsByProdId" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptDto$Item">
         SELECT o.*, cd_ot.code_label AS opt_type_cd_nm  /* base.ec.pd :: PdProd :: selectOptsByProdId */
         FROM pd_prod_opt o
             LEFT JOIN sy_code cd_ot ON cd_ot.code_grp = 'OPT_TYPE' AND cd_ot.code_value = o.opt_type_cd

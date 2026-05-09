@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryUpdateProdsDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdCategoryService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -80,8 +81,8 @@ public class BoPdCategoryController {
     public ResponseEntity<ApiResponse<Void>> updateProds(
             @PathVariable("id") String id,
             @PathVariable("activeTypeCd") String activeTypeCd,
-            @RequestBody Map<String, Object> body) {
-        boPdCategoryService.updateProds(id, activeTypeCd, body);
+            @RequestBody PdCategoryUpdateProdsDto.Request req) {
+        boPdCategoryService.updateProds(id, activeTypeCd, req);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
     /** saveList — 저장 */

@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryProdMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryProdRepository;
@@ -16,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -40,17 +40,17 @@ public class BoPdCategoryProdService {
 
     /** saveProds — 저장 */
     @Transactional
-    public void saveProds(Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> rows = (List<Map<String, Object>>) body.get("categoryProds");
-        if (rows == null || rows.isEmpty()) return;
+    public void saveProds(PdCategoryProdSaveDto.Request req) {
+        if (req == null || req.getCategoryProds() == null || req.getCategoryProds().isEmpty()) return;
 
+        List<PdCategoryProdSaveDto.Row> rows = req.getCategoryProds();
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
-        for (Map<String, Object> row : rows) {
-            if ("D".equals(row.getOrDefault("rowStatus", "U"))) {
-                String id = (String) row.get("categoryProdId");
+        for (PdCategoryProdSaveDto.Row row : rows) {
+            String rowStatus = row.getRowStatus() != null ? row.getRowStatus() : "U";
+            if ("D".equals(rowStatus)) {
+                String id = row.getCategoryProdId();
                 if (id != null && pdCategoryProdRepository.existsById(id)) {
                     pdCategoryProdRepository.deleteById(id);
                 }
@@ -59,11 +59,11 @@ public class BoPdCategoryProdService {
         em.flush();
         em.clear();
 
-        for (Map<String, Object> row : rows) {
-            String rowStatus = (String) row.getOrDefault("rowStatus", "U");
+        for (PdCategoryProdSaveDto.Row row : rows) {
+            String rowStatus = row.getRowStatus() != null ? row.getRowStatus() : "U";
             if ("D".equals(rowStatus)) continue;
 
-            String id = (String) row.get("categoryProdId");
+            String id = row.getCategoryProdId();
 
             PdCategoryProd entity;
             if ("I".equals(rowStatus) || id == null || id.startsWith("CP_")) {
@@ -76,14 +76,12 @@ public class BoPdCategoryProdService {
                         .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
             }
 
-            entity.setCategoryId((String) row.get("categoryId"));
-            entity.setProdId((String) row.get("prodId"));
-            entity.setCategoryProdTypeCd((String) row.getOrDefault("typeCd", row.get("categoryProdTypeCd")));
-            entity.setDispYn((String) row.getOrDefault("dispYn", "Y"));
-            entity.setEmphasisCd((String) row.get("emphasisCd"));
-
-            Object sortOrd = row.get("sortOrd");
-            if (sortOrd != null) entity.setSortOrd(((Number) sortOrd).intValue());
+            entity.setCategoryId(row.getCategoryId());
+            entity.setProdId(row.getProdId());
+            entity.setCategoryProdTypeCd(row.getTypeCd() != null ? row.getTypeCd() : row.getCategoryProdTypeCd());
+            entity.setDispYn(row.getDispYn() != null ? row.getDispYn() : "Y");
+            entity.setEmphasisCd(row.getEmphasisCd());
+            if (row.getSortOrd() != null) entity.setSortOrd(row.getSortOrd());
 
             entity.setUpdBy(authId);
             entity.setUpdDate(now);

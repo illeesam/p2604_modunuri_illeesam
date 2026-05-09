@@ -104,9 +104,8 @@ public class BoPdProdTabController {
     @Transactional
     public ResponseEntity<ApiResponse<Void>> updateImages(
             @PathVariable("prodId") String prodId,
-            @RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> rows = (List<Map<String, Object>>) body.getOrDefault("images", List.of());
+            @RequestBody PdProdImgUpdateDto.Request req) {
+        List<PdProdImgUpdateDto.Row> rows = req != null && req.getImages() != null ? req.getImages() : List.of();
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -115,23 +114,22 @@ public class BoPdProdTabController {
 
         // 2) 신규 INSERT
         int idx = 0;
-        for (Map<String, Object> r : rows) {
+        for (PdProdImgUpdateDto.Row r : rows) {
             String prodImgId = "PI" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + idx;
             if (prodImgId.length() > 21) prodImgId = prodImgId.substring(0, 21);
 
             PdProdImg img = new PdProdImg();
             img.setProdImgId(prodImgId);
             img.setProdId(prodId);
-            img.setOptItemId1(strOrNull(r.get("optItemId1")));
-            img.setOptItemId2(strOrNull(r.get("optItemId2")));
-            String imgUrl = strOrNull(r.get("previewUrl"));
-            String thumbUrl = strOrNull(r.get("cdnThumbUrl"));
+            img.setOptItemId1(r.getOptItemId1());
+            img.setOptItemId2(r.getOptItemId2());
+            String imgUrl = r.getPreviewUrl();
+            String thumbUrl = r.getCdnThumbUrl();
             img.setCdnImgUrl(imgUrl);
             img.setCdnThumbUrl(thumbUrl != null ? thumbUrl : imgUrl);
-            img.setImgAltText(strOrNull(r.get("imgAltText")));
+            img.setImgAltText(r.getImgAltText());
             img.setSortOrd(idx + 1);
-            Object isMain = r.get("isMain");
-            img.setIsThumb(Boolean.TRUE.equals(isMain) || "true".equals(String.valueOf(isMain)) ? "Y" : "N");
+            img.setIsThumb(Boolean.TRUE.equals(r.getIsMain()) ? "Y" : "N");
             img.setRegBy(authId);
             img.setRegDate(now);
             img.setUpdBy(authId);
@@ -159,9 +157,8 @@ public class BoPdProdTabController {
     @Transactional
     public ResponseEntity<ApiResponse<Void>> updateOpts(
             @PathVariable("prodId") String prodId,
-            @RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> groups = (List<Map<String, Object>>) body.getOrDefault("optGroups", List.of());
+            @RequestBody PdProdOptUpdateDto.Request req) {
+        List<PdProdOptUpdateDto.Group> groups = req != null && req.getOptGroups() != null ? req.getOptGroups() : List.of();
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -184,15 +181,14 @@ public class BoPdProdTabController {
         List<String[]> itemParentLinks = new ArrayList<>();
 
         int gIdx = 0;
-        for (Map<String, Object> g : groups) {
-            String gClientId = String.valueOf(g.getOrDefault("_id", ""));
-            Integer level    = toInt(g.get("level"), gIdx + 1);
-            String  typeCd   = strOrNull(g.get("typeCd"));
+        for (PdProdOptUpdateDto.Group g : groups) {
+            String gClientId = String.valueOf(g.get_id() != null ? g.get_id() : "");
+            int level    = g.getLevel() != null ? g.getLevel() : (gIdx + 1);
+            String typeCd = nullIfEmpty(g.getTypeCd());
             // grpNm 은 NOT NULL — 비어있으면 typeCd 또는 "옵션N" 으로 fallback
-            String  grpNm    = strOrNull(g.get("grpNm"));
+            String grpNm = nullIfEmpty(g.getGrpNm());
             if (grpNm == null) grpNm = (typeCd != null ? typeCd : "옵션" + (gIdx + 1));
-            String  inputCd  = strOrEmpty(g.get("inputTypeCd"), "SELECT");
-            Integer sortOrd  = toInt(g.get("sortOrd"), gIdx + 1);
+            String inputCd = g.getInputTypeCd() != null && !g.getInputTypeCd().isEmpty() ? g.getInputTypeCd() : "SELECT";
 
             String optId = "PO" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + gIdx;
             if (optId.length() > 21) optId = optId.substring(0, 21);
@@ -205,18 +201,17 @@ public class BoPdProdTabController {
             opt.setOptLevel(level);
             opt.setOptTypeCd(typeCd);
             opt.setOptInputTypeCd(inputCd);
-            opt.setSortOrd(sortOrd);
+            opt.setSortOrd(gIdx + 1);
             opt.setRegBy(authId);
             opt.setRegDate(now);
             opt.setUpdBy(authId);
             opt.setUpdDate(now);
             pdProdOptRepository.save(opt);
 
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> items = (List<Map<String, Object>>) g.getOrDefault("items", List.of());
+            List<PdProdOptUpdateDto.Item> items = g.getItems() != null ? g.getItems() : List.of();
             int iIdx = 0;
-            for (Map<String, Object> it : items) {
-                String iClientId = String.valueOf(it.getOrDefault("_id", ""));
+            for (PdProdOptUpdateDto.Item it : items) {
+                String iClientId = String.valueOf(it.get_id() != null ? it.get_id() : "");
                 String optItemId = "PI" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + gIdx + "_" + iIdx;
                 if (optItemId.length() > 21) optItemId = optItemId.substring(0, 21);
                 clientItemIdToItemId.put(iClientId, optItemId);
@@ -225,18 +220,18 @@ public class BoPdProdTabController {
                 item.setOptItemId(optItemId);
                 item.setOptId(optId);
                 item.setOptTypeCd(typeCd);
-                item.setOptNm(strOrEmpty(it.get("nm"), ""));
-                item.setOptVal(strOrEmpty(it.get("val"), ""));
-                item.setOptValCodeId(strOrNull(it.get("valCodeId")));
-                item.setOptStyle(strOrNull(it.get("optStyle")));
-                item.setSortOrd(toInt(it.get("sortOrd"), iIdx + 1));
-                item.setUseYn(strOrEmpty(it.get("useYn"), "Y"));
+                item.setOptNm(it.getNm() != null ? it.getNm() : "");
+                item.setOptVal(it.getVal() != null ? it.getVal() : "");
+                item.setOptValCodeId(nullIfEmpty(it.getValCodeId()));
+                item.setSortOrd(it.getSortOrd() != null ? it.getSortOrd() : (iIdx + 1));
+                item.setUseYn(it.getUseYn() != null && !it.getUseYn().isEmpty() ? it.getUseYn() : "Y");
                 item.setRegBy(authId);
                 item.setRegDate(now);
                 item.setUpdBy(authId);
                 item.setUpdDate(now);
                 // parent 임시 보관 (1단=비어있음, 2단=1단 client _id)
-                String parentClient = strOrNull(it.get("parentOptItemId"));
+                String parentClient = it.getParentOptItemId() != null ? String.valueOf(it.getParentOptItemId()) : null;
+                if (parentClient != null && parentClient.isEmpty()) parentClient = null;
                 itemsToInsert.add(item);
                 itemParentLinks.add(new String[] { optItemId, parentClient });
                 iIdx++;
@@ -256,6 +251,11 @@ public class BoPdProdTabController {
         }
 
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /** nullIfEmpty — 빈 문자열을 null로 정규화 */
+    private static String nullIfEmpty(String s) {
+        return (s == null || s.isEmpty()) ? null : s;
     }
 
     /** strOrNull */
@@ -294,9 +294,8 @@ public class BoPdProdTabController {
     @Transactional
     public ResponseEntity<ApiResponse<Void>> updateContents(
             @PathVariable("prodId") String prodId,
-            @RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> blocks = (List<Map<String, Object>>) body.getOrDefault("contentBlocks", List.of());
+            @RequestBody PdProdContentUpdateDto.Request req) {
+        List<PdProdContentUpdateDto.Block> blocks = req != null && req.getContentBlocks() != null ? req.getContentBlocks() : List.of();
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -305,10 +304,9 @@ public class BoPdProdTabController {
 
         // 2) 새 블록 INSERT
         int order = 1;
-        for (Map<String, Object> blk : blocks) {
-            String type = String.valueOf(blk.getOrDefault("type", "html"));
-            String content = String.valueOf(blk.getOrDefault("content", ""));
-            String fileName = blk.get("fileName") != null ? String.valueOf(blk.get("fileName")) : null;
+        for (PdProdContentUpdateDto.Block blk : blocks) {
+            String type = blk.getType() != null ? blk.getType() : "html";
+            String content = blk.getContent() != null ? blk.getContent() : "";
 
             PdProdContent entity = new PdProdContent();
             entity.setProdContentId("PC" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));

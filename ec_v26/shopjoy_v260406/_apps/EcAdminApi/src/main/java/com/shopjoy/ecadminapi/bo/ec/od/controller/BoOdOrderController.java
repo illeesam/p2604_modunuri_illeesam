@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.od.controller;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdOrderService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -79,8 +80,8 @@ public class BoOdOrderController {
     /** changeStatus */
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<OdOrderDto.Item>> changeStatus(
-            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.changeStatus(id, body.get("statusCd"))));
+            @PathVariable("id") String id, @RequestBody OdOrderChangeStatusDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.changeStatus(id, req.getStatusCd())));
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")

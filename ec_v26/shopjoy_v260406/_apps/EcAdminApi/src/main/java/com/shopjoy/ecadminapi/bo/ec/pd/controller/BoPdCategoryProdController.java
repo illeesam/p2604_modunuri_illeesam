@@ -1,14 +1,13 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdSaveDto;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdCategoryProdService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * BO 카테고리-상품 매핑 API
@@ -30,8 +29,8 @@ public class BoPdCategoryProdController {
 
     /** saveProds — 저장 */
     @PutMapping
-    public ResponseEntity<ApiResponse<Void>> saveProds(@RequestBody Map<String, Object> body) {
-        boPdCategoryProdService.saveProds(body);
+    public ResponseEntity<ApiResponse<Void>> saveProds(@RequestBody PdCategoryProdSaveDto.Request req) {
+        boPdCategoryProdService.saveProds(req);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }
