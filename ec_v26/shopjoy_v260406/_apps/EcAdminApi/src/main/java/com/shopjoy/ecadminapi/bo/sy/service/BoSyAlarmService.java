@@ -3,7 +3,6 @@ package com.shopjoy.ecadminapi.bo.sy.service;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.base.sy.service.SyAlarmService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
@@ -12,9 +11,9 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 /**
  * BO 알람 서비스 — base SyAlarmService 위임 + saveList(List<SyAlarm>) 보존.

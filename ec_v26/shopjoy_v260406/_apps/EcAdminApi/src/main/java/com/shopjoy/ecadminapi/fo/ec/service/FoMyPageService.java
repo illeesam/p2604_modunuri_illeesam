@@ -26,11 +26,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
+
 
 /**
  * FO 마이페이지 서비스 — 현재 로그인 회원 전용
