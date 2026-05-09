@@ -53,14 +53,14 @@ window.Login = {
     };
 
     /* -- 회원선택 모달 (개발용) -- */
-    const memberPick = reactive({ show: false, kw: '', loading: false, rows: [], total: 0, pageNo: 1, totalPage: 1 });
+    const memberPick = reactive({ show: false, searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, totalPage: 1 });
     const PICK_SIZE = 20;
 
     const _loadMemberPick = async () => {
       memberPick.loading = true;
       try {
         const res = await coApiSvc.mbMember.getPage(
-          { kw: memberPick.kw, pageNo: memberPick.pageNo, pageSize: PICK_SIZE },
+          { searchValue: memberPick.searchValue, pageNo: memberPick.pageNo, pageSize: PICK_SIZE },
           '로그인', '회원선택',
         );
         const d = res.data?.data || {};
@@ -74,7 +74,7 @@ window.Login = {
       }
     };
 
-    const onOpenMemberPick = () => { memberPick.show = true; memberPick.kw = ''; memberPick.pageNo = 1; _loadMemberPick(); };
+    const onOpenMemberPick = () => { memberPick.show = true; memberPick.searchValue = ''; memberPick.pageNo = 1; _loadMemberPick(); };
     const onMemberPickSearch = () => { memberPick.pageNo = 1; _loadMemberPick(); };
     const onMemberPickPage = (p) => { memberPick.pageNo = p; _loadMemberPick(); };
     const onPickMember = async (m) => {
@@ -365,7 +365,7 @@ window.Login = {
           <div style="display:flex;gap:6px;margin-bottom:10px;">
             <div style="position:relative;flex:1;">
               <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
-              <input v-model="memberPick.kw" type="text" placeholder="이름 / 로그인ID / 연락처 검색..."
+              <input v-model="memberPick.searchValue" type="text" placeholder="이름 / 로그인ID / 연락처 검색..."
                 @keyup.enter="onMemberPickSearch"
                 style="width:100%;padding:7px 10px 7px 32px;border:1.5px solid #f0c8d8;border-radius:8px;font-size:12px;outline:none;box-sizing:border-box;">
             </div>

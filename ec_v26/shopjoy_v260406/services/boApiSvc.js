@@ -6,7 +6,7 @@
  * 선행 로드: utils/boApiAxios.js (boApi) + utils/coUtil.js
  *
  * 사용법:
- *   const res = await boApiSvc.mbMember.getPage({ kw: '홍길동' }, '회원관리', '목록조회');
+ *   const res = await boApiSvc.mbMember.getPage({ searchValue: '홍길동' }, '회원관리', '목록조회');
  *   const res = await boApiSvc.mbMember.create(body, '회원관리', '등록');
  *   const res = await boApiSvc.mbMember.update(_id, body, '회원관리', '저장');
  *   const res = await boApiSvc.mbMember.remove(_id, '회원관리', '삭제');

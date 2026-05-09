@@ -30,8 +30,8 @@ window.XsSample09 = {
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
     const showToast = (msg, type = 'success') => { toast.msg = msg; toast.type = type; toast.show = true; clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500); };
-    const searchParam = reactive({ kw: '', category: '', status: '' });
-    const searchParamOrg = reactive({ kw: '', category: '', status: '' });
+    const searchParam = reactive({ searchValue: '', category: '', status: '' });
+    const searchParamOrg = reactive({ searchValue: '', category: '', status: '' });
     const allData    = reactive([]);
     const gridRows   = reactive([]);
     let   _tempId    = -1;
@@ -51,7 +51,7 @@ window.XsSample09 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
-        const kw = searchParam.kw.toLowerCase();
+        const kw = searchParam.searchValue.toLowerCase();
         if (kw && !['question', 'author'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
         if (searchParam.category && d.category !== searchParam.category) return false;
         if (searchParam.status   && d.status   !== searchParam.status)   return false;
@@ -66,7 +66,7 @@ window.XsSample09 = {
       handleSearchList();
     });
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
-    const onReset  = async () => { Object.assign(searchParam, { kw: '', category: '', status: '' }); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+    const onReset  = async () => { Object.assign(searchParam, { searchValue: '', category: '', status: '' }); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
     const setFocused   = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N'; };
     const addRow = () => {
@@ -94,7 +94,7 @@ window.XsSample09 = {
         allData.splice(0, allData.length, ...list.map(toRow));
         gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
-          const kw = searchParam.kw.toLowerCase();
+          const kw = searchParam.searchValue.toLowerCase();
           if (kw && !['question', 'author'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
           if (searchParam.category && d.category !== searchParam.category) return false;
           if (searchParam.status   && d.status   !== searchParam.status)   return false;
@@ -130,7 +130,7 @@ window.XsSample09 = {
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">09. FAQ 관리 <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span></div>
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchParam.kw" placeholder="질문 / 작성자 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:200px;outline:none;" />
+      <input v-model="searchParam.searchValue" placeholder="질문 / 작성자 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:200px;outline:none;" />
       <select v-model="searchParam.category" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">카테고리 전체</option>
         <option v-for="o in codes.contact_cat_opts" :key="o.value" :value="o.value">{{ o.label }}</option>

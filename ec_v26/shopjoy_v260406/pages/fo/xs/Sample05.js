@@ -30,8 +30,8 @@ window.XsSample05 = {
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
     const showToast = (msg, type = 'success') => { toast.msg = msg; toast.type = type; toast.show = true; clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500); };
-    const searchParam = reactive({ kw: '', category: '', status: '' });
-    const searchParamOrg = reactive({ kw: '', category: '', status: '' });
+    const searchParam = reactive({ searchValue: '', category: '', status: '' });
+    const searchParamOrg = reactive({ searchValue: '', category: '', status: '' });
     const allData    = reactive([]);
     const gridRows   = reactive([]);
     let   _tempId    = -1;
@@ -51,7 +51,7 @@ window.XsSample05 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
-        const kw = searchParam.kw.toLowerCase();
+        const kw = searchParam.searchValue.toLowerCase();
         if (kw && !['title', 'author'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
         if (searchParam.category && d.category !== searchParam.category) return false;
         if (searchParam.status   && d.status   !== searchParam.status)   return false;
@@ -94,7 +94,7 @@ window.XsSample05 = {
         allData.splice(0, allData.length, ...list.map(toRow));
         gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
-          const kw = searchParam.kw.toLowerCase();
+          const kw = searchParam.searchValue.toLowerCase();
           if (kw && !['title', 'author'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
           if (searchParam.category && d.category !== searchParam.category) return false;
           if (searchParam.status   && d.status   !== searchParam.status)   return false;

@@ -6,7 +6,7 @@
  * 선행 로드: utils/foApiAxios.js (foApi) + utils/coUtil.js
  *
  * 사용법:
- *   const res = await foApiSvc.pdProd.getPage({ kw: '신발' }, '상품목록', '조회');
+ *   const res = await foApiSvc.pdProd.getPage({ searchValue: '신발' }, '상품목록', '조회');
  *   const res = await foApiSvc.myInquiry.create(body, '문의', '등록');
  */
 (function (global) {

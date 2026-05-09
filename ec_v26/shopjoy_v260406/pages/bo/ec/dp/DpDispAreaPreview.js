@@ -220,7 +220,7 @@ window.DpDispAreaPreview = {
         type:       searchParam.filterType,
         status:     searchParam.filterStatus,
         dispEnv:    searchParam.filterDispEnv,
-        kw:         searchParam.searchValue.trim().toLowerCase(),
+        searchValue: searchParam.searchValue.trim().toLowerCase(),
         visibility: searchParam.filterVisibility,
       });
     };
@@ -231,7 +231,7 @@ window.DpDispAreaPreview = {
     };
 
     const cfFilteredLibs = computed(() => {
-      const kw = applied.kw;
+      const kw = applied.searchValue;
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;

@@ -30,7 +30,7 @@ window.DpDispWidgetMng = {
     /* applied: 결과에 실제 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
     const applied = reactive({ type: '', status: '' });
     const cfFilterDirty = computed(() =>
-      searchParam.searchValue !== applied.kw ||
+      searchParam.searchValue !== applied.searchValue ||
       searchParam.type !== applied.type ||
       searchParam.status !== applied.status
     );
@@ -55,12 +55,12 @@ window.DpDispWidgetMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const { type, status, kw } = searchParam;
+        const { type, status, searchValue } = searchParam;
         /* dp_widget (실제 배치된 위젯 인스턴스) — 메인 데이터 */
         const widgetParams = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
-          ...(kw     ? { kw: kw.trim() } : {}),
+          ...(searchValue ? { searchValue: searchValue.trim() } : {}),
           ...(type   ? { typeCd: type }  : {}),
           ...(status ? { useYn: status } : {}),
         };
@@ -77,7 +77,7 @@ window.DpDispWidgetMng = {
         pager.pageTotalPage  = dW?.pageTotalPage  || 1;
         fnBuildPagerNums();
         /* 결과에 반영된 조건 기록 */
-        applied.kw     = searchParam.searchValue;
+        applied.searchValue     = searchParam.searchValue;
         applied.type   = searchParam.type;
         applied.status = searchParam.status;
         uiState.error = null;
@@ -238,8 +238,8 @@ window.DpDispWidgetMng = {
       <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;">#{{ uiState.selectedPath }}</span>
       <!-- 적용 중인 필터 뱃지 -->
       <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
-        <span v-if="!applied.kw && !applied.type && !applied.status" style="color:#bbb;">필터 없음</span>
-        <span v-if="applied.kw" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">검색: {{ applied.kw }}</span>
+        <span v-if="!applied.searchValue && !applied.type && !applied.status" style="color:#bbb;">필터 없음</span>
+        <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">검색: {{ applied.searchValue }}</span>
         <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">유형: {{ wTypeLabel(applied.type) }}</span>
         <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}</span>
       </div>

@@ -438,7 +438,7 @@ window.DpDispWidgetPreview = {
         type:       searchParam.filterType,
         status:     searchParam.filterStatus,
         dispEnv:    searchParam.filterDispEnv,
-        kw:         searchParam.searchValue.trim().toLowerCase(),
+        searchValue: searchParam.searchValue.trim().toLowerCase(),
         visibility: searchParam.filterVisibility,
       });
     };
@@ -457,7 +457,7 @@ window.DpDispWidgetPreview = {
     const _getId   = (lib) => lib.widgetLibId || lib.libId || '';
 
     const cfFilteredLibs = computed(() => {
-      const kw = (applied.kw || '').toLowerCase();
+      const kw = (applied.searchValue || '').toLowerCase();
       return (widgetLibs || []).filter(lib => {
         if (applied.type   && _getType(lib)   !== applied.type) return false;
         if (applied.status && _getStatus(lib) !== applied.status) return false;

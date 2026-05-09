@@ -222,7 +222,7 @@ window.DpDispUiPreview = {
       filterDispEnv: 'PROD',
       searchKw: ''});
 
-    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
+    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', searchValue: '', visibility: '' });
 
     const onSearch = () => {
       Object.assign(applied, {
@@ -246,7 +246,7 @@ window.DpDispUiPreview = {
     };
 
     const cfFilteredLibs = computed(() => {
-      const kw = applied.kw;
+      const kw = applied.searchValue;
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;

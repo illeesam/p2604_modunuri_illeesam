@@ -54,8 +54,8 @@ window.BlogView = {
     };
 
     /* 사이드바 */
-    const searchParam = reactive({ kw: '', commentText: ''});;
-    const searchParamOrg = reactive({ kw: '' });
+    const searchParam = reactive({ searchValue: '', commentText: ''});;
+    const searchParamOrg = reactive({ searchValue: '' });
     const cfLatestPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
     const categories  = [
       { name: 'Fashion', count: 12 },
@@ -200,7 +200,7 @@ window.BlogView = {
       <!-- -- 검색 --------------------------------------------------------- -->
       <div>
         <div style="position:relative;">
-          <input v-model="searchParam.kw" type="text" placeholder="Search..."
+          <input v-model="searchParam.searchValue" type="text" placeholder="Search..."
             style="width:100%;padding:10px 42px 10px 14px;border:1.5px solid var(--border);border-radius:4px;font-size:0.85rem;outline:none;background:var(--bg-card);color:var(--text-primary);box-sizing:border-box;" />
           <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);">🔍</span>
         </div>

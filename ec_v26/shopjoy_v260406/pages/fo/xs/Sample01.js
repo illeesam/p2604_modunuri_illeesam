@@ -37,8 +37,8 @@ window.XsSample01 = {
     };
 
     /* -- 검색 -- */
-    const searchParam = reactive({ kw: '', grade: '', status: '' });
-    const searchParamOrg = reactive({ kw: '', grade: '', status: '' });
+    const searchParam = reactive({ searchValue: '', grade: '', status: '' });
+    const searchParamOrg = reactive({ searchValue: '', grade: '', status: '' });
 
     /* -- CRUD Grid -- */
     const allData   = reactive([]);
@@ -87,7 +87,7 @@ window.XsSample01 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
-        const kw = searchParam.kw.toLowerCase();
+        const kw = searchParam.searchValue.toLowerCase();
         if (kw && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
         if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
         if (searchParam.status && d.status !== searchParam.status) return false;
@@ -160,7 +160,7 @@ window.XsSample01 = {
         allData.splice(0, allData.length, ...list.map(toRow));
         gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
-          const kw = searchParam.kw.toLowerCase();
+          const kw = searchParam.searchValue.toLowerCase();
           if (kw && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
           if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
           if (searchParam.status && d.status !== searchParam.status) return false;
@@ -208,7 +208,7 @@ window.XsSample01 = {
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchParam.kw" placeholder="이름 / 이메일 / 전화번호 검색" @keyup.enter="onSearch"
+      <input v-model="searchParam.searchValue" placeholder="이름 / 이메일 / 전화번호 검색" @keyup.enter="onSearch"
         style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:220px;outline:none;" />
       <select v-model="searchParam.grade" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">등급 전체</option>

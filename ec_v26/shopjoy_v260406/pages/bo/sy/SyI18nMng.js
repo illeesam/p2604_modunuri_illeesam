@@ -24,10 +24,10 @@ window.SyI18nMng = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const { kw, scope, use } = searchParam;
+        const { searchValue, scope, use } = searchParam;
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...(kw    ? { kw: kw.trim() }         : {}),
+          ...(searchValue ? { searchValue: searchValue.trim() } : {}),
           ...(scope ? { i18nScopeCd: scope }     : {}),
           ...(use   ? { useYn: use }             : {}),
         };

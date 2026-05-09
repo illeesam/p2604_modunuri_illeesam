@@ -56,12 +56,12 @@ window.DpDispUiMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const { type, kw, ...restParam } = searchParam;
+        const { type, searchValue, ...restParam } = searchParam;
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
-          ...(kw       ? { kw: kw.trim() } : {}),
+          ...(searchValue ? { searchValue: searchValue.trim() } : {}),
           ...(type     ? { uiType: type }  : {}),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };

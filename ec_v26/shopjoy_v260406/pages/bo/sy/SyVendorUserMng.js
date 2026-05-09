@@ -85,7 +85,7 @@ window.SyVendorUserMng = {
       try {
         const params = {
           pageNo: 1, pageSize: 10000,
-          ...(uiState.bizKw        ? { kw: uiState.bizKw.trim() }          : {}),
+          ...(uiState.bizKw        ? { searchValue: uiState.bizKw.trim() }          : {}),
           ...(uiState.bizVendorFlt ? { vendorTypeCd: uiState.bizVendorFlt } : {}),
         };
         const res = await boApiSvc.syVendor.getPage(params, '업체사용자관리', '조회');

@@ -37,8 +37,8 @@ window.XsSample02 = {
     };
 
     /* -- 검색 -- */
-    const searchParam = reactive({ kw: '', category: '', status: '', visibleCount: 10});;
-    const searchParamOrg = reactive({ kw: '', category: '', status: '' });
+    const searchParam = reactive({ searchValue: '', category: '', status: '', visibleCount: 10});;
+    const searchParamOrg = reactive({ searchValue: '', category: '', status: '' });
 
     /* -- CRUD Grid -- */
     
@@ -89,7 +89,7 @@ window.XsSample02 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; uiState.visibleCount = 10;
       allData.filter(d => {
-        const kw = searchParam.kw.toLowerCase();
+        const kw = searchParam.searchValue.toLowerCase();
         if (kw && !String(d.productNm || '').toLowerCase().includes(kw)) return false;
         if (searchParam.category && d.category !== searchParam.category) return false;
         if (searchParam.status   && d.status   !== searchParam.status)   return false;
@@ -177,7 +177,7 @@ window.XsSample02 = {
         allData.splice(0, allData.length, ...list.map(toRow));
         gridRows.splice(0); uiState.focusedIdx = null; uiState.visibleCount = 10;
         allData.filter(d => {
-          const kw = searchParam.kw.toLowerCase();
+          const kw = searchParam.searchValue.toLowerCase();
           if (kw && !String(d.productNm || '').toLowerCase().includes(kw)) return false;
           if (searchParam.category && d.category !== searchParam.category) return false;
           if (searchParam.status   && d.status   !== searchParam.status)   return false;
@@ -232,7 +232,7 @@ window.XsSample02 = {
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchParam.kw" placeholder="상품명 검색" @keyup.enter="onSearch"
+      <input v-model="searchParam.searchValue" placeholder="상품명 검색" @keyup.enter="onSearch"
         style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:180px;outline:none;" />
       <select v-model="searchParam.category" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">카테고리 전체</option>

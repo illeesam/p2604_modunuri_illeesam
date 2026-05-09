@@ -49,12 +49,12 @@ window.SyPropMng = {
     // 검색/조회 함수
     const fetchData = async (searchType = 'DEFAULT') => {
       try {
-        const { kw, useFlt, typeFlt } = searchParam;
+        const { searchValue, useFlt, typeFlt } = searchParam;
         const params = {
           pageNo: 1, pageSize: 10000,
           ...(cfSiteId.value          ? { siteId: cfSiteId.value }       : {}),
           ...(uiState.selectedPath    ? { pathId: uiState.selectedPath } : {}),
-          ...(kw      ? { kw }                    : {}),
+          ...(searchValue ? { searchValue }        : {}),
           ...(useFlt  ? { useYn: useFlt }         : {}),
           ...(typeFlt ? { propType: typeFlt }      : {}),
         };

@@ -77,7 +77,7 @@ window.Prod02List = {
       try {
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...(uiState.searchText   ? { kw: uiState.searchText }                : {}),
+          ...(uiState.searchText   ? { searchValue: uiState.searchText }                : {}),
           ...(uiState.priceMin     ? { priceMin: uiState.priceMin }            : {}),
           ...(uiState.priceMax     ? { priceMax: uiState.priceMax }            : {}),
           ...(selCats.size   > 0   ? { categoryIds: [...selCats].join(',') }   : {}),

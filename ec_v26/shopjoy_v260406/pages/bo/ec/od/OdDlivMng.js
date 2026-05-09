@@ -316,13 +316,13 @@ window.OdDlivMng = {
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
 
     /* ── 회원 선택 팝업 ── */
-    const memberPick = reactive({ open: false, kw: '', rows: [], pageNo: 1, total: 0, totalPage: 1, loading: false });
-    const openMemberPick = () => { memberPick.open = true; memberPick.kw = ''; memberPick.pageNo = 1; handlePickSearch(); };
+    const memberPick = reactive({ open: false, searchValue: '', rows: [], pageNo: 1, total: 0, totalPage: 1, loading: false });
+    const openMemberPick = () => { memberPick.open = true; memberPick.searchValue = ''; memberPick.pageNo = 1; handlePickSearch(); };
     const closeMemberPick = () => { memberPick.open = false; };
     const handlePickSearch = async () => {
       memberPick.loading = true;
       try {
-        const res = await boApiSvc.mbMember.getPage({ pageNo: memberPick.pageNo, pageSize: 20, kw: memberPick.kw || undefined }, '배송관리', '회원검색');
+        const res = await boApiSvc.mbMember.getPage({ pageNo: memberPick.pageNo, pageSize: 20, searchValue: memberPick.searchValue || undefined }, '배송관리', '회원검색');
         const d = res.data?.data || {};
         memberPick.rows = d.pageList || [];
         memberPick.total = d.pageTotalCount || 0;
@@ -558,7 +558,7 @@ window.OdDlivMng = {
         <div style="display:flex;gap:8px;margin-top:12px;">
           <div style="position:relative;flex:1;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;">🔍</span>
-            <input v-model="memberPick.kw" @keyup.enter="onPickSearch" class="form-control" placeholder="이름 / 아이디 검색" style="padding-left:32px;border-radius:8px;" />
+            <input v-model="memberPick.searchValue" @keyup.enter="onPickSearch" class="form-control" placeholder="이름 / 아이디 검색" style="padding-left:32px;border-radius:8px;" />
           </div>
           <button class="btn btn-primary" @click="onPickSearch" style="border-radius:8px;">검색</button>
         </div>

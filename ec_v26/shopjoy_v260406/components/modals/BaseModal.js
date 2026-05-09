@@ -581,13 +581,13 @@ window.SiteSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 10;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ kw: '' });
+    const searchParam = reactive({ searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApiSvc.sySite.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '사이트관리', '목록조회');
+        const res = await boApiSvc.sySite.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined }, '사이트관리', '목록조회');
         const data = res.data?.data;
         list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -598,7 +598,7 @@ window.SiteSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
@@ -609,7 +609,7 @@ window.SiteSelectModal = {
       <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
         title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
     </span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="searchParam.kw" placeholder="사이트번호 / 사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="사이트번호 / 사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
@@ -643,13 +643,13 @@ window.VendorSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ kw: '' });
+    const searchParam = reactive({ searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApiSvc.syVendor.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '판매자관리', '목록조회');
+        const res = await boApiSvc.syVendor.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined }, '판매자관리', '목록조회');
         const data = res.data?.data;
         list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -660,7 +660,7 @@ window.VendorSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
@@ -668,7 +668,7 @@ window.VendorSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="searchParam.kw" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
@@ -735,7 +735,7 @@ window.BoUserSelectModal = {
       pager.pageTotalPage = 1;
       try {
         const params = { pageNo: pager.page, pageSize: pager.size };
-        if (pager.userKw.trim()) params.kw = pager.userKw.trim();
+        if (pager.userKw.trim()) params.searchValue = pager.userKw.trim();
         if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
         const res = await boApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
         const d = res.data?.data;
@@ -953,13 +953,13 @@ window.MemberSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ kw: '' });
+    const searchParam = reactive({ searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApiSvc.mbMember.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '회원관리', '목록조회');
+        const res = await boApiSvc.mbMember.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined }, '회원관리', '목록조회');
         const data = res.data?.data;
         list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -970,7 +970,7 @@ window.MemberSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
@@ -978,7 +978,7 @@ window.MemberSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="searchParam.kw" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
@@ -1011,13 +1011,13 @@ window.OrderSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ kw: '' });
+    const searchParam = reactive({ searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApiSvc.odOrder.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '주문관리', '목록조회');
+        const res = await boApiSvc.odOrder.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined }, '주문관리', '목록조회');
         const data = res.data?.data;
         list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -1028,7 +1028,7 @@ window.OrderSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
@@ -1036,7 +1036,7 @@ window.OrderSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="searchParam.kw" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
@@ -1069,13 +1069,13 @@ window.BbmSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 6;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ kw: '' });
+    const searchParam = reactive({ searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApiSvc.syBbm.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '게시판모드관리', '목록조회');
+        const res = await boApiSvc.syBbm.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined }, '게시판모드관리', '목록조회');
         const data = res.data?.data;
         list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -1086,7 +1086,7 @@ window.BbmSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
     const fnScopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
@@ -1096,7 +1096,7 @@ window.BbmSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:560px;">
     <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="searchParam.kw" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list" style="min-height:200px;">
       <div v-if="loading" style="text-align:center;color:#999;padding:30px;font-size:13px;">로딩 중...</div>
@@ -1236,7 +1236,7 @@ window.TemplateSendModal = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
-    const searchParam = reactive({ type: 'member', kw: '' });
+    const searchParam = reactive({ type: 'member', searchValue: '' });
     const selected = reactive([]);
     const getId = (item) => item.memberId || item.userId || item.boUserId;
 
@@ -1289,14 +1289,14 @@ window.TemplateSendModal = {
 
     /* ── 목록 ── */
     const cfMemberList = computed(() => {
-      const k = searchParam.kw.trim().toLowerCase();
+      const k = searchParam.searchValue.trim().toLowerCase();
       let list = allMembers;
       if (selectedGrade.value) list = list.filter(m => m.memberGrade === selectedGrade.value || m.grade === selectedGrade.value);
       if (k) list = list.filter(m => (m.memberNm || '').toLowerCase().includes(k) || (m.memberEmail || m.email || '').toLowerCase().includes(k) || String(m.memberId || m.userId || '').includes(k));
       return list;
     });
     const cfUserList = computed(() => {
-      const k = searchParam.kw.trim().toLowerCase();
+      const k = searchParam.searchValue.trim().toLowerCase();
       let list = allBoUsers;
       if (selectedDeptId.value !== null) {
         const ids = fnGetDescDeptIds(selectedDeptId.value);
@@ -1319,7 +1319,7 @@ window.TemplateSendModal = {
       else { cfList.value.forEach(x => { const id = getId(x); if (!selected.includes(id)) selected.push(id); }); }
     };
 
-    watch(() => searchParam.type, () => { selected.splice(0); searchParam.kw = ''; uiState.selectedDeptId = null; uiState.selectedGrade = null; });
+    watch(() => searchParam.type, () => { selected.splice(0); searchParam.searchValue = ''; uiState.selectedDeptId = null; uiState.selectedGrade = null; });
 
     const cfTypeBadge = computed(() => ({
       '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
@@ -1452,7 +1452,7 @@ window.TemplateSendModal = {
         <div style="padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
           <div style="position:relative;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#bbb;">🔍</span>
-            <input v-model="searchParam.kw" :placeholder="searchParam.type==='member'?'이름 / 이메일 / ID 검색':'이름 / 이메일 / ID 검색'"
+            <input v-model="searchParam.searchValue" :placeholder="searchParam.type==='member'?'이름 / 이메일 / ID 검색':'이름 / 이메일 / ID 검색'"
               style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;outline:none;box-sizing:border-box;" />
           </div>
         </div>
@@ -1535,7 +1535,7 @@ window.RoleTreeModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ kw: '', hoverId: null });
+    const uiState = reactive({ searchValue: '', hoverId: null });
     const allRoles = reactive([]);
     const handleSearchList = async () => {
       try {
@@ -1563,7 +1563,7 @@ window.RoleTreeModal = {
         mark(props.excludeId);
       }
       const base = allRoles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
-      const kwVal = uiState.kw.trim().toLowerCase();
+      const kwVal = uiState.searchValue.trim().toLowerCase();
       const list  = kwVal ? base.filter(r => r.roleNm.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
       return fnFlatten(fnBuildTree(list, null, 0));
     });
@@ -1585,7 +1585,7 @@ window.RoleTreeModal = {
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
-        <input class="form-control" v-model="uiState.kw" placeholder="역할명 또는 역할코드 검색"
+        <input class="form-control" v-model="uiState.searchValue" placeholder="역할명 또는 역할코드 검색"
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
     </div>
@@ -1613,7 +1613,7 @@ window.RoleTreeModal = {
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: uiState.hoverId===r.roleId ? 1 : 0 }">›</span>
       </div>
       <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
-        {{ uiState.kw ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.' }}
+        {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.' }}
       </div>
     </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
@@ -1629,7 +1629,7 @@ window.MenuTreeModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ kw: '', hoverId: null });
+    const uiState = reactive({ searchValue: '', hoverId: null });
     const allMenus = reactive([]);
     const handleSearchList = async () => {
       try {
@@ -1662,7 +1662,7 @@ window.MenuTreeModal = {
         markExclude(props.excludeId);
       }
       const base = allMenus.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
-      const kwVal = uiState.kw.trim().toLowerCase();
+      const kwVal = uiState.searchValue.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(m => m.menuNm.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
         : base;
@@ -1692,7 +1692,7 @@ window.MenuTreeModal = {
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
-        <input class="form-control" v-model="uiState.kw"
+        <input class="form-control" v-model="uiState.searchValue"
           placeholder="메뉴명 또는 메뉴코드 검색"
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
@@ -1745,7 +1745,7 @@ window.MenuTreeModal = {
       <!-- 빈 상태 -->
       <div v-if="cfFlatTree.length===0"
         style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
-        {{ uiState.kw ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.' }}
+        {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.' }}
       </div>
     </div>
 
@@ -1763,7 +1763,7 @@ window.DeptTreeModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ kw: '', hoverId: null });
+    const uiState = reactive({ searchValue: '', hoverId: null });
     const allDepts = reactive([]);
     const handleSearchList = async () => {
       try {
@@ -1797,7 +1797,7 @@ window.DeptTreeModal = {
         markExclude(props.excludeId);
       }
       const base = allDepts.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
-      const kwVal = uiState.kw.trim().toLowerCase();
+      const kwVal = uiState.searchValue.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(d => d.deptNm.toLowerCase().includes(kwVal) || d.deptCode.toLowerCase().includes(kwVal))
         : base;
@@ -1830,7 +1830,7 @@ window.DeptTreeModal = {
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
-        <input class="form-control" v-model="uiState.kw"
+        <input class="form-control" v-model="uiState.searchValue"
           placeholder="부서명 또는 부서코드 검색"
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
@@ -1886,7 +1886,7 @@ window.DeptTreeModal = {
       <div v-if="cfFlatTree.length===0"
         style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         <div style="font-size:32px;margin-bottom:8px;">🔍</div>
-        {{ uiState.kw ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.' }}
+        {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.' }}
       </div>
     </div>
 
@@ -1907,7 +1907,7 @@ window.CategoryTreeModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ kw: '', hoverId: null });
+    const uiState = reactive({ searchValue: '', hoverId: null });
     const allCategories = reactive([]);
     const handleSearchList = async () => {
       try {
@@ -1937,7 +1937,7 @@ window.CategoryTreeModal = {
         mark(props.excludeId);
       }
       const base   = allCategories.filter(c => !excSet.has(c.categoryId) && (c.useYn === 'Y' || c.status === '활성'));
-      const kwVal  = uiState.kw.trim().toLowerCase();
+      const kwVal  = uiState.searchValue.trim().toLowerCase();
       const list   = kwVal ? base.filter(c => c.categoryNm.toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));
     });
@@ -1960,7 +1960,7 @@ window.CategoryTreeModal = {
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
-        <input class="form-control" v-model="uiState.kw" placeholder="카테고리명 검색"
+        <input class="form-control" v-model="uiState.searchValue" placeholder="카테고리명 검색"
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
     </div>
@@ -1991,7 +1991,7 @@ window.CategoryTreeModal = {
       </div>
       <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         <div style="font-size:32px;margin-bottom:8px;">🔍</div>
-        {{ uiState.kw ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.' }}
+        {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.' }}
       </div>
     </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
@@ -2206,7 +2206,7 @@ window.CategorySelectModal = {
   setup(props, { emit }) {
     const { ref, reactive, computed, watch, watchEffect } = Vue;
 
-    const searchParam = reactive({ kw: '' });
+    const searchParam = reactive({ searchValue: '' });
 
     const cfAllCats = computed(() =>
       ((window.dispDataset || {}).categories || [])
@@ -2216,7 +2216,7 @@ window.CategorySelectModal = {
 
     /* 루트/자식 */
     const cfRoots = computed(() => {
-      const kwv = searchParam.kw.trim().toLowerCase();
+      const kwv = searchParam.searchValue.trim().toLowerCase();
       let list = cfAllCats.value;
       if (kwv) {
         const matchIds = new Set(list.filter(c => c.categoryNm.toLowerCase().includes(kwv)).map(c => c.categoryId));
@@ -2226,7 +2226,7 @@ window.CategorySelectModal = {
     });
 
     const childrenOf = (parentId) => {
-      const kwv = searchParam.kw.trim().toLowerCase();
+      const kwv = searchParam.searchValue.trim().toLowerCase();
       let list = cfAllCats.value.filter(c => c.parentId === parentId);
       if (kwv) list = list.filter(c => c.categoryNm.toLowerCase().includes(kwv));
       return list;
@@ -2283,7 +2283,7 @@ window.CategorySelectModal = {
 
     <!-- 검색 -->
     <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <input v-model="searchParam.kw" type="text" placeholder="카테고리명 검색" style="width:100%;box-sizing:border-box;font-size:12px;padding:4px 9px;border:1px solid #ddd;border-radius:5px;outline:none;" />
+      <input v-model="searchParam.searchValue" type="text" placeholder="카테고리명 검색" style="width:100%;box-sizing:border-box;font-size:12px;padding:4px 9px;border:1px solid #ddd;border-radius:5px;outline:none;" />
     </div>
 
     <!-- 트리 목록 -->
@@ -2605,7 +2605,7 @@ window.AreaPickModal = {
   emits: ['close', 'pick'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const searchParam = reactive({ kw: '', useYn: '' });
+    const searchParam = reactive({ searchValue: '', useYn: '' });
     const pager = reactive({ page: 1, size: 5 });
     const useYnOpts = reactive([]);
     onMounted(() => {
@@ -2623,7 +2623,7 @@ window.AreaPickModal = {
 
     const cfFiltered = computed(() => (props.areas || []).filter(a => {
       if (props.excludeUi && a.uiCode === props.excludeUi) return false;
-      const kw = searchParam.kw.trim().toLowerCase();
+      const kw = searchParam.searchValue.trim().toLowerCase();
       if (kw && !(a.codeValue||'').toLowerCase().includes(kw) && !(a.codeLabel||'').toLowerCase().includes(kw)) return false;
       if (searchParam.useYn && a.useYn !== searchParam.useYn) return false;
       if (selectedTreeKey.value) {
@@ -2695,7 +2695,7 @@ window.AreaPickModal = {
       <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <input v-model="searchParam.kw" placeholder="영역코드·영역명 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <input v-model="searchParam.searchValue" placeholder="영역코드·영역명 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
       <select v-model="searchParam.useYn" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">사용 전체</option>
         <template v-if="useYnOpts.length">
@@ -2808,7 +2808,7 @@ window.PanelPickModal = {
   emits: ['close', 'pick'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchParam = reactive({ kw: '', status: '' });
+    const searchParam = reactive({ searchValue: '', status: '' });
     const activeStatuses = reactive([]);
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
@@ -2825,7 +2825,7 @@ window.PanelPickModal = {
 
     const cfFiltered = computed(() => (props.displays || []).filter(p => {
       if (props.excludeArea && p.area === props.excludeArea) return false;
-      const kw = searchParam.kw.trim().toLowerCase();
+      const kw = searchParam.searchValue.trim().toLowerCase();
       if (kw && !(p.name||'').toLowerCase().includes(kw) && !(p.area||'').toLowerCase().includes(kw)) return false;
       if (searchParam.status && p.status !== searchParam.status) return false;
       if (selectedTreeKey.value) {
@@ -2901,7 +2901,7 @@ window.PanelPickModal = {
       <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <input v-model="searchParam.kw" placeholder="패널명·영역코드 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <input v-model="searchParam.searchValue" placeholder="패널명·영역코드 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
       <select v-model="searchParam.status" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">상태 전체</option>
         <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -3009,12 +3009,12 @@ window.WidgetLibPickModal = {
   emits: ['close', 'pick'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchParam = reactive({ kw: '', type: '', status: '' });
+    const searchParam = reactive({ searchValue: '', type: '', status: '' });
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
 
     const cfFiltered = computed(() => (props.widgetLibs || []).filter(d => {
-      const kw = searchParam.kw.trim().toLowerCase();
+      const kw = searchParam.searchValue.trim().toLowerCase();
       if (kw && !(d.name||'').toLowerCase().includes(kw) && !(d.desc||'').toLowerCase().includes(kw) && !(d.tags||'').toLowerCase().includes(kw)) return false;
       if (searchParam.type && d.widgetType !== searchParam.type) return false;
       if (searchParam.status && d.status !== searchParam.status) return false;
@@ -3094,7 +3094,7 @@ window.WidgetLibPickModal = {
 
     <!-- 검색 -->
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <input v-model="searchParam.kw" placeholder="이름·설명·태그 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <input v-model="searchParam.searchValue" placeholder="이름·설명·태그 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
       <select v-model="searchParam.type" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
       </select>
@@ -3505,8 +3505,8 @@ window.BizPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchParam = reactive({ kw: '', type: '' });
-    const searchParamOrg = reactive({ kw: '', type: '' });
+    const searchParam = reactive({ searchValue: '', type: '' });
+    const searchParamOrg = reactive({ searchValue: '', type: '' });
     const bizs = reactive([]);
     const handleSearchList = async () => {
       try {
@@ -3535,7 +3535,7 @@ window.BizPickModal = {
     const cfAllowedPathIds = computed(() => selectedPathId.value == null ? null : boUtil.getPathDescendants('sy_biz', selectedPathId.value));
 
     const cfFiltered = computed(() => bizs.filter(b => {
-      const k = searchParam.kw.trim().toLowerCase();
+      const k = searchParam.searchValue.trim().toLowerCase();
       if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
       if (searchParam.type && b.vendorTypeCd !== searchParam.type) return false;
       if (cfAllowedPathIds.value && !cfAllowedPathIds.value.has(b.pathId)) return false;
@@ -3558,7 +3558,7 @@ window.BizPickModal = {
         <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
       </div>
       <div style="display:flex;gap:6px;margin-top:12px;">
-        <input class="form-control" v-model="searchParam.kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
+        <input class="form-control" v-model="searchParam.searchValue" placeholder="사업자번호 / 상호 / 대표자 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
         <select class="form-control" v-model="searchParam.type" style="width:140px;height:32px;font-size:12px;">
           <option value="">업체유형 전체</option>
           <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
@@ -3609,7 +3609,7 @@ window.SimpleUserPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchParam = reactive({ kw: '' });
+    const searchParam = reactive({ searchValue: '' });
     const boUsers = reactive([]);
     const handleSearchList = async () => {
       try {
@@ -3618,13 +3618,13 @@ window.SimpleUserPickModal = {
       } catch (_) {}
     };
     const onSearch = () => { handleSearchList(); };
-    const onReset = () => { searchParam.kw = ''; handleSearchList(); };
+    const onReset = () => { searchParam.searchValue = ''; handleSearchList(); };
     Vue.onMounted(() => { handleSearchList(); });
     Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const cfExcl = computed(() => new Set(props.excludeIds || []));
     const cfFiltered = computed(() => boUsers.filter(u => {
       if (cfExcl.value.has(u.boUserId)) return false;
-      const k = searchParam.kw.trim().toLowerCase();
+      const k = searchParam.searchValue.trim().toLowerCase();
       if (k && !(u.name||'').toLowerCase().includes(k) && !(u.loginId||'').toLowerCase().includes(k) && !(u.email||'').toLowerCase().includes(k)) return false;
       return true;
     }));
@@ -3644,7 +3644,7 @@ window.SimpleUserPickModal = {
         <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
       </div>
       <div style="display:flex;gap:6px;margin-top:12px;">
-        <input class="form-control" v-model="searchParam.kw" placeholder="이름 / 로그인ID / 이메일 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
+        <input class="form-control" v-model="searchParam.searchValue" placeholder="이름 / 로그인ID / 이메일 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
         <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>

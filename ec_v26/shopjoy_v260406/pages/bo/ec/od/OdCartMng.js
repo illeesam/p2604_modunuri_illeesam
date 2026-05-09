@@ -31,7 +31,7 @@ window.OdCartMng = {
 
     const openMemberPick = () => {
       memberPick.open = true;
-      memberPick.kw = '';
+      memberPick.searchValue = '';
       memberPick.rows = [];
       memberPick.pageNo = 1;
       memberPick.total = 0;
@@ -44,7 +44,7 @@ window.OdCartMng = {
       memberPick.loading = true;
       try {
         const res = await boApiSvc.mbMember.getPage(
-          { pageNo: memberPick.pageNo, pageSize: PICK_SIZE, kw: memberPick.kw || undefined },
+          { pageNo: memberPick.pageNo, pageSize: PICK_SIZE, searchValue: memberPick.searchValue || undefined },
           '장바구니관리', '회원검색'
         );
         const d = res.data?.data || {};
@@ -348,7 +348,7 @@ window.OdCartMng = {
         <div style="display:flex;gap:8px;margin-top:12px;">
           <div style="position:relative;flex:1;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;">🔍</span>
-            <input v-model="memberPick.kw" @keyup.enter="onPickSearch"
+            <input v-model="memberPick.searchValue" @keyup.enter="onPickSearch"
                    class="form-control" placeholder="이름 / 아이디 / 이메일 검색"
                    style="padding-left:32px;border-radius:8px;" />
           </div>

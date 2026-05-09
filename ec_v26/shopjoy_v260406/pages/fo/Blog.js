@@ -9,8 +9,8 @@ window.Blog = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    const searchParam = reactive({ kw: '', cat: 'all' });
-    const searchParamOrg = reactive({ kw: '', cat: 'all' });
+    const searchParam = reactive({ searchValue: '', cat: 'all' });
+    const searchParamOrg = reactive({ searchValue: '', cat: 'all' });
 
     const categories = [
       { id: 'all', name: '전체' },
@@ -103,7 +103,7 @@ window.Blog = {
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div style="display:flex;justify-content:center;margin-bottom:32px;gap:8px;">
     <div style="position:relative;width:100%;max-width:480px;">
-      <input v-model="searchParam.kw" type="text" placeholder="검색어를 입력하세요..."
+      <input v-model="searchParam.searchValue" type="text" placeholder="검색어를 입력하세요..."
         style="width:100%;padding:12px 44px 12px 16px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);" />
       <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:1rem;">🔍</span>
     </div>

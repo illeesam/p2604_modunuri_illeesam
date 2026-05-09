@@ -1028,12 +1028,12 @@
   };
   /* 사용자 선택 모달 */
   const PAGE_SIZE = 20;
-  const userPickModal = reactive({ show: false, kw: '', pageNo: 1, loading: false, rows: [], total: 0, totalPage: 1, isApiMode: false });
+  const userPickModal = reactive({ show: false, searchValue: '', pageNo: 1, loading: false, rows: [], total: 0, totalPage: 1, isApiMode: false });
   const _loadUserPickPage = async () => {
   userPickModal.loading = true;
   try {
   const params = { pageNo: userPickModal.pageNo, pageSize: PAGE_SIZE };
-  if (userPickModal.kw) params.kw = userPickModal.kw; // 빈 문자열 미전송 → 전체 조회
+  if (userPickModal.searchValue) params.searchValue = userPickModal.searchValue; // 빈 문자열 미전송 → 전체 조회
   const res = await window.coApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
   const d = res.data?.data;
   userPickModal.rows      = d?.pageList || d?.list || [];
@@ -1046,7 +1046,7 @@
   };
   /* 로컬(QUICK_USERS) 페이징 — 로그인 전 fallback */
   const cfLocalFiltered = Vue.computed(() => {
-  const kw = (userPickModal.kw || '').toLowerCase();
+  const kw = (userPickModal.searchValue || '').toLowerCase();
   return kw ? QUICK_USERS.filter(u =>
     u.label.toLowerCase().includes(kw) || u.loginId.toLowerCase().includes(kw) || (u.userNm||'').toLowerCase().includes(kw)
   ) : QUICK_USERS;
@@ -1060,7 +1060,7 @@
   const cfPickTotal    = Vue.computed(() => userPickModal.isApiMode ? userPickModal.total    : cfLocalFiltered.value.length);
   const cfPickTotalPage= Vue.computed(() => userPickModal.isApiMode ? userPickModal.totalPage: cfLocalTotalPage.value);
   const openUserPick = () => {
-  userPickModal.kw = ''; userPickModal.pageNo = 1;
+  userPickModal.searchValue = ''; userPickModal.pageNo = 1;
   userPickModal.isApiMode = true; // 항상 API 모드 (로그인 전/후 무관)
   userPickModal.show = true;
   _loadUserPickPage();
@@ -2085,7 +2085,7 @@
   <div style="display:flex;gap:6px;margin-bottom:10px;">
   <div style="position:relative;flex:1;">
   <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
-  <input class="form-control" v-model="userPickModal.kw" placeholder="이름 / 로그인ID / 이메일 검색..."
+  <input class="form-control" v-model="userPickModal.searchValue" placeholder="이름 / 로그인ID / 이메일 검색..."
   @keyup.enter="onUserPickSearch" style="padding-left:32px;height:34px;" />
   </div>
   <button class="btn btn-primary btn-sm" @click="onUserPickSearch" style="padding:0 16px;font-weight:700;">조회</button>
