@@ -1,11 +1,13 @@
 package com.shopjoy.ecadminapi.common.exception;
 
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.common.config.MyBatisQueryInterceptor;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -115,6 +117,42 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(ApiResponse.<Void>error(404, msg)
                 .withDebug(ex.getMessage(), buildUserInfo(req)));
+    }
+
+    /**
+     * MyBatis 실행 오류 — Mapper.method, 누락 property, DTO class 를 추출해 메시지 구성.
+     *
+     * 흔한 케이스 (OGNL ReflectionException):
+     *   - Mapper XML <if test="status != null"> 인데 DTO에 status getter 없음
+     *   - 컬럼명과 다른 별칭으로 #{} 바인딩한 경우
+     */
+    @ExceptionHandler(MyBatisSystemException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMyBatis(MyBatisSystemException ex, HttpServletRequest req) {
+        String mapperInfo = CmUtil.nvl(MyBatisQueryInterceptor.getCurrentMapperInfo(), "(unknown)");
+        Throwable root = ex;
+        while (root.getCause() != null && root.getCause() != root) root = root.getCause();
+        String rootMsg = CmUtil.nvl(root.getMessage(), root.getClass().getSimpleName());
+
+        // ReflectionException: "There is no getter for property named 'xxx' in 'class com.shopjoy....Yyy$Request'"
+        String property = null, dtoClass = null;
+        java.util.regex.Matcher m = java.util.regex.Pattern
+            .compile("property named '([^']+)' in '(?:class )?([^']+)'")
+            .matcher(rootMsg);
+        if (m.find()) { property = m.group(1); dtoClass = m.group(2); }
+
+        StringBuilder msg = new StringBuilder("MyBatis 실행 오류 — ").append(mapperInfo);
+        if (property != null) {
+            msg.append("\n   ⓘ DTO 누락: ")
+               .append(dtoClass).append(" 에 '").append(property).append("' getter 없음.")
+               .append("\n   ⓘ Mapper XML 의 <if test=\"").append(property).append(" != null\"> 또는 #{").append(property)
+               .append("} 바인딩과 매핑되는 필드가 Request DTO 에 정의돼야 합니다.");
+        } else {
+            msg.append("\n   ⓘ 원인: ").append(rootMsg);
+        }
+        log.error("MyBatisSystemException [{}]: {}", mapperInfo, rootMsg, ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiResponse.<Void>error(500, msg.toString())
+                .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
     /** 그 외 처리되지 않은 예외 — 500 (스택 트레이스 포함 ERROR 로깅) */

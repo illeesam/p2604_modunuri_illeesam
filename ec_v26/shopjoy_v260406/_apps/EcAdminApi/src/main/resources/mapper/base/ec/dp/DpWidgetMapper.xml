@@ -10,7 +10,7 @@
             <if test="siteId != null and siteId != ''">AND w.site_id = #{siteId}</if>
             <if test="widgetId != null and widgetId != ''">AND w.widget_id = #{widgetId}</if>
             <if test="widgetLibId != null and widgetLibId != ''">AND w.widget_lib_id = #{widgetLibId}</if>
-            <if test="typeCd != null and typeCd != ''">AND w.widget_type_cd = #{typeCd}</if>
+            <if test="widgetTypeCd != null and widgetTypeCd != ''">AND w.widget_type_cd = #{widgetTypeCd}</if>
             <if test="searchValue != null and searchValue != ''">
                 AND (1=0
                     <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_widget_nm')">OR w.widget_nm ILIKE '%' || #{searchValue} || '%'</if>

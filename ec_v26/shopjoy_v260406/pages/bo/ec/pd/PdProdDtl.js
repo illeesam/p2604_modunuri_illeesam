@@ -23,7 +23,7 @@ window.PdProdDtl = {
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearch: '' });
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchTypes: '', mdSearch: '', prodPickerSearchTypes: '' });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
     const grpCodes = reactive({ product_statuses: [], prod_types: [], prod_plan_statuses: [], opt_stock_statuses: [], stock_filter_opts: [{value:'in',label:'재고있음'},{value:'out',label:'품절(0)'}] });
@@ -625,16 +625,21 @@ window.PdProdDtl = {
     // 상품 추가 피커 모달
     const prodPickerOpen   = ref(''); // '' | 'rel' | 'code'
         const cfProdPickerList   = computed(() => {
-      const q    = prodPickerSearch.value.trim().toLowerCase();
+      const q    = (uiState.prodPickerSearch || '').trim().toLowerCase();
       const all  = products;
       const used = (uiState.prodPickerOpen === 'rel' ? relProds : codeProds).map(r => r.prodId);
+      const types = uiState.prodPickerSearchTypes || 'def_id,def_nm,def_cat';
       return safeFilter(all, p => {
         if (used.includes(p.prodId)) return false;
         if (!q) return true;
-        return String(p.prodId).includes(q) || (p.prodNm||'').toLowerCase().includes(q) || (p.cateNm||'').toLowerCase().includes(q);
+        const hits = [];
+        if (types.includes('def_id'))  hits.push(String(p.prodId).includes(q));
+        if (types.includes('def_nm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
+        if (types.includes('def_cat')) hits.push((p.cateNm || '').toLowerCase().includes(q));
+        return hits.some(Boolean);
       });
     });
-    const openProdPicker = (type) => { uiState.prodPickerSearch = ''; uiState.prodPickerOpen = type; };
+    const openProdPicker = (type) => { uiState.prodPickerSearch = ''; uiState.prodPickerSearchTypes = ''; uiState.prodPickerOpen = type; };
     const selectProdItem = (p) => {
       const row = { _id: _relSeq++, prodId: p.prodId, prodNm: p.prodNm, cateNm: p.cateNm||'', listPrice: p.listPrice||0, prodStock: p.prodStock||0, prodStatusCd: p.prodStatusCd||'' };
       if (uiState.prodPickerOpen === 'rel') relProds.push(row);
@@ -702,12 +707,20 @@ window.PdProdDtl = {
 
     // -- mounted
     // -- 담당MD 모달
+    const mdSearchTypes = ref('');
     const mdSearch    = ref('');
     const cfMdUserList  = computed(() => (boUsers||[]).filter(u => u.userStatusCd !== 'SUSPENDED' && u.userStatusCd !== 'DELETED'));
     const cfMdUserListFiltered = computed(() => {
-      const q = uiState.mdSearch.trim().toLowerCase();
+      const q = (uiState.mdSearch || '').trim().toLowerCase();
       if (!q) return cfMdUserList.value;
-      return cfMdUserList.value.filter(u => (u.userNm||'').toLowerCase().includes(q) || (u.deptId||'').toLowerCase().includes(q) || (u.roleId||'').toLowerCase().includes(q));
+      const types = (uiState.mdSearchTypes || mdSearchTypes.value) || 'def_nm,def_dept,def_role';
+      return cfMdUserList.value.filter(u => {
+        const hits = [];
+        if (types.includes('def_nm'))   hits.push((u.userNm || '').toLowerCase().includes(q));
+        if (types.includes('def_dept')) hits.push((u.deptId || '').toLowerCase().includes(q));
+        if (types.includes('def_role')) hits.push((u.roleId || '').toLowerCase().includes(q));
+        return hits.some(Boolean);
+      });
     });
     const cfMdSelectedNm = computed(() => {
       const u = cfMdUserList.value.find(u => u.userId === form.mdUserId);
@@ -975,6 +988,8 @@ window.PdProdDtl = {
     const prodOptCategoryTypeCd = Vue.toRef(uiState, 'prodOptCategoryTypeCd');
     const openHelp = (topic) => { if (window.showBoHelp) window.showBoHelp(topic); };
     const prodPickerSearch = Vue.toRef(uiState, 'prodPickerSearch');
+    const prodPickerSearchTypes = Vue.toRef(uiState, 'prodPickerSearchTypes');
+    const mdSearchTypesRef = Vue.toRef(uiState, 'mdSearchTypes');
     const skuFilter1 = Vue.toRef(uiState, 'skuFilter1');
     const skuFilter2 = Vue.toRef(uiState, 'skuFilter2');
     const skuFilterStock = Vue.toRef(uiState, 'skuFilterStock');
@@ -1002,7 +1017,7 @@ window.PdProdDtl = {
 
     return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
-      uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
+      uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser, mdSearchTypesRef, prodPickerSearchTypes,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus, moveSku,
       cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
       cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
@@ -1163,7 +1178,17 @@ window.PdProdDtl = {
           </div>
           <!-- -- 검색 ----------------------------------------------------- -->
           <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
-            <input class="form-control" v-model="mdSearch" placeholder="이름 · 부서 · 역할 검색" autofocus style="font-size:13px;" />
+            <multi-check-select
+              v-model="uiState.mdSearchTypes"
+              :options="[
+                { value: 'def_nm',   label: '이름' },
+                { value: 'def_dept', label: '부서' },
+                { value: 'def_role', label: '역할' },
+              ]"
+              placeholder="검색대상 전체"
+              all-label="전체 선택"
+              min-width="160px" />
+            <input class="form-control" v-model="uiState.mdSearch" placeholder="검색어 입력" autofocus style="font-size:13px;margin-top:6px;" />
           </div>
           <!-- -- 목록 ----------------------------------------------------- -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
@@ -1884,7 +1909,17 @@ window.PdProdDtl = {
           </div>
           <!-- -- 검색 ----------------------------------------------------- -->
           <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
-            <input class="form-control" v-model="prodPickerSearch" placeholder="상품명 · ID · 카테고리 검색" style="font-size:13px;" />
+            <multi-check-select
+              v-model="uiState.prodPickerSearchTypes"
+              :options="[
+                { value: 'def_nm',  label: '상품명' },
+                { value: 'def_id',  label: 'ID' },
+                { value: 'def_cat', label: '카테고리' },
+              ]"
+              placeholder="검색대상 전체"
+              all-label="전체 선택"
+              min-width="160px" />
+            <input class="form-control" v-model="prodPickerSearch" placeholder="검색어 입력" style="font-size:13px;margin-top:6px;" />
           </div>
           <!-- -- 목록 ----------------------------------------------------- -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">

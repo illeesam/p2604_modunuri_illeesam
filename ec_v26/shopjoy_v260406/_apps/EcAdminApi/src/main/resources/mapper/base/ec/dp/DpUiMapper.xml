@@ -18,7 +18,7 @@
                     ) SELECT path_id FROM sub
                 )
             </if>
-            <if test="typeCd != null and typeCd != ''">AND u.device_type_cd = #{typeCd}</if>
+            <if test="deviceTypeCd != null and deviceTypeCd != ''">AND u.device_type_cd = #{deviceTypeCd}</if>
             <if test="searchValue != null and searchValue != ''">
                 AND (1=0
                     <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_ui_nm')">OR u.ui_nm ILIKE '%' || #{searchValue} || '%'</if>

@@ -15,7 +15,7 @@ window.PdBundleMng = {
     const brands = reactive([]);
     const bundles = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearch: '', dragIdx: null, dragoverIdx: null });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearchTypes: '', pickerSearch: '', dragIdx: null, dragoverIdx: null });
     const codes = reactive({
       product_statuses: [],
       bundle_types: [],
@@ -242,11 +242,15 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const cfPickerList = computed(() => {
       const q    = (uiState.pickerSearch || '').trim().toLowerCase();
       const used = dtlItems.map(d => d.itemProdId);
+      const types = uiState.pickerSearchTypes || 'def_id,def_nm';
       return (products || []).filter(p => {
         if (p.productId === cfCurrentBundleId.value) return false;
         if (used.includes(p.productId)) return false;
         if (!q) return true;
-        return String(p.productId).includes(q) || (p.prodNm || '').toLowerCase().includes(q);
+        const hits = [];
+        if (types.includes('def_id')) hits.push(String(p.productId).includes(q));
+        if (types.includes('def_nm')) hits.push((p.prodNm || '').toLowerCase().includes(q));
+        return hits.some(Boolean);
       });
     });
 
@@ -258,7 +262,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         itemProdId: prod.productId, itemSkuId: null,
         itemQty: 1, priceRate: 0, sortOrd: maxSort + 1, useYn: 'Y',
       });
-      uiState.pickerOpen = false; uiState.pickerSearch = '';
+      uiState.pickerOpen = false; uiState.pickerSearchTypes = ''; uiState.pickerSearch = '';
     };
     const removeItem = idx => dtlItems.splice(idx, 1);
 
@@ -657,7 +661,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     <!-- -- 구성품 추가 / 안분율 안내 ---------------------------------------------- -->
     <div style="margin-top:12px;display:flex;align-items:flex-start;gap:12px">
-      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="uiState.pickerOpen=true;uiState.pickerSearch=''">
+      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="uiState.pickerOpen=true;uiState.pickerSearchTypes='';uiState.pickerSearch=''">
         + 구성품 추가
       </button>
       <div v-if="dtlItems.length" style="flex:1;padding:7px 14px;border-radius:6px;font-size:12px"
@@ -681,8 +685,17 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <strong style="font-size:15px">구성품 상품 선택</strong>
           <button class="btn btn-secondary btn-xs" @click="uiState.pickerOpen=false">닫기</button>
         </div>
+        <multi-check-select
+          v-model="uiState.pickerSearchTypes"
+          :options="[
+            { value: 'def_nm', label: '상품명' },
+            { value: 'def_id', label: 'ID' },
+          ]"
+          placeholder="검색대상 전체"
+          all-label="전체 선택"
+          min-width="100%" />
         <input class="form-control" v-model="uiState.pickerSearch"
-               placeholder="상품명 / ID 검색" style="margin-bottom:12px">
+               placeholder="검색어 입력" style="margin:8px 0 12px 0;">
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <table class="bo-table" style="margin:0">
             <thead><tr>

@@ -246,13 +246,20 @@ window.PdCategoryProdMng = {
 
     /* -- 피커 검색 -- */
     const cfPickerList = computed(() => {
+      const q = pickerSearch.value.toLowerCase();
+      if (!q) return products.slice(0, 50);
+      const types = pickerSearchTypes.value || 'def_nm,def_id,def_cat';
       return products.filter(p => {
-        const q = pickerSearch.value.toLowerCase();
-        return !q || p.prodNm?.toLowerCase().includes(q) || String(p.prodId || p.productId || '').includes(q);
+        const hits = [];
+        if (types.includes('def_nm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
+        if (types.includes('def_id'))  hits.push(String(p.prodId || p.productId || '').includes(q));
+        if (types.includes('def_cat')) hits.push((p.categoryNm || p.categoryPath || '').toLowerCase().includes(q));
+        return hits.some(Boolean);
       }).slice(0, 50);
     });
 
     const pickerOpen = ref(false);
+    const pickerSearchTypes = ref('');
     const pickerSearch = ref('');
     const onSave = async () => {
       const ok = await showConfirm('저장', '저장하시겠습니까?');
@@ -282,7 +289,7 @@ window.PdCategoryProdMng = {
       fnDepthColor, fnDepthBullet, totalProdCount, cfTypeCountMap,
       dragoverIdx, onDragStart, onDragOver, onDrop,
       getProdNm, getProd, getCatPath, removeRow, addProd,
-      pickerOpen, pickerSearch, onSave,
+      pickerOpen, pickerSearchTypes, pickerSearch, onSave,
       showRefModal: showRefModal, showToast: showToast, showConfirm: showConfirm, setApiRes: setApiRes, navigate: props.navigate,
     };
   },
@@ -336,7 +343,7 @@ window.PdCategoryProdMng = {
             <span v-if="!cfIsLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">(하위 포함)</span>
           </span>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-secondary btn-sm" @click="pickerOpen=true;pickerSearch=''">+ 상품추가</button>
+            <button class="btn btn-secondary btn-sm" @click="pickerOpen=true;pickerSearchTypes='';pickerSearch=''">+ 상품추가</button>
             <button class="btn btn-primary btn-sm" @click="onSave">저장</button>
           </div>
         </div>
@@ -547,8 +554,18 @@ window.PdCategoryProdMng = {
           </div>
           <button class="btn btn-secondary btn-xs" @click="pickerOpen=false">닫기</button>
         </div>
+        <multi-check-select
+          v-model="pickerSearchTypes"
+          :options="[
+            { value: 'def_nm',  label: '상품명' },
+            { value: 'def_id',  label: 'ID' },
+            { value: 'def_cat', label: '카테고리' },
+          ]"
+          placeholder="검색대상 전체"
+          all-label="전체 선택"
+          min-width="100%" />
         <input class="form-control" v-model="pickerSearch"
-               placeholder="상품명 / ID / 카테고리 검색" style="margin-bottom:12px">
+               placeholder="검색어 입력" style="margin:8px 0 12px 0;">
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <table class="bo-table" style="margin:0">
             <thead><tr>

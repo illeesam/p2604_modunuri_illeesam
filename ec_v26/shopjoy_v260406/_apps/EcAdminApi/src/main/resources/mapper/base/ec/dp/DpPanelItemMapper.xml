@@ -8,7 +8,7 @@
     <sql id="dpPanelItemCond">
         <where>
                         <if test="panelItemId != null and panelItemId != ''">AND i.panel_item_id = #{panelItemId}</if>
-<if test="typeCd != null and typeCd != ''">AND i.widget_type_cd = #{typeCd}</if>
+<if test="widgetTypeCd != null and widgetTypeCd != ''">AND i.widget_type_cd = #{widgetTypeCd}</if>
             <if test="widgetLibId != null and widgetLibId != ''">AND i.widget_lib_id = #{widgetLibId}</if>
             <if test="panelId != null and panelId != ''">AND i.panel_id = #{panelId}</if>
             <if test="searchValue != null and searchValue != ''">

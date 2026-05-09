@@ -36,6 +36,10 @@ window.OdDlivMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_dliv_id,def_order_id,def_member_nm,def_recv_nm,def_invoice_no';
+        }
         const [delivRes, membersRes] = await Promise.all([
           boApiSvc.odDliv.getPage(params, '배송관리', '목록조회'),
           boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '배송관리', '목록조회')

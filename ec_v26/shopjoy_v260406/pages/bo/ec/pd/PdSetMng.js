@@ -15,7 +15,7 @@ window.PdSetMng = {
     const brands = reactive([]);
     const sets = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearch: '' });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearchTypes: '', pickerSearch: '' });
     const codes = reactive({
       product_statuses: [],
       bundle_statuses: [],
@@ -126,11 +126,15 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const cfPickerList   = computed(() => {
       const q    = (uiState.pickerSearch || '').trim().toLowerCase();
       const used = new Set(dtlItems.map(d => d.itemProdId).filter(Boolean));
+      const types = uiState.pickerSearchTypes || 'def_id,def_nm';
       return (products || []).filter(p => {
         if (p.productId === uiState.editSetId) return false;
         if (used.has(p.productId)) return false;
         if (!q) return true;
-        return String(p.productId).includes(q) || (p.prodNm || '').toLowerCase().includes(q);
+        const hits = [];
+        if (types.includes('def_id')) hits.push(String(p.productId).includes(q));
+        if (types.includes('def_nm')) hits.push((p.prodNm || '').toLowerCase().includes(q));
+        return hits.some(Boolean);
       });
     });
 
@@ -230,7 +234,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         sortOrd:    maxSort + 1,
         useYn:      'Y',
       });
-      uiState.pickerOpen = false; uiState.pickerSearch = '';
+      uiState.pickerOpen = false; uiState.pickerSearchTypes = ''; uiState.pickerSearch = '';
     };
 
     /* -- 구성품 추가 (비상품 — 직접입력) -- */
@@ -616,7 +620,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     <!-- -- 구성품 추가 버튼 ---------------------------------------------------- -->
     <div style="margin-top:12px;display:flex;gap:8px">
-      <button class="btn btn-secondary btn-sm" @click="uiState.pickerOpen=true;uiState.pickerSearch=''">
+      <button class="btn btn-secondary btn-sm" @click="uiState.pickerOpen=true;uiState.pickerSearchTypes='';uiState.pickerSearch=''">
         + 상품 구성품 추가
       </button>
       <button class="btn btn-secondary btn-sm" @click="addItemBlank">
@@ -634,8 +638,17 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <strong style="font-size:15px">구성품 상품 선택</strong>
           <button class="btn btn-secondary btn-xs" @click="uiState.pickerOpen=false">닫기</button>
         </div>
+        <multi-check-select
+          v-model="uiState.pickerSearchTypes"
+          :options="[
+            { value: 'def_nm', label: '상품명' },
+            { value: 'def_id', label: 'ID' },
+          ]"
+          placeholder="검색대상 전체"
+          all-label="전체 선택"
+          min-width="100%" />
         <input class="form-control" v-model="uiState.pickerSearch"
-               placeholder="상품명 / ID 검색" style="margin-bottom:12px">
+               placeholder="검색어 입력" style="margin:8px 0 12px 0;">
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <table class="bo-table" style="margin:0">
             <thead><tr>

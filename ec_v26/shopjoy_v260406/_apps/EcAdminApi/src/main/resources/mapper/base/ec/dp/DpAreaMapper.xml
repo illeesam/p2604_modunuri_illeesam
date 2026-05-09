@@ -19,7 +19,7 @@
                     ) SELECT path_id FROM sub
                 )
             </if>
-            <if test="typeCd != null and typeCd != ''">AND a.area_type_cd = #{typeCd}</if>
+            <if test="areaTypeCd != null and areaTypeCd != ''">AND a.area_type_cd = #{areaTypeCd}</if>
             <if test="searchValue != null and searchValue != ''">
                 AND (1=0
                     <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_area_nm')">OR a.area_nm ILIKE '%' || #{searchValue} || '%'</if>

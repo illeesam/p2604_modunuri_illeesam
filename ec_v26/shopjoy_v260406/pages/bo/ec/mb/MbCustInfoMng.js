@@ -149,7 +149,7 @@
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     });
       /* -- 검색 상태 -- */
-      const memberModal  = reactive({ show: false, keyword: '', list: [] });
+      const memberModal  = reactive({ show: false, searchTypes: '', keyword: '', list: [] });
 
       /* -- 기간 필터 (searchParam 통합) -- */
       const searchParam = reactive({ period: '1y', customFrom: '', customTo: today() });
@@ -241,9 +241,15 @@
       };
       const searchMemberModal = () => {
         const searchVal = memberModal.keyword.trim().toLowerCase();
+        const types = memberModal.searchTypes || 'def_nm,def_email,def_phone';
         memberModal.list = searchVal
-          ? members.filter(m =>
-              m.memberNm.includes(searchVal) || m.email.toLowerCase().includes(searchVal) || (m.phone || '').includes(searchVal))
+          ? members.filter(m => {
+              const hits = [];
+              if (types.includes('def_nm'))    hits.push((m.memberNm || '').includes(searchVal));
+              if (types.includes('def_email')) hits.push((m.email || '').toLowerCase().includes(searchVal));
+              if (types.includes('def_phone')) hits.push((m.phone || '').includes(searchVal));
+              return hits.some(Boolean);
+            })
           : [...members];
       };
       const selectMember = (m) => {
@@ -682,9 +688,19 @@
         <span class="modal-close" @click="memberModal.show=false">✕</span>
       </div>
       <div style="flex:1;overflow:auto;padding:0 4px;">
-        <div style="display:flex;gap:6px;margin-bottom:14px;">
+        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+          <multi-check-select
+            v-model="memberModal.searchTypes"
+            :options="[
+              { value: 'def_nm',    label: '이름' },
+              { value: 'def_email', label: '이메일' },
+              { value: 'def_phone', label: '전화번호' },
+            ]"
+            placeholder="검색대상 전체"
+            all-label="전체 선택"
+            min-width="160px" />
           <input type="text" class="form-control" v-model="memberModal.keyword"
-            placeholder="이름 · 이메일 · 전화번호로 검색" @keyup.enter="() => searchMemberModal?.()"
+            placeholder="검색어 입력" @keyup.enter="() => searchMemberModal?.()"
             style="flex:1;font-size:13px;" />
           <button class="btn btn-primary btn-sm" @click="searchMemberModal" style="white-space:nowrap;">🔍 검색</button>
         </div>

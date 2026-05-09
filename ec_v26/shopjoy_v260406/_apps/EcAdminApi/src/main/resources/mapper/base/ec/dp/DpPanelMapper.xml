@@ -18,8 +18,8 @@
                     ) SELECT path_id FROM sub
                 )
             </if>
-            <if test="status != null and status != ''">AND p.disp_panel_status_cd = #{status}</if>
-            <if test="typeCd != null and typeCd != ''">AND p.panel_type_cd = #{typeCd}</if>
+            <if test="dispPanelStatusCd != null and dispPanelStatusCd != ''">AND p.disp_panel_status_cd = #{dispPanelStatusCd}</if>
+            <if test="panelTypeCd != null and panelTypeCd != ''">AND p.panel_type_cd = #{panelTypeCd}</if>
             <if test="searchValue != null and searchValue != ''">
                 AND (1=0
                     <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_panel_nm')">OR p.panel_nm ILIKE '%' || #{searchValue} || '%'</if>

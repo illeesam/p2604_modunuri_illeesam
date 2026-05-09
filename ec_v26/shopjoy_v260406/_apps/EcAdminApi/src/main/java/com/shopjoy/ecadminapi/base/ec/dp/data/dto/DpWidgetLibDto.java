@@ -17,6 +17,7 @@ public class DpWidgetLibDto {
         @Size(max = 21) private String pathId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String widgetLibId;
+        @Size(max = 30) private String widgetTypeCd;
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -18,6 +18,7 @@ public class DpUiDto {
         @Size(max = 21) private String pathId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String uiId;
+        @Size(max = 30) private String deviceTypeCd;
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -36,6 +36,10 @@ window.OdClaimMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_claim_id,def_order_id,def_member_nm,def_prod_nm';
+        }
         const [claimsRes, membersRes] = await Promise.all([
           boApiSvc.odClaim.getPage(params, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
           boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [] } } }))

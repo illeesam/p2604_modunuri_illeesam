@@ -17,7 +17,7 @@ window.SyPostman = {
     const uiState = reactive({
       treeLoaded: false,
       settingsOpen: false,
-      histResSending: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0,
+      histResSending: false, treeSearchTypes: '', treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0,
     });
 
     /* ===== Tree (JSON 로딩) ===== */
@@ -137,9 +137,15 @@ window.SyPostman = {
     const flattenTree = (nodes, depth = 0) => {
       const result = [];
       const searchVal = uiState.treeSearch.toLowerCase();
+      const types = uiState.treeSearchTypes || 'def_nm,def_url';
       for (const n of nodes) {
         if (n.type === 'app' && !appFilter[n.appId]) continue;
-        if (searchVal && n.type === 'req' && !n.label.toLowerCase().includes(searchVal) && !n.url.toLowerCase().includes(searchVal)) continue;
+        if (searchVal && n.type === 'req') {
+          const hits = [];
+          if (types.includes('def_nm'))  hits.push((n.label || '').toLowerCase().includes(searchVal));
+          if (types.includes('def_url')) hits.push((n.url   || '').toLowerCase().includes(searchVal));
+          if (!hits.some(Boolean)) continue;
+        }
         result.push({ n, depth });
         if (n.type !== 'req' && (n.open || searchVal)) {
           flattenTree(n.children || [], depth + 1).forEach(x => result.push(x));
@@ -568,8 +574,17 @@ window.SyPostman = {
           <input type="checkbox" v-model="appFilter[key]" style="display:none;" />{{ meta.label }}
         </label>
       </div>
-      <input v-model="uiState.treeSearch" placeholder="🔍 이름 / URL 검색"
-        style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 7px;border:1px solid #ddd;border-radius:4px;outline:none;background:#fff;" />
+      <multi-check-select
+        v-model="uiState.treeSearchTypes"
+        :options="[
+          { value: 'def_nm',  label: '이름' },
+          { value: 'def_url', label: 'URL' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="100%" />
+      <input v-model="uiState.treeSearch" placeholder="🔍 검색어 입력"
+        style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 7px;border:1px solid #ddd;border-radius:4px;outline:none;background:#fff;margin-top:4px;" />
     </div>
     <div style="flex:1;overflow-y:auto;padding:4px 0;">
       <div v-if="!uiState.treeLoaded" style="text-align:center;padding:20px;color:#ccc;font-size:11px;">로딩 중…</div>

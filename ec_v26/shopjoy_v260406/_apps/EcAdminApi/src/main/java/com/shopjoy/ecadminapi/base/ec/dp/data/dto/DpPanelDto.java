@@ -18,6 +18,8 @@ public class DpPanelDto {
         @Size(max = 21) private String pathId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String panelId;
+        @Size(max = 30) private String panelTypeCd;
+        @Size(max = 30) private String dispPanelStatusCd;
     }
 
     @Getter @Setter @NoArgsConstructor

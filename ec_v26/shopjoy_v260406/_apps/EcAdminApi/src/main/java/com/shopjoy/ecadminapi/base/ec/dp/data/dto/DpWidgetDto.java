@@ -16,6 +16,8 @@ public class DpWidgetDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String widgetId;
+        @Size(max = 21) private String widgetLibId;
+        @Size(max = 30) private String widgetTypeCd;
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -33,7 +33,12 @@ window.PdProdMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdProd.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_prod_id,def_prod_nm,def_prod_code';
+        }
+        const res = await boApiSvc.pdProd.getPage(params, '상품관리', '목록조회');
         const data = res.data?.data;
         products.splice(0, products.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
