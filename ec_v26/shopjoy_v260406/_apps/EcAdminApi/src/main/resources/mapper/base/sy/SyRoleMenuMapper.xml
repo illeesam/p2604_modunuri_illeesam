@@ -26,7 +26,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto$Item">
         SELECT  /* base.sy :: SyRoleMenu :: selectById */
               m.*
             , ste.site_nm AS site_nm
@@ -35,7 +35,7 @@
         WHERE m.role_menu_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto$Item">
         SELECT  /* base.sy :: SyRoleMenu :: selectList */
               m.*
             , ste.site_nm AS site_nm
@@ -46,7 +46,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto$Item">
         SELECT  /* base.sy :: SyRoleMenu :: selectPageList */
               m.*
             , ste.site_nm AS site_nm
@@ -77,3 +77,4 @@
     </update>
 
 </mapper>
+

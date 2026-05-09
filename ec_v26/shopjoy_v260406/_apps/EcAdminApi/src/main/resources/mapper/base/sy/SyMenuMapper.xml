@@ -9,10 +9,14 @@
         <where>
             <if test="siteId != null and siteId != ''">AND m.site_id = #{siteId}</if>
             <if test="menuId != null and menuId != ''">AND m.menu_id = #{menuId}</if>
-            <if test="typeCd != null and typeCd != ''">AND m.menu_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (m.menu_nm ILIKE '%' || #{kw} || '%'
-                  OR m.menu_code ILIKE '%' || #{kw} || '%')
+            <if test="menuTypeCd != null and menuTypeCd != ''">AND m.menu_type_cd = #{menuTypeCd}</if>
+            <if test="parentMenuId != null and parentMenuId != ''">AND m.parent_menu_id = #{parentMenuId}</if>
+            <if test="useYn != null and useYn != ''">AND m.use_yn = #{useYn}</if>
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_nm')">OR m.menu_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_code')"> OR m.menu_code ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND m.reg_date &gt;= #{dateStart}::DATE
@@ -35,7 +39,7 @@
     </sql>
 
     <!-- 메뉴 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto$Item">
         SELECT  /* base.sy :: SyMenu :: selectById */
               m.*
             , ste.site_nm AS site_nm
@@ -47,7 +51,7 @@
     </select>
 
     <!-- 메뉴 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto$Item">
         SELECT  /* base.sy :: SyMenu :: selectList */
               m.*
             , ste.site_nm AS site_nm
@@ -61,7 +65,7 @@
     </select>
 
     <!-- 메뉴 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto$Item">
         SELECT  /* base.sy :: SyMenu :: selectPageList */
               m.*
             , ste.site_nm AS site_nm
@@ -102,3 +106,4 @@
     </update>
 
 </mapper>
+

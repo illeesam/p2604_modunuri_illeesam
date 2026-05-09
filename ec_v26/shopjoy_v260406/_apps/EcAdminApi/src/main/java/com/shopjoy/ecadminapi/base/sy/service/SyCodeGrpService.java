@@ -5,7 +5,6 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyCodeGrp;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyCodeGrpMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyCodeGrpRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -17,15 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyCodeGrpService {
-
 
     private final SyCodeGrpMapper syCodeGrpMapper;
     private final SyCodeGrpRepository syCodeGrpRepository;
@@ -33,99 +30,137 @@ public class SyCodeGrpService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyCodeGrpDto getById(String id) {
-        // sy_code_grp :: select one :: id [orm:mybatis]
-        SyCodeGrpDto result = syCodeGrpMapper.selectById(id);
-        return result;
+    public SyCodeGrpDto.Item getById(String id) {
+        SyCodeGrpDto.Item dto = syCodeGrpMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyCodeGrpDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_code_grp :: select list :: p [orm:mybatis]
-        List<SyCodeGrpDto> result = syCodeGrpMapper.selectList(p);
-        return result;
+    public SyCodeGrp findById(String id) {
+        return syCodeGrpRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyCodeGrpDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_code_grp :: select page :: p [orm:mybatis]
-        return PageResult.of(syCodeGrpMapper.selectPageList(p), syCodeGrpMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syCodeGrpRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(SyCodeGrp entity) {
-        // sy_code_grp :: update :: entity [orm:mybatis]
-        int result = syCodeGrpMapper.updateSelective(entity);
-        return result;
+    public List<SyCodeGrpDto.Item> getList(SyCodeGrpDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syCodeGrpMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public SyCodeGrpDto.PageResponse getPageData(SyCodeGrpDto.Request req) {
+        PageHelper.addPaging(req);
+        SyCodeGrpDto.PageResponse res = new SyCodeGrpDto.PageResponse();
+        List<SyCodeGrpDto.Item> list = syCodeGrpMapper.selectPageList(req);
+        long count = syCodeGrpMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public SyCodeGrp create(SyCodeGrp entity) {
-        entity.setCodeGrpId(CmUtil.generateId("sy_code_grp"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_code_grp :: insert or update :: [orm:jpa]
-        SyCodeGrp result = syCodeGrpRepository.save(entity);
-        return result;
+    public SyCodeGrp create(SyCodeGrp body) {
+        body.setCodeGrpId(CmUtil.generateId("sy_code_grp"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyCodeGrp saved = syCodeGrpRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getCodeGrpId());
     }
 
-    /** save — 저장 */
     @Transactional
     public SyCodeGrp save(SyCodeGrp entity) {
-        if (!syCodeGrpRepository.existsById(entity.getCodeGrpId()))
+        if (!existsById(entity.getCodeGrpId()))
             throw new CmBizException("존재하지 않는 SyCodeGrp입니다: " + entity.getCodeGrpId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_code_grp :: insert or update :: [orm:jpa]
-        SyCodeGrp result = syCodeGrpRepository.save(entity);
-        return result;
+        SyCodeGrp saved = syCodeGrpRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getCodeGrpId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyCodeGrp update(String id, SyCodeGrp body) {
+        SyCodeGrp entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "codeGrpId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyCodeGrp saved = syCodeGrpRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyCodeGrp updatePartial(SyCodeGrp entity) {
+        if (entity.getCodeGrpId() == null) throw new CmBizException("codeGrpId 가 필요합니다.");
+        if (!existsById(entity.getCodeGrpId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCodeGrpId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syCodeGrpMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getCodeGrpId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyCodeGrp entity = syCodeGrpRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyCodeGrp entity = findById(id);
         syCodeGrpRepository.delete(entity);
         em.flush();
-        if (syCodeGrpRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyCodeGrp> rows) {
+    public List<SyCodeGrp> saveList(List<SyCodeGrp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyCodeGrp row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setCodeGrpId(CmUtil.generateId("sy_code_grp"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syCodeGrpRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getCodeGrpId(), "codeGrpId must not be null");
-                SyCodeGrp entity = syCodeGrpRepository.findById(id)
-                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "codeGrpId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syCodeGrpRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getCodeGrpId(), "codeGrpId must not be null");
-                if (syCodeGrpRepository.existsById(id)) syCodeGrpRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getCodeGrpId() != null)
+            .map(SyCodeGrp::getCodeGrpId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syCodeGrpRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyCodeGrp> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getCodeGrpId() != null)
+            .toList();
+        for (SyCodeGrp row : updateRows) {
+            SyCodeGrp entity = findById(row.getCodeGrpId());
+            VoUtil.voCopyExclude(row, entity, "codeGrpId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syCodeGrpRepository.save(entity);
+            upsertedIds.add(entity.getCodeGrpId());
         }
         em.flush();
-    }
 
+        List<SyCodeGrp> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyCodeGrp row : insertRows) {
+            row.setCodeGrpId(CmUtil.generateId("sy_code_grp"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syCodeGrpRepository.save(row);
+            upsertedIds.add(row.getCodeGrpId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SyCodeGrp> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
+    }
 }

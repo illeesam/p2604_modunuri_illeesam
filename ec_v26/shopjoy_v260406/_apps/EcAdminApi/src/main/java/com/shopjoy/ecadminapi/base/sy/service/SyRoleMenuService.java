@@ -6,10 +6,10 @@ import com.shopjoy.ecadminapi.base.sy.mapper.SyRoleMenuMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyRoleMenuRepository;
 import com.shopjoy.ecadminapi.cache.redisstore.SyRoleMenuRedisStore;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -17,118 +17,165 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyRoleMenuService {
 
-
-    private final SyRoleMenuMapper      syRoleMenuMapper;
-    private final SyRoleMenuRepository  syRoleMenuRepository;
-    private final SyRoleMenuRedisStore  roleMenuCache;
+    private final SyRoleMenuMapper syRoleMenuMapper;
+    private final SyRoleMenuRepository syRoleMenuRepository;
+    private final SyRoleMenuRedisStore roleMenuCache;
 
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyRoleMenuDto getById(String id) {
-        // sy_role_menu :: select one :: id [orm:mybatis]
-        SyRoleMenuDto result = syRoleMenuMapper.selectById(id);
-        return result;
+    public SyRoleMenuDto.Item getById(String id) {
+        SyRoleMenuDto.Item dto = syRoleMenuMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyRoleMenuDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_role_menu :: select list :: p [orm:mybatis]
-        List<SyRoleMenuDto> result = syRoleMenuMapper.selectList(p);
-        return result;
+    public SyRoleMenu findById(String id) {
+        return syRoleMenuRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyRoleMenuDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_role_menu :: select page :: p [orm:mybatis]
-        return PageResult.of(syRoleMenuMapper.selectPageList(p), syRoleMenuMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syRoleMenuRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(SyRoleMenu entity) {
-        // sy_role_menu :: update :: entity [orm:mybatis]
-        int result = syRoleMenuMapper.updateSelective(entity);
-        roleMenuCache.evict(entity.getRoleId());
-        return result;
+    public List<SyRoleMenuDto.Item> getList(SyRoleMenuDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syRoleMenuMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public SyRoleMenuDto.PageResponse getPageData(SyRoleMenuDto.Request req) {
+        PageHelper.addPaging(req);
+        SyRoleMenuDto.PageResponse res = new SyRoleMenuDto.PageResponse();
+        List<SyRoleMenuDto.Item> list = syRoleMenuMapper.selectPageList(req);
+        long count = syRoleMenuMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public SyRoleMenu create(SyRoleMenu entity) {
-        entity.setRoleMenuId(CmUtil.generateId("sy_role_menu"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_role_menu :: insert or update :: [orm:jpa]
-        SyRoleMenu result = syRoleMenuRepository.save(entity);
-        roleMenuCache.evict(entity.getRoleId());
-        return result;
+    public SyRoleMenu create(SyRoleMenu body) {
+        body.setRoleMenuId(CmUtil.generateId("sy_role_menu"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyRoleMenu saved = syRoleMenuRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        roleMenuCache.evict(body.getRoleId());
+        return findById(saved.getRoleMenuId());
     }
 
-    /** save — 저장 */
     @Transactional
     public SyRoleMenu save(SyRoleMenu entity) {
-        if (!syRoleMenuRepository.existsById(entity.getRoleMenuId()))
+        if (!existsById(entity.getRoleMenuId()))
             throw new CmBizException("존재하지 않는 SyRoleMenu입니다: " + entity.getRoleMenuId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_role_menu :: insert or update :: [orm:jpa]
-        SyRoleMenu result = syRoleMenuRepository.save(entity);
+        SyRoleMenu saved = syRoleMenuRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
         roleMenuCache.evict(entity.getRoleId());
-        return result;
+        return findById(saved.getRoleMenuId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyRoleMenu update(String id, SyRoleMenu body) {
+        SyRoleMenu entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "roleMenuId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyRoleMenu saved = syRoleMenuRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        roleMenuCache.evict(entity.getRoleId());
+        return findById(id);
+    }
+
+    @Transactional
+    public SyRoleMenu updatePartial(SyRoleMenu entity) {
+        if (entity.getRoleMenuId() == null) throw new CmBizException("roleMenuId 가 필요합니다.");
+        if (!existsById(entity.getRoleMenuId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRoleMenuId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syRoleMenuMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        if (entity.getRoleId() != null) roleMenuCache.evict(entity.getRoleId());
+        return findById(entity.getRoleMenuId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyRoleMenu entity = syRoleMenuRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyRoleMenu entity = findById(id);
+        String roleId = entity.getRoleId();
         syRoleMenuRepository.delete(entity);
         em.flush();
-        if (syRoleMenuRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (roleId != null) roleMenuCache.evict(roleId);
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyRoleMenu> rows) {
+    public List<SyRoleMenu> saveList(List<SyRoleMenu> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyRoleMenu row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setRoleMenuId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_role_menu"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syRoleMenuRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getRoleMenuId(), "roleMenuId must not be null");
-                SyRoleMenu entity = syRoleMenuRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "roleMenuId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syRoleMenuRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getRoleMenuId(), "roleMenuId must not be null");
-                if (syRoleMenuRepository.existsById(id)) syRoleMenuRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getRoleMenuId() != null)
+            .map(SyRoleMenu::getRoleMenuId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syRoleMenuRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyRoleMenu> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getRoleMenuId() != null)
+            .toList();
+        for (SyRoleMenu row : updateRows) {
+            SyRoleMenu entity = findById(row.getRoleMenuId());
+            VoUtil.voCopyExclude(row, entity, "roleMenuId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syRoleMenuRepository.save(entity);
+            upsertedIds.add(entity.getRoleMenuId());
         }
         em.flush();
+
+        List<SyRoleMenu> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyRoleMenu row : insertRows) {
+            row.setRoleMenuId(CmUtil.generateId("sy_role_menu"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syRoleMenuRepository.save(row);
+            upsertedIds.add(row.getRoleMenuId());
+        }
+        em.flush();
+        em.clear();
+
+        // 영향 받은 모든 roleId의 캐시 evict
+        rows.stream()
+            .map(SyRoleMenu::getRoleId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .forEach(roleMenuCache::evict);
+
+        List<SyRoleMenu> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

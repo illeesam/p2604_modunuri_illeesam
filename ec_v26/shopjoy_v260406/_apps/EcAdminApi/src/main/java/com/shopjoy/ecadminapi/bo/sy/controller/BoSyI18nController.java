@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyI18nService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,52 +22,43 @@ public class BoSyI18nController {
 
     private final BoSyI18nService boSyI18nService;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SyI18nDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.getList(p)));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyI18nDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.getPageData(p)));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18nDto>> getById(@PathVariable("id") String id) {
+    public ResponseEntity<ApiResponse<SyI18nDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.getById(id)));
     }
 
-    /** create — 생성 */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SyI18nDto.Item>>> list(@Valid @ModelAttribute SyI18nDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SyI18nDto.PageResponse>> page(@Valid @ModelAttribute SyI18nDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.getPageData(req)));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyI18n>> create(@RequestBody SyI18n body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyI18nService.create(body)));
     }
 
-    /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyI18n>> update(@PathVariable("id") String id, @RequestBody SyI18n body) {
-        body.setI18nId(id);
-        return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.save(body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.update(id, body)));
     }
 
-    /** upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyI18n>> upsert(@PathVariable("id") String id, @RequestBody SyI18n body) {
-        body.setI18nId(id);
-        return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.save(body)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.update(id, body)));
     }
 
-    /** delete — 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boSyI18nService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /** saveMsgs — 저장 */
+    /** saveMsgs — 다국어 메시지 일괄 저장 */
     @PutMapping("/{id}/msgs")
     public ResponseEntity<ApiResponse<Void>> saveMsgs(
             @PathVariable("id") String id, @RequestBody Map<String, Object> body) {

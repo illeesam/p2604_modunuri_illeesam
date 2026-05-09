@@ -2,129 +2,29 @@ package com.shopjoy.ecadminapi.bo.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyNoticeMapper;
-import com.shopjoy.ecadminapi.base.sy.repository.SyNoticeRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.shopjoy.ecadminapi.base.sy.service.SyNoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
+/**
+ * BO 공지사항 서비스 — base SyNoticeService 위임 (thin wrapper).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoCmNoticeService {
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyNoticeMapper syNoticeMapper;
-    private final SyNoticeRepository syNoticeRepository;
-    @PersistenceContext
-    private EntityManager em;
 
-    /** getList — 조회 */
-    public List<SyNoticeDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return syNoticeMapper.selectList(p);
-    }
+    private final SyNoticeService syNoticeService;
 
-    /** getPageData — 조회 */
-    public PageResult<SyNoticeDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(syNoticeMapper.selectPageList(p), syNoticeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-    }
+    public SyNoticeDto.Item getById(String id) { return syNoticeService.getById(id); }
+    public List<SyNoticeDto.Item> getList(SyNoticeDto.Request req) { return syNoticeService.getList(req); }
+    public SyNoticeDto.PageResponse getPageData(SyNoticeDto.Request req) { return syNoticeService.getPageData(req); }
 
-    /** getById — 조회 */
-    public SyNoticeDto getById(String id) {
-        SyNoticeDto dto = syNoticeMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        return dto;
-    }
-
-    /** create — 생성 */
-    @Transactional
-    public SyNotice create(SyNotice body) {
-        if (body.getIsFixed() == null) body.setIsFixed("N");
-        if (body.getNoticeStatusCd() == null) body.setNoticeStatusCd("DRAFT");
-        body.setNoticeId("NT" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getAuthUser().authId());
-        body.setRegDate(LocalDateTime.now());
-        body.setUpdBy(SecurityUtil.getAuthUser().authId());
-        body.setUpdDate(LocalDateTime.now());
-        SyNotice saved = syNoticeRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        return saved;
-    }
-
-    /** update — 수정 */
-    @Transactional
-    public SyNoticeDto update(String id, SyNotice body) {
-        SyNotice entity = syNoticeRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        VoUtil.voCopyExclude(body, entity, "noticeId^regBy^regDate");
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        syNoticeRepository.save(entity);
-        em.flush();
-        return getById(id);
-    }
-
-    /** delete — 삭제 */
-    @Transactional
-    public void delete(String id) {
-        SyNotice entity = syNoticeRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        syNoticeRepository.delete(entity);
-        em.flush();
-        if (syNoticeRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
-    }
-    /** saveList — 저장 */
-    @Transactional
-    public void saveList(List<SyNotice> rows) {
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
-
-        // 1단계: DELETE 일괄 처리
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getNoticeId() != null)
-            .map(SyNotice::getNoticeId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            syNoticeRepository.deleteAllById(deleteIds);
-            em.flush();
-            em.clear();
-        }
-
-        // 2단계: UPDATE 처리
-        for (SyNotice row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = Objects.requireNonNull(row.getNoticeId(), "noticeId must not be null");
-            SyNotice entity = syNoticeRepository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-            VoUtil.voCopyExclude(row, entity, "noticeId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            syNoticeRepository.save(entity);
-        }
-        em.flush();
-
-        // 3단계: INSERT 처리
-        for (SyNotice row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
-            row.setNoticeId("NT" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            syNoticeRepository.save(row);
-        }
-        em.flush();
-        em.clear();
-    }
+    @Transactional public SyNotice create(SyNotice body) { return syNoticeService.create(body); }
+    @Transactional public SyNotice update(String id, SyNotice body) { return syNoticeService.update(id, body); }
+    @Transactional public void delete(String id) { syNoticeService.delete(id); }
+    @Transactional public List<SyNotice> saveList(List<SyNotice> rows) { return syNoticeService.saveList(rows); }
 }

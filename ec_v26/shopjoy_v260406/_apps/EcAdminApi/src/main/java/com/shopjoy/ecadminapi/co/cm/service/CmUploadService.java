@@ -322,9 +322,11 @@ public class CmUploadService {
     }
 
     /** 첨부 그룹 ID로 파일 목록 조회 (CDN URL 보정 포함) */
-    public List<SyAttachDto> getAttachGrpFiles(String attachGrpId) {
+    public List<SyAttachDto.Item> getAttachGrpFiles(String attachGrpId) {
         String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
-        List<SyAttachDto> files = syAttachService.getList(Map.of("attachGrpId", attachGrpId));
+        SyAttachDto.Request req = new SyAttachDto.Request();
+        req.setAttachGrpId(attachGrpId);
+        List<SyAttachDto.Item> files = syAttachService.getList(req);
         files.forEach(f -> {
             if (f.getThumbUrl() != null && !f.getThumbUrl().isBlank()) {
                 f.setThumbCdnUrl(cdnBase + "/" + f.getThumbUrl());
@@ -336,7 +338,7 @@ public class CmUploadService {
     /** 첨부 파일 단건 삭제 — DB + 실제 파일 */
     @Transactional
     public void deleteAttach(String attachId) {
-        SyAttachDto dto = syAttachService.getById(attachId);
+        SyAttachDto.Item dto = syAttachService.getById(attachId);
         if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId);
 
         syAttachService.delete(attachId);
@@ -353,10 +355,10 @@ public class CmUploadService {
     /** 첨부 파일 정렬 순서 변경 */
     @Transactional
     public void updateAttachSort(String attachId, Integer sortOrd) {
-        SyAttachDto dto = syAttachService.getById(attachId);
+        SyAttachDto.Item dto = syAttachService.getById(attachId);
         if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId);
         SyAttach entity = SyAttach.builder().attachId(attachId).sortOrd(sortOrd).build();
-        syAttachService.update(entity);
+        syAttachService.updatePartial(entity);
     }
 
     /** resolveAttachGrp — 결정 */

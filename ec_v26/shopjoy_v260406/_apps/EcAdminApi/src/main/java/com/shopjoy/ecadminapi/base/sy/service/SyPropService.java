@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyPropMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,94 +30,137 @@ public class SyPropService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyPropDto getById(String id) {
-        return syPropMapper.selectById(id);
+    public SyPropDto.Item getById(String id) {
+        SyPropDto.Item dto = syPropMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyPropDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return syPropMapper.selectList(p);
+    public SyProp findById(String id) {
+        return syPropRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyPropDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(syPropMapper.selectPageList(p), syPropMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syPropRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<SyPropDto.Item> getList(SyPropDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syPropMapper.selectList(req);
+    }
+
+    public SyPropDto.PageResponse getPageData(SyPropDto.Request req) {
+        PageHelper.addPaging(req);
+        SyPropDto.PageResponse res = new SyPropDto.PageResponse();
+        List<SyPropDto.Item> list = syPropMapper.selectPageList(req);
+        long count = syPropMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(SyProp entity) {
-        return syPropMapper.updateSelective(entity);
+    public SyProp create(SyProp body) {
+        body.setPropId(CmUtil.generateId("sy_prop"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyProp saved = syPropRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getPropId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public SyProp create(SyProp entity) {
-        entity.setPropId(CmUtil.generateId("sy_prop"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        return syPropRepository.save(entity);
-    }
-
-    /** save — 저장 */
     @Transactional
     public SyProp save(SyProp entity) {
-        if (!syPropRepository.existsById(entity.getPropId()))
+        if (!existsById(entity.getPropId()))
             throw new CmBizException("존재하지 않는 SyProp입니다: " + entity.getPropId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        return syPropRepository.save(entity);
+        SyProp saved = syPropRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getPropId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyProp update(String id, SyProp body) {
+        SyProp entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "propId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyProp saved = syPropRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyProp updatePartial(SyProp entity) {
+        if (entity.getPropId() == null) throw new CmBizException("propId 가 필요합니다.");
+        if (!existsById(entity.getPropId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPropId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syPropMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getPropId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyProp entity = syPropRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyProp entity = findById(id);
         syPropRepository.delete(entity);
         em.flush();
-        if (syPropRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyProp> rows) {
+    public List<SyProp> saveList(List<SyProp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyProp row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setPropId(CmUtil.generateId("sy_prop"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syPropRepository.save(row);
-            } else if ("U".equals(rs)) {
-                SyProp entity = syPropRepository.findById(row.getPropId())
-                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getPropId()));
-                entity.setSiteId(row.getSiteId());
-                entity.setPathId(row.getPathId());
-                entity.setPropKey(row.getPropKey());
-                entity.setPropValue(row.getPropValue());
-                entity.setPropLabel(row.getPropLabel());
-                entity.setPropTypeCd(row.getPropTypeCd());
-                entity.setSortOrd(row.getSortOrd());
-                entity.setUseYn(row.getUseYn());
-                entity.setPropRemark(row.getPropRemark());
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syPropRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                if (syPropRepository.existsById(row.getPropId())) syPropRepository.deleteById(row.getPropId());
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getPropId() != null)
+            .map(SyProp::getPropId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syPropRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyProp> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getPropId() != null)
+            .toList();
+        for (SyProp row : updateRows) {
+            SyProp entity = findById(row.getPropId());
+            VoUtil.voCopyExclude(row, entity, "propId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syPropRepository.save(entity);
+            upsertedIds.add(entity.getPropId());
         }
         em.flush();
-    }
 
+        List<SyProp> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyProp row : insertRows) {
+            row.setPropId(CmUtil.generateId("sy_prop"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syPropRepository.save(row);
+            upsertedIds.add(row.getPropId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SyProp> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
+    }
 }

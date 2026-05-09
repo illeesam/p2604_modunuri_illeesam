@@ -7,8 +7,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18nMsg;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyI18nMsgMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyI18nMsgRepository;
 import com.shopjoy.ecadminapi.base.sy.service.SyI18nService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.cache.redisstore.SyI18nRedisStore;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,40 +26,30 @@ public class BoSyI18nService {
     private final SyI18nService syI18nService;
     private final SyI18nMsgMapper syI18nMsgMapper;
     private final SyI18nMsgRepository syI18nMsgRepository;
+    private final SyI18nRedisStore i18nCache;
 
-    /** getById — 조회 */
-    public SyI18nDto getById(String id) {
-        SyI18nDto result = syI18nService.getById(id);
-        if (result == null) throw new CmBizException("존재하지 않는 다국어 키입니다: " + id);
-        return result;
-    }
+    public SyI18nDto.Item getById(String id) { return syI18nService.getById(id); }
+    public List<SyI18nDto.Item> getList(SyI18nDto.Request req) { return syI18nService.getList(req); }
+    public SyI18nDto.PageResponse getPageData(SyI18nDto.Request req) { return syI18nService.getPageData(req); }
 
-    /** getList — 조회 */
-    public List<SyI18nDto> getList(Map<String, Object> p) {
-        return syI18nService.getList(p);
-    }
-
-    /** getPageData — 조회 */
-    public PageResult<SyI18nDto> getPageData(Map<String, Object> p) {
-        return syI18nService.getPageData(p);
-    }
-
-    /** create — 생성 */
     @Transactional
     public SyI18n create(SyI18n body) {
-        return syI18nService.create(body);
+        SyI18n saved = syI18nService.create(body);
+        i18nCache.evictAll();
+        return saved;
     }
 
-    /** save — 저장 */
     @Transactional
-    public SyI18n save(SyI18n body) {
-        return syI18nService.save(body);
+    public SyI18n update(String id, SyI18n body) {
+        SyI18n saved = syI18nService.update(id, body);
+        i18nCache.evictAll();
+        return saved;
     }
 
-    /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
         syI18nService.delete(id);
+        i18nCache.evictAll();
     }
 
     /**
@@ -74,13 +62,13 @@ public class BoSyI18nService {
         LocalDateTime now = LocalDateTime.now();
 
         msgs.forEach((langCd, msgText) -> {
-            Map<String, Object> p = new HashMap<>();
-            p.put("i18nId", i18nId);
-            p.put("langCd", langCd);
-            List<SyI18nMsgDto> existing = syI18nMsgMapper.selectList(p);
+            SyI18nMsgDto.Request req = new SyI18nMsgDto.Request();
+            req.setI18nId(i18nId);
+            req.setLangCd(langCd);
+            List<SyI18nMsgDto.Item> existing = syI18nMsgMapper.selectList(req);
 
             if (!existing.isEmpty()) {
-                SyI18nMsgDto dto = existing.get(0);
+                SyI18nMsgDto.Item dto = existing.get(0);
                 SyI18nMsg entity = new SyI18nMsg();
                 entity.setI18nMsgId(dto.getI18nMsgId());
                 entity.setI18nId(i18nId);
@@ -102,5 +90,6 @@ public class BoSyI18nService {
                 syI18nMsgRepository.save(entity);
             }
         });
+        i18nCache.evictAll();
     }
 }

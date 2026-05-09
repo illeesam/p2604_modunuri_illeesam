@@ -6,18 +6,22 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyCodeGrpMapper {
 
-    SyCodeGrpDto selectById(@Param("id") String id);
+    /** 단건조회 */
+    SyCodeGrpDto.Item selectById(@Param("id") String id);
 
-    List<SyCodeGrpDto> selectList(Map<String, Object> p);
+    /** 목록조회 */
+    List<SyCodeGrpDto.Item> selectList(SyCodeGrpDto.Request req);
 
-    List<SyCodeGrpDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyCodeGrpDto.Item> selectPageList(SyCodeGrpDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyCodeGrpDto.Request req);
 
+    /** 수정 */
     int updateSelective(SyCodeGrp entity);
 }

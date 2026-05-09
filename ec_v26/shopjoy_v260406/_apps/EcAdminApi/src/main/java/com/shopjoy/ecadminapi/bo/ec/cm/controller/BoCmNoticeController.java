@@ -4,23 +4,15 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmNoticeService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
- * BO 공지사항 API
- * GET    /api/bo/ec/cm/notice       — 목록
- * GET    /api/bo/ec/cm/notice/page  — 페이징
- * GET    /api/bo/ec/cm/notice/{id}  — 단건
- * POST   /api/bo/ec/cm/notice       — 등록
- * PUT    /api/bo/ec/cm/notice/{id}  — 수정
- * DELETE /api/bo/ec/cm/notice/{id}  — 삭제
- *
+ * BO 공지사항 API — /api/bo/ec/cm/notice
  * 인가: BO_ONLY (관리자)
  */
 @RestController
@@ -29,61 +21,44 @@ import java.util.Map;
 public class BoCmNoticeController {
     private final BoCmNoticeService boCmNoticeService;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SyNoticeDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<SyNoticeDto> result = boCmNoticeService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyNoticeDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<SyNoticeDto> result = boCmNoticeService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyNoticeDto>> getById(@PathVariable("id") String id) {
-        SyNoticeDto result = boCmNoticeService.getById(id);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<SyNoticeDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmNoticeService.getById(id)));
     }
 
-    /** create — 생성 */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SyNoticeDto.Item>>> list(@Valid @ModelAttribute SyNoticeDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmNoticeService.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SyNoticeDto.PageResponse>> page(@Valid @ModelAttribute SyNoticeDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmNoticeService.getPageData(req)));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyNotice>> create(@RequestBody SyNotice body) {
-        SyNotice result = boCmNoticeService.create(body);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(boCmNoticeService.create(body)));
     }
 
-    /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyNoticeDto>> update(@PathVariable("id") String id, @RequestBody SyNotice body) {
-        SyNoticeDto result = boCmNoticeService.update(id, body);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** upsert */
-    @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyNoticeDto>> upsert(@PathVariable("id") String id, @RequestBody SyNotice body) {
+    public ResponseEntity<ApiResponse<SyNotice>> update(@PathVariable("id") String id, @RequestBody SyNotice body) {
         return ResponseEntity.ok(ApiResponse.ok(boCmNoticeService.update(id, body)));
     }
 
-    /** delete — 삭제 */
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyNotice>> upsert(@PathVariable("id") String id, @RequestBody SyNotice body) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmNoticeService.update(id, body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boCmNoticeService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
-    /** saveList — 저장 */
+
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyNotice> rows) {
-        boCmNoticeService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<SyNotice>>> saveList(@RequestBody List<SyNotice> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmNoticeService.saveList(rows), "저장되었습니다."));
     }
 }

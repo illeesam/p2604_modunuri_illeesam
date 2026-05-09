@@ -10,6 +10,15 @@
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
             <if test="codeId != null and codeId != ''">AND c.code_id = #{codeId}</if>
             <if test="codeGrp != null and codeGrp != ''">AND c.code_grp = #{codeGrp}</if>
+            <if test="codeValue != null and codeValue != ''">AND c.code_value = #{codeValue}</if>
+            <if test="parentCodeValue != null and parentCodeValue != ''">AND c.parent_code_value = #{parentCodeValue}</if>
+            <if test="useYn != null and useYn != ''">AND c.use_yn = #{useYn}</if>
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_label')">OR c.code_label ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_value')"> OR c.code_value ILIKE '%' || #{searchValue} || '%'</if>
+                )
+            </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND c.reg_date &gt;= #{dateStart}::DATE
                 AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
@@ -29,7 +38,7 @@
     </sql>
 
     <!-- 공통 코드 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto$Item">
         SELECT  /* base.sy :: SyCode :: selectById */
               c.*
             , ste.site_nm AS site_nm
@@ -39,7 +48,7 @@
     </select>
 
     <!-- 공통 코드 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto$Item">
         SELECT  /* base.sy :: SyCode :: selectList */
               c.*
             , ste.site_nm AS site_nm
@@ -51,7 +60,7 @@
     </select>
 
     <!-- 공통 코드 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto$Item">
         SELECT  /* base.sy :: SyCode :: selectPageList */
               c.*
             , ste.site_nm AS site_nm
@@ -89,3 +98,4 @@
     </update>
 
 </mapper>
+

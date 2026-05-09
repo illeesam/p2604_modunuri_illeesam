@@ -32,7 +32,7 @@ public class CmUploadMultiController {
 
     /// 첨부 그룹 ID로 파일 목록 조회
     @GetMapping("/attach-grp/{attachGrpId}/files")
-    public ResponseEntity<ApiResponse<List<SyAttachDto>>> getAttachGrpFiles(
+    public ResponseEntity<ApiResponse<List<SyAttachDto.Item>>> getAttachGrpFiles(
             @PathVariable("attachGrpId") String attachGrpId) {
         return ResponseEntity.ok(ApiResponse.ok(cmUploadService.getAttachGrpFiles(attachGrpId)));
     }

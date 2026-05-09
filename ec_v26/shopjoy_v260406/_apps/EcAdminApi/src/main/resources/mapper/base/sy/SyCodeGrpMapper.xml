@@ -18,9 +18,13 @@
                     ) SELECT path_id FROM sub
                 )
             </if>
-            <if test="kw != null and kw != ''">
-                AND (g.grp_nm ILIKE '%' || #{kw} || '%'
-                  OR g.code_grp ILIKE '%' || #{kw} || '%')
+            <if test="codeGrp != null and codeGrp != ''">AND g.code_grp = #{codeGrp}</if>
+            <if test="useYn != null and useYn != ''">AND g.use_yn = #{useYn}</if>
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_nm')">OR g.grp_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_grp')"> OR g.code_grp ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND g.reg_date &gt;= #{dateStart}::DATE
@@ -47,7 +51,7 @@
     </sql>
 
     <!-- 공통 코드 그룹 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto$Item">
         SELECT  /* base.sy :: SyCodeGrp :: selectById */
               g.*
             , ste.site_nm AS site_nm
@@ -57,7 +61,7 @@
     </select>
 
     <!-- 공통 코드 그룹 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto$Item">
         SELECT  /* base.sy :: SyCodeGrp :: selectList */
               g.*
             , ste.site_nm AS site_nm
@@ -69,7 +73,7 @@
     </select>
 
     <!-- 공통 코드 그룹 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto$Item">
         SELECT  /* base.sy :: SyCodeGrp :: selectPageList */
               g.*
             , ste.site_nm AS site_nm
@@ -104,3 +108,4 @@
     </update>
 
 </mapper>
+

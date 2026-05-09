@@ -17,10 +17,14 @@
                     ) SELECT path_id FROM sub
                 )
             </if>
-            <if test="typeCd != null and typeCd != ''">AND r.role_type_cd = #{typeCd}</if>
-            <if test="kw != null and kw != ''">
-                AND (r.role_nm ILIKE '%' || #{kw} || '%'
-                  OR r.role_code ILIKE '%' || #{kw} || '%')
+            <if test="roleTypeCd != null and roleTypeCd != ''">AND r.role_type_cd = #{roleTypeCd}</if>
+            <if test="parentRoleId != null and parentRoleId != ''">AND r.parent_role_id = #{parentRoleId}</if>
+            <if test="useYn != null and useYn != ''">AND r.use_yn = #{useYn}</if>
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_nm')">OR r.role_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_code')"> OR r.role_code ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND r.reg_date &gt;= #{dateStart}::DATE
@@ -42,7 +46,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto$Item">
         SELECT  /* base.sy :: SyRole :: selectById */
               r.*
             , ste.site_nm AS site_nm
@@ -53,7 +57,7 @@
         WHERE r.role_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto$Item">
         SELECT  /* base.sy :: SyRole :: selectList */
               r.*
             , ste.site_nm AS site_nm
@@ -66,7 +70,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto$Item">
         SELECT  /* base.sy :: SyRole :: selectPageList */
               r.*
             , ste.site_nm AS site_nm
@@ -105,3 +109,4 @@
     </update>
 
 </mapper>
+

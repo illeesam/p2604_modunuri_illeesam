@@ -8,8 +8,13 @@
         <where>
             <if test="siteId != null and siteId != ''">AND v.site_id = #{siteId}</if>
             <if test="vocId != null and vocId != ''">AND v.voc_id = #{vocId}</if>
-            <if test="kw != null and kw != ''">
-                AND (v.voc_nm ILIKE '%' || #{kw} || '%')
+            <if test="vocMasterCd != null and vocMasterCd != ''">AND v.voc_master_cd = #{vocMasterCd}</if>
+            <if test="vocDetailCd != null and vocDetailCd != ''">AND v.voc_detail_cd = #{vocDetailCd}</if>
+            <if test="useYn != null and useYn != ''">AND v.use_yn = #{useYn}</if>
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_nm')">OR v.voc_nm ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
                 AND v.reg_date &gt;= #{dateStart}::DATE
@@ -31,7 +36,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto$Item">
         SELECT  /* base.sy :: SyVoc :: selectById */
               v.*
             , ste.site_nm AS site_nm
@@ -44,7 +49,7 @@
         WHERE v.voc_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto$Item">
         SELECT  /* base.sy :: SyVoc :: selectList */
               v.*
             , ste.site_nm AS site_nm
@@ -59,7 +64,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto$Item">
         SELECT  /* base.sy :: SyVoc :: selectPageList */
               v.*
             , ste.site_nm AS site_nm
@@ -96,3 +101,4 @@
     </update>
 
 </mapper>
+

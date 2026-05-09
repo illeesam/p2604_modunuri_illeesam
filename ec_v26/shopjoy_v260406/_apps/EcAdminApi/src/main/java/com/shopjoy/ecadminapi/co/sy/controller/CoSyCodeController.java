@@ -1,15 +1,14 @@
 package com.shopjoy.ecadminapi.co.sy.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
-import com.shopjoy.ecadminapi.bo.sy.service.BoSyCodeService;
+import com.shopjoy.ecadminapi.base.sy.service.SyCodeService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 공통코드 공용 API — /api/co/sy/code
@@ -20,25 +19,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CoSyCodeController {
 
-    private final BoSyCodeService boSyCodeService;
+    private final SyCodeService syCodeService;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SyCodeDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.getList(p)));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyCodeDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.getPageData(p)));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeDto>> getById(@PathVariable("id") String id) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.getById(id)));
+    public ResponseEntity<ApiResponse<SyCodeDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(syCodeService.getById(id)));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SyCodeDto.Item>>> list(@Valid @ModelAttribute SyCodeDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(syCodeService.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SyCodeDto.PageResponse>> page(@Valid @ModelAttribute SyCodeDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(syCodeService.getPageData(req)));
     }
 }

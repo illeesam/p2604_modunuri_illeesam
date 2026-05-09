@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyVoc;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyVocMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVocRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyVocService {
-
 
     private final SyVocMapper syVocMapper;
     private final SyVocRepository syVocRepository;
@@ -33,97 +30,137 @@ public class SyVocService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyVocDto getById(String id) {
-        // sy_voc :: select one :: id [orm:mybatis]
-        SyVocDto result = syVocMapper.selectById(id);
-        return result;
+    public SyVocDto.Item getById(String id) {
+        SyVocDto.Item dto = syVocMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyVocDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_voc :: select list :: p [orm:mybatis]
-        List<SyVocDto> result = syVocMapper.selectList(p);
-        return result;
+    public SyVoc findById(String id) {
+        return syVocRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyVocDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_voc :: select page :: p [orm:mybatis]
-        return PageResult.of(syVocMapper.selectPageList(p), syVocMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syVocRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(SyVoc entity) {
-        // sy_voc :: update :: entity [orm:mybatis]
-        int result = syVocMapper.updateSelective(entity);
-        return result;
+    public List<SyVocDto.Item> getList(SyVocDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syVocMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public SyVocDto.PageResponse getPageData(SyVocDto.Request req) {
+        PageHelper.addPaging(req);
+        SyVocDto.PageResponse res = new SyVocDto.PageResponse();
+        List<SyVocDto.Item> list = syVocMapper.selectPageList(req);
+        long count = syVocMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public SyVoc create(SyVoc entity) {
-        entity.setVocId(CmUtil.generateId("sy_voc"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_voc :: insert or update :: [orm:jpa]
-        SyVoc result = syVocRepository.save(entity);
-        return result;
+    public SyVoc create(SyVoc body) {
+        body.setVocId(CmUtil.generateId("sy_voc"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyVoc saved = syVocRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getVocId());
     }
 
-    /** save — 저장 */
     @Transactional
     public SyVoc save(SyVoc entity) {
-        if (!syVocRepository.existsById(entity.getVocId()))
+        if (!existsById(entity.getVocId()))
             throw new CmBizException("존재하지 않는 SyVoc입니다: " + entity.getVocId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_voc :: insert or update :: [orm:jpa]
-        SyVoc result = syVocRepository.save(entity);
-        return result;
+        SyVoc saved = syVocRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getVocId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyVoc update(String id, SyVoc body) {
+        SyVoc entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "vocId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyVoc saved = syVocRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyVoc updatePartial(SyVoc entity) {
+        if (entity.getVocId() == null) throw new CmBizException("vocId 가 필요합니다.");
+        if (!existsById(entity.getVocId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVocId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syVocMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getVocId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyVoc entity = syVocRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyVoc entity = findById(id);
         syVocRepository.delete(entity);
         em.flush();
-        if (syVocRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyVoc> rows) {
+    public List<SyVoc> saveList(List<SyVoc> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyVoc row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setVocId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_voc"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syVocRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getVocId(), "vocId must not be null");
-                SyVoc entity = syVocRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "vocId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syVocRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getVocId(), "vocId must not be null");
-                if (syVocRepository.existsById(id)) syVocRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getVocId() != null)
+            .map(SyVoc::getVocId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syVocRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyVoc> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getVocId() != null)
+            .toList();
+        for (SyVoc row : updateRows) {
+            SyVoc entity = findById(row.getVocId());
+            VoUtil.voCopyExclude(row, entity, "vocId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syVocRepository.save(entity);
+            upsertedIds.add(entity.getVocId());
         }
         em.flush();
+
+        List<SyVoc> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyVoc row : insertRows) {
+            row.setVocId(CmUtil.generateId("sy_voc"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syVocRepository.save(row);
+            upsertedIds.add(row.getVocId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SyVoc> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

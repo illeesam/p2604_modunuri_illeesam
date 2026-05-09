@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyI18nMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyI18nRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyI18nService {
-
 
     private final SyI18nMapper syI18nMapper;
     private final SyI18nRepository syI18nRepository;
@@ -33,97 +30,137 @@ public class SyI18nService {
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    public SyI18nDto getById(String id) {
-        // sy_i18n :: select one :: id [orm:mybatis]
-        SyI18nDto result = syI18nMapper.selectById(id);
-        return result;
+    public SyI18nDto.Item getById(String id) {
+        SyI18nDto.Item dto = syI18nMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<SyI18nDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_i18n :: select list :: p [orm:mybatis]
-        List<SyI18nDto> result = syI18nMapper.selectList(p);
-        return result;
+    public SyI18n findById(String id) {
+        return syI18nRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<SyI18nDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // sy_i18n :: select page :: p [orm:mybatis]
-        return PageResult.of(syI18nMapper.selectPageList(p), syI18nMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return syI18nRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(SyI18n entity) {
-        // sy_i18n :: update :: entity [orm:mybatis]
-        int result = syI18nMapper.updateSelective(entity);
-        return result;
+    public List<SyI18nDto.Item> getList(SyI18nDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return syI18nMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public SyI18nDto.PageResponse getPageData(SyI18nDto.Request req) {
+        PageHelper.addPaging(req);
+        SyI18nDto.PageResponse res = new SyI18nDto.PageResponse();
+        List<SyI18nDto.Item> list = syI18nMapper.selectPageList(req);
+        long count = syI18nMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public SyI18n create(SyI18n entity) {
-        entity.setI18nId(CmUtil.generateId("sy_i18n"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_i18n :: insert or update :: [orm:jpa]
-        SyI18n result = syI18nRepository.save(entity);
-        return result;
+    public SyI18n create(SyI18n body) {
+        body.setI18nId(CmUtil.generateId("sy_i18n"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        SyI18n saved = syI18nRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getI18nId());
     }
 
-    /** save — 저장 */
     @Transactional
     public SyI18n save(SyI18n entity) {
-        if (!syI18nRepository.existsById(entity.getI18nId()))
+        if (!existsById(entity.getI18nId()))
             throw new CmBizException("존재하지 않는 SyI18n입니다: " + entity.getI18nId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_i18n :: insert or update :: [orm:jpa]
-        SyI18n result = syI18nRepository.save(entity);
-        return result;
+        SyI18n saved = syI18nRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getI18nId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public SyI18n update(String id, SyI18n body) {
+        SyI18n entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "i18nId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        SyI18n saved = syI18nRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public SyI18n updatePartial(SyI18n entity) {
+        if (entity.getI18nId() == null) throw new CmBizException("i18nId 가 필요합니다.");
+        if (!existsById(entity.getI18nId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getI18nId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = syI18nMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getI18nId());
+    }
+
     @Transactional
     public void delete(String id) {
-        SyI18n entity = syI18nRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        SyI18n entity = findById(id);
         syI18nRepository.delete(entity);
         em.flush();
-        if (syI18nRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<SyI18n> rows) {
+    public List<SyI18n> saveList(List<SyI18n> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyI18n row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setI18nId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_i18n"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syI18nRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getI18nId(), "i18nId must not be null");
-                SyI18n entity = syI18nRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "i18nId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                syI18nRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getI18nId(), "i18nId must not be null");
-                if (syI18nRepository.existsById(id)) syI18nRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getI18nId() != null)
+            .map(SyI18n::getI18nId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syI18nRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<SyI18n> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getI18nId() != null)
+            .toList();
+        for (SyI18n row : updateRows) {
+            SyI18n entity = findById(row.getI18nId());
+            VoUtil.voCopyExclude(row, entity, "i18nId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            syI18nRepository.save(entity);
+            upsertedIds.add(entity.getI18nId());
         }
         em.flush();
+
+        List<SyI18n> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyI18n row : insertRows) {
+            row.setI18nId(CmUtil.generateId("sy_i18n"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syI18nRepository.save(row);
+            upsertedIds.add(row.getI18nId());
+        }
+        em.flush();
+        em.clear();
+
+        List<SyI18n> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

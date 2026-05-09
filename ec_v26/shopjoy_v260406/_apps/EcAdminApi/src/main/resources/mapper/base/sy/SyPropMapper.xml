@@ -35,7 +35,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto$Item">
         SELECT  /* base.sy :: SyProp :: selectById */
               p.*
             , ste.site_nm            AS site_nm
@@ -46,7 +46,7 @@
         WHERE p.prop_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto$Item">
         SELECT  /* base.sy :: SyProp :: selectList */
               p.*
             , ste.site_nm            AS site_nm
@@ -59,7 +59,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto$Item">
         SELECT  /* base.sy :: SyProp :: selectPageList */
               p.*
             , ste.site_nm            AS site_nm
@@ -97,3 +97,4 @@
     </update>
 
 </mapper>
+
