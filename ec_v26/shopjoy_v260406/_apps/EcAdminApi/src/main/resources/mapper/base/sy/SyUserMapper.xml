@@ -4,22 +4,44 @@
 
 <mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyUserMapper">
 
+    <!-- SyUserDto.Request 파라미터 예시
+         고유: siteId / deptId / status
+         검색: searchTypes="def_id,def_login,def_name,def_email"  searchValue
+         기간: dateType="reg_date|upd_date|last_login_date"  dateStart  dateEnd
+         정렬·페이징: sort="reg_desc"  pageNo=1  pageSize=20 -->
     <sql id="syUserCond">
         <where>
             <if test="siteId != null and siteId != ''">AND u.site_id = #{siteId}</if>
             <if test="deptId != null and deptId != ''">AND u.dept_id = #{deptId}</if>
             <if test="status != null and status != ''">AND u.user_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (u.user_nm ILIKE '%' || #{kw} || '%' OR u.login_id ILIKE '%' || #{kw} || '%' OR u.user_email ILIKE '%' || #{kw} || '%')
+            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+                AND (1=0
+                    <if test="searchTypes.contains('def_id')">    OR u.user_id    ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_login')"> OR u.login_id   ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_name')">  OR u.user_nm    ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes.contains('def_email')"> OR u.user_email ILIKE '%' || #{searchValue} || '%'</if>
+                )
             </if>
-            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != ''">
-                AND u.reg_date &gt;= #{dateStart}::DATE
-                AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">
+                <choose>
+                    <when test="dateType == 'reg_date'">
+                        AND u.reg_date &gt;= #{dateStart}::DATE
+                        AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'upd_date'">
+                        AND u.upd_date &gt;= #{dateStart}::DATE
+                        AND u.upd_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                    <when test="dateType == 'last_login_date'">
+                        AND u.last_login_date &gt;= #{dateStart}::DATE
+                        AND u.last_login_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')
+                    </when>
+                </choose>
             </if>
         </where>
     </sql>
 
-    <!-- ?뺣젹 議곌굔 -->
+    <!-- 정렬 조건 -->
     <sql id="syUserSort">
         <choose>
             <when test="sort == 'id_asc'">ORDER BY u.user_id ASC</when>
@@ -32,7 +54,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto$Item">
         SELECT  /* base.sy :: SyUser :: selectById */
               u.*
             , ste.site_nm AS site_nm
@@ -49,7 +71,7 @@
         WHERE u.user_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto$Item">
         SELECT  /* base.sy :: SyUser :: selectList */
               u.*
             , ste.site_nm AS site_nm
@@ -68,7 +90,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto$Item">
         SELECT  /* base.sy :: SyUser :: selectPageList */
               u.*
             , ste.site_nm AS site_nm

@@ -3,12 +3,10 @@ package com.shopjoy.ecadminapi.co.sy.controller;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyUserService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * 사용자 공용 API — /api/co/sy/user
@@ -22,10 +20,10 @@ public class CoSyUserController {
 
     private final BoSyUserService boSyUserService;
 
-    /** page — 페이지 */
+    /** page — 페이징조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyUserDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyUserService.getPageData(p)));
+    public ResponseEntity<ApiResponse<SyUserDto.PageResponse>> page(
+            @Valid @ModelAttribute SyUserDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyUserService.getPageData(req)));
     }
 }

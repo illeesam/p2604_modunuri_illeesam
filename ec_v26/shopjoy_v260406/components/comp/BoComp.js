@@ -10,6 +10,11 @@
  *                      showBizCd prop으로 #bizCd 표시 제어
  *
  * PathParentSelector — 부모경로 선택 모달용 재귀 노드
+ *
+ * MultiCheckSelect   — 다중 선택 드롭다운 (체크박스 + ',' 구분 String v-model)
+ *                      v-model 은 토큰 콤마결합 문자열 (예: "def_id,def_name")
+ *                      options: [{value, label}, ...] 또는 [{codeValue, codeLabel}, ...]
+ *                      사용: <multi-check-select v-model="searchTypes" :options="opts" placeholder="전체" />
  */
 
 /* ── PathTree 컨테이너 ────────────────────────────────────────────────────
@@ -439,6 +444,121 @@ window.PathParentSelector = {
   <div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
     <path-parent-selector v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
+  </div>
+</div>`,
+};
+
+/* ── MultiCheckSelect ────────────────────────────────────────────────────
+ * 다중 선택 드롭다운 (체크박스). v-model 은 콤마(,) 결합 문자열.
+ *
+ * props:
+ *   modelValue       — string. 콤마 결합값 예: "def_id,def_name"
+ *   options          — array. [{value, label}] 또는 [{codeValue, codeLabel}]
+ *   placeholder      — string. 선택값 없을 때 표시 (기본 '전체')
+ *   allLabel         — string. '전체' 토글 라벨 (기본 '전체')
+ *   showAll          — boolean. '전체' 옵션 노출 (기본 true)
+ *   minWidth         — string. 트리거 최소 너비 (기본 '160px')
+ *   disabled         — boolean.
+ *
+ * v-model 동작:
+ *   - 모든 옵션 체크 → 빈 문자열 '' (= 전체)  ※ showAll=true 일 때
+ *   - 일부 체크 → "value1,value2" 콤마 결합
+ *   - 체크 없음 → '' (= 전체)
+ *
+ * 표시 라벨:
+ *   - 빈값 → placeholder
+ *   - 1~2개 → "라벨1, 라벨2"
+ *   - 3개 이상 → "라벨1 외 N개"
+ * ──────────────────────────────────────────────────────────────────────── */
+window.MultiCheckSelect = {
+  name: 'MultiCheckSelect',
+  props: {
+    modelValue:  { type: String,  default: '' },
+    options:     { type: Array,   required: true },
+    placeholder: { type: String,  default: '전체' },
+    allLabel:    { type: String,  default: '전체' },
+    showAll:     { type: Boolean, default: true },
+    minWidth:    { type: String,  default: '160px' },
+    disabled:    { type: Boolean, default: false },
+  },
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    const { ref, computed, onMounted, onBeforeUnmount } = Vue;
+    const open = ref(false);
+    const rootRef = ref(null);
+
+    const cfNorm = computed(() =>
+      (props.options || []).map(o => ({
+        value: o.value != null ? o.value : o.codeValue,
+        label: o.label != null ? o.label : o.codeLabel,
+      })).filter(o => o.value != null)
+    );
+
+    const cfSelected = computed(() => {
+      const raw = (props.modelValue || '').toString().trim();
+      if (!raw) return new Set(cfNorm.value.map(o => o.value));
+      return new Set(raw.split(',').map(s => s.trim()).filter(Boolean));
+    });
+
+    const cfIsAll = computed(() => {
+      const sel = cfSelected.value;
+      return cfNorm.value.length > 0 && cfNorm.value.every(o => sel.has(o.value));
+    });
+
+    const cfDisplay = computed(() => {
+      if (cfIsAll.value) return props.placeholder;
+      const sel = cfSelected.value;
+      const labels = cfNorm.value.filter(o => sel.has(o.value)).map(o => o.label);
+      if (labels.length === 0) return props.placeholder;
+      if (labels.length <= 2) return labels.join(', ');
+      return labels[0] + ' 외 ' + (labels.length - 1) + '개';
+    });
+
+    const emitFromSet = (set) => {
+      if (cfNorm.value.every(o => set.has(o.value))) emit('update:modelValue', '');
+      else emit('update:modelValue', cfNorm.value.filter(o => set.has(o.value)).map(o => o.value).join(','));
+    };
+
+    const onToggle = () => { if (!props.disabled) open.value = !open.value; };
+    const onClickOption = (val) => {
+      const set = new Set(cfSelected.value);
+      if (set.has(val)) set.delete(val); else set.add(val);
+      emitFromSet(set);
+    };
+    const onClickAll = () => {
+      if (cfIsAll.value) emit('update:modelValue', cfNorm.value[0]?.value || '');
+      else emit('update:modelValue', '');
+    };
+
+    const onDocClick = (e) => {
+      if (!rootRef.value) return;
+      if (!rootRef.value.contains(e.target)) open.value = false;
+    };
+    onMounted(() => document.addEventListener('mousedown', onDocClick));
+    onBeforeUnmount(() => document.removeEventListener('mousedown', onDocClick));
+
+    return { open, rootRef, cfNorm, cfSelected, cfIsAll, cfDisplay, onToggle, onClickOption, onClickAll };
+  },
+  template: /* html */`
+<div ref="rootRef" class="multi-check-select" :style="'position:relative;display:inline-block;min-width:'+minWidth">
+  <div @click="onToggle"
+       :style="'border:1px solid #d4d4d8;border-radius:6px;padding:6px 28px 6px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:#333;position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
+    {{ cfDisplay }}
+    <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#888;font-size:10px;">▼</span>
+  </div>
+  <div v-if="open"
+       style="position:absolute;top:calc(100% + 4px);left:0;min-width:100%;max-height:280px;overflow-y:auto;background:#fff;border:1px solid #d4d4d8;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:1000;padding:6px 0;">
+    <label v-if="showAll" style="display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-weight:600;">
+      <input type="checkbox" :checked="cfIsAll" @change="onClickAll" />
+      <span>{{ allLabel }}</span>
+    </label>
+    <label v-for="o in cfNorm" :key="o.value"
+           style="display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:13px;cursor:pointer;"
+           @mouseenter="$event.currentTarget.style.background='#f9fafb'"
+           @mouseleave="$event.currentTarget.style.background='transparent'">
+      <input type="checkbox" :checked="cfSelected.has(o.value)" @change="onClickOption(o.value)" />
+      <span>{{ o.label }}</span>
+    </label>
   </div>
 </div>`,
 };

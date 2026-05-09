@@ -62,7 +62,7 @@ dependencies {
     // implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
 
     // DevTools (핫 리로드)
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    //developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // 이미지 처리 (썸네일 생성)
     implementation("net.coobird:thumbnailator:0.4.20")

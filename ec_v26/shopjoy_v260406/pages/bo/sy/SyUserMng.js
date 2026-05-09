@@ -40,6 +40,10 @@ window.SyUserMng = {
           ...getSortParam(),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색 (UI 멀티체크 "전체" = 모든 토큰)
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_id,def_login,def_name,def_email';
+        }
         if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
         const [resUsers] = await Promise.all([
           boApiSvc.syUser.getPage(params, '사용자관리', '목록조회'),
@@ -93,7 +97,7 @@ window.SyUserMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { kw: '', role: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchTypes: '', searchValue: '', role: '', status: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -187,7 +191,18 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="이름 / 로그인ID / 이메일 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_id',    label: '사용자ID' },
+          { value: 'def_login', label: '로그인ID' },
+          { value: 'def_name',  label: '이름' },
+          { value: 'def_email', label: '이메일' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.role">
         <option value="">권한 전체</option>
         <option v-for="c in codes.user_roles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -196,7 +211,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <option value="">상태 전체</option>
         <option v-for="c in codes.user_status" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
+      <select v-model="searchParam.dateType">
+        <option value="reg_date">등록일</option>
+        <option value="upd_date">수정일</option>
+        <option value="last_login_date">최종로그인일</option>
+      </select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

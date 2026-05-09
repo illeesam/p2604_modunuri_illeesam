@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.common.util;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
@@ -29,6 +30,38 @@ public class PageHelper {
         p.put("limit",  pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
         PAGE_CONTEXT.set(new int[]{pageNo, pageSize});
+    }
+
+    /** Request DTO에 limit / offset setter 호출 + ThreadLocal 저장
+     *  대상 객체에는 getPageNo / getPageSize / setLimit / setOffset 메서드가 있어야 한다.
+     *  pageNo / pageSize가 null이면 기본값 적용. */
+    public static void addPaging(Object req) {
+        if (req == null) return;
+        int pageNo   = toInt(invokeGetter(req, "getPageNo"),   DEFAULT_PAGE_NO);
+        int pageSize = toInt(invokeGetter(req, "getPageSize"), DEFAULT_PAGE_SIZE);
+        invokeSetter(req, "setPageNo",   Integer.class, pageNo);
+        invokeSetter(req, "setPageSize", Integer.class, pageSize);
+        invokeSetter(req, "setLimit",    Integer.class, pageSize);
+        invokeSetter(req, "setOffset",   Integer.class, (pageNo - 1) * pageSize);
+        PAGE_CONTEXT.set(new int[]{pageNo, pageSize});
+    }
+
+    private static Object invokeGetter(Object target, String name) {
+        try {
+            Method m = target.getClass().getMethod(name);
+            return m.invoke(target);
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
+    }
+
+    private static void invokeSetter(Object target, String name, Class<?> argType, Object value) {
+        try {
+            Method m = target.getClass().getMethod(name, argType);
+            m.invoke(target, value);
+        } catch (ReflectiveOperationException ignored) {
+            // setter 없음 — 무시 (Request DTO에 해당 필드 없을 수 있음)
+        }
     }
 
     /** addPaging() 이후 사용 가능. 저장된 pageNo 반환 */

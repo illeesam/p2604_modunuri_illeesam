@@ -4,13 +4,12 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.base.sy.service.SyUserService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/sy/user")
@@ -19,27 +18,26 @@ public class SyUserController {
 
     private final SyUserService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SyUserDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<SyUserDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyUserDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<SyUserDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
+    /** getById — 단건조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyUserDto>> getById(@PathVariable("id") String id) {
-        SyUserDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<SyUserDto.Item>> getById(@PathVariable("id") String id) {
+        SyUserDto.Item result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /** list — 목록조회 */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SyUserDto.Item>>> list(
+            @Valid @ModelAttribute SyUserDto.Request req) {
+        List<SyUserDto.Item> result = service.getList(req);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /** page — 페이징조회 */
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<SyUserDto.PageResponse>> page(
+            @Valid @ModelAttribute SyUserDto.Request req) {
+        SyUserDto.PageResponse result = service.getPageData(req);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -59,12 +57,12 @@ public class SyUserController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    /* ── 선택 필드 수정 (MyBatis) ── */
+    /* ── 선택 필드 수정 (MyBatis selective) ── */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> update(
+    public ResponseEntity<ApiResponse<SyUser>> updatePartial(
             @PathVariable("id") String id, @RequestBody SyUser entity) {
         entity.setUserId(id);
-        int result = service.update(entity);
+        SyUser result = service.updatePartial(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -76,8 +74,8 @@ public class SyUserController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyUser> rows) {
-        service.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<SyUser>>> saveList(@RequestBody List<SyUser> rows) {
+        List<SyUser> result = service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
     }
 }

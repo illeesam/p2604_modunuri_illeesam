@@ -6,18 +6,22 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface SyUserMapper {
 
-    SyUserDto selectById(@Param("id") String id);
+    /** 단건조회 */
+    SyUserDto.Item selectById(@Param("id") String id);
 
-    List<SyUserDto> selectList(Map<String, Object> p);
+    /** 목록조회 */
+    List<SyUserDto.Item> selectList(SyUserDto.Request req);
 
-    List<SyUserDto> selectPageList(Map<String, Object> p);
+    /** 페이징조회 */
+    List<SyUserDto.Item> selectPageList(SyUserDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    /** 페이징조회 - 전체건수 */
+    long selectPageCount(SyUserDto.Request req);
 
+    /** 수정 */
     int updateSelective(SyUser entity);
 }

@@ -2434,6 +2434,7 @@
   .component('PathTreeNode',  window.PathTreeNode)
   .component('CategoryTree',  window.CategoryTree)
   .component('TuiHtmlEditor', window.TuiHtmlEditor)
+  .component('MultiCheckSelect', window.MultiCheckSelect)
   .component('PathParentSelector',  window.PathParentSelector)
   .component('PathPickModal',  window.PathPickModal)
   .component('BizPickModal',  window.BizPickModal)
