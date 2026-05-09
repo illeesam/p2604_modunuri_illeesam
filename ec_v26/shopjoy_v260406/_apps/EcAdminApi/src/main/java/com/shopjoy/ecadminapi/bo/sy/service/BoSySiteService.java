@@ -55,6 +55,6 @@ public class BoSySiteService {
     /** saveList — 일괄 저장 */
     @Transactional
     public void saveList(List<SySite> rows) {
-        return sySiteService.saveList(rows);
+        sySiteService.saveList(rows);
     }
 }

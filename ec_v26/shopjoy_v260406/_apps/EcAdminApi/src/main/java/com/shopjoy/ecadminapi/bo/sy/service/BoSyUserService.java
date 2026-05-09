@@ -56,6 +56,6 @@ public class BoSyUserService {
     /** saveList — 일괄 저장 */
     @Transactional
     public void saveList(List<SyUser> rows) {
-        return syUserService.saveList(rows);
+        syUserService.saveList(rows);
     }
 }

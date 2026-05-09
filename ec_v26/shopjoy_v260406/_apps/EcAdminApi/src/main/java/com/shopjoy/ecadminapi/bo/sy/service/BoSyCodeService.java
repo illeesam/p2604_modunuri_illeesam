@@ -47,8 +47,7 @@ public class BoSyCodeService {
 
     @Transactional
     public void saveList(List<SyCode> rows) {
-        List<SyCode> saved = syCodeService.saveList(rows);
+        syCodeService.saveList(rows);
         codeCache.evictAll();
-        return saved;
     }
 }

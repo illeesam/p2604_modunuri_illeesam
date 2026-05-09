@@ -47,8 +47,7 @@ public class BoSyPropService {
 
     @Transactional
     public void saveList(List<SyProp> rows) {
-        List<SyProp> saved = syPropService.saveList(rows);
+        syPropService.saveList(rows);
         propCache.evictAll();
-        return saved;
     }
 }

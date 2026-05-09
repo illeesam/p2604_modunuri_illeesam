@@ -97,7 +97,7 @@ public class SyRoleMenuService {
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         roleMenuCache.evict(entity.getRoleId());
-        return findById(id);
+        return saved;
     }
 
     @Transactional

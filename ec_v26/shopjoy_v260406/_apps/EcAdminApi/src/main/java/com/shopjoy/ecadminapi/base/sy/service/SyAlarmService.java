@@ -125,6 +125,12 @@ public class SyAlarmService {
 
     @Transactional
     public List<SyAlarm> saveListByRowStatus(List<SyAlarmReq> list) {
+        List<SyAlarm> result = new java.util.ArrayList<>();
+        for (SyAlarmReq req : list) {
+            SyAlarm saved = doSaveByRowStatus(req);
+            if (saved != null) result.add(saved);
+        }
+        return result;
     }
 
     private SyAlarm doSaveByRowStatus(SyAlarmReq req) {

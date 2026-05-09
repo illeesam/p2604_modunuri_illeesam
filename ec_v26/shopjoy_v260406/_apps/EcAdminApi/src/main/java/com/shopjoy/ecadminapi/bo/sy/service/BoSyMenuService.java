@@ -47,8 +47,7 @@ public class BoSyMenuService {
 
     @Transactional
     public void saveList(List<SyMenu> rows) {
-        List<SyMenu> saved = syMenuService.saveList(rows);
+        syMenuService.saveList(rows);
         menuCache.evictAll();
-        return saved;
     }
 }
