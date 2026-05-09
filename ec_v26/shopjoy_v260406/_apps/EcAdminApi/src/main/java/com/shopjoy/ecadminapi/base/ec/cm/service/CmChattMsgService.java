@@ -68,7 +68,7 @@ public class CmChattMsgService {
         CmChattMsg saved = cmChattMsgRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getChattMsgId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class CmChattMsgService {
         CmChattMsg saved = cmChattMsgRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getChattMsgId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class CmChattMsgService {
         CmChattMsg saved = cmChattMsgRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class CmChattMsgService {
         int affected = cmChattMsgMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getChattMsgId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class CmChattMsgService {
     }
 
     @Transactional
-    public List<CmChattMsg> saveList(List<CmChattMsg> rows) {
+    public void saveList(List<CmChattMsg> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class CmChattMsgService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<CmChattMsg> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getChattMsgId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class CmChattMsgService {
             VoUtil.voCopyExclude(row, entity, "chattMsgId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             cmChattMsgRepository.save(entity);
-            upsertedIds.add(entity.getChattMsgId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class CmChattMsgService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmChattMsgRepository.save(row);
-            upsertedIds.add(row.getChattMsgId());
         }
         em.flush();
         em.clear();
-
-        List<CmChattMsg> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

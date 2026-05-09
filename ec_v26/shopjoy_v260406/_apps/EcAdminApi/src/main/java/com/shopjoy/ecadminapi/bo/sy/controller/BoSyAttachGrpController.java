@@ -58,7 +58,8 @@ public class BoSyAttachGrpController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyAttachGrp>>> saveList(@RequestBody List<SyAttachGrp> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyAttachGrpService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyAttachGrp> rows) {
+        boSyAttachGrpService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -68,7 +68,7 @@ public class OdClaimItemService {
         OdClaimItem saved = odClaimItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getClaimItemId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdClaimItemService {
         OdClaimItem saved = odClaimItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getClaimItemId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdClaimItemService {
         OdClaimItem saved = odClaimItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdClaimItemService {
         int affected = odClaimItemMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getClaimItemId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdClaimItemService {
     }
 
     @Transactional
-    public List<OdClaimItem> saveList(List<OdClaimItem> rows) {
+    public void saveList(List<OdClaimItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdClaimItemService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdClaimItem> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getClaimItemId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdClaimItemService {
             VoUtil.voCopyExclude(row, entity, "claimItemId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odClaimItemRepository.save(entity);
-            upsertedIds.add(entity.getClaimItemId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdClaimItemService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odClaimItemRepository.save(row);
-            upsertedIds.add(row.getClaimItemId());
         }
         em.flush();
         em.clear();
-
-        List<OdClaimItem> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

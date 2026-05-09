@@ -68,7 +68,7 @@ public class CmBlogGoodService {
         CmBlogGood saved = cmBlogGoodRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLikeId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class CmBlogGoodService {
         CmBlogGood saved = cmBlogGoodRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLikeId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class CmBlogGoodService {
         CmBlogGood saved = cmBlogGoodRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class CmBlogGoodService {
         int affected = cmBlogGoodMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getLikeId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class CmBlogGoodService {
     }
 
     @Transactional
-    public List<CmBlogGood> saveList(List<CmBlogGood> rows) {
+    public void saveList(List<CmBlogGood> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class CmBlogGoodService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<CmBlogGood> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getLikeId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class CmBlogGoodService {
             VoUtil.voCopyExclude(row, entity, "likeId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             cmBlogGoodRepository.save(entity);
-            upsertedIds.add(entity.getLikeId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class CmBlogGoodService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmBlogGoodRepository.save(row);
-            upsertedIds.add(row.getLikeId());
         }
         em.flush();
         em.clear();
-
-        List<CmBlogGood> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

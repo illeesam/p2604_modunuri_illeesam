@@ -68,7 +68,7 @@ public class OdhClaimItemStatusHistService {
         OdhClaimItemStatusHist saved = odhClaimItemStatusHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getClaimItemStatusHistId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdhClaimItemStatusHistService {
         OdhClaimItemStatusHist saved = odhClaimItemStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getClaimItemStatusHistId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdhClaimItemStatusHistService {
         OdhClaimItemStatusHist saved = odhClaimItemStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdhClaimItemStatusHistService {
         int affected = odhClaimItemStatusHistMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getClaimItemStatusHistId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdhClaimItemStatusHistService {
     }
 
     @Transactional
-    public List<OdhClaimItemStatusHist> saveList(List<OdhClaimItemStatusHist> rows) {
+    public void saveList(List<OdhClaimItemStatusHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdhClaimItemStatusHistService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdhClaimItemStatusHist> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getClaimItemStatusHistId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdhClaimItemStatusHistService {
             VoUtil.voCopyExclude(row, entity, "claimItemStatusHistId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odhClaimItemStatusHistRepository.save(entity);
-            upsertedIds.add(entity.getClaimItemStatusHistId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdhClaimItemStatusHistService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odhClaimItemStatusHistRepository.save(row);
-            upsertedIds.add(row.getClaimItemStatusHistId());
         }
         em.flush();
         em.clear();
-
-        List<OdhClaimItemStatusHist> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

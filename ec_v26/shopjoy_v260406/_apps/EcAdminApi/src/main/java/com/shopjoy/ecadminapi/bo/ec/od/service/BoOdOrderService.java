@@ -39,7 +39,7 @@ public class BoOdOrderService {
     }
     @Transactional public OdOrder update(String id, OdOrder body) { return odOrderService.update(id, body); }
     @Transactional public void delete(String id) { odOrderService.delete(id); }
-    @Transactional public List<OdOrder> saveList(List<OdOrder> rows) { return odOrderService.saveList(rows); }
+    @Transactional public void saveList(List<OdOrder> rows) { odOrderService.saveList(rows); }
 
     /** changeStatus — orderStatusCd 변경 (이력 보존) */
     @Transactional

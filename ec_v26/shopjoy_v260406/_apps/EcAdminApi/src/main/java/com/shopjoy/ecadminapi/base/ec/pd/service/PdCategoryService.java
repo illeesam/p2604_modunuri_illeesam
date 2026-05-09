@@ -68,7 +68,7 @@ public class PdCategoryService {
         PdCategory saved = pdCategoryRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCategoryId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdCategoryService {
         PdCategory saved = pdCategoryRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCategoryId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdCategoryService {
         PdCategory saved = pdCategoryRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdCategoryService {
         int affected = pdCategoryMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getCategoryId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdCategoryService {
     }
 
     @Transactional
-    public List<PdCategory> saveList(List<PdCategory> rows) {
+    public void saveList(List<PdCategory> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdCategoryService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdCategory> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getCategoryId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdCategoryService {
             VoUtil.voCopyExclude(row, entity, "categoryId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdCategoryRepository.save(entity);
-            upsertedIds.add(entity.getCategoryId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdCategoryService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdCategoryRepository.save(row);
-            upsertedIds.add(row.getCategoryId());
         }
         em.flush();
         em.clear();
-
-        List<PdCategory> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

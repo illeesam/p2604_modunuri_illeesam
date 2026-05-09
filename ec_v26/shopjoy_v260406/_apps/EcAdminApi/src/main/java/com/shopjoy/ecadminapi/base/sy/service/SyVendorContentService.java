@@ -68,7 +68,7 @@ public class SyVendorContentService {
         SyVendorContent saved = syVendorContentRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVendorContentId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyVendorContentService {
         SyVendorContent saved = syVendorContentRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVendorContentId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyVendorContentService {
         SyVendorContent saved = syVendorContentRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyVendorContentService {
         int affected = syVendorContentMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getVendorContentId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyVendorContentService {
     }
 
     @Transactional
-    public List<SyVendorContent> saveList(List<SyVendorContent> rows) {
+    public void saveList(List<SyVendorContent> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyVendorContentService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyVendorContent> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorContentId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyVendorContentService {
             VoUtil.voCopyExclude(row, entity, "vendorContentId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syVendorContentRepository.save(entity);
-            upsertedIds.add(entity.getVendorContentId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyVendorContentService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syVendorContentRepository.save(row);
-            upsertedIds.add(row.getVendorContentId());
         }
         em.flush();
         em.clear();
-
-        List<SyVendorContent> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

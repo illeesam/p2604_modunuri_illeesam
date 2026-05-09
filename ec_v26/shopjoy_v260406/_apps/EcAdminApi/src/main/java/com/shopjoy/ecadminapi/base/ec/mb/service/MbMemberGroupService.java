@@ -68,7 +68,7 @@ public class MbMemberGroupService {
         MbMemberGroup saved = mbMemberGroupRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMemberGroupId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class MbMemberGroupService {
         MbMemberGroup saved = mbMemberGroupRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMemberGroupId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class MbMemberGroupService {
         MbMemberGroup saved = mbMemberGroupRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class MbMemberGroupService {
         int affected = mbMemberGroupMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getMemberGroupId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class MbMemberGroupService {
     }
 
     @Transactional
-    public List<MbMemberGroup> saveList(List<MbMemberGroup> rows) {
+    public void saveList(List<MbMemberGroup> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class MbMemberGroupService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<MbMemberGroup> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberGroupId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class MbMemberGroupService {
             VoUtil.voCopyExclude(row, entity, "memberGroupId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             mbMemberGroupRepository.save(entity);
-            upsertedIds.add(entity.getMemberGroupId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class MbMemberGroupService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             mbMemberGroupRepository.save(row);
-            upsertedIds.add(row.getMemberGroupId());
         }
         em.flush();
         em.clear();
-
-        List<MbMemberGroup> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

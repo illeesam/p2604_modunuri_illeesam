@@ -59,7 +59,8 @@ public class BoDpPanelController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<DpPanel>>> saveList(@RequestBody List<DpPanel> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boDpPanelService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpPanel> rows) {
+        boDpPanelService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -68,7 +68,7 @@ public class DpWidgetLibService {
         DpWidgetLib saved = dpWidgetLibRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getWidgetLibId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class DpWidgetLibService {
         DpWidgetLib saved = dpWidgetLibRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getWidgetLibId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class DpWidgetLibService {
         DpWidgetLib saved = dpWidgetLibRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class DpWidgetLibService {
         int affected = dpWidgetLibMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getWidgetLibId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class DpWidgetLibService {
     }
 
     @Transactional
-    public List<DpWidgetLib> saveList(List<DpWidgetLib> rows) {
+    public void saveList(List<DpWidgetLib> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class DpWidgetLibService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<DpWidgetLib> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getWidgetLibId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class DpWidgetLibService {
             VoUtil.voCopyExclude(row, entity, "widgetLibId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             dpWidgetLibRepository.save(entity);
-            upsertedIds.add(entity.getWidgetLibId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class DpWidgetLibService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             dpWidgetLibRepository.save(row);
-            upsertedIds.add(row.getWidgetLibId());
         }
         em.flush();
         em.clear();
-
-        List<DpWidgetLib> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

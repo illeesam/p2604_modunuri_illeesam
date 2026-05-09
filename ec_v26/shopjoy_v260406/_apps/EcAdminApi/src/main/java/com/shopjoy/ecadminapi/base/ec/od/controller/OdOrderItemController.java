@@ -57,7 +57,8 @@ public class OdOrderItemController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<OdOrderItem>>> saveList(@RequestBody List<OdOrderItem> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdOrderItem> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -71,7 +71,7 @@ public class SyRoleMenuService {
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         roleMenuCache.evict(body.getRoleId());
-        return findById(saved.getRoleMenuId());
+        return saved;
     }
 
     @Transactional
@@ -84,7 +84,7 @@ public class SyRoleMenuService {
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         roleMenuCache.evict(entity.getRoleId());
-        return findById(saved.getRoleMenuId());
+        return saved;
     }
 
     @Transactional
@@ -111,7 +111,7 @@ public class SyRoleMenuService {
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
         if (entity.getRoleId() != null) roleMenuCache.evict(entity.getRoleId());
-        return findById(entity.getRoleMenuId());
+        return entity;
     }
 
     @Transactional
@@ -125,7 +125,7 @@ public class SyRoleMenuService {
     }
 
     @Transactional
-    public List<SyRoleMenu> saveList(List<SyRoleMenu> rows) {
+    public void saveList(List<SyRoleMenu> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -138,8 +138,6 @@ public class SyRoleMenuService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyRoleMenu> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getRoleMenuId() != null)
             .toList();
@@ -148,7 +146,6 @@ public class SyRoleMenuService {
             VoUtil.voCopyExclude(row, entity, "roleMenuId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syRoleMenuRepository.save(entity);
-            upsertedIds.add(entity.getRoleMenuId());
         }
         em.flush();
 
@@ -160,7 +157,6 @@ public class SyRoleMenuService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syRoleMenuRepository.save(row);
-            upsertedIds.add(row.getRoleMenuId());
         }
         em.flush();
         em.clear();
@@ -171,11 +167,5 @@ public class SyRoleMenuService {
             .filter(java.util.Objects::nonNull)
             .distinct()
             .forEach(roleMenuCache::evict);
-
-        List<SyRoleMenu> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

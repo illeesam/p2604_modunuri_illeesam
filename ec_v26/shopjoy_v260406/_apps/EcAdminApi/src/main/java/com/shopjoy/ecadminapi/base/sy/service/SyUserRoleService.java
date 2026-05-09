@@ -72,7 +72,7 @@ public class SyUserRoleService {
         SyUserRole saved = syUserRoleRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUserRoleId());
+        return saved;
     }
 
     @Transactional
@@ -84,7 +84,7 @@ public class SyUserRoleService {
         SyUserRole saved = syUserRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUserRoleId());
+        return saved;
     }
 
     @Transactional
@@ -96,7 +96,7 @@ public class SyUserRoleService {
         SyUserRole saved = syUserRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -109,7 +109,7 @@ public class SyUserRoleService {
         int affected = syUserRoleMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getUserRoleId());
+        return entity;
     }
 
     @Transactional
@@ -121,7 +121,7 @@ public class SyUserRoleService {
     }
 
     @Transactional
-    public List<SyUserRole> saveList(List<SyUserRole> rows) {
+    public void saveList(List<SyUserRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -134,8 +134,6 @@ public class SyUserRoleService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyUserRole> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getUserRoleId() != null)
             .toList();
@@ -144,7 +142,6 @@ public class SyUserRoleService {
             VoUtil.voCopyExclude(row, entity, "userRoleId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syUserRoleRepository.save(entity);
-            upsertedIds.add(entity.getUserRoleId());
         }
         em.flush();
 
@@ -156,15 +153,8 @@ public class SyUserRoleService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syUserRoleRepository.save(row);
-            upsertedIds.add(row.getUserRoleId());
         }
         em.flush();
         em.clear();
-
-        List<SyUserRole> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -36,7 +36,7 @@ public class BoPmPlanService {
     @Transactional public PmPlan create(PmPlan body) { return pmPlanService.create(body); }
     @Transactional public PmPlan update(String id, PmPlan body) { return pmPlanService.update(id, body); }
     @Transactional public void delete(String id) { pmPlanService.delete(id); }
-    @Transactional public List<PmPlan> saveList(List<PmPlan> rows) { return pmPlanService.saveList(rows); }
+    @Transactional public void saveList(List<PmPlan> rows) { pmPlanService.saveList(rows); }
 
     /** changeStatus — planStatusCd 변경 (이력 보존) */
     @Transactional

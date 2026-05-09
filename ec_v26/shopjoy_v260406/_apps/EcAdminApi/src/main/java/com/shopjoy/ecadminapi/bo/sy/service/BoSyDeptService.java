@@ -34,5 +34,5 @@ public class BoSyDeptService {
     public void delete(String id) { syDeptService.delete(id); }
 
     @Transactional
-    public List<SyDept> saveList(List<SyDept> rows) { return syDeptService.saveList(rows); }
+    public void saveList(List<SyDept> rows) { return syDeptService.saveList(rows); }
 }

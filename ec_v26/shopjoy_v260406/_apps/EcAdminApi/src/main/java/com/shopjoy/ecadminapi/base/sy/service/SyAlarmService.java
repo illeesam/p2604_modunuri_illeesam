@@ -68,7 +68,7 @@ public class SyAlarmService {
         SyAlarm saved = syAlarmRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getAlarmId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyAlarmService {
         SyAlarm saved = syAlarmRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getAlarmId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyAlarmService {
         SyAlarm saved = syAlarmRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyAlarmService {
         int affected = syAlarmMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getAlarmId());
+        return entity;
     }
 
     @Transactional
@@ -125,11 +125,6 @@ public class SyAlarmService {
 
     @Transactional
     public List<SyAlarm> saveListByRowStatus(List<SyAlarmReq> list) {
-        List<SyAlarm> result = new ArrayList<>();
-        for (SyAlarmReq req : list.stream().filter(r -> "D".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
-        for (SyAlarmReq req : list.stream().filter(r -> "U".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
-        for (SyAlarmReq req : list.stream().filter(r -> "I".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
-        return result;
     }
 
     private SyAlarm doSaveByRowStatus(SyAlarmReq req) {

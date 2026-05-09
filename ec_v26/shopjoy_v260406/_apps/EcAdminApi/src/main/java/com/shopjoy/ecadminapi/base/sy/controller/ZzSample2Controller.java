@@ -66,7 +66,8 @@ public class ZzSample2Controller {
 
     /** saveList — 일괄 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<ZzSample2>>> saveList(@RequestBody List<ZzSample2> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<ZzSample2> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

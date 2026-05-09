@@ -68,7 +68,7 @@ public class SyPropService {
         SyProp saved = syPropRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPropId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyPropService {
         SyProp saved = syPropRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPropId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyPropService {
         SyProp saved = syPropRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyPropService {
         int affected = syPropMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getPropId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyPropService {
     }
 
     @Transactional
-    public List<SyProp> saveList(List<SyProp> rows) {
+    public void saveList(List<SyProp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyPropService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyProp> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getPropId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyPropService {
             VoUtil.voCopyExclude(row, entity, "propId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syPropRepository.save(entity);
-            upsertedIds.add(entity.getPropId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyPropService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syPropRepository.save(row);
-            upsertedIds.add(row.getPropId());
         }
         em.flush();
         em.clear();
-
-        List<SyProp> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

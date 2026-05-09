@@ -58,7 +58,8 @@ public class BoSyCodeGrpController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyCodeGrp>>> saveList(@RequestBody List<SyCodeGrp> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyCodeGrpService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyCodeGrp> rows) {
+        boSyCodeGrpService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -57,7 +57,8 @@ public class SyI18nController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyI18n>>> saveList(@RequestBody List<SyI18n> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyI18n> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

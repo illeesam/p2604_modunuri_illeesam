@@ -68,7 +68,7 @@ public class CmBlogReplyService {
         CmBlogReply saved = cmBlogReplyRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCommentId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class CmBlogReplyService {
         CmBlogReply saved = cmBlogReplyRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCommentId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class CmBlogReplyService {
         CmBlogReply saved = cmBlogReplyRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class CmBlogReplyService {
         int affected = cmBlogReplyMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getCommentId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class CmBlogReplyService {
     }
 
     @Transactional
-    public List<CmBlogReply> saveList(List<CmBlogReply> rows) {
+    public void saveList(List<CmBlogReply> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class CmBlogReplyService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<CmBlogReply> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getCommentId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class CmBlogReplyService {
             VoUtil.voCopyExclude(row, entity, "commentId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             cmBlogReplyRepository.save(entity);
-            upsertedIds.add(entity.getCommentId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class CmBlogReplyService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmBlogReplyRepository.save(row);
-            upsertedIds.add(row.getCommentId());
         }
         em.flush();
         em.clear();
-
-        List<CmBlogReply> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -68,7 +68,7 @@ public class PmSaveUsageService {
         PmSaveUsage saved = pmSaveUsageRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSaveUsageId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmSaveUsageService {
         PmSaveUsage saved = pmSaveUsageRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSaveUsageId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmSaveUsageService {
         PmSaveUsage saved = pmSaveUsageRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmSaveUsageService {
         int affected = pmSaveUsageMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getSaveUsageId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmSaveUsageService {
     }
 
     @Transactional
-    public List<PmSaveUsage> saveList(List<PmSaveUsage> rows) {
+    public void saveList(List<PmSaveUsage> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmSaveUsageService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmSaveUsage> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getSaveUsageId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmSaveUsageService {
             VoUtil.voCopyExclude(row, entity, "saveUsageId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmSaveUsageRepository.save(entity);
-            upsertedIds.add(entity.getSaveUsageId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmSaveUsageService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmSaveUsageRepository.save(row);
-            upsertedIds.add(row.getSaveUsageId());
         }
         em.flush();
         em.clear();
-
-        List<PmSaveUsage> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

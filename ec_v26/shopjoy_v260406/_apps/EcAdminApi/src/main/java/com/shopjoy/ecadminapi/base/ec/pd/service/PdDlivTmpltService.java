@@ -68,7 +68,7 @@ public class PdDlivTmpltService {
         PdDlivTmplt saved = pdDlivTmpltRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDlivTmpltId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdDlivTmpltService {
         PdDlivTmplt saved = pdDlivTmpltRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDlivTmpltId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdDlivTmpltService {
         PdDlivTmplt saved = pdDlivTmpltRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdDlivTmpltService {
         int affected = pdDlivTmpltMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getDlivTmpltId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdDlivTmpltService {
     }
 
     @Transactional
-    public List<PdDlivTmplt> saveList(List<PdDlivTmplt> rows) {
+    public void saveList(List<PdDlivTmplt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdDlivTmpltService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdDlivTmplt> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getDlivTmpltId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdDlivTmpltService {
             VoUtil.voCopyExclude(row, entity, "dlivTmpltId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdDlivTmpltRepository.save(entity);
-            upsertedIds.add(entity.getDlivTmpltId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdDlivTmpltService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdDlivTmpltRepository.save(row);
-            upsertedIds.add(row.getDlivTmpltId());
         }
         em.flush();
         em.clear();
-
-        List<PdDlivTmplt> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

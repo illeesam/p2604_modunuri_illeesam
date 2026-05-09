@@ -68,7 +68,7 @@ public class MbMemberGradeService {
         MbMemberGrade saved = mbMemberGradeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMemberGradeId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class MbMemberGradeService {
         MbMemberGrade saved = mbMemberGradeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMemberGradeId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class MbMemberGradeService {
         MbMemberGrade saved = mbMemberGradeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class MbMemberGradeService {
         int affected = mbMemberGradeMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getMemberGradeId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class MbMemberGradeService {
     }
 
     @Transactional
-    public List<MbMemberGrade> saveList(List<MbMemberGrade> rows) {
+    public void saveList(List<MbMemberGrade> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class MbMemberGradeService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<MbMemberGrade> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberGradeId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class MbMemberGradeService {
             VoUtil.voCopyExclude(row, entity, "memberGradeId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             mbMemberGradeRepository.save(entity);
-            upsertedIds.add(entity.getMemberGradeId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class MbMemberGradeService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             mbMemberGradeRepository.save(row);
-            upsertedIds.add(row.getMemberGradeId());
         }
         em.flush();
         em.clear();
-
-        List<MbMemberGrade> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

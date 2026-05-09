@@ -68,7 +68,7 @@ public class PdhProdViewLogService {
         PdhProdViewLog saved = pdhProdViewLogRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLogId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdhProdViewLogService {
         PdhProdViewLog saved = pdhProdViewLogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLogId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdhProdViewLogService {
         PdhProdViewLog saved = pdhProdViewLogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdhProdViewLogService {
         int affected = pdhProdViewLogMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getLogId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdhProdViewLogService {
     }
 
     @Transactional
-    public List<PdhProdViewLog> saveList(List<PdhProdViewLog> rows) {
+    public void saveList(List<PdhProdViewLog> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdhProdViewLogService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdhProdViewLog> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getLogId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdhProdViewLogService {
             VoUtil.voCopyExclude(row, entity, "logId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdhProdViewLogRepository.save(entity);
-            upsertedIds.add(entity.getLogId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdhProdViewLogService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdhProdViewLogRepository.save(row);
-            upsertedIds.add(row.getLogId());
         }
         em.flush();
         em.clear();
-
-        List<PdhProdViewLog> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

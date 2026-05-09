@@ -68,7 +68,7 @@ public class MbMemberSnsService {
         MbMemberSns saved = mbMemberSnsRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMemberSnsId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class MbMemberSnsService {
         MbMemberSns saved = mbMemberSnsRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMemberSnsId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class MbMemberSnsService {
         MbMemberSns saved = mbMemberSnsRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class MbMemberSnsService {
         int affected = mbMemberSnsMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getMemberSnsId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class MbMemberSnsService {
     }
 
     @Transactional
-    public List<MbMemberSns> saveList(List<MbMemberSns> rows) {
+    public void saveList(List<MbMemberSns> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class MbMemberSnsService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<MbMemberSns> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberSnsId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class MbMemberSnsService {
             VoUtil.voCopyExclude(row, entity, "memberSnsId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             mbMemberSnsRepository.save(entity);
-            upsertedIds.add(entity.getMemberSnsId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class MbMemberSnsService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             mbMemberSnsRepository.save(row);
-            upsertedIds.add(row.getMemberSnsId());
         }
         em.flush();
         em.clear();
-
-        List<MbMemberSns> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

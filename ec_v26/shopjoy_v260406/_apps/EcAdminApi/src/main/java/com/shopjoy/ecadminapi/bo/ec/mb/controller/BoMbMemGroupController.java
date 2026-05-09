@@ -58,7 +58,8 @@ public class BoMbMemGroupController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<MbMemberGroup>>> saveList(@RequestBody List<MbMemberGroup> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boMbMemGroupService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<MbMemberGroup> rows) {
+        boMbMemGroupService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

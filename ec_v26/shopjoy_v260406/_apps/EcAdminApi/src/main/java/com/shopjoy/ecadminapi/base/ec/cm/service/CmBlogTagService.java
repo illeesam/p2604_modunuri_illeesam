@@ -68,7 +68,7 @@ public class CmBlogTagService {
         CmBlogTag saved = cmBlogTagRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBlogTagId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class CmBlogTagService {
         CmBlogTag saved = cmBlogTagRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBlogTagId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class CmBlogTagService {
         CmBlogTag saved = cmBlogTagRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class CmBlogTagService {
         int affected = cmBlogTagMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getBlogTagId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class CmBlogTagService {
     }
 
     @Transactional
-    public List<CmBlogTag> saveList(List<CmBlogTag> rows) {
+    public void saveList(List<CmBlogTag> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class CmBlogTagService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<CmBlogTag> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBlogTagId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class CmBlogTagService {
             VoUtil.voCopyExclude(row, entity, "blogTagId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             cmBlogTagRepository.save(entity);
-            upsertedIds.add(entity.getBlogTagId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class CmBlogTagService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmBlogTagRepository.save(row);
-            upsertedIds.add(row.getBlogTagId());
         }
         em.flush();
         em.clear();
-
-        List<CmBlogTag> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -36,7 +36,7 @@ public class BoPdReviewService {
     @Transactional public PdReview create(PdReview body) { return pdReviewService.create(body); }
     @Transactional public PdReview update(String id, PdReview body) { return pdReviewService.update(id, body); }
     @Transactional public void delete(String id) { pdReviewService.delete(id); }
-    @Transactional public List<PdReview> saveList(List<PdReview> rows) { return pdReviewService.saveList(rows); }
+    @Transactional public void saveList(List<PdReview> rows) { pdReviewService.saveList(rows); }
 
     /** changeStatus — reviewStatusCd 변경 (이력 보존) */
     @Transactional

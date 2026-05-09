@@ -68,7 +68,7 @@ public class PmEventItemService {
         PmEventItem saved = pmEventItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getEventItemId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmEventItemService {
         PmEventItem saved = pmEventItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getEventItemId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmEventItemService {
         PmEventItem saved = pmEventItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmEventItemService {
         int affected = pmEventItemMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getEventItemId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmEventItemService {
     }
 
     @Transactional
-    public List<PmEventItem> saveList(List<PmEventItem> rows) {
+    public void saveList(List<PmEventItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmEventItemService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmEventItem> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getEventItemId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmEventItemService {
             VoUtil.voCopyExclude(row, entity, "eventItemId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmEventItemRepository.save(entity);
-            upsertedIds.add(entity.getEventItemId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmEventItemService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmEventItemRepository.save(row);
-            upsertedIds.add(row.getEventItemId());
         }
         em.flush();
         em.clear();
-
-        List<PmEventItem> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -68,7 +68,7 @@ public class OdhDlivStatusHistService {
         OdhDlivStatusHist saved = odhDlivStatusHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDlivStatusHistId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdhDlivStatusHistService {
         OdhDlivStatusHist saved = odhDlivStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDlivStatusHistId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdhDlivStatusHistService {
         OdhDlivStatusHist saved = odhDlivStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdhDlivStatusHistService {
         int affected = odhDlivStatusHistMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getDlivStatusHistId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdhDlivStatusHistService {
     }
 
     @Transactional
-    public List<OdhDlivStatusHist> saveList(List<OdhDlivStatusHist> rows) {
+    public void saveList(List<OdhDlivStatusHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdhDlivStatusHistService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdhDlivStatusHist> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getDlivStatusHistId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdhDlivStatusHistService {
             VoUtil.voCopyExclude(row, entity, "dlivStatusHistId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odhDlivStatusHistRepository.save(entity);
-            upsertedIds.add(entity.getDlivStatusHistId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdhDlivStatusHistService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odhDlivStatusHistRepository.save(row);
-            upsertedIds.add(row.getDlivStatusHistId());
         }
         em.flush();
         em.clear();
-
-        List<OdhDlivStatusHist> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

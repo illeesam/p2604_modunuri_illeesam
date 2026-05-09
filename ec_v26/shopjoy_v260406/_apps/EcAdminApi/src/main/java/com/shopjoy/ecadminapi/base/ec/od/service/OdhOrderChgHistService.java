@@ -68,7 +68,7 @@ public class OdhOrderChgHistService {
         OdhOrderChgHist saved = odhOrderChgHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getOrderChgHistId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdhOrderChgHistService {
         OdhOrderChgHist saved = odhOrderChgHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getOrderChgHistId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdhOrderChgHistService {
         OdhOrderChgHist saved = odhOrderChgHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdhOrderChgHistService {
         int affected = odhOrderChgHistMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getOrderChgHistId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdhOrderChgHistService {
     }
 
     @Transactional
-    public List<OdhOrderChgHist> saveList(List<OdhOrderChgHist> rows) {
+    public void saveList(List<OdhOrderChgHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdhOrderChgHistService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdhOrderChgHist> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getOrderChgHistId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdhOrderChgHistService {
             VoUtil.voCopyExclude(row, entity, "orderChgHistId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odhOrderChgHistRepository.save(entity);
-            upsertedIds.add(entity.getOrderChgHistId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdhOrderChgHistService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odhOrderChgHistRepository.save(row);
-            upsertedIds.add(row.getOrderChgHistId());
         }
         em.flush();
         em.clear();
-
-        List<OdhOrderChgHist> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

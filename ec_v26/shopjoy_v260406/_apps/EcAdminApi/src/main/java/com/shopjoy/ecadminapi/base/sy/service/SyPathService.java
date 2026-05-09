@@ -68,7 +68,7 @@ public class SyPathService {
         SyPath saved = syPathRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPathId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyPathService {
         SyPath saved = syPathRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPathId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyPathService {
         SyPath saved = syPathRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyPathService {
         int affected = syPathMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getPathId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyPathService {
     }
 
     @Transactional
-    public List<SyPath> saveList(List<SyPath> rows) {
+    public void saveList(List<SyPath> rows) {
         String authId = CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system");
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyPathService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyPath> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getPathId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyPathService {
             VoUtil.voCopyExclude(row, entity, "pathId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syPathRepository.save(entity);
-            upsertedIds.add(entity.getPathId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyPathService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syPathRepository.save(row);
-            upsertedIds.add(row.getPathId());
         }
         em.flush();
         em.clear();
-
-        List<SyPath> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

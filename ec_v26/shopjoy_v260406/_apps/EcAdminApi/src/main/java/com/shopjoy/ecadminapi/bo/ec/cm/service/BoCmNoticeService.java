@@ -26,5 +26,5 @@ public class BoCmNoticeService {
     @Transactional public SyNotice create(SyNotice body) { return syNoticeService.create(body); }
     @Transactional public SyNotice update(String id, SyNotice body) { return syNoticeService.update(id, body); }
     @Transactional public void delete(String id) { syNoticeService.delete(id); }
-    @Transactional public List<SyNotice> saveList(List<SyNotice> rows) { return syNoticeService.saveList(rows); }
+    @Transactional public void saveList(List<SyNotice> rows) { syNoticeService.saveList(rows); }
 }

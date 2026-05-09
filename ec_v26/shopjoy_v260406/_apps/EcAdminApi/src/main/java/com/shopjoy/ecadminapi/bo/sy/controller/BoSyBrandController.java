@@ -58,7 +58,8 @@ public class BoSyBrandController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyBrand>>> saveList(@RequestBody List<SyBrand> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyBrandService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyBrand> rows) {
+        boSyBrandService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

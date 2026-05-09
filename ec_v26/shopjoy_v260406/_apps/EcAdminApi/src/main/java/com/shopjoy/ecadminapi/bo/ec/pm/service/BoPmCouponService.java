@@ -36,7 +36,7 @@ public class BoPmCouponService {
     @Transactional public PmCoupon create(PmCoupon body) { return pmCouponService.create(body); }
     @Transactional public PmCoupon update(String id, PmCoupon body) { return pmCouponService.update(id, body); }
     @Transactional public void delete(String id) { pmCouponService.delete(id); }
-    @Transactional public List<PmCoupon> saveList(List<PmCoupon> rows) { return pmCouponService.saveList(rows); }
+    @Transactional public void saveList(List<PmCoupon> rows) { pmCouponService.saveList(rows); }
 
     /** changeStatus — couponStatusCd 변경 (이력 보존) */
     @Transactional

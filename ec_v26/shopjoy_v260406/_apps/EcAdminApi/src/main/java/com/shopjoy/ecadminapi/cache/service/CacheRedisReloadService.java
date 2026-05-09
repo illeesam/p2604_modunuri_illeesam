@@ -119,7 +119,7 @@ public class CacheRedisReloadService {
     public int reloadCode() {
         if (!redis.isEnabled()) return 0;
         codeCache.evictAll();
-        var list = codeMapper.selectList(new SyCodeDto.Request());
+        List<SyCodeDto.Item> list = codeMapper.selectList(new SyCodeDto.Request());
         Map<String, List<Map<String, Object>>> grouped = list.stream()
             .collect(Collectors.groupingBy(
                 dto -> dto.getCodeGrp(),
@@ -135,7 +135,7 @@ public class CacheRedisReloadService {
     public int reloadMenu() {
         if (!redis.isEnabled()) return 0;
         menuCache.evictAll();
-        var list = menuMapper.selectList(new SyMenuDto.Request());
+        List<SyMenuDto.Item> list = menuMapper.selectList(new SyMenuDto.Request());
         menuCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] sy-menu 리로드 완료 — {}건", list.size());
         return list.size();
@@ -145,7 +145,7 @@ public class CacheRedisReloadService {
     public int reloadRole() {
         if (!redis.isEnabled()) return 0;
         roleCache.evictAll();
-        var list = roleMapper.selectList(new SyRoleDto.Request());
+        List<SyRoleDto.Item> list = roleMapper.selectList(new SyRoleDto.Request());
         roleCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] sy-role 리로드 완료 — {}건", list.size());
         return list.size();
@@ -155,7 +155,7 @@ public class CacheRedisReloadService {
     public int reloadRoleMenu() {
         if (!redis.isEnabled()) return 0;
         roleMenuCache.evictAll();
-        var list = roleMenuMapper.selectList(new SyRoleMenuDto.Request());
+        List<SyRoleMenuDto.Item> list = roleMenuMapper.selectList(new SyRoleMenuDto.Request());
         list.stream()
             .collect(Collectors.groupingBy(
                 dto -> dto.getRoleId(),
@@ -170,7 +170,7 @@ public class CacheRedisReloadService {
     public int reloadProp() {
         if (!redis.isEnabled()) return 0;
         propCache.evictAll();
-        var list = propMapper.selectList(new SyPropDto.Request());
+        List<SyPropDto.Item> list = propMapper.selectList(new SyPropDto.Request());
         Map<String, String> propMap = list.stream()
             .filter(dto -> dto.getPropKey() != null)
             .collect(Collectors.toMap(
@@ -188,7 +188,7 @@ public class CacheRedisReloadService {
     public int reloadI18n() {
         if (!redis.isEnabled()) return 0;
         i18nCache.evictAll();
-        var list = i18nMsgMapper.selectList(new SyI18nMsgDto.Request());
+        List<SyI18nMsgDto.Item> list = i18nMsgMapper.selectList(new SyI18nMsgDto.Request());
         Map<String, Map<String, String>> i18nMap = list.stream()
             .filter(dto -> dto.getLangCd() != null && dto.getI18nId() != null)
             .collect(Collectors.groupingBy(
@@ -210,7 +210,7 @@ public class CacheRedisReloadService {
     public int reloadEcPdCate() {
         if (!redis.isEnabled()) return 0;
         ecPdCateCache.evictAll();
-        var list = categoryMapper.selectList(new com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Request());
+        List<com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Item> list = categoryMapper.selectList(new com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Request());
         ecPdCateCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] ec-pd-cate 리로드 완료 — {}건", list.size());
         return list.size();

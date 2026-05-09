@@ -72,7 +72,8 @@ public class BoSyDeptController {
 
     /** saveList — 일괄 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyDept>>> saveList(@RequestBody List<SyDept> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyDeptService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyDept> rows) {
+        boSyDeptService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

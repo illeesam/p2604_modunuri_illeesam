@@ -74,7 +74,8 @@ public class BoPdProdController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<PdProd>>> saveList(@RequestBody List<PdProd> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdProdService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdProd> rows) {
+        boPdProdService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

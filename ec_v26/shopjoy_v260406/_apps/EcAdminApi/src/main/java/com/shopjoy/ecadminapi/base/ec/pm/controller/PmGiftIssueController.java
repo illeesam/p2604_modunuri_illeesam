@@ -57,7 +57,8 @@ public class PmGiftIssueController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<PmGiftIssue>>> saveList(@RequestBody List<PmGiftIssue> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmGiftIssue> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

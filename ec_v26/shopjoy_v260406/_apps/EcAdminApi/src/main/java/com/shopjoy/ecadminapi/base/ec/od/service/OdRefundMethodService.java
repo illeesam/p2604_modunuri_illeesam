@@ -68,7 +68,7 @@ public class OdRefundMethodService {
         OdRefundMethod saved = odRefundMethodRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getRefundMethodId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdRefundMethodService {
         OdRefundMethod saved = odRefundMethodRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getRefundMethodId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdRefundMethodService {
         OdRefundMethod saved = odRefundMethodRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdRefundMethodService {
         int affected = odRefundMethodMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getRefundMethodId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdRefundMethodService {
     }
 
     @Transactional
-    public List<OdRefundMethod> saveList(List<OdRefundMethod> rows) {
+    public void saveList(List<OdRefundMethod> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdRefundMethodService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdRefundMethod> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getRefundMethodId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdRefundMethodService {
             VoUtil.voCopyExclude(row, entity, "refundMethodId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odRefundMethodRepository.save(entity);
-            upsertedIds.add(entity.getRefundMethodId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdRefundMethodService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odRefundMethodRepository.save(row);
-            upsertedIds.add(row.getRefundMethodId());
         }
         em.flush();
         em.clear();
-
-        List<OdRefundMethod> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

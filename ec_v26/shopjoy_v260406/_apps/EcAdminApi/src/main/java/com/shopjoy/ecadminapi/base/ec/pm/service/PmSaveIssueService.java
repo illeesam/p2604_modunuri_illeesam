@@ -68,7 +68,7 @@ public class PmSaveIssueService {
         PmSaveIssue saved = pmSaveIssueRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSaveIssueId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmSaveIssueService {
         PmSaveIssue saved = pmSaveIssueRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSaveIssueId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmSaveIssueService {
         PmSaveIssue saved = pmSaveIssueRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmSaveIssueService {
         int affected = pmSaveIssueMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getSaveIssueId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmSaveIssueService {
     }
 
     @Transactional
-    public List<PmSaveIssue> saveList(List<PmSaveIssue> rows) {
+    public void saveList(List<PmSaveIssue> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmSaveIssueService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmSaveIssue> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getSaveIssueId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmSaveIssueService {
             VoUtil.voCopyExclude(row, entity, "saveIssueId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmSaveIssueRepository.save(entity);
-            upsertedIds.add(entity.getSaveIssueId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmSaveIssueService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmSaveIssueRepository.save(row);
-            upsertedIds.add(row.getSaveIssueId());
         }
         em.flush();
         em.clear();
-
-        List<PmSaveIssue> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

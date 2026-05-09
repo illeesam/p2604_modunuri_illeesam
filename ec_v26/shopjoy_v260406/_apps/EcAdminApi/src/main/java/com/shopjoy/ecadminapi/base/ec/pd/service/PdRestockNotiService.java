@@ -68,7 +68,7 @@ public class PdRestockNotiService {
         PdRestockNoti saved = pdRestockNotiRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getRestockNotiId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdRestockNotiService {
         PdRestockNoti saved = pdRestockNotiRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getRestockNotiId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdRestockNotiService {
         PdRestockNoti saved = pdRestockNotiRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdRestockNotiService {
         int affected = pdRestockNotiMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getRestockNotiId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdRestockNotiService {
     }
 
     @Transactional
-    public List<PdRestockNoti> saveList(List<PdRestockNoti> rows) {
+    public void saveList(List<PdRestockNoti> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdRestockNotiService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdRestockNoti> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getRestockNotiId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdRestockNotiService {
             VoUtil.voCopyExclude(row, entity, "restockNotiId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdRestockNotiRepository.save(entity);
-            upsertedIds.add(entity.getRestockNotiId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdRestockNotiService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdRestockNotiRepository.save(row);
-            upsertedIds.add(row.getRestockNotiId());
         }
         em.flush();
         em.clear();
-
-        List<PdRestockNoti> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -68,7 +68,7 @@ public class PdProdContentService {
         PdProdContent saved = pdProdContentRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getProdContentId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdProdContentService {
         PdProdContent saved = pdProdContentRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getProdContentId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdProdContentService {
         PdProdContent saved = pdProdContentRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdProdContentService {
         int affected = pdProdContentMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getProdContentId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdProdContentService {
     }
 
     @Transactional
-    public List<PdProdContent> saveList(List<PdProdContent> rows) {
+    public void saveList(List<PdProdContent> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdProdContentService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdProdContent> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getProdContentId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdProdContentService {
             VoUtil.voCopyExclude(row, entity, "prodContentId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdProdContentRepository.save(entity);
-            upsertedIds.add(entity.getProdContentId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdProdContentService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdContentRepository.save(row);
-            upsertedIds.add(row.getProdContentId());
         }
         em.flush();
         em.clear();
-
-        List<PdProdContent> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

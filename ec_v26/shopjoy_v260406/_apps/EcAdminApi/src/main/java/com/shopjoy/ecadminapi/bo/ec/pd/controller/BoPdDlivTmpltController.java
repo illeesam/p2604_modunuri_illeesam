@@ -65,7 +65,8 @@ public class BoPdDlivTmpltController {
 
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<PdDlivTmplt>>> saveList(@RequestBody List<PdDlivTmplt> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdDlivTmpltService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdDlivTmplt> rows) {
+        boPdDlivTmpltService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

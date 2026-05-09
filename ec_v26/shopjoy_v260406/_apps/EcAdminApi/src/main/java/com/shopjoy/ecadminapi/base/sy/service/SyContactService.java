@@ -68,7 +68,7 @@ public class SyContactService {
         SyContact saved = syContactRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getContactId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyContactService {
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getContactId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyContactService {
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyContactService {
         int affected = syContactMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getContactId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyContactService {
     }
 
     @Transactional
-    public List<SyContact> saveList(List<SyContact> rows) {
+    public void saveList(List<SyContact> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyContactService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyContact> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getContactId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyContactService {
             VoUtil.voCopyExclude(row, entity, "contactId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syContactRepository.save(entity);
-            upsertedIds.add(entity.getContactId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyContactService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syContactRepository.save(row);
-            upsertedIds.add(row.getContactId());
         }
         em.flush();
         em.clear();
-
-        List<SyContact> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

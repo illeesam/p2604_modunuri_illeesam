@@ -68,7 +68,7 @@ public class SyBatchService {
         SyBatch saved = syBatchRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBatchId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyBatchService {
         SyBatch saved = syBatchRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBatchId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyBatchService {
         SyBatch saved = syBatchRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyBatchService {
         int affected = syBatchMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getBatchId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyBatchService {
     }
 
     @Transactional
-    public List<SyBatch> saveList(List<SyBatch> rows) {
+    public void saveList(List<SyBatch> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyBatchService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyBatch> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBatchId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyBatchService {
             VoUtil.voCopyExclude(row, entity, "batchId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syBatchRepository.save(entity);
-            upsertedIds.add(entity.getBatchId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyBatchService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syBatchRepository.save(row);
-            upsertedIds.add(row.getBatchId());
         }
         em.flush();
         em.clear();
-
-        List<SyBatch> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

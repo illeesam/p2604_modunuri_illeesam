@@ -68,7 +68,7 @@ public class PmEventBenefitService {
         PmEventBenefit saved = pmEventBenefitRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBenefitId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmEventBenefitService {
         PmEventBenefit saved = pmEventBenefitRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBenefitId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmEventBenefitService {
         PmEventBenefit saved = pmEventBenefitRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmEventBenefitService {
         int affected = pmEventBenefitMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getBenefitId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmEventBenefitService {
     }
 
     @Transactional
-    public List<PmEventBenefit> saveList(List<PmEventBenefit> rows) {
+    public void saveList(List<PmEventBenefit> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmEventBenefitService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmEventBenefit> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBenefitId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmEventBenefitService {
             VoUtil.voCopyExclude(row, entity, "benefitId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmEventBenefitRepository.save(entity);
-            upsertedIds.add(entity.getBenefitId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmEventBenefitService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmEventBenefitRepository.save(row);
-            upsertedIds.add(row.getBenefitId());
         }
         em.flush();
         em.clear();
-
-        List<PmEventBenefit> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

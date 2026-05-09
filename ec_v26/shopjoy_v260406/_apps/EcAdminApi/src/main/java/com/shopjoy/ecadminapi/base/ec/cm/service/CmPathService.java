@@ -67,7 +67,7 @@ public class CmPathService {
         CmPath saved = cmPathRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBizCd());
+        return saved;
     }
 
     @Transactional
@@ -79,7 +79,7 @@ public class CmPathService {
         CmPath saved = cmPathRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBizCd());
+        return saved;
     }
 
     @Transactional
@@ -91,7 +91,7 @@ public class CmPathService {
         CmPath saved = cmPathRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -104,7 +104,7 @@ public class CmPathService {
         int affected = cmPathMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getBizCd());
+        return entity;
     }
 
     @Transactional
@@ -116,7 +116,7 @@ public class CmPathService {
     }
 
     @Transactional
-    public List<CmPath> saveList(List<CmPath> rows) {
+    public void saveList(List<CmPath> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -129,8 +129,6 @@ public class CmPathService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<CmPath> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBizCd() != null)
             .toList();
@@ -139,7 +137,6 @@ public class CmPathService {
             VoUtil.voCopyExclude(row, entity, "bizCd^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             cmPathRepository.save(entity);
-            upsertedIds.add(entity.getBizCd());
         }
         em.flush();
 
@@ -151,15 +148,8 @@ public class CmPathService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmPathRepository.save(row);
-            upsertedIds.add(row.getBizCd());
         }
         em.flush();
         em.clear();
-
-        List<CmPath> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

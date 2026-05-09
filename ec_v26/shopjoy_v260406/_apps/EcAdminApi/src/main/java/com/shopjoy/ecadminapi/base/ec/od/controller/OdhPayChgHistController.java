@@ -57,7 +57,8 @@ public class OdhPayChgHistController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<OdhPayChgHist>>> saveList(@RequestBody List<OdhPayChgHist> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdhPayChgHist> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

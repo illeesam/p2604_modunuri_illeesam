@@ -68,7 +68,7 @@ public class PdProdQnaService {
         PdProdQna saved = pdProdQnaRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getQnaId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdProdQnaService {
         PdProdQna saved = pdProdQnaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getQnaId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdProdQnaService {
         PdProdQna saved = pdProdQnaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdProdQnaService {
         int affected = pdProdQnaMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getQnaId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdProdQnaService {
     }
 
     @Transactional
-    public List<PdProdQna> saveList(List<PdProdQna> rows) {
+    public void saveList(List<PdProdQna> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdProdQnaService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdProdQna> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getQnaId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdProdQnaService {
             VoUtil.voCopyExclude(row, entity, "qnaId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdProdQnaRepository.save(entity);
-            upsertedIds.add(entity.getQnaId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdProdQnaService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdQnaRepository.save(row);
-            upsertedIds.add(row.getQnaId());
         }
         em.flush();
         em.clear();
-
-        List<PdProdQna> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -29,7 +29,7 @@ public class BoPdRestockNotiService {
     @Transactional public PdRestockNoti create(PdRestockNoti body) { return pdRestockNotiService.create(body); }
     @Transactional public PdRestockNoti update(String id, PdRestockNoti body) { return pdRestockNotiService.update(id, body); }
     @Transactional public void delete(String id) { pdRestockNotiService.delete(id); }
-    @Transactional public List<PdRestockNoti> saveList(List<PdRestockNoti> rows) { return pdRestockNotiService.saveList(rows); }
+    @Transactional public void saveList(List<PdRestockNoti> rows) { pdRestockNotiService.saveList(rows); }
 
     /** send — 재입고 알림 발송 */
     public void send(Map<String, Object> body) {

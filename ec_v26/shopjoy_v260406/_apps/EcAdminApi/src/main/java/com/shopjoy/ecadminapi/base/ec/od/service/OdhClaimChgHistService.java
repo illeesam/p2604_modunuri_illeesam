@@ -68,7 +68,7 @@ public class OdhClaimChgHistService {
         OdhClaimChgHist saved = odhClaimChgHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getClaimChgHistId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdhClaimChgHistService {
         OdhClaimChgHist saved = odhClaimChgHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getClaimChgHistId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdhClaimChgHistService {
         OdhClaimChgHist saved = odhClaimChgHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdhClaimChgHistService {
         int affected = odhClaimChgHistMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getClaimChgHistId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdhClaimChgHistService {
     }
 
     @Transactional
-    public List<OdhClaimChgHist> saveList(List<OdhClaimChgHist> rows) {
+    public void saveList(List<OdhClaimChgHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdhClaimChgHistService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdhClaimChgHist> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getClaimChgHistId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdhClaimChgHistService {
             VoUtil.voCopyExclude(row, entity, "claimChgHistId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odhClaimChgHistRepository.save(entity);
-            upsertedIds.add(entity.getClaimChgHistId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdhClaimChgHistService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odhClaimChgHistRepository.save(row);
-            upsertedIds.add(row.getClaimChgHistId());
         }
         em.flush();
         em.clear();
-
-        List<OdhClaimChgHist> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

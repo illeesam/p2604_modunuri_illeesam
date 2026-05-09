@@ -57,7 +57,8 @@ public class CmhPushLogController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<CmhPushLog>>> saveList(@RequestBody List<CmhPushLog> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<CmhPushLog> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

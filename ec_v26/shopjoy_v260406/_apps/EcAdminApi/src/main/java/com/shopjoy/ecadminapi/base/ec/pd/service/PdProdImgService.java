@@ -68,7 +68,7 @@ public class PdProdImgService {
         PdProdImg saved = pdProdImgRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getProdImgId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdProdImgService {
         PdProdImg saved = pdProdImgRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getProdImgId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdProdImgService {
         PdProdImg saved = pdProdImgRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdProdImgService {
         int affected = pdProdImgMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getProdImgId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdProdImgService {
     }
 
     @Transactional
-    public List<PdProdImg> saveList(List<PdProdImg> rows) {
+    public void saveList(List<PdProdImg> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdProdImgService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdProdImg> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getProdImgId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdProdImgService {
             VoUtil.voCopyExclude(row, entity, "prodImgId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdProdImgRepository.save(entity);
-            upsertedIds.add(entity.getProdImgId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdProdImgService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdImgRepository.save(row);
-            upsertedIds.add(row.getProdImgId());
         }
         em.flush();
         em.clear();
-
-        List<PdProdImg> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

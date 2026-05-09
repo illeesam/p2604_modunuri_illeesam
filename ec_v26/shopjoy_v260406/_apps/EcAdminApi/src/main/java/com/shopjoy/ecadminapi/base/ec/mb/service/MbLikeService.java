@@ -68,7 +68,7 @@ public class MbLikeService {
         MbLike saved = mbLikeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLikeId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class MbLikeService {
         MbLike saved = mbLikeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLikeId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class MbLikeService {
         MbLike saved = mbLikeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class MbLikeService {
         int affected = mbLikeMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getLikeId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class MbLikeService {
     }
 
     @Transactional
-    public List<MbLike> saveList(List<MbLike> rows) {
+    public void saveList(List<MbLike> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class MbLikeService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<MbLike> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getLikeId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class MbLikeService {
             VoUtil.voCopyExclude(row, entity, "likeId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             mbLikeRepository.save(entity);
-            upsertedIds.add(entity.getLikeId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class MbLikeService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             mbLikeRepository.save(row);
-            upsertedIds.add(row.getLikeId());
         }
         em.flush();
         em.clear();
-
-        List<MbLike> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

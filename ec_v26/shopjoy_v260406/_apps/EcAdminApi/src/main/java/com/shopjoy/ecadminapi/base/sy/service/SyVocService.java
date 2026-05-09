@@ -68,7 +68,7 @@ public class SyVocService {
         SyVoc saved = syVocRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVocId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyVocService {
         SyVoc saved = syVocRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVocId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyVocService {
         SyVoc saved = syVocRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyVocService {
         int affected = syVocMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getVocId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyVocService {
     }
 
     @Transactional
-    public List<SyVoc> saveList(List<SyVoc> rows) {
+    public void saveList(List<SyVoc> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyVocService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyVoc> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getVocId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyVocService {
             VoUtil.voCopyExclude(row, entity, "vocId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syVocRepository.save(entity);
-            upsertedIds.add(entity.getVocId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyVocService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syVocRepository.save(row);
-            upsertedIds.add(row.getVocId());
         }
         em.flush();
         em.clear();
-
-        List<SyVoc> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

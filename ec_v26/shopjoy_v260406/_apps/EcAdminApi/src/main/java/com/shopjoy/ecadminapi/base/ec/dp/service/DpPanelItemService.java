@@ -68,7 +68,7 @@ public class DpPanelItemService {
         DpPanelItem saved = dpPanelItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPanelItemId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class DpPanelItemService {
         DpPanelItem saved = dpPanelItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPanelItemId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class DpPanelItemService {
         DpPanelItem saved = dpPanelItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class DpPanelItemService {
         int affected = dpPanelItemMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getPanelItemId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class DpPanelItemService {
     }
 
     @Transactional
-    public List<DpPanelItem> saveList(List<DpPanelItem> rows) {
+    public void saveList(List<DpPanelItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class DpPanelItemService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<DpPanelItem> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getPanelItemId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class DpPanelItemService {
             VoUtil.voCopyExclude(row, entity, "panelItemId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             dpPanelItemRepository.save(entity);
-            upsertedIds.add(entity.getPanelItemId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class DpPanelItemService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             dpPanelItemRepository.save(row);
-            upsertedIds.add(row.getPanelItemId());
         }
         em.flush();
         em.clear();
-
-        List<DpPanelItem> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -68,7 +68,7 @@ public class SyTemplateService {
         SyTemplate saved = syTemplateRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getTemplateId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyTemplateService {
         SyTemplate saved = syTemplateRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getTemplateId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyTemplateService {
         SyTemplate saved = syTemplateRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyTemplateService {
         int affected = syTemplateMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getTemplateId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyTemplateService {
     }
 
     @Transactional
-    public List<SyTemplate> saveList(List<SyTemplate> rows) {
+    public void saveList(List<SyTemplate> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyTemplateService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyTemplate> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getTemplateId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyTemplateService {
             VoUtil.voCopyExclude(row, entity, "templateId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syTemplateRepository.save(entity);
-            upsertedIds.add(entity.getTemplateId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyTemplateService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syTemplateRepository.save(row);
-            upsertedIds.add(row.getTemplateId());
         }
         em.flush();
         em.clear();
-
-        List<SyTemplate> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

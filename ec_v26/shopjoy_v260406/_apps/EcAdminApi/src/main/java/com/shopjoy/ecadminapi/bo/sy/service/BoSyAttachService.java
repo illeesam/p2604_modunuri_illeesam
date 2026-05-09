@@ -26,5 +26,5 @@ public class BoSyAttachService {
     @Transactional public SyAttach create(SyAttach body) { return syAttachService.create(body); }
     @Transactional public SyAttach update(String id, SyAttach body) { return syAttachService.update(id, body); }
     @Transactional public void delete(String id) { syAttachService.delete(id); }
-    @Transactional public List<SyAttach> saveList(List<SyAttach> rows) { return syAttachService.saveList(rows); }
+    @Transactional public void saveList(List<SyAttach> rows) { syAttachService.saveList(rows); }
 }

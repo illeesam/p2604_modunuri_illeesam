@@ -57,7 +57,8 @@ public class SyAttachGrpController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyAttachGrp>>> saveList(@RequestBody List<SyAttachGrp> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyAttachGrp> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

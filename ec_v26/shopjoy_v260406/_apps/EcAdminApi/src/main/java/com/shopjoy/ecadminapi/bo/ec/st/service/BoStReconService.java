@@ -26,5 +26,5 @@ public class BoStReconService {
     @Transactional public StRecon create(StRecon body) { return stReconService.create(body); }
     @Transactional public StRecon update(String id, StRecon body) { return stReconService.update(id, body); }
     @Transactional public void delete(String id) { stReconService.delete(id); }
-    @Transactional public List<StRecon> saveList(List<StRecon> rows) { return stReconService.saveList(rows); }
+    @Transactional public void saveList(List<StRecon> rows) { stReconService.saveList(rows); }
 }

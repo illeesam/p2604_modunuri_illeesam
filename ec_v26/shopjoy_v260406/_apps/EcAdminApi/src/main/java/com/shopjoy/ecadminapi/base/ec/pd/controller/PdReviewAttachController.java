@@ -57,7 +57,8 @@ public class PdReviewAttachController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<PdReviewAttach>>> saveList(@RequestBody List<PdReviewAttach> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdReviewAttach> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -26,5 +26,5 @@ public class BoPdProdService {
     @Transactional public PdProd create(PdProd body) { return pdProdService.create(body); }
     @Transactional public PdProd update(String id, PdProd body) { return pdProdService.update(id, body); }
     @Transactional public void delete(String id) { pdProdService.delete(id); }
-    @Transactional public List<PdProd> saveList(List<PdProd> rows) { return pdProdService.saveList(rows); }
+    @Transactional public void saveList(List<PdProd> rows) { pdProdService.saveList(rows); }
 }

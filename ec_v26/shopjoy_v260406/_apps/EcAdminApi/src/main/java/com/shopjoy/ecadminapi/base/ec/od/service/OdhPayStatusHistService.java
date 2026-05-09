@@ -68,7 +68,7 @@ public class OdhPayStatusHistService {
         OdhPayStatusHist saved = odhPayStatusHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPayStatusHistId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdhPayStatusHistService {
         OdhPayStatusHist saved = odhPayStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPayStatusHistId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdhPayStatusHistService {
         OdhPayStatusHist saved = odhPayStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdhPayStatusHistService {
         int affected = odhPayStatusHistMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getPayStatusHistId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdhPayStatusHistService {
     }
 
     @Transactional
-    public List<OdhPayStatusHist> saveList(List<OdhPayStatusHist> rows) {
+    public void saveList(List<OdhPayStatusHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdhPayStatusHistService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdhPayStatusHist> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getPayStatusHistId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdhPayStatusHistService {
             VoUtil.voCopyExclude(row, entity, "payStatusHistId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odhPayStatusHistRepository.save(entity);
-            upsertedIds.add(entity.getPayStatusHistId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdhPayStatusHistService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odhPayStatusHistRepository.save(row);
-            upsertedIds.add(row.getPayStatusHistId());
         }
         em.flush();
         em.clear();
-
-        List<OdhPayStatusHist> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

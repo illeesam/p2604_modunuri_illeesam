@@ -68,7 +68,7 @@ public class PmCacheService {
         PmCache saved = pmCacheRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCacheId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmCacheService {
         PmCache saved = pmCacheRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCacheId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmCacheService {
         PmCache saved = pmCacheRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmCacheService {
         int affected = pmCacheMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getCacheId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmCacheService {
     }
 
     @Transactional
-    public List<PmCache> saveList(List<PmCache> rows) {
+    public void saveList(List<PmCache> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmCacheService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmCache> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getCacheId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmCacheService {
             VoUtil.voCopyExclude(row, entity, "cacheId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmCacheRepository.save(entity);
-            upsertedIds.add(entity.getCacheId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmCacheService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmCacheRepository.save(row);
-            upsertedIds.add(row.getCacheId());
         }
         em.flush();
         em.clear();
-
-        List<PmCache> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

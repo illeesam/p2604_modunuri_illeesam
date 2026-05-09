@@ -364,7 +364,7 @@ public class CmUploadService {
     /** resolveAttachGrp — 결정 */
     private SyAttachGrp resolveAttachGrp(String businessCode, String grpNm, String attachGrpId) {
         if (attachGrpId != null && !attachGrpId.isBlank()) {
-            var existing = syAttachGrpService.getById(attachGrpId);
+            com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachGrpDto.Item existing = syAttachGrpService.getById(attachGrpId);
             if (existing == null) throw new CmBizException("존재하지 않는 첨부 그룹입니다: " + attachGrpId);
             return SyAttachGrp.builder()
                     .attachGrpId(existing.getAttachGrpId())

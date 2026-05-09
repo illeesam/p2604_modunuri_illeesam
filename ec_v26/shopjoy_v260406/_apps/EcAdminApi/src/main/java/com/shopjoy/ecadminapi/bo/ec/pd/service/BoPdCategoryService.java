@@ -39,7 +39,7 @@ public class BoPdCategoryService {
     @Transactional public PdCategory create(PdCategory body) { return pdCategoryService.create(body); }
     @Transactional public PdCategory update(String id, PdCategory body) { return pdCategoryService.update(id, body); }
     @Transactional public void delete(String id) { pdCategoryService.delete(id); }
-    @Transactional public List<PdCategory> saveList(List<PdCategory> rows) { return pdCategoryService.saveList(rows); }
+    @Transactional public void saveList(List<PdCategory> rows) { pdCategoryService.saveList(rows); }
 
     /** updateProds — 카테고리에 상품 일괄 매핑 */
     @Transactional

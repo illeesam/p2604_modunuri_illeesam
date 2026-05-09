@@ -26,5 +26,5 @@ public class BoSyAttachGrpService {
     @Transactional public SyAttachGrp create(SyAttachGrp body) { return syAttachGrpService.create(body); }
     @Transactional public SyAttachGrp update(String id, SyAttachGrp body) { return syAttachGrpService.update(id, body); }
     @Transactional public void delete(String id) { syAttachGrpService.delete(id); }
-    @Transactional public List<SyAttachGrp> saveList(List<SyAttachGrp> rows) { return syAttachGrpService.saveList(rows); }
+    @Transactional public void saveList(List<SyAttachGrp> rows) { syAttachGrpService.saveList(rows); }
 }

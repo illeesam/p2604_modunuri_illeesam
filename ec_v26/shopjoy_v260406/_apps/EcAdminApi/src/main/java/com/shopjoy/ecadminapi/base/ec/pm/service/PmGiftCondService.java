@@ -68,7 +68,7 @@ public class PmGiftCondService {
         PmGiftCond saved = pmGiftCondRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getGiftCondId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmGiftCondService {
         PmGiftCond saved = pmGiftCondRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getGiftCondId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmGiftCondService {
         PmGiftCond saved = pmGiftCondRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmGiftCondService {
         int affected = pmGiftCondMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getGiftCondId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmGiftCondService {
     }
 
     @Transactional
-    public List<PmGiftCond> saveList(List<PmGiftCond> rows) {
+    public void saveList(List<PmGiftCond> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmGiftCondService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmGiftCond> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getGiftCondId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmGiftCondService {
             VoUtil.voCopyExclude(row, entity, "giftCondId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmGiftCondRepository.save(entity);
-            upsertedIds.add(entity.getGiftCondId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmGiftCondService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmGiftCondRepository.save(row);
-            upsertedIds.add(row.getGiftCondId());
         }
         em.flush();
         em.clear();
-
-        List<PmGiftCond> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -68,7 +68,7 @@ public class PmVoucherIssueService {
         PmVoucherIssue saved = pmVoucherIssueRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVoucherIssueId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmVoucherIssueService {
         PmVoucherIssue saved = pmVoucherIssueRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVoucherIssueId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmVoucherIssueService {
         PmVoucherIssue saved = pmVoucherIssueRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmVoucherIssueService {
         int affected = pmVoucherIssueMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getVoucherIssueId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmVoucherIssueService {
     }
 
     @Transactional
-    public List<PmVoucherIssue> saveList(List<PmVoucherIssue> rows) {
+    public void saveList(List<PmVoucherIssue> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmVoucherIssueService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmVoucherIssue> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getVoucherIssueId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmVoucherIssueService {
             VoUtil.voCopyExclude(row, entity, "voucherIssueId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmVoucherIssueRepository.save(entity);
-            upsertedIds.add(entity.getVoucherIssueId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmVoucherIssueService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmVoucherIssueRepository.save(row);
-            upsertedIds.add(row.getVoucherIssueId());
         }
         em.flush();
         em.clear();
-
-        List<PmVoucherIssue> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

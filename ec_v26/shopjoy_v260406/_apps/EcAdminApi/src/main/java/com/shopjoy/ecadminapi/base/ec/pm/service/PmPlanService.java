@@ -68,7 +68,7 @@ public class PmPlanService {
         PmPlan saved = pmPlanRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPlanId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmPlanService {
         PmPlan saved = pmPlanRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPlanId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmPlanService {
         PmPlan saved = pmPlanRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmPlanService {
         int affected = pmPlanMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getPlanId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmPlanService {
     }
 
     @Transactional
-    public List<PmPlan> saveList(List<PmPlan> rows) {
+    public void saveList(List<PmPlan> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmPlanService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmPlan> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getPlanId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmPlanService {
             VoUtil.voCopyExclude(row, entity, "planId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmPlanRepository.save(entity);
-            upsertedIds.add(entity.getPlanId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmPlanService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmPlanRepository.save(row);
-            upsertedIds.add(row.getPlanId());
         }
         em.flush();
         em.clear();
-
-        List<PmPlan> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

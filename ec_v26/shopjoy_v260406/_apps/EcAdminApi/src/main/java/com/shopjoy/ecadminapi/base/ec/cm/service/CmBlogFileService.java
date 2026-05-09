@@ -68,7 +68,7 @@ public class CmBlogFileService {
         CmBlogFile saved = cmBlogFileRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBlogImgId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class CmBlogFileService {
         CmBlogFile saved = cmBlogFileRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBlogImgId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class CmBlogFileService {
         CmBlogFile saved = cmBlogFileRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class CmBlogFileService {
         int affected = cmBlogFileMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getBlogImgId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class CmBlogFileService {
     }
 
     @Transactional
-    public List<CmBlogFile> saveList(List<CmBlogFile> rows) {
+    public void saveList(List<CmBlogFile> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class CmBlogFileService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<CmBlogFile> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBlogImgId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class CmBlogFileService {
             VoUtil.voCopyExclude(row, entity, "blogImgId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             cmBlogFileRepository.save(entity);
-            upsertedIds.add(entity.getBlogImgId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class CmBlogFileService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmBlogFileRepository.save(row);
-            upsertedIds.add(row.getBlogImgId());
         }
         em.flush();
         em.clear();
-
-        List<CmBlogFile> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

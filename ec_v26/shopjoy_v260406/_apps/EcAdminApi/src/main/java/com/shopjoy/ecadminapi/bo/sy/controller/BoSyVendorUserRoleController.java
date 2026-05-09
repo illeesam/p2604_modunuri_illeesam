@@ -59,7 +59,8 @@ public class BoSyVendorUserRoleController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyVendorUserRole>>> saveList(@RequestBody List<SyVendorUserRole> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserRoleService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyVendorUserRole> rows) {
+        boSyVendorUserRoleService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

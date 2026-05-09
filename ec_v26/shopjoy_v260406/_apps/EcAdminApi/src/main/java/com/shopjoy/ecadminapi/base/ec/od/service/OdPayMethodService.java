@@ -68,7 +68,7 @@ public class OdPayMethodService {
         OdPayMethod saved = odPayMethodRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPayMethodId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdPayMethodService {
         OdPayMethod saved = odPayMethodRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getPayMethodId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdPayMethodService {
         OdPayMethod saved = odPayMethodRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdPayMethodService {
         int affected = odPayMethodMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getPayMethodId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdPayMethodService {
     }
 
     @Transactional
-    public List<OdPayMethod> saveList(List<OdPayMethod> rows) {
+    public void saveList(List<OdPayMethod> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdPayMethodService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdPayMethod> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getPayMethodId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdPayMethodService {
             VoUtil.voCopyExclude(row, entity, "payMethodId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odPayMethodRepository.save(entity);
-            upsertedIds.add(entity.getPayMethodId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdPayMethodService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odPayMethodRepository.save(row);
-            upsertedIds.add(row.getPayMethodId());
         }
         em.flush();
         em.clear();
-
-        List<OdPayMethod> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

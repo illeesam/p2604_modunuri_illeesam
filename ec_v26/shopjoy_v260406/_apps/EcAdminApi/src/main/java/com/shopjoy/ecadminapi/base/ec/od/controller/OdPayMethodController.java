@@ -57,7 +57,8 @@ public class OdPayMethodController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<OdPayMethod>>> saveList(@RequestBody List<OdPayMethod> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdPayMethod> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

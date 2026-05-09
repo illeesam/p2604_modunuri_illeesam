@@ -78,7 +78,7 @@ public class SyDeptService {
         SyDept saved = syDeptRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDeptId());
+        return saved;
     }
 
     @Transactional
@@ -90,7 +90,7 @@ public class SyDeptService {
         SyDept saved = syDeptRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDeptId());
+        return saved;
     }
 
     @Transactional
@@ -102,7 +102,7 @@ public class SyDeptService {
         SyDept saved = syDeptRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -115,7 +115,7 @@ public class SyDeptService {
         int affected = syDeptMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getDeptId());
+        return entity;
     }
 
     @Transactional
@@ -127,7 +127,7 @@ public class SyDeptService {
     }
 
     @Transactional
-    public List<SyDept> saveList(List<SyDept> rows) {
+    public void saveList(List<SyDept> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -140,8 +140,6 @@ public class SyDeptService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyDept> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getDeptId() != null)
             .toList();
@@ -150,7 +148,6 @@ public class SyDeptService {
             VoUtil.voCopyExclude(row, entity, "deptId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syDeptRepository.save(entity);
-            upsertedIds.add(entity.getDeptId());
         }
         em.flush();
 
@@ -162,15 +159,8 @@ public class SyDeptService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syDeptRepository.save(row);
-            upsertedIds.add(row.getDeptId());
         }
         em.flush();
         em.clear();
-
-        List<SyDept> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

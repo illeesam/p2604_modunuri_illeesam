@@ -68,7 +68,7 @@ public class SyCodeService {
         SyCode saved = syCodeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCodeId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyCodeService {
         SyCode saved = syCodeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCodeId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyCodeService {
         SyCode saved = syCodeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyCodeService {
         int affected = syCodeMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getCodeId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyCodeService {
     }
 
     @Transactional
-    public List<SyCode> saveList(List<SyCode> rows) {
+    public void saveList(List<SyCode> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyCodeService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyCode> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getCodeId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyCodeService {
             VoUtil.voCopyExclude(row, entity, "codeId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syCodeRepository.save(entity);
-            upsertedIds.add(entity.getCodeId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyCodeService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syCodeRepository.save(row);
-            upsertedIds.add(row.getCodeId());
         }
         em.flush();
         em.clear();
-
-        List<SyCode> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

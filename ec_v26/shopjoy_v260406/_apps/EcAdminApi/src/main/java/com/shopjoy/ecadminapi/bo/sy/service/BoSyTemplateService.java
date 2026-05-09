@@ -26,5 +26,5 @@ public class BoSyTemplateService {
     @Transactional public SyTemplate create(SyTemplate body) { return syTemplateService.create(body); }
     @Transactional public SyTemplate update(String id, SyTemplate body) { return syTemplateService.update(id, body); }
     @Transactional public void delete(String id) { syTemplateService.delete(id); }
-    @Transactional public List<SyTemplate> saveList(List<SyTemplate> rows) { return syTemplateService.saveList(rows); }
+    @Transactional public void saveList(List<SyTemplate> rows) { syTemplateService.saveList(rows); }
 }

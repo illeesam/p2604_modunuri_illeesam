@@ -58,7 +58,8 @@ public class BoSyRoleController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyRole>>> saveList(@RequestBody List<SyRole> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyRoleService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyRole> rows) {
+        boSyRoleService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

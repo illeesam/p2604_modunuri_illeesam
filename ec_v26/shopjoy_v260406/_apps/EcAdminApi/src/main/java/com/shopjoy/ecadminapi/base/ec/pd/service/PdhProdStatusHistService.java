@@ -68,7 +68,7 @@ public class PdhProdStatusHistService {
         PdhProdStatusHist saved = pdhProdStatusHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getProdStatusHistId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdhProdStatusHistService {
         PdhProdStatusHist saved = pdhProdStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getProdStatusHistId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdhProdStatusHistService {
         PdhProdStatusHist saved = pdhProdStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdhProdStatusHistService {
         int affected = pdhProdStatusHistMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getProdStatusHistId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdhProdStatusHistService {
     }
 
     @Transactional
-    public List<PdhProdStatusHist> saveList(List<PdhProdStatusHist> rows) {
+    public void saveList(List<PdhProdStatusHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdhProdStatusHistService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdhProdStatusHist> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getProdStatusHistId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdhProdStatusHistService {
             VoUtil.voCopyExclude(row, entity, "prodStatusHistId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdhProdStatusHistRepository.save(entity);
-            upsertedIds.add(entity.getProdStatusHistId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdhProdStatusHistService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdhProdStatusHistRepository.save(row);
-            upsertedIds.add(row.getProdStatusHistId());
         }
         em.flush();
         em.clear();
-
-        List<PdhProdStatusHist> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

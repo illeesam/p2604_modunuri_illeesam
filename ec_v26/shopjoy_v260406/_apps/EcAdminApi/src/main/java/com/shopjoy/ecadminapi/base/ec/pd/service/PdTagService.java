@@ -68,7 +68,7 @@ public class PdTagService {
         PdTag saved = pdTagRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getTagId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdTagService {
         PdTag saved = pdTagRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getTagId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdTagService {
         PdTag saved = pdTagRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdTagService {
         int affected = pdTagMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getTagId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdTagService {
     }
 
     @Transactional
-    public List<PdTag> saveList(List<PdTag> rows) {
+    public void saveList(List<PdTag> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdTagService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdTag> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getTagId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdTagService {
             VoUtil.voCopyExclude(row, entity, "tagId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdTagRepository.save(entity);
-            upsertedIds.add(entity.getTagId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdTagService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdTagRepository.save(row);
-            upsertedIds.add(row.getTagId());
         }
         em.flush();
         em.clear();
-
-        List<PdTag> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -37,7 +37,7 @@ public class BoStSettleAdjService {
     @Transactional public StSettleAdj create(StSettleAdj body) { return stSettleAdjService.create(body); }
     @Transactional public StSettleAdj update(String id, StSettleAdj body) { return stSettleAdjService.update(id, body); }
     @Transactional public void delete(String id) { stSettleAdjService.delete(id); }
-    @Transactional public List<StSettleAdj> saveList(List<StSettleAdj> rows) { return stSettleAdjService.saveList(rows); }
+    @Transactional public void saveList(List<StSettleAdj> rows) { stSettleAdjService.saveList(rows); }
 
     /** approve — 승인 */
     @Transactional

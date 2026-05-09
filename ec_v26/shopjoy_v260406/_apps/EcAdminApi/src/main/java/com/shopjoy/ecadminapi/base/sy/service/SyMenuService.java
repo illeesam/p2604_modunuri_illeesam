@@ -68,7 +68,7 @@ public class SyMenuService {
         SyMenu saved = syMenuRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMenuId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyMenuService {
         SyMenu saved = syMenuRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMenuId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyMenuService {
         SyMenu saved = syMenuRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyMenuService {
         int affected = syMenuMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getMenuId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyMenuService {
     }
 
     @Transactional
-    public List<SyMenu> saveList(List<SyMenu> rows) {
+    public void saveList(List<SyMenu> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyMenuService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyMenu> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getMenuId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyMenuService {
             VoUtil.voCopyExclude(row, entity, "menuId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syMenuRepository.save(entity);
-            upsertedIds.add(entity.getMenuId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyMenuService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syMenuRepository.save(row);
-            upsertedIds.add(row.getMenuId());
         }
         em.flush();
         em.clear();
-
-        List<SyMenu> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

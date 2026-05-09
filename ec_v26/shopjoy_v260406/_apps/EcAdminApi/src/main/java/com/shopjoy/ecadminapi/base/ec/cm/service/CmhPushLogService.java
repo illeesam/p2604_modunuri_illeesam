@@ -68,7 +68,7 @@ public class CmhPushLogService {
         CmhPushLog saved = cmhPushLogRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLogId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class CmhPushLogService {
         CmhPushLog saved = cmhPushLogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLogId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class CmhPushLogService {
         CmhPushLog saved = cmhPushLogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class CmhPushLogService {
         int affected = cmhPushLogMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getLogId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class CmhPushLogService {
     }
 
     @Transactional
-    public List<CmhPushLog> saveList(List<CmhPushLog> rows) {
+    public void saveList(List<CmhPushLog> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class CmhPushLogService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<CmhPushLog> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getLogId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class CmhPushLogService {
             VoUtil.voCopyExclude(row, entity, "logId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             cmhPushLogRepository.save(entity);
-            upsertedIds.add(entity.getLogId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class CmhPushLogService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmhPushLogRepository.save(row);
-            upsertedIds.add(row.getLogId());
         }
         em.flush();
         em.clear();
-
-        List<CmhPushLog> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

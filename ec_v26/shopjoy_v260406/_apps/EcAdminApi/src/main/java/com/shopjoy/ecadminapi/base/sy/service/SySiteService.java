@@ -79,7 +79,7 @@ public class SySiteService {
         SySite saved = sySiteRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSiteId());
+        return saved;
     }
 
     /** save — 전체 저장 (ID 존재 검증) */
@@ -92,7 +92,7 @@ public class SySiteService {
         SySite saved = sySiteRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSiteId());
+        return saved;
     }
 
     /** update — 선택 필드 수정 (JPA + VoUtil voCopyExclude) */
@@ -105,7 +105,7 @@ public class SySiteService {
         SySite saved = sySiteRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     /** updatePartial — 선택 필드 수정 (MyBatis selective UPDATE) */
@@ -120,7 +120,7 @@ public class SySiteService {
         int affected = sySiteMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getSiteId());
+        return entity;
     }
 
     /** delete — 삭제 (JPA) */
@@ -135,7 +135,7 @@ public class SySiteService {
 
     /** saveList — 일괄 저장 */
     @Transactional
-    public List<SySite> saveList(List<SySite> rows) {
+    public void saveList(List<SySite> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -148,8 +148,6 @@ public class SySiteService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SySite> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getSiteId() != null)
             .toList();
@@ -158,7 +156,6 @@ public class SySiteService {
             VoUtil.voCopyExclude(row, entity, "siteId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             sySiteRepository.save(entity);
-            upsertedIds.add(entity.getSiteId());
         }
         em.flush();
 
@@ -170,15 +167,8 @@ public class SySiteService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             sySiteRepository.save(row);
-            upsertedIds.add(row.getSiteId());
         }
         em.flush();
         em.clear();
-
-        List<SySite> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -26,5 +26,5 @@ public class BoDpAreaService {
     @Transactional public DpArea create(DpArea body) { return dpAreaService.create(body); }
     @Transactional public DpArea update(String id, DpArea body) { return dpAreaService.update(id, body); }
     @Transactional public void delete(String id) { dpAreaService.delete(id); }
-    @Transactional public List<DpArea> saveList(List<DpArea> rows) { return dpAreaService.saveList(rows); }
+    @Transactional public void saveList(List<DpArea> rows) { dpAreaService.saveList(rows); }
 }

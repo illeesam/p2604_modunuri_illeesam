@@ -26,5 +26,5 @@ public class BoSyBatchService {
     @Transactional public SyBatch create(SyBatch body) { return syBatchService.create(body); }
     @Transactional public SyBatch update(String id, SyBatch body) { return syBatchService.update(id, body); }
     @Transactional public void delete(String id) { syBatchService.delete(id); }
-    @Transactional public List<SyBatch> saveList(List<SyBatch> rows) { return syBatchService.saveList(rows); }
+    @Transactional public void saveList(List<SyBatch> rows) { syBatchService.saveList(rows); }
 }

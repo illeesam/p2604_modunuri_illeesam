@@ -68,7 +68,7 @@ public class OdDlivService {
         OdDliv saved = odDlivRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDlivId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdDlivService {
         OdDliv saved = odDlivRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDlivId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdDlivService {
         OdDliv saved = odDlivRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdDlivService {
         int affected = odDlivMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getDlivId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdDlivService {
     }
 
     @Transactional
-    public List<OdDliv> saveList(List<OdDliv> rows) {
+    public void saveList(List<OdDliv> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdDlivService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdDliv> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getDlivId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdDlivService {
             VoUtil.voCopyExclude(row, entity, "dlivId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odDlivRepository.save(entity);
-            upsertedIds.add(entity.getDlivId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdDlivService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odDlivRepository.save(row);
-            upsertedIds.add(row.getDlivId());
         }
         em.flush();
         em.clear();
-
-        List<OdDliv> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

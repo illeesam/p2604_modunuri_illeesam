@@ -58,7 +58,8 @@ public class BoSyPathController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyPath>>> saveList(@RequestBody List<SyPath> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyPathService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyPath> rows) {
+        boSyPathService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

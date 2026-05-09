@@ -68,7 +68,7 @@ public class MbMemberRoleService {
         MbMemberRole saved = mbMemberRoleRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMemberRoleId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class MbMemberRoleService {
         MbMemberRole saved = mbMemberRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getMemberRoleId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class MbMemberRoleService {
         MbMemberRole saved = mbMemberRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class MbMemberRoleService {
         int affected = mbMemberRoleMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getMemberRoleId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class MbMemberRoleService {
     }
 
     @Transactional
-    public List<MbMemberRole> saveList(List<MbMemberRole> rows) {
+    public void saveList(List<MbMemberRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class MbMemberRoleService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<MbMemberRole> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberRoleId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class MbMemberRoleService {
             VoUtil.voCopyExclude(row, entity, "memberRoleId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             mbMemberRoleRepository.save(entity);
-            upsertedIds.add(entity.getMemberRoleId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class MbMemberRoleService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             mbMemberRoleRepository.save(row);
-            upsertedIds.add(row.getMemberRoleId());
         }
         em.flush();
         em.clear();
-
-        List<MbMemberRole> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

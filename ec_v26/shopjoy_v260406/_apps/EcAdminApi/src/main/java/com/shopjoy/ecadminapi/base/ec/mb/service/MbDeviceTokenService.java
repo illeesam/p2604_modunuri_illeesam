@@ -68,7 +68,7 @@ public class MbDeviceTokenService {
         MbDeviceToken saved = mbDeviceTokenRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDeviceTokenId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class MbDeviceTokenService {
         MbDeviceToken saved = mbDeviceTokenRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDeviceTokenId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class MbDeviceTokenService {
         MbDeviceToken saved = mbDeviceTokenRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class MbDeviceTokenService {
         int affected = mbDeviceTokenMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getDeviceTokenId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class MbDeviceTokenService {
     }
 
     @Transactional
-    public List<MbDeviceToken> saveList(List<MbDeviceToken> rows) {
+    public void saveList(List<MbDeviceToken> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class MbDeviceTokenService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<MbDeviceToken> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getDeviceTokenId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class MbDeviceTokenService {
             VoUtil.voCopyExclude(row, entity, "deviceTokenId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             mbDeviceTokenRepository.save(entity);
-            upsertedIds.add(entity.getDeviceTokenId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class MbDeviceTokenService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             mbDeviceTokenRepository.save(row);
-            upsertedIds.add(row.getDeviceTokenId());
         }
         em.flush();
         em.clear();
-
-        List<MbDeviceToken> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

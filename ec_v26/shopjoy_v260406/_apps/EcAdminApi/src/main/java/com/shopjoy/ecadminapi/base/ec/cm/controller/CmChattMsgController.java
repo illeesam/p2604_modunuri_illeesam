@@ -57,7 +57,8 @@ public class CmChattMsgController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<CmChattMsg>>> saveList(@RequestBody List<CmChattMsg> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<CmChattMsg> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

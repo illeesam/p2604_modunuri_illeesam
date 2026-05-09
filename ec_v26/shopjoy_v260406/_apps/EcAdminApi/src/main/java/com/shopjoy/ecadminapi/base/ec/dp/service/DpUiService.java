@@ -68,7 +68,7 @@ public class DpUiService {
         DpUi saved = dpUiRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUiId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class DpUiService {
         DpUi saved = dpUiRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUiId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class DpUiService {
         DpUi saved = dpUiRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class DpUiService {
         int affected = dpUiMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getUiId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class DpUiService {
     }
 
     @Transactional
-    public List<DpUi> saveList(List<DpUi> rows) {
+    public void saveList(List<DpUi> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class DpUiService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<DpUi> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getUiId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class DpUiService {
             VoUtil.voCopyExclude(row, entity, "uiId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             dpUiRepository.save(entity);
-            upsertedIds.add(entity.getUiId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class DpUiService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             dpUiRepository.save(row);
-            upsertedIds.add(row.getUiId());
         }
         em.flush();
         em.clear();
-
-        List<DpUi> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

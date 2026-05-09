@@ -68,7 +68,7 @@ public class PmCouponUsageService {
         PmCouponUsage saved = pmCouponUsageRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUsageId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmCouponUsageService {
         PmCouponUsage saved = pmCouponUsageRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUsageId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmCouponUsageService {
         PmCouponUsage saved = pmCouponUsageRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmCouponUsageService {
         int affected = pmCouponUsageMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getUsageId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmCouponUsageService {
     }
 
     @Transactional
-    public List<PmCouponUsage> saveList(List<PmCouponUsage> rows) {
+    public void saveList(List<PmCouponUsage> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmCouponUsageService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmCouponUsage> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getUsageId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmCouponUsageService {
             VoUtil.voCopyExclude(row, entity, "usageId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmCouponUsageRepository.save(entity);
-            upsertedIds.add(entity.getUsageId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmCouponUsageService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmCouponUsageRepository.save(row);
-            upsertedIds.add(row.getUsageId());
         }
         em.flush();
         em.clear();
-
-        List<PmCouponUsage> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

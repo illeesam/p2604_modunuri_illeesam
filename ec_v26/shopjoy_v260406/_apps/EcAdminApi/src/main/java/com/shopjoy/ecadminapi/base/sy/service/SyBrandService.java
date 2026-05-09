@@ -68,7 +68,7 @@ public class SyBrandService {
         SyBrand saved = syBrandRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBrandId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyBrandService {
         SyBrand saved = syBrandRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBrandId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyBrandService {
         SyBrand saved = syBrandRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyBrandService {
         int affected = syBrandMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getBrandId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyBrandService {
     }
 
     @Transactional
-    public List<SyBrand> saveList(List<SyBrand> rows) {
+    public void saveList(List<SyBrand> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyBrandService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyBrand> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBrandId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyBrandService {
             VoUtil.voCopyExclude(row, entity, "brandId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syBrandRepository.save(entity);
-            upsertedIds.add(entity.getBrandId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyBrandService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syBrandRepository.save(row);
-            upsertedIds.add(row.getBrandId());
         }
         em.flush();
         em.clear();
-
-        List<SyBrand> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

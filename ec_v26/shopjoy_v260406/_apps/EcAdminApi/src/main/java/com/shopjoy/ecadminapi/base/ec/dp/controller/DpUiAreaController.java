@@ -57,7 +57,8 @@ public class DpUiAreaController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<DpUiArea>>> saveList(@RequestBody List<DpUiArea> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpUiArea> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

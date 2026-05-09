@@ -68,7 +68,7 @@ public class SyI18nMsgService {
         SyI18nMsg saved = syI18nMsgRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getI18nMsgId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyI18nMsgService {
         SyI18nMsg saved = syI18nMsgRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getI18nMsgId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyI18nMsgService {
         SyI18nMsg saved = syI18nMsgRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyI18nMsgService {
         int affected = syI18nMsgMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getI18nMsgId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyI18nMsgService {
     }
 
     @Transactional
-    public List<SyI18nMsg> saveList(List<SyI18nMsg> rows) {
+    public void saveList(List<SyI18nMsg> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyI18nMsgService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyI18nMsg> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getI18nMsgId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyI18nMsgService {
             VoUtil.voCopyExclude(row, entity, "i18nMsgId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syI18nMsgRepository.save(entity);
-            upsertedIds.add(entity.getI18nMsgId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyI18nMsgService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syI18nMsgRepository.save(row);
-            upsertedIds.add(row.getI18nMsgId());
         }
         em.flush();
         em.clear();
-
-        List<SyI18nMsg> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

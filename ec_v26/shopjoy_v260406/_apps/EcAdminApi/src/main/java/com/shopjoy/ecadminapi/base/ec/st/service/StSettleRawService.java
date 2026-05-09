@@ -68,7 +68,7 @@ public class StSettleRawService {
         StSettleRaw saved = stSettleRawRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSettleRawId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class StSettleRawService {
         StSettleRaw saved = stSettleRawRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSettleRawId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class StSettleRawService {
         StSettleRaw saved = stSettleRawRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class StSettleRawService {
         int affected = stSettleRawMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getSettleRawId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class StSettleRawService {
     }
 
     @Transactional
-    public List<StSettleRaw> saveList(List<StSettleRaw> rows) {
+    public void saveList(List<StSettleRaw> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class StSettleRawService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<StSettleRaw> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getSettleRawId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class StSettleRawService {
             VoUtil.voCopyExclude(row, entity, "settleRawId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             stSettleRawRepository.save(entity);
-            upsertedIds.add(entity.getSettleRawId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class StSettleRawService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             stSettleRawRepository.save(row);
-            upsertedIds.add(row.getSettleRawId());
         }
         em.flush();
         em.clear();
-
-        List<StSettleRaw> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

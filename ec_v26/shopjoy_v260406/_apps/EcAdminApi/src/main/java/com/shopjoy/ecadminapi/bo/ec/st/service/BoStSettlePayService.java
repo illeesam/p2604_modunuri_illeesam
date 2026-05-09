@@ -36,7 +36,7 @@ public class BoStSettlePayService {
     @Transactional public StSettlePay create(StSettlePay body) { return stSettlePayService.create(body); }
     @Transactional public StSettlePay update(String id, StSettlePay body) { return stSettlePayService.update(id, body); }
     @Transactional public void delete(String id) { stSettlePayService.delete(id); }
-    @Transactional public List<StSettlePay> saveList(List<StSettlePay> rows) { return stSettlePayService.saveList(rows); }
+    @Transactional public void saveList(List<StSettlePay> rows) { stSettlePayService.saveList(rows); }
 
     /** pay — 결제 처리 */
     @Transactional

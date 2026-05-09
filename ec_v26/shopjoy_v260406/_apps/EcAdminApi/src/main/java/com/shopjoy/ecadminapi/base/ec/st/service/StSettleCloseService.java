@@ -68,7 +68,7 @@ public class StSettleCloseService {
         StSettleClose saved = stSettleCloseRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSettleCloseId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class StSettleCloseService {
         StSettleClose saved = stSettleCloseRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSettleCloseId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class StSettleCloseService {
         StSettleClose saved = stSettleCloseRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class StSettleCloseService {
         int affected = stSettleCloseMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getSettleCloseId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class StSettleCloseService {
     }
 
     @Transactional
-    public List<StSettleClose> saveList(List<StSettleClose> rows) {
+    public void saveList(List<StSettleClose> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class StSettleCloseService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<StSettleClose> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getSettleCloseId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class StSettleCloseService {
             VoUtil.voCopyExclude(row, entity, "settleCloseId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             stSettleCloseRepository.save(entity);
-            upsertedIds.add(entity.getSettleCloseId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class StSettleCloseService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             stSettleCloseRepository.save(row);
-            upsertedIds.add(row.getSettleCloseId());
         }
         em.flush();
         em.clear();
-
-        List<StSettleClose> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

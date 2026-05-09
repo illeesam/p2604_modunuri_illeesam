@@ -118,7 +118,7 @@ public class ZzSample1Service {
 
     /** saveList — 일괄 저장 */
     @Transactional
-    public List<ZzSample1> saveList(List<ZzSample1> rows) {
-        return zzSample1Repository.saveAll(rows);
+    public void saveList(List<ZzSample1> rows) {
+        zzSample1Repository.saveAll(rows);
     }
 }

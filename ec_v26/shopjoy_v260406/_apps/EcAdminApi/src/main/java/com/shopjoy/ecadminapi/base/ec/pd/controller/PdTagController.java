@@ -57,7 +57,8 @@ public class PdTagController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<PdTag>>> saveList(@RequestBody List<PdTag> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdTag> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -78,7 +78,7 @@ public class SyUserService {
         SyUser saved = syUserRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUserId());
+        return saved;
     }
 
     /** save — 전체 저장 (ID 존재 검증) */
@@ -91,7 +91,7 @@ public class SyUserService {
         SyUser saved = syUserRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUserId());
+        return saved;
     }
 
     /** update — 선택 필드 수정 (JPA + VoUtil voCopyExclude) */
@@ -104,7 +104,7 @@ public class SyUserService {
         SyUser saved = syUserRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     /** updatePartial — 선택 필드 수정 (MyBatis selective UPDATE) */
@@ -120,7 +120,7 @@ public class SyUserService {
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         // MyBatis 가 직접 SQL 수행했으므로 영속성 컨텍스트와 DB 상태 불일치 가능 → clear 후 재조회
         em.clear();
-        return findById(entity.getUserId());
+        return entity;
     }
 
     /** delete — 삭제 (JPA) */
@@ -135,7 +135,7 @@ public class SyUserService {
 
     /** saveList — 일괄 저장 (DELETE/UPDATE/INSERT 단계별 처리). 처리된 row 들의 최신 SyUser 반환 */
     @Transactional
-    public List<SyUser> saveList(List<SyUser> rows) {
+    public void saveList(List<SyUser> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -151,7 +151,6 @@ public class SyUserService {
         }
 
         // 2단계: UPDATE 처리 + 처리된 ID 수집
-        List<String> upsertedIds = new ArrayList<>();
         List<SyUser> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getUserId() != null)
             .toList();
@@ -160,7 +159,6 @@ public class SyUserService {
             VoUtil.voCopyExclude(row, entity, "userId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syUserRepository.save(entity);
-            upsertedIds.add(entity.getUserId());
         }
         em.flush();
 
@@ -173,17 +171,11 @@ public class SyUserService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syUserRepository.save(row);
-            upsertedIds.add(row.getUserId());
         }
         em.flush();
         em.clear();
 
         // 4단계: 처리된 row 들 최신 상태 조회 (JPA)
-        List<SyUser> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 
 }

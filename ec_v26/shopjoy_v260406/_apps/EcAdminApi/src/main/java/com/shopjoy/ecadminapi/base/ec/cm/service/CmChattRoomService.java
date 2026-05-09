@@ -68,7 +68,7 @@ public class CmChattRoomService {
         CmChattRoom saved = cmChattRoomRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getChattRoomId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class CmChattRoomService {
         CmChattRoom saved = cmChattRoomRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getChattRoomId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class CmChattRoomService {
         CmChattRoom saved = cmChattRoomRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class CmChattRoomService {
         int affected = cmChattRoomMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getChattRoomId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class CmChattRoomService {
     }
 
     @Transactional
-    public List<CmChattRoom> saveList(List<CmChattRoom> rows) {
+    public void saveList(List<CmChattRoom> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class CmChattRoomService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<CmChattRoom> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getChattRoomId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class CmChattRoomService {
             VoUtil.voCopyExclude(row, entity, "chattRoomId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             cmChattRoomRepository.save(entity);
-            upsertedIds.add(entity.getChattRoomId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class CmChattRoomService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmChattRoomRepository.save(row);
-            upsertedIds.add(row.getChattRoomId());
         }
         em.flush();
         em.clear();
-
-        List<CmChattRoom> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

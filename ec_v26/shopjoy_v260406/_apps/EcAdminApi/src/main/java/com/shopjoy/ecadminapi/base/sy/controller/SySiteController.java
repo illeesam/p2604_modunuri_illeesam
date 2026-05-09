@@ -71,7 +71,8 @@ public class SySiteController {
 
     /** saveList — 일괄 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SySite>>> saveList(@RequestBody List<SySite> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SySite> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

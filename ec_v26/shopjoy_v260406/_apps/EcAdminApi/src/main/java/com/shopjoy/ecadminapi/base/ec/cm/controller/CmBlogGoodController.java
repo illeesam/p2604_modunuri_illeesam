@@ -57,7 +57,8 @@ public class CmBlogGoodController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<CmBlogGood>>> saveList(@RequestBody List<CmBlogGood> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<CmBlogGood> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

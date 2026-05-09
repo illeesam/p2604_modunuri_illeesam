@@ -36,7 +36,7 @@ public class BoMbMemberService {
     @Transactional public MbMember create(MbMember body) { return mbMemberService.create(body); }
     @Transactional public MbMember update(String id, MbMember body) { return mbMemberService.update(id, body); }
     @Transactional public void delete(String id) { mbMemberService.delete(id); }
-    @Transactional public List<MbMember> saveList(List<MbMember> rows) { return mbMemberService.saveList(rows); }
+    @Transactional public void saveList(List<MbMember> rows) { mbMemberService.saveList(rows); }
 
     /** changeStatus — memberStatusCd 변경 (이력 보존) */
     @Transactional

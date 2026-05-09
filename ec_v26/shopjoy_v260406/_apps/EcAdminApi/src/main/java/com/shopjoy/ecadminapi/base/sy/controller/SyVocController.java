@@ -57,7 +57,8 @@ public class SyVocController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyVoc>>> saveList(@RequestBody List<SyVoc> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyVoc> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

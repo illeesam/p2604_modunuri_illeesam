@@ -68,7 +68,7 @@ public class SyNoticeService {
         SyNotice saved = syNoticeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getNoticeId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyNoticeService {
         SyNotice saved = syNoticeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getNoticeId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyNoticeService {
         SyNotice saved = syNoticeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyNoticeService {
         int affected = syNoticeMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getNoticeId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyNoticeService {
     }
 
     @Transactional
-    public List<SyNotice> saveList(List<SyNotice> rows) {
+    public void saveList(List<SyNotice> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyNoticeService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyNotice> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getNoticeId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyNoticeService {
             VoUtil.voCopyExclude(row, entity, "noticeId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syNoticeRepository.save(entity);
-            upsertedIds.add(entity.getNoticeId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyNoticeService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syNoticeRepository.save(row);
-            upsertedIds.add(row.getNoticeId());
         }
         em.flush();
         em.clear();
-
-        List<SyNotice> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

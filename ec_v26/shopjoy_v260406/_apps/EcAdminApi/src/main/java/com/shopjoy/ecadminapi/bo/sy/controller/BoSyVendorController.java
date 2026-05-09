@@ -58,7 +58,8 @@ public class BoSyVendorController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyVendor>>> saveList(@RequestBody List<SyVendor> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyVendorService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyVendor> rows) {
+        boSyVendorService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

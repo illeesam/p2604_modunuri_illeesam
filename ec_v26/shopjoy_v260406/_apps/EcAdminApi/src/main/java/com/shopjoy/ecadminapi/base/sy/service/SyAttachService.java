@@ -68,7 +68,7 @@ public class SyAttachService {
         SyAttach saved = syAttachRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getAttachId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyAttachService {
         SyAttach saved = syAttachRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getAttachId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyAttachService {
         SyAttach saved = syAttachRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyAttachService {
         int affected = syAttachMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getAttachId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyAttachService {
     }
 
     @Transactional
-    public List<SyAttach> saveList(List<SyAttach> rows) {
+    public void saveList(List<SyAttach> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyAttachService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyAttach> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getAttachId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyAttachService {
             VoUtil.voCopyExclude(row, entity, "attachId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syAttachRepository.save(entity);
-            upsertedIds.add(entity.getAttachId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyAttachService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syAttachRepository.save(row);
-            upsertedIds.add(row.getAttachId());
         }
         em.flush();
         em.clear();
-
-        List<SyAttach> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

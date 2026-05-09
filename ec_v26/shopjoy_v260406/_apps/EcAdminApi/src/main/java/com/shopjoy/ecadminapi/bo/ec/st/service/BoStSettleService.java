@@ -36,7 +36,7 @@ public class BoStSettleService {
     @Transactional public StSettle create(StSettle body) { return stSettleService.create(body); }
     @Transactional public StSettle update(String id, StSettle body) { return stSettleService.update(id, body); }
     @Transactional public void delete(String id) { stSettleService.delete(id); }
-    @Transactional public List<StSettle> saveList(List<StSettle> rows) { return stSettleService.saveList(rows); }
+    @Transactional public void saveList(List<StSettle> rows) { stSettleService.saveList(rows); }
 
     /** changeStatus — settleStatusCd 변경 (이력 보존) */
     @Transactional

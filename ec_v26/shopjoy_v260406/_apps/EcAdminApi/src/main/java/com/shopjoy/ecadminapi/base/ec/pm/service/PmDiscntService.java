@@ -68,7 +68,7 @@ public class PmDiscntService {
         PmDiscnt saved = pmDiscntRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDiscntId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PmDiscntService {
         PmDiscnt saved = pmDiscntRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getDiscntId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PmDiscntService {
         PmDiscnt saved = pmDiscntRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PmDiscntService {
         int affected = pmDiscntMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getDiscntId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PmDiscntService {
     }
 
     @Transactional
-    public List<PmDiscnt> saveList(List<PmDiscnt> rows) {
+    public void saveList(List<PmDiscnt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PmDiscntService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PmDiscnt> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getDiscntId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PmDiscntService {
             VoUtil.voCopyExclude(row, entity, "discntId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pmDiscntRepository.save(entity);
-            upsertedIds.add(entity.getDiscntId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PmDiscntService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmDiscntRepository.save(row);
-            upsertedIds.add(row.getDiscntId());
         }
         em.flush();
         em.clear();
-
-        List<PmDiscnt> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

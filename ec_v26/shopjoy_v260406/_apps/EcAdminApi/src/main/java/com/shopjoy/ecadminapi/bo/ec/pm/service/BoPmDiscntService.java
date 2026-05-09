@@ -36,7 +36,7 @@ public class BoPmDiscntService {
     @Transactional public PmDiscnt create(PmDiscnt body) { return pmDiscntService.create(body); }
     @Transactional public PmDiscnt update(String id, PmDiscnt body) { return pmDiscntService.update(id, body); }
     @Transactional public void delete(String id) { pmDiscntService.delete(id); }
-    @Transactional public List<PmDiscnt> saveList(List<PmDiscnt> rows) { return pmDiscntService.saveList(rows); }
+    @Transactional public void saveList(List<PmDiscnt> rows) { pmDiscntService.saveList(rows); }
 
     /** changeStatus — discntStatusCd 변경 (이력 보존) */
     @Transactional

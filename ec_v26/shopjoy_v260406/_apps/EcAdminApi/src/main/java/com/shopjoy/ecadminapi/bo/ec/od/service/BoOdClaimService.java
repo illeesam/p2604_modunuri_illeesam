@@ -37,7 +37,7 @@ public class BoOdClaimService {
     @Transactional public OdClaim create(OdClaim body) { return odClaimService.create(body); }
     @Transactional public OdClaim update(String id, OdClaim body) { return odClaimService.update(id, body); }
     @Transactional public void delete(String id) { odClaimService.delete(id); }
-    @Transactional public List<OdClaim> saveList(List<OdClaim> rows) { return odClaimService.saveList(rows); }
+    @Transactional public void saveList(List<OdClaim> rows) { odClaimService.saveList(rows); }
 
     /** changeStatus — claimStatusCd 변경 (이력 보존) */
     @Transactional

@@ -68,7 +68,7 @@ public class OdOrderDiscntService {
         OdOrderDiscnt saved = odOrderDiscntRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getOrderDiscntId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdOrderDiscntService {
         OdOrderDiscnt saved = odOrderDiscntRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getOrderDiscntId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdOrderDiscntService {
         OdOrderDiscnt saved = odOrderDiscntRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdOrderDiscntService {
         int affected = odOrderDiscntMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getOrderDiscntId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdOrderDiscntService {
     }
 
     @Transactional
-    public List<OdOrderDiscnt> saveList(List<OdOrderDiscnt> rows) {
+    public void saveList(List<OdOrderDiscnt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdOrderDiscntService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdOrderDiscnt> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getOrderDiscntId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdOrderDiscntService {
             VoUtil.voCopyExclude(row, entity, "orderDiscntId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odOrderDiscntRepository.save(entity);
-            upsertedIds.add(entity.getOrderDiscntId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdOrderDiscntService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odOrderDiscntRepository.save(row);
-            upsertedIds.add(row.getOrderDiscntId());
         }
         em.flush();
         em.clear();
-
-        List<OdOrderDiscnt> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -68,7 +68,7 @@ public class PdReviewService {
         PdReview saved = pdReviewRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getReviewId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdReviewService {
         PdReview saved = pdReviewRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getReviewId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdReviewService {
         PdReview saved = pdReviewRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdReviewService {
         int affected = pdReviewMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getReviewId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdReviewService {
     }
 
     @Transactional
-    public List<PdReview> saveList(List<PdReview> rows) {
+    public void saveList(List<PdReview> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdReviewService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdReview> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getReviewId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdReviewService {
             VoUtil.voCopyExclude(row, entity, "reviewId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdReviewRepository.save(entity);
-            upsertedIds.add(entity.getReviewId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdReviewService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdReviewRepository.save(row);
-            upsertedIds.add(row.getReviewId());
         }
         em.flush();
         em.clear();
-
-        List<PdReview> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -57,7 +57,8 @@ public class StSettleAdjController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<StSettleAdj>>> saveList(@RequestBody List<StSettleAdj> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<StSettleAdj> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -68,7 +68,7 @@ public class PdProdSkuService {
         PdProdSku saved = pdProdSkuRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSkuId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdProdSkuService {
         PdProdSku saved = pdProdSkuRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getSkuId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdProdSkuService {
         PdProdSku saved = pdProdSkuRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdProdSkuService {
         int affected = pdProdSkuMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getSkuId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdProdSkuService {
     }
 
     @Transactional
-    public List<PdProdSku> saveList(List<PdProdSku> rows) {
+    public void saveList(List<PdProdSku> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdProdSkuService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdProdSku> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getSkuId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdProdSkuService {
             VoUtil.voCopyExclude(row, entity, "skuId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdProdSkuRepository.save(entity);
-            upsertedIds.add(entity.getSkuId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdProdSkuService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdSkuRepository.save(row);
-            upsertedIds.add(row.getSkuId());
         }
         em.flush();
         em.clear();
-
-        List<PdProdSku> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

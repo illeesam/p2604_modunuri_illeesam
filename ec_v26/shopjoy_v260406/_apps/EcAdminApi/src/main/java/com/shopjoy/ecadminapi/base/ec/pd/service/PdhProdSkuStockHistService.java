@@ -63,6 +63,6 @@ public class PdhProdSkuStockHistService {
         PdhProdSkuStockHist saved = pdhProdSkuStockHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getHistId());
+        return saved;
     }
 }

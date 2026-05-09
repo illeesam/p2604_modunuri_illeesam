@@ -68,7 +68,7 @@ public class DpAreaService {
         DpArea saved = dpAreaRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getAreaId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class DpAreaService {
         DpArea saved = dpAreaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getAreaId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class DpAreaService {
         DpArea saved = dpAreaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class DpAreaService {
         int affected = dpAreaMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getAreaId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class DpAreaService {
     }
 
     @Transactional
-    public List<DpArea> saveList(List<DpArea> rows) {
+    public void saveList(List<DpArea> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class DpAreaService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<DpArea> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getAreaId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class DpAreaService {
             VoUtil.voCopyExclude(row, entity, "areaId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             dpAreaRepository.save(entity);
-            upsertedIds.add(entity.getAreaId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class DpAreaService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             dpAreaRepository.save(row);
-            upsertedIds.add(row.getAreaId());
         }
         em.flush();
         em.clear();
-
-        List<DpArea> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

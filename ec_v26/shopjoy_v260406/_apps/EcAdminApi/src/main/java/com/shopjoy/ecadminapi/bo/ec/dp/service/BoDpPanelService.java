@@ -26,5 +26,5 @@ public class BoDpPanelService {
     @Transactional public DpPanel create(DpPanel body) { return dpPanelService.create(body); }
     @Transactional public DpPanel update(String id, DpPanel body) { return dpPanelService.update(id, body); }
     @Transactional public void delete(String id) { dpPanelService.delete(id); }
-    @Transactional public List<DpPanel> saveList(List<DpPanel> rows) { return dpPanelService.saveList(rows); }
+    @Transactional public void saveList(List<DpPanel> rows) { dpPanelService.saveList(rows); }
 }

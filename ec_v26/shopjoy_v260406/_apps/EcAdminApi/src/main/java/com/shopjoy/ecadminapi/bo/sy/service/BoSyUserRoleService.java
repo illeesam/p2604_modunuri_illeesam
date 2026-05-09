@@ -27,5 +27,5 @@ public class BoSyUserRoleService {
     @Transactional public SyUserRole create(SyUserRole body) { return syUserRoleService.create(body); }
     @Transactional public SyUserRole update(String id, SyUserRole body) { return syUserRoleService.update(id, body); }
     @Transactional public void delete(String id) { syUserRoleService.delete(id); }
-    @Transactional public List<SyUserRole> saveList(List<SyUserRole> rows) { return syUserRoleService.saveList(rows); }
+    @Transactional public void saveList(List<SyUserRole> rows) { syUserRoleService.saveList(rows); }
 }

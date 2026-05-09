@@ -26,5 +26,5 @@ public class BoSyVendorService {
     @Transactional public SyVendor create(SyVendor body) { return syVendorService.create(body); }
     @Transactional public SyVendor update(String id, SyVendor body) { return syVendorService.update(id, body); }
     @Transactional public void delete(String id) { syVendorService.delete(id); }
-    @Transactional public List<SyVendor> saveList(List<SyVendor> rows) { return syVendorService.saveList(rows); }
+    @Transactional public void saveList(List<SyVendor> rows) { syVendorService.saveList(rows); }
 }

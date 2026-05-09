@@ -58,7 +58,8 @@ public class BoSyRoleMenuController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyRoleMenu>>> saveList(@RequestBody List<SyRoleMenu> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyRoleMenuService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyRoleMenu> rows) {
+        boSyRoleMenuService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

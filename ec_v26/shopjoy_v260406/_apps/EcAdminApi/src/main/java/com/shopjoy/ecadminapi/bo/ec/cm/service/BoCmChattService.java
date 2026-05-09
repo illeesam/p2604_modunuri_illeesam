@@ -39,7 +39,7 @@ public class BoCmChattService {
     }
     @Transactional public CmChattRoom update(String id, CmChattRoom body) { return cmChattRoomService.update(id, body); }
     @Transactional public void delete(String id) { cmChattRoomService.delete(id); }
-    @Transactional public List<CmChattRoom> saveList(List<CmChattRoom> rows) { return cmChattRoomService.saveList(rows); }
+    @Transactional public void saveList(List<CmChattRoom> rows) { cmChattRoomService.saveList(rows); }
 
     /** changeStatus — chattStatusCd 변경 */
     @Transactional

@@ -68,7 +68,7 @@ public class SyVendorBrandService {
         SyVendorBrand saved = syVendorBrandRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVendorBrandId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyVendorBrandService {
         SyVendorBrand saved = syVendorBrandRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVendorBrandId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyVendorBrandService {
         SyVendorBrand saved = syVendorBrandRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyVendorBrandService {
         int affected = syVendorBrandMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getVendorBrandId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyVendorBrandService {
     }
 
     @Transactional
-    public List<SyVendorBrand> saveList(List<SyVendorBrand> rows) {
+    public void saveList(List<SyVendorBrand> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyVendorBrandService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyVendorBrand> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorBrandId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyVendorBrandService {
             VoUtil.voCopyExclude(row, entity, "vendorBrandId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syVendorBrandRepository.save(entity);
-            upsertedIds.add(entity.getVendorBrandId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyVendorBrandService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syVendorBrandRepository.save(row);
-            upsertedIds.add(row.getVendorBrandId());
         }
         em.flush();
         em.clear();
-
-        List<SyVendorBrand> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

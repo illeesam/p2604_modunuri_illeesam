@@ -29,5 +29,5 @@ public class BoMbMemGroupService {
     }
     @Transactional public MbMemberGroup update(String id, MbMemberGroup body) { return mbMemberGroupService.update(id, body); }
     @Transactional public void delete(String id) { mbMemberGroupService.delete(id); }
-    @Transactional public List<MbMemberGroup> saveList(List<MbMemberGroup> rows) { return mbMemberGroupService.saveList(rows); }
+    @Transactional public void saveList(List<MbMemberGroup> rows) { mbMemberGroupService.saveList(rows); }
 }

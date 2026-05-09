@@ -68,7 +68,7 @@ public class SyVendorUserService {
         SyVendorUser saved = syVendorUserRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVendorUserId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyVendorUserService {
         SyVendorUser saved = syVendorUserRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVendorUserId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyVendorUserService {
         SyVendorUser saved = syVendorUserRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyVendorUserService {
         int affected = syVendorUserMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getVendorUserId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyVendorUserService {
     }
 
     @Transactional
-    public List<SyVendorUser> saveList(List<SyVendorUser> rows) {
+    public void saveList(List<SyVendorUser> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyVendorUserService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyVendorUser> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorUserId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyVendorUserService {
             VoUtil.voCopyExclude(row, entity, "vendorUserId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syVendorUserRepository.save(entity);
-            upsertedIds.add(entity.getVendorUserId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyVendorUserService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syVendorUserRepository.save(row);
-            upsertedIds.add(row.getVendorUserId());
         }
         em.flush();
         em.clear();
-
-        List<SyVendorUser> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

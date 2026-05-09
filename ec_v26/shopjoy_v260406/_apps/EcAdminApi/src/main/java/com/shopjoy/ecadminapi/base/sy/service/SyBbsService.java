@@ -68,7 +68,7 @@ public class SyBbsService {
         SyBbs saved = syBbsRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBbsId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyBbsService {
         SyBbs saved = syBbsRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBbsId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyBbsService {
         SyBbs saved = syBbsRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyBbsService {
         int affected = syBbsMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getBbsId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyBbsService {
     }
 
     @Transactional
-    public List<SyBbs> saveList(List<SyBbs> rows) {
+    public void saveList(List<SyBbs> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyBbsService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyBbs> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBbsId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyBbsService {
             VoUtil.voCopyExclude(row, entity, "bbsId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syBbsRepository.save(entity);
-            upsertedIds.add(entity.getBbsId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyBbsService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syBbsRepository.save(row);
-            upsertedIds.add(row.getBbsId());
         }
         em.flush();
         em.clear();
-
-        List<SyBbs> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

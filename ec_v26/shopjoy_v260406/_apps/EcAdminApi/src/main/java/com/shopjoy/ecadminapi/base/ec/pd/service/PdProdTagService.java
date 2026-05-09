@@ -68,7 +68,7 @@ public class PdProdTagService {
         PdProdTag saved = pdProdTagRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getProdTagId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdProdTagService {
         PdProdTag saved = pdProdTagRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getProdTagId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdProdTagService {
         PdProdTag saved = pdProdTagRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdProdTagService {
         int affected = pdProdTagMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getProdTagId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdProdTagService {
     }
 
     @Transactional
-    public List<PdProdTag> saveList(List<PdProdTag> rows) {
+    public void saveList(List<PdProdTag> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdProdTagService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdProdTag> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getProdTagId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdProdTagService {
             VoUtil.voCopyExclude(row, entity, "prodTagId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdProdTagRepository.save(entity);
-            upsertedIds.add(entity.getProdTagId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdProdTagService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdTagRepository.save(row);
-            upsertedIds.add(row.getProdTagId());
         }
         em.flush();
         em.clear();
-
-        List<PdProdTag> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

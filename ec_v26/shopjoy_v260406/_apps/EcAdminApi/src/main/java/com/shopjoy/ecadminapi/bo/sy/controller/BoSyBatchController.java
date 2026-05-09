@@ -58,7 +58,8 @@ public class BoSyBatchController {
     }
 
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyBatch>>> saveList(@RequestBody List<SyBatch> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyBatchService.saveList(rows), "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyBatch> rows) {
+        boSyBatchService.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

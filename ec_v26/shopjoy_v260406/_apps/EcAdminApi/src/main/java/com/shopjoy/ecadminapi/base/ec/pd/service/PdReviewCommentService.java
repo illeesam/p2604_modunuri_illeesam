@@ -68,7 +68,7 @@ public class PdReviewCommentService {
         PdReviewComment saved = pdReviewCommentRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getReviewCommentId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdReviewCommentService {
         PdReviewComment saved = pdReviewCommentRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getReviewCommentId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdReviewCommentService {
         PdReviewComment saved = pdReviewCommentRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdReviewCommentService {
         int affected = pdReviewCommentMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getReviewCommentId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdReviewCommentService {
     }
 
     @Transactional
-    public List<PdReviewComment> saveList(List<PdReviewComment> rows) {
+    public void saveList(List<PdReviewComment> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdReviewCommentService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdReviewComment> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getReviewCommentId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdReviewCommentService {
             VoUtil.voCopyExclude(row, entity, "reviewCommentId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdReviewCommentRepository.save(entity);
-            upsertedIds.add(entity.getReviewCommentId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdReviewCommentService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdReviewCommentRepository.save(row);
-            upsertedIds.add(row.getReviewCommentId());
         }
         em.flush();
         em.clear();
-
-        List<PdReviewComment> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

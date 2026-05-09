@@ -26,5 +26,5 @@ public class BoSyCodeGrpService {
     @Transactional public SyCodeGrp create(SyCodeGrp body) { return syCodeGrpService.create(body); }
     @Transactional public SyCodeGrp update(String id, SyCodeGrp body) { return syCodeGrpService.update(id, body); }
     @Transactional public void delete(String id) { syCodeGrpService.delete(id); }
-    @Transactional public List<SyCodeGrp> saveList(List<SyCodeGrp> rows) { return syCodeGrpService.saveList(rows); }
+    @Transactional public void saveList(List<SyCodeGrp> rows) { syCodeGrpService.saveList(rows); }
 }

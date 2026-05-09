@@ -68,7 +68,7 @@ public class PdProdBundleItemService {
         PdProdBundleItem saved = pdProdBundleItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBundleItemId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdProdBundleItemService {
         PdProdBundleItem saved = pdProdBundleItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBundleItemId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdProdBundleItemService {
         PdProdBundleItem saved = pdProdBundleItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdProdBundleItemService {
         int affected = pdProdBundleItemMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getBundleItemId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdProdBundleItemService {
     }
 
     @Transactional
-    public List<PdProdBundleItem> saveList(List<PdProdBundleItem> rows) {
+    public void saveList(List<PdProdBundleItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdProdBundleItemService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdProdBundleItem> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBundleItemId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdProdBundleItemService {
             VoUtil.voCopyExclude(row, entity, "bundleItemId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdProdBundleItemRepository.save(entity);
-            upsertedIds.add(entity.getBundleItemId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdProdBundleItemService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdBundleItemRepository.save(row);
-            upsertedIds.add(row.getBundleItemId());
         }
         em.flush();
         em.clear();
-
-        List<PdProdBundleItem> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

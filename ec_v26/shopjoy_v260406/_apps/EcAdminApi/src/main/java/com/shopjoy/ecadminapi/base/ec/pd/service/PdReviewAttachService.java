@@ -68,7 +68,7 @@ public class PdReviewAttachService {
         PdReviewAttach saved = pdReviewAttachRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getReviewAttachId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class PdReviewAttachService {
         PdReviewAttach saved = pdReviewAttachRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getReviewAttachId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PdReviewAttachService {
         PdReviewAttach saved = pdReviewAttachRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class PdReviewAttachService {
         int affected = pdReviewAttachMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getReviewAttachId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class PdReviewAttachService {
     }
 
     @Transactional
-    public List<PdReviewAttach> saveList(List<PdReviewAttach> rows) {
+    public void saveList(List<PdReviewAttach> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class PdReviewAttachService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<PdReviewAttach> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getReviewAttachId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class PdReviewAttachService {
             VoUtil.voCopyExclude(row, entity, "reviewAttachId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             pdReviewAttachRepository.save(entity);
-            upsertedIds.add(entity.getReviewAttachId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class PdReviewAttachService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdReviewAttachRepository.save(row);
-            upsertedIds.add(row.getReviewAttachId());
         }
         em.flush();
         em.clear();
-
-        List<PdReviewAttach> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -68,7 +68,7 @@ public class SyCodeGrpService {
         SyCodeGrp saved = syCodeGrpRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCodeGrpId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyCodeGrpService {
         SyCodeGrp saved = syCodeGrpRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCodeGrpId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyCodeGrpService {
         SyCodeGrp saved = syCodeGrpRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyCodeGrpService {
         int affected = syCodeGrpMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getCodeGrpId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyCodeGrpService {
     }
 
     @Transactional
-    public List<SyCodeGrp> saveList(List<SyCodeGrp> rows) {
+    public void saveList(List<SyCodeGrp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyCodeGrpService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyCodeGrp> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getCodeGrpId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyCodeGrpService {
             VoUtil.voCopyExclude(row, entity, "codeGrpId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syCodeGrpRepository.save(entity);
-            upsertedIds.add(entity.getCodeGrpId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyCodeGrpService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syCodeGrpRepository.save(row);
-            upsertedIds.add(row.getCodeGrpId());
         }
         em.flush();
         em.clear();
-
-        List<SyCodeGrp> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

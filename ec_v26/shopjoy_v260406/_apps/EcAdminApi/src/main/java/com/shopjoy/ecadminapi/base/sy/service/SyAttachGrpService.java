@@ -68,7 +68,7 @@ public class SyAttachGrpService {
         SyAttachGrp saved = syAttachGrpRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getAttachGrpId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class SyAttachGrpService {
         SyAttachGrp saved = syAttachGrpRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getAttachGrpId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class SyAttachGrpService {
         SyAttachGrp saved = syAttachGrpRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class SyAttachGrpService {
         int affected = syAttachGrpMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getAttachGrpId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class SyAttachGrpService {
     }
 
     @Transactional
-    public List<SyAttachGrp> saveList(List<SyAttachGrp> rows) {
+    public void saveList(List<SyAttachGrp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class SyAttachGrpService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyAttachGrp> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getAttachGrpId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class SyAttachGrpService {
             VoUtil.voCopyExclude(row, entity, "attachGrpId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syAttachGrpRepository.save(entity);
-            upsertedIds.add(entity.getAttachGrpId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class SyAttachGrpService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syAttachGrpRepository.save(row);
-            upsertedIds.add(row.getAttachGrpId());
         }
         em.flush();
         em.clear();
-
-        List<SyAttachGrp> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

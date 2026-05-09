@@ -68,7 +68,7 @@ public class CmBlogCateService {
         CmBlogCate saved = cmBlogCateRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBlogCateId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class CmBlogCateService {
         CmBlogCate saved = cmBlogCateRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getBlogCateId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class CmBlogCateService {
         CmBlogCate saved = cmBlogCateRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class CmBlogCateService {
         int affected = cmBlogCateMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getBlogCateId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class CmBlogCateService {
     }
 
     @Transactional
-    public List<CmBlogCate> saveList(List<CmBlogCate> rows) {
+    public void saveList(List<CmBlogCate> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class CmBlogCateService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<CmBlogCate> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getBlogCateId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class CmBlogCateService {
             VoUtil.voCopyExclude(row, entity, "blogCateId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             cmBlogCateRepository.save(entity);
-            upsertedIds.add(entity.getBlogCateId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class CmBlogCateService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmBlogCateRepository.save(row);
-            upsertedIds.add(row.getBlogCateId());
         }
         em.flush();
         em.clear();
-
-        List<CmBlogCate> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

@@ -68,7 +68,7 @@ public class MbhMemberLoginLogService {
         MbhMemberLoginLog saved = mbhMemberLoginLogRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLogId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class MbhMemberLoginLogService {
         MbhMemberLoginLog saved = mbhMemberLoginLogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getLogId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class MbhMemberLoginLogService {
         MbhMemberLoginLog saved = mbhMemberLoginLogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class MbhMemberLoginLogService {
         int affected = mbhMemberLoginLogMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getLogId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class MbhMemberLoginLogService {
     }
 
     @Transactional
-    public List<MbhMemberLoginLog> saveList(List<MbhMemberLoginLog> rows) {
+    public void saveList(List<MbhMemberLoginLog> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class MbhMemberLoginLogService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<MbhMemberLoginLog> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getLogId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class MbhMemberLoginLogService {
             VoUtil.voCopyExclude(row, entity, "logId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             mbhMemberLoginLogRepository.save(entity);
-            upsertedIds.add(entity.getLogId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class MbhMemberLoginLogService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             mbhMemberLoginLogRepository.save(row);
-            upsertedIds.add(row.getLogId());
         }
         em.flush();
         em.clear();
-
-        List<MbhMemberLoginLog> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

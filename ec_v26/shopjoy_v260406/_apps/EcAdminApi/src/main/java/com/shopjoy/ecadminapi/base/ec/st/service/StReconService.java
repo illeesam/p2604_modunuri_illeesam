@@ -68,7 +68,7 @@ public class StReconService {
         StRecon saved = stReconRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getReconId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class StReconService {
         StRecon saved = stReconRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getReconId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class StReconService {
         StRecon saved = stReconRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class StReconService {
         int affected = stReconMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getReconId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class StReconService {
     }
 
     @Transactional
-    public List<StRecon> saveList(List<StRecon> rows) {
+    public void saveList(List<StRecon> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class StReconService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<StRecon> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getReconId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class StReconService {
             VoUtil.voCopyExclude(row, entity, "reconId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             stReconRepository.save(entity);
-            upsertedIds.add(entity.getReconId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class StReconService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             stReconRepository.save(row);
-            upsertedIds.add(row.getReconId());
         }
         em.flush();
         em.clear();
-
-        List<StRecon> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

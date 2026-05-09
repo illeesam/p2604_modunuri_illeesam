@@ -81,8 +81,9 @@ public class BoSyUserController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyUser>>> saveList(@RequestBody List<SyUser> rows) {
-        List<SyUser> result = boSyUserService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyUser> rows) {
+        boSyUserService.saveList(rows);
+
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

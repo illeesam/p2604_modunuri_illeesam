@@ -68,7 +68,7 @@ public class DpUiAreaService {
         DpUiArea saved = dpUiAreaRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUiAreaId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class DpUiAreaService {
         DpUiArea saved = dpUiAreaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getUiAreaId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class DpUiAreaService {
         DpUiArea saved = dpUiAreaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class DpUiAreaService {
         int affected = dpUiAreaMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getUiAreaId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class DpUiAreaService {
     }
 
     @Transactional
-    public List<DpUiArea> saveList(List<DpUiArea> rows) {
+    public void saveList(List<DpUiArea> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class DpUiAreaService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<DpUiArea> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getUiAreaId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class DpUiAreaService {
             VoUtil.voCopyExclude(row, entity, "uiAreaId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             dpUiAreaRepository.save(entity);
-            upsertedIds.add(entity.getUiAreaId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class DpUiAreaService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             dpUiAreaRepository.save(row);
-            upsertedIds.add(row.getUiAreaId());
         }
         em.flush();
         em.clear();
-
-        List<DpUiArea> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

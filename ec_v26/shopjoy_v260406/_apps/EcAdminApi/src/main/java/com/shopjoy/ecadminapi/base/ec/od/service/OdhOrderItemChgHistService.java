@@ -68,7 +68,7 @@ public class OdhOrderItemChgHistService {
         OdhOrderItemChgHist saved = odhOrderItemChgHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getOrderItemChgHistId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdhOrderItemChgHistService {
         OdhOrderItemChgHist saved = odhOrderItemChgHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getOrderItemChgHistId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdhOrderItemChgHistService {
         OdhOrderItemChgHist saved = odhOrderItemChgHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdhOrderItemChgHistService {
         int affected = odhOrderItemChgHistMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getOrderItemChgHistId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdhOrderItemChgHistService {
     }
 
     @Transactional
-    public List<OdhOrderItemChgHist> saveList(List<OdhOrderItemChgHist> rows) {
+    public void saveList(List<OdhOrderItemChgHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdhOrderItemChgHistService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdhOrderItemChgHist> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getOrderItemChgHistId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdhOrderItemChgHistService {
             VoUtil.voCopyExclude(row, entity, "orderItemChgHistId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odhOrderItemChgHistRepository.save(entity);
-            upsertedIds.add(entity.getOrderItemChgHistId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdhOrderItemChgHistService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odhOrderItemChgHistRepository.save(row);
-            upsertedIds.add(row.getOrderItemChgHistId());
         }
         em.flush();
         em.clear();
-
-        List<OdhOrderItemChgHist> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

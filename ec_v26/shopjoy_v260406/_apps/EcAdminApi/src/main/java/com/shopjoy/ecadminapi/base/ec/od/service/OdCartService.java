@@ -68,7 +68,7 @@ public class OdCartService {
         OdCart saved = odCartRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCartId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OdCartService {
         OdCart saved = odCartRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getCartId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class OdCartService {
         OdCart saved = odCartRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class OdCartService {
         int affected = odCartMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getCartId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class OdCartService {
     }
 
     @Transactional
-    public List<OdCart> saveList(List<OdCart> rows) {
+    public void saveList(List<OdCart> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class OdCartService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<OdCart> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getCartId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class OdCartService {
             VoUtil.voCopyExclude(row, entity, "cartId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             odCartRepository.save(entity);
-            upsertedIds.add(entity.getCartId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class OdCartService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odCartRepository.save(row);
-            upsertedIds.add(row.getCartId());
         }
         em.flush();
         em.clear();
-
-        List<OdCart> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

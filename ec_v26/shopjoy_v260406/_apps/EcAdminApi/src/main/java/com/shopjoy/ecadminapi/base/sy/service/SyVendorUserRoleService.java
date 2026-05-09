@@ -70,7 +70,7 @@ public class SyVendorUserRoleService {
         SyVendorUserRole saved = syVendorUserRoleRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVendorUserRoleId());
+        return saved;
     }
 
     @Transactional
@@ -82,7 +82,7 @@ public class SyVendorUserRoleService {
         SyVendorUserRole saved = syVendorUserRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getVendorUserRoleId());
+        return saved;
     }
 
     @Transactional
@@ -94,7 +94,7 @@ public class SyVendorUserRoleService {
         SyVendorUserRole saved = syVendorUserRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -107,7 +107,7 @@ public class SyVendorUserRoleService {
         int affected = syVendorUserRoleMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getVendorUserRoleId());
+        return entity;
     }
 
     @Transactional
@@ -119,7 +119,7 @@ public class SyVendorUserRoleService {
     }
 
     @Transactional
-    public List<SyVendorUserRole> saveList(List<SyVendorUserRole> rows) {
+    public void saveList(List<SyVendorUserRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -132,8 +132,6 @@ public class SyVendorUserRoleService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<SyVendorUserRole> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorUserRoleId() != null)
             .toList();
@@ -142,7 +140,6 @@ public class SyVendorUserRoleService {
             VoUtil.voCopyExclude(row, entity, "vendorUserRoleId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             syVendorUserRoleRepository.save(entity);
-            upsertedIds.add(entity.getVendorUserRoleId());
         }
         em.flush();
 
@@ -154,15 +151,8 @@ public class SyVendorUserRoleService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             syVendorUserRoleRepository.save(row);
-            upsertedIds.add(row.getVendorUserRoleId());
         }
         em.flush();
         em.clear();
-
-        List<SyVendorUserRole> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

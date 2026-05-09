@@ -68,7 +68,7 @@ public class StErpVoucherLineService {
         StErpVoucherLine saved = stErpVoucherLineRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getErpVoucherLineId());
+        return saved;
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class StErpVoucherLineService {
         StErpVoucherLine saved = stErpVoucherLineRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(saved.getErpVoucherLineId());
+        return saved;
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class StErpVoucherLineService {
         StErpVoucherLine saved = stErpVoucherLineRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return findById(id);
+        return saved;
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class StErpVoucherLineService {
         int affected = stErpVoucherLineMapper.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.clear();
-        return findById(entity.getErpVoucherLineId());
+        return entity;
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class StErpVoucherLineService {
     }
 
     @Transactional
-    public List<StErpVoucherLine> saveList(List<StErpVoucherLine> rows) {
+    public void saveList(List<StErpVoucherLine> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -130,8 +130,6 @@ public class StErpVoucherLineService {
             em.flush();
             em.clear();
         }
-
-        List<String> upsertedIds = new ArrayList<>();
         List<StErpVoucherLine> updateRows = rows.stream()
             .filter(r -> "U".equals(r.getRowStatus()) && r.getErpVoucherLineId() != null)
             .toList();
@@ -140,7 +138,6 @@ public class StErpVoucherLineService {
             VoUtil.voCopyExclude(row, entity, "erpVoucherLineId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             stErpVoucherLineRepository.save(entity);
-            upsertedIds.add(entity.getErpVoucherLineId());
         }
         em.flush();
 
@@ -152,15 +149,8 @@ public class StErpVoucherLineService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             stErpVoucherLineRepository.save(row);
-            upsertedIds.add(row.getErpVoucherLineId());
         }
         em.flush();
         em.clear();
-
-        List<StErpVoucherLine> result = new ArrayList<>();
-        for (String id : upsertedIds) {
-            result.add(findById(id));
-        }
-        return result;
     }
 }

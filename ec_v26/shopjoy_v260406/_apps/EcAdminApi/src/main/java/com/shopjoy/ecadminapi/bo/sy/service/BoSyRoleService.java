@@ -49,7 +49,7 @@ public class BoSyRoleService {
     }
 
     @Transactional
-    public List<SyRole> saveList(List<SyRole> rows) {
+    public void saveList(List<SyRole> rows) {
         List<SyRole> saved = syRoleService.saveList(rows);
         roleCache.evictAll();
         return saved;
