@@ -25,12 +25,12 @@ window.DpDispWidgetMng = {
 
     // 코드 주입
 
-    const _initSearchParam = () => ({ kw: '', type: '', status: '' });
+    const _initSearchParam = () => ({ type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     /* applied: 결과에 실제 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
-    const applied = reactive({ kw: '', type: '', status: '' });
+    const applied = reactive({ type: '', status: '' });
     const cfFilterDirty = computed(() =>
-      searchParam.kw !== applied.kw ||
+      searchParam.searchValue !== applied.kw ||
       searchParam.type !== applied.type ||
       searchParam.status !== applied.status
     );
@@ -77,7 +77,7 @@ window.DpDispWidgetMng = {
         pager.pageTotalPage  = dW?.pageTotalPage  || 1;
         fnBuildPagerNums();
         /* 결과에 반영된 조건 기록 */
-        applied.kw     = searchParam.kw;
+        applied.kw     = searchParam.searchValue;
         applied.type   = searchParam.type;
         applied.status = searchParam.status;
         uiState.error = null;
@@ -192,7 +192,7 @@ window.DpDispWidgetMng = {
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
         <label class="form-label">검색어</label>
-        <input v-model="searchParam.kw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => onSearch?.()" style="margin:0;" />
+        <input v-model="searchParam.searchValue" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => onSearch?.()" style="margin:0;" />
       </div>
       <div class="form-group" style="margin:0;width:160px;">
         <label class="form-label">위젯 유형</label>

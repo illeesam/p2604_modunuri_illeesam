@@ -16,7 +16,7 @@ window.MbMemberMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ member_statuses: [], member_grades: [] });
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const _initSearchParam = () => ({ kw: '', grade: '', status: '' });
+    const _initSearchParam = () => ({ grade: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     const detailModal = reactive({
       show: false,
@@ -207,7 +207,7 @@ window.MbMemberMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">이름/이메일/ID</label>
-      <input v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="이름 또는 이메일 검색" />
+      <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="이름 또는 이메일 검색" />
       <label class="search-label">등급</label>
       <select v-model="searchParam.grade">
         <option value="">전체</option>

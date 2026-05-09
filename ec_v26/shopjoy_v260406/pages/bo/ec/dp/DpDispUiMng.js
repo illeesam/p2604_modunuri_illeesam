@@ -33,7 +33,7 @@ window.DpDispUiMng = {
 
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { kw: '', type: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
+      return { type: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -135,7 +135,7 @@ window.DpDispUiMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">키워드</label>
-      <input class="form-control" v-model="searchParam.kw" placeholder="UI명 검색" @keyup.enter="onSearch" style="width:200px;" />
+      <input class="form-control" v-model="searchParam.searchValue" placeholder="UI명 검색" @keyup.enter="onSearch" style="width:200px;" />
       <label class="search-label">사용여부</label>
       <select class="form-control" v-model="searchParam.useYn" style="width:100px;">
         <option value="">전체</option>

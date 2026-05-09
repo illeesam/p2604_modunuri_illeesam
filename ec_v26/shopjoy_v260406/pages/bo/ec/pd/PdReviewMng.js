@@ -74,7 +74,7 @@ window.PdReviewMng = {
     });
     const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
-    const _initSearchParam = () => ({ kw: '', status: '', rating: '' });
+    const _initSearchParam = () => ({ status: '', rating: '' });
     const searchParam = reactive(_initSearchParam());
 
     const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
@@ -240,7 +240,7 @@ window.PdReviewMng = {
       <div class="search-bar" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:flex-end">
         <div style="display:flex;flex-direction:column;gap:8px">
           <label class="search-label">리뷰제목</label>
-          <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
+          <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <label class="search-label">상태</label>

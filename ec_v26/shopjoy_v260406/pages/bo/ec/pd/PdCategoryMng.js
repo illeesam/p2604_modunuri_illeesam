@@ -38,8 +38,7 @@ window.PdCategoryMng = {
       siteId: (window.boCommonFilter && window.boCommonFilter.siteId)
               || window.sfGetBoAppStore?.()?.svBoSiteId
               || (window._boCmSites?.[0]?.siteId)
-              || '2604010000000001',
-      kw: '', categoryDepth: '', categoryStatusCd: ''
+              || '2604010000000001', categoryDepth: '', categoryStatusCd: ''
     });
     const searchParam = reactive(_initSearchParam());
 
@@ -360,7 +359,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         <option v-for="s in sites" :key="s.siteId" :value="s.siteId">{{ s.siteId }} {{ s.siteNm }}</option>
       </select>
       <label class="search-label">카테고리명</label>
-      <input class="form-control" v-model="searchParam.kw" placeholder="카테고리명 검색" style="max-width:240px" @keyup.enter="() => onSearch?.()">
+      <input class="form-control" v-model="searchParam.searchValue" placeholder="카테고리명 검색" style="max-width:240px" @keyup.enter="() => onSearch?.()">
       <label class="search-label">단계</label>
       <select class="form-control" v-model="searchParam.categoryDepth" style="width:120px">
         <option value="">전체</option>

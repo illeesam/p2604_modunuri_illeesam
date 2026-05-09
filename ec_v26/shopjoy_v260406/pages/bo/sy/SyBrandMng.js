@@ -68,7 +68,7 @@ window.SyBrandMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { bizCd: '', kw: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { bizCd: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
     const handleDateRangeChange = () => {
@@ -269,7 +269,7 @@ window.SyBrandMng = {
     <div class="search-bar">
       <label class="search-label">업무코드</label>
       <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:160px" @keyup.enter="onSearch">
-      <input v-model="searchParam.kw" placeholder="브랜드코드 / 브랜드명 / 영문명 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="브랜드코드 / 브랜드명 / 영문명 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
         <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>

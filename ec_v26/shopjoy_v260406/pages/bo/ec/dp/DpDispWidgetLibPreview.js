@@ -192,7 +192,7 @@ window.DpDispWidgetLibPreview = {
     const wTypeLabel = (v) => cfDispWidgetTypes.value.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* -- 조회 조건 -- */
-    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: '', kw: '' });
+    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: ''});
     const searchParam = reactive(_initSearchParam());
 
     const onReset = () => {
@@ -200,7 +200,7 @@ window.DpDispWidgetLibPreview = {
     };
 
     const cfFilteredLibs = computed(() => {
-      const kw = searchParam.kw.trim().toLowerCase();
+      const kw = searchParam.searchValue.trim().toLowerCase();
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (searchParam.filterType   && lib.widgetType !== searchParam.filterType) return false;
         if (searchParam.filterStatus && lib.status     !== searchParam.filterStatus) return false;
@@ -568,7 +568,7 @@ window.DpDispWidgetLibPreview = {
           <option v-for="t in cfDispWidgetTypes" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
-      <input v-model="searchParam.kw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
       <button @click="onReset" style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#666;">초기화</button>
     </div>

@@ -12,10 +12,10 @@
             <if test="menuTypeCd != null and menuTypeCd != ''">AND m.menu_type_cd = #{menuTypeCd}</if>
             <if test="parentMenuId != null and parentMenuId != ''">AND m.parent_menu_id = #{parentMenuId}</if>
             <if test="useYn != null and useYn != ''">AND m.use_yn = #{useYn}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_nm')">OR m.menu_nm ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_code')"> OR m.menu_code ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_nm')">OR m.menu_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_code')"> OR m.menu_code ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

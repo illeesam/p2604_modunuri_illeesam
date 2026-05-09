@@ -33,7 +33,7 @@ window.SyAttachMng = {
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
-    const searchParam = reactive({ kw: '', attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
+    const searchParam = reactive({ attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
 
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
@@ -97,7 +97,7 @@ window.SyAttachMng = {
     /* -- 검색 / 페이징 -- */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
     const onReset = () => {
-      Object.assign(searchParam, { kw: '', attachGrpId: '', dateStart: '', dateEnd: '', dateRange: '' });
+      Object.assign(searchParam, { attachGrpId: '', dateStart: '', dateEnd: '', dateRange: '' });
       uiState.selectedGrpId = null;
       pager.pageNo = 1;
       handleSearchData();
@@ -312,7 +312,7 @@ window.SyAttachMng = {
             <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">(전체)</span>
           </b>
           <input v-model="searchParam.attachGrpId" placeholder="첨부그룹ID" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:130px;" @keyup.enter="onSearch" />
-          <input v-model="searchParam.kw" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:150px;" @keyup.enter="onSearch" />
+          <input v-model="searchParam.searchValue" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:150px;" @keyup.enter="onSearch" />
           <span style="font-size:12px;color:#666;white-space:nowrap;">등록일</span>
           <input type="date" v-model="searchParam.dateStart" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" />
           <span style="font-size:12px;color:#aaa;">~</span>

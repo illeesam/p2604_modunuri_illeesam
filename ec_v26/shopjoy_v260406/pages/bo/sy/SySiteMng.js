@@ -78,7 +78,7 @@ window.SySiteMng = {
   const _initSearchParam = () => {
     const today = new Date();
     const thisYear = today.getFullYear();
-    return { kw: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    return { type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
   };
   const searchParam = reactive(_initSearchParam());
 
@@ -173,7 +173,7 @@ const detailModal = reactive({
 <div>
   <div class="page-title">사이트관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="사이트코드 / 사이트명 / 도메인 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="사이트코드 / 사이트명 / 도메인 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>

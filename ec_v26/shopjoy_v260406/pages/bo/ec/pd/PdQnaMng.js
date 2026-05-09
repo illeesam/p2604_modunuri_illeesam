@@ -64,7 +64,7 @@ window.PdQnaMng = {
         uiState.loading = false;
       }
     };
-    const _initSearchParam = () => ({ kw: '', status: '', prod: '' });
+    const _initSearchParam = () => ({ status: '', prod: '' });
     const searchParam = reactive(_initSearchParam());
 
     // ★ onMounted
@@ -95,7 +95,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
   <div class="card">
     <div class="search-bar">
       <label class="search-label">키워드</label>
-      <input class="form-control" v-model="searchParam.kw" placeholder="제목 검색" @keyup.enter="onSearch" style="width:200px;" />
+      <input class="form-control" v-model="searchParam.searchValue" placeholder="제목 검색" @keyup.enter="onSearch" style="width:200px;" />
       <label class="search-label">상태</label>
       <select class="form-control" v-model="searchParam.status" style="width:120px;">
         <option value="">전체</option>

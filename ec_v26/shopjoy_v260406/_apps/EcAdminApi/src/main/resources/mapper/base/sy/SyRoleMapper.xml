@@ -20,10 +20,10 @@
             <if test="roleTypeCd != null and roleTypeCd != ''">AND r.role_type_cd = #{roleTypeCd}</if>
             <if test="parentRoleId != null and parentRoleId != ''">AND r.parent_role_id = #{parentRoleId}</if>
             <if test="useYn != null and useYn != ''">AND r.use_yn = #{useYn}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_nm')">OR r.role_nm ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_code')"> OR r.role_code ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_nm')">OR r.role_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_code')"> OR r.role_code ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

@@ -210,24 +210,24 @@ window.DpDispAreaPreview = {
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* -- 조회 조건 -- */
-    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', kw: '' });
+    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD'});
     const searchParam = reactive(_initSearchParam());
 
-    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
+    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', visibility: '' });
 
     const onSearch = () => {
       Object.assign(applied, {
         type:       searchParam.filterType,
         status:     searchParam.filterStatus,
         dispEnv:    searchParam.filterDispEnv,
-        kw:         searchParam.kw.trim().toLowerCase(),
+        kw:         searchParam.searchValue.trim().toLowerCase(),
         visibility: searchParam.filterVisibility,
       });
     };
 
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
-      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
+      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', visibility: '' });
     };
 
     const cfFilteredLibs = computed(() => {
@@ -595,7 +595,7 @@ window.DpDispAreaPreview = {
           <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
-      <input v-model="searchParam.kw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
       <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
         <button @click="onSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>

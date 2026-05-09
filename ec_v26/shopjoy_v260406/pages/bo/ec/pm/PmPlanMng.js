@@ -70,7 +70,7 @@ window.PmPlanMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { kw: '', category: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+      return { category: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
@@ -156,7 +156,7 @@ const CATEGORIES = [
   <div class="page-title">기획전관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="기획전명 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="기획전명 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.category"><option value="">카테고리 전체</option><option v-for="c in CATEGORIES.slice(1)" :key="c?.value" :value="c.value">{{ c.label }}</option></select>
       <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.plan_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>

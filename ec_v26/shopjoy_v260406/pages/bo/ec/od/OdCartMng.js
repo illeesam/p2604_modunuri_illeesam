@@ -14,7 +14,7 @@ window.OdCartMng = {
     /* ── 목록 상태 ── */
     const rows   = reactive([]);
     const pager  = reactive({ pageNo: 1, pageSize: 20, totalCount: 0, totalPage: 1 });
-    const search = reactive({ siteId: '', memberId: '', memberNm: '', kw: '', searchTypes: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
+    const search = reactive({ siteId: '', memberId: '', memberNm: '', searchTypes: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
     const uiState = reactive({ loading: false, selectedIds: [] });
     const codes = reactive({ sites: [] });
 
@@ -22,7 +22,6 @@ window.OdCartMng = {
     const PICK_SIZE = 20;
     const memberPick = reactive({
       open: false,
-      kw: '',
       rows: [],
       pageNo: 1,
       total: 0,
@@ -85,7 +84,6 @@ window.OdCartMng = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...(search.siteId    && { siteId:    search.siteId }),
           ...(search.memberId  && { memberId:  search.memberId }),
-          ...(search.kw          && { kw:          search.kw }),
           ...(search.searchTypes && { searchTypes: search.searchTypes }),
           ...(search.searchValue && { searchValue: search.searchValue }),
           ...(search.dateType    && { dateType:    search.dateType }),
@@ -113,7 +111,7 @@ window.OdCartMng = {
     };
     const onReset     = () => {
       search.siteId = ''; search.memberId = ''; search.memberNm = '';
-      search.kw = ''; search.searchTypes = ''; search.searchValue = '';
+      search.searchTypes = ''; search.searchValue = '';
       search.dateType = 'reg_date'; search.dateStart = ''; search.dateEnd = '';
       onSearch();
     };

@@ -86,7 +86,7 @@ window.SyTemplateMng = {
   const _initSearchParam = () => {
     const today = new Date();
     const thisYear = today.getFullYear();
-    return { kw: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    return { type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
   };
   const searchParam = reactive(_initSearchParam());
 
@@ -169,7 +169,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 <div>
   <div class="page-title">템플릿관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="템플릿명 / 제목 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="템플릿명 / 제목 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in codes.template_types" :key="t">{{ t }}</option>

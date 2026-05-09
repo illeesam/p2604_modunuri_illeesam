@@ -12,7 +12,7 @@ window.MbMemGradeMng = {
     const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkAll: false, focusedIdx: null });
     const codes = reactive({ member_grades: [], use_yn: [] });
-    const searchParam = reactive({ kw: '', use: '' });
+    const searchParam = reactive({ use: '' });
     const gridRows = reactive([]);
     let _tempId = -1;
 
@@ -58,7 +58,7 @@ window.MbMemGradeMng = {
     });
 
     const onSearch = async () => { await handleSearchList(); };
-    const onReset = () => { Object.assign(searchParam, { kw: '', use: '' }); handleSearchList(); };
+    const onReset = () => { Object.assign(searchParam, { use: '' }); handleSearchList(); };
 
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
@@ -167,7 +167,7 @@ window.MbMemGradeMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">등급명/코드</label>
-      <input class="form-control" v-model="searchParam.kw" @keyup.enter="onSearch" placeholder="등급명 또는 코드 검색">
+      <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="등급명 또는 코드 검색">
       <label class="search-label">사용여부</label>
       <select class="form-control" v-model="searchParam.use">
         <option value="">전체</option>

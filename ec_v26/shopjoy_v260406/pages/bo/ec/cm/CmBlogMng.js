@@ -22,7 +22,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     const selectedId = ref(null);
 
     const _initSearchParam = () => {
-      return { kw: '', use: '', notice: '' };
+      return { use: '', notice: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -181,7 +181,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     <div class="card">
       <div class="search-bar">
         <label class="search-label">제목/작성자</label>
-        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="제목 또는 작성자 검색">
+        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="제목 또는 작성자 검색">
         <label class="search-label">공개여부</label>
         <select class="form-control" v-model="searchParam.use">
           <option value="">전체</option>

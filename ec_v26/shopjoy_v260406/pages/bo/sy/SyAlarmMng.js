@@ -92,7 +92,7 @@ window.SyAlarmMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { kw: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
     const handleDateRangeChange = () => {
@@ -163,7 +163,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 <div>
   <div class="page-title">알림관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="제목 / 메시지 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="제목 / 메시지 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="c in codes.alarm_type" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>

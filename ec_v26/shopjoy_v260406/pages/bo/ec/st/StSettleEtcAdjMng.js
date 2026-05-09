@@ -75,7 +75,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const form = reactive({});
     const errors = reactive({});
     const isNew  = ref(false);
-  const _initSearchParam = () => ({ kw: '', type: '', status: '' });
+  const _initSearchParam = () => ({ type: '', status: '' });
   const searchParam = reactive(_initSearchParam());
 
     const openNew = () => {
@@ -163,7 +163,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <select v-model="searchParam.status" style="width:100px">
         <option value="">상태 전체</option><option v-for="c in codes.settle_adj_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input v-model="searchParam.kw" placeholder="ID / 업체명 / 사유" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="searchParam.searchValue" placeholder="ID / 업체명 / 사유" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

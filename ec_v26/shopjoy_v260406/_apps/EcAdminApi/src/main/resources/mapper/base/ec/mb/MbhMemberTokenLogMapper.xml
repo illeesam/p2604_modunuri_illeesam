@@ -22,7 +22,12 @@
             <if test="ip          != null and ip          != ''">AND l.ip            LIKE '%'||#{ip}||'%'</if>
             <if test="uiNm        != null and uiNm        != ''">AND l.ui_nm         LIKE '%'||#{uiNm}||'%'</if>
             <if test="traceId     != null and traceId     != ''">AND l.trace_id      LIKE '%'||#{traceId}||'%'</if>
-            <if test="kw          != null and kw          != ''">AND (l.member_id LIKE '%'||#{kw}||'%' OR l.login_id LIKE '%'||#{kw}||'%')</if>
+            <if test="searchValue != null and searchValue != ''">
+                AND (1=0
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member_id')">OR l.member_id ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_login_id')"> OR l.login_id  ILIKE '%' || #{searchValue} || '%'</if>
+                )
+            </if>
         </where>
     </sql>
 

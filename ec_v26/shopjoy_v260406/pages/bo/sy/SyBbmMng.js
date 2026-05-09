@@ -60,7 +60,7 @@ window.SyBbmMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const _initSearchParam = () => {
-      return { kw: '', type: '', useYn: 'Y' };
+      return { type: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -125,7 +125,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="page-title">게시판관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="게시판명 / 코드 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="게시판명 / 코드 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="c in codes.bbm_type" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>

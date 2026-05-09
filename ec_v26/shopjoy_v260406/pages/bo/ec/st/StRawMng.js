@@ -45,7 +45,7 @@ window.StRawMng = {
     (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     // 검색 필드
-  const _initSearchParam = () => ({ kw: '', type: '', status: '', vendorType: '', payMethod: '', buyConfirm: '', closeYn: '', erpSend: '', period: '', orderStatus: '', amtFrom: '', amtTo: '', moreOpen: '' });
+  const _initSearchParam = () => ({ type: '', status: '', vendorType: '', payMethod: '', buyConfirm: '', closeYn: '', erpSend: '', period: '', orderStatus: '', amtFrom: '', amtTo: '', moreOpen: '' });
   const searchParam = reactive(_initSearchParam());
 
     const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -164,7 +164,7 @@ const rawList = reactive([]);
         <option value="">수집상태 전체</option>
         <option v-for="c in codes.raw_collect_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input v-model="searchParam.kw" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="searchParam.searchValue" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="() => onSearch?.()" />
     </div>
     <!-- -- 2행: 추가 필터 ---------------------------------------------------- -->
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">

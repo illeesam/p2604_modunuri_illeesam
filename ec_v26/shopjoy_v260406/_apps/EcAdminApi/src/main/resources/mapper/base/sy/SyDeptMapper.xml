@@ -11,10 +11,10 @@
             <if test="parentDeptId != null and parentDeptId != ''">AND d.parent_dept_id = #{parentDeptId}</if>
             <if test="typeCd != null and typeCd != ''">AND d.dept_type_cd = #{typeCd}</if>
             <if test="useYn != null and useYn != ''">AND d.use_yn = #{useYn}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_name')">OR d.dept_nm   ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_code')">OR d.dept_code ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_name')">OR d.dept_nm   ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_code')">OR d.dept_code ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

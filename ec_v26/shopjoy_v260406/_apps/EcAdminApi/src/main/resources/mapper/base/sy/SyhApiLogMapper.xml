@@ -9,9 +9,9 @@
             <if test="siteId != null and siteId != ''">AND l.site_id = #{siteId}</if>
             <if test="logId != null and logId != ''">AND l.log_id = #{logId}</if>
             <if test="typeCd != null and typeCd != ''">AND l.api_type_cd = #{typeCd}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_apiNm')">OR l.api_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_apiNm')">OR l.api_nm ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

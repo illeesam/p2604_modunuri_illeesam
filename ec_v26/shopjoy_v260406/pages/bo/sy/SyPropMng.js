@@ -37,7 +37,7 @@ window.SyPropMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* -- 검색 -- */
-    const searchParam = reactive({ kw: '', useFlt: '', typeFlt: '' });
+    const searchParam = reactive({ useFlt: '', typeFlt: '' });
 
     /* -- 데이터 (작업 상태 포함) -- */
     const rows = reactive([]);
@@ -139,7 +139,7 @@ window.SyPropMng = {
     };
 
     const onReset = () => {
-      searchParam.kw = ''; searchParam.useFlt = ''; searchParam.typeFlt = '';
+      searchParam.searchValue = ''; searchParam.useFlt = ''; searchParam.typeFlt = '';
       uiState.selectedPath = '';
       reload();
     };
@@ -177,7 +177,7 @@ window.SyPropMng = {
   <!-- -- 검색 바 ----------------------------------------------------------- -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
-      <input class="form-control" v-model="searchParam.kw" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;" @keyup.enter="fetchData">
+      <input class="form-control" v-model="searchParam.searchValue" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;" @keyup.enter="fetchData">
       <select class="form-control" v-model="searchParam.typeFlt" style="width:120px;">
         <option value="">전체 타입</option>
         <option v-for="t in codes.prop_types" :key="t" :value="t">{{ t }}</option>

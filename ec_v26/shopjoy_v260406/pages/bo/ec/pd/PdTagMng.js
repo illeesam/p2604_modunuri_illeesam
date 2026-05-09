@@ -46,7 +46,7 @@ window.PdTagMng = {
       }
     };
     /* -- 검색 파라미터 -- */
-    const _initSearchParam = () => ({ kw: '', use: '' });
+    const _initSearchParam = () => ({ use: '' });
     const searchParam = reactive(_initSearchParam());
 
     // ★ onMounted
@@ -125,7 +125,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     <div class="card">
       <div class="search-bar">
         <label class="search-label">태그명</label>
-        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="태그명 검색">
+        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="태그명 검색">
         <label class="search-label">사용여부</label>
         <select class="form-control" v-model="searchParam.use">
           <option value="">전체</option>

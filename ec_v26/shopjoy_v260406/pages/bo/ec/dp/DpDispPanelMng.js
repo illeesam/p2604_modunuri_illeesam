@@ -340,7 +340,7 @@ window.DpDispPanelMng = {
     /* -- 표시경로 (영역별 그룹) -- */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, area: '', status: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' };
+      return { dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, area: '', status: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' };
     };
       const searchParam = reactive(_initSearchParam());
   /* '' = 전체, '<areaCode>' = 특정 영역 */
@@ -399,7 +399,7 @@ window.DpDispPanelMng = {
   <div class="page-title">전시패널관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 전시패널 관리</span></div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="패널명 / 영역코드 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="패널명 / 영역코드 검색" @keyup.enter="onSearch" />
       <span class="search-label">화면영역</span>
       <select v-model="searchParam.area" style="min-width:160px;">
         <option value="">전체 영역</option>

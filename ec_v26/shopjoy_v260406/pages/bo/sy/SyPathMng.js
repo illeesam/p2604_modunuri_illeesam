@@ -27,7 +27,7 @@ window.SyPathMng = {
 
     /* -- 검색 파라미터 -- */
     const _initSearchParam = () => {
-      return { bizCd: '', kw: '', useYn: 'Y' };
+      return { bizCd: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -237,7 +237,7 @@ window.SyPathMng = {
       <label class="search-label">업무코드</label>
       <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:180px" @keyup.enter="onSearch">
       <label class="search-label">라벨/비고</label>
-      <input class="form-control" v-model="searchParam.kw" placeholder="라벨 / 비고 검색" style="min-width:200px;flex:1;max-width:320px" @keyup.enter="onSearch">
+      <input class="form-control" v-model="searchParam.searchValue" placeholder="라벨 / 비고 검색" style="min-width:200px;flex:1;max-width:320px" @keyup.enter="onSearch">
       <label class="search-label">사용여부</label>
       <select class="form-control" v-model="searchParam.useYn" style="width:120px">
         <option value="">전체</option>

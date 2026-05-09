@@ -19,10 +19,10 @@
                 )
             </if>
             <if test="status != null and status != ''">AND b.bbs_status_cd = #{status}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_author')">OR b.author_nm ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_title')"> OR b.bbs_title ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_author')">OR b.author_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_title')"> OR b.bbs_title ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

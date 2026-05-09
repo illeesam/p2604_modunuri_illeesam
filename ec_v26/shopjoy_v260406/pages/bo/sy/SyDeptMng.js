@@ -56,7 +56,7 @@ window.SyDeptMng = {
     };
     /* -- 검색 -- */
     const _initSearchParam = () => {
-      return { kw: '', type: '', useYn: 'Y' };
+      return { type: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -278,7 +278,7 @@ window.SyDeptMng = {
 
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="부서코드 / 부서명 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="부서코드 / 부서명 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>

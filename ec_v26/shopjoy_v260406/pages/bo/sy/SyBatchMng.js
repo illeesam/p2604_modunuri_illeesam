@@ -71,7 +71,7 @@ window.SyBatchMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { kw: '', status: '', runStatus: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { status: '', runStatus: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
     const handleDateRangeChange = () => {
@@ -364,7 +364,7 @@ window.SyBatchMng = {
   <div class="page-title">배치스케즐관리</div>  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="배치명 / 배치코드 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="배치명 / 배치코드 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.status">
         <option value="">활성여부 전체</option>
         <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>

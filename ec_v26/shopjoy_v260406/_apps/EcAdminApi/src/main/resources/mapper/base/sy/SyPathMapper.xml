@@ -14,10 +14,10 @@
             <if test="bizCd != null and bizCd != ''">AND p.biz_cd = #{bizCd}</if>
             <if test="parentPathId != null">AND p.parent_path_id = #{parentPathId}</if>
             <if test="useYn != null and useYn != ''">AND p.use_yn = #{useYn}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_label')">OR p.path_label ILIKE '%'||#{searchValue}||'%'</if>
-                    <if test="searchTypes.contains('def_remark')"> OR p.path_remark ILIKE '%'||#{searchValue}||'%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_label')">OR p.path_label ILIKE '%'||#{searchValue}||'%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_remark')"> OR p.path_remark ILIKE '%'||#{searchValue}||'%'</if>
                 )
             </if>
         </where>

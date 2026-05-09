@@ -10,10 +10,10 @@
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
             <if test="contactId != null and contactId != ''">AND c.contact_id = #{contactId}</if>
             <if test="status != null and status != ''">AND c.contact_status_cd = #{status}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_member')">OR c.member_nm ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_title')"> OR c.contact_title ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_member')">OR c.member_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_title')"> OR c.contact_title ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

@@ -13,10 +13,10 @@
             <if test="codeValue != null and codeValue != ''">AND c.code_value = #{codeValue}</if>
             <if test="parentCodeValue != null and parentCodeValue != ''">AND c.parent_code_value = #{parentCodeValue}</if>
             <if test="useYn != null and useYn != ''">AND c.use_yn = #{useYn}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_label')">OR c.code_label ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_value')"> OR c.code_value ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_label')">OR c.code_label ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_value')"> OR c.code_value ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

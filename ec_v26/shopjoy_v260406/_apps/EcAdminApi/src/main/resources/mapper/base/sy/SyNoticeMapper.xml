@@ -12,9 +12,9 @@
             <if test="status != null and status != ''">AND n.notice_status_cd = #{status}</if>
             <if test="noticeTypeCd != null and noticeTypeCd != ''">AND n.notice_type_cd = #{noticeTypeCd}</if>
             <if test="isFixed != null and isFixed != ''">AND n.is_fixed = #{isFixed}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_title')">OR n.notice_title ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_title')">OR n.notice_title ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

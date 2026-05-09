@@ -40,7 +40,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const slips = reactive([]);
-    const _initSearchParam = () => ({ kw: '', type: '', status: '' });
+    const _initSearchParam = () => ({ type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -109,7 +109,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <select v-model="searchParam.status" style="width:110px">
         <option value="">상태 전체</option><option v-for="c in codes.erp_voucher_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input v-model="searchParam.kw" placeholder="전표ID / 적요 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="searchParam.searchValue" placeholder="전표ID / 적요 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

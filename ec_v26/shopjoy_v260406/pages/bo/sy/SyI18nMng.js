@@ -16,7 +16,7 @@ window.SyI18nMng = {
     const codes = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
     const _initSearchParam = () => {
-      return { kw: '', scope: '', use: '' };
+      return { scope: '', use: '' };
     };
     const searchParam = reactive(_initSearchParam());
     const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -125,7 +125,7 @@ window.SyI18nMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">키/설명</label>
-        <input class="form-control" v-model="searchParam.kw" @keyup.enter="onSearch" placeholder="키 또는 설명 검색">
+        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="키 또는 설명 검색">
         <label class="search-label">범위</label>
         <select class="form-control" v-model="searchParam.scope">
           <option value="">전체</option><option v-for="s in codes.i18n_scopes" :key="s" :value="s">{{ s }}</option>

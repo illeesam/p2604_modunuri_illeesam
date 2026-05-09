@@ -79,7 +79,7 @@ window.DpDispAreaMng = {
     /* -- 검색 -- */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { kw: '', areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
+      return { areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
     };
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const searchParam = reactive(_initSearchParam());
@@ -132,7 +132,7 @@ const searchParam = reactive(_initSearchParam());
   <div class="card">
     <div class="search-bar">
       <label class="search-label">키워드</label>
-      <input class="form-control" v-model="searchParam.kw" placeholder="영역코드/명 검색" @keyup.enter="onSearch" style="width:200px;" />
+      <input class="form-control" v-model="searchParam.searchValue" placeholder="영역코드/명 검색" @keyup.enter="onSearch" style="width:200px;" />
       <label class="search-label">사용여부</label>
       <select class="form-control" v-model="searchParam.useYn" style="width:100px;">
         <option value="">전체</option>

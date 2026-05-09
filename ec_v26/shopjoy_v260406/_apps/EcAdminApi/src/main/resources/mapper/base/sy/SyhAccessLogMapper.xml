@@ -24,10 +24,10 @@
             <if test="appTypeCd != null and appTypeCd != ''">AND l.app_type_cd = #{appTypeCd}</if>
             <if test="uiNm      != null and uiNm      != ''">AND l.ui_nm    LIKE '%'||#{uiNm}||'%'</if>
             <if test="traceId   != null and traceId   != ''">AND l.trace_id LIKE '%'||#{traceId}||'%'</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_ip')">      OR l.req_ip  LIKE '%'||#{searchValue}||'%'</if>
-                    <if test="searchTypes.contains('def_userId')">  OR l.user_id LIKE '%'||#{searchValue}||'%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_ip')">      OR l.req_ip  LIKE '%'||#{searchValue}||'%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_userId')">  OR l.user_id LIKE '%'||#{searchValue}||'%'</if>
                 )
             </if>
         </where>

@@ -72,7 +72,7 @@ window.PmSaveMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
+      return { dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
@@ -152,7 +152,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   <div class="page-title">마일리지관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="마일리지명 / ID 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="마일리지명 / ID 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type"><option value="">유형 전체</option><option v-for="c in codes.save_issue_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">시작일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>

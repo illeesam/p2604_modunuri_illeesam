@@ -19,10 +19,10 @@
             <if test="vendorId != null and vendorId != ''">AND v.vendor_id = #{vendorId}</if>
             <if test="status != null and status != ''">AND v.vendor_status_cd = #{status}</if>
             <if test="vendorClassCd != null and vendorClassCd != ''">AND v.vendor_class_cd = #{vendorClassCd}</if>
-            <if test="searchValue != null and searchValue != '' and searchTypes != null and searchTypes != ''">
+            <if test="searchValue != null and searchValue != ''">
                 AND (1=0
-                    <if test="searchTypes.contains('def_nm')">OR v.vendor_nm ILIKE '%' || #{searchValue} || '%'</if>
-                    <if test="searchTypes.contains('def_ceo')"> OR v.ceo_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_nm')">OR v.vendor_nm ILIKE '%' || #{searchValue} || '%'</if>
+                    <if test="searchTypes == null or searchTypes == '' or searchTypes.contains('def_ceo')"> OR v.ceo_nm ILIKE '%' || #{searchValue} || '%'</if>
                 )
             </if>
             <if test="dateStart != null and dateStart != '' and dateEnd != null and dateEnd != '' and dateType != null and dateType != ''">

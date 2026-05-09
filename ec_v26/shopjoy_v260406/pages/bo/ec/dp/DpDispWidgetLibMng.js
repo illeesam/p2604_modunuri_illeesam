@@ -25,12 +25,12 @@ window.DpDispWidgetLibMng = {
     // 코드 주입
 
     /* -- 검색 -- */
-    const _initSearchParam = () => ({ kw: '', type: '', status: '' });
+    const _initSearchParam = () => ({ type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     /* applied: 현재 결과에 실제로 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
-    const applied = reactive({ kw: '', type: '', status: '' });
+    const applied = reactive({ type: '', status: '' });
     const cfFilterDirty = computed(() =>
-      searchParam.kw !== applied.kw ||
+      searchParam.searchValue !== applied.kw ||
       searchParam.type !== applied.type ||
       searchParam.status !== applied.status
     );
@@ -72,7 +72,7 @@ window.DpDispWidgetLibMng = {
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
         fnBuildPagerNums();
         /* 결과에 반영된 조건 기록 */
-        applied.kw     = searchParam.kw;
+        applied.kw     = searchParam.searchValue;
         applied.type   = searchParam.type;
         applied.status = searchParam.status;
         uiState.error = null;
@@ -173,7 +173,7 @@ window.DpDispWidgetLibMng = {
   <div class="page-title">위젯라이브러리관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="이름/설명/태그 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="이름/설명/태그 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">타입 전체</option>
         <option v-for="t in codes.disp_widget_types" :key="t.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>

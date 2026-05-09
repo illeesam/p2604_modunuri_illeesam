@@ -30,7 +30,7 @@ window.SyCodeMng = {
       const thisYear = today.getFullYear();
       const threeYearsAgo = thisYear - 3;
       return {
-        kw: '', grp: '', useYn: 'Y', dateRange: '',
+        grp: '', useYn: 'Y', dateRange: '',
         dateStart: `${threeYearsAgo}-01-01`,
         dateEnd:   `${thisYear}-12-31`,
       };
@@ -501,7 +501,7 @@ window.SyCodeMng = {
   <!-- -- 검색 영역 -------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="코드그룹 / 라벨 / 코드값 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="코드그룹 / 라벨 / 코드값 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
         <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>

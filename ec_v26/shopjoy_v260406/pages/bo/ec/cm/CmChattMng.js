@@ -33,7 +33,7 @@ window.CmChattMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+      return { dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -143,7 +143,7 @@ window.CmChattMng = {
   <div class="page-title">채팅관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="회원명 / 제목 검색" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" placeholder="회원명 / 제목 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.status">
         <option value="">상태 전체</option>
         <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
