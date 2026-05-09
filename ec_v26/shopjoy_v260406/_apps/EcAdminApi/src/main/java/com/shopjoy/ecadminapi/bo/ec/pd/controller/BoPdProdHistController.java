@@ -28,7 +28,7 @@ public class BoPdProdHistController {
 
     /** orders */
     @GetMapping("/orders")
-    public ResponseEntity<ApiResponse<List<PdProdHistDto>>> orders(
+    public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> orders(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getOrders(prodId, p)));
@@ -36,7 +36,7 @@ public class BoPdProdHistController {
 
     /** stock */
     @GetMapping("/stock")
-    public ResponseEntity<ApiResponse<List<PdProdHistDto>>> stock(
+    public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> stock(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStockHist(prodId, p)));
@@ -44,7 +44,7 @@ public class BoPdProdHistController {
 
     /** price */
     @GetMapping("/price")
-    public ResponseEntity<ApiResponse<List<PdProdHistDto>>> price(
+    public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> price(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getPriceHist(prodId, p)));
@@ -52,7 +52,7 @@ public class BoPdProdHistController {
 
     /** status */
     @GetMapping("/status")
-    public ResponseEntity<ApiResponse<List<PdProdHistDto>>> status(
+    public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> status(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStatusHist(prodId, p)));
@@ -60,7 +60,7 @@ public class BoPdProdHistController {
 
     /** changes */
     @GetMapping("/changes")
-    public ResponseEntity<ApiResponse<List<PdProdHistDto>>> changes(
+    public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> changes(
             @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getChangeHist(prodId, p)));

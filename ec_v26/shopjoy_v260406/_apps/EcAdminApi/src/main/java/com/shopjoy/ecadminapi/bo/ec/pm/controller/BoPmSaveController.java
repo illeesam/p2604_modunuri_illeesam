@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmSaveService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-
 /**
  * BO 적립금 API — /api/bo/ec/pm/save
  * 인가: BO_ONLY (관리자)
@@ -24,26 +22,20 @@ public class BoPmSaveController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PmSaveDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<PmSaveDto> result = boPmSaveService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PmSaveDto.Item>>> list(@Valid @ModelAttribute PmSaveDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmSaveService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PmSaveDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<PmSaveDto> result = boPmSaveService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PmSaveDto.PageResponse>> page(@Valid @ModelAttribute PmSaveDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmSaveService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSaveDto>> getById(@PathVariable("id") String id) {
-        PmSaveDto result = boPmSaveService.getById(id);
+    public ResponseEntity<ApiResponse<PmSaveDto.Item>> getById(@PathVariable("id") String id) {
+        PmSaveDto.Item result = boPmSaveService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -56,14 +48,14 @@ public class BoPmSaveController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSaveDto>> update(@PathVariable("id") String id, @RequestBody PmSave body) {
-        PmSaveDto result = boPmSaveService.update(id, body);
+    public ResponseEntity<ApiResponse<PmSave>> update(@PathVariable("id") String id, @RequestBody PmSave body) {
+        PmSave result = boPmSaveService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSaveDto>> upsert(@PathVariable("id") String id, @RequestBody PmSave body) {
+    public ResponseEntity<ApiResponse<PmSave>> upsert(@PathVariable("id") String id, @RequestBody PmSave body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmSaveService.update(id, body)));
     }
 
@@ -76,8 +68,7 @@ public class BoPmSaveController {
 
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmSave> rows) {
-        boPmSaveService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<PmSave>>> saveList(@RequestBody List<PmSave> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmSaveService.saveList(rows), "저장되었습니다."));
     }
 }

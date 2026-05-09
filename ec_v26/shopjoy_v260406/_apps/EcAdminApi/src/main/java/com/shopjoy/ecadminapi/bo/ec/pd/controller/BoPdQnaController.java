@@ -4,7 +4,6 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdQnaService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,46 +31,37 @@ public class BoPdQnaController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PdProdQnaDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<PdProdQnaDto> result = boPdQnaService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PdProdQnaDto.Item>>> list(@Valid @ModelAttribute PdProdQnaDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PdProdQnaDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<PdProdQnaDto> result = boPdQnaService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PdProdQnaDto.PageResponse>> page(@Valid @ModelAttribute PdProdQnaDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdQnaDto>> getById(@PathVariable("id") String id) {
-        PdProdQnaDto result = boPdQnaService.getById(id);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PdProdQnaDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.getById(id)));
     }
 
     /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<PdProdQna>> create(@RequestBody PdProdQna body) {
-        PdProdQna result = boPdQnaService.create(body);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(boPdQnaService.create(body)));
     }
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdQnaDto>> update(@PathVariable("id") String id, @RequestBody PdProdQna body) {
-        PdProdQnaDto result = boPdQnaService.update(id, body);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PdProdQna>> update(@PathVariable("id") String id, @RequestBody PdProdQna body) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdQnaDto>> upsert(@PathVariable("id") String id, @RequestBody PdProdQna body) {
+    public ResponseEntity<ApiResponse<PdProdQna>> upsert(@PathVariable("id") String id, @RequestBody PdProdQna body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.update(id, body)));
     }
 
@@ -84,10 +74,11 @@ public class BoPdQnaController {
 
     /** answer */
     @PutMapping("/{id}/answer")
-    public ResponseEntity<ApiResponse<PdProdQnaDto>> answer(
+    public ResponseEntity<ApiResponse<PdProdQnaDto.Item>> answer(
             @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.saveAnswer(id, body)));
     }
+
     /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<List<PdProdQna>>> saveList(@RequestBody List<PdProdQna> rows) {

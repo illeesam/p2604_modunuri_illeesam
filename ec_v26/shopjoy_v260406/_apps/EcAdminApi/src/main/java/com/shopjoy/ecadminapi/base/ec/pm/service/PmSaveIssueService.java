@@ -5,110 +5,162 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmSaveIssueMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveIssueRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PmSaveIssueService {
 
-
     private final PmSaveIssueMapper pmSaveIssueMapper;
     private final PmSaveIssueRepository pmSaveIssueRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PmSaveIssueDto getById(String id) {
-        PmSaveIssueDto result = pmSaveIssueMapper.selectById(id);
-        return result;
+    public PmSaveIssueDto.Item getById(String id) {
+        PmSaveIssueDto.Item dto = pmSaveIssueMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PmSaveIssueDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<PmSaveIssueDto> result = pmSaveIssueMapper.selectList(p);
-        return result;
+    public PmSaveIssue findById(String id) {
+        return pmSaveIssueRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PmSaveIssueDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(pmSaveIssueMapper.selectPageList(p), pmSaveIssueMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pmSaveIssueRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<PmSaveIssueDto.Item> getList(PmSaveIssueDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pmSaveIssueMapper.selectList(req);
+    }
+
+    public PmSaveIssueDto.PageResponse getPageData(PmSaveIssueDto.Request req) {
+        PageHelper.addPaging(req);
+        PmSaveIssueDto.PageResponse res = new PmSaveIssueDto.PageResponse();
+        List<PmSaveIssueDto.Item> list = pmSaveIssueMapper.selectPageList(req);
+        long count = pmSaveIssueMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(PmSaveIssue entity) {
-        int result = pmSaveIssueMapper.updateSelective(entity);
-        return result;
+    public PmSaveIssue create(PmSaveIssue body) {
+        body.setSaveIssueId(CmUtil.generateId("pm_save_issue"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PmSaveIssue saved = pmSaveIssueRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSaveIssueId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public PmSaveIssue create(PmSaveIssue entity) {
-        entity.setSaveIssueId(CmUtil.generateId("pm_save_issue"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        PmSaveIssue result = pmSaveIssueRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public PmSaveIssue save(PmSaveIssue entity) {
-        if (!pmSaveIssueRepository.existsById(entity.getSaveIssueId()))
+        if (!existsById(entity.getSaveIssueId()))
             throw new CmBizException("존재하지 않는 PmSaveIssue입니다: " + entity.getSaveIssueId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmSaveIssue result = pmSaveIssueRepository.save(entity);
-        return result;
+        PmSaveIssue saved = pmSaveIssueRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getSaveIssueId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PmSaveIssue update(String id, PmSaveIssue body) {
+        PmSaveIssue entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "saveIssueId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PmSaveIssue saved = pmSaveIssueRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PmSaveIssue updatePartial(PmSaveIssue entity) {
+        if (entity.getSaveIssueId() == null) throw new CmBizException("saveIssueId 가 필요합니다.");
+        if (!existsById(entity.getSaveIssueId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSaveIssueId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pmSaveIssueMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getSaveIssueId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pmSaveIssueRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PmSaveIssue입니다: " + id);
-        pmSaveIssueRepository.deleteById(id);
+        PmSaveIssue entity = findById(id);
+        pmSaveIssueRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PmSaveIssue> rows) {
+    public List<PmSaveIssue> saveList(List<PmSaveIssue> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PmSaveIssue row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setSaveIssueId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_save_issue"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pmSaveIssueRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSaveIssueId(), "saveIssueId must not be null");
-                PmSaveIssue entity = pmSaveIssueRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "saveIssueId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pmSaveIssueRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getSaveIssueId(), "saveIssueId must not be null");
-                if (pmSaveIssueRepository.existsById(id)) pmSaveIssueRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getSaveIssueId() != null)
+            .map(PmSaveIssue::getSaveIssueId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pmSaveIssueRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PmSaveIssue> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getSaveIssueId() != null)
+            .toList();
+        for (PmSaveIssue row : updateRows) {
+            PmSaveIssue entity = findById(row.getSaveIssueId());
+            VoUtil.voCopyExclude(row, entity, "saveIssueId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pmSaveIssueRepository.save(entity);
+            upsertedIds.add(entity.getSaveIssueId());
+        }
+        em.flush();
+
+        List<PmSaveIssue> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PmSaveIssue row : insertRows) {
+            row.setSaveIssueId(CmUtil.generateId("pm_save_issue"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pmSaveIssueRepository.save(row);
+            upsertedIds.add(row.getSaveIssueId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PmSaveIssue> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

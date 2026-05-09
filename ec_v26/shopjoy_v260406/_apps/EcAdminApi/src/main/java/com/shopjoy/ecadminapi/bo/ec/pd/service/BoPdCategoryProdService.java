@@ -5,7 +5,6 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryProdMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryProdRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -26,18 +25,17 @@ public class BoPdCategoryProdService {
 
     private final PdCategoryProdMapper pdCategoryProdMapper;
     private final PdCategoryProdRepository pdCategoryProdRepository;
+
     @PersistenceContext
     private EntityManager em;
 
     /** getPageData — 조회 */
-    public PageResult<PdCategoryProdDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(
-                pdCategoryProdMapper.selectPageList(p),
-                pdCategoryProdMapper.selectPageCount(p),
-                PageHelper.getPageNo(),
-                PageHelper.getPageSize(),
-                p);
+    public PdCategoryProdDto.PageResponse getPageData(PdCategoryProdDto.Request req) {
+        PageHelper.addPaging(req);
+        PdCategoryProdDto.PageResponse res = new PdCategoryProdDto.PageResponse();
+        List<PdCategoryProdDto.Item> list = pdCategoryProdMapper.selectPageList(req);
+        long count = pdCategoryProdMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
     /** saveProds — 저장 */
@@ -50,7 +48,6 @@ public class BoPdCategoryProdService {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
-        // DELETE 먼저 일괄 처리 후 flush — insert와 순서 보장
         for (Map<String, Object> row : rows) {
             if ("D".equals(row.getOrDefault("rowStatus", "U"))) {
                 String id = (String) row.get("categoryProdId");
@@ -60,9 +57,8 @@ public class BoPdCategoryProdService {
             }
         }
         em.flush();
-        em.clear(); // 1차 캐시 초기화 — 이후 조회가 DB에서 최신 상태를 읽도록
+        em.clear();
 
-        // INSERT / UPDATE 처리
         for (Map<String, Object> row : rows) {
             String rowStatus = (String) row.getOrDefault("rowStatus", "U");
             if ("D".equals(rowStatus)) continue;

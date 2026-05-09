@@ -31,7 +31,7 @@
     </sql>
 
     <!-- 바우처(상품권) 발행 이력 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto$Item">
         SELECT  /* base.ec.pm :: PmVoucherIssue :: selectById */
               i.*
             , vou.voucher_nm AS voucher_nm
@@ -47,7 +47,7 @@
     </select>
 
     <!-- 바우처(상품권) 발행 이력 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto$Item">
         SELECT  /* base.ec.pm :: PmVoucherIssue :: selectList */
               i.*
             , vou.voucher_nm AS voucher_nm
@@ -65,7 +65,7 @@
     </select>
 
     <!-- 바우처(상품권) 발행 이력 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto$Item">
         SELECT  /* base.ec.pm :: PmVoucherIssue :: selectPageList */
               i.*
             , vou.voucher_nm AS voucher_nm

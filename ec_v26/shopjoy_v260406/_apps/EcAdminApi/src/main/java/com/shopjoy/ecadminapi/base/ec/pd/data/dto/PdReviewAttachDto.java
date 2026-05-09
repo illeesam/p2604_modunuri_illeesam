@@ -15,6 +15,7 @@ public class PdReviewAttachDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String reviewAttachId;
+        @Size(max = 21) private String prodId;
     }
 
     @Getter @Setter @NoArgsConstructor

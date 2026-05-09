@@ -5,110 +5,162 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmGiftIssueMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmGiftIssueRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PmGiftIssueService {
 
-
     private final PmGiftIssueMapper pmGiftIssueMapper;
     private final PmGiftIssueRepository pmGiftIssueRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PmGiftIssueDto getById(String id) {
-        PmGiftIssueDto result = pmGiftIssueMapper.selectById(id);
-        return result;
+    public PmGiftIssueDto.Item getById(String id) {
+        PmGiftIssueDto.Item dto = pmGiftIssueMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PmGiftIssueDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<PmGiftIssueDto> result = pmGiftIssueMapper.selectList(p);
-        return result;
+    public PmGiftIssue findById(String id) {
+        return pmGiftIssueRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PmGiftIssueDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(pmGiftIssueMapper.selectPageList(p), pmGiftIssueMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pmGiftIssueRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<PmGiftIssueDto.Item> getList(PmGiftIssueDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pmGiftIssueMapper.selectList(req);
+    }
+
+    public PmGiftIssueDto.PageResponse getPageData(PmGiftIssueDto.Request req) {
+        PageHelper.addPaging(req);
+        PmGiftIssueDto.PageResponse res = new PmGiftIssueDto.PageResponse();
+        List<PmGiftIssueDto.Item> list = pmGiftIssueMapper.selectPageList(req);
+        long count = pmGiftIssueMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(PmGiftIssue entity) {
-        int result = pmGiftIssueMapper.updateSelective(entity);
-        return result;
+    public PmGiftIssue create(PmGiftIssue body) {
+        body.setGiftIssueId(CmUtil.generateId("pm_gift_issue"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PmGiftIssue saved = pmGiftIssueRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getGiftIssueId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public PmGiftIssue create(PmGiftIssue entity) {
-        entity.setGiftIssueId(CmUtil.generateId("pm_gift_issue"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        PmGiftIssue result = pmGiftIssueRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public PmGiftIssue save(PmGiftIssue entity) {
-        if (!pmGiftIssueRepository.existsById(entity.getGiftIssueId()))
+        if (!existsById(entity.getGiftIssueId()))
             throw new CmBizException("존재하지 않는 PmGiftIssue입니다: " + entity.getGiftIssueId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        PmGiftIssue result = pmGiftIssueRepository.save(entity);
-        return result;
+        PmGiftIssue saved = pmGiftIssueRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getGiftIssueId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PmGiftIssue update(String id, PmGiftIssue body) {
+        PmGiftIssue entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "giftIssueId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PmGiftIssue saved = pmGiftIssueRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PmGiftIssue updatePartial(PmGiftIssue entity) {
+        if (entity.getGiftIssueId() == null) throw new CmBizException("giftIssueId 가 필요합니다.");
+        if (!existsById(entity.getGiftIssueId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getGiftIssueId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pmGiftIssueMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getGiftIssueId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pmGiftIssueRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PmGiftIssue입니다: " + id);
-        pmGiftIssueRepository.deleteById(id);
+        PmGiftIssue entity = findById(id);
+        pmGiftIssueRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PmGiftIssue> rows) {
+    public List<PmGiftIssue> saveList(List<PmGiftIssue> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PmGiftIssue row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setGiftIssueId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_gift_issue"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pmGiftIssueRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getGiftIssueId(), "giftIssueId must not be null");
-                PmGiftIssue entity = pmGiftIssueRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "giftIssueId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pmGiftIssueRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getGiftIssueId(), "giftIssueId must not be null");
-                if (pmGiftIssueRepository.existsById(id)) pmGiftIssueRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getGiftIssueId() != null)
+            .map(PmGiftIssue::getGiftIssueId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pmGiftIssueRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PmGiftIssue> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getGiftIssueId() != null)
+            .toList();
+        for (PmGiftIssue row : updateRows) {
+            PmGiftIssue entity = findById(row.getGiftIssueId());
+            VoUtil.voCopyExclude(row, entity, "giftIssueId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pmGiftIssueRepository.save(entity);
+            upsertedIds.add(entity.getGiftIssueId());
+        }
+        em.flush();
+
+        List<PmGiftIssue> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PmGiftIssue row : insertRows) {
+            row.setGiftIssueId(CmUtil.generateId("pm_gift_issue"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pmGiftIssueRepository.save(row);
+            upsertedIds.add(row.getGiftIssueId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PmGiftIssue> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmCouponService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,26 +24,20 @@ public class BoPmCouponController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PmCouponDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<PmCouponDto> result = boPmCouponService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PmCouponDto.Item>>> list(@Valid @ModelAttribute PmCouponDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmCouponService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PmCouponDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<PmCouponDto> result = boPmCouponService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PmCouponDto.PageResponse>> page(@Valid @ModelAttribute PmCouponDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmCouponService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCouponDto>> getById(@PathVariable("id") String id) {
-        PmCouponDto result = boPmCouponService.getById(id);
+    public ResponseEntity<ApiResponse<PmCouponDto.Item>> getById(@PathVariable("id") String id) {
+        PmCouponDto.Item result = boPmCouponService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -56,14 +50,14 @@ public class BoPmCouponController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCouponDto>> update(@PathVariable("id") String id, @RequestBody PmCoupon body) {
-        PmCouponDto result = boPmCouponService.update(id, body);
+    public ResponseEntity<ApiResponse<PmCoupon>> update(@PathVariable("id") String id, @RequestBody PmCoupon body) {
+        PmCoupon result = boPmCouponService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCouponDto>> upsert(@PathVariable("id") String id, @RequestBody PmCoupon body) {
+    public ResponseEntity<ApiResponse<PmCoupon>> upsert(@PathVariable("id") String id, @RequestBody PmCoupon body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmCouponService.update(id, body)));
     }
 
@@ -83,8 +77,7 @@ public class BoPmCouponController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmCoupon> rows) {
-        boPmCouponService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<PmCoupon>>> saveList(@RequestBody List<PmCoupon> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmCouponService.saveList(rows), "저장되었습니다."));
     }
 }

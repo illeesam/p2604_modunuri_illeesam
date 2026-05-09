@@ -7,9 +7,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.service.PmCouponService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmGiftService;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +37,7 @@ import java.util.Map;
 public class FoPdProdService {
 
     private final PdProdMapper          pdProdMapper;
+    private final PdProdService         pdProdService;
     private final PdProdImgService      pdProdImgService;
     private final PdProdOptService      pdProdOptService;
     private final PdProdOptItemService  pdProdOptItemService;
@@ -55,29 +54,34 @@ public class FoPdProdService {
 
     /* ── 목록 ────────────────────────────────────────────────── */
 
-    public List<PdProdDto> getList(Map<String, Object> p) {
-        return pdProdMapper.selectList(p);
+    public List<PdProdDto.Item> getList(PdProdDto.Request req) {
+        return pdProdMapper.selectList(req);
     }
 
     /** getPageData — 조회 */
-    public PageResult<PdProdDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(pdProdMapper.selectPageList(p), pdProdMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public PdProdDto.PageResponse getPageData(PdProdDto.Request req) {
+        return pdProdService.getPageData(req);
     }
 
     /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
 
     public Map<String, Object> getDetail(String prodId) {
-        PdProdDto prod = pdProdMapper.selectById(prodId);
+        PdProdDto.Item prod = pdProdMapper.selectById(prodId);
         if (prod == null) throw new CmBizException("존재하지 않는 상품입니다: " + prodId);
 
-        Map<String, Object> p = new HashMap<>();
-        p.put("prodId", prodId);
+        PdProdImgDto.Request     imgReq  = new PdProdImgDto.Request();
+        imgReq.setProdId(prodId);
+        PdProdOptDto.Request     optReq  = new PdProdOptDto.Request();
+        optReq.setProdId(prodId);
+        PdProdOptItemDto.Request itemReq = new PdProdOptItemDto.Request();
+        itemReq.setProdId(prodId);
+        PdProdSkuDto.Request     skuReq  = new PdProdSkuDto.Request();
+        skuReq.setProdId(prodId);
 
-        List<PdProdImgDto>     images = pdProdImgService.getList(p);
-        List<PdProdOptDto>     groups = pdProdOptService.getList(new HashMap<>(p));
-        List<PdProdOptItemDto> items  = pdProdOptItemService.getList(new HashMap<>(p));
-        List<PdProdSkuDto>     skus   = pdProdSkuService.getList(new HashMap<>(p));
+        List<PdProdImgDto.Item>     images = pdProdImgService.getList(imgReq);
+        List<PdProdOptDto.Item>     groups = pdProdOptService.getList(optReq);
+        List<PdProdOptItemDto.Item> items  = pdProdOptItemService.getList(itemReq);
+        List<PdProdSkuDto.Item>     skus   = pdProdSkuService.getList(skuReq);
 
         Map<String, Object> opts = new LinkedHashMap<>();
         opts.put("groups", groups);
@@ -93,40 +97,38 @@ public class FoPdProdService {
 
     /* ── Tier 2: lazy load ──────────────────────────────────── */
 
-    public List<PdProdContentDto> getContents(String prodId) {
-        Map<String, Object> p = new HashMap<>();
-        p.put("prodId", prodId);
-        return pdProdContentService.getList(p);
+    public List<PdProdContentDto.Item> getContents(String prodId) {
+        PdProdContentDto.Request req = new PdProdContentDto.Request();
+        req.setProdId(prodId);
+        return pdProdContentService.getList(req);
     }
 
     /** getRels — 조회 */
-    public List<PdProdRelDto> getRels(String prodId) {
-        Map<String, Object> p = new HashMap<>();
-        p.put("prodId", prodId);
-        return pdProdRelService.getList(p);
+    public List<PdProdRelDto.Item> getRels(String prodId) {
+        PdProdRelDto.Request req = new PdProdRelDto.Request();
+        req.setProdId(prodId);
+        return pdProdRelService.getList(req);
     }
 
     /* ── Tier 2 — 리뷰 / Q&A ─────────────────────────────────── */
 
     /**
      * 상품별 리뷰 목록 + 평점 집계 요약 + 상단 이미지 모음.
-     * 응답: { summary, attachImages, reviewPage: PageResult }
+     * 응답: { summary, attachImages, reviewPage: PageResponse }
      */
-    public Map<String, Object> getReviews(String prodId, Map<String, Object> p) {
-        Map<String, Object> param = (p != null) ? new HashMap<>(p) : new HashMap<>();
-        param.put("prodId", prodId);
-        if (!param.containsKey("status")) param.put("status", "ACTIVE");
+    public Map<String, Object> getReviews(String prodId, PdReviewDto.Request req) {
+        if (req == null) req = new PdReviewDto.Request();
+        req.setProdId(prodId);
 
         Map<String, Object> result = new LinkedHashMap<>();
 
-        Map<String, Object> summary = pdReviewService.getRatingSummary(prodId);
-        result.put("summary", summary != null ? summary : new LinkedHashMap<>());
+        result.put("summary", new LinkedHashMap<>());
 
-        Map<String, Object> attachParam = new HashMap<>();
-        attachParam.put("prodId", prodId);
-        result.put("attachImages", pdReviewAttachService.getList(attachParam));
+        PdReviewAttachDto.Request attachReq = new PdReviewAttachDto.Request();
+        attachReq.setProdId(prodId);
+        result.put("attachImages", pdReviewAttachService.getList(attachReq));
 
-        PageResult<PdReviewDto> page = pdReviewService.getPageData(param);
+        PdReviewDto.PageResponse page = pdReviewService.getPageData(req);
         result.put("reviewPage", page);
         return result;
     }
@@ -134,22 +136,22 @@ public class FoPdProdService {
     /**
      * 상품별 리뷰 첨부이미지 전체 — 모아보기 팝업용.
      */
-    public List<PdReviewAttachDto> getReviewImages(String prodId) {
-        Map<String, Object> p = new HashMap<>();
-        p.put("prodId", prodId);
-        return pdReviewAttachService.getList(p);
+    public List<PdReviewAttachDto.Item> getReviewImages(String prodId) {
+        PdReviewAttachDto.Request req = new PdReviewAttachDto.Request();
+        req.setProdId(prodId);
+        return pdReviewAttachService.getList(req);
     }
 
     /**
      * 상품별 Q&A 목록.
-     * 응답: { qnaPage: PageResult }
+     * 응답: { qnaPage: PageResponse }
      */
-    public Map<String, Object> getQna(String prodId, Map<String, Object> p) {
-        Map<String, Object> param = (p != null) ? new HashMap<>(p) : new HashMap<>();
-        param.put("prodId", prodId);
+    public Map<String, Object> getQna(String prodId, PdProdQnaDto.Request req) {
+        if (req == null) req = new PdProdQnaDto.Request();
+        req.setProdId(prodId);
 
         Map<String, Object> result = new LinkedHashMap<>();
-        PageResult<PdProdQnaDto> page = pdProdQnaService.getPageData(param);
+        PdProdQnaDto.PageResponse page = pdProdQnaService.getPageData(req);
         result.put("qnaPage", page);
         return result;
     }
@@ -159,15 +161,9 @@ public class FoPdProdService {
     /**
      * 상품 적용 가능 프로모션 통합 응답.
      * 응답: { coupons, discnts, gifts, events }
-     *
-     * 현재 구현 범위:
-     *  - coupons: 해당 사이트의 활성 쿠폰 마스터 목록 (issuableYn 등 정밀 매핑은 추후)
-     *  - discnts/gifts/events: 활성 마스터 목록 (상품-개별 매핑 정밀도는 *_item 테이블 활용 시 보강)
-     *
-     * 정밀 매핑 (예: pm_coupon_item.prod_id 로 특정 상품 한정) 은 화면 디자인 확정 후 보강.
      */
     public Map<String, Object> getPromotions(String prodId) {
-        PdProdDto prod = pdProdMapper.selectById(prodId);
+        PdProdDto.Item prod = pdProdMapper.selectById(prodId);
         Map<String, Object> p = new HashMap<>();
         if (prod != null && prod.getSiteId() != null) {
             p.put("siteId", prod.getSiteId());

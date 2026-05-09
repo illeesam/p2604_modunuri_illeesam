@@ -40,7 +40,7 @@
     </sql>
 
     <!-- 쿠폰 발행 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto$Item">
         SELECT  /* base.ec.pm :: PmCouponIssue :: selectById */
               ci.*
             , c.coupon_nm,    c.coupon_cd,    c.coupon_type_cd
@@ -55,7 +55,7 @@
     </select>
 
     <!-- 쿠폰 발행 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto$Item">
         SELECT  /* base.ec.pm :: PmCouponIssue :: selectList */
               ci.*
             , c.coupon_nm,    c.coupon_cd,    c.coupon_type_cd
@@ -72,7 +72,7 @@
     </select>
 
     <!-- 쿠폰 발행 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto$Item">
         SELECT  /* base.ec.pm :: PmCouponIssue :: selectPageList */
               ci.*
             , c.coupon_nm,    c.coupon_cd,    c.coupon_type_cd
@@ -115,7 +115,7 @@
          ================================================================ -->
 
     <!-- 회원 ID로 쿠폰 발행 이력 조회 -->
-    <select id="selectByMemberId" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto">
+    <select id="selectByMemberId" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto$Item">
         SELECT  /* base.ec.pm :: PmCouponIssue :: selectByMemberId */
               ci.*
             , c.coupon_nm,    c.coupon_cd,    c.coupon_type_cd

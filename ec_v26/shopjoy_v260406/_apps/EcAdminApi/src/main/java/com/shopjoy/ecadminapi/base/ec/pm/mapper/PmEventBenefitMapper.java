@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface PmEventBenefitMapper {
 
-    PmEventBenefitDto selectById(@Param("id") String id);
+    PmEventBenefitDto.Item selectById(@Param("id") String id);
 
-    List<PmEventBenefitDto> selectList(Map<String, Object> p);
+    List<PmEventBenefitDto.Item> selectList(PmEventBenefitDto.Request req);
 
-    List<PmEventBenefitDto> selectPageList(Map<String, Object> p);
+    List<PmEventBenefitDto.Item> selectPageList(PmEventBenefitDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(PmEventBenefitDto.Request req);
 
     int updateSelective(PmEventBenefit entity);
 }

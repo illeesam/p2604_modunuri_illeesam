@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmCacheService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-
 /**
  * BO 캐시(충전금) API — /api/bo/ec/pm/cache
  * 인가: BO_ONLY (관리자)
@@ -24,26 +22,20 @@ public class BoPmCacheController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PmCacheDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<PmCacheDto> result = boPmCacheService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PmCacheDto.Item>>> list(@Valid @ModelAttribute PmCacheDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmCacheService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PmCacheDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<PmCacheDto> result = boPmCacheService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PmCacheDto.PageResponse>> page(@Valid @ModelAttribute PmCacheDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmCacheService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCacheDto>> getById(@PathVariable("id") String id) {
-        PmCacheDto result = boPmCacheService.getById(id);
+    public ResponseEntity<ApiResponse<PmCacheDto.Item>> getById(@PathVariable("id") String id) {
+        PmCacheDto.Item result = boPmCacheService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -56,14 +48,14 @@ public class BoPmCacheController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCacheDto>> update(@PathVariable("id") String id, @RequestBody PmCache body) {
-        PmCacheDto result = boPmCacheService.update(id, body);
+    public ResponseEntity<ApiResponse<PmCache>> update(@PathVariable("id") String id, @RequestBody PmCache body) {
+        PmCache result = boPmCacheService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCacheDto>> upsert(@PathVariable("id") String id, @RequestBody PmCache body) {
+    public ResponseEntity<ApiResponse<PmCache>> upsert(@PathVariable("id") String id, @RequestBody PmCache body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmCacheService.update(id, body)));
     }
 
@@ -75,8 +67,7 @@ public class BoPmCacheController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmCache> rows) {
-        boPmCacheService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<PmCache>>> saveList(@RequestBody List<PmCache> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmCacheService.saveList(rows), "저장되었습니다."));
     }
 }

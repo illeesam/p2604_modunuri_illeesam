@@ -77,7 +77,7 @@ public class BoPdReviewController {
 
     /** changeStatus */
     @PutMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<PdReviewDto>> changeStatus(
+    public ResponseEntity<ApiResponse<PdReviewDto.Item>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.changeStatus(id, body.get("reviewStatusCd"))));
     }

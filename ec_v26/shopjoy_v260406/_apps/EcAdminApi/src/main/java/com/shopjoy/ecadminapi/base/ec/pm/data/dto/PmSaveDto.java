@@ -1,27 +1,38 @@
 package com.shopjoy.ecadminapi.base.ec.pm.data.dto;
 
+import com.shopjoy.ecadminapi.common.data.BasePageResponse;
+import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter @NoArgsConstructor
 public class PmSaveDto {
 
-    // ── pm_save ──────────────────────────────────────────
-    private String saveId;
-    private String siteId;
-    private String memberId;
-    private String saveTypeCd;
-    private Long saveAmt;
-    private Long balanceAmt;
-    private String refTypeCd;
-    private String refId;
-    private LocalDateTime expireDate;
-    private String saveMemo;
-    private String regBy;
-    private LocalDateTime regDate;
+    @Getter @Setter @NoArgsConstructor
+    public static class Request extends BaseRequest {
+        @Size(max = 21) private String siteId;
+        @Size(max = 21) private String saveId;
+    }
 
-    // ── JOIN: 필요 시 추가 ────────────────────────────────────────
+    @Getter @Setter @NoArgsConstructor
+    public static class Item {
+        private String saveId;
+        private String siteId;
+        private String memberId;
+        private String saveTypeCd;
+        private Long saveAmt;
+        private Long balanceAmt;
+        private String refTypeCd;
+        private String refId;
+        private LocalDateTime expireDate;
+        private String saveMemo;
+        private String regBy;
+        private LocalDateTime regDate;
+    }
+
+    @Getter @Setter @NoArgsConstructor
+    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

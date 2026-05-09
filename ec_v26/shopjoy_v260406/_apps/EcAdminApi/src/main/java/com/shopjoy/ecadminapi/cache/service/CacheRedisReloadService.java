@@ -210,7 +210,7 @@ public class CacheRedisReloadService {
     public int reloadEcPdCate() {
         if (!redis.isEnabled()) return 0;
         ecPdCateCache.evictAll();
-        var list = categoryMapper.selectList(Map.of());
+        var list = categoryMapper.selectList(new com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Request());
         ecPdCateCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] ec-pd-cate 리로드 완료 — {}건", list.size());
         return list.size();

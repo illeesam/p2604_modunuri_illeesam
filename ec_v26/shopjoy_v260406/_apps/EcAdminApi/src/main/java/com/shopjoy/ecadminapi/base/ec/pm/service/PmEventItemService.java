@@ -5,117 +5,162 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventItem;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventItemMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventItemRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PmEventItemService {
 
-
     private final PmEventItemMapper pmEventItemMapper;
     private final PmEventItemRepository pmEventItemRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PmEventItemDto getById(String id) {
-        // pm_event_item :: select one :: id [orm:mybatis]
-        PmEventItemDto result = pmEventItemMapper.selectById(id);
-        return result;
+    public PmEventItemDto.Item getById(String id) {
+        PmEventItemDto.Item dto = pmEventItemMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PmEventItemDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pm_event_item :: select list :: p [orm:mybatis]
-        List<PmEventItemDto> result = pmEventItemMapper.selectList(p);
-        return result;
+    public PmEventItem findById(String id) {
+        return pmEventItemRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PmEventItemDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pm_event_item :: select page :: [orm:mybatis]
-        return PageResult.of(pmEventItemMapper.selectPageList(p), pmEventItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pmEventItemRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PmEventItem entity) {
-        // pm_event_item :: update :: [orm:mybatis]
-        int result = pmEventItemMapper.updateSelective(entity);
-        return result;
+    public List<PmEventItemDto.Item> getList(PmEventItemDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pmEventItemMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public PmEventItemDto.PageResponse getPageData(PmEventItemDto.Request req) {
+        PageHelper.addPaging(req);
+        PmEventItemDto.PageResponse res = new PmEventItemDto.PageResponse();
+        List<PmEventItemDto.Item> list = pmEventItemMapper.selectPageList(req);
+        long count = pmEventItemMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public PmEventItem create(PmEventItem entity) {
-        entity.setEventItemId(CmUtil.generateId("pm_event_item"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pm_event_item :: insert or update :: [orm:jpa]
-        PmEventItem result = pmEventItemRepository.save(entity);
-        return result;
+    public PmEventItem create(PmEventItem body) {
+        body.setEventItemId(CmUtil.generateId("pm_event_item"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PmEventItem saved = pmEventItemRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getEventItemId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PmEventItem save(PmEventItem entity) {
-        if (!pmEventItemRepository.existsById(entity.getEventItemId()))
+        if (!existsById(entity.getEventItemId()))
             throw new CmBizException("존재하지 않는 PmEventItem입니다: " + entity.getEventItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pm_event_item :: insert or update :: [orm:jpa]
-        PmEventItem result = pmEventItemRepository.save(entity);
-        return result;
+        PmEventItem saved = pmEventItemRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getEventItemId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PmEventItem update(String id, PmEventItem body) {
+        PmEventItem entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "eventItemId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PmEventItem saved = pmEventItemRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PmEventItem updatePartial(PmEventItem entity) {
+        if (entity.getEventItemId() == null) throw new CmBizException("eventItemId 가 필요합니다.");
+        if (!existsById(entity.getEventItemId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getEventItemId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pmEventItemMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getEventItemId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pmEventItemRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PmEventItem입니다: " + id);
-        // pm_event_item :: delete :: id [orm:jpa]
-        pmEventItemRepository.deleteById(id);
+        PmEventItem entity = findById(id);
+        pmEventItemRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PmEventItem> rows) {
+    public List<PmEventItem> saveList(List<PmEventItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PmEventItem row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setEventItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_event_item"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pmEventItemRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getEventItemId(), "eventItemId must not be null");
-                PmEventItem entity = pmEventItemRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "eventItemId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pmEventItemRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getEventItemId(), "eventItemId must not be null");
-                if (pmEventItemRepository.existsById(id)) pmEventItemRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getEventItemId() != null)
+            .map(PmEventItem::getEventItemId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pmEventItemRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PmEventItem> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getEventItemId() != null)
+            .toList();
+        for (PmEventItem row : updateRows) {
+            PmEventItem entity = findById(row.getEventItemId());
+            VoUtil.voCopyExclude(row, entity, "eventItemId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pmEventItemRepository.save(entity);
+            upsertedIds.add(entity.getEventItemId());
+        }
+        em.flush();
+
+        List<PmEventItem> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PmEventItem row : insertRows) {
+            row.setEventItemId(CmUtil.generateId("pm_event_item"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pmEventItemRepository.save(row);
+            upsertedIds.add(row.getEventItemId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PmEventItem> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

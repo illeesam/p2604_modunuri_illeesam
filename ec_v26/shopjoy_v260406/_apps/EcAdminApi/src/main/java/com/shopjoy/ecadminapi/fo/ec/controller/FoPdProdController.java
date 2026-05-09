@@ -2,11 +2,13 @@ package com.shopjoy.ecadminapi.fo.ec.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdContentDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdRelDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.fo.ec.service.FoPdProdService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,16 +49,14 @@ public class FoPdProdController {
     /* ── 목록 ────────────────────────────────────────────────── */
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PdProdDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getList(p)));
+    public ResponseEntity<ApiResponse<List<PdProdDto.Item>>> list(@Valid @ModelAttribute PdProdDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getPageData(p)));
+    public ResponseEntity<ApiResponse<PdProdDto.PageResponse>> page(@Valid @ModelAttribute PdProdDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getPageData(req)));
     }
 
     /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
@@ -70,14 +70,14 @@ public class FoPdProdController {
     /* ── Tier 2: lazy load ──────────────────────────────────── */
 
     @GetMapping("/{id}/contents")
-    public ResponseEntity<ApiResponse<List<PdProdContentDto>>> getContents(
+    public ResponseEntity<ApiResponse<List<PdProdContentDto.Item>>> getContents(
             @PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getContents(id)));
     }
 
     /** getRels — 조회 */
     @GetMapping("/{id}/rels")
-    public ResponseEntity<ApiResponse<List<PdProdRelDto>>> getRels(
+    public ResponseEntity<ApiResponse<List<PdProdRelDto.Item>>> getRels(
             @PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getRels(id)));
     }
@@ -86,13 +86,13 @@ public class FoPdProdController {
     @GetMapping("/{id}/reviews")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getReviews(
             @PathVariable("id") String id,
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getReviews(id, p)));
+            @Valid @ModelAttribute PdReviewDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getReviews(id, req)));
     }
 
     /** getReviewImages — 조회 */
     @GetMapping("/{id}/review-images")
-    public ResponseEntity<ApiResponse<List<PdReviewAttachDto>>> getReviewImages(
+    public ResponseEntity<ApiResponse<List<PdReviewAttachDto.Item>>> getReviewImages(
             @PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getReviewImages(id)));
     }
@@ -101,8 +101,8 @@ public class FoPdProdController {
     @GetMapping("/{id}/qna")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getQna(
             @PathVariable("id") String id,
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getQna(id, p)));
+            @Valid @ModelAttribute PdProdQnaDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getQna(id, req)));
     }
 
     /* ── Tier 3: 사용자별 프로모션 (통합) ───────────────────── */

@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface PmCouponIssueMapper {
 
-    PmCouponIssueDto selectById(@Param("id") String id);
+    PmCouponIssueDto.Item selectById(@Param("id") String id);
 
-    List<PmCouponIssueDto> selectList(Map<String, Object> p);
+    List<PmCouponIssueDto.Item> selectList(PmCouponIssueDto.Request req);
 
-    List<PmCouponIssueDto> selectPageList(Map<String, Object> p);
+    List<PmCouponIssueDto.Item> selectPageList(PmCouponIssueDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(PmCouponIssueDto.Request req);
 
     int updateSelective(PmCouponIssue entity);
 }

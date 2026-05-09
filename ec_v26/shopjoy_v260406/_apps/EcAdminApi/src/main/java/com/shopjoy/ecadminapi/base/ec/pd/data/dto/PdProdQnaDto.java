@@ -16,6 +16,7 @@ public class PdProdQnaDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String qnaId;
+        @Size(max = 21) private String prodId;
     }
 
     @Getter @Setter @NoArgsConstructor

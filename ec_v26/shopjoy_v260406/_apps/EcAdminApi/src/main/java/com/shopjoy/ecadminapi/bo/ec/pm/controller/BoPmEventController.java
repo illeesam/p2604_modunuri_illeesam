@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmEventService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,26 +24,20 @@ public class BoPmEventController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PmEventDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<PmEventDto> result = boPmEventService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PmEventDto.Item>>> list(@Valid @ModelAttribute PmEventDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmEventService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PmEventDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<PmEventDto> result = boPmEventService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PmEventDto.PageResponse>> page(@Valid @ModelAttribute PmEventDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmEventService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable("id") String id) {
-        PmEventDto result = boPmEventService.getById(id);
+    public ResponseEntity<ApiResponse<PmEventDto.Item>> getById(@PathVariable("id") String id) {
+        PmEventDto.Item result = boPmEventService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -56,14 +50,14 @@ public class BoPmEventController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmEventDto>> update(@PathVariable("id") String id, @RequestBody PmEvent body) {
-        PmEventDto result = boPmEventService.update(id, body);
+    public ResponseEntity<ApiResponse<PmEvent>> update(@PathVariable("id") String id, @RequestBody PmEvent body) {
+        PmEvent result = boPmEventService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmEventDto>> upsert(@PathVariable("id") String id, @RequestBody PmEvent body) {
+    public ResponseEntity<ApiResponse<PmEvent>> upsert(@PathVariable("id") String id, @RequestBody PmEvent body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmEventService.update(id, body)));
     }
 
@@ -83,8 +77,7 @@ public class BoPmEventController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmEvent> rows) {
-        boPmEventService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<PmEvent>>> saveList(@RequestBody List<PmEvent> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boPmEventService.saveList(rows), "저장되었습니다."));
     }
 }

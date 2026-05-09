@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * SKU 변경 이력 — write-once 로그성 (조회 + 등록만 지원).
+ */
 @RestController
 @RequestMapping("/api/base/ec/pd/prod-sku-chg-hist")
 @RequiredArgsConstructor
@@ -36,28 +39,5 @@ public class PdhProdSkuChgHistController {
     @PostMapping
     public ResponseEntity<ApiResponse<PdhProdSkuChgHist>> create(@RequestBody PdhProdSkuChgHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdhProdSkuChgHist>> save(@PathVariable("id") String id, @RequestBody PdhProdSkuChgHist entity) {
-        entity.setHistId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdhProdSkuChgHist>> updatePartial(@PathVariable("id") String id, @RequestBody PdhProdSkuChgHist entity) {
-        entity.setHistId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
-        service.delete(id);
-        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
-    }
-
-    @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<PdhProdSkuChgHist>>> saveList(@RequestBody List<PdhProdSkuChgHist> rows) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

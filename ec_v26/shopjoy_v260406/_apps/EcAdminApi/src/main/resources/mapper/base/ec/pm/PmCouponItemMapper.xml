@@ -30,7 +30,7 @@
     </sql>
 
     <!-- 쿠폰 대상 상품 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto$Item">
         SELECT  /* base.ec.pm :: PmCouponItem :: selectById */
               i.*
             , cpn.coupon_nm AS coupon_nm
@@ -44,7 +44,7 @@
     </select>
 
     <!-- 쿠폰 대상 상품 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto$Item">
         SELECT  /* base.ec.pm :: PmCouponItem :: selectList */
               i.*
             , cpn.coupon_nm AS coupon_nm
@@ -60,7 +60,7 @@
     </select>
 
     <!-- 쿠폰 대상 상품 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto$Item">
         SELECT  /* base.ec.pm :: PmCouponItem :: selectPageList */
               i.*
             , cpn.coupon_nm AS coupon_nm

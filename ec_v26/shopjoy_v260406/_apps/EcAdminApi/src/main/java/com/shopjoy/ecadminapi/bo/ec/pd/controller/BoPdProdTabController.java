@@ -54,23 +54,24 @@ public class BoPdProdTabController {
 
     /** images */
     @GetMapping("/images")
-    public ResponseEntity<ApiResponse<List<PdProdImgDto>>> images(
-            @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        p.put("prodId", prodId);
-        return ResponseEntity.ok(ApiResponse.ok(imgService.getList(p)));
+    public ResponseEntity<ApiResponse<List<PdProdImgDto.Item>>> images(
+            @PathVariable("prodId") String prodId) {
+        PdProdImgDto.Request req = new PdProdImgDto.Request();
+        req.setProdId(prodId);
+        return ResponseEntity.ok(ApiResponse.ok(imgService.getList(req)));
     }
 
     /** opts */
     @GetMapping("/opts")
     public ResponseEntity<ApiResponse<Map<String, Object>>> opts(
-            @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        p.put("prodId", prodId);
-        List<PdProdOptDto> groups = optService.getList(p);
+            @PathVariable("prodId") String prodId) {
+        PdProdOptDto.Request optReq = new PdProdOptDto.Request();
+        optReq.setProdId(prodId);
+        List<PdProdOptDto.Item> groups = optService.getList(optReq);
 
-        Map<String, Object> p2 = new HashMap<>(p);
-        List<PdProdOptItemDto> items = optItemService.getList(p2);
+        PdProdOptItemDto.Request optItemReq = new PdProdOptItemDto.Request();
+        optItemReq.setProdId(prodId);
+        List<PdProdOptItemDto.Item> items = optItemService.getList(optItemReq);
 
         Map<String, Object> result = new HashMap<>();
         result.put("groups", groups);
@@ -80,11 +81,11 @@ public class BoPdProdTabController {
 
     /** skus */
     @GetMapping("/skus")
-    public ResponseEntity<ApiResponse<List<PdProdSkuDto>>> skus(
-            @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        p.put("prodId", prodId);
-        return ResponseEntity.ok(ApiResponse.ok(skuService.getList(p)));
+    public ResponseEntity<ApiResponse<List<PdProdSkuDto.Item>>> skus(
+            @PathVariable("prodId") String prodId) {
+        PdProdSkuDto.Request req = new PdProdSkuDto.Request();
+        req.setProdId(prodId);
+        return ResponseEntity.ok(ApiResponse.ok(skuService.getList(req)));
     }
 
     /**
@@ -277,11 +278,11 @@ public class BoPdProdTabController {
 
     /** contents */
     @GetMapping("/contents")
-    public ResponseEntity<ApiResponse<List<PdProdContentDto>>> contents(
-            @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        p.put("prodId", prodId);
-        return ResponseEntity.ok(ApiResponse.ok(contentService.getList(p)));
+    public ResponseEntity<ApiResponse<List<PdProdContentDto.Item>>> contents(
+            @PathVariable("prodId") String prodId) {
+        PdProdContentDto.Request req = new PdProdContentDto.Request();
+        req.setProdId(prodId);
+        return ResponseEntity.ok(ApiResponse.ok(contentService.getList(req)));
     }
 
     /**
@@ -327,10 +328,10 @@ public class BoPdProdTabController {
 
     /** rels */
     @GetMapping("/rels")
-    public ResponseEntity<ApiResponse<List<PdProdRelDto>>> rels(
-            @PathVariable("prodId") String prodId,
-            @RequestParam Map<String, Object> p) {
-        p.put("prodId", prodId);
-        return ResponseEntity.ok(ApiResponse.ok(relService.getList(p)));
+    public ResponseEntity<ApiResponse<List<PdProdRelDto.Item>>> rels(
+            @PathVariable("prodId") String prodId) {
+        PdProdRelDto.Request req = new PdProdRelDto.Request();
+        req.setProdId(prodId);
+        return ResponseEntity.ok(ApiResponse.ok(relService.getList(req)));
     }
 }

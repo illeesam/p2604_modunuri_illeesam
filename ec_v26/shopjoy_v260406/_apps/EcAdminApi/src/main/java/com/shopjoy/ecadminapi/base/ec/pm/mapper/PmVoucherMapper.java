@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface PmVoucherMapper {
 
-    PmVoucherDto selectById(@Param("id") String id);
+    PmVoucherDto.Item selectById(@Param("id") String id);
 
-    List<PmVoucherDto> selectList(Map<String, Object> p);
+    List<PmVoucherDto.Item> selectList(PmVoucherDto.Request req);
 
-    List<PmVoucherDto> selectPageList(Map<String, Object> p);
+    List<PmVoucherDto.Item> selectPageList(PmVoucherDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(PmVoucherDto.Request req);
 
     int updateSelective(PmVoucher entity);
 }

@@ -5,117 +5,162 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmDiscntMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmDiscntRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PmDiscntService {
 
-
     private final PmDiscntMapper pmDiscntMapper;
     private final PmDiscntRepository pmDiscntRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PmDiscntDto getById(String id) {
-        // pm_discnt :: select one :: id [orm:mybatis]
-        PmDiscntDto result = pmDiscntMapper.selectById(id);
-        return result;
+    public PmDiscntDto.Item getById(String id) {
+        PmDiscntDto.Item dto = pmDiscntMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PmDiscntDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pm_discnt :: select list :: p [orm:mybatis]
-        List<PmDiscntDto> result = pmDiscntMapper.selectList(p);
-        return result;
+    public PmDiscnt findById(String id) {
+        return pmDiscntRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PmDiscntDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pm_discnt :: select page :: [orm:mybatis]
-        return PageResult.of(pmDiscntMapper.selectPageList(p), pmDiscntMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pmDiscntRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PmDiscnt entity) {
-        // pm_discnt :: update :: [orm:mybatis]
-        int result = pmDiscntMapper.updateSelective(entity);
-        return result;
+    public List<PmDiscntDto.Item> getList(PmDiscntDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pmDiscntMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public PmDiscntDto.PageResponse getPageData(PmDiscntDto.Request req) {
+        PageHelper.addPaging(req);
+        PmDiscntDto.PageResponse res = new PmDiscntDto.PageResponse();
+        List<PmDiscntDto.Item> list = pmDiscntMapper.selectPageList(req);
+        long count = pmDiscntMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public PmDiscnt create(PmDiscnt entity) {
-        entity.setDiscntId(CmUtil.generateId("pm_discnt"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pm_discnt :: insert or update :: [orm:jpa]
-        PmDiscnt result = pmDiscntRepository.save(entity);
-        return result;
+    public PmDiscnt create(PmDiscnt body) {
+        body.setDiscntId(CmUtil.generateId("pm_discnt"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PmDiscnt saved = pmDiscntRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getDiscntId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PmDiscnt save(PmDiscnt entity) {
-        if (!pmDiscntRepository.existsById(entity.getDiscntId()))
+        if (!existsById(entity.getDiscntId()))
             throw new CmBizException("존재하지 않는 PmDiscnt입니다: " + entity.getDiscntId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pm_discnt :: insert or update :: [orm:jpa]
-        PmDiscnt result = pmDiscntRepository.save(entity);
-        return result;
+        PmDiscnt saved = pmDiscntRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getDiscntId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PmDiscnt update(String id, PmDiscnt body) {
+        PmDiscnt entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "discntId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PmDiscnt saved = pmDiscntRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PmDiscnt updatePartial(PmDiscnt entity) {
+        if (entity.getDiscntId() == null) throw new CmBizException("discntId 가 필요합니다.");
+        if (!existsById(entity.getDiscntId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDiscntId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pmDiscntMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getDiscntId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pmDiscntRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PmDiscnt입니다: " + id);
-        // pm_discnt :: delete :: id [orm:jpa]
-        pmDiscntRepository.deleteById(id);
+        PmDiscnt entity = findById(id);
+        pmDiscntRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PmDiscnt> rows) {
+    public List<PmDiscnt> saveList(List<PmDiscnt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PmDiscnt row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setDiscntId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_discnt"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pmDiscntRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getDiscntId(), "discntId must not be null");
-                PmDiscnt entity = pmDiscntRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "discntId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pmDiscntRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getDiscntId(), "discntId must not be null");
-                if (pmDiscntRepository.existsById(id)) pmDiscntRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getDiscntId() != null)
+            .map(PmDiscnt::getDiscntId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pmDiscntRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PmDiscnt> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getDiscntId() != null)
+            .toList();
+        for (PmDiscnt row : updateRows) {
+            PmDiscnt entity = findById(row.getDiscntId());
+            VoUtil.voCopyExclude(row, entity, "discntId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pmDiscntRepository.save(entity);
+            upsertedIds.add(entity.getDiscntId());
+        }
+        em.flush();
+
+        List<PmDiscnt> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PmDiscnt row : insertRows) {
+            row.setDiscntId(CmUtil.generateId("pm_discnt"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pmDiscntRepository.save(row);
+            upsertedIds.add(row.getDiscntId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PmDiscnt> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

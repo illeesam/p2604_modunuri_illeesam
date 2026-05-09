@@ -5,117 +5,162 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCouponUsageMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponUsageRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PmCouponUsageService {
 
-
     private final PmCouponUsageMapper pmCouponUsageMapper;
     private final PmCouponUsageRepository pmCouponUsageRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PmCouponUsageDto getById(String id) {
-        // pm_coupon_usage :: select one :: id [orm:mybatis]
-        PmCouponUsageDto result = pmCouponUsageMapper.selectById(id);
-        return result;
+    public PmCouponUsageDto.Item getById(String id) {
+        PmCouponUsageDto.Item dto = pmCouponUsageMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PmCouponUsageDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pm_coupon_usage :: select list :: p [orm:mybatis]
-        List<PmCouponUsageDto> result = pmCouponUsageMapper.selectList(p);
-        return result;
+    public PmCouponUsage findById(String id) {
+        return pmCouponUsageRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PmCouponUsageDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pm_coupon_usage :: select page :: [orm:mybatis]
-        return PageResult.of(pmCouponUsageMapper.selectPageList(p), pmCouponUsageMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pmCouponUsageRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PmCouponUsage entity) {
-        // pm_coupon_usage :: update :: [orm:mybatis]
-        int result = pmCouponUsageMapper.updateSelective(entity);
-        return result;
+    public List<PmCouponUsageDto.Item> getList(PmCouponUsageDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pmCouponUsageMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public PmCouponUsageDto.PageResponse getPageData(PmCouponUsageDto.Request req) {
+        PageHelper.addPaging(req);
+        PmCouponUsageDto.PageResponse res = new PmCouponUsageDto.PageResponse();
+        List<PmCouponUsageDto.Item> list = pmCouponUsageMapper.selectPageList(req);
+        long count = pmCouponUsageMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public PmCouponUsage create(PmCouponUsage entity) {
-        entity.setUsageId(CmUtil.generateId("pm_coupon_usage"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pm_coupon_usage :: insert or update :: [orm:jpa]
-        PmCouponUsage result = pmCouponUsageRepository.save(entity);
-        return result;
+    public PmCouponUsage create(PmCouponUsage body) {
+        body.setUsageId(CmUtil.generateId("pm_coupon_usage"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PmCouponUsage saved = pmCouponUsageRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getUsageId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PmCouponUsage save(PmCouponUsage entity) {
-        if (!pmCouponUsageRepository.existsById(entity.getUsageId()))
+        if (!existsById(entity.getUsageId()))
             throw new CmBizException("존재하지 않는 PmCouponUsage입니다: " + entity.getUsageId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pm_coupon_usage :: insert or update :: [orm:jpa]
-        PmCouponUsage result = pmCouponUsageRepository.save(entity);
-        return result;
+        PmCouponUsage saved = pmCouponUsageRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getUsageId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PmCouponUsage update(String id, PmCouponUsage body) {
+        PmCouponUsage entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "usageId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PmCouponUsage saved = pmCouponUsageRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PmCouponUsage updatePartial(PmCouponUsage entity) {
+        if (entity.getUsageId() == null) throw new CmBizException("usageId 가 필요합니다.");
+        if (!existsById(entity.getUsageId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUsageId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pmCouponUsageMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getUsageId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pmCouponUsageRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PmCouponUsage입니다: " + id);
-        // pm_coupon_usage :: delete :: id [orm:jpa]
-        pmCouponUsageRepository.deleteById(id);
+        PmCouponUsage entity = findById(id);
+        pmCouponUsageRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PmCouponUsage> rows) {
+    public List<PmCouponUsage> saveList(List<PmCouponUsage> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PmCouponUsage row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setUsageId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_coupon_usage"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pmCouponUsageRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getUsageId(), "usageId must not be null");
-                PmCouponUsage entity = pmCouponUsageRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "usageId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pmCouponUsageRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getUsageId(), "usageId must not be null");
-                if (pmCouponUsageRepository.existsById(id)) pmCouponUsageRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getUsageId() != null)
+            .map(PmCouponUsage::getUsageId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pmCouponUsageRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PmCouponUsage> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getUsageId() != null)
+            .toList();
+        for (PmCouponUsage row : updateRows) {
+            PmCouponUsage entity = findById(row.getUsageId());
+            VoUtil.voCopyExclude(row, entity, "usageId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pmCouponUsageRepository.save(entity);
+            upsertedIds.add(entity.getUsageId());
+        }
+        em.flush();
+
+        List<PmCouponUsage> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PmCouponUsage row : insertRows) {
+            row.setUsageId(CmUtil.generateId("pm_coupon_usage"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pmCouponUsageRepository.save(row);
+            upsertedIds.add(row.getUsageId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PmCouponUsage> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

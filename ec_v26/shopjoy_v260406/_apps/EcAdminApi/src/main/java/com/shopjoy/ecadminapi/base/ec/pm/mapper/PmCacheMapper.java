@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface PmCacheMapper {
 
-    PmCacheDto selectById(@Param("id") String id);
+    PmCacheDto.Item selectById(@Param("id") String id);
 
-    List<PmCacheDto> selectList(Map<String, Object> p);
+    List<PmCacheDto.Item> selectList(PmCacheDto.Request req);
 
-    List<PmCacheDto> selectPageList(Map<String, Object> p);
+    List<PmCacheDto.Item> selectPageList(PmCacheDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(PmCacheDto.Request req);
 
     int updateSelective(PmCache entity);
 }

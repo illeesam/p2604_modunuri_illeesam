@@ -5,117 +5,162 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventBenefitMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventBenefitRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PmEventBenefitService {
 
-
     private final PmEventBenefitMapper pmEventBenefitMapper;
     private final PmEventBenefitRepository pmEventBenefitRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PmEventBenefitDto getById(String id) {
-        // pm_event_benefit :: select one :: id [orm:mybatis]
-        PmEventBenefitDto result = pmEventBenefitMapper.selectById(id);
-        return result;
+    public PmEventBenefitDto.Item getById(String id) {
+        PmEventBenefitDto.Item dto = pmEventBenefitMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PmEventBenefitDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pm_event_benefit :: select list :: p [orm:mybatis]
-        List<PmEventBenefitDto> result = pmEventBenefitMapper.selectList(p);
-        return result;
+    public PmEventBenefit findById(String id) {
+        return pmEventBenefitRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PmEventBenefitDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pm_event_benefit :: select page :: [orm:mybatis]
-        return PageResult.of(pmEventBenefitMapper.selectPageList(p), pmEventBenefitMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pmEventBenefitRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PmEventBenefit entity) {
-        // pm_event_benefit :: update :: [orm:mybatis]
-        int result = pmEventBenefitMapper.updateSelective(entity);
-        return result;
+    public List<PmEventBenefitDto.Item> getList(PmEventBenefitDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pmEventBenefitMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public PmEventBenefitDto.PageResponse getPageData(PmEventBenefitDto.Request req) {
+        PageHelper.addPaging(req);
+        PmEventBenefitDto.PageResponse res = new PmEventBenefitDto.PageResponse();
+        List<PmEventBenefitDto.Item> list = pmEventBenefitMapper.selectPageList(req);
+        long count = pmEventBenefitMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public PmEventBenefit create(PmEventBenefit entity) {
-        entity.setBenefitId(CmUtil.generateId("pm_event_benefit"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pm_event_benefit :: insert or update :: [orm:jpa]
-        PmEventBenefit result = pmEventBenefitRepository.save(entity);
-        return result;
+    public PmEventBenefit create(PmEventBenefit body) {
+        body.setBenefitId(CmUtil.generateId("pm_event_benefit"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PmEventBenefit saved = pmEventBenefitRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getBenefitId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PmEventBenefit save(PmEventBenefit entity) {
-        if (!pmEventBenefitRepository.existsById(entity.getBenefitId()))
+        if (!existsById(entity.getBenefitId()))
             throw new CmBizException("존재하지 않는 PmEventBenefit입니다: " + entity.getBenefitId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pm_event_benefit :: insert or update :: [orm:jpa]
-        PmEventBenefit result = pmEventBenefitRepository.save(entity);
-        return result;
+        PmEventBenefit saved = pmEventBenefitRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getBenefitId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PmEventBenefit update(String id, PmEventBenefit body) {
+        PmEventBenefit entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "benefitId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PmEventBenefit saved = pmEventBenefitRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PmEventBenefit updatePartial(PmEventBenefit entity) {
+        if (entity.getBenefitId() == null) throw new CmBizException("benefitId 가 필요합니다.");
+        if (!existsById(entity.getBenefitId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBenefitId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pmEventBenefitMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getBenefitId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pmEventBenefitRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PmEventBenefit입니다: " + id);
-        // pm_event_benefit :: delete :: id [orm:jpa]
-        pmEventBenefitRepository.deleteById(id);
+        PmEventBenefit entity = findById(id);
+        pmEventBenefitRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PmEventBenefit> rows) {
+    public List<PmEventBenefit> saveList(List<PmEventBenefit> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PmEventBenefit row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setBenefitId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pm_event_benefit"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pmEventBenefitRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getBenefitId(), "benefitId must not be null");
-                PmEventBenefit entity = pmEventBenefitRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "benefitId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pmEventBenefitRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getBenefitId(), "benefitId must not be null");
-                if (pmEventBenefitRepository.existsById(id)) pmEventBenefitRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getBenefitId() != null)
+            .map(PmEventBenefit::getBenefitId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pmEventBenefitRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PmEventBenefit> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getBenefitId() != null)
+            .toList();
+        for (PmEventBenefit row : updateRows) {
+            PmEventBenefit entity = findById(row.getBenefitId());
+            VoUtil.voCopyExclude(row, entity, "benefitId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pmEventBenefitRepository.save(entity);
+            upsertedIds.add(entity.getBenefitId());
+        }
+        em.flush();
+
+        List<PmEventBenefit> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PmEventBenefit row : insertRows) {
+            row.setBenefitId(CmUtil.generateId("pm_event_benefit"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pmEventBenefitRepository.save(row);
+            upsertedIds.add(row.getBenefitId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PmEventBenefit> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }
