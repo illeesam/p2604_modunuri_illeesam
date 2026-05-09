@@ -16,6 +16,9 @@ public class PdCategoryProdDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String categoryProdId;
+        @Size(max = 21) private String categoryId;
+        @Size(max = 21) private String prodId;
+        @Size(max = 30) private String typeCd;
     }
 
     @Getter @Setter @NoArgsConstructor

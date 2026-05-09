@@ -15,6 +15,9 @@ public class PdCategoryDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String categoryId;
+        @Size(max = 21) private String parentCategoryId;
+        @Size(max = 30) private String status;
+        private Integer depth;
     }
 
     @Getter @Setter @NoArgsConstructor
