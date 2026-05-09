@@ -49,14 +49,14 @@ public class SyRoleMenuService {
 
     public List<SyRoleMenuDto.Item> getList(SyRoleMenuDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syRoleMenuMapper.selectList(req);
+        return syRoleMenuMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyRoleMenuDto.PageResponse getPageData(SyRoleMenuDto.Request req) {
         PageHelper.addPaging(req);
         SyRoleMenuDto.PageResponse res = new SyRoleMenuDto.PageResponse();
-        List<SyRoleMenuDto.Item> list = syRoleMenuMapper.selectPageList(req);
-        long count = syRoleMenuMapper.selectPageCount(req);
+        List<SyRoleMenuDto.Item> list = syRoleMenuMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syRoleMenuMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

@@ -47,14 +47,14 @@ public class OdClaimItemService {
 
     public List<OdClaimItemDto.Item> getList(OdClaimItemDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odClaimItemMapper.selectList(req);
+        return odClaimItemMapper.selectList(VoUtil.voToMap(req));
     }
 
     public OdClaimItemDto.PageResponse getPageData(OdClaimItemDto.Request req) {
         PageHelper.addPaging(req);
         OdClaimItemDto.PageResponse res = new OdClaimItemDto.PageResponse();
-        List<OdClaimItemDto.Item> list = odClaimItemMapper.selectPageList(req);
-        long count = odClaimItemMapper.selectPageCount(req);
+        List<OdClaimItemDto.Item> list = odClaimItemMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odClaimItemMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

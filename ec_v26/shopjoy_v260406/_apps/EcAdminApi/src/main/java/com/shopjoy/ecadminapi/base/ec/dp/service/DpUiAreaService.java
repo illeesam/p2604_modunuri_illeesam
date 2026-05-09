@@ -47,14 +47,14 @@ public class DpUiAreaService {
 
     public List<DpUiAreaDto.Item> getList(DpUiAreaDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return dpUiAreaMapper.selectList(req);
+        return dpUiAreaMapper.selectList(VoUtil.voToMap(req));
     }
 
     public DpUiAreaDto.PageResponse getPageData(DpUiAreaDto.Request req) {
         PageHelper.addPaging(req);
         DpUiAreaDto.PageResponse res = new DpUiAreaDto.PageResponse();
-        List<DpUiAreaDto.Item> list = dpUiAreaMapper.selectPageList(req);
-        long count = dpUiAreaMapper.selectPageCount(req);
+        List<DpUiAreaDto.Item> list = dpUiAreaMapper.selectPageList(VoUtil.voToMap(req));
+        long count = dpUiAreaMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

@@ -47,14 +47,14 @@ public class PmVoucherService {
 
     public List<PmVoucherDto.Item> getList(PmVoucherDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmVoucherMapper.selectList(req);
+        return pmVoucherMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PmVoucherDto.PageResponse getPageData(PmVoucherDto.Request req) {
         PageHelper.addPaging(req);
         PmVoucherDto.PageResponse res = new PmVoucherDto.PageResponse();
-        List<PmVoucherDto.Item> list = pmVoucherMapper.selectPageList(req);
-        long count = pmVoucherMapper.selectPageCount(req);
+        List<PmVoucherDto.Item> list = pmVoucherMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pmVoucherMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

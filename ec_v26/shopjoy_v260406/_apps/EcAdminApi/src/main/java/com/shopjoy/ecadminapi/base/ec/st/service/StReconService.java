@@ -47,14 +47,14 @@ public class StReconService {
 
     public List<StReconDto.Item> getList(StReconDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stReconMapper.selectList(req);
+        return stReconMapper.selectList(VoUtil.voToMap(req));
     }
 
     public StReconDto.PageResponse getPageData(StReconDto.Request req) {
         PageHelper.addPaging(req);
         StReconDto.PageResponse res = new StReconDto.PageResponse();
-        List<StReconDto.Item> list = stReconMapper.selectPageList(req);
-        long count = stReconMapper.selectPageCount(req);
+        List<StReconDto.Item> list = stReconMapper.selectPageList(VoUtil.voToMap(req));
+        long count = stReconMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

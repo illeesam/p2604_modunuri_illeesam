@@ -47,14 +47,14 @@ public class SyVendorBrandService {
 
     public List<SyVendorBrandDto.Item> getList(SyVendorBrandDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syVendorBrandMapper.selectList(req);
+        return syVendorBrandMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyVendorBrandDto.PageResponse getPageData(SyVendorBrandDto.Request req) {
         PageHelper.addPaging(req);
         SyVendorBrandDto.PageResponse res = new SyVendorBrandDto.PageResponse();
-        List<SyVendorBrandDto.Item> list = syVendorBrandMapper.selectPageList(req);
-        long count = syVendorBrandMapper.selectPageCount(req);
+        List<SyVendorBrandDto.Item> list = syVendorBrandMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syVendorBrandMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

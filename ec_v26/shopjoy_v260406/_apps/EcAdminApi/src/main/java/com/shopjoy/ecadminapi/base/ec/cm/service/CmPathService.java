@@ -46,14 +46,14 @@ public class CmPathService {
 
     public List<CmPathDto.Item> getList(CmPathDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return cmPathMapper.selectList(req);
+        return cmPathMapper.selectList(VoUtil.voToMap(req));
     }
 
     public CmPathDto.PageResponse getPageData(CmPathDto.Request req) {
         PageHelper.addPaging(req);
         CmPathDto.PageResponse res = new CmPathDto.PageResponse();
-        List<CmPathDto.Item> list = cmPathMapper.selectPageList(req);
-        long count = cmPathMapper.selectPageCount(req);
+        List<CmPathDto.Item> list = cmPathMapper.selectPageList(VoUtil.voToMap(req));
+        long count = cmPathMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

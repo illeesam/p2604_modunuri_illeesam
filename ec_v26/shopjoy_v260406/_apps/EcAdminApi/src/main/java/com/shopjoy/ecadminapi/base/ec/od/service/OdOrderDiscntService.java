@@ -47,14 +47,14 @@ public class OdOrderDiscntService {
 
     public List<OdOrderDiscntDto.Item> getList(OdOrderDiscntDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odOrderDiscntMapper.selectList(req);
+        return odOrderDiscntMapper.selectList(VoUtil.voToMap(req));
     }
 
     public OdOrderDiscntDto.PageResponse getPageData(OdOrderDiscntDto.Request req) {
         PageHelper.addPaging(req);
         OdOrderDiscntDto.PageResponse res = new OdOrderDiscntDto.PageResponse();
-        List<OdOrderDiscntDto.Item> list = odOrderDiscntMapper.selectPageList(req);
-        long count = odOrderDiscntMapper.selectPageCount(req);
+        List<OdOrderDiscntDto.Item> list = odOrderDiscntMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odOrderDiscntMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

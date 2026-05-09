@@ -47,14 +47,14 @@ public class PdReviewAttachService {
 
     public List<PdReviewAttachDto.Item> getList(PdReviewAttachDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdReviewAttachMapper.selectList(req);
+        return pdReviewAttachMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PdReviewAttachDto.PageResponse getPageData(PdReviewAttachDto.Request req) {
         PageHelper.addPaging(req);
         PdReviewAttachDto.PageResponse res = new PdReviewAttachDto.PageResponse();
-        List<PdReviewAttachDto.Item> list = pdReviewAttachMapper.selectPageList(req);
-        long count = pdReviewAttachMapper.selectPageCount(req);
+        List<PdReviewAttachDto.Item> list = pdReviewAttachMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdReviewAttachMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

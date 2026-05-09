@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbLike;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbLikeMapper;
@@ -34,7 +35,7 @@ public class FoMbLikeService {
         if (req == null) req = new MbLikeDto.Request();
         // memberId는 보안 컨텍스트에서 강제
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return mbLikeMapper.selectList(req);
+        return mbLikeMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** 찜 토글: 없으면 추가, 있으면 삭제 → true=추가됨 false=취소됨 */

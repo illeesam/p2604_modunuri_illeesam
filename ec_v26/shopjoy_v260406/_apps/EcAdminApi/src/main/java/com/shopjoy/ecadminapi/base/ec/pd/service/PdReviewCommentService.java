@@ -47,14 +47,14 @@ public class PdReviewCommentService {
 
     public List<PdReviewCommentDto.Item> getList(PdReviewCommentDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdReviewCommentMapper.selectList(req);
+        return pdReviewCommentMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PdReviewCommentDto.PageResponse getPageData(PdReviewCommentDto.Request req) {
         PageHelper.addPaging(req);
         PdReviewCommentDto.PageResponse res = new PdReviewCommentDto.PageResponse();
-        List<PdReviewCommentDto.Item> list = pdReviewCommentMapper.selectPageList(req);
-        long count = pdReviewCommentMapper.selectPageCount(req);
+        List<PdReviewCommentDto.Item> list = pdReviewCommentMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdReviewCommentMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

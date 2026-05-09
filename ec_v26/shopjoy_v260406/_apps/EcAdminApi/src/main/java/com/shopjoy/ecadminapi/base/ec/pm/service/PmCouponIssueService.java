@@ -47,14 +47,14 @@ public class PmCouponIssueService {
 
     public List<PmCouponIssueDto.Item> getList(PmCouponIssueDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmCouponIssueMapper.selectList(req);
+        return pmCouponIssueMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PmCouponIssueDto.PageResponse getPageData(PmCouponIssueDto.Request req) {
         PageHelper.addPaging(req);
         PmCouponIssueDto.PageResponse res = new PmCouponIssueDto.PageResponse();
-        List<PmCouponIssueDto.Item> list = pmCouponIssueMapper.selectPageList(req);
-        long count = pmCouponIssueMapper.selectPageCount(req);
+        List<PmCouponIssueDto.Item> list = pmCouponIssueMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pmCouponIssueMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

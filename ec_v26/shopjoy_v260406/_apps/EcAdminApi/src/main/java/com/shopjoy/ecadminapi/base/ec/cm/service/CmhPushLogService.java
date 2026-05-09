@@ -47,14 +47,14 @@ public class CmhPushLogService {
 
     public List<CmhPushLogDto.Item> getList(CmhPushLogDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return cmhPushLogMapper.selectList(req);
+        return cmhPushLogMapper.selectList(VoUtil.voToMap(req));
     }
 
     public CmhPushLogDto.PageResponse getPageData(CmhPushLogDto.Request req) {
         PageHelper.addPaging(req);
         CmhPushLogDto.PageResponse res = new CmhPushLogDto.PageResponse();
-        List<CmhPushLogDto.Item> list = cmhPushLogMapper.selectPageList(req);
-        long count = cmhPushLogMapper.selectPageCount(req);
+        List<CmhPushLogDto.Item> list = cmhPushLogMapper.selectPageList(VoUtil.voToMap(req));
+        long count = cmhPushLogMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

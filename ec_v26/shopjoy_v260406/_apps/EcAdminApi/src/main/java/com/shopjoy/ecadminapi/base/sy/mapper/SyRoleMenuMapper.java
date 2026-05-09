@@ -3,7 +3,9 @@ package com.shopjoy.ecadminapi.base.sy.mapper;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.Map;
 import org.apache.ibatis.annotations.Param;
+import java.util.Map;
 
 import java.util.List;
 
@@ -14,13 +16,13 @@ public interface SyRoleMenuMapper {
     SyRoleMenuDto.Item selectById(@Param("id") String id);
 
     /** 목록조회 */
-    List<SyRoleMenuDto.Item> selectList(SyRoleMenuDto.Request req);
+    List<SyRoleMenuDto.Item> selectList(Map<String, Object> p);
 
     /** 페이징조회 */
-    List<SyRoleMenuDto.Item> selectPageList(SyRoleMenuDto.Request req);
+    List<SyRoleMenuDto.Item> selectPageList(Map<String, Object> p);
 
     /** 페이징조회 - 전체건수 */
-    long selectPageCount(SyRoleMenuDto.Request req);
+    long selectPageCount(Map<String, Object> p);
 
     /** 수정 */
     int updateSelective(SyRoleMenu entity);

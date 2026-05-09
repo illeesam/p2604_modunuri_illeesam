@@ -3,7 +3,9 @@ package com.shopjoy.ecadminapi.base.ec.cm.mapper;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmhPushLog;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.Map;
 import org.apache.ibatis.annotations.Param;
+import java.util.Map;
 
 import java.util.List;
 @Mapper
@@ -11,11 +13,11 @@ public interface CmhPushLogMapper {
 
     CmhPushLogDto.Item selectById(@Param("id") String id);
 
-    List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request req);
+    List<CmhPushLogDto.Item> selectList(Map<String, Object> p);
 
-    List<CmhPushLogDto.Item> selectPageList(CmhPushLogDto.Request req);
+    List<CmhPushLogDto.Item> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(CmhPushLogDto.Request req);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(CmhPushLog entity);
 }

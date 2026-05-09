@@ -47,14 +47,14 @@ public class SyContactService {
 
     public List<SyContactDto.Item> getList(SyContactDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syContactMapper.selectList(req);
+        return syContactMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyContactDto.PageResponse getPageData(SyContactDto.Request req) {
         PageHelper.addPaging(req);
         SyContactDto.PageResponse res = new SyContactDto.PageResponse();
-        List<SyContactDto.Item> list = syContactMapper.selectPageList(req);
-        long count = syContactMapper.selectPageCount(req);
+        List<SyContactDto.Item> list = syContactMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syContactMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

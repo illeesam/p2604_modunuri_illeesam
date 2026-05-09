@@ -47,14 +47,14 @@ public class OdPayMethodService {
 
     public List<OdPayMethodDto.Item> getList(OdPayMethodDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odPayMethodMapper.selectList(req);
+        return odPayMethodMapper.selectList(VoUtil.voToMap(req));
     }
 
     public OdPayMethodDto.PageResponse getPageData(OdPayMethodDto.Request req) {
         PageHelper.addPaging(req);
         OdPayMethodDto.PageResponse res = new OdPayMethodDto.PageResponse();
-        List<OdPayMethodDto.Item> list = odPayMethodMapper.selectPageList(req);
-        long count = odPayMethodMapper.selectPageCount(req);
+        List<OdPayMethodDto.Item> list = odPayMethodMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odPayMethodMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

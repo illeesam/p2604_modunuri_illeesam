@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -50,18 +51,19 @@ public class SyUserService {
         return syUserRepository.existsById(id);
     }
 
-    /** getList — 목록조회 */
+    /** getList — 목록조회 (DTO Request 받아 Map 변환 후 Mapper 호출 — DTO 타입 안전 + Mapper missing field 안전) */
     public List<SyUserDto.Item> getList(SyUserDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syUserMapper.selectList(req);
+        return syUserMapper.selectList(VoUtil.voToMap(req));
     }
 
-    /** getPageData — 페이징조회 */
+    /** getPageData — 페이징조회 (DTO Request → Map 변환 후 Mapper 호출) */
     public SyUserDto.PageResponse getPageData(SyUserDto.Request req) {
         PageHelper.addPaging(req);
         SyUserDto.PageResponse res = new SyUserDto.PageResponse();
-        List<SyUserDto.Item> list = syUserMapper.selectPageList(req);
-        long count = syUserMapper.selectPageCount(req);
+        Map<String, Object> p = VoUtil.voToMap(req);
+        List<SyUserDto.Item> list = syUserMapper.selectPageList(p);
+        long count = syUserMapper.selectPageCount(p);
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

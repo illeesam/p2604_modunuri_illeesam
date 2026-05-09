@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCacheMapper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -24,7 +25,7 @@ public class FoPmCacheService {
     public long getBalance(PmCacheDto.Request req) {
         if (req == null) req = new PmCacheDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        List<PmCacheDto.Item> list = pmCacheMapper.selectList(req);
+        List<PmCacheDto.Item> list = pmCacheMapper.selectList(VoUtil.voToMap(req));
         return list.isEmpty() ? 0L : (list.get(0).getBalanceAmt() != null ? list.get(0).getBalanceAmt() : 0L);
     }
 }

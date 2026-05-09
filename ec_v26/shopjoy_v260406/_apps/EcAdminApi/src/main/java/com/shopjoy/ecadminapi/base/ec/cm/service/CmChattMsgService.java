@@ -47,14 +47,14 @@ public class CmChattMsgService {
 
     public List<CmChattMsgDto.Item> getList(CmChattMsgDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return cmChattMsgMapper.selectList(req);
+        return cmChattMsgMapper.selectList(VoUtil.voToMap(req));
     }
 
     public CmChattMsgDto.PageResponse getPageData(CmChattMsgDto.Request req) {
         PageHelper.addPaging(req);
         CmChattMsgDto.PageResponse res = new CmChattMsgDto.PageResponse();
-        List<CmChattMsgDto.Item> list = cmChattMsgMapper.selectPageList(req);
-        long count = cmChattMsgMapper.selectPageCount(req);
+        List<CmChattMsgDto.Item> list = cmChattMsgMapper.selectPageList(VoUtil.voToMap(req));
+        long count = cmChattMsgMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

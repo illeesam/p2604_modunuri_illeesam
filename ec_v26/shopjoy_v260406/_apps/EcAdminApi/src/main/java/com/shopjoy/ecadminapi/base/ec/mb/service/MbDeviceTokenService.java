@@ -47,14 +47,14 @@ public class MbDeviceTokenService {
 
     public List<MbDeviceTokenDto.Item> getList(MbDeviceTokenDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbDeviceTokenMapper.selectList(req);
+        return mbDeviceTokenMapper.selectList(VoUtil.voToMap(req));
     }
 
     public MbDeviceTokenDto.PageResponse getPageData(MbDeviceTokenDto.Request req) {
         PageHelper.addPaging(req);
         MbDeviceTokenDto.PageResponse res = new MbDeviceTokenDto.PageResponse();
-        List<MbDeviceTokenDto.Item> list = mbDeviceTokenMapper.selectPageList(req);
-        long count = mbDeviceTokenMapper.selectPageCount(req);
+        List<MbDeviceTokenDto.Item> list = mbDeviceTokenMapper.selectPageList(VoUtil.voToMap(req));
+        long count = mbDeviceTokenMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

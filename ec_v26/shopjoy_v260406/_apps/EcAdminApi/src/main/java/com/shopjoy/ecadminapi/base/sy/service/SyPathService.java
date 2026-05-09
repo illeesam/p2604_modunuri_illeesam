@@ -47,14 +47,14 @@ public class SyPathService {
 
     public List<SyPathDto.Item> getList(SyPathDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syPathMapper.selectList(req);
+        return syPathMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyPathDto.PageResponse getPageData(SyPathDto.Request req) {
         PageHelper.addPaging(req);
         SyPathDto.PageResponse res = new SyPathDto.PageResponse();
-        List<SyPathDto.Item> list = syPathMapper.selectPageList(req);
-        long count = syPathMapper.selectPageCount(req);
+        List<SyPathDto.Item> list = syPathMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syPathMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

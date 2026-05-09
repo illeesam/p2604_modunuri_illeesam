@@ -3,7 +3,9 @@ package com.shopjoy.ecadminapi.base.ec.cm.mapper;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattRoom;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.Map;
 import org.apache.ibatis.annotations.Param;
+import java.util.Map;
 
 import java.util.List;
 @Mapper
@@ -11,11 +13,11 @@ public interface CmChattRoomMapper {
 
     CmChattRoomDto.Item selectById(@Param("id") String id);
 
-    List<CmChattRoomDto.Item> selectList(CmChattRoomDto.Request req);
+    List<CmChattRoomDto.Item> selectList(Map<String, Object> p);
 
-    List<CmChattRoomDto.Item> selectPageList(CmChattRoomDto.Request req);
+    List<CmChattRoomDto.Item> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(CmChattRoomDto.Request req);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(CmChattRoom entity);
 }

@@ -56,15 +56,15 @@ public class SyDeptService {
     /** getList — 목록조회 */
     public List<SyDeptDto.Item> getList(SyDeptDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syDeptMapper.selectList(req);
+        return syDeptMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getPageData — 페이징조회 */
     public SyDeptDto.PageResponse getPageData(SyDeptDto.Request req) {
         PageHelper.addPaging(req);
         SyDeptDto.PageResponse res = new SyDeptDto.PageResponse();
-        List<SyDeptDto.Item> list = syDeptMapper.selectPageList(req);
-        long count = syDeptMapper.selectPageCount(req);
+        List<SyDeptDto.Item> list = syDeptMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syDeptMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

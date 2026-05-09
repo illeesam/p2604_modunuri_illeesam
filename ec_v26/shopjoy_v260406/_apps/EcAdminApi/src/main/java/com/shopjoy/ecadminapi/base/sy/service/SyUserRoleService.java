@@ -51,14 +51,14 @@ public class SyUserRoleService {
 
     public List<SyUserRoleDto.Item> getList(SyUserRoleDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syUserRoleMapper.selectList(req);
+        return syUserRoleMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyUserRoleDto.PageResponse getPageData(SyUserRoleDto.Request req) {
         PageHelper.addPaging(req);
         SyUserRoleDto.PageResponse res = new SyUserRoleDto.PageResponse();
-        List<SyUserRoleDto.Item> list = syUserRoleMapper.selectPageList(req);
-        long count = syUserRoleMapper.selectPageCount(req);
+        List<SyUserRoleDto.Item> list = syUserRoleMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syUserRoleMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

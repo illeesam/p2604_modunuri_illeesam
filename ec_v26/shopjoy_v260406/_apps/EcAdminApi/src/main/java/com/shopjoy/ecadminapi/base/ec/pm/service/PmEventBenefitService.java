@@ -47,14 +47,14 @@ public class PmEventBenefitService {
 
     public List<PmEventBenefitDto.Item> getList(PmEventBenefitDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmEventBenefitMapper.selectList(req);
+        return pmEventBenefitMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PmEventBenefitDto.PageResponse getPageData(PmEventBenefitDto.Request req) {
         PageHelper.addPaging(req);
         PmEventBenefitDto.PageResponse res = new PmEventBenefitDto.PageResponse();
-        List<PmEventBenefitDto.Item> list = pmEventBenefitMapper.selectPageList(req);
-        long count = pmEventBenefitMapper.selectPageCount(req);
+        List<PmEventBenefitDto.Item> list = pmEventBenefitMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pmEventBenefitMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

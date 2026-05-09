@@ -3,7 +3,9 @@ package com.shopjoy.ecadminapi.base.sy.mapper;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.Map;
 import org.apache.ibatis.annotations.Param;
+import java.util.Map;
 
 import java.util.List;
 
@@ -14,13 +16,13 @@ public interface SyNoticeMapper {
     SyNoticeDto.Item selectById(@Param("id") String id);
 
     /** 목록조회 */
-    List<SyNoticeDto.Item> selectList(SyNoticeDto.Request req);
+    List<SyNoticeDto.Item> selectList(Map<String, Object> p);
 
     /** 페이징조회 */
-    List<SyNoticeDto.Item> selectPageList(SyNoticeDto.Request req);
+    List<SyNoticeDto.Item> selectPageList(Map<String, Object> p);
 
     /** 페이징조회 - 전체건수 */
-    long selectPageCount(SyNoticeDto.Request req);
+    long selectPageCount(Map<String, Object> p);
 
     /** 수정 */
     int updateSelective(SyNotice entity);

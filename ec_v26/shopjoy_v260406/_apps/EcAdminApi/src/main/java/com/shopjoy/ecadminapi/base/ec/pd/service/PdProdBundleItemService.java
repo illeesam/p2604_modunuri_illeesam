@@ -47,14 +47,14 @@ public class PdProdBundleItemService {
 
     public List<PdProdBundleItemDto.Item> getList(PdProdBundleItemDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdProdBundleItemMapper.selectList(req);
+        return pdProdBundleItemMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PdProdBundleItemDto.PageResponse getPageData(PdProdBundleItemDto.Request req) {
         PageHelper.addPaging(req);
         PdProdBundleItemDto.PageResponse res = new PdProdBundleItemDto.PageResponse();
-        List<PdProdBundleItemDto.Item> list = pdProdBundleItemMapper.selectPageList(req);
-        long count = pdProdBundleItemMapper.selectPageCount(req);
+        List<PdProdBundleItemDto.Item> list = pdProdBundleItemMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdProdBundleItemMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

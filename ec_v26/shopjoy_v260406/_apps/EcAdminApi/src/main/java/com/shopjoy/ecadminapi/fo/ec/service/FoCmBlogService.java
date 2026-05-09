@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogMapper;
@@ -37,15 +38,15 @@ public class FoCmBlogService {
 
     /** getList — 조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {
-        return cmBlogMapper.selectList(req);
+        return cmBlogMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getPageData — 조회 */
     public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
         CmBlogDto.PageResponse res = new CmBlogDto.PageResponse();
-        List<CmBlogDto.Item> list = cmBlogMapper.selectPageList(req);
-        long count = cmBlogMapper.selectPageCount(req);
+        List<CmBlogDto.Item> list = cmBlogMapper.selectPageList(VoUtil.voToMap(req));
+        long count = cmBlogMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

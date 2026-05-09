@@ -47,14 +47,14 @@ public class OdhClaimStatusHistService {
 
     public List<OdhClaimStatusHistDto.Item> getList(OdhClaimStatusHistDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odhClaimStatusHistMapper.selectList(req);
+        return odhClaimStatusHistMapper.selectList(VoUtil.voToMap(req));
     }
 
     public OdhClaimStatusHistDto.PageResponse getPageData(OdhClaimStatusHistDto.Request req) {
         PageHelper.addPaging(req);
         OdhClaimStatusHistDto.PageResponse res = new OdhClaimStatusHistDto.PageResponse();
-        List<OdhClaimStatusHistDto.Item> list = odhClaimStatusHistMapper.selectPageList(req);
-        long count = odhClaimStatusHistMapper.selectPageCount(req);
+        List<OdhClaimStatusHistDto.Item> list = odhClaimStatusHistMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odhClaimStatusHistMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

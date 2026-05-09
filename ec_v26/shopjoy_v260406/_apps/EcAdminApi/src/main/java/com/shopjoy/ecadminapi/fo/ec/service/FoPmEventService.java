@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventMapper;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -23,15 +24,15 @@ public class FoPmEventService {
 
     /** getList — 조회 */
     public List<PmEventDto.Item> getList(PmEventDto.Request req) {
-        return pmEventMapper.selectList(req);
+        return pmEventMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getPageData — 조회 */
     public PmEventDto.PageResponse getPageData(PmEventDto.Request req) {
         PageHelper.addPaging(req);
         PmEventDto.PageResponse res = new PmEventDto.PageResponse();
-        List<PmEventDto.Item> list = pmEventMapper.selectPageList(req);
-        long count = pmEventMapper.selectPageCount(req);
+        List<PmEventDto.Item> list = pmEventMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pmEventMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

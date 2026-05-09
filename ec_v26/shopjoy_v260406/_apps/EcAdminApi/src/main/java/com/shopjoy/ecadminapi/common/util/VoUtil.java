@@ -1,6 +1,9 @@
 package com.shopjoy.ecadminapi.common.util;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * VO/DTO/Map → Entity 필드 자동 복사 유틸.
@@ -413,5 +416,43 @@ public class VoUtil {
         }
 
         return target;
+    }
+
+    /**
+     * VO/DTO 의 모든 필드(상속 포함)를 Map<String, Object> 로 변환.
+     *
+     * 용도: MyBatis Mapper 가 Map 을 받도록 하면, Mapper XML 의 <if test="someField != null">
+     *       조건이 DTO 에 정의되지 않은 필드를 참조해도 OGNL 이 missing key 를 null 로 안전 처리한다.
+     *
+     * 특징:
+     * - source 의 부모 클래스 필드도 모두 포함 (BaseRequest 의 searchTypes/searchValue 등)
+     * - null 값도 그대로 Map 에 포함 (MyBatis <if> 평가에 필요)
+     * - 타입 정보 보존 (Integer 는 Integer, String 은 String) — JDBC 타입 추론 유지
+     *
+     * @param source 변환할 VO/DTO 객체 (null 이면 빈 Map 반환)
+     * @return source 의 모든 필드를 담은 LinkedHashMap (순서 보존)
+     */
+    public static Map<String, Object> voToMap(Object source) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (source == null) return result;
+
+        try {
+            Class<?> clazz = source.getClass();
+            while (clazz != null && clazz != Object.class) {
+                for (Field field : clazz.getDeclaredFields()) {
+                    if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+                    field.setAccessible(true);
+                    String name = field.getName();
+                    // 상속 체인에서 동일 이름 필드는 자식 클래스 값 우선 (이미 putIfAbsent 효과)
+                    if (!result.containsKey(name)) {
+                        result.put(name, field.get(source));
+                    }
+                }
+                clazz = clazz.getSuperclass();
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("VoUtil.voToMap() 실패: " + e.getMessage(), e);
+        }
+        return result;
     }
 }

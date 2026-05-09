@@ -47,14 +47,14 @@ public class MbhMemberTokenLogService {
 
     public List<MbhMemberTokenLogDto.Item> getList(MbhMemberTokenLogDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbhMemberTokenLogMapper.selectList(req);
+        return mbhMemberTokenLogMapper.selectList(VoUtil.voToMap(req));
     }
 
     public MbhMemberTokenLogDto.PageResponse getPageData(MbhMemberTokenLogDto.Request req) {
         PageHelper.addPaging(req);
         MbhMemberTokenLogDto.PageResponse res = new MbhMemberTokenLogDto.PageResponse();
-        List<MbhMemberTokenLogDto.Item> list = mbhMemberTokenLogMapper.selectPageList(req);
-        long count = mbhMemberTokenLogMapper.selectPageCount(req);
+        List<MbhMemberTokenLogDto.Item> list = mbhMemberTokenLogMapper.selectPageList(VoUtil.voToMap(req));
+        long count = mbhMemberTokenLogMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

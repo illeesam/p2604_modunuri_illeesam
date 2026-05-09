@@ -47,14 +47,14 @@ public class SyRoleService {
 
     public List<SyRoleDto.Item> getList(SyRoleDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syRoleMapper.selectList(req);
+        return syRoleMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyRoleDto.PageResponse getPageData(SyRoleDto.Request req) {
         PageHelper.addPaging(req);
         SyRoleDto.PageResponse res = new SyRoleDto.PageResponse();
-        List<SyRoleDto.Item> list = syRoleMapper.selectPageList(req);
-        long count = syRoleMapper.selectPageCount(req);
+        List<SyRoleDto.Item> list = syRoleMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syRoleMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

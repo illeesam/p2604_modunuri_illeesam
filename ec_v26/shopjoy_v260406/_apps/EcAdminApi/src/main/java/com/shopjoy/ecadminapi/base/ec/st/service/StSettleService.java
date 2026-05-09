@@ -47,14 +47,14 @@ public class StSettleService {
 
     public List<StSettleDto.Item> getList(StSettleDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stSettleMapper.selectList(req);
+        return stSettleMapper.selectList(VoUtil.voToMap(req));
     }
 
     public StSettleDto.PageResponse getPageData(StSettleDto.Request req) {
         PageHelper.addPaging(req);
         StSettleDto.PageResponse res = new StSettleDto.PageResponse();
-        List<StSettleDto.Item> list = stSettleMapper.selectPageList(req);
-        long count = stSettleMapper.selectPageCount(req);
+        List<StSettleDto.Item> list = stSettleMapper.selectPageList(VoUtil.voToMap(req));
+        long count = stSettleMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

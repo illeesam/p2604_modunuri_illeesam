@@ -47,14 +47,14 @@ public class PdProdService {
 
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdProdMapper.selectList(req);
+        return pdProdMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PdProdDto.PageResponse getPageData(PdProdDto.Request req) {
         PageHelper.addPaging(req);
         PdProdDto.PageResponse res = new PdProdDto.PageResponse();
-        List<PdProdDto.Item> list = pdProdMapper.selectPageList(req);
-        long count = pdProdMapper.selectPageCount(req);
+        List<PdProdDto.Item> list = pdProdMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdProdMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendEmailLog;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyhSendEmailLogMapper;
@@ -27,15 +28,15 @@ public class SyhSendEmailLogService {
     /** getList — 목록조회 */
     public List<SyhSendEmailLogDto.Item> getList(SyhSendEmailLogDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syhSendEmailLogMapper.selectList(req);
+        return syhSendEmailLogMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getPageData — 페이징조회 */
     public SyhSendEmailLogDto.PageResponse getPageData(SyhSendEmailLogDto.Request req) {
         PageHelper.addPaging(req);
         SyhSendEmailLogDto.PageResponse res = new SyhSendEmailLogDto.PageResponse();
-        List<SyhSendEmailLogDto.Item> list = syhSendEmailLogMapper.selectPageList(req);
-        long count = syhSendEmailLogMapper.selectPageCount(req);
+        List<SyhSendEmailLogDto.Item> list = syhSendEmailLogMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syhSendEmailLogMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

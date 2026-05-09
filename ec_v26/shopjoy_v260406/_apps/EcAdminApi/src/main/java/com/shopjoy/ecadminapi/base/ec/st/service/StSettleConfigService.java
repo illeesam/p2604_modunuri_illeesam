@@ -47,14 +47,14 @@ public class StSettleConfigService {
 
     public List<StSettleConfigDto.Item> getList(StSettleConfigDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stSettleConfigMapper.selectList(req);
+        return stSettleConfigMapper.selectList(VoUtil.voToMap(req));
     }
 
     public StSettleConfigDto.PageResponse getPageData(StSettleConfigDto.Request req) {
         PageHelper.addPaging(req);
         StSettleConfigDto.PageResponse res = new StSettleConfigDto.PageResponse();
-        List<StSettleConfigDto.Item> list = stSettleConfigMapper.selectPageList(req);
-        long count = stSettleConfigMapper.selectPageCount(req);
+        List<StSettleConfigDto.Item> list = stSettleConfigMapper.selectPageList(VoUtil.voToMap(req));
+        long count = stSettleConfigMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

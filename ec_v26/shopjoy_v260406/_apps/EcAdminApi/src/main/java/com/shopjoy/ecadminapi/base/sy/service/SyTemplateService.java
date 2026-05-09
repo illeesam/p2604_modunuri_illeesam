@@ -47,14 +47,14 @@ public class SyTemplateService {
 
     public List<SyTemplateDto.Item> getList(SyTemplateDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syTemplateMapper.selectList(req);
+        return syTemplateMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyTemplateDto.PageResponse getPageData(SyTemplateDto.Request req) {
         PageHelper.addPaging(req);
         SyTemplateDto.PageResponse res = new SyTemplateDto.PageResponse();
-        List<SyTemplateDto.Item> list = syTemplateMapper.selectPageList(req);
-        long count = syTemplateMapper.selectPageCount(req);
+        List<SyTemplateDto.Item> list = syTemplateMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syTemplateMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

@@ -47,14 +47,14 @@ public class MbMemberService {
 
     public List<MbMemberDto.Item> getList(MbMemberDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbMemberMapper.selectList(req);
+        return mbMemberMapper.selectList(VoUtil.voToMap(req));
     }
 
     public MbMemberDto.PageResponse getPageData(MbMemberDto.Request req) {
         PageHelper.addPaging(req);
         MbMemberDto.PageResponse res = new MbMemberDto.PageResponse();
-        List<MbMemberDto.Item> list = mbMemberMapper.selectPageList(req);
-        long count = mbMemberMapper.selectPageCount(req);
+        List<MbMemberDto.Item> list = mbMemberMapper.selectPageList(VoUtil.voToMap(req));
+        long count = mbMemberMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

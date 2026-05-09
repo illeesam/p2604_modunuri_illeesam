@@ -47,14 +47,14 @@ public class StErpVoucherService {
 
     public List<StErpVoucherDto.Item> getList(StErpVoucherDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stErpVoucherMapper.selectList(req);
+        return stErpVoucherMapper.selectList(VoUtil.voToMap(req));
     }
 
     public StErpVoucherDto.PageResponse getPageData(StErpVoucherDto.Request req) {
         PageHelper.addPaging(req);
         StErpVoucherDto.PageResponse res = new StErpVoucherDto.PageResponse();
-        List<StErpVoucherDto.Item> list = stErpVoucherMapper.selectPageList(req);
-        long count = stErpVoucherMapper.selectPageCount(req);
+        List<StErpVoucherDto.Item> list = stErpVoucherMapper.selectPageList(VoUtil.voToMap(req));
+        long count = stErpVoucherMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

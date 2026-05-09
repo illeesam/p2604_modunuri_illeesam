@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuChgHist;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdhProdSkuChgHistMapper;
@@ -44,14 +45,14 @@ public class PdhProdSkuChgHistService {
 
     public List<PdhProdSkuChgHistDto.Item> getList(PdhProdSkuChgHistDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdhProdSkuChgHistMapper.selectList(req);
+        return pdhProdSkuChgHistMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PdhProdSkuChgHistDto.PageResponse getPageData(PdhProdSkuChgHistDto.Request req) {
         PageHelper.addPaging(req);
         PdhProdSkuChgHistDto.PageResponse res = new PdhProdSkuChgHistDto.PageResponse();
-        List<PdhProdSkuChgHistDto.Item> list = pdhProdSkuChgHistMapper.selectPageList(req);
-        long count = pdhProdSkuChgHistMapper.selectPageCount(req);
+        List<PdhProdSkuChgHistDto.Item> list = pdhProdSkuChgHistMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdhProdSkuChgHistMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

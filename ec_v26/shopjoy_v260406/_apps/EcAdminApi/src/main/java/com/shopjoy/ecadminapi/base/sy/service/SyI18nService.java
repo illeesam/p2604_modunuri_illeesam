@@ -47,14 +47,14 @@ public class SyI18nService {
 
     public List<SyI18nDto.Item> getList(SyI18nDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syI18nMapper.selectList(req);
+        return syI18nMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyI18nDto.PageResponse getPageData(SyI18nDto.Request req) {
         PageHelper.addPaging(req);
         SyI18nDto.PageResponse res = new SyI18nDto.PageResponse();
-        List<SyI18nDto.Item> list = syI18nMapper.selectPageList(req);
-        long count = syI18nMapper.selectPageCount(req);
+        List<SyI18nDto.Item> list = syI18nMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syI18nMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

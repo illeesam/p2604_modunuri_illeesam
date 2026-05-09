@@ -50,15 +50,15 @@ public class ZzSample2Service {
     /** getList — 조회 */
     public List<ZzSample2Dto.Item> getList(ZzSample2Dto.Request req) {
         if (req.getPageSize() != null) PageHelper.addPaging(req);
-        return zzSample2Mapper.selectList(req);
+        return zzSample2Mapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getPageData — 조회 */
     public ZzSample2Dto.PageResponse getPageData(ZzSample2Dto.Request req) {
         PageHelper.addPaging(req);
         ZzSample2Dto.PageResponse res = new ZzSample2Dto.PageResponse();
-        List<ZzSample2Dto.Item> list = zzSample2Mapper.selectPageList(req);
-        long count = zzSample2Mapper.selectPageCount(req);
+        List<ZzSample2Dto.Item> list = zzSample2Mapper.selectPageList(VoUtil.voToMap(req));
+        long count = zzSample2Mapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

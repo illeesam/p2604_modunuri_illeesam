@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAlarmSendHist;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyhAlarmSendHistMapper;
@@ -27,15 +28,15 @@ public class SyhAlarmSendHistService {
     /** getList — 목록조회 */
     public List<SyhAlarmSendHistDto.Item> getList(SyhAlarmSendHistDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syhAlarmSendHistMapper.selectList(req);
+        return syhAlarmSendHistMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getPageData — 페이징조회 */
     public SyhAlarmSendHistDto.PageResponse getPageData(SyhAlarmSendHistDto.Request req) {
         PageHelper.addPaging(req);
         SyhAlarmSendHistDto.PageResponse res = new SyhAlarmSendHistDto.PageResponse();
-        List<SyhAlarmSendHistDto.Item> list = syhAlarmSendHistMapper.selectPageList(req);
-        long count = syhAlarmSendHistMapper.selectPageCount(req);
+        List<SyhAlarmSendHistDto.Item> list = syhAlarmSendHistMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syhAlarmSendHistMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

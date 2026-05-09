@@ -47,14 +47,14 @@ public class PmVoucherIssueService {
 
     public List<PmVoucherIssueDto.Item> getList(PmVoucherIssueDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmVoucherIssueMapper.selectList(req);
+        return pmVoucherIssueMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PmVoucherIssueDto.PageResponse getPageData(PmVoucherIssueDto.Request req) {
         PageHelper.addPaging(req);
         PmVoucherIssueDto.PageResponse res = new PmVoucherIssueDto.PageResponse();
-        List<PmVoucherIssueDto.Item> list = pmVoucherIssueMapper.selectPageList(req);
-        long count = pmVoucherIssueMapper.selectPageCount(req);
+        List<PmVoucherIssueDto.Item> list = pmVoucherIssueMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pmVoucherIssueMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

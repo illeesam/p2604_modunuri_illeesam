@@ -47,14 +47,14 @@ public class PdTagService {
 
     public List<PdTagDto.Item> getList(PdTagDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdTagMapper.selectList(req);
+        return pdTagMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PdTagDto.PageResponse getPageData(PdTagDto.Request req) {
         PageHelper.addPaging(req);
         PdTagDto.PageResponse res = new PdTagDto.PageResponse();
-        List<PdTagDto.Item> list = pdTagMapper.selectPageList(req);
-        long count = pdTagMapper.selectPageCount(req);
+        List<PdTagDto.Item> list = pdTagMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdTagMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

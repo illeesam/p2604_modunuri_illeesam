@@ -47,14 +47,14 @@ public class OdhOrderStatusHistService {
 
     public List<OdhOrderStatusHistDto.Item> getList(OdhOrderStatusHistDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odhOrderStatusHistMapper.selectList(req);
+        return odhOrderStatusHistMapper.selectList(VoUtil.voToMap(req));
     }
 
     public OdhOrderStatusHistDto.PageResponse getPageData(OdhOrderStatusHistDto.Request req) {
         PageHelper.addPaging(req);
         OdhOrderStatusHistDto.PageResponse res = new OdhOrderStatusHistDto.PageResponse();
-        List<OdhOrderStatusHistDto.Item> list = odhOrderStatusHistMapper.selectPageList(req);
-        long count = odhOrderStatusHistMapper.selectPageCount(req);
+        List<OdhOrderStatusHistDto.Item> list = odhOrderStatusHistMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odhOrderStatusHistMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

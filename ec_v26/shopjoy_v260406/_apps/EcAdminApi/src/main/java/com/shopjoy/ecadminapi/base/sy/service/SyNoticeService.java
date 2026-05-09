@@ -47,14 +47,14 @@ public class SyNoticeService {
 
     public List<SyNoticeDto.Item> getList(SyNoticeDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syNoticeMapper.selectList(req);
+        return syNoticeMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyNoticeDto.PageResponse getPageData(SyNoticeDto.Request req) {
         PageHelper.addPaging(req);
         SyNoticeDto.PageResponse res = new SyNoticeDto.PageResponse();
-        List<SyNoticeDto.Item> list = syNoticeMapper.selectPageList(req);
-        long count = syNoticeMapper.selectPageCount(req);
+        List<SyNoticeDto.Item> list = syNoticeMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syNoticeMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

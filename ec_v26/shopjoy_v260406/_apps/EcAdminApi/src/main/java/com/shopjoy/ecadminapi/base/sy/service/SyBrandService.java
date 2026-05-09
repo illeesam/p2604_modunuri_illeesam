@@ -47,14 +47,14 @@ public class SyBrandService {
 
     public List<SyBrandDto.Item> getList(SyBrandDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syBrandMapper.selectList(req);
+        return syBrandMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyBrandDto.PageResponse getPageData(SyBrandDto.Request req) {
         PageHelper.addPaging(req);
         SyBrandDto.PageResponse res = new SyBrandDto.PageResponse();
-        List<SyBrandDto.Item> list = syBrandMapper.selectPageList(req);
-        long count = syBrandMapper.selectPageCount(req);
+        List<SyBrandDto.Item> list = syBrandMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syBrandMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

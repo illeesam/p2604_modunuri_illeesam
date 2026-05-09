@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessErrorLogDto;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyhAccessErrorLogMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhAccessErrorLogRepository;
@@ -22,8 +23,8 @@ public class SyhAccessErrorLogService {
     public SyhAccessErrorLogDto.PageResponse getPageData(SyhAccessErrorLogDto.Request req) {
         PageHelper.addPaging(req);
         SyhAccessErrorLogDto.PageResponse res = new SyhAccessErrorLogDto.PageResponse();
-        List<SyhAccessErrorLogDto.Item> list = syhAccessErrorLogMapper.selectPageList(req);
-        long count = syhAccessErrorLogMapper.selectPageCount(req);
+        List<SyhAccessErrorLogDto.Item> list = syhAccessErrorLogMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syhAccessErrorLogMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

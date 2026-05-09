@@ -47,14 +47,14 @@ public class SyBbmService {
 
     public List<SyBbmDto.Item> getList(SyBbmDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syBbmMapper.selectList(req);
+        return syBbmMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyBbmDto.PageResponse getPageData(SyBbmDto.Request req) {
         PageHelper.addPaging(req);
         SyBbmDto.PageResponse res = new SyBbmDto.PageResponse();
-        List<SyBbmDto.Item> list = syBbmMapper.selectPageList(req);
-        long count = syBbmMapper.selectPageCount(req);
+        List<SyBbmDto.Item> list = syBbmMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syBbmMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

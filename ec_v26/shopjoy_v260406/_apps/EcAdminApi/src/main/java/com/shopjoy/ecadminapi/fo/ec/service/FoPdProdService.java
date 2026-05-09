@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.*;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.*;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
@@ -58,7 +59,7 @@ public class FoPdProdService {
     /* ── 목록 ────────────────────────────────────────────────── */
 
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
-        return pdProdMapper.selectList(req);
+        return pdProdMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getPageData — 조회 */

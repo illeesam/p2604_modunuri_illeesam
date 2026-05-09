@@ -47,14 +47,14 @@ public class SyMenuService {
 
     public List<SyMenuDto.Item> getList(SyMenuDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syMenuMapper.selectList(req);
+        return syMenuMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyMenuDto.PageResponse getPageData(SyMenuDto.Request req) {
         PageHelper.addPaging(req);
         SyMenuDto.PageResponse res = new SyMenuDto.PageResponse();
-        List<SyMenuDto.Item> list = syMenuMapper.selectPageList(req);
-        long count = syMenuMapper.selectPageCount(req);
+        List<SyMenuDto.Item> list = syMenuMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syMenuMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

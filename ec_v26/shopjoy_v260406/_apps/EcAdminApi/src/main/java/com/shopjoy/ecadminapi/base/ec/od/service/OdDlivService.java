@@ -47,14 +47,14 @@ public class OdDlivService {
 
     public List<OdDlivDto.Item> getList(OdDlivDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odDlivMapper.selectList(req);
+        return odDlivMapper.selectList(VoUtil.voToMap(req));
     }
 
     public OdDlivDto.PageResponse getPageData(OdDlivDto.Request req) {
         PageHelper.addPaging(req);
         OdDlivDto.PageResponse res = new OdDlivDto.PageResponse();
-        List<OdDlivDto.Item> list = odDlivMapper.selectPageList(req);
-        long count = odDlivMapper.selectPageCount(req);
+        List<OdDlivDto.Item> list = odDlivMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odDlivMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

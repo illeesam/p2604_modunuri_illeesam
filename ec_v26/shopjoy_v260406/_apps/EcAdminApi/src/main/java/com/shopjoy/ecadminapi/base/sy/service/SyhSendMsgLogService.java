@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendMsgLog;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyhSendMsgLogMapper;
@@ -27,15 +28,15 @@ public class SyhSendMsgLogService {
     /** getList — 목록조회 */
     public List<SyhSendMsgLogDto.Item> getList(SyhSendMsgLogDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syhSendMsgLogMapper.selectList(req);
+        return syhSendMsgLogMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getPageData — 페이징조회 */
     public SyhSendMsgLogDto.PageResponse getPageData(SyhSendMsgLogDto.Request req) {
         PageHelper.addPaging(req);
         SyhSendMsgLogDto.PageResponse res = new SyhSendMsgLogDto.PageResponse();
-        List<SyhSendMsgLogDto.Item> list = syhSendMsgLogMapper.selectPageList(req);
-        long count = syhSendMsgLogMapper.selectPageCount(req);
+        List<SyhSendMsgLogDto.Item> list = syhSendMsgLogMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syhSendMsgLogMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

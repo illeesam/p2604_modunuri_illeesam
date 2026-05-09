@@ -98,7 +98,7 @@ public class FoMyPageService {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMemberAddrDto.Request req = new MbMemberAddrDto.Request();
         req.setMemberId(memberId);
-        return addrMapper.selectList(req);
+        return addrMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** saveAddr — 저장 */
@@ -133,27 +133,27 @@ public class FoMyPageService {
     public List<OdOrderDto.Item> getMyOrders(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return orderMapper.selectList(req);
+        return orderMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getMyClaims — 조회 */
     public List<OdClaimDto.Item> getMyClaims(OdClaimDto.Request req) {
         if (req == null) req = new OdClaimDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return claimMapper.selectList(req);
+        return claimMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getMyCoupons — 조회 */
     public List<PmCouponDto.Item> getMyCoupons(PmCouponDto.Request req) {
         if (req == null) req = new PmCouponDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return couponMapper.selectList(req);
+        return couponMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getMyCacheHistory — 조회 */
     public List<PmCacheDto.Item> getMyCacheHistory(PmCacheDto.Request req) {
         if (req == null) req = new PmCacheDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return cacheMapper.selectList(req);
+        return cacheMapper.selectList(VoUtil.voToMap(req));
     }
 }

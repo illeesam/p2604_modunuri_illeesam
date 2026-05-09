@@ -3,7 +3,9 @@ package com.shopjoy.ecadminapi.base.sy.mapper;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserRole;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.Map;
 import org.apache.ibatis.annotations.Param;
+import java.util.Map;
 
 import java.util.List;
 
@@ -17,13 +19,13 @@ public interface SyUserRoleMapper {
     List<SyUserRoleDto.Item> selectByUserId(@Param("userId") String userId);
 
     /** 목록조회 */
-    List<SyUserRoleDto.Item> selectList(SyUserRoleDto.Request req);
+    List<SyUserRoleDto.Item> selectList(Map<String, Object> p);
 
     /** 페이징조회 */
-    List<SyUserRoleDto.Item> selectPageList(SyUserRoleDto.Request req);
+    List<SyUserRoleDto.Item> selectPageList(Map<String, Object> p);
 
     /** 페이징조회 - 전체건수 */
-    long selectPageCount(SyUserRoleDto.Request req);
+    long selectPageCount(Map<String, Object> p);
 
     /** 수정 */
     int updateSelective(SyUserRole entity);

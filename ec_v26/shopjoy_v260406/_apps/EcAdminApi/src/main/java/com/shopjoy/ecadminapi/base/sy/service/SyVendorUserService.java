@@ -47,14 +47,14 @@ public class SyVendorUserService {
 
     public List<SyVendorUserDto.Item> getList(SyVendorUserDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syVendorUserMapper.selectList(req);
+        return syVendorUserMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyVendorUserDto.PageResponse getPageData(SyVendorUserDto.Request req) {
         PageHelper.addPaging(req);
         SyVendorUserDto.PageResponse res = new SyVendorUserDto.PageResponse();
-        List<SyVendorUserDto.Item> list = syVendorUserMapper.selectPageList(req);
-        long count = syVendorUserMapper.selectPageCount(req);
+        List<SyVendorUserDto.Item> list = syVendorUserMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syVendorUserMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

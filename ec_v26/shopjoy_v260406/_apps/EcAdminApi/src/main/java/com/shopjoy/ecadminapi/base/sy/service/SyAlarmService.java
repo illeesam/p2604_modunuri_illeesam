@@ -47,14 +47,14 @@ public class SyAlarmService {
 
     public List<SyAlarmDto.Item> getList(SyAlarmDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syAlarmMapper.selectList(req);
+        return syAlarmMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyAlarmDto.PageResponse getPageData(SyAlarmDto.Request req) {
         PageHelper.addPaging(req);
         SyAlarmDto.PageResponse res = new SyAlarmDto.PageResponse();
-        List<SyAlarmDto.Item> list = syAlarmMapper.selectPageList(req);
-        long count = syAlarmMapper.selectPageCount(req);
+        List<SyAlarmDto.Item> list = syAlarmMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syAlarmMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

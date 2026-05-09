@@ -47,14 +47,14 @@ public class OdCartService {
 
     public List<OdCartDto.Item> getList(OdCartDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odCartMapper.selectList(req);
+        return odCartMapper.selectList(VoUtil.voToMap(req));
     }
 
     public OdCartDto.PageResponse getPageData(OdCartDto.Request req) {
         PageHelper.addPaging(req);
         OdCartDto.PageResponse res = new OdCartDto.PageResponse();
-        List<OdCartDto.Item> list = odCartMapper.selectPageList(req);
-        long count = odCartMapper.selectPageCount(req);
+        List<OdCartDto.Item> list = odCartMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odCartMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

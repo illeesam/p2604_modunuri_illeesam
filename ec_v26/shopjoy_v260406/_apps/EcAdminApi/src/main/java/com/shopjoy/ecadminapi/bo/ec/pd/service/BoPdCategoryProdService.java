@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
@@ -33,8 +34,8 @@ public class BoPdCategoryProdService {
     public PdCategoryProdDto.PageResponse getPageData(PdCategoryProdDto.Request req) {
         PageHelper.addPaging(req);
         PdCategoryProdDto.PageResponse res = new PdCategoryProdDto.PageResponse();
-        List<PdCategoryProdDto.Item> list = pdCategoryProdMapper.selectPageList(req);
-        long count = pdCategoryProdMapper.selectPageCount(req);
+        List<PdCategoryProdDto.Item> list = pdCategoryProdMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdCategoryProdMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

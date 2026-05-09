@@ -47,14 +47,14 @@ public class CmBlogCateService {
 
     public List<CmBlogCateDto.Item> getList(CmBlogCateDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return cmBlogCateMapper.selectList(req);
+        return cmBlogCateMapper.selectList(VoUtil.voToMap(req));
     }
 
     public CmBlogCateDto.PageResponse getPageData(CmBlogCateDto.Request req) {
         PageHelper.addPaging(req);
         CmBlogCateDto.PageResponse res = new CmBlogCateDto.PageResponse();
-        List<CmBlogCateDto.Item> list = cmBlogCateMapper.selectPageList(req);
-        long count = cmBlogCateMapper.selectPageCount(req);
+        List<CmBlogCateDto.Item> list = cmBlogCateMapper.selectPageList(VoUtil.voToMap(req));
+        long count = cmBlogCateMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

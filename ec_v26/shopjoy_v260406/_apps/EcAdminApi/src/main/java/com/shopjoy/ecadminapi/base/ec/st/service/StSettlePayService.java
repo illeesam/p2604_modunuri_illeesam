@@ -47,14 +47,14 @@ public class StSettlePayService {
 
     public List<StSettlePayDto.Item> getList(StSettlePayDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stSettlePayMapper.selectList(req);
+        return stSettlePayMapper.selectList(VoUtil.voToMap(req));
     }
 
     public StSettlePayDto.PageResponse getPageData(StSettlePayDto.Request req) {
         PageHelper.addPaging(req);
         StSettlePayDto.PageResponse res = new StSettlePayDto.PageResponse();
-        List<StSettlePayDto.Item> list = stSettlePayMapper.selectPageList(req);
-        long count = stSettlePayMapper.selectPageCount(req);
+        List<StSettlePayDto.Item> list = stSettlePayMapper.selectPageList(VoUtil.voToMap(req));
+        long count = stSettlePayMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

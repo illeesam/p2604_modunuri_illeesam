@@ -3,7 +3,9 @@ package com.shopjoy.ecadminapi.base.ec.pd.mapper;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdStatusHist;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.Map;
 import org.apache.ibatis.annotations.Param;
+import java.util.Map;
 
 import java.util.List;
 @Mapper
@@ -11,11 +13,11 @@ public interface PdhProdStatusHistMapper {
 
     PdhProdStatusHistDto.Item selectById(@Param("id") String id);
 
-    List<PdhProdStatusHistDto.Item> selectList(PdhProdStatusHistDto.Request req);
+    List<PdhProdStatusHistDto.Item> selectList(Map<String, Object> p);
 
-    List<PdhProdStatusHistDto.Item> selectPageList(PdhProdStatusHistDto.Request req);
+    List<PdhProdStatusHistDto.Item> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(PdhProdStatusHistDto.Request req);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdhProdStatusHist entity);
 }

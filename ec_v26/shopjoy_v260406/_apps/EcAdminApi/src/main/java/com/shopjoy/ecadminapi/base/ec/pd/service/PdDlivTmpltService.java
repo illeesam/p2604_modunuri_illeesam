@@ -47,14 +47,14 @@ public class PdDlivTmpltService {
 
     public List<PdDlivTmpltDto.Item> getList(PdDlivTmpltDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdDlivTmpltMapper.selectList(req);
+        return pdDlivTmpltMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PdDlivTmpltDto.PageResponse getPageData(PdDlivTmpltDto.Request req) {
         PageHelper.addPaging(req);
         PdDlivTmpltDto.PageResponse res = new PdDlivTmpltDto.PageResponse();
-        List<PdDlivTmpltDto.Item> list = pdDlivTmpltMapper.selectPageList(req);
-        long count = pdDlivTmpltMapper.selectPageCount(req);
+        List<PdDlivTmpltDto.Item> list = pdDlivTmpltMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdDlivTmpltMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

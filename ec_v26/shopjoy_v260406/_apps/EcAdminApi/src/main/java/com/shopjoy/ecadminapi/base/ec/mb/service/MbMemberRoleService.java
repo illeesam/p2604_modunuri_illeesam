@@ -47,14 +47,14 @@ public class MbMemberRoleService {
 
     public List<MbMemberRoleDto.Item> getList(MbMemberRoleDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbMemberRoleMapper.selectList(req);
+        return mbMemberRoleMapper.selectList(VoUtil.voToMap(req));
     }
 
     public MbMemberRoleDto.PageResponse getPageData(MbMemberRoleDto.Request req) {
         PageHelper.addPaging(req);
         MbMemberRoleDto.PageResponse res = new MbMemberRoleDto.PageResponse();
-        List<MbMemberRoleDto.Item> list = mbMemberRoleMapper.selectPageList(req);
-        long count = mbMemberRoleMapper.selectPageCount(req);
+        List<MbMemberRoleDto.Item> list = mbMemberRoleMapper.selectPageList(VoUtil.voToMap(req));
+        long count = mbMemberRoleMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

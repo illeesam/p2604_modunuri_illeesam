@@ -3,7 +3,9 @@ package com.shopjoy.ecadminapi.base.sy.mapper;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAlarmSendHist;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.Map;
 import org.apache.ibatis.annotations.Param;
+import java.util.Map;
 
 import java.util.List;
 
@@ -14,13 +16,13 @@ public interface SyhAlarmSendHistMapper {
     SyhAlarmSendHistDto.Item selectById(@Param("id") String id);
 
     /** 목록조회 */
-    List<SyhAlarmSendHistDto.Item> selectList(SyhAlarmSendHistDto.Request req);
+    List<SyhAlarmSendHistDto.Item> selectList(Map<String, Object> p);
 
     /** 페이징조회 */
-    List<SyhAlarmSendHistDto.Item> selectPageList(SyhAlarmSendHistDto.Request req);
+    List<SyhAlarmSendHistDto.Item> selectPageList(Map<String, Object> p);
 
     /** 페이징조회 - 전체건수 */
-    long selectPageCount(SyhAlarmSendHistDto.Request req);
+    long selectPageCount(Map<String, Object> p);
 
     /** 수정 */
     int updateSelective(SyhAlarmSendHist entity);

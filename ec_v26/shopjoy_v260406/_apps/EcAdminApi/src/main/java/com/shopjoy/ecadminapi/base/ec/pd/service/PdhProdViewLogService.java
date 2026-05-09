@@ -47,14 +47,14 @@ public class PdhProdViewLogService {
 
     public List<PdhProdViewLogDto.Item> getList(PdhProdViewLogDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdhProdViewLogMapper.selectList(req);
+        return pdhProdViewLogMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PdhProdViewLogDto.PageResponse getPageData(PdhProdViewLogDto.Request req) {
         PageHelper.addPaging(req);
         PdhProdViewLogDto.PageResponse res = new PdhProdViewLogDto.PageResponse();
-        List<PdhProdViewLogDto.Item> list = pdhProdViewLogMapper.selectPageList(req);
-        long count = pdhProdViewLogMapper.selectPageCount(req);
+        List<PdhProdViewLogDto.Item> list = pdhProdViewLogMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdhProdViewLogMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

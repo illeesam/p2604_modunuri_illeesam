@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nMsgDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
@@ -65,7 +66,7 @@ public class BoSyI18nService {
             SyI18nMsgDto.Request req = new SyI18nMsgDto.Request();
             req.setI18nId(i18nId);
             req.setLangCd(langCd);
-            List<SyI18nMsgDto.Item> existing = syI18nMsgMapper.selectList(req);
+            List<SyI18nMsgDto.Item> existing = syI18nMsgMapper.selectList(VoUtil.voToMap(req));
 
             if (!existing.isEmpty()) {
                 SyI18nMsgDto.Item dto = existing.get(0);

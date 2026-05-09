@@ -47,14 +47,14 @@ public class CmBlogService {
 
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return cmBlogMapper.selectList(req);
+        return cmBlogMapper.selectList(VoUtil.voToMap(req));
     }
 
     public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
         CmBlogDto.PageResponse res = new CmBlogDto.PageResponse();
-        List<CmBlogDto.Item> list = cmBlogMapper.selectPageList(req);
-        long count = cmBlogMapper.selectPageCount(req);
+        List<CmBlogDto.Item> list = cmBlogMapper.selectPageList(VoUtil.voToMap(req));
+        long count = cmBlogMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

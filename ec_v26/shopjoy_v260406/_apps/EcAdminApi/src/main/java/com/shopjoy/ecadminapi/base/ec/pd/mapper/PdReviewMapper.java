@@ -13,11 +13,11 @@ public interface PdReviewMapper {
 
     PdReviewDto.Item selectById(@Param("id") String id);
 
-    List<PdReviewDto.Item> selectList(PdReviewDto.Request req);
+    List<PdReviewDto.Item> selectList(Map<String, Object> p);
 
-    List<PdReviewDto.Item> selectPageList(PdReviewDto.Request req);
+    List<PdReviewDto.Item> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(PdReviewDto.Request req);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdReview entity);
 

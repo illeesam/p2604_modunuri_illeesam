@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper;
@@ -31,7 +32,7 @@ public class FoOdOrderService {
     public List<OdOrderDto.Item> getMyOrders(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return odOrderMapper.selectList(req);
+        return odOrderMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getMyOrderPage — 조회 */
@@ -40,8 +41,8 @@ public class FoOdOrderService {
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         PageHelper.addPaging(req);
         OdOrderDto.PageResponse res = new OdOrderDto.PageResponse();
-        List<OdOrderDto.Item> list = odOrderMapper.selectPageList(req);
-        long count = odOrderMapper.selectPageCount(req);
+        List<OdOrderDto.Item> list = odOrderMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odOrderMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

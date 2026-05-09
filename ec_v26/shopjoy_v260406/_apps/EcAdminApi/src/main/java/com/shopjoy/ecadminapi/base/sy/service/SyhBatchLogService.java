@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchLog;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyhBatchLogMapper;
@@ -27,15 +28,15 @@ public class SyhBatchLogService {
     /** getList — 목록조회 */
     public List<SyhBatchLogDto.Item> getList(SyhBatchLogDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syhBatchLogMapper.selectList(req);
+        return syhBatchLogMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** getPageData — 페이징조회 */
     public SyhBatchLogDto.PageResponse getPageData(SyhBatchLogDto.Request req) {
         PageHelper.addPaging(req);
         SyhBatchLogDto.PageResponse res = new SyhBatchLogDto.PageResponse();
-        List<SyhBatchLogDto.Item> list = syhBatchLogMapper.selectPageList(req);
-        long count = syhBatchLogMapper.selectPageCount(req);
+        List<SyhBatchLogDto.Item> list = syhBatchLogMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syhBatchLogMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

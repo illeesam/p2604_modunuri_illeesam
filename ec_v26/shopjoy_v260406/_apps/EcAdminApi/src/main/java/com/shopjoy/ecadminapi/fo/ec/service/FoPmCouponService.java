@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCouponIssueMapper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -25,6 +26,6 @@ public class FoPmCouponService {
         if (req == null) req = new PmCouponIssueDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         req.setUseYn("N");
-        return pmCouponIssueMapper.selectList(req);
+        return pmCouponIssueMapper.selectList(VoUtil.voToMap(req));
     }
 }

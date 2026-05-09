@@ -47,14 +47,14 @@ public class SyBatchService {
 
     public List<SyBatchDto.Item> getList(SyBatchDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syBatchMapper.selectList(req);
+        return syBatchMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyBatchDto.PageResponse getPageData(SyBatchDto.Request req) {
         PageHelper.addPaging(req);
         SyBatchDto.PageResponse res = new SyBatchDto.PageResponse();
-        List<SyBatchDto.Item> list = syBatchMapper.selectPageList(req);
-        long count = syBatchMapper.selectPageCount(req);
+        List<SyBatchDto.Item> list = syBatchMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syBatchMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

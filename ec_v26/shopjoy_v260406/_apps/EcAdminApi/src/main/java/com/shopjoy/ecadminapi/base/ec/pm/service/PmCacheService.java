@@ -47,14 +47,14 @@ public class PmCacheService {
 
     public List<PmCacheDto.Item> getList(PmCacheDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmCacheMapper.selectList(req);
+        return pmCacheMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PmCacheDto.PageResponse getPageData(PmCacheDto.Request req) {
         PageHelper.addPaging(req);
         PmCacheDto.PageResponse res = new PmCacheDto.PageResponse();
-        List<PmCacheDto.Item> list = pmCacheMapper.selectPageList(req);
-        long count = pmCacheMapper.selectPageCount(req);
+        List<PmCacheDto.Item> list = pmCacheMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pmCacheMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

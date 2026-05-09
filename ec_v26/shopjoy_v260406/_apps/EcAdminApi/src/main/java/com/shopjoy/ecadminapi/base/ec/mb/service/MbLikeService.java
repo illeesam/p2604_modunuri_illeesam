@@ -47,14 +47,14 @@ public class MbLikeService {
 
     public List<MbLikeDto.Item> getList(MbLikeDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbLikeMapper.selectList(req);
+        return mbLikeMapper.selectList(VoUtil.voToMap(req));
     }
 
     public MbLikeDto.PageResponse getPageData(MbLikeDto.Request req) {
         PageHelper.addPaging(req);
         MbLikeDto.PageResponse res = new MbLikeDto.PageResponse();
-        List<MbLikeDto.Item> list = mbLikeMapper.selectPageList(req);
-        long count = mbLikeMapper.selectPageCount(req);
+        List<MbLikeDto.Item> list = mbLikeMapper.selectPageList(VoUtil.voToMap(req));
+        long count = mbLikeMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

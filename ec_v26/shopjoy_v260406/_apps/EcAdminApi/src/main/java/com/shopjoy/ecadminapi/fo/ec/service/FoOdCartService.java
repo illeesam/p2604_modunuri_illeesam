@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdCartMapper;
@@ -31,7 +32,7 @@ public class FoOdCartService {
     public List<OdCartDto.Item> getMyCart(OdCartDto.Request req) {
         if (req == null) req = new OdCartDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return odCartMapper.selectList(req);
+        return odCartMapper.selectList(VoUtil.voToMap(req));
     }
 
     /** addToCart — 추가 */

@@ -47,14 +47,14 @@ public class DpWidgetService {
 
     public List<DpWidgetDto.Item> getList(DpWidgetDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return dpWidgetMapper.selectList(req);
+        return dpWidgetMapper.selectList(VoUtil.voToMap(req));
     }
 
     public DpWidgetDto.PageResponse getPageData(DpWidgetDto.Request req) {
         PageHelper.addPaging(req);
         DpWidgetDto.PageResponse res = new DpWidgetDto.PageResponse();
-        List<DpWidgetDto.Item> list = dpWidgetMapper.selectPageList(req);
-        long count = dpWidgetMapper.selectPageCount(req);
+        List<DpWidgetDto.Item> list = dpWidgetMapper.selectPageList(VoUtil.voToMap(req));
+        long count = dpWidgetMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

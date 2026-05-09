@@ -47,14 +47,14 @@ public class SyVocService {
 
     public List<SyVocDto.Item> getList(SyVocDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syVocMapper.selectList(req);
+        return syVocMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyVocDto.PageResponse getPageData(SyVocDto.Request req) {
         PageHelper.addPaging(req);
         SyVocDto.PageResponse res = new SyVocDto.PageResponse();
-        List<SyVocDto.Item> list = syVocMapper.selectPageList(req);
-        long count = syVocMapper.selectPageCount(req);
+        List<SyVocDto.Item> list = syVocMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syVocMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

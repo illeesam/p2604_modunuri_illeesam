@@ -47,14 +47,14 @@ public class StSettleCloseService {
 
     public List<StSettleCloseDto.Item> getList(StSettleCloseDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stSettleCloseMapper.selectList(req);
+        return stSettleCloseMapper.selectList(VoUtil.voToMap(req));
     }
 
     public StSettleCloseDto.PageResponse getPageData(StSettleCloseDto.Request req) {
         PageHelper.addPaging(req);
         StSettleCloseDto.PageResponse res = new StSettleCloseDto.PageResponse();
-        List<StSettleCloseDto.Item> list = stSettleCloseMapper.selectPageList(req);
-        long count = stSettleCloseMapper.selectPageCount(req);
+        List<StSettleCloseDto.Item> list = stSettleCloseMapper.selectPageList(VoUtil.voToMap(req));
+        long count = stSettleCloseMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

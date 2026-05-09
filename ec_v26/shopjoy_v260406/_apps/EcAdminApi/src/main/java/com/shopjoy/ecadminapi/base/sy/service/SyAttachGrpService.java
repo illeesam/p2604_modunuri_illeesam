@@ -47,14 +47,14 @@ public class SyAttachGrpService {
 
     public List<SyAttachGrpDto.Item> getList(SyAttachGrpDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syAttachGrpMapper.selectList(req);
+        return syAttachGrpMapper.selectList(VoUtil.voToMap(req));
     }
 
     public SyAttachGrpDto.PageResponse getPageData(SyAttachGrpDto.Request req) {
         PageHelper.addPaging(req);
         SyAttachGrpDto.PageResponse res = new SyAttachGrpDto.PageResponse();
-        List<SyAttachGrpDto.Item> list = syAttachGrpMapper.selectPageList(req);
-        long count = syAttachGrpMapper.selectPageCount(req);
+        List<SyAttachGrpDto.Item> list = syAttachGrpMapper.selectPageList(VoUtil.voToMap(req));
+        long count = syAttachGrpMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

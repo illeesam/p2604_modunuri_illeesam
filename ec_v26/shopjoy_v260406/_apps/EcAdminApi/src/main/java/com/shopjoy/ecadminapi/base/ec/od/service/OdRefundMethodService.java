@@ -47,14 +47,14 @@ public class OdRefundMethodService {
 
     public List<OdRefundMethodDto.Item> getList(OdRefundMethodDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odRefundMethodMapper.selectList(req);
+        return odRefundMethodMapper.selectList(VoUtil.voToMap(req));
     }
 
     public OdRefundMethodDto.PageResponse getPageData(OdRefundMethodDto.Request req) {
         PageHelper.addPaging(req);
         OdRefundMethodDto.PageResponse res = new OdRefundMethodDto.PageResponse();
-        List<OdRefundMethodDto.Item> list = odRefundMethodMapper.selectPageList(req);
-        long count = odRefundMethodMapper.selectPageCount(req);
+        List<OdRefundMethodDto.Item> list = odRefundMethodMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odRefundMethodMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

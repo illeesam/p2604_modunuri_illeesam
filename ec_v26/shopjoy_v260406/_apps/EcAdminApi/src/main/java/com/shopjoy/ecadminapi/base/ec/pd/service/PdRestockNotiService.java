@@ -47,14 +47,14 @@ public class PdRestockNotiService {
 
     public List<PdRestockNotiDto.Item> getList(PdRestockNotiDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdRestockNotiMapper.selectList(req);
+        return pdRestockNotiMapper.selectList(VoUtil.voToMap(req));
     }
 
     public PdRestockNotiDto.PageResponse getPageData(PdRestockNotiDto.Request req) {
         PageHelper.addPaging(req);
         PdRestockNotiDto.PageResponse res = new PdRestockNotiDto.PageResponse();
-        List<PdRestockNotiDto.Item> list = pdRestockNotiMapper.selectPageList(req);
-        long count = pdRestockNotiMapper.selectPageCount(req);
+        List<PdRestockNotiDto.Item> list = pdRestockNotiMapper.selectPageList(VoUtil.voToMap(req));
+        long count = pdRestockNotiMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

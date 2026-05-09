@@ -47,14 +47,14 @@ public class OdhDlivChgHistService {
 
     public List<OdhDlivChgHistDto.Item> getList(OdhDlivChgHistDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odhDlivChgHistMapper.selectList(req);
+        return odhDlivChgHistMapper.selectList(VoUtil.voToMap(req));
     }
 
     public OdhDlivChgHistDto.PageResponse getPageData(OdhDlivChgHistDto.Request req) {
         PageHelper.addPaging(req);
         OdhDlivChgHistDto.PageResponse res = new OdhDlivChgHistDto.PageResponse();
-        List<OdhDlivChgHistDto.Item> list = odhDlivChgHistMapper.selectPageList(req);
-        long count = odhDlivChgHistMapper.selectPageCount(req);
+        List<OdhDlivChgHistDto.Item> list = odhDlivChgHistMapper.selectPageList(VoUtil.voToMap(req));
+        long count = odhDlivChgHistMapper.selectPageCount(VoUtil.voToMap(req));
         return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
