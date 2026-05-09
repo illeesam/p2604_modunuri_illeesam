@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.fo.ec.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.fo.ec.service.FoPmEventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,7 @@ public class FoPmEventController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PmEventDto.Item>>> page(@Valid @ModelAttribute PmEventDto.Request req) {
+    public ResponseEntity<ApiResponse<PmEventDto.PageResponse>> page(@Valid @ModelAttribute PmEventDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foPmEventService.getPageData(req)));
     }
 

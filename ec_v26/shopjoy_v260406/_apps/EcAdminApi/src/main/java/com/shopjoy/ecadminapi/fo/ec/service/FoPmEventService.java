@@ -4,7 +4,6 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventMapper;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +27,12 @@ public class FoPmEventService {
     }
 
     /** getPageData — 조회 */
-    public PageResult<PmEventDto.Item> getPageData(PmEventDto.Request req) {
+    public PmEventDto.PageResponse getPageData(PmEventDto.Request req) {
         PageHelper.addPaging(req);
-        return PageResult.of(pmEventMapper.selectPageList(req), pmEventMapper.selectPageCount(req), PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        PmEventDto.PageResponse res = new PmEventDto.PageResponse();
+        List<PmEventDto.Item> list = pmEventMapper.selectPageList(req);
+        long count = pmEventMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
     /** getById — 조회 */
