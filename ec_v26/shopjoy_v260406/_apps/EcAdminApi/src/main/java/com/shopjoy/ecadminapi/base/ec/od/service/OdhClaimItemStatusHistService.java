@@ -4,14 +4,20 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimItemStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimItemStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdhClaimItemStatusHistMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdhClaimItemStatusHistRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,31 +27,140 @@ public class OdhClaimItemStatusHistService {
     private final OdhClaimItemStatusHistMapper odhClaimItemStatusHistMapper;
     private final OdhClaimItemStatusHistRepository odhClaimItemStatusHistRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public OdhClaimItemStatusHistDto getById(String id) {
-        OdhClaimItemStatusHistDto result = odhClaimItemStatusHistMapper.selectById(id);
-        return result;
+    public OdhClaimItemStatusHistDto.Item getById(String id) {
+        OdhClaimItemStatusHistDto.Item dto = odhClaimItemStatusHistMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<OdhClaimItemStatusHistDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdhClaimItemStatusHistDto> result = odhClaimItemStatusHistMapper.selectList(p);
-        return result;
+    public OdhClaimItemStatusHist findById(String id) {
+        return odhClaimItemStatusHistRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<OdhClaimItemStatusHistDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(odhClaimItemStatusHistMapper.selectPageList(p), odhClaimItemStatusHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return odhClaimItemStatusHistRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<OdhClaimItemStatusHistDto.Item> getList(OdhClaimItemStatusHistDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return odhClaimItemStatusHistMapper.selectList(req);
+    }
+
+    public OdhClaimItemStatusHistDto.PageResponse getPageData(OdhClaimItemStatusHistDto.Request req) {
+        PageHelper.addPaging(req);
+        OdhClaimItemStatusHistDto.PageResponse res = new OdhClaimItemStatusHistDto.PageResponse();
+        List<OdhClaimItemStatusHistDto.Item> list = odhClaimItemStatusHistMapper.selectPageList(req);
+        long count = odhClaimItemStatusHistMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(OdhClaimItemStatusHist entity) {
-        int result = odhClaimItemStatusHistMapper.updateSelective(entity);
-        return result;
+    public OdhClaimItemStatusHist create(OdhClaimItemStatusHist body) {
+        body.setClaimItemStatusHistId(CmUtil.generateId("odh_claim_item_status_hist"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        OdhClaimItemStatusHist saved = odhClaimItemStatusHistRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getClaimItemStatusHistId());
     }
 
+    @Transactional
+    public OdhClaimItemStatusHist save(OdhClaimItemStatusHist entity) {
+        if (!existsById(entity.getClaimItemStatusHistId()))
+            throw new CmBizException("존재하지 않는 OdhClaimItemStatusHist입니다: " + entity.getClaimItemStatusHistId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdhClaimItemStatusHist saved = odhClaimItemStatusHistRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getClaimItemStatusHistId());
+    }
+
+    @Transactional
+    public OdhClaimItemStatusHist update(String id, OdhClaimItemStatusHist body) {
+        OdhClaimItemStatusHist entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "claimItemStatusHistId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdhClaimItemStatusHist saved = odhClaimItemStatusHistRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public OdhClaimItemStatusHist updatePartial(OdhClaimItemStatusHist entity) {
+        if (entity.getClaimItemStatusHistId() == null) throw new CmBizException("claimItemStatusHistId 가 필요합니다.");
+        if (!existsById(entity.getClaimItemStatusHistId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getClaimItemStatusHistId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = odhClaimItemStatusHistMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getClaimItemStatusHistId());
+    }
+
+    @Transactional
+    public void delete(String id) {
+        OdhClaimItemStatusHist entity = findById(id);
+        odhClaimItemStatusHistRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+    }
+
+    @Transactional
+    public List<OdhClaimItemStatusHist> saveList(List<OdhClaimItemStatusHist> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getClaimItemStatusHistId() != null)
+            .map(OdhClaimItemStatusHist::getClaimItemStatusHistId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            odhClaimItemStatusHistRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<OdhClaimItemStatusHist> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getClaimItemStatusHistId() != null)
+            .toList();
+        for (OdhClaimItemStatusHist row : updateRows) {
+            OdhClaimItemStatusHist entity = findById(row.getClaimItemStatusHistId());
+            VoUtil.voCopyExclude(row, entity, "claimItemStatusHistId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            odhClaimItemStatusHistRepository.save(entity);
+            upsertedIds.add(entity.getClaimItemStatusHistId());
+        }
+        em.flush();
+
+        List<OdhClaimItemStatusHist> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (OdhClaimItemStatusHist row : insertRows) {
+            row.setClaimItemStatusHistId(CmUtil.generateId("odh_claim_item_status_hist"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            odhClaimItemStatusHistRepository.save(row);
+            upsertedIds.add(row.getClaimItemStatusHistId());
+        }
+        em.flush();
+        em.clear();
+
+        List<OdhClaimItemStatusHist> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
+    }
 }

@@ -54,16 +54,16 @@ public class FoMyPageService {
     private EntityManager em;
 
     /** getMyInfo — 조회 */
-    public MbMemberDto getMyInfo() {
+    public MbMemberDto.Item getMyInfo() {
         String memberId = SecurityUtil.getAuthUser().authId();
-        MbMemberDto dto = memberMapper.selectById(memberId);
+        MbMemberDto.Item dto = memberMapper.selectById(memberId);
         if (dto == null) throw new CmBizException("회원 정보를 찾을 수 없습니다.");
         return dto;
     }
 
     /** updateMyInfo — 수정 */
     @Transactional
-    public MbMemberDto updateMyInfo(MbMember body) {
+    public MbMemberDto.Item updateMyInfo(MbMember body) {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
@@ -96,9 +96,11 @@ public class FoMyPageService {
     }
 
     /** getMyAddrs — 조회 */
-    public List<MbMemberAddrDto> getMyAddrs() {
+    public List<MbMemberAddrDto.Item> getMyAddrs() {
         String memberId = SecurityUtil.getAuthUser().authId();
-        return addrMapper.selectList(Map.of("memberId", memberId));
+        MbMemberAddrDto.Request req = new MbMemberAddrDto.Request();
+        req.setMemberId(memberId);
+        return addrMapper.selectList(req);
     }
 
     /** saveAddr — 저장 */

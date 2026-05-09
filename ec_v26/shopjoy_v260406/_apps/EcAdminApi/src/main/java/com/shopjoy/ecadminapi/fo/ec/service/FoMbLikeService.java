@@ -33,10 +33,12 @@ public class FoMbLikeService {
     private final MbLikeMapper     mbLikeMapper;
     private final MbLikeRepository mbLikeRepository;
 
-    /** getMyLikes — 조회 */
-    public List<MbLikeDto> getMyLikes(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return mbLikeMapper.selectList(p);
+    /** getMyLikes — 조회 (현재 회원 찜 목록) */
+    public List<MbLikeDto.Item> getMyLikes(MbLikeDto.Request req) {
+        if (req == null) req = new MbLikeDto.Request();
+        // memberId는 보안 컨텍스트에서 강제
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return mbLikeMapper.selectList(req);
     }
 
     /** 찜 토글: 없으면 추가, 있으면 삭제 → true=추가됨 false=취소됨 */

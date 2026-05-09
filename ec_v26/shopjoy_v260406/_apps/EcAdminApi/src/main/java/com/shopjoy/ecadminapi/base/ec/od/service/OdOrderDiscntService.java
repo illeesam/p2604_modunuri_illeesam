@@ -4,21 +4,20 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderDiscnt;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderDiscntMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderDiscntRepository;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -28,86 +27,140 @@ public class OdOrderDiscntService {
     private final OdOrderDiscntMapper odOrderDiscntMapper;
     private final OdOrderDiscntRepository odOrderDiscntRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public OdOrderDiscntDto getById(String id) {
-        OdOrderDiscntDto result = odOrderDiscntMapper.selectById(id);
-        return result;
+    public OdOrderDiscntDto.Item getById(String id) {
+        OdOrderDiscntDto.Item dto = odOrderDiscntMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<OdOrderDiscntDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdOrderDiscntDto> result = odOrderDiscntMapper.selectList(p);
-        return result;
+    public OdOrderDiscnt findById(String id) {
+        return odOrderDiscntRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<OdOrderDiscntDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(odOrderDiscntMapper.selectPageList(p), odOrderDiscntMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return odOrderDiscntRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<OdOrderDiscntDto.Item> getList(OdOrderDiscntDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return odOrderDiscntMapper.selectList(req);
+    }
+
+    public OdOrderDiscntDto.PageResponse getPageData(OdOrderDiscntDto.Request req) {
+        PageHelper.addPaging(req);
+        OdOrderDiscntDto.PageResponse res = new OdOrderDiscntDto.PageResponse();
+        List<OdOrderDiscntDto.Item> list = odOrderDiscntMapper.selectPageList(req);
+        long count = odOrderDiscntMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(OdOrderDiscnt entity) {
-        int result = odOrderDiscntMapper.updateSelective(entity);
-        return result;
+    public OdOrderDiscnt create(OdOrderDiscnt body) {
+        body.setOrderDiscntId(CmUtil.generateId("od_order_discnt"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        OdOrderDiscnt saved = odOrderDiscntRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getOrderDiscntId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public OdOrderDiscnt create(OdOrderDiscnt entity) {
-        entity.setOrderDiscntId(CmUtil.generateId("od_order_discnt"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        OdOrderDiscnt result = odOrderDiscntRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public OdOrderDiscnt save(OdOrderDiscnt entity) {
-        if (!odOrderDiscntRepository.existsById(entity.getOrderDiscntId()))
+        if (!existsById(entity.getOrderDiscntId()))
             throw new CmBizException("존재하지 않는 OdOrderDiscnt입니다: " + entity.getOrderDiscntId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdOrderDiscnt result = odOrderDiscntRepository.save(entity);
-        return result;
+        OdOrderDiscnt saved = odOrderDiscntRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getOrderDiscntId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public OdOrderDiscnt update(String id, OdOrderDiscnt body) {
+        OdOrderDiscnt entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "orderDiscntId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdOrderDiscnt saved = odOrderDiscntRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public OdOrderDiscnt updatePartial(OdOrderDiscnt entity) {
+        if (entity.getOrderDiscntId() == null) throw new CmBizException("orderDiscntId 가 필요합니다.");
+        if (!existsById(entity.getOrderDiscntId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOrderDiscntId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = odOrderDiscntMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getOrderDiscntId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!odOrderDiscntRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 OdOrderDiscnt입니다: " + id);
-        odOrderDiscntRepository.deleteById(id);
+        OdOrderDiscnt entity = findById(id);
+        odOrderDiscntRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
-    /** saveList — 저장 */
+
     @Transactional
-    public void saveList(List<OdOrderDiscnt> rows) {
+    public List<OdOrderDiscnt> saveList(List<OdOrderDiscnt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (OdOrderDiscnt row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setOrderDiscntId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_order_discnt"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                odOrderDiscntRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getOrderDiscntId(), "orderDiscntId must not be null");
-                OdOrderDiscnt entity = odOrderDiscntRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "orderDiscntId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                odOrderDiscntRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getOrderDiscntId(), "orderDiscntId must not be null");
-                if (odOrderDiscntRepository.existsById(id)) odOrderDiscntRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getOrderDiscntId() != null)
+            .map(OdOrderDiscnt::getOrderDiscntId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            odOrderDiscntRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<OdOrderDiscnt> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getOrderDiscntId() != null)
+            .toList();
+        for (OdOrderDiscnt row : updateRows) {
+            OdOrderDiscnt entity = findById(row.getOrderDiscntId());
+            VoUtil.voCopyExclude(row, entity, "orderDiscntId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            odOrderDiscntRepository.save(entity);
+            upsertedIds.add(entity.getOrderDiscntId());
+        }
+        em.flush();
+
+        List<OdOrderDiscnt> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (OdOrderDiscnt row : insertRows) {
+            row.setOrderDiscntId(CmUtil.generateId("od_order_discnt"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            odOrderDiscntRepository.save(row);
+            upsertedIds.add(row.getOrderDiscntId());
+        }
+        em.flush();
+        em.clear();
+
+        List<OdOrderDiscnt> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

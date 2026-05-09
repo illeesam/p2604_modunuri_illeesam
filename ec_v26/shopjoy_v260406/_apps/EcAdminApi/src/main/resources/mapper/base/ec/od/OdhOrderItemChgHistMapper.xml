@@ -28,7 +28,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto$Item">
         SELECT  /* base.ec.od :: OdhOrderItemChgHist :: selectById */
               h.*
             , ste.site_nm AS site_nm
@@ -39,7 +39,7 @@
         WHERE h.order_item_chg_hist_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto$Item">
         SELECT  /* base.ec.od :: OdhOrderItemChgHist :: selectList */
               h.*
             , ste.site_nm AS site_nm
@@ -52,7 +52,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto$Item">
         SELECT  /* base.ec.od :: OdhOrderItemChgHist :: selectPageList */
               h.*
             , ste.site_nm AS site_nm

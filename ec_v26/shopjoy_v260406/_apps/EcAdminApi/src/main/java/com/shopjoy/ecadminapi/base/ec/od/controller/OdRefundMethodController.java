@@ -4,13 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundMethodDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefundMethod;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdRefundMethodService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/ec/od/refund-method")
@@ -19,65 +18,46 @@ public class OdRefundMethodController {
 
     private final OdRefundMethodService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<OdRefundMethodDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<OdRefundMethodDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<OdRefundMethodDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<OdRefundMethodDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdRefundMethodDto>> getById(@PathVariable("id") String id) {
-        OdRefundMethodDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<OdRefundMethodDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
-    /* ── 등록 (JPA) ── */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<OdRefundMethodDto.Item>>> list(@Valid @ModelAttribute OdRefundMethodDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<OdRefundMethodDto.PageResponse>> page(@Valid @ModelAttribute OdRefundMethodDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<OdRefundMethod>> create(@RequestBody OdRefundMethod entity) {
-        OdRefundMethod result = service.create(entity);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
-    /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdRefundMethod>> save(
-            @PathVariable("id") String id, @RequestBody OdRefundMethod entity) {
+    public ResponseEntity<ApiResponse<OdRefundMethod>> save(@PathVariable("id") String id, @RequestBody OdRefundMethod entity) {
         entity.setRefundMethodId(id);
-        OdRefundMethod result = service.save(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
-    /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable("id") String id, @RequestBody OdRefundMethod entity) {
+    public ResponseEntity<ApiResponse<OdRefundMethod>> updatePartial(@PathVariable("id") String id, @RequestBody OdRefundMethod entity) {
         entity.setRefundMethodId(id);
-        int result = service.update(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
     }
 
-    /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
-    /** saveList — 저장 */
+
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdRefundMethod> rows) {
-        service.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<OdRefundMethod>>> saveList(@RequestBody List<OdRefundMethod> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

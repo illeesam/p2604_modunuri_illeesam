@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdClaimItemMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimItemRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,86 +27,140 @@ public class OdClaimItemService {
     private final OdClaimItemMapper odClaimItemMapper;
     private final OdClaimItemRepository odClaimItemRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public OdClaimItemDto getById(String id) {
-        OdClaimItemDto result = odClaimItemMapper.selectById(id);
-        return result;
+    public OdClaimItemDto.Item getById(String id) {
+        OdClaimItemDto.Item dto = odClaimItemMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<OdClaimItemDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdClaimItemDto> result = odClaimItemMapper.selectList(p);
-        return result;
+    public OdClaimItem findById(String id) {
+        return odClaimItemRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<OdClaimItemDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(odClaimItemMapper.selectPageList(p), odClaimItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return odClaimItemRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<OdClaimItemDto.Item> getList(OdClaimItemDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return odClaimItemMapper.selectList(req);
+    }
+
+    public OdClaimItemDto.PageResponse getPageData(OdClaimItemDto.Request req) {
+        PageHelper.addPaging(req);
+        OdClaimItemDto.PageResponse res = new OdClaimItemDto.PageResponse();
+        List<OdClaimItemDto.Item> list = odClaimItemMapper.selectPageList(req);
+        long count = odClaimItemMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(OdClaimItem entity) {
-        int result = odClaimItemMapper.updateSelective(entity);
-        return result;
+    public OdClaimItem create(OdClaimItem body) {
+        body.setClaimItemId(CmUtil.generateId("od_claim_item"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        OdClaimItem saved = odClaimItemRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getClaimItemId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public OdClaimItem create(OdClaimItem entity) {
-        entity.setClaimItemId(CmUtil.generateId("od_claim_item"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        OdClaimItem result = odClaimItemRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public OdClaimItem save(OdClaimItem entity) {
-        if (!odClaimItemRepository.existsById(entity.getClaimItemId()))
+        if (!existsById(entity.getClaimItemId()))
             throw new CmBizException("존재하지 않는 OdClaimItem입니다: " + entity.getClaimItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdClaimItem result = odClaimItemRepository.save(entity);
-        return result;
+        OdClaimItem saved = odClaimItemRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getClaimItemId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public OdClaimItem update(String id, OdClaimItem body) {
+        OdClaimItem entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "claimItemId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdClaimItem saved = odClaimItemRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public OdClaimItem updatePartial(OdClaimItem entity) {
+        if (entity.getClaimItemId() == null) throw new CmBizException("claimItemId 가 필요합니다.");
+        if (!existsById(entity.getClaimItemId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getClaimItemId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = odClaimItemMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getClaimItemId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!odClaimItemRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 OdClaimItem입니다: " + id);
-        odClaimItemRepository.deleteById(id);
+        OdClaimItem entity = findById(id);
+        odClaimItemRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
-    /** saveList — 저장 */
+
     @Transactional
-    public void saveList(List<OdClaimItem> rows) {
+    public List<OdClaimItem> saveList(List<OdClaimItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (OdClaimItem row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setClaimItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_claim_item"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                odClaimItemRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getClaimItemId(), "claimItemId must not be null");
-                OdClaimItem entity = odClaimItemRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "claimItemId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                odClaimItemRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getClaimItemId(), "claimItemId must not be null");
-                if (odClaimItemRepository.existsById(id)) odClaimItemRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getClaimItemId() != null)
+            .map(OdClaimItem::getClaimItemId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            odClaimItemRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<OdClaimItem> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getClaimItemId() != null)
+            .toList();
+        for (OdClaimItem row : updateRows) {
+            OdClaimItem entity = findById(row.getClaimItemId());
+            VoUtil.voCopyExclude(row, entity, "claimItemId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            odClaimItemRepository.save(entity);
+            upsertedIds.add(entity.getClaimItemId());
+        }
+        em.flush();
+
+        List<OdClaimItem> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (OdClaimItem row : insertRows) {
+            row.setClaimItemId(CmUtil.generateId("od_claim_item"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            odClaimItemRepository.save(row);
+            upsertedIds.add(row.getClaimItemId());
+        }
+        em.flush();
+        em.clear();
+
+        List<OdClaimItem> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

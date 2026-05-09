@@ -43,7 +43,7 @@
     </sql>
 
     <!-- 클레임(취소/반품/교환) 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto$Item">
         SELECT  /* base.ec.od :: OdClaim :: selectById */
               c.*
             , o.order_date,       o.order_status_cd,  o.pay_method_cd
@@ -77,7 +77,7 @@
     </select>
 
     <!-- 클레임(취소/반품/교환) 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto$Item">
         SELECT  /* base.ec.od :: OdClaim :: selectList */
               c.*
             , o.order_date,       o.order_status_cd
@@ -101,7 +101,7 @@
     </select>
 
     <!-- 클레임(취소/반품/교환) 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto$Item">
         SELECT  /* base.ec.od :: OdClaim :: selectPageList */
               c.*
             , o.order_date,       o.order_status_cd
@@ -162,7 +162,7 @@
          ================================================================ -->
 
     <!-- 주문번호로 클레임 목록 조회 -->
-    <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto">
+    <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto$Item">
         SELECT  /* base.ec.od :: OdClaim :: selectByOrderId */
               c.*
             , cd_ct.code_label AS claim_type_cd_nm

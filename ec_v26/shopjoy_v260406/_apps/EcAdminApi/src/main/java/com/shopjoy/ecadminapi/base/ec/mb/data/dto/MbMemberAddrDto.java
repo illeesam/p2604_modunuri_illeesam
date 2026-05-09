@@ -14,6 +14,7 @@ public class MbMemberAddrDto {
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
         @Size(max = 21) private String memberAddrId;
+        @Size(max = 21) private String memberId;
     }
 
     @Getter @Setter @NoArgsConstructor

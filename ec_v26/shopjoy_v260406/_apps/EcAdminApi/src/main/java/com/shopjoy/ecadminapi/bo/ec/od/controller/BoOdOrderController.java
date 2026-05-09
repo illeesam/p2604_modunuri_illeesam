@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdOrderService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,26 +32,20 @@ public class BoOdOrderController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<OdOrderDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<OdOrderDto> result = boOdOrderService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<OdOrderDto.Item>>> list(@Valid @ModelAttribute OdOrderDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<OdOrderDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<OdOrderDto> result = boOdOrderService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<OdOrderDto.PageResponse>> page(@Valid @ModelAttribute OdOrderDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdOrderDto>> getById(@PathVariable("id") String id) {
-        OdOrderDto result = boOdOrderService.getById(id);
+    public ResponseEntity<ApiResponse<OdOrderDto.Item>> getById(@PathVariable("id") String id) {
+        OdOrderDto.Item result = boOdOrderService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -64,14 +58,14 @@ public class BoOdOrderController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdOrderDto>> update(@PathVariable("id") String id, @RequestBody OdOrder body) {
-        OdOrderDto result = boOdOrderService.update(id, body);
+    public ResponseEntity<ApiResponse<OdOrder>> update(@PathVariable("id") String id, @RequestBody OdOrder body) {
+        OdOrder result = boOdOrderService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdOrderDto>> upsert(@PathVariable("id") String id, @RequestBody OdOrder body) {
+    public ResponseEntity<ApiResponse<OdOrder>> upsert(@PathVariable("id") String id, @RequestBody OdOrder body) {
         return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.update(id, body)));
     }
 
@@ -84,15 +78,13 @@ public class BoOdOrderController {
 
     /** changeStatus */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<OdOrderDto>> changeStatus(
+    public ResponseEntity<ApiResponse<OdOrderDto.Item>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        OdOrderDto result = boOdOrderService.changeStatus(id, body.get("statusCd"));
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.changeStatus(id, body.get("statusCd"))));
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdOrder> rows) {
-        boOdOrderService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<OdOrder>>> saveList(@RequestBody List<OdOrder> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.saveList(rows), "저장되었습니다."));
     }
 }

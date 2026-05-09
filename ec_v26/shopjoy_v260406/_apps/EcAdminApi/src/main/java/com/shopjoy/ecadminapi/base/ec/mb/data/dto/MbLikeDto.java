@@ -15,6 +15,9 @@ public class MbLikeDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String likeId;
+        @Size(max = 21) private String memberId;
+        @Size(max = 50) private String targetTypeCd;
+        @Size(max = 21) private String targetId;
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,87 +27,140 @@ public class OdOrderService {
     private final OdOrderMapper odOrderMapper;
     private final OdOrderRepository odOrderRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public OdOrderDto getById(String id) {
-        OdOrderDto result = odOrderMapper.selectById(id);
-        return result;
+    public OdOrderDto.Item getById(String id) {
+        OdOrderDto.Item dto = odOrderMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<OdOrderDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdOrderDto> result = odOrderMapper.selectList(p);
-        return result;
+    public OdOrder findById(String id) {
+        return odOrderRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<OdOrderDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(odOrderMapper.selectPageList(p), odOrderMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return odOrderRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<OdOrderDto.Item> getList(OdOrderDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return odOrderMapper.selectList(req);
+    }
+
+    public OdOrderDto.PageResponse getPageData(OdOrderDto.Request req) {
+        PageHelper.addPaging(req);
+        OdOrderDto.PageResponse res = new OdOrderDto.PageResponse();
+        List<OdOrderDto.Item> list = odOrderMapper.selectPageList(req);
+        long count = odOrderMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(OdOrder entity) {
-        int result = odOrderMapper.updateSelective(entity);
-        return result;
+    public OdOrder create(OdOrder body) {
+        body.setOrderId(CmUtil.generateId("od_order"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        OdOrder saved = odOrderRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getOrderId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public OdOrder create(OdOrder entity) {
-        entity.setOrderId(CmUtil.generateId("od_order"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        OdOrder result = odOrderRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public OdOrder save(OdOrder entity) {
-        if (!odOrderRepository.existsById(entity.getOrderId()))
+        if (!existsById(entity.getOrderId()))
             throw new CmBizException("존재하지 않는 OdOrder입니다: " + entity.getOrderId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdOrder result = odOrderRepository.save(entity);
-        return result;
+        OdOrder saved = odOrderRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getOrderId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public OdOrder update(String id, OdOrder body) {
+        OdOrder entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "orderId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdOrder saved = odOrderRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public OdOrder updatePartial(OdOrder entity) {
+        if (entity.getOrderId() == null) throw new CmBizException("orderId 가 필요합니다.");
+        if (!existsById(entity.getOrderId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOrderId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = odOrderMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getOrderId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!odOrderRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 OdOrder입니다: " + id);
-        odOrderRepository.deleteById(id);
+        OdOrder entity = findById(id);
+        odOrderRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<OdOrder> rows) {
+    public List<OdOrder> saveList(List<OdOrder> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (OdOrder row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setOrderId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_order"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                odOrderRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getOrderId(), "orderId must not be null");
-                OdOrder entity = odOrderRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "orderId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                odOrderRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getOrderId(), "orderId must not be null");
-                if (odOrderRepository.existsById(id)) odOrderRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getOrderId() != null)
+            .map(OdOrder::getOrderId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            odOrderRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<OdOrder> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getOrderId() != null)
+            .toList();
+        for (OdOrder row : updateRows) {
+            OdOrder entity = findById(row.getOrderId());
+            VoUtil.voCopyExclude(row, entity, "orderId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            odOrderRepository.save(entity);
+            upsertedIds.add(entity.getOrderId());
+        }
+        em.flush();
+
+        List<OdOrder> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (OdOrder row : insertRows) {
+            row.setOrderId(CmUtil.generateId("od_order"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            odOrderRepository.save(row);
+            upsertedIds.add(row.getOrderId());
+        }
+        em.flush();
+        em.clear();
+
+        List<OdOrder> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

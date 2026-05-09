@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdClaimService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,26 +32,20 @@ public class BoOdClaimController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<OdClaimDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<OdClaimDto> result = boOdClaimService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<OdClaimDto.Item>>> list(@Valid @ModelAttribute OdClaimDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdClaimService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<OdClaimDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<OdClaimDto> result = boOdClaimService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<OdClaimDto.PageResponse>> page(@Valid @ModelAttribute OdClaimDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdClaimService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdClaimDto>> getById(@PathVariable("id") String id) {
-        OdClaimDto result = boOdClaimService.getById(id);
+    public ResponseEntity<ApiResponse<OdClaimDto.Item>> getById(@PathVariable("id") String id) {
+        OdClaimDto.Item result = boOdClaimService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -64,14 +58,14 @@ public class BoOdClaimController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdClaimDto>> update(@PathVariable("id") String id, @RequestBody OdClaim body) {
-        OdClaimDto result = boOdClaimService.update(id, body);
+    public ResponseEntity<ApiResponse<OdClaim>> update(@PathVariable("id") String id, @RequestBody OdClaim body) {
+        OdClaim result = boOdClaimService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdClaimDto>> upsert(@PathVariable("id") String id, @RequestBody OdClaim body) {
+    public ResponseEntity<ApiResponse<OdClaim>> upsert(@PathVariable("id") String id, @RequestBody OdClaim body) {
         return ResponseEntity.ok(ApiResponse.ok(boOdClaimService.update(id, body)));
     }
 
@@ -84,10 +78,9 @@ public class BoOdClaimController {
 
     /** changeStatus */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<OdClaimDto>> changeStatus(
+    public ResponseEntity<ApiResponse<OdClaimDto.Item>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        OdClaimDto result = boOdClaimService.changeStatus(id, body.get("statusCd"));
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(boOdClaimService.changeStatus(id, body.get("statusCd"))));
     }
 
     /** bulkStatus */
@@ -119,8 +112,7 @@ public class BoOdClaimController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdClaim> rows) {
-        boOdClaimService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<OdClaim>>> saveList(@RequestBody List<OdClaim> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdClaimService.saveList(rows), "저장되었습니다."));
     }
 }

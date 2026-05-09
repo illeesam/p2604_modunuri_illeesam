@@ -58,7 +58,10 @@ public class FoCmDashboardController {
         int couponCount = coupons != null ? coupons.size() : 0;
 
         // 3) 찜 상품 수
-        List<MbLikeDto> likes = safeList(() -> likeService.getMyLikes(new HashMap<>(p)));
+        List<MbLikeDto.Item> likes = safeList(() -> {
+            MbLikeDto.Request r = new MbLikeDto.Request();
+            return likeService.getMyLikes(r);
+        });
         int likeCount = likes != null ? likes.size() : 0;
 
         // 4) 주문 — 최근 목록 + 상태 카운트 (한 번 조회 후 분류)

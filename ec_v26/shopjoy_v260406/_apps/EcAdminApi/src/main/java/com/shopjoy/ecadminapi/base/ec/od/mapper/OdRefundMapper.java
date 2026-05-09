@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface OdRefundMapper {
 
-    OdRefundDto selectById(@Param("id") String id);
+    OdRefundDto.Item selectById(@Param("id") String id);
 
-    List<OdRefundDto> selectList(Map<String, Object> p);
+    List<OdRefundDto.Item> selectList(OdRefundDto.Request req);
 
-    List<OdRefundDto> selectPageList(Map<String, Object> p);
+    List<OdRefundDto.Item> selectPageList(OdRefundDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(OdRefundDto.Request req);
 
     int updateSelective(OdRefund entity);
 }

@@ -1,15 +1,15 @@
 package com.shopjoy.ecadminapi.base.ec.od.controller;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhPayChgHistDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhPayChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdhPayChgHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/ec/od/pay-chg-hist")
@@ -18,27 +18,46 @@ public class OdhPayChgHistController {
 
     private final OdhPayChgHistService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<OdhPayChgHistDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<OdhPayChgHistDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<OdhPayChgHistDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<OdhPayChgHistDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhPayChgHistDto>> getById(@PathVariable("id") String id) {
-        OdhPayChgHistDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<OdhPayChgHistDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<OdhPayChgHistDto.Item>>> list(@Valid @ModelAttribute OdhPayChgHistDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<OdhPayChgHistDto.PageResponse>> page(@Valid @ModelAttribute OdhPayChgHistDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<OdhPayChgHist>> create(@RequestBody OdhPayChgHist entity) {
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<OdhPayChgHist>> save(@PathVariable("id") String id, @RequestBody OdhPayChgHist entity) {
+        entity.setPayChgHistId(id);
+        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<OdhPayChgHist>> updatePartial(@PathVariable("id") String id, @RequestBody OdhPayChgHist entity) {
+        entity.setPayChgHistId(id);
+        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
+        service.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<List<OdhPayChgHist>>> saveList(@RequestBody List<OdhPayChgHist> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdCartMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdCartRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,87 +27,140 @@ public class OdCartService {
     private final OdCartMapper odCartMapper;
     private final OdCartRepository odCartRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public OdCartDto getById(String id) {
-        OdCartDto result = odCartMapper.selectById(id);
-        return result;
+    public OdCartDto.Item getById(String id) {
+        OdCartDto.Item dto = odCartMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<OdCartDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdCartDto> result = odCartMapper.selectList(p);
-        return result;
+    public OdCart findById(String id) {
+        return odCartRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<OdCartDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(odCartMapper.selectPageList(p), odCartMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return odCartRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<OdCartDto.Item> getList(OdCartDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return odCartMapper.selectList(req);
+    }
+
+    public OdCartDto.PageResponse getPageData(OdCartDto.Request req) {
+        PageHelper.addPaging(req);
+        OdCartDto.PageResponse res = new OdCartDto.PageResponse();
+        List<OdCartDto.Item> list = odCartMapper.selectPageList(req);
+        long count = odCartMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(OdCart entity) {
-        int result = odCartMapper.updateSelective(entity);
-        return result;
+    public OdCart create(OdCart body) {
+        body.setCartId(CmUtil.generateId("od_cart"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        OdCart saved = odCartRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getCartId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public OdCart create(OdCart entity) {
-        entity.setCartId(CmUtil.generateId("od_cart"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        OdCart result = odCartRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public OdCart save(OdCart entity) {
-        if (!odCartRepository.existsById(entity.getCartId()))
+        if (!existsById(entity.getCartId()))
             throw new CmBizException("존재하지 않는 OdCart입니다: " + entity.getCartId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdCart result = odCartRepository.save(entity);
-        return result;
+        OdCart saved = odCartRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getCartId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public OdCart update(String id, OdCart body) {
+        OdCart entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "cartId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdCart saved = odCartRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public OdCart updatePartial(OdCart entity) {
+        if (entity.getCartId() == null) throw new CmBizException("cartId 가 필요합니다.");
+        if (!existsById(entity.getCartId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCartId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = odCartMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getCartId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!odCartRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 OdCart입니다: " + id);
-        odCartRepository.deleteById(id);
+        OdCart entity = findById(id);
+        odCartRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<OdCart> rows) {
+    public List<OdCart> saveList(List<OdCart> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (OdCart row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setCartId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_cart"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                odCartRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getCartId(), "cartId must not be null");
-                OdCart entity = odCartRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "cartId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                odCartRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getCartId(), "cartId must not be null");
-                if (odCartRepository.existsById(id)) odCartRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getCartId() != null)
+            .map(OdCart::getCartId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            odCartRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<OdCart> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getCartId() != null)
+            .toList();
+        for (OdCart row : updateRows) {
+            OdCart entity = findById(row.getCartId());
+            VoUtil.voCopyExclude(row, entity, "cartId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            odCartRepository.save(entity);
+            upsertedIds.add(entity.getCartId());
+        }
+        em.flush();
+
+        List<OdCart> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (OdCart row : insertRows) {
+            row.setCartId(CmUtil.generateId("od_cart"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            odCartRepository.save(row);
+            upsertedIds.add(row.getCartId());
+        }
+        em.flush();
+        em.clear();
+
+        List<OdCart> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

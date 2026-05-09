@@ -4,14 +4,20 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhOrderItemStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdhOrderItemStatusHistMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdhOrderItemStatusHistRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,31 +27,140 @@ public class OdhOrderItemStatusHistService {
     private final OdhOrderItemStatusHistMapper odhOrderItemStatusHistMapper;
     private final OdhOrderItemStatusHistRepository odhOrderItemStatusHistRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public OdhOrderItemStatusHistDto getById(String id) {
-        OdhOrderItemStatusHistDto result = odhOrderItemStatusHistMapper.selectById(id);
-        return result;
+    public OdhOrderItemStatusHistDto.Item getById(String id) {
+        OdhOrderItemStatusHistDto.Item dto = odhOrderItemStatusHistMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<OdhOrderItemStatusHistDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdhOrderItemStatusHistDto> result = odhOrderItemStatusHistMapper.selectList(p);
-        return result;
+    public OdhOrderItemStatusHist findById(String id) {
+        return odhOrderItemStatusHistRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<OdhOrderItemStatusHistDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(odhOrderItemStatusHistMapper.selectPageList(p), odhOrderItemStatusHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return odhOrderItemStatusHistRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<OdhOrderItemStatusHistDto.Item> getList(OdhOrderItemStatusHistDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return odhOrderItemStatusHistMapper.selectList(req);
+    }
+
+    public OdhOrderItemStatusHistDto.PageResponse getPageData(OdhOrderItemStatusHistDto.Request req) {
+        PageHelper.addPaging(req);
+        OdhOrderItemStatusHistDto.PageResponse res = new OdhOrderItemStatusHistDto.PageResponse();
+        List<OdhOrderItemStatusHistDto.Item> list = odhOrderItemStatusHistMapper.selectPageList(req);
+        long count = odhOrderItemStatusHistMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(OdhOrderItemStatusHist entity) {
-        int result = odhOrderItemStatusHistMapper.updateSelective(entity);
-        return result;
+    public OdhOrderItemStatusHist create(OdhOrderItemStatusHist body) {
+        body.setOrderItemStatusHistId(CmUtil.generateId("odh_order_item_status_hist"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        OdhOrderItemStatusHist saved = odhOrderItemStatusHistRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getOrderItemStatusHistId());
     }
 
+    @Transactional
+    public OdhOrderItemStatusHist save(OdhOrderItemStatusHist entity) {
+        if (!existsById(entity.getOrderItemStatusHistId()))
+            throw new CmBizException("존재하지 않는 OdhOrderItemStatusHist입니다: " + entity.getOrderItemStatusHistId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdhOrderItemStatusHist saved = odhOrderItemStatusHistRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getOrderItemStatusHistId());
+    }
+
+    @Transactional
+    public OdhOrderItemStatusHist update(String id, OdhOrderItemStatusHist body) {
+        OdhOrderItemStatusHist entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "orderItemStatusHistId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdhOrderItemStatusHist saved = odhOrderItemStatusHistRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public OdhOrderItemStatusHist updatePartial(OdhOrderItemStatusHist entity) {
+        if (entity.getOrderItemStatusHistId() == null) throw new CmBizException("orderItemStatusHistId 가 필요합니다.");
+        if (!existsById(entity.getOrderItemStatusHistId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOrderItemStatusHistId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = odhOrderItemStatusHistMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getOrderItemStatusHistId());
+    }
+
+    @Transactional
+    public void delete(String id) {
+        OdhOrderItemStatusHist entity = findById(id);
+        odhOrderItemStatusHistRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+    }
+
+    @Transactional
+    public List<OdhOrderItemStatusHist> saveList(List<OdhOrderItemStatusHist> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getOrderItemStatusHistId() != null)
+            .map(OdhOrderItemStatusHist::getOrderItemStatusHistId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            odhOrderItemStatusHistRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<OdhOrderItemStatusHist> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getOrderItemStatusHistId() != null)
+            .toList();
+        for (OdhOrderItemStatusHist row : updateRows) {
+            OdhOrderItemStatusHist entity = findById(row.getOrderItemStatusHistId());
+            VoUtil.voCopyExclude(row, entity, "orderItemStatusHistId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            odhOrderItemStatusHistRepository.save(entity);
+            upsertedIds.add(entity.getOrderItemStatusHistId());
+        }
+        em.flush();
+
+        List<OdhOrderItemStatusHist> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (OdhOrderItemStatusHist row : insertRows) {
+            row.setOrderItemStatusHistId(CmUtil.generateId("odh_order_item_status_hist"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            odhOrderItemStatusHistRepository.save(row);
+            upsertedIds.add(row.getOrderItemStatusHistId());
+        }
+        em.flush();
+        em.clear();
+
+        List<OdhOrderItemStatusHist> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
+    }
 }

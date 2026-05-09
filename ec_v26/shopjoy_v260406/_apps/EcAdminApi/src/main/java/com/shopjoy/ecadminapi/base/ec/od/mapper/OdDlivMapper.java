@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface OdDlivMapper {
 
-    OdDlivDto selectById(@Param("id") String id);
+    OdDlivDto.Item selectById(@Param("id") String id);
 
-    List<OdDlivDto> selectList(Map<String, Object> p);
+    List<OdDlivDto.Item> selectList(OdDlivDto.Request req);
 
-    List<OdDlivDto> selectPageList(Map<String, Object> p);
+    List<OdDlivDto.Item> selectPageList(OdDlivDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(OdDlivDto.Request req);
 
     int updateSelective(OdDliv entity);
 }

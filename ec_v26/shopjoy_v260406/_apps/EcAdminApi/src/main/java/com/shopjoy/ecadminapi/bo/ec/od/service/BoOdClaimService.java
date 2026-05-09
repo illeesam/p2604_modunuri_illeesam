@@ -2,13 +2,10 @@ package com.shopjoy.ecadminapi.bo.ec.od.service;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
-import com.shopjoy.ecadminapi.base.ec.od.mapper.OdClaimMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimRepository;
+import com.shopjoy.ecadminapi.base.ec.od.service.OdClaimService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,81 +13,37 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+/**
+ * BO 클레임 서비스 — base OdClaimService 위임 (thin wrapper) + 일괄 처리 메서드.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoOdClaimService {
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final OdClaimMapper odClaimMapper;
+
+    private final OdClaimService odClaimService;
     private final OdClaimRepository odClaimRepository;
+
     @PersistenceContext
     private EntityManager em;
 
-    /** getList — 조회 */
-    public List<OdClaimDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return odClaimMapper.selectList(p);
-    }
+    public OdClaimDto.Item getById(String id) { return odClaimService.getById(id); }
+    public List<OdClaimDto.Item> getList(OdClaimDto.Request req) { return odClaimService.getList(req); }
+    public OdClaimDto.PageResponse getPageData(OdClaimDto.Request req) { return odClaimService.getPageData(req); }
 
-    /** getPageData — 조회 */
-    public PageResult<OdClaimDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(odClaimMapper.selectPageList(p), odClaimMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-    }
+    @Transactional public OdClaim create(OdClaim body) { return odClaimService.create(body); }
+    @Transactional public OdClaim update(String id, OdClaim body) { return odClaimService.update(id, body); }
+    @Transactional public void delete(String id) { odClaimService.delete(id); }
+    @Transactional public List<OdClaim> saveList(List<OdClaim> rows) { return odClaimService.saveList(rows); }
 
-    /** getById — 조회 */
-    public OdClaimDto getById(String id) {
-        OdClaimDto dto = odClaimMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        return dto;
-    }
-
-    /** create — 생성 */
+    /** changeStatus — claimStatusCd 변경 (이력 보존) */
     @Transactional
-    public OdClaim create(OdClaim body) {
-        body.setClaimId("CL" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getAuthUser().authId());
-        body.setRegDate(LocalDateTime.now());
-        body.setUpdBy(SecurityUtil.getAuthUser().authId());
-        body.setUpdDate(LocalDateTime.now());
-        OdClaim saved = odClaimRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        return saved;
-    }
-
-    /** update — 수정 */
-    @Transactional
-    public OdClaimDto update(String id, OdClaim body) {
-        OdClaim entity = odClaimRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        VoUtil.voCopyExclude(body, entity, "claimId^regBy^regDate");
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        OdClaim saved = odClaimRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        em.flush();
-        return getById(id);
-    }
-
-    /** delete — 삭제 */
-    @Transactional
-    public void delete(String id) {
+    public OdClaimDto.Item changeStatus(String id, String statusCd) {
         OdClaim entity = odClaimRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        odClaimRepository.delete(entity);
-        em.flush();
-        if (odClaimRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
-    }
-
-    /** changeStatus */
-    @Transactional
-    public OdClaimDto changeStatus(String id, String statusCd) {
-        OdClaim entity = odClaimRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setClaimStatusCdBefore(entity.getClaimStatusCd());
         entity.setClaimStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -98,10 +51,10 @@ public class BoOdClaimService {
         OdClaim saved = odClaimRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return getById(id);
+        return odClaimService.getById(id);
     }
 
-    /** bulkStatus */
+    /** bulkStatus — 다건 상태 변경 */
     @Transactional
     public void bulkStatus(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -122,7 +75,7 @@ public class BoOdClaimService {
         }
     }
 
-    /** bulkType */
+    /** bulkType — 다건 유형 변경 */
     @Transactional
     public void bulkType(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -141,7 +94,7 @@ public class BoOdClaimService {
         }
     }
 
-    /** bulkApproval */
+    /** bulkApproval — 다건 결재 처리 */
     @Transactional
     public void bulkApproval(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -158,7 +111,7 @@ public class BoOdClaimService {
         }
     }
 
-    /** bulkApprovalReq */
+    /** bulkApprovalReq — 다건 결재 요청 */
     @Transactional
     public void bulkApprovalReq(Map<String, Object> body) {
         @SuppressWarnings("unchecked")
@@ -173,45 +126,5 @@ public class BoOdClaimService {
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
             });
         }
-    }
-    /** saveList — 저장 */
-    @Transactional
-    public void saveList(List<OdClaim> rows) {
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
-
-        // 1단계: DELETE 일괄 처리
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getClaimId() != null)
-            .map(OdClaim::getClaimId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            odClaimRepository.deleteAllById(deleteIds);
-            em.flush();
-            em.clear();
-        }
-
-        // 2단계: UPDATE 처리
-        for (OdClaim row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = Objects.requireNonNull(row.getClaimId(), "claimId must not be null");
-            OdClaim entity = odClaimRepository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-            VoUtil.voCopyExclude(row, entity, "claimId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            odClaimRepository.save(entity);
-        }
-        em.flush();
-
-        // 3단계: INSERT 처리
-        for (OdClaim row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
-            row.setClaimId("CL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            odClaimRepository.save(row);
-        }
-        em.flush();
-        em.clear();
     }
 }

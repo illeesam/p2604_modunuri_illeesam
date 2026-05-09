@@ -27,10 +27,8 @@ public class FoMbLikeController {
 
     /** myLikes */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<MbLikeDto>>> myLikes(
-            @RequestParam Map<String, Object> p) {
-        List<MbLikeDto> result = foMbLikeService.getMyLikes(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<MbLikeDto.Item>>> myLikes(@jakarta.validation.Valid @ModelAttribute MbLikeDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMbLikeService.getMyLikes(req)));
     }
 
     /** toggle — 전환 */

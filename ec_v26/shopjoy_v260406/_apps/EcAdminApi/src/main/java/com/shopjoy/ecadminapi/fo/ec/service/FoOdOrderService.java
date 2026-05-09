@@ -6,19 +6,14 @@ import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 /**
  * FO 주문 서비스 — 주문 생성 및 내 주문 조회
@@ -29,26 +24,30 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 @Transactional(readOnly = true)
 public class FoOdOrderService {
 
-
-    private final OdOrderMapper     odOrderMapper;
+    private final OdOrderMapper odOrderMapper;
     private final OdOrderRepository odOrderRepository;
 
     /** getMyOrders — 조회 */
-    public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return odOrderMapper.selectList(p);
+    public List<OdOrderDto.Item> getMyOrders(OdOrderDto.Request req) {
+        if (req == null) req = new OdOrderDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return odOrderMapper.selectList(req);
     }
 
     /** getMyOrderPage — 조회 */
-    public PageResult<OdOrderDto> getMyOrderPage(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().authId());
-        PageHelper.addPaging(p);
-        return PageResult.of(odOrderMapper.selectPageList(p), odOrderMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public OdOrderDto.PageResponse getMyOrderPage(OdOrderDto.Request req) {
+        if (req == null) req = new OdOrderDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        PageHelper.addPaging(req);
+        OdOrderDto.PageResponse res = new OdOrderDto.PageResponse();
+        List<OdOrderDto.Item> list = odOrderMapper.selectPageList(req);
+        long count = odOrderMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
     /** getById — 조회 */
-    public OdOrderDto getById(String orderId) {
-        OdOrderDto dto = odOrderMapper.selectById(orderId);
+    public OdOrderDto.Item getById(String orderId) {
+        OdOrderDto.Item dto = odOrderMapper.selectById(orderId);
         if (dto == null) throw new CmBizException("존재하지 않는 주문입니다: " + orderId);
         if (!dto.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
             throw new CmBizException("접근 권한이 없습니다.");
@@ -69,5 +68,4 @@ public class FoOdOrderService {
         if (saved == null) throw new CmBizException("주문 생성에 실패했습니다.");
         return saved;
     }
-
 }

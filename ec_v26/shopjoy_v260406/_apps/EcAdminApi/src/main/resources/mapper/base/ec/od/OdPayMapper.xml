@@ -41,7 +41,7 @@
     </sql>
 
     <!-- 결제 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto$Item">
         SELECT  /* base.ec.od :: OdPay :: selectById */
       p.*
             , o.member_nm, o.order_date, o.order_status_cd
@@ -67,7 +67,7 @@
     </select>
 
     <!-- 결제 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto$Item">
         SELECT  /* base.ec.od :: OdPay :: selectList */
       p.*
             , o.member_nm,    o.order_date
@@ -93,7 +93,7 @@
     </select>
 
     <!-- 결제 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto$Item">
         SELECT  /* base.ec.od :: OdPay :: selectPageList */
       p.*
             , o.member_nm,    o.order_date
@@ -149,7 +149,7 @@
          ================================================================ -->
 
     <!-- 주문번호로 결제 목록 조회 -->
-    <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto">
+    <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto$Item">
         SELECT  /* base.ec.od :: OdPay :: selectByOrderId */
       p.*
             , cd_ps.code_label AS pay_status_cd_nm

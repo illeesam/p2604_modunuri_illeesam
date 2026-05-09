@@ -41,16 +41,14 @@ public class FoMyPageController {
 
     /** getMyInfo — 조회 */
     @GetMapping("/info")
-    public ResponseEntity<ApiResponse<MbMemberDto>> getMyInfo() {
-        MbMemberDto result = foMyPageService.getMyInfo();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<MbMemberDto.Item>> getMyInfo() {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyInfo()));
     }
 
     /** updateMyInfo — 수정 */
     @PutMapping("/info")
-    public ResponseEntity<ApiResponse<MbMemberDto>> updateMyInfo(@RequestBody MbMember body) {
-        MbMemberDto result = foMyPageService.updateMyInfo(body);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<MbMemberDto.Item>> updateMyInfo(@RequestBody MbMember body) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.updateMyInfo(body)));
     }
 
     /** changePassword */
@@ -62,9 +60,8 @@ public class FoMyPageController {
 
     /** getMyAddrs — 조회 */
     @GetMapping("/addr")
-    public ResponseEntity<ApiResponse<List<MbMemberAddrDto>>> getMyAddrs() {
-        List<MbMemberAddrDto> result = foMyPageService.getMyAddrs();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<MbMemberAddrDto.Item>>> getMyAddrs() {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyAddrs()));
     }
 
     /** saveAddr — 저장 */

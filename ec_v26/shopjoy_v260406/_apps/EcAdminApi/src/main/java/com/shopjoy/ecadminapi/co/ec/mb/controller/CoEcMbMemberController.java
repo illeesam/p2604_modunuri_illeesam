@@ -3,12 +3,10 @@ package com.shopjoy.ecadminapi.co.ec.mb.controller;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemberService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * 회원 공용 API — /api/co/ec/mb/member
@@ -22,10 +20,8 @@ public class CoEcMbMemberController {
 
     private final BoMbMemberService boMbMemberService;
 
-    /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<MbMemberDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.getPageData(p)));
+    public ResponseEntity<ApiResponse<MbMemberDto.PageResponse>> page(@Valid @ModelAttribute MbMemberDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.getPageData(req)));
     }
 }

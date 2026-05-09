@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefund;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdRefundMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdRefundRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,86 +27,140 @@ public class OdRefundService {
     private final OdRefundMapper odRefundMapper;
     private final OdRefundRepository odRefundRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public OdRefundDto getById(String id) {
-        OdRefundDto result = odRefundMapper.selectById(id);
-        return result;
+    public OdRefundDto.Item getById(String id) {
+        OdRefundDto.Item dto = odRefundMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<OdRefundDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdRefundDto> result = odRefundMapper.selectList(p);
-        return result;
+    public OdRefund findById(String id) {
+        return odRefundRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<OdRefundDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(odRefundMapper.selectPageList(p), odRefundMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return odRefundRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<OdRefundDto.Item> getList(OdRefundDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return odRefundMapper.selectList(req);
+    }
+
+    public OdRefundDto.PageResponse getPageData(OdRefundDto.Request req) {
+        PageHelper.addPaging(req);
+        OdRefundDto.PageResponse res = new OdRefundDto.PageResponse();
+        List<OdRefundDto.Item> list = odRefundMapper.selectPageList(req);
+        long count = odRefundMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(OdRefund entity) {
-        int result = odRefundMapper.updateSelective(entity);
-        return result;
+    public OdRefund create(OdRefund body) {
+        body.setRefundId(CmUtil.generateId("od_refund"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        OdRefund saved = odRefundRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getRefundId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public OdRefund create(OdRefund entity) {
-        entity.setRefundId(CmUtil.generateId("od_refund"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        OdRefund result = odRefundRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public OdRefund save(OdRefund entity) {
-        if (!odRefundRepository.existsById(entity.getRefundId()))
+        if (!existsById(entity.getRefundId()))
             throw new CmBizException("존재하지 않는 OdRefund입니다: " + entity.getRefundId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        OdRefund result = odRefundRepository.save(entity);
-        return result;
+        OdRefund saved = odRefundRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getRefundId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public OdRefund update(String id, OdRefund body) {
+        OdRefund entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "refundId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdRefund saved = odRefundRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public OdRefund updatePartial(OdRefund entity) {
+        if (entity.getRefundId() == null) throw new CmBizException("refundId 가 필요합니다.");
+        if (!existsById(entity.getRefundId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRefundId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = odRefundMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getRefundId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!odRefundRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 OdRefund입니다: " + id);
-        odRefundRepository.deleteById(id);
+        OdRefund entity = findById(id);
+        odRefundRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
-    /** saveList — 저장 */
+
     @Transactional
-    public void saveList(List<OdRefund> rows) {
+    public List<OdRefund> saveList(List<OdRefund> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (OdRefund row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setRefundId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_refund"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                odRefundRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getRefundId(), "refundId must not be null");
-                OdRefund entity = odRefundRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "refundId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                odRefundRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getRefundId(), "refundId must not be null");
-                if (odRefundRepository.existsById(id)) odRefundRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getRefundId() != null)
+            .map(OdRefund::getRefundId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            odRefundRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<OdRefund> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getRefundId() != null)
+            .toList();
+        for (OdRefund row : updateRows) {
+            OdRefund entity = findById(row.getRefundId());
+            VoUtil.voCopyExclude(row, entity, "refundId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            odRefundRepository.save(entity);
+            upsertedIds.add(entity.getRefundId());
+        }
+        em.flush();
+
+        List<OdRefund> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (OdRefund row : insertRows) {
+            row.setRefundId(CmUtil.generateId("od_refund"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            odRefundRepository.save(row);
+            upsertedIds.add(row.getRefundId());
+        }
+        em.flush();
+        em.clear();
+
+        List<OdRefund> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface OdClaimMapper {
 
-    OdClaimDto selectById(@Param("id") String id);
+    OdClaimDto.Item selectById(@Param("id") String id);
 
-    List<OdClaimDto> selectList(Map<String, Object> p);
+    List<OdClaimDto.Item> selectList(OdClaimDto.Request req);
 
-    List<OdClaimDto> selectPageList(Map<String, Object> p);
+    List<OdClaimDto.Item> selectPageList(OdClaimDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(OdClaimDto.Request req);
 
     int updateSelective(OdClaim entity);
 }

@@ -1,15 +1,15 @@
 package com.shopjoy.ecadminapi.base.ec.od.controller;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdhClaimStatusHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/ec/od/claim-status-hist")
@@ -18,27 +18,46 @@ public class OdhClaimStatusHistController {
 
     private final OdhClaimStatusHistService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<OdhClaimStatusHistDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<OdhClaimStatusHistDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<OdhClaimStatusHistDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<OdhClaimStatusHistDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhClaimStatusHistDto>> getById(@PathVariable("id") String id) {
-        OdhClaimStatusHistDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<OdhClaimStatusHistDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<OdhClaimStatusHistDto.Item>>> list(@Valid @ModelAttribute OdhClaimStatusHistDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<OdhClaimStatusHistDto.PageResponse>> page(@Valid @ModelAttribute OdhClaimStatusHistDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<OdhClaimStatusHist>> create(@RequestBody OdhClaimStatusHist entity) {
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<OdhClaimStatusHist>> save(@PathVariable("id") String id, @RequestBody OdhClaimStatusHist entity) {
+        entity.setClaimStatusHistId(id);
+        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<OdhClaimStatusHist>> updatePartial(@PathVariable("id") String id, @RequestBody OdhClaimStatusHist entity) {
+        entity.setClaimStatusHistId(id);
+        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
+        service.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<List<OdhClaimStatusHist>>> saveList(@RequestBody List<OdhClaimStatusHist> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

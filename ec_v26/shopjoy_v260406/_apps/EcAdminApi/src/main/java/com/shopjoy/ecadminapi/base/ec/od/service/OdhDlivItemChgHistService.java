@@ -4,14 +4,20 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivItemChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhDlivItemChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdhDlivItemChgHistMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdhDlivItemChgHistRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,31 +27,140 @@ public class OdhDlivItemChgHistService {
     private final OdhDlivItemChgHistMapper odhDlivItemChgHistMapper;
     private final OdhDlivItemChgHistRepository odhDlivItemChgHistRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public OdhDlivItemChgHistDto getById(String id) {
-        OdhDlivItemChgHistDto result = odhDlivItemChgHistMapper.selectById(id);
-        return result;
+    public OdhDlivItemChgHistDto.Item getById(String id) {
+        OdhDlivItemChgHistDto.Item dto = odhDlivItemChgHistMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<OdhDlivItemChgHistDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<OdhDlivItemChgHistDto> result = odhDlivItemChgHistMapper.selectList(p);
-        return result;
+    public OdhDlivItemChgHist findById(String id) {
+        return odhDlivItemChgHistRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<OdhDlivItemChgHistDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(odhDlivItemChgHistMapper.selectPageList(p), odhDlivItemChgHistMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return odhDlivItemChgHistRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<OdhDlivItemChgHistDto.Item> getList(OdhDlivItemChgHistDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return odhDlivItemChgHistMapper.selectList(req);
+    }
+
+    public OdhDlivItemChgHistDto.PageResponse getPageData(OdhDlivItemChgHistDto.Request req) {
+        PageHelper.addPaging(req);
+        OdhDlivItemChgHistDto.PageResponse res = new OdhDlivItemChgHistDto.PageResponse();
+        List<OdhDlivItemChgHistDto.Item> list = odhDlivItemChgHistMapper.selectPageList(req);
+        long count = odhDlivItemChgHistMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(OdhDlivItemChgHist entity) {
-        int result = odhDlivItemChgHistMapper.updateSelective(entity);
-        return result;
+    public OdhDlivItemChgHist create(OdhDlivItemChgHist body) {
+        body.setDlivItemChgHistId(CmUtil.generateId("odh_dliv_item_chg_hist"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        OdhDlivItemChgHist saved = odhDlivItemChgHistRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getDlivItemChgHistId());
     }
 
+    @Transactional
+    public OdhDlivItemChgHist save(OdhDlivItemChgHist entity) {
+        if (!existsById(entity.getDlivItemChgHistId()))
+            throw new CmBizException("존재하지 않는 OdhDlivItemChgHist입니다: " + entity.getDlivItemChgHistId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdhDlivItemChgHist saved = odhDlivItemChgHistRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getDlivItemChgHistId());
+    }
+
+    @Transactional
+    public OdhDlivItemChgHist update(String id, OdhDlivItemChgHist body) {
+        OdhDlivItemChgHist entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "dlivItemChgHistId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        OdhDlivItemChgHist saved = odhDlivItemChgHistRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public OdhDlivItemChgHist updatePartial(OdhDlivItemChgHist entity) {
+        if (entity.getDlivItemChgHistId() == null) throw new CmBizException("dlivItemChgHistId 가 필요합니다.");
+        if (!existsById(entity.getDlivItemChgHistId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDlivItemChgHistId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = odhDlivItemChgHistMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getDlivItemChgHistId());
+    }
+
+    @Transactional
+    public void delete(String id) {
+        OdhDlivItemChgHist entity = findById(id);
+        odhDlivItemChgHistRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+    }
+
+    @Transactional
+    public List<OdhDlivItemChgHist> saveList(List<OdhDlivItemChgHist> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getDlivItemChgHistId() != null)
+            .map(OdhDlivItemChgHist::getDlivItemChgHistId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            odhDlivItemChgHistRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<OdhDlivItemChgHist> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getDlivItemChgHistId() != null)
+            .toList();
+        for (OdhDlivItemChgHist row : updateRows) {
+            OdhDlivItemChgHist entity = findById(row.getDlivItemChgHistId());
+            VoUtil.voCopyExclude(row, entity, "dlivItemChgHistId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            odhDlivItemChgHistRepository.save(entity);
+            upsertedIds.add(entity.getDlivItemChgHistId());
+        }
+        em.flush();
+
+        List<OdhDlivItemChgHist> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (OdhDlivItemChgHist row : insertRows) {
+            row.setDlivItemChgHistId(CmUtil.generateId("odh_dliv_item_chg_hist"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            odhDlivItemChgHistRepository.save(row);
+            upsertedIds.add(row.getDlivItemChgHistId());
+        }
+        em.flush();
+        em.clear();
+
+        List<OdhDlivItemChgHist> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
+    }
 }

@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface OdhPayChgHistMapper {
 
-    OdhPayChgHistDto selectById(@Param("id") String id);
+    OdhPayChgHistDto.Item selectById(@Param("id") String id);
 
-    List<OdhPayChgHistDto> selectList(Map<String, Object> p);
+    List<OdhPayChgHistDto.Item> selectList(OdhPayChgHistDto.Request req);
 
-    List<OdhPayChgHistDto> selectPageList(Map<String, Object> p);
+    List<OdhPayChgHistDto.Item> selectPageList(OdhPayChgHistDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(OdhPayChgHistDto.Request req);
 
     int updateSelective(OdhPayChgHist entity);
 }

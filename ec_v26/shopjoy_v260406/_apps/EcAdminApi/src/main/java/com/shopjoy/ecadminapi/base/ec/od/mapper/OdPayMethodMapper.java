@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface OdPayMethodMapper {
 
-    OdPayMethodDto selectById(@Param("id") String id);
+    OdPayMethodDto.Item selectById(@Param("id") String id);
 
-    List<OdPayMethodDto> selectList(Map<String, Object> p);
+    List<OdPayMethodDto.Item> selectList(OdPayMethodDto.Request req);
 
-    List<OdPayMethodDto> selectPageList(Map<String, Object> p);
+    List<OdPayMethodDto.Item> selectPageList(OdPayMethodDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(OdPayMethodDto.Request req);
 
     int updateSelective(OdPayMethod entity);
 }
