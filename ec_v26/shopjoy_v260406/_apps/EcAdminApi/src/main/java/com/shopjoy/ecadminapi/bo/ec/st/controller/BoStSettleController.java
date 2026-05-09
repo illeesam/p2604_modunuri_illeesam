@@ -78,9 +78,8 @@ public class BoStSettleController {
 
     /** changeStatus */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<StSettleDto>> changeStatus(
+    public ResponseEntity<ApiResponse<StSettleDto.Item>> changeStatus(
             @PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        StSettleDto result = boStSettleService.changeStatus(id, body.get("statusCd"));
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(boStSettleService.changeStatus(id, body.get("statusCd"))));
     }
 }

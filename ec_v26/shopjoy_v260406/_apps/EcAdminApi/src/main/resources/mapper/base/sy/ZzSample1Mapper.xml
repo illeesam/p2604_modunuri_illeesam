@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -15,14 +15,14 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto$Item">
         SELECT  /* base.sy :: ZzSample1 :: selectById */
               s.*
         FROM shopjoy_2604.zz_sample1 s
         WHERE s.sample1_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto$Item">
         SELECT  /* base.sy :: ZzSample1 :: selectList */
               s.*
         FROM shopjoy_2604.zz_sample1 s
@@ -39,7 +39,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto$Item">
         SELECT  /* base.sy :: ZzSample1 :: selectPageList */
               s.*
         FROM shopjoy_2604.zz_sample1 s

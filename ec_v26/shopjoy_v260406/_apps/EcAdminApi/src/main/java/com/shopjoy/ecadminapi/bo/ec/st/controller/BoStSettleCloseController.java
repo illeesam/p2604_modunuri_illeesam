@@ -65,7 +65,7 @@ public class BoStSettleCloseController {
 
     /** reopen */
     @PutMapping("/{id}/reopen")
-    public ResponseEntity<ApiResponse<StSettleCloseDto>> reopen(@PathVariable("id") String id) {
+    public ResponseEntity<ApiResponse<StSettleCloseDto.Item>> reopen(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleCloseService.reopen(id)));
     }
 }

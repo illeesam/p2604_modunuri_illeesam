@@ -67,7 +67,7 @@ public class BoStSettleAdjController {
 
     /** approve — 승인 */
     @PutMapping("/{id}/approve")
-    public ResponseEntity<ApiResponse<StSettleAdjDto>> approve(
+    public ResponseEntity<ApiResponse<StSettleAdjDto.Item>> approve(
             @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleAdjService.approve(id, body)));
     }

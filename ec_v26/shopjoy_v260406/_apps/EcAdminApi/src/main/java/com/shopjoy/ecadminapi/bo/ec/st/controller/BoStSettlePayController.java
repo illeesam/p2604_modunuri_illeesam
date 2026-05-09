@@ -65,7 +65,7 @@ public class BoStSettlePayController {
 
     /** pay — 결제 */
     @PutMapping("/{id}/pay")
-    public ResponseEntity<ApiResponse<StSettlePayDto>> pay(@PathVariable("id") String id) {
+    public ResponseEntity<ApiResponse<StSettlePayDto.Item>> pay(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.pay(id)));
     }
 }

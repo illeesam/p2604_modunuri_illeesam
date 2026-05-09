@@ -7,7 +7,6 @@ import com.shopjoy.ecadminapi.base.ec.st.repository.StErpVoucherRepository;
 import com.shopjoy.ecadminapi.base.ec.st.service.StErpVoucherService;
 import com.shopjoy.ecadminapi.base.ec.st.service.StReconService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * BO ERP 전표 서비스 — base StErpVoucherService 위임 (thin wrapper) + gen + resend + getReconPageData.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,20 +29,9 @@ public class BoStErpService {
     private final StErpVoucherRepository stErpVoucherRepository;
     private final StReconService stReconService;
 
-    /** getList — 조회 */
-    public List<StErpVoucherDto> getList(Map<String, Object> p) {
-        return stErpVoucherService.getList(p);
-    }
-
-    /** getPageData — 조회 */
-    public PageResult<StErpVoucherDto> getPageData(Map<String, Object> p) {
-        return stErpVoucherService.getPageData(p);
-    }
-
-    /** getReconPageData — 조회 */
-    public PageResult<StReconDto> getReconPageData(Map<String, Object> p) {
-        return stReconService.getPageData(p);
-    }
+    public List<StErpVoucherDto.Item> getList(StErpVoucherDto.Request req) { return stErpVoucherService.getList(req); }
+    public StErpVoucherDto.PageResponse getPageData(StErpVoucherDto.Request req) { return stErpVoucherService.getPageData(req); }
+    public StReconDto.PageResponse getReconPageData(StReconDto.Request req) { return stReconService.getPageData(req); }
 
     /** ERP 전표 생성 — PENDING 상태로 신규 발행 */
     @Transactional

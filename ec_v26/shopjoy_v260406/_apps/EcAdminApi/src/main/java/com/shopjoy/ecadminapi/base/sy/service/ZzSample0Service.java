@@ -5,10 +5,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample0;
 import com.shopjoy.ecadminapi.base.sy.mapper.ZzSample0Mapper;
 import com.shopjoy.ecadminapi.base.sy.repository.ZzSample0Repository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ZzSample0Service {
-
 
     private final ZzSample0Mapper zzSample0Mapper;
     private final ZzSample0Repository zzSample0Repository;
@@ -32,54 +30,79 @@ public class ZzSample0Service {
     private EntityManager em;
 
     /** getById — 조회 */
-    public ZzSample0Dto getById(String id) {
-        // zz_sample0 :: select one :: id [orm:mybatis]
-        return zzSample0Mapper.selectById(id);
+    public ZzSample0Dto.Item getById(String id) {
+        ZzSample0Dto.Item dto = zzSample0Mapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
+    }
+
+    /** findById — 엔티티 조회 */
+    public ZzSample0 findById(String id) {
+        return zzSample0Repository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+    }
+
+    /** existsById — 존재 확인 */
+    public boolean existsById(String id) {
+        return zzSample0Repository.existsById(id);
     }
 
     /** getList — 조회 */
-    public List<ZzSample0Dto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // zz_sample0 :: select list :: p [orm:mybatis]
-        return zzSample0Mapper.selectList(p);
+    public List<ZzSample0Dto.Item> getList(ZzSample0Dto.Request req) {
+        if (req.getPageSize() != null) PageHelper.addPaging(req);
+        return zzSample0Mapper.selectList(req);
     }
 
     /** getPageData — 조회 */
-    public PageResult<ZzSample0Dto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // zz_sample0 :: select page :: p [orm:mybatis]
-        return PageResult.of(zzSample0Mapper.selectPageList(p), zzSample0Mapper.selectPageCount(p),
-            PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-    }
-
-    /** update — 수정 */
-    @Transactional
-    public int update(ZzSample0 entity) {
-        // zz_sample0 :: update :: entity [orm:mybatis]
-        return zzSample0Mapper.updateSelective(entity);
+    public ZzSample0Dto.PageResponse getPageData(ZzSample0Dto.Request req) {
+        PageHelper.addPaging(req);
+        ZzSample0Dto.PageResponse res = new ZzSample0Dto.PageResponse();
+        List<ZzSample0Dto.Item> list = zzSample0Mapper.selectPageList(req);
+        long count = zzSample0Mapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
     /** create — 생성 */
     @Transactional
-    public ZzSample0 create(ZzSample0 entity) {
-        entity.setSample0Id(CmUtil.generateId("zz_sample0"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
+    public ZzSample0 create(ZzSample0 body) {
+        body.setSample0Id(CmUtil.generateId("zz_sample0"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        ZzSample0 saved = zzSample0Repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
+    }
+
+    /** save — 저장 (단건) */
+    @Transactional
+    public ZzSample0 save(ZzSample0 entity) {
+        if (entity.getSample0Id() == null || !zzSample0Repository.existsById(entity.getSample0Id()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSample0Id());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // zz_sample0 :: insert or update :: [orm:jpa]
         return zzSample0Repository.save(entity);
     }
 
-    /** save — 저장 */
+    /** update — 수정 */
     @Transactional
-    public ZzSample0 save(ZzSample0 entity) {
-        if (!zzSample0Repository.existsById(entity.getSample0Id()))
-            throw new CmBizException("존재하지 않는 ZzSample0입니다: " + entity.getSample0Id());
+    public ZzSample0 update(String id, ZzSample0 body) {
+        ZzSample0 entity = zzSample0Repository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "sample0Id^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // zz_sample0 :: insert or update :: [orm:jpa]
-        return zzSample0Repository.save(entity);
+        ZzSample0 saved = zzSample0Repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return saved;
+    }
+
+    /** updatePartial — 부분 수정 (selective) */
+    @Transactional
+    public int updatePartial(ZzSample0 entity) {
+        return zzSample0Mapper.updateSelective(entity);
     }
 
     /** delete — 삭제 */
@@ -93,4 +116,9 @@ public class ZzSample0Service {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    /** saveList — 일괄 저장 */
+    @Transactional
+    public List<ZzSample0> saveList(List<ZzSample0> rows) {
+        return zzSample0Repository.saveAll(rows);
+    }
 }

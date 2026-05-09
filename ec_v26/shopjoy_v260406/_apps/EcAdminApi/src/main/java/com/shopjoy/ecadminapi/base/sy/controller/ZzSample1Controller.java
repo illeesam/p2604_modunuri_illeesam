@@ -4,13 +4,12 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample1;
 import com.shopjoy.ecadminapi.base.sy.service.ZzSample1Service;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/sy/zz-sample1")
@@ -21,51 +20,41 @@ public class ZzSample1Controller {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ZzSample1Dto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<ZzSample1Dto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<ZzSample1Dto.Item>>> list(@Valid @ModelAttribute ZzSample1Dto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<ZzSample1Dto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<ZzSample1Dto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<ZzSample1Dto.PageResponse>> page(@Valid @ModelAttribute ZzSample1Dto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ZzSample1Dto>> getById(@PathVariable("id") String id) {
-        ZzSample1Dto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<ZzSample1Dto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
     /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<ZzSample1>> create(@RequestBody ZzSample1 entity) {
-        ZzSample1 result = service.create(entity);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
-    }
-
-    /** save — 저장 */
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<ZzSample1>> save(
-            @PathVariable("id") String id, @RequestBody ZzSample1 entity) {
-        entity.setSample1Id(id);
-        ZzSample1 result = service.save(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
     /** update — 수정 */
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ZzSample1>> update(
+            @PathVariable("id") String id, @RequestBody ZzSample1 entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.update(id, entity)));
+    }
+
+    /** updatePartial — 부분 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> update(
+    public ResponseEntity<ApiResponse<Integer>> updatePartial(
             @PathVariable("id") String id, @RequestBody ZzSample1 entity) {
         entity.setSample1Id(id);
-        int result = service.update(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
     }
 
     /** delete — 삭제 */
@@ -73,5 +62,11 @@ public class ZzSample1Controller {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+
+    /** saveList — 일괄 저장 */
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<List<ZzSample1>>> saveList(@RequestBody List<ZzSample1> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

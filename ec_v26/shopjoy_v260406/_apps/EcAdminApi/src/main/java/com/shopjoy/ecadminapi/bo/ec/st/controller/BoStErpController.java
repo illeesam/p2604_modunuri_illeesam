@@ -28,26 +28,26 @@ public class BoStErpController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<StErpVoucherDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getList(p)));
+    public ResponseEntity<ApiResponse<List<StErpVoucherDto.Item>>> list(@Valid @ModelAttribute StErpVoucherDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<StErpVoucherDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getPageData(p)));
+    public ResponseEntity<ApiResponse<StErpVoucherDto.PageResponse>> page(@Valid @ModelAttribute StErpVoucherDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getPageData(req)));
     }
 
     /** genPage */
     @GetMapping("/gen/page")
-    public ResponseEntity<ApiResponse<PageResult<StErpVoucherDto>>> genPage(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getPageData(p)));
+    public ResponseEntity<ApiResponse<StErpVoucherDto.PageResponse>> genPage(@Valid @ModelAttribute StErpVoucherDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getPageData(req)));
     }
 
     /** reconPage */
     @GetMapping("/recon/page")
-    public ResponseEntity<ApiResponse<PageResult<StReconDto>>> reconPage(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getReconPageData(p)));
+    public ResponseEntity<ApiResponse<StReconDto.PageResponse>> reconPage(@Valid @ModelAttribute StReconDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boStErpService.getReconPageData(req)));
     }
 
     /** gen */

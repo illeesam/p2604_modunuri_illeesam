@@ -7,16 +7,13 @@ import com.shopjoy.ecadminapi.base.ec.mb.repository.MbLikeRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 /**
  * FO 찜(Like) 서비스 — 현재 회원의 찜 목록 관리
@@ -28,7 +25,6 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class FoMbLikeService {
-
 
     private final MbLikeMapper     mbLikeMapper;
     private final MbLikeRepository mbLikeRepository;
@@ -43,13 +39,13 @@ public class FoMbLikeService {
 
     /** 찜 토글: 없으면 추가, 있으면 삭제 → true=추가됨 false=취소됨 */
     @Transactional
-    public boolean toggle(String targetTypeCd, String targetId, Map<String, Object> p) {
+    public boolean toggle(String targetTypeCd, String targetId, String siteId) {
         String authId = SecurityUtil.getAuthUser().authId();
         Optional<MbLike> existing = mbLikeRepository.findAll().stream()
             .filter(l -> authId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())
                       && targetTypeCd.equals(l.getTargetTypeCd())
-                      && (p.get("siteId") == null || p.get("siteId").equals(l.getSiteId())))
+                      && (siteId == null || siteId.equals(l.getSiteId())))
             .findFirst();
 
         if (existing.isPresent()) {
@@ -58,7 +54,7 @@ public class FoMbLikeService {
         } else {
             MbLike like = new MbLike();
             like.setLikeId(CmUtil.generateId("mb_like"));
-            like.setSiteId((String) p.get("siteId"));
+            like.setSiteId(siteId);
             like.setMemberId(authId);
             like.setTargetTypeCd(targetTypeCd);
             like.setTargetId(targetId);
@@ -74,7 +70,7 @@ public class FoMbLikeService {
 
     /** unlike */
     @Transactional
-    public void unlike(String targetTypeCd, String targetId, Map<String, Object> p) {
+    public void unlike(String targetTypeCd, String targetId) {
         String authId = SecurityUtil.getAuthUser().authId();
         mbLikeRepository.findAll().stream()
             .filter(l -> authId.equals(l.getMemberId())
@@ -83,5 +79,4 @@ public class FoMbLikeService {
             .findFirst()
             .ifPresent(mbLikeRepository::delete);
     }
-
 }
