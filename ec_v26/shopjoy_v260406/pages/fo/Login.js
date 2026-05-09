@@ -79,7 +79,7 @@ window.Login = {
       }
     };
 
-    const onOpenMemberPick = () => { memberPick.show = true; memberPick.searchValue = ''; memberPick.pageNo = 1; _loadMemberPick(); };
+    const onOpenMemberPick = () => { memberPick.show = true; memberPick.searchTypes = ''; memberPick.searchValue = ''; memberPick.pageNo = 1; _loadMemberPick(); };
     const onMemberPickSearch = () => { memberPick.pageNo = 1; _loadMemberPick(); };
     const onMemberPickPage = (p) => { memberPick.pageNo = p; _loadMemberPick(); };
     const onPickMember = async (m) => {
@@ -370,7 +370,17 @@ window.Login = {
           <div style="display:flex;gap:6px;margin-bottom:10px;">
             <div style="position:relative;flex:1;">
               <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
-              <input v-model="memberPick.searchValue" type="text" placeholder="이름 / 로그인ID / 연락처 검색..."
+              <multi-check-select
+                v-model="memberPick.searchTypes"
+                :options="[
+                  { value: 'def_nm',      label: '이름' },
+                  { value: 'def_loginId', label: '로그인ID' },
+                  { value: 'def_phone',   label: '연락처' },
+                ]"
+                placeholder="검색대상 전체"
+                all-label="전체 선택"
+                min-width="140px" />
+              <input v-model="memberPick.searchValue" type="text" placeholder="검색어 입력..."
                 @keyup.enter="onMemberPickSearch"
                 style="width:100%;padding:7px 10px 7px 32px;border:1.5px solid #f0c8d8;border-radius:8px;font-size:12px;outline:none;box-sizing:border-box;">
             </div>

@@ -37,8 +37,8 @@ window.XsSample01 = {
     };
 
     /* -- 검색 -- */
-    const searchParam = reactive({ searchValue: '', grade: '', status: '' });
-    const searchParamOrg = reactive({ searchValue: '', grade: '', status: '' });
+    const searchParam = reactive({ searchTypes: '', searchValue: '', grade: '', status: '' });
+    const searchParamOrg = reactive({ searchTypes: '', searchValue: '', grade: '', status: '' });
 
     /* -- CRUD Grid -- */
     const allData   = reactive([]);
@@ -88,7 +88,14 @@ window.XsSample01 = {
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
-        if (searchVal && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
+        if (searchVal) {
+          const types = searchParam.searchTypes || 'def_nm,def_email,def_phone';
+          const hits = [];
+          if (types.includes('def_nm'))    hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal));
+          if (types.includes('def_email')) hits.push(String(d.email    || '').toLowerCase().includes(searchVal));
+          if (types.includes('def_phone')) hits.push(String(d.phone    || '').toLowerCase().includes(searchVal));
+          if (!hits.some(Boolean)) return false;
+        }
         if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
         if (searchParam.status && d.status !== searchParam.status) return false;
         return true;
@@ -161,7 +168,14 @@ window.XsSample01 = {
         gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
           const searchVal = searchParam.searchValue.toLowerCase();
-          if (searchVal && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
+          if (searchVal) {
+            const types = searchParam.searchTypes || 'def_nm,def_email,def_phone';
+            const hits = [];
+            if (types.includes('def_nm'))    hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal));
+            if (types.includes('def_email')) hits.push(String(d.email    || '').toLowerCase().includes(searchVal));
+            if (types.includes('def_phone')) hits.push(String(d.phone    || '').toLowerCase().includes(searchVal));
+            if (!hits.some(Boolean)) return false;
+          }
           if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
           if (searchParam.status && d.status !== searchParam.status) return false;
           return true;
@@ -208,7 +222,17 @@ window.XsSample01 = {
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchParam.searchValue" placeholder="이름 / 이메일 / 전화번호 검색" @keyup.enter="onSearch"
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm',    label: '이름' },
+          { value: 'def_email', label: '이메일' },
+          { value: 'def_phone', label: '전화번호' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch"
         style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:220px;outline:none;" />
       <select v-model="searchParam.grade" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">등급 전체</option>

@@ -581,13 +581,18 @@ window.SiteSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 10;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ searchValue: '' });
+    const searchParam = reactive({ searchTypes: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApiSvc.sySite.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined }, '사이트관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchTypes: searchParam.searchTypes || undefined };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_no,def_code,def_nm,def_domain';
+        }
+        const res = await boApiSvc.sySite.getPage(params, '사이트관리', '목록조회');
         const data = res.data?.data;
         list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -609,7 +614,18 @@ window.SiteSelectModal = {
       <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
         title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
     </span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="사이트번호 / 사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
+    <multi-check-select
+      v-model="searchParam.searchTypes"
+      :options="[
+        { value: 'def_no',     label: '사이트번호' },
+        { value: 'def_code',   label: '사이트코드' },
+        { value: 'def_nm',     label: '사이트명' },
+        { value: 'def_domain', label: '도메인' },
+      ]"
+      placeholder="검색대상 전체"
+      all-label="전체 선택"
+      min-width="100%" />
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
@@ -643,13 +659,18 @@ window.VendorSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ searchValue: '' });
+    const searchParam = reactive({ searchTypes: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApiSvc.syVendor.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined }, '판매자관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchTypes: searchParam.searchTypes || undefined };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_bizno';
+        }
+        const res = await boApiSvc.syVendor.getPage(params, '판매자관리', '목록조회');
         const data = res.data?.data;
         list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -668,7 +689,16 @@ window.VendorSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
+    <multi-check-select
+      v-model="searchParam.searchTypes"
+      :options="[
+        { value: 'def_nm',    label: '업체명' },
+        { value: 'def_bizno', label: '사업자번호' },
+      ]"
+      placeholder="검색대상 전체"
+      all-label="전체 선택"
+      min-width="100%" />
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
@@ -953,13 +983,18 @@ window.MemberSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ searchValue: '' });
+    const searchParam = reactive({ searchTypes: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApiSvc.mbMember.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined }, '회원관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchTypes: searchParam.searchTypes || undefined };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_email,def_id';
+        }
+        const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
         list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -978,7 +1013,17 @@ window.MemberSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
+    <multi-check-select
+      v-model="searchParam.searchTypes"
+      :options="[
+        { value: 'def_nm',    label: '이름' },
+        { value: 'def_email', label: '이메일' },
+        { value: 'def_id',    label: 'ID' },
+      ]"
+      placeholder="검색대상 전체"
+      all-label="전체 선택"
+      min-width="100%" />
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
@@ -1011,13 +1056,18 @@ window.OrderSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ searchValue: '' });
+    const searchParam = reactive({ searchTypes: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApiSvc.odOrder.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined }, '주문관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchTypes: searchParam.searchTypes || undefined };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_orderId,def_memberNm,def_prodNm';
+        }
+        const res = await boApiSvc.odOrder.getPage(params, '주문관리', '목록조회');
         const data = res.data?.data;
         list.splice(0, list.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -1036,7 +1086,17 @@ window.OrderSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
+    <multi-check-select
+      v-model="searchParam.searchTypes"
+      :options="[
+        { value: 'def_orderId',  label: '주문ID' },
+        { value: 'def_memberNm', label: '회원명' },
+        { value: 'def_prodNm',   label: '상품명' },
+      ]"
+      placeholder="검색대상 전체"
+      all-label="전체 선택"
+      min-width="100%" />
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>

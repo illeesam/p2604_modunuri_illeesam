@@ -27,8 +27,8 @@ window.XsSample08 = {
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
     const showToast = (msg, type = 'success') => { toast.msg = msg; toast.type = type; toast.show = true; clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500); };
-    const searchParam = reactive({ searchValue: '', useYn: '' });
-    const searchParamOrg = reactive({ searchValue: '', useYn: '' });
+    const searchParam = reactive({ searchTypes: '', searchValue: '', useYn: '' });
+    const searchParamOrg = reactive({ searchTypes: '', searchValue: '', useYn: '' });
     const allData    = reactive([]);
     const gridRows   = reactive([]);
     let   _tempId    = -1;
@@ -49,7 +49,13 @@ window.XsSample08 = {
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
-        if (searchVal && !['categoryNm', 'parentNm'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
+        if (searchVal) {
+          const types = searchParam.searchTypes || 'def_nm,def_parentNm';
+          const hits = [];
+          if (types.includes('def_nm'))       hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal));
+          if (types.includes('def_parentNm')) hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal));
+          if (!hits.some(Boolean)) return false;
+        }
         if (searchParam.useYn && d.useYn !== searchParam.useYn) return false;
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
@@ -91,7 +97,13 @@ window.XsSample08 = {
         gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
           const searchVal = searchParam.searchValue.toLowerCase();
-          if (searchVal && !['categoryNm', 'parentNm'].some(f => String(d[f] || '').toLowerCase().includes(searchVal))) return false;
+          if (searchVal) {
+          const types = searchParam.searchTypes || 'def_nm,def_parentNm';
+          const hits = [];
+          if (types.includes('def_nm'))       hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal));
+          if (types.includes('def_parentNm')) hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal));
+          if (!hits.some(Boolean)) return false;
+        }
           if (searchParam.useYn && d.useYn !== searchParam.useYn) return false;
           return true;
         }).forEach(d => gridRows.push(makeRow(d)));
@@ -125,7 +137,16 @@ window.XsSample08 = {
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">08. 카테고리 관리 <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span></div>
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchParam.searchValue" placeholder="카테고리명 / 상위명 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:200px;outline:none;" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm',       label: '카테고리명' },
+          { value: 'def_parentNm', label: '상위명' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="140px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:200px;outline:none;" />
       <select v-model="searchParam.useyn" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">사용여부 전체</option><option v-for="o in codes.use_yn_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
