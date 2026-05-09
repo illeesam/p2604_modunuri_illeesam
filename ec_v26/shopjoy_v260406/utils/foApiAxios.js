@@ -230,9 +230,10 @@
       var errMsg = (res && res.data && res.data.message) || err.message || '오류가 발생했습니다.';
       var errorDetails = '';
       try {
-        // 상세 오류 정보 수집
+        // 상세 오류 정보 수집 — details 영역 맨 위에 message 우선 표시
         if (res && res.data) {
           var details = [];
+          if (res.data.message) details.push('━━ 메시지 ━━\n' + res.data.message);
           if (res.data.descErrStack) details.push(res.data.descErrStack);
           if (res.data.stackTrace) details.push('Stack Trace:\n' + res.data.stackTrace);
           if (res.data.details) details.push('Details:\n' + JSON.stringify(res.data.details, null, 2));

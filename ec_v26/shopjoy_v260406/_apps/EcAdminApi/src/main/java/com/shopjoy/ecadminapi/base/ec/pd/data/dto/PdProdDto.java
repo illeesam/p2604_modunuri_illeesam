@@ -16,6 +16,13 @@ public class PdProdDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String prodId;
+        @Size(max = 21) private String brandId;
+        @Size(max = 21) private String vendorId;
+        @Size(max = 21) private String categoryId;
+        @Size(max = 21) private String mdUserId;
+        @Size(max = 30) private String prodTypeCd;
+        @Size(max = 30) private String prodStatusCd;
+        @Size(max = 1) private String useYn;
     }
 
     @Getter @Setter @NoArgsConstructor
