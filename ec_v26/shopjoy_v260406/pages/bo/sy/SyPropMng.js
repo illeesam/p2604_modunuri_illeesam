@@ -37,7 +37,7 @@ window.SyPropMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* -- 검색 -- */
-    const searchParam = reactive({ useFlt: '', typeFlt: '' });
+    const searchParam = reactive({ searchTypes: '', searchValue: '', useFlt: '', typeFlt: '' });
 
     /* -- 데이터 (작업 상태 포함) -- */
     const rows = reactive([]);
@@ -49,15 +49,20 @@ window.SyPropMng = {
     // 검색/조회 함수
     const fetchData = async (searchType = 'DEFAULT') => {
       try {
-        const { searchValue, useFlt, typeFlt } = searchParam;
+        const { searchTypes, searchValue, useFlt, typeFlt } = searchParam;
         const params = {
           pageNo: 1, pageSize: 10000,
           ...(cfSiteId.value          ? { siteId: cfSiteId.value }       : {}),
           ...(uiState.selectedPath    ? { pathId: uiState.selectedPath } : {}),
           ...(searchValue ? { searchValue }        : {}),
+          ...(searchTypes ? { searchTypes }        : {}),
           ...(useFlt  ? { useYn: useFlt }         : {}),
           ...(typeFlt ? { propType: typeFlt }      : {}),
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_pathId,def_key,def_value,def_label';
+        }
         const res = await boApiSvc.syProp.getPage(params, '속성관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         _rawProps.splice(0, _rawProps.length, ...list);
@@ -177,7 +182,18 @@ window.SyPropMng = {
   <!-- -- 검색 바 ----------------------------------------------------------- -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
-      <input class="form-control" v-model="searchParam.searchValue" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;" @keyup.enter="fetchData">
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_pathId', label: '표시경로' },
+          { value: 'def_key',    label: '키' },
+          { value: 'def_value',  label: '값' },
+          { value: 'def_label',  label: '라벨' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="min-width:200px;flex:1;max-width:420px;" @keyup.enter="fetchData">
       <select class="form-control" v-model="searchParam.typeFlt" style="width:120px;">
         <option value="">전체 타입</option>
         <option v-for="t in codes.prop_types" :key="t" :value="t">{{ t }}</option>

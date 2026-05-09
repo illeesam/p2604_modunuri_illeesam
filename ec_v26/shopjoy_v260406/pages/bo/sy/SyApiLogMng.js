@@ -16,6 +16,7 @@ window.SyApiLogMng = {
       dateRange: '1week',
       dateStart: '',
       dateEnd: '',
+      searchTypes: '',
       searchValue: '',
       searchMethod: '',
       searchStatus: '',
@@ -78,19 +79,27 @@ window.SyApiLogMng = {
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
-    const buildSearchParams = () => ({
-      pageNo:      pager.pageNo,
-      pageSize:    pager.pageSize,
-      dateStart:   uiState.dateStart       || undefined,
-      dateEnd:     uiState.dateEnd         || undefined,
-      searchValue: uiState.searchValue        || undefined,
-      method:      uiState.searchMethod    || undefined,
-      status:      uiState.searchStatus    || undefined,
-      path:        uiState.searchPath      || undefined,
-      appTypeCd: uiState.searchAppTypeCd || undefined,
-      uiNm:        uiState.searchUiNm      || undefined,
-      traceId:     uiState.searchTraceId   || undefined,
-    });
+    const buildSearchParams = () => {
+      const p = {
+        pageNo:      pager.pageNo,
+        pageSize:    pager.pageSize,
+        dateStart:   uiState.dateStart       || undefined,
+        dateEnd:     uiState.dateEnd         || undefined,
+        searchTypes: uiState.searchTypes      || undefined,
+        searchValue: uiState.searchValue        || undefined,
+        method:      uiState.searchMethod    || undefined,
+        status:      uiState.searchStatus    || undefined,
+        path:        uiState.searchPath      || undefined,
+        appTypeCd: uiState.searchAppTypeCd || undefined,
+        uiNm:        uiState.searchUiNm      || undefined,
+        traceId:     uiState.searchTraceId   || undefined,
+      };
+      // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+      if (p.searchValue && !p.searchTypes) {
+        p.searchTypes = 'def_ip,def_userId';
+      }
+      return p;
+    };
 
     const handleSearchAccessLog = async () => {
       try {
@@ -154,7 +163,7 @@ window.SyApiLogMng = {
     const onSearch     = () => { pager.pageNo = 1; handleSearchList(); };
     const onReset      = () => {
       Object.assign(uiState, {
-        searchValue:'', searchMethod:'', searchStatus:'', searchPath:'',
+        searchTypes:'', searchValue:'', searchMethod:'', searchStatus:'', searchPath:'',
         searchAppTypeCd:'', searchUiNm:'', searchTraceId:'',
         dateRange:'1week', srchOpen:false,
       });
@@ -224,7 +233,16 @@ window.SyApiLogMng = {
         <option v-for="c in codes.http_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.searchPath" placeholder="API 경로 (예: /bo/sy/)" style="width:190px" @keyup.enter="onSearch" />
-      <input v-model="uiState.searchValue" placeholder="IP / 사용자ID" style="width:150px" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="uiState.searchTypes"
+        :options="[
+          { value: 'def_ip',     label: 'IP' },
+          { value: 'def_userId', label: '사용자ID' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="140px" />
+      <input v-model="uiState.searchValue" placeholder="검색어 입력" style="width:150px" @keyup.enter="onSearch" />
       <div class="search-actions" style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0;">
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
         <button class="btn btn-primary" @click="onSearch">조회</button>

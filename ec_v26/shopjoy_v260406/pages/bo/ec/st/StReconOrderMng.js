@@ -39,7 +39,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const rows = reactive([]);
 
-    const _initSearchParam = () => ({ diff: '' });
+    const _initSearchParam = () => ({ searchTypes: '', searchValue: '', diff: '' });
     const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -53,10 +53,15 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApiSvc.stRecon.getPage({
-            pageNo: pager.pageNo, pageSize: pager.pageSize, typeCd: 'ORDER',
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          }, '주문-정산 대사', '목록조회');
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize, typeCd: 'ORDER',
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_orderId,def_custNm';
+        }
+        const res = await boApiSvc.stRecon.getPage(params, '주문-정산 대사', '목록조회');
         const data = res.data?.data;
         rows.splice(0, rows.length, ...(data?.list || rows));
         pager.pageTotalCount = data?.pageTotalCount || rows.length;
@@ -105,7 +110,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <select v-model="searchParam.diff" style="width:110px">
         <option value="">대사결과 전체</option><option v-for="c in codes.recon_results" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input v-model="searchParam.searchValue" placeholder="주문ID / 고객명" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_orderId', label: '주문ID' },
+          { value: 'def_custNm',  label: '고객명' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

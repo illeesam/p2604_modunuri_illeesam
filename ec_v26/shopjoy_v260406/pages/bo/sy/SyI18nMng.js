@@ -16,7 +16,7 @@ window.SyI18nMng = {
     const codes = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
     const _initSearchParam = () => {
-      return { scope: '', use: '' };
+      return { searchTypes: '', searchValue: '', scope: '', use: '' };
     };
     const searchParam = reactive(_initSearchParam());
     const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -24,13 +24,18 @@ window.SyI18nMng = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const { searchValue, scope, use } = searchParam;
+        const { searchTypes, searchValue, scope, use } = searchParam;
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
+          ...(searchTypes ? { searchTypes }      : {}),
           ...(scope ? { i18nScopeCd: scope }     : {}),
           ...(use   ? { useYn: use }             : {}),
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_key,def_desc';
+        }
         const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
         const d = res.data?.data;
         i18nKeys.splice(0, i18nKeys.length, ...(d?.pageList || []));
@@ -125,7 +130,16 @@ window.SyI18nMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">키/설명</label>
-        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="키 또는 설명 검색">
+        <multi-check-select
+          v-model="searchParam.searchTypes"
+          :options="[
+            { value: 'def_key',  label: '키' },
+            { value: 'def_desc', label: '설명' },
+          ]"
+          placeholder="검색대상 전체"
+          all-label="전체 선택"
+          min-width="160px" />
+        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="검색어 입력">
         <label class="search-label">범위</label>
         <select class="form-control" v-model="searchParam.scope">
           <option value="">전체</option><option v-for="s in codes.i18n_scopes" :key="s" :value="s">{{ s }}</option>

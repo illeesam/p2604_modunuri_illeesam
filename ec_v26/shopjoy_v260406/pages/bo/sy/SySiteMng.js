@@ -34,7 +34,12 @@ window.SySiteMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.sySite.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '사이트관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_code,def_nm,def_domain';
+        }
+        const res = await boApiSvc.sySite.getPage(params, '사이트관리', '목록조회');
         const data = res.data?.data;
         sites.splice(0, sites.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || sites.length;
@@ -78,7 +83,7 @@ window.SySiteMng = {
   const _initSearchParam = () => {
     const today = new Date();
     const thisYear = today.getFullYear();
-    return { type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    return { searchTypes: '', searchValue: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
   };
   const searchParam = reactive(_initSearchParam());
 
@@ -173,7 +178,17 @@ const detailModal = reactive({
 <div>
   <div class="page-title">사이트관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.searchValue" placeholder="사이트코드 / 사이트명 / 도메인 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_code',   label: '사이트코드' },
+          { value: 'def_nm',     label: '사이트명' },
+          { value: 'def_domain', label: '도메인' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>

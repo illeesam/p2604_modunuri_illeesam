@@ -63,6 +63,10 @@ window.DpDispPanelMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: 1, pageSize: 10000, ...getSortParam(), ...uiParams };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_panel_nm,def_area_cd';
+        }
         const [panelsRes, displaysRes] = await Promise.all([
           boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
           boApiSvc.dpUi.getPage(params, '전시패널관리', '조회'),
@@ -340,7 +344,7 @@ window.DpDispPanelMng = {
     /* -- 표시경로 (영역별 그룹) -- */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, area: '', status: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' };
+      return { searchTypes: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, area: '', status: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' };
     };
       const searchParam = reactive(_initSearchParam());
   /* '' = 전체, '<areaCode>' = 특정 영역 */
@@ -399,7 +403,16 @@ window.DpDispPanelMng = {
   <div class="page-title">전시패널관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 전시패널 관리</span></div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.searchValue" placeholder="패널명 / 영역코드 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_panel_nm', label: '패널명' },
+          { value: 'def_area_cd',  label: '영역코드' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <span class="search-label">화면영역</span>
       <select v-model="searchParam.area" style="min-width:160px;">
         <option value="">전체 영역</option>

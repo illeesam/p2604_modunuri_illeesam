@@ -90,6 +90,10 @@ window.OdCartMng = {
           ...(search.dateStart   && { dateStart:   search.dateStart }),
           ...(search.dateEnd     && { dateEnd:     search.dateEnd }),
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_member_nm,def_member_id,def_login_id,def_prod_nm';
+        }
         const res = await boApiSvc.odCart.getPage(params, '장바구니관리', '조회');
         const d = res.data?.data || {};
         rows.splice(0, rows.length, ...(d.pageList || []));

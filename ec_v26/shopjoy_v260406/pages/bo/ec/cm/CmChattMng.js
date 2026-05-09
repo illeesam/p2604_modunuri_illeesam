@@ -33,7 +33,7 @@ window.CmChattMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+      return { searchTypes: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -55,11 +55,16 @@ window.CmChattMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.cmChatt.getPage({
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...getSortParam(),
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          }, '채팅관리', '목록조회');
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...getSortParam(),
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_member_nm,def_title';
+        }
+        const res = await boApiSvc.cmChatt.getPage(params, '채팅관리', '목록조회');
         const data = res.data?.data;
         chatts.splice(0, chatts.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -143,7 +148,16 @@ window.CmChattMng = {
   <div class="page-title">채팅관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.searchValue" placeholder="회원명 / 제목 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_member_nm', label: '회원명' },
+          { value: 'def_title',     label: '제목' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.status">
         <option value="">상태 전체</option>
         <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>

@@ -27,6 +27,7 @@ public class QueryParam {
 
     // ── SearchRequest 매핑 ──
     private final String searchValue;
+    private final String searchTypes;   // 검색 대상 컬럼 토큰(콤마 구분). null/공백이면 전체 searchFields 적용
     private final String dateStart;
     private final String dateEnd;
     private final String siteId;

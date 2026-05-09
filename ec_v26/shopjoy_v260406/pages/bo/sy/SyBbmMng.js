@@ -18,7 +18,12 @@ window.SyBbmMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syBbm.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '게시판모드관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_code';
+        }
+        const res = await boApiSvc.syBbm.getPage(params, '게시판모드관리', '목록조회');
         const data = res.data?.data;
         bbms.splice(0, bbms.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || bbms.length;
@@ -60,7 +65,7 @@ window.SyBbmMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const _initSearchParam = () => {
-      return { type: '', useYn: 'Y' };
+      return { searchTypes: '', searchValue: '', type: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -125,7 +130,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="page-title">게시판관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.searchValue" placeholder="게시판명 / 코드 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm',   label: '게시판명' },
+          { value: 'def_code', label: '코드' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="c in codes.bbm_type" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>

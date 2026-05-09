@@ -151,7 +151,7 @@ window.SyRoleMng = {
 
     /* -- 검색 -- */
     const _initSearchParam = () => {
-      return { type: '', useYn: 'Y', cat: '', treeCatFilter: '' };
+      return { searchTypes: '', searchValue: '', type: '', useYn: 'Y', cat: '', treeCatFilter: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -510,7 +510,16 @@ window.SyRoleMng = {
   <div class="page-title">역할관리</div>  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.searchValue" placeholder="역할코드 / 역할명 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_code', label: '역할코드' },
+          { value: 'def_nm',   label: '역할명' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.cat">
         <option value="">역할구분 전체</option>
         <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>

@@ -34,6 +34,10 @@ window.SyBrandMng = {
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_code,def_nm,def_en_nm';
+        }
         const res = await boApiSvc.syBrand.getPage(params, '브랜드관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         brands.splice(0, brands.length, ...list);
@@ -68,7 +72,7 @@ window.SyBrandMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { bizCd: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchTypes: '', searchValue: '', bizCd: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
     const handleDateRangeChange = () => {
@@ -269,7 +273,17 @@ window.SyBrandMng = {
     <div class="search-bar">
       <label class="search-label">업무코드</label>
       <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:160px" @keyup.enter="onSearch">
-      <input v-model="searchParam.searchValue" placeholder="브랜드코드 / 브랜드명 / 영문명 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_code',  label: '브랜드코드' },
+          { value: 'def_nm',    label: '브랜드명' },
+          { value: 'def_en_nm', label: '영문명' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
         <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>

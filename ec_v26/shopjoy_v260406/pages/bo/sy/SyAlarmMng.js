@@ -34,12 +34,17 @@ window.SyAlarmMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syAlarm.getPage({
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...getSortParam(),
-            ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          }, '알람관리', '목록조회');
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...getSortParam(),
+          ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_title,def_message';
+        }
+        const res = await boApiSvc.syAlarm.getPage(params, '알람관리', '목록조회');
         const data = res.data?.data;
         alarms.splice(0, alarms.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || alarms.length;
@@ -92,7 +97,7 @@ window.SyAlarmMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchTypes: '', searchValue: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
     const handleDateRangeChange = () => {
@@ -163,7 +168,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 <div>
   <div class="page-title">알림관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.searchValue" placeholder="제목 / 메시지 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_title',   label: '제목' },
+          { value: 'def_message', label: '메시지' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="c in codes.alarm_type" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>

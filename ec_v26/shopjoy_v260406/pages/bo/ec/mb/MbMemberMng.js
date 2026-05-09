@@ -16,7 +16,7 @@ window.MbMemberMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ member_statuses: [], member_grades: [] });
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const _initSearchParam = () => ({ grade: '', status: '' });
+    const _initSearchParam = () => ({ searchTypes: '', searchValue: '', grade: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     const detailModal = reactive({
       show: false,
@@ -57,11 +57,16 @@ window.MbMemberMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.mbMember.getPage({
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...getSortParam(),
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          }, '회원관리', '목록조회');
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...getSortParam(),
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_email';
+        }
+        const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
         members.splice(0, members.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -207,7 +212,16 @@ window.MbMemberMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">이름/이메일/ID</label>
-      <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="이름 또는 이메일 검색" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm',    label: '이름' },
+          { value: 'def_email', label: '이메일' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="검색어 입력" />
       <label class="search-label">등급</label>
       <select v-model="searchParam.grade">
         <option value="">전체</option>

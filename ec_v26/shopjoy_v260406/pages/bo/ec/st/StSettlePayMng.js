@@ -31,10 +31,15 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApiSvc.stSettlePay.getPage({
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          }, '정산지급관리', '목록조회');
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_payId,def_vendorNm';
+        }
+        const res = await boApiSvc.stSettlePay.getPage(params, '정산지급관리', '목록조회');
         const data = res.data?.data;
         payList.splice(0, payList.length, ...(data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || payList.length;
@@ -60,7 +65,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const payList = reactive([]);
 
-  const _initSearchParam = () => ({ status: '' });
+  const _initSearchParam = () => ({ searchTypes: '', searchValue: '', status: '' });
   const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -119,7 +124,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <select v-model="searchParam.status" style="width:120px">
         <option value="">상태 전체</option><option v-for="c in codes.settle_pay_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input v-model="searchParam.searchValue" placeholder="지급ID / 업체명" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_payId',    label: '지급ID' },
+          { value: 'def_vendorNm', label: '업체명' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

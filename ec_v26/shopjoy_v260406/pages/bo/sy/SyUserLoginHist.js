@@ -16,7 +16,7 @@ window.SyUserLoginHist = {
       descOpen: false, isPageCodeLoad: false, srchOpen: false,
       activeTab: 'log',
       dateRange: '1week', dateStart: '', dateEnd: '',
-      searchValue: '', searchResultCd: '', searchIp: '',
+      searchTypes: '', searchValue: '', searchResultCd: '', searchIp: '',
       searchUiNm: '', searchTraceId: '',
     });
 
@@ -60,16 +60,24 @@ window.SyUserLoginHist = {
     };
 
     // ── 검색 ─────────────────────────────────────────────────────────────
-    const buildParams = () => ({
-      pageNo: pager.pageNo, pageSize: pager.pageSize,
-      dateStart:  uiState.dateStart    || undefined,
-      dateEnd:    uiState.dateEnd      || undefined,
-      resultCd:   uiState.searchResultCd || undefined,
-      ip:         uiState.searchIp     || undefined,
-      uiNm:       uiState.searchUiNm   || undefined,
-      traceId:    uiState.searchTraceId || undefined,
-      searchValue: uiState.searchValue    || undefined,
-    });
+    const buildParams = () => {
+      const p = {
+        pageNo: pager.pageNo, pageSize: pager.pageSize,
+        dateStart:  uiState.dateStart    || undefined,
+        dateEnd:    uiState.dateEnd      || undefined,
+        resultCd:   uiState.searchResultCd || undefined,
+        ip:         uiState.searchIp     || undefined,
+        uiNm:       uiState.searchUiNm   || undefined,
+        traceId:    uiState.searchTraceId || undefined,
+        searchTypes: uiState.searchTypes  || undefined,
+        searchValue: uiState.searchValue    || undefined,
+      };
+      // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+      if (p.searchValue && !p.searchTypes) {
+        p.searchTypes = 'def_userId,def_loginId';
+      }
+      return p;
+    };
 
     const handleSearchLog = async () => {
       try {
@@ -108,7 +116,7 @@ window.SyUserLoginHist = {
     const onTabChange = tab => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
     const onSearch    = () => { pager.pageNo = 1; handleSearchList(); };
     const onReset     = () => {
-      Object.assign(uiState, { searchValue:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
+      Object.assign(uiState, { searchTypes:'', searchValue:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
       onDateRangeChange(); pager.pageNo = 1; handleSearchList();
     };
     const setPage      = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo=n; handleSearchList(); } };
@@ -175,7 +183,16 @@ window.SyUserLoginHist = {
         <option v-for="c in codes.login_results" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.searchIp" placeholder="IP 주소" style="width:140px" @keyup.enter="onSearch" />
-      <input v-model="uiState.searchValue" placeholder="사용자ID / 로그인ID" style="width:170px" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="uiState.searchTypes"
+        :options="[
+          { value: 'def_userId',  label: '사용자ID' },
+          { value: 'def_loginId', label: '로그인ID' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="uiState.searchValue" placeholder="검색어 입력" style="width:170px" @keyup.enter="onSearch" />
       <div class="search-actions" style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0;">
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
         <button class="btn btn-primary" @click="onSearch">조회</button>

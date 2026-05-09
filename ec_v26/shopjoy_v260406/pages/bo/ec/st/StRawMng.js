@@ -45,7 +45,7 @@ window.StRawMng = {
     (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     // 검색 필드
-  const _initSearchParam = () => ({ type: '', status: '', vendorType: '', payMethod: '', buyConfirm: '', closeYn: '', erpSend: '', period: '', orderStatus: '', amtFrom: '', amtTo: '', moreOpen: '' });
+  const _initSearchParam = () => ({ searchTypes: '', searchValue: '', type: '', status: '', vendorType: '', payMethod: '', buyConfirm: '', closeYn: '', erpSend: '', period: '', orderStatus: '', amtFrom: '', amtTo: '', moreOpen: '' });
   const searchParam = reactive(_initSearchParam());
 
     const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -54,10 +54,15 @@ const rawList = reactive([]);
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
-        const res = await boApiSvc.stSettleRaw.getPage({
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          }, '정산데이터관리', '목록조회');
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_raw_id,def_src_id,def_vendor_nm,def_prod_nm,def_brand_nm';
+        }
+        const res = await boApiSvc.stSettleRaw.getPage(params, '정산데이터관리', '목록조회');
         const data = res.data?.data;
         rawList.splice(0, rawList.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || rawList.length;
@@ -164,7 +169,19 @@ const rawList = reactive([]);
         <option value="">수집상태 전체</option>
         <option v-for="c in codes.raw_collect_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input v-model="searchParam.searchValue" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="() => onSearch?.()" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_raw_id',    label: '원장ID' },
+          { value: 'def_src_id',    label: '소스ID' },
+          { value: 'def_vendor_nm', label: '업체명' },
+          { value: 'def_prod_nm',   label: '상품명' },
+          { value: 'def_brand_nm',  label: '브랜드' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:230px" @keyup.enter="() => onSearch?.()" />
     </div>
     <!-- -- 2행: 추가 필터 ---------------------------------------------------- -->
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">

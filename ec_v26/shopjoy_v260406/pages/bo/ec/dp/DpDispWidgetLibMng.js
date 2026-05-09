@@ -25,7 +25,7 @@ window.DpDispWidgetLibMng = {
     // 코드 주입
 
     /* -- 검색 -- */
-    const _initSearchParam = () => ({ type: '', status: '' });
+    const _initSearchParam = () => ({ searchTypes: '', searchValue: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     /* applied: 현재 결과에 실제로 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
     const applied = reactive({ type: '', status: '' });
@@ -55,16 +55,21 @@ window.DpDispWidgetLibMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const { type, status, searchValue, ...restParam } = searchParam;
+        const { type, status, searchTypes, searchValue, ...restParam } = searchParam;
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
+          ...(searchTypes ? { searchTypes }                     : {}),
           ...(type   ? { typeCd: type }  : {}),  /* mapper 는 typeCd 파라미터를 받음 */
           ...(status ? { useYn: status } : {}),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_desc,def_tag';
+        }
         const res = await boApiSvc.dpWidgetLib.getPage(params, '전시위젯라이브러리', '조회');
         const d = res.data?.data;
         widgetLibs.splice(0, widgetLibs.length, ...(d?.pageList || d?.list || []));
@@ -173,7 +178,17 @@ window.DpDispWidgetLibMng = {
   <div class="page-title">위젯라이브러리관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.searchValue" placeholder="이름/설명/태그 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm',   label: '이름' },
+          { value: 'def_desc', label: '설명' },
+          { value: 'def_tag',  label: '태그' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">타입 전체</option>
         <option v-for="t in codes.disp_widget_types" :key="t.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>

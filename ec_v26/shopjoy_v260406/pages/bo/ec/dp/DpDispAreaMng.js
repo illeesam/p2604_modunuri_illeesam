@@ -51,6 +51,10 @@ window.DpDispAreaMng = {
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_areaCd,def_areaNm';
+        }
         const res = await boApiSvc.dpArea.getPage(params, '전시영역관리', '목록조회');
         const d = res.data?.data;
         areas.splice(0, areas.length, ...(d?.pageList || d?.list || []));
@@ -79,7 +83,7 @@ window.DpDispAreaMng = {
     /* -- 검색 -- */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
+      return { searchTypes: '', searchValue: '', areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
     };
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const searchParam = reactive(_initSearchParam());
@@ -132,7 +136,16 @@ const searchParam = reactive(_initSearchParam());
   <div class="card">
     <div class="search-bar">
       <label class="search-label">키워드</label>
-      <input class="form-control" v-model="searchParam.searchValue" placeholder="영역코드/명 검색" @keyup.enter="onSearch" style="width:200px;" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_areaCd', label: '영역코드' },
+          { value: 'def_areaNm', label: '영역명' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" style="width:200px;" />
       <label class="search-label">사용여부</label>
       <select class="form-control" v-model="searchParam.useYn" style="width:100px;">
         <option value="">전체</option>

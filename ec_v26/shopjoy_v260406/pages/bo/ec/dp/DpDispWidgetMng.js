@@ -25,7 +25,7 @@ window.DpDispWidgetMng = {
 
     // 코드 주입
 
-    const _initSearchParam = () => ({ type: '', status: '' });
+    const _initSearchParam = () => ({ searchTypes: '', searchValue: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     /* applied: 결과에 실제 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
     const applied = reactive({ type: '', status: '' });
@@ -55,15 +55,20 @@ window.DpDispWidgetMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const { type, status, searchValue } = searchParam;
+        const { type, status, searchTypes, searchValue } = searchParam;
         /* dp_widget (실제 배치된 위젯 인스턴스) — 메인 데이터 */
         const widgetParams = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
+          ...(searchTypes ? { searchTypes }                     : {}),
           ...(type   ? { typeCd: type }  : {}),
           ...(status ? { useYn: status } : {}),
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (widgetParams.searchValue && !widgetParams.searchTypes) {
+          widgetParams.searchTypes = 'def_nm,def_desc,def_tag';
+        }
         const [res, resLibs] = await Promise.all([
           boApiSvc.dpWidget.getPage(widgetParams, '전시위젯관리', '조회'),
           /* widgetLib 은 라이브러리 참조 표시(widget_lib_nm)용으로 함께 로드 (path 트리는 widget_lib 의 path_id 기준이라 lib 도 필요) */
@@ -192,7 +197,17 @@ window.DpDispWidgetMng = {
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
         <label class="form-label">검색어</label>
-        <input v-model="searchParam.searchValue" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => onSearch?.()" style="margin:0;" />
+        <multi-check-select
+          v-model="searchParam.searchTypes"
+          :options="[
+            { value: 'def_nm',   label: '이름' },
+            { value: 'def_desc', label: '설명' },
+            { value: 'def_tag',  label: '태그' },
+          ]"
+          placeholder="검색대상 전체"
+          all-label="전체 선택"
+          min-width="160px" />
+        <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" @keyup.enter="() => onSearch?.()" style="margin:0;" />
       </div>
       <div class="form-group" style="margin:0;width:160px;">
         <label class="form-label">위젯 유형</label>

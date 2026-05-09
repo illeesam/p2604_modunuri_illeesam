@@ -12,7 +12,7 @@ window.SyVendorUserMng = {
     const setApiRes    = window.boApp.setApiRes;
 
     const vendorUsers = reactive([]);
-    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false, selectedPath: null, searchVendorId: null, bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null});
+    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false, selectedPath: null, searchVendorId: null, bizSearchTypes: '', bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null});
     const codes = reactive({
       user_status: [],
       bool_opts: [{codeValue:'Y',codeLabel:'예'},{codeValue:'N',codeLabel:'아니오'}],
@@ -86,8 +86,13 @@ window.SyVendorUserMng = {
         const params = {
           pageNo: 1, pageSize: 10000,
           ...(uiState.bizSearchValue        ? { searchValue: uiState.bizSearchValue.trim() }          : {}),
+          ...(uiState.bizSearchTypes        ? { searchTypes: uiState.bizSearchTypes }                  : {}),
           ...(uiState.bizVendorFlt ? { vendorTypeCd: uiState.bizVendorFlt } : {}),
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_bizno,def_id';
+        }
         const res = await boApiSvc.syVendor.getPage(params, '업체사용자관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data || [];
         vendors.splice(0, vendors.length, ...list);
@@ -144,6 +149,7 @@ window.SyVendorUserMng = {
 
     const onSearch = () => { bizPager.pageNo = 1; handleLoadDetail(); };
     const onReset = () => {
+      uiState.bizSearchTypes = '';
       uiState.bizSearchValue = '';
       uiState.bizVendorFlt = '';
       uiState.bizStatusFlt = '';
@@ -426,7 +432,17 @@ window.SyVendorUserMng = {
         <button type="button" @click="uiState.vendorPickOpen=true" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}">🔍</button>
         <button v-if="uiState.searchVendorId!=null" type="button" @click="uiState.searchVendorId=null;vendorUsers.splice(0)" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #fca5a5',borderRadius:'50%',fontSize:'11px',color:'#dc2626',padding:'0',fontWeight:700}">✕</button>
       </div>
-      <input v-model="uiState.bizSearchValue" placeholder="업체명 / 사업자번호 검색" style="margin-left:12px;min-width:200px;" />
+      <multi-check-select
+        v-model="uiState.bizSearchTypes"
+        :options="[
+          { value: 'def_nm',    label: '업체명' },
+          { value: 'def_bizno', label: '사업자번호' },
+          { value: 'def_id',    label: '업체ID' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="uiState.bizSearchValue" placeholder="검색어 입력" style="margin-left:8px;min-width:200px;" @keyup.enter="onSearch" />
       <select class="form-control" v-model="uiState.bizVendorFlt" style="width:140px;">
         <option value="">업체유형 전체</option>
         <option v-for="v in codes.vendor_types" :key="v[0]" :value="v[0]">{{ v[1] }}</option>

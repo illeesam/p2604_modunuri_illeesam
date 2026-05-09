@@ -55,7 +55,12 @@ window.PmDiscntMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmDiscnt.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '할인관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_id';
+        }
+        const res = await boApiSvc.pmDiscnt.getPage(params, '할인관리', '목록조회');
         const data = res.data?.data;
         discounts.splice(0, discounts.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -74,7 +79,7 @@ window.PmDiscntMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
+      return { searchTypes: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
@@ -155,7 +160,16 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   <div class="page-title">할인관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.searchValue" placeholder="할인명 / ID 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm', label: '할인명' },
+          { value: 'def_id', label: 'ID' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.type"><option value="">유형 전체</option><option v-for="c in codes.discnt_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">시작일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>

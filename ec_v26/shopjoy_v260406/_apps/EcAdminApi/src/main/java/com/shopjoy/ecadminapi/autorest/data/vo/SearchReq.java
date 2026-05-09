@@ -8,6 +8,7 @@ import java.util.Map;
 @Data
 public class SearchReq {
     private String searchValue;
+    private String searchTypes;     // 검색 대상 컬럼 토큰(콤마 구분). null/공백이면 전체 searchFields 적용
     private Map<String, Object> filters = new HashMap<>();
     private String dateField;
     private String dateStart;

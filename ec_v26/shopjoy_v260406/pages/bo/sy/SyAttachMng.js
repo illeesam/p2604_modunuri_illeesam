@@ -33,7 +33,7 @@ window.SyAttachMng = {
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
-    const searchParam = reactive({ attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
+    const searchParam = reactive({ searchTypes: '', searchValue: '', attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
 
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
@@ -60,6 +60,10 @@ window.SyAttachMng = {
         };
         // 좌측 그룹 클릭 선택이 우선, 없으면 검색 조건 attachGrpId 사용
         if (uiState.selectedGrpId) p.attachGrpId = uiState.selectedGrpId;
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (p.searchValue && !p.searchTypes) {
+          p.searchTypes = 'def_fileNm,def_refId';
+        }
         const attachRes = await boApiSvc.syAttach.getPage(p, '첨부파일관리', '조회');
         const data = attachRes.data?.data;
         const list = data?.pageList || data?.list || [];
@@ -312,7 +316,16 @@ window.SyAttachMng = {
             <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">(전체)</span>
           </b>
           <input v-model="searchParam.attachGrpId" placeholder="첨부그룹ID" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:130px;" @keyup.enter="onSearch" />
-          <input v-model="searchParam.searchValue" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:150px;" @keyup.enter="onSearch" />
+          <multi-check-select
+            v-model="searchParam.searchTypes"
+            :options="[
+              { value: 'def_fileNm', label: '파일명' },
+              { value: 'def_refId',  label: 'RefID' },
+            ]"
+            placeholder="검색대상 전체"
+            all-label="전체 선택"
+            min-width="140px" />
+          <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:150px;" @keyup.enter="onSearch" />
           <span style="font-size:12px;color:#666;white-space:nowrap;">등록일</span>
           <input type="date" v-model="searchParam.dateStart" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" />
           <span style="font-size:12px;color:#aaa;">~</span>

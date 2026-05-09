@@ -12,7 +12,7 @@ window.MbMemGradeMng = {
     const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkAll: false, focusedIdx: null });
     const codes = reactive({ member_grades: [], use_yn: [] });
-    const searchParam = reactive({ use: '' });
+    const searchParam = reactive({ searchTypes: '', searchValue: '', use: '' });
     const gridRows = reactive([]);
     let _tempId = -1;
 
@@ -40,6 +40,10 @@ window.MbMemGradeMng = {
           pageNo: 1, pageSize: 10000,
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
         };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_code';
+        }
         const res = await boApiSvc.mbMemGrade.getPage(params, '회원등급관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0, gridRows.length, ...list.map(b => makeRow(b)));
@@ -58,7 +62,7 @@ window.MbMemGradeMng = {
     });
 
     const onSearch = async () => { await handleSearchList(); };
-    const onReset = () => { Object.assign(searchParam, { use: '' }); handleSearchList(); };
+    const onReset = () => { Object.assign(searchParam, { searchTypes: '', searchValue: '', use: '' }); handleSearchList(); };
 
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
@@ -167,7 +171,16 @@ window.MbMemGradeMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">등급명/코드</label>
-      <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="등급명 또는 코드 검색">
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm',   label: '등급명' },
+          { value: 'def_code', label: '코드' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="검색어 입력">
       <label class="search-label">사용여부</label>
       <select class="form-control" v-model="searchParam.use">
         <option value="">전체</option>

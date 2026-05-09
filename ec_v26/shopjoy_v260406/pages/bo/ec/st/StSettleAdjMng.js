@@ -44,10 +44,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       try {
         const [resV, resA] = await Promise.all([
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산조정관리', '목록조회'),
-          boApiSvc.stSettleAdj.getPage({
+          (() => {
+            const params = {
               pageNo: pager.pageNo, pageSize: pager.pageSize,
               ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-            }, '정산조정관리', '목록조회')
+            };
+            // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+            if (params.searchValue && !params.searchTypes) {
+              params.searchTypes = 'def_adjId,def_vendorNm,def_reason';
+            }
+            return boApiSvc.stSettleAdj.getPage(params, '정산조정관리', '목록조회');
+          })()
         ]);
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
         const data = resA.data?.data;
@@ -76,7 +83,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const form = reactive({});
     const errors = reactive({});
     const isNew  = ref(false);
-  const _initSearchParam = () => ({ type: '', status: '' });
+  const _initSearchParam = () => ({ searchTypes: '', searchValue: '', type: '', status: '' });
   const searchParam = reactive(_initSearchParam());
 
     const schema = window.yup.object({
@@ -189,7 +196,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <select v-model="searchParam.status" style="width:100px">
         <option value="">상태 전체</option><option v-for="c in codes.settle_adj_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input v-model="searchParam.searchValue" placeholder="조정ID / 업체명 / 사유" style="width:200px" @keyup.enter="() => onSearch?.()" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_adjId',    label: '조정ID' },
+          { value: 'def_vendorNm', label: '업체명' },
+          { value: 'def_reason',   label: '사유' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:200px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

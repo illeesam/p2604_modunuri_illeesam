@@ -22,7 +22,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     const selectedId = ref(null);
 
     const _initSearchParam = () => {
-      return { use: '', notice: '' };
+      return { searchTypes: '', searchValue: '', use: '', notice: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -52,11 +52,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.cmBlog.getPage({
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...getSortParam(),
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          }, '블로그관리', '목록조회');
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...getSortParam(),
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_title,def_author';
+        }
+        const res = await boApiSvc.cmBlog.getPage(params, '블로그관리', '목록조회');
         const data = res.data?.data;
         blogs.splice(0, blogs.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -181,7 +186,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     <div class="card">
       <div class="search-bar">
         <label class="search-label">제목/작성자</label>
-        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="제목 또는 작성자 검색">
+        <multi-check-select
+          v-model="searchParam.searchTypes"
+          :options="[
+            { value: 'def_title',  label: '제목' },
+            { value: 'def_author', label: '작성자' },
+          ]"
+          placeholder="검색대상 전체"
+          all-label="전체 선택"
+          min-width="160px" />
+        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="검색어 입력">
         <label class="search-label">공개여부</label>
         <select class="form-control" v-model="searchParam.use">
           <option value="">전체</option>

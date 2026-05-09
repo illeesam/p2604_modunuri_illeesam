@@ -34,7 +34,12 @@ window.SyTemplateMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syTemplate.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '템플릿관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_nm,def_subject';
+        }
+        const res = await boApiSvc.syTemplate.getPage(params, '템플릿관리', '목록조회');
         const data = res.data?.data;
         templates.splice(0, templates.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || templates.length;
@@ -86,7 +91,7 @@ window.SyTemplateMng = {
   const _initSearchParam = () => {
     const today = new Date();
     const thisYear = today.getFullYear();
-    return { type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    return { searchTypes: '', searchValue: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
   };
   const searchParam = reactive(_initSearchParam());
 
@@ -169,7 +174,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 <div>
   <div class="page-title">템플릿관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.searchValue" placeholder="템플릿명 / 제목 검색" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_nm',      label: '템플릿명' },
+          { value: 'def_subject', label: '제목' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in codes.template_types" :key="t">{{ t }}</option>

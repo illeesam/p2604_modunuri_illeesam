@@ -16,7 +16,7 @@ window.SyMemberLoginHist = {
       descOpen: false, isPageCodeLoad: false, srchOpen: false,
       activeTab: 'log',
       dateRange: '1week', dateStart: '', dateEnd: '',
-      searchValue: '', searchResultCd: '', searchIp: '',
+      searchTypes: '', searchValue: '', searchResultCd: '', searchIp: '',
       searchUiNm: '', searchTraceId: '',
     });
 

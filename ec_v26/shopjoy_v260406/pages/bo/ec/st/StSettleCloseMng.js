@@ -57,6 +57,7 @@ window.StSettleCloseMng = {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
+    const searchTypes = ref('');
     const searchValue = ref('');
     const searchStatus = ref('');
 
@@ -64,6 +65,7 @@ window.StSettleCloseMng = {
       await handleSearchData('DEFAULT');
     };
     const onReset = () => {
+      searchTypes.value = '';
       searchValue.value = '';
       searchStatus.value = '';
       onSearch();
@@ -125,14 +127,20 @@ window.StSettleCloseMng = {
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
     const cfFilteredClose = computed(() => closeList.filter(r => {
-      if (searchValue.value && !r.closeMon.includes(searchValue.value) && !r.regUserNm.includes(searchValue.value)) return false;
+      if (searchValue.value) {
+        const types = searchTypes.value || 'def_closeMon,def_regUserNm';
+        const hits = [];
+        if (types.includes('def_closeMon')) hits.push(r.closeMon && r.closeMon.includes(searchValue.value));
+        if (types.includes('def_regUserNm')) hits.push(r.regUserNm && r.regUserNm.includes(searchValue.value));
+        if (!hits.some(Boolean)) return false;
+      }
       if (searchStatus.value && r.status !== searchStatus.value) return false;
       return true;
     }));
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, closeList, cfFilteredClose, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
+    return { uiState, closeList, cfFilteredClose, searchTypes, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
   },
   template: /* html */`
 <div>
@@ -184,7 +192,16 @@ window.StSettleCloseMng = {
   <!-- -- 마감 이력 ---------------------------------------------------------- -->
   <div class="card" style="margin-top:12px">
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="searchValue" placeholder="정산월 / 담당자 검색" style="width:180px" @keyup.enter="onSearch" />
+      <multi-check-select
+        v-model="searchTypes"
+        :options="[
+          { value: 'def_closeMon',  label: '정산월' },
+          { value: 'def_regUserNm', label: '담당자' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input v-model="searchValue" placeholder="검색어 입력" style="width:180px" @keyup.enter="onSearch" />
       <select v-model="searchStatus" style="width:130px">
         <option value="">상태 전체</option>
         <option v-for="c in codes.settle_close_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>

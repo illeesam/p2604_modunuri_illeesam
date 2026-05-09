@@ -27,7 +27,7 @@ window.SyPathMng = {
 
     /* -- 검색 파라미터 -- */
     const _initSearchParam = () => {
-      return { bizCd: '', useYn: 'Y' };
+      return { searchTypes: '', searchValue: '', bizCd: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -91,6 +91,10 @@ window.SyPathMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...searchParam };
         if (uiState.selectedPathId != null) params.parentPathId = uiState.selectedPathId;
+        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchTypes) {
+          params.searchTypes = 'def_pathLabel,def_pathRemark';
+        }
         const res = await boApiSvc.syPath.getPage(params, '경로관리', '목록조회');
         const data = res.data?.data || {};
         const list = data.pageList || data.list || [];
@@ -237,7 +241,16 @@ window.SyPathMng = {
       <label class="search-label">업무코드</label>
       <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:180px" @keyup.enter="onSearch">
       <label class="search-label">라벨/비고</label>
-      <input class="form-control" v-model="searchParam.searchValue" placeholder="라벨 / 비고 검색" style="min-width:200px;flex:1;max-width:320px" @keyup.enter="onSearch">
+      <multi-check-select
+        v-model="searchParam.searchTypes"
+        :options="[
+          { value: 'def_pathLabel',  label: '라벨' },
+          { value: 'def_pathRemark', label: '비고' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="min-width:200px;flex:1;max-width:320px" @keyup.enter="onSearch">
       <label class="search-label">사용여부</label>
       <select class="form-control" v-model="searchParam.useYn" style="width:120px">
         <option value="">전체</option>
