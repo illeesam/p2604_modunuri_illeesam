@@ -22,7 +22,7 @@ window.SyRoleMng = {
       checkAll: false,
       error: null,
       userSelectOpen: false,
-      isPageCodeLoad: false, loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchKw: ''});
+      isPageCodeLoad: false, loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchValue: ''});
     const codes = reactive({ role_status: [], use_yn: [], perm_levels: ['없음','읽기','쓰기','관리','차단'], role_cats: [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']] });
 
     // onMounted에서 API 로드
@@ -402,7 +402,7 @@ window.SyRoleMng = {
       return result;
     };
     const cfMenuTree = computed(() => {
-      const kw = (uiState.menuSearchKw || '').trim().toLowerCase();
+      const kw = (uiState.menuSearchValue || '').trim().toLowerCase();
       const all = menus || [];
       const list = kw ? all.filter(m => m.menuNm.toLowerCase().includes(kw) || m.menuCode.toLowerCase().includes(kw)) : all;
       return flatMenuTree(buildMenuTree(list, null, 0));
@@ -684,7 +684,7 @@ window.SyRoleMng = {
 
         <!-- -- 메뉴 검색 ---------------------------------------------------- -->
         <div v-if="uiState.selectedRoleId" style="padding:8px 0 6px;">
-          <input class="form-control" v-model="uiState.menuSearchKw" placeholder="메뉴명 또는 메뉴코드 검색"
+          <input class="form-control" v-model="uiState.menuSearchValue" placeholder="메뉴명 또는 메뉴코드 검색"
             style="font-size:12px;padding:5px 10px;" />
         </div>
 

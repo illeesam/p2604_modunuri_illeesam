@@ -15,7 +15,7 @@ import java.util.List;
  *   "pageSize":        20,
  *   "pageTotalCount":  153,
  *   "pageTotalPage":   8,
- *   "pageCond":        { "kw": "검색어", "siteId": "s01" }
+ *   "pageCond":        { "searchValue": "검색어", "siteId": "s01" }
  * }
  *
  * pageTotalPage는 최소 1 (데이터가 없어도 1페이지로 표시).

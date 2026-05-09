@@ -24,7 +24,7 @@ public class CmUtil {
 
     /**
      * null·빈 값을 무시하며 Map 생성.
-     * 사용: CmUtil.params("siteId", siteId, "kw", kw, ...)
+     * 사용: CmUtil.params("siteId", siteId, "searchValue", searchValue, ...)
      */
     public static Map<String, Object> params(Object... keyValues) {
         Map<String, Object> p = new HashMap<>();
@@ -42,7 +42,7 @@ public class CmUtil {
 
     /**
      * 필수 파라미터 존재 여부 검증. 없으면 CmBizException(400).
-     * 사용: CmUtil.require(p, "siteId", "kw")
+     * 사용: CmUtil.require(p, "siteId", "searchValue")
      */
     public static void require(Map<String, Object> p, String... keys) {
         for (String key : keys) {

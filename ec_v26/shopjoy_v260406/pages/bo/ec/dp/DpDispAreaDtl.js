@@ -16,7 +16,7 @@ window.DpDispAreaDtl = {
     const codes = reactive({ disp_areas: [], layout_types: [], use_yn: [] });
     const areas = reactive([]);
     const panels = reactive([]);
-    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickKw: '', activeTab: 'base', previewMode: 'default', previewPaneWidth: 520 });
+    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickSearchValue: '', activeTab: 'base', previewMode: 'default', previewPaneWidth: 520 });
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
@@ -126,7 +126,7 @@ window.DpDispAreaDtl = {
     );
 
     /* -- 패널 선택 팝업 -- */
-    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; };
+    const openPick  = () => { uiState.pickOpen = true; uiState.pickSearchValue = ''; };
     const movePanel = (idx, dir) => {
       const arr = cfRelatedPanels.value;
       const target = idx + dir;

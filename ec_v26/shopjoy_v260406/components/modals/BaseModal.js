@@ -701,8 +701,8 @@ window.BoUserSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const depts = reactive([]);
-    const uiState = reactive({ loading: false, deptKw: '', selectedDeptId: null });
-    const pager = reactive({ page: 1, size: 20, pageTotalCount: 0, pageTotalPage: 1, pageList: [], pageNums: [], userKw: '' });
+    const uiState = reactive({ loading: false, deptSearchValue: '', selectedDeptId: null });
+    const pager = reactive({ page: 1, size: 20, pageTotalCount: 0, pageTotalPage: 1, pageList: [], pageNums: [], userSearchValue: '' });
     const selectedIds = reactive(new Set());
     const selectedUsers = reactive([]);
 
@@ -716,7 +716,7 @@ window.BoUserSelectModal = {
       return result;
     };
     const cfFlatDeptTree = computed(() => {
-      const kw = uiState.deptKw.trim().toLowerCase();
+      const kw = uiState.deptSearchValue.trim().toLowerCase();
       const base = kw
         ? depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
         : depts;
@@ -735,7 +735,7 @@ window.BoUserSelectModal = {
       pager.pageTotalPage = 1;
       try {
         const params = { pageNo: pager.page, pageSize: pager.size };
-        if (pager.userKw.trim()) params.searchValue = pager.userKw.trim();
+        if (pager.userSearchValue.trim()) params.searchValue = pager.userSearchValue.trim();
         if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
         const res = await boApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
         const d = res.data?.data;
@@ -820,7 +820,7 @@ window.BoUserSelectModal = {
           <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">조직 / 부서</div>
           <div style="position:relative;">
             <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:#bbb;">🔍</span>
-            <input v-model="uiState.deptKw" placeholder="부서 검색"
+            <input v-model="uiState.deptSearchValue" placeholder="부서 검색"
               style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:5px 8px 5px 24px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
           </div>
         </div>
@@ -863,7 +863,7 @@ window.BoUserSelectModal = {
         <div style="padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
           <div style="position:relative;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#bbb;">🔍</span>
-            <input v-model="pager.userKw" placeholder="이름 / 로그인ID / 이메일 검색" @keyup.enter="onSearch"
+            <input v-model="pager.userSearchValue" placeholder="이름 / 로그인ID / 이메일 검색" @keyup.enter="onSearch"
               style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;outline:none;box-sizing:border-box;color:#374151;" />
             <button @click="onSearch" style="margin-top:4px;width:100%;padding:5px 0;border:1px solid #e8587a;border-radius:6px;background:#e8587a;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">조회</button>
           </div>
@@ -1260,7 +1260,7 @@ window.TemplateSendModal = {
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
     /* ── 부서 트리 (관리자 탭) ── */
-    const uiState = reactive({ selectedDeptId: null, selectedGrade: null, deptKw: '' });
+    const uiState = reactive({ selectedDeptId: null, selectedGrade: null, deptSearchValue: '' });
     const selectedDeptId = computed(() => uiState.selectedDeptId);
     const selectedGrade = computed(() => uiState.selectedGrade);
     const fnBuildDeptTree = (items, parentId, depth) =>
@@ -1269,7 +1269,7 @@ window.TemplateSendModal = {
         .map(d => ({ ...d, _depth: depth, _kids: fnBuildDeptTree(items, d.deptId, depth + 1) }));
     const fnFlattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); fnFlattenDept(n._kids, result); }); return result; };
     const cfFlatDeptTree = computed(() => {
-      const k = uiState.deptKw.trim().toLowerCase();
+      const k = uiState.deptSearchValue.trim().toLowerCase();
       const base = k ? allDepts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : allDepts;
       return fnFlattenDept(fnBuildDeptTree(base, null, 1));
     });
@@ -1392,7 +1392,7 @@ window.TemplateSendModal = {
             <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">조직 / 부서</div>
             <div style="position:relative;">
               <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:#bbb;">🔍</span>
-              <input v-model="deptKw" placeholder="부서 검색"
+              <input v-model="deptSearchValue" placeholder="부서 검색"
                 style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:5px 8px 5px 24px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;" />
             </div>
           </div>
@@ -2382,7 +2382,7 @@ window.RowPickModal = {
   emits: ['close', 'pick-multi'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchKw = ref('');
+    const searchValue = ref('');
     const searchStatus = ref('');
     const activeStatuses = reactive([]);
     const pager = reactive({ page: 1, size: 5 });
@@ -2418,7 +2418,7 @@ window.RowPickModal = {
     });
 
     const cfFiltered = computed(() => cfAllRows.value.filter(o => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = searchValue.value.trim().toLowerCase();
       if (kw && !(o.row.widgetNm||'').toLowerCase().includes(kw)
            && !(o.__panelName||'').toLowerCase().includes(kw)
            && !(o.row.widgetType||'').toLowerCase().includes(kw)) return false;
@@ -2484,7 +2484,7 @@ window.RowPickModal = {
     });
 
     return {
-      searchKw, searchStatus, activeStatuses, pager, PAGE_SIZES,
+      searchValue, searchStatus, activeStatuses, pager, PAGE_SIZES,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, areaNm, wLabel,
       checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti, pickOne,
@@ -2499,7 +2499,7 @@ window.RowPickModal = {
       <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <input v-model="searchKw" placeholder="위젯명·패널명·유형 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <input v-model="searchValue" placeholder="위젯명·패널명·유형 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
       <select v-model="searchStatus" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">패널상태 전체</option>
         <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>

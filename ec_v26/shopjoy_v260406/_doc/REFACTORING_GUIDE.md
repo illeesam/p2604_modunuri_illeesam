@@ -87,7 +87,7 @@ const onReset = () => {
 <select v-model="searchType">
 
 <!-- ✅ After -->
-<input v-model="searchParam.kw" />
+<input v-model="searchParam.searchValue" />
 <select v-model="searchParam.type">
 ```
 

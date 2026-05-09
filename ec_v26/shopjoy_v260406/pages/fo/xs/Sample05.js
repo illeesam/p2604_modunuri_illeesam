@@ -129,7 +129,7 @@ window.XsSample05 = {
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">05. 게시판 관리 <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span></div>
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchKw" placeholder="제목 / 작성자 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:200px;outline:none;" />
+      <input v-model="searchParam.searchValue" placeholder="제목 / 작성자 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:200px;outline:none;" />
       <select v-model="searchCategory" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">카테고리 전체</option>
         <option v-for="o in codes.category_opts" :key="o.value" :value="o.value">{{ o.label }}</option>

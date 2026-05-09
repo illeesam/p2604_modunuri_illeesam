@@ -16,7 +16,7 @@ window.SyApiLogMng = {
       dateRange: '1week',
       dateStart: '',
       dateEnd: '',
-      searchKw: '',
+      searchValue: '',
       searchMethod: '',
       searchStatus: '',
       searchPath: '',
@@ -83,7 +83,7 @@ window.SyApiLogMng = {
       pageSize:    pager.pageSize,
       dateStart:   uiState.dateStart       || undefined,
       dateEnd:     uiState.dateEnd         || undefined,
-      searchValue: uiState.searchKw        || undefined,
+      searchValue: uiState.searchValue        || undefined,
       method:      uiState.searchMethod    || undefined,
       status:      uiState.searchStatus    || undefined,
       path:        uiState.searchPath      || undefined,
@@ -154,7 +154,7 @@ window.SyApiLogMng = {
     const onSearch     = () => { pager.pageNo = 1; handleSearchList(); };
     const onReset      = () => {
       Object.assign(uiState, {
-        searchKw:'', searchMethod:'', searchStatus:'', searchPath:'',
+        searchValue:'', searchMethod:'', searchStatus:'', searchPath:'',
         searchAppTypeCd:'', searchUiNm:'', searchTraceId:'',
         dateRange:'1week', srchOpen:false,
       });
@@ -224,7 +224,7 @@ window.SyApiLogMng = {
         <option v-for="c in codes.http_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.searchPath" placeholder="API 경로 (예: /bo/sy/)" style="width:190px" @keyup.enter="onSearch" />
-      <input v-model="uiState.searchKw" placeholder="IP / 사용자ID" style="width:150px" @keyup.enter="onSearch" />
+      <input v-model="uiState.searchValue" placeholder="IP / 사용자ID" style="width:150px" @keyup.enter="onSearch" />
       <div class="search-actions" style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0;">
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
         <button class="btn btn-primary" @click="onSearch">조회</button>

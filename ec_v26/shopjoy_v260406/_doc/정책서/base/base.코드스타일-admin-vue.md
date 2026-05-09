@@ -22,7 +22,7 @@
 
 ```js
 // ❌ 금지 — 검색 파라미터 변경 시 watch로 조회 트리거
-watch(() => searchParam.kw, () => handleSearchList());
+watch(() => searchParam.searchValue, () => handleSearchList());
 watch(() => uiState.selectedPath, () => handleSearchList());
 
 // ✅ 대체 — 이벤트 함수에서 직접 호출

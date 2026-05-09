@@ -279,7 +279,7 @@ const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(
 
 // ❌ 피할 패턴
 const params = { pageNo: 1, pageSize: 100000 };
-if (searchParam.kw) params.kw = searchParam.kw;
+if (searchParam.searchValue) params.searchValue = searchParam.searchValue;
 if (searchParam.grp) params.grp = searchParam.grp;
 // ... 반복
 ```
@@ -492,7 +492,7 @@ const onReset = () => {
 
 // ❌ 피할 패턴
 const onReset = () => {
-  searchParam.kw = searchParamOrg.kw;
+  searchParam.searchValue = searchParamOrg.searchValue;
   searchParam.type = searchParamOrg.type;
   searchParam.useYn = searchParamOrg.useYn;
   onSearch();

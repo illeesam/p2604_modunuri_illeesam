@@ -12,14 +12,14 @@ window.SyAttachMng = {
     const attachGrps = reactive([]);
     const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null });
     const codes = reactive({ attach_type: [], active_statuses: [], date_range_opts: [] });
-    const grpSearchKw = ref('');
+    const grpSearchValue = ref('');
     const pager = reactive({
       pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
       pageNums: [], pageSizes: [10, 20, 50, 100],
     });
 
     const cfFilteredGrps = computed(() => {
-      const kw = grpSearchKw.value.trim().toLowerCase();
+      const kw = grpSearchValue.value.trim().toLowerCase();
       if (!kw) return attachGrps;
       return attachGrps.filter(g =>
         (g.grpNm || '').toLowerCase().includes(kw) ||
@@ -214,7 +214,7 @@ window.SyAttachMng = {
     // -- return ---------------------------------------------------------------
     return {
       attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
-      attachGrps, cfFilteredGrps, grpSearchKw, grpForm, pager,
+      attachGrps, cfFilteredGrps, grpSearchValue, grpForm, pager,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
@@ -233,7 +233,7 @@ window.SyAttachMng = {
           <button class="btn btn-primary btn-sm" @click="openGrpNew">+ 신규</button>
         </div>
         <div style="padding:0 0 10px 0;">
-          <input v-model="grpSearchKw" placeholder="그룹명 / 코드 검색" style="width:100%;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" />
+          <input v-model="grpSearchValue" placeholder="그룹명 / 코드 검색" style="width:100%;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" />
         </div>
 
         <!-- 그룹 폼 -->
@@ -298,7 +298,7 @@ window.SyAttachMng = {
             <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ cfSiteNm }}</span>
           </div>
         </div>
-        <div v-if="!cfFilteredGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">{{ grpSearchKw ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}</div>
+        <div v-if="!cfFilteredGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">{{ grpSearchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}</div>
       </div>
     </div>
 

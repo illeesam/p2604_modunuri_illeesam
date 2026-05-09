@@ -214,7 +214,7 @@ const closeProductModal = () => {
 
 ```html
 <!-- 검색란 -->
-<input v-model="searchParam.kw" placeholder="검색">
+<input v-model="searchParam.searchValue" placeholder="검색">
 <select v-model="searchParam.type">
   <option value="">전체</option>
   <option value="A">타입A</option>
@@ -265,7 +265,7 @@ const closeProductModal = () => {
 ## 주의사항
 
 1. **watch 의존성**: `watch([searchParam], ...)` 형태로 reactive 객체 전체 감시
-   - 개별 필드 감시 필요 시: `watch(() => searchParam.kw, ...)`
+   - 개별 필드 감시 필요 시: `watch(() => searchParam.searchValue, ...)`
 
 2. **Yup validation**: formErrors는 동적 키(validation 결과) 저장용
    ```javascript

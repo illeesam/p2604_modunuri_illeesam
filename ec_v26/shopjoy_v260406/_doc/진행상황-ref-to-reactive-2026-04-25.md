@@ -180,7 +180,7 @@ const openDetail = (row) => {
 
 3. **Watch 의존성**
    - `watch([searchParam], ...)` 전체 감시
-   - `watch(() => searchParam.kw, ...)` 개별 감시
+   - `watch(() => searchParam.searchValue, ...)` 개별 감시
 
 ---
 

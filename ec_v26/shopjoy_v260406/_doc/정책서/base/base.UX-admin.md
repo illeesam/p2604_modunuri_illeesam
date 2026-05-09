@@ -413,7 +413,7 @@ Vue.onMounted(() => {
 <div class="card">
   <div class="search-bar">
     <label class="search-label">이름/이메일</label>
-    <input v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="이름 또는 이메일 검색" />
+    <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="이름 또는 이메일 검색" />
     
     <label class="search-label">등급</label>
     <select v-model="searchParam.grade">
@@ -456,10 +456,10 @@ Vue.onMounted(() => {
 
 ```
 ❌ 금지 — v-model 입력 즉시 computed filter 반응
-const cfFilteredRows = computed(() => rows.filter(r => r.name.includes(searchParam.kw)));
+const cfFilteredRows = computed(() => rows.filter(r => r.name.includes(searchParam.searchValue)));
 
 ❌ 금지 — watch로 searchParam 변경 시 자동 조회
-watch(() => searchParam.kw, () => handleSearchList());
+watch(() => searchParam.searchValue, () => handleSearchList());
 
 ✅ 올바른 패턴 — 조회 버튼 / Enter 에서만 API 호출
 const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };

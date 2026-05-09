@@ -16,7 +16,7 @@ window.SyMemberLoginHist = {
       descOpen: false, isPageCodeLoad: false, srchOpen: false,
       activeTab: 'log',
       dateRange: '1week', dateStart: '', dateEnd: '',
-      searchKw: '', searchResultCd: '', searchIp: '',
+      searchValue: '', searchResultCd: '', searchIp: '',
       searchUiNm: '', searchTraceId: '',
     });
 
@@ -67,7 +67,7 @@ window.SyMemberLoginHist = {
       ip:         uiState.searchIp    || undefined,
       uiNm:       uiState.searchUiNm  || undefined,
       traceId:    uiState.searchTraceId || undefined,
-      searchValue: uiState.searchKw   || undefined,
+      searchValue: uiState.searchValue   || undefined,
     });
 
     const handleSearchLog = async () => {
@@ -107,7 +107,7 @@ window.SyMemberLoginHist = {
     const onTabChange = tab => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
     const onSearch    = () => { pager.pageNo = 1; handleSearchList(); };
     const onReset     = () => {
-      Object.assign(uiState, { searchKw:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
+      Object.assign(uiState, { searchValue:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
       onDateRangeChange(); pager.pageNo = 1; handleSearchList();
     };
     const setPage      = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo=n; handleSearchList(); } };
@@ -173,7 +173,7 @@ window.SyMemberLoginHist = {
         <option v-for="c in codes.login_results" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.searchIp" placeholder="IP 주소" style="width:140px" @keyup.enter="onSearch" />
-      <input v-model="uiState.searchKw" placeholder="회원ID / 로그인ID" style="width:170px" @keyup.enter="onSearch" />
+      <input v-model="uiState.searchValue" placeholder="회원ID / 로그인ID" style="width:170px" @keyup.enter="onSearch" />
       <div class="search-actions" style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0;">
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
         <button class="btn btn-primary" @click="onSearch">조회</button>

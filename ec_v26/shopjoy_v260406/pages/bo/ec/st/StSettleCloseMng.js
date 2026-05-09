@@ -42,7 +42,7 @@ window.StSettleCloseMng = {
           boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
           boApiSvc.stSettleClose.getPage({
-            searchValue: searchKw.value, status: searchStatus.value, pageNo: 1, pageSize: 100
+            searchValue: searchValue.value, status: searchStatus.value, pageNo: 1, pageSize: 100
           }, '정산마감관리', '이력조회'),
         ]);
         orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
@@ -57,14 +57,14 @@ window.StSettleCloseMng = {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    const searchKw = ref('');
+    const searchValue = ref('');
     const searchStatus = ref('');
 
     const onSearch = async () => {
       await handleSearchData('DEFAULT');
     };
     const onReset = () => {
-      searchKw.value = '';
+      searchValue.value = '';
       searchStatus.value = '';
       onSearch();
     };
@@ -125,14 +125,14 @@ window.StSettleCloseMng = {
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
     const cfFilteredClose = computed(() => closeList.filter(r => {
-      if (searchKw.value && !r.closeMon.includes(searchKw.value) && !r.regUserNm.includes(searchKw.value)) return false;
+      if (searchValue.value && !r.closeMon.includes(searchValue.value) && !r.regUserNm.includes(searchValue.value)) return false;
       if (searchStatus.value && r.status !== searchStatus.value) return false;
       return true;
     }));
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, closeList, cfFilteredClose, searchKw, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
+    return { uiState, closeList, cfFilteredClose, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
   },
   template: /* html */`
 <div>
@@ -184,7 +184,7 @@ window.StSettleCloseMng = {
   <!-- -- 마감 이력 ---------------------------------------------------------- -->
   <div class="card" style="margin-top:12px">
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="searchKw" placeholder="정산월 / 담당자 검색" style="width:180px" @keyup.enter="onSearch" />
+      <input v-model="searchValue" placeholder="정산월 / 담당자 검색" style="width:180px" @keyup.enter="onSearch" />
       <select v-model="searchStatus" style="width:130px">
         <option value="">상태 전체</option>
         <option v-for="c in codes.settle_close_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>

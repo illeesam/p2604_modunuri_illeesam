@@ -15,7 +15,7 @@ window.DpDispUiDtl = {
     const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_ui_types: [], use_yn: [] });
     const displays = reactive([]);
-    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickKw: '' });
+    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickSearchValue: '' });
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
@@ -161,14 +161,14 @@ window.DpDispUiDtl = {
     /* 영역 선택 팝업 */
     const cfAvailableAreas = computed(() => {
       const all = areas.filter(c => c.codeGrp === 'DISP_AREA');
-      const kw  = uiState.pickKw.trim().toLowerCase();
+      const kw  = uiState.pickSearchValue.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, a => {
         if (a.uiCode === form.codeValue) return false;
         if (kw && !(a.codeLabel||'').toLowerCase().includes(kw) && !(a.codeValue||'').toLowerCase().includes(kw)) return false;
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
-    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; };
+    const openPick  = () => { uiState.pickOpen = true; uiState.pickSearchValue = ''; };
     const onAreaPicked = (a) => {
       if (!form.codeValue) { showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       a.uiCode = form.codeValue;

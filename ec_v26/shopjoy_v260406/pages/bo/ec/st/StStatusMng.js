@@ -10,7 +10,7 @@ window.StStatusMng = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchKw: '', orderSearchKw: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchKw: '', promoSearchType: '', settleSearchMonth: ''});;
+const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchValue: '', orderSearchValue: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: ''});;
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
 
@@ -95,7 +95,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* ════════════════════════════════════════════════
      * 1. 업체별현황
      * ════════════════════════════════════════════════ */
-    const vendorSearchKw  = ref('');
+    const vendorSearchValue  = ref('');
     const vendorPager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfVendorRows = computed(() => {
@@ -113,7 +113,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // -- return ---------------------------------------------------------------
 
         return { vendorId: v.vendorId, vendorNm: v.vendorNm, orderCnt: vOrders.length, sales, refund, netSales, comm, settle: netSales - comm };
-      }).filter(r => !uiState.vendorSearchKw || r.vendorNm.includes(uiState.vendorSearchKw));
+      }).filter(r => !uiState.vendorSearchValue || r.vendorNm.includes(uiState.vendorSearchValue));
     });
     const cfVendorTotal = computed(() => cfVendorRows.value.length);
     const cfVendorPages = computed(() => Math.max(1, Math.ceil(cfVendorTotal.value / vendorPager.size)));
@@ -123,11 +123,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* ════════════════════════════════════════════════
      * 2. 주문별현황
      * ════════════════════════════════════════════════ */
-    const orderSearchKw  = ref('');
+    const orderSearchValue  = ref('');
         const orderPager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfOrderRows = computed(() => {
-      const kw = uiState.orderSearchKw.trim().toLowerCase();
+      const kw = uiState.orderSearchValue.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(orderList, o => {
         if (!inRange(o.orderDate)) return false;
         if (uiState.orderSearchStatus && o.status !== uiState.orderSearchStatus) return false;
@@ -191,11 +191,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* ════════════════════════════════════════════════
      * 4. 프로모션별현황
      * ════════════════════════════════════════════════ */
-    const promoSearchKw   = ref('');
+    const promoSearchValue   = ref('');
         const promoPager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfPromoRows = computed(() => {
-      const kw = uiState.promoSearchKw.trim().toLowerCase();
+      const kw = uiState.promoSearchValue.trim().toLowerCase();
       const couponRows = couponList.map(c => {
         const discountAmt = c.discountType === 'amount' ? c.discountValue * c.useCount
           : c.discountType === 'rate' ? Math.round(50000 * (c.discountValue / 100) * c.useCount) // 평균 주문금액 가정
@@ -277,8 +277,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       await handleSearchData('DEFAULT');
     };
     const onReset  = () => {
-      uiState.vendorSearchKw = ''; uiState.orderSearchKw = ''; uiState.orderSearchStatus = '';
-      uiState.claimSearchType = ''; uiState.claimSearchStatus = ''; uiState.promoSearchKw = ''; uiState.promoSearchType = ''; uiState.settleSearchMonth = '';
+      uiState.vendorSearchValue = ''; uiState.orderSearchValue = ''; uiState.orderSearchStatus = '';
+      uiState.claimSearchType = ''; uiState.claimSearchStatus = ''; uiState.promoSearchValue = ''; uiState.promoSearchType = ''; uiState.settleSearchMonth = '';
       onSearch();
     };
 
@@ -378,7 +378,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <!-- -- 검색 ----------------------------------------------------------- -->
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="uiState.vendorSearchKw" placeholder="업체명 검색" style="width:200px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="uiState.vendorSearchValue" placeholder="업체명 검색" style="width:200px" @keyup.enter="() => onSearch?.()" />
     </div>
     <!-- -- 테이블 ---------------------------------------------------------- -->
     <div class="toolbar"><span class="list-count">총 {{ cfVendorTotal }}개 업체</span></div>
@@ -424,7 +424,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </div>
     </div>
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="uiState.orderSearchKw" placeholder="주문ID / 고객명 / 상품명" style="width:220px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="uiState.orderSearchValue" placeholder="주문ID / 고객명 / 상품명" style="width:220px" @keyup.enter="() => onSearch?.()" />
       <select v-model="uiState.orderSearchStatus" style="width:130px">
         <option value="">상태 전체</option>
         <option v-for="c in codes.st_order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -529,7 +529,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <option value="">유형 전체</option>
         <option v-for="c in codes.promo_types_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input v-model="uiState.promoSearchKw" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="uiState.promoSearchValue" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </div>
     <div class="toolbar"><span class="list-count">총 {{ cfPromoTotal }}개</span></div>
     <table class="bo-table">
