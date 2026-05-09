@@ -5,117 +5,162 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdTagMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdTagRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PdTagService {
 
-
     private final PdTagMapper pdTagMapper;
     private final PdTagRepository pdTagRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PdTagDto getById(String id) {
-        // pd_tag :: select one :: id [orm:mybatis]
-        PdTagDto result = pdTagMapper.selectById(id);
-        return result;
+    public PdTagDto.Item getById(String id) {
+        PdTagDto.Item dto = pdTagMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PdTagDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pd_tag :: select list :: p [orm:mybatis]
-        List<PdTagDto> result = pdTagMapper.selectList(p);
-        return result;
+    public PdTag findById(String id) {
+        return pdTagRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PdTagDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pd_tag :: select page :: [orm:mybatis]
-        return PageResult.of(pdTagMapper.selectPageList(p), pdTagMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pdTagRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PdTag entity) {
-        // pd_tag :: update :: [orm:mybatis]
-        int result = pdTagMapper.updateSelective(entity);
-        return result;
+    public List<PdTagDto.Item> getList(PdTagDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pdTagMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public PdTagDto.PageResponse getPageData(PdTagDto.Request req) {
+        PageHelper.addPaging(req);
+        PdTagDto.PageResponse res = new PdTagDto.PageResponse();
+        List<PdTagDto.Item> list = pdTagMapper.selectPageList(req);
+        long count = pdTagMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public PdTag create(PdTag entity) {
-        entity.setTagId(CmUtil.generateId("pd_tag"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pd_tag :: insert or update :: [orm:jpa]
-        PdTag result = pdTagRepository.save(entity);
-        return result;
+    public PdTag create(PdTag body) {
+        body.setTagId(CmUtil.generateId("pd_tag"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PdTag saved = pdTagRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getTagId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PdTag save(PdTag entity) {
-        if (!pdTagRepository.existsById(entity.getTagId()))
+        if (!existsById(entity.getTagId()))
             throw new CmBizException("존재하지 않는 PdTag입니다: " + entity.getTagId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pd_tag :: insert or update :: [orm:jpa]
-        PdTag result = pdTagRepository.save(entity);
-        return result;
+        PdTag saved = pdTagRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getTagId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PdTag update(String id, PdTag body) {
+        PdTag entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "tagId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PdTag saved = pdTagRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PdTag updatePartial(PdTag entity) {
+        if (entity.getTagId() == null) throw new CmBizException("tagId 가 필요합니다.");
+        if (!existsById(entity.getTagId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getTagId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pdTagMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getTagId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pdTagRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PdTag입니다: " + id);
-        // pd_tag :: delete :: id [orm:jpa]
-        pdTagRepository.deleteById(id);
+        PdTag entity = findById(id);
+        pdTagRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PdTag> rows) {
+    public List<PdTag> saveList(List<PdTag> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PdTag row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setTagId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_tag"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pdTagRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getTagId(), "tagId must not be null");
-                PdTag entity = pdTagRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "tagId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pdTagRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getTagId(), "tagId must not be null");
-                if (pdTagRepository.existsById(id)) pdTagRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getTagId() != null)
+            .map(PdTag::getTagId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pdTagRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PdTag> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getTagId() != null)
+            .toList();
+        for (PdTag row : updateRows) {
+            PdTag entity = findById(row.getTagId());
+            VoUtil.voCopyExclude(row, entity, "tagId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pdTagRepository.save(entity);
+            upsertedIds.add(entity.getTagId());
+        }
+        em.flush();
+
+        List<PdTag> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PdTag row : insertRows) {
+            row.setTagId(CmUtil.generateId("pd_tag"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pdTagRepository.save(row);
+            upsertedIds.add(row.getTagId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PdTag> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

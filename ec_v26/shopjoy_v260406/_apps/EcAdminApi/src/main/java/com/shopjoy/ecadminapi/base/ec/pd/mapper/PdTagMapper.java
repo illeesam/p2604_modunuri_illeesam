@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface PdTagMapper {
 
-    PdTagDto selectById(@Param("id") String id);
+    PdTagDto.Item selectById(@Param("id") String id);
 
-    List<PdTagDto> selectList(Map<String, Object> p);
+    List<PdTagDto.Item> selectList(PdTagDto.Request req);
 
-    List<PdTagDto> selectPageList(Map<String, Object> p);
+    List<PdTagDto.Item> selectPageList(PdTagDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(PdTagDto.Request req);
 
     int updateSelective(PdTag entity);
 }

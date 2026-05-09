@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdReviewService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,26 +31,20 @@ public class BoPdReviewController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PdReviewDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<PdReviewDto> result = boPdReviewService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PdReviewDto.Item>>> list(@Valid @ModelAttribute PdReviewDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PdReviewDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<PdReviewDto> result = boPdReviewService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PdReviewDto.PageResponse>> page(@Valid @ModelAttribute PdReviewDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewDto>> getById(@PathVariable("id") String id) {
-        PdReviewDto result = boPdReviewService.getById(id);
+    public ResponseEntity<ApiResponse<PdReviewDto.Item>> getById(@PathVariable("id") String id) {
+        PdReviewDto.Item result = boPdReviewService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -63,14 +57,14 @@ public class BoPdReviewController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewDto>> update(@PathVariable("id") String id, @RequestBody PdReview body) {
-        PdReviewDto result = boPdReviewService.update(id, body);
+    public ResponseEntity<ApiResponse<PdReview>> update(@PathVariable("id") String id, @RequestBody PdReview body) {
+        PdReview result = boPdReviewService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewDto>> upsert(@PathVariable("id") String id, @RequestBody PdReview body) {
+    public ResponseEntity<ApiResponse<PdReview>> upsert(@PathVariable("id") String id, @RequestBody PdReview body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.update(id, body)));
     }
 
@@ -89,8 +83,7 @@ public class BoPdReviewController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdReview> rows) {
-        boPdReviewService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<PdReview>>> saveList(@RequestBody List<PdReview> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.saveList(rows), "저장되었습니다."));
     }
 }

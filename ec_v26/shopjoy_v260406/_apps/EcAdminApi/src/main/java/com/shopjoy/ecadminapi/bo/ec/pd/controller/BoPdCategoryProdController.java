@@ -3,7 +3,7 @@ package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdCategoryProdService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +24,8 @@ public class BoPdCategoryProdController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PdCategoryProdDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<PdCategoryProdDto> result = boPdCategoryProdService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PdCategoryProdDto.PageResponse>> page(@Valid @ModelAttribute PdCategoryProdDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdCategoryProdService.getPageData(req)));
     }
 
     /** saveProds — 저장 */

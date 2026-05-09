@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdTagService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-
 /**
  * BO 태그 API — /api/bo/ec/pd/tag
  */
@@ -23,20 +21,20 @@ public class BoPdTagController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PdTagDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdTagService.getList(p)));
+    public ResponseEntity<ApiResponse<List<PdTagDto.Item>>> list(@Valid @ModelAttribute PdTagDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdTagService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PdTagDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdTagService.getPageData(p)));
+    public ResponseEntity<ApiResponse<PdTagDto.PageResponse>> page(@Valid @ModelAttribute PdTagDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdTagService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdTagDto>> getById(@PathVariable("id") String id) {
-        PdTagDto result = boPdTagService.getById(id);
+    public ResponseEntity<ApiResponse<PdTagDto.Item>> getById(@PathVariable("id") String id) {
+        PdTagDto.Item result = boPdTagService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -48,13 +46,13 @@ public class BoPdTagController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdTagDto>> update(@PathVariable("id") String id, @RequestBody PdTag body) {
+    public ResponseEntity<ApiResponse<PdTag>> update(@PathVariable("id") String id, @RequestBody PdTag body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdTagService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdTagDto>> upsert(@PathVariable("id") String id, @RequestBody PdTag body) {
+    public ResponseEntity<ApiResponse<PdTag>> upsert(@PathVariable("id") String id, @RequestBody PdTag body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdTagService.update(id, body)));
     }
 
@@ -67,8 +65,7 @@ public class BoPdTagController {
 
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdTag> rows) {
-        boPdTagService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<PdTag>>> saveList(@RequestBody List<PdTag> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdTagService.saveList(rows), "저장되었습니다."));
     }
 }

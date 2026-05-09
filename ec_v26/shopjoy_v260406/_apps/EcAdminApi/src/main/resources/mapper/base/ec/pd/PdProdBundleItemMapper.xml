@@ -30,7 +30,7 @@
     </sql>
 
     <!-- 묶음상품 구성 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdBundleItemDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdBundleItemDto$Item">
         SELECT  /* base.ec.pd :: PdProdBundleItem :: selectById */
               i.*
             , ste.site_nm AS site_nm
@@ -44,7 +44,7 @@
     </select>
 
     <!-- 묶음상품 구성 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdBundleItemDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdBundleItemDto$Item">
         SELECT  /* base.ec.pd :: PdProdBundleItem :: selectList */
               i.*
             , ste.site_nm AS site_nm
@@ -60,7 +60,7 @@
     </select>
 
     <!-- 묶음상품 구성 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdBundleItemDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdBundleItemDto$Item">
         SELECT  /* base.ec.pd :: PdProdBundleItem :: selectPageList */
               i.*
             , ste.site_nm AS site_nm

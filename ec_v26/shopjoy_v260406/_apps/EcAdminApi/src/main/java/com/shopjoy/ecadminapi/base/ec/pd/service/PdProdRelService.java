@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdRel;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdRelMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdRelRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,93 +27,140 @@ public class PdProdRelService {
     private final PdProdRelMapper pdProdRelMapper;
     private final PdProdRelRepository pdProdRelRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PdProdRelDto getById(String id) {
-        // pd_prod_rel :: select one :: id [orm:mybatis]
-        PdProdRelDto result = pdProdRelMapper.selectById(id);
-        return result;
+    public PdProdRelDto.Item getById(String id) {
+        PdProdRelDto.Item dto = pdProdRelMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PdProdRelDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pd_prod_rel :: select list :: p [orm:mybatis]
-        List<PdProdRelDto> result = pdProdRelMapper.selectList(p);
-        return result;
+    public PdProdRel findById(String id) {
+        return pdProdRelRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PdProdRelDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pd_prod_rel :: select page :: [orm:mybatis]
-        return PageResult.of(pdProdRelMapper.selectPageList(p), pdProdRelMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pdProdRelRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PdProdRel entity) {
-        // pd_prod_rel :: update :: [orm:mybatis]
-        int result = pdProdRelMapper.updateSelective(entity);
-        return result;
+    public List<PdProdRelDto.Item> getList(PdProdRelDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pdProdRelMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public PdProdRelDto.PageResponse getPageData(PdProdRelDto.Request req) {
+        PageHelper.addPaging(req);
+        PdProdRelDto.PageResponse res = new PdProdRelDto.PageResponse();
+        List<PdProdRelDto.Item> list = pdProdRelMapper.selectPageList(req);
+        long count = pdProdRelMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public PdProdRel create(PdProdRel entity) {
-        entity.setProdRelId(CmUtil.generateId("pd_prod_rel"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pd_prod_rel :: insert or update :: [orm:jpa]
-        PdProdRel result = pdProdRelRepository.save(entity);
-        return result;
+    public PdProdRel create(PdProdRel body) {
+        body.setProdRelId(CmUtil.generateId("pd_prod_rel"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PdProdRel saved = pdProdRelRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getProdRelId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PdProdRel save(PdProdRel entity) {
-        if (!pdProdRelRepository.existsById(entity.getProdRelId()))
+        if (!existsById(entity.getProdRelId()))
             throw new CmBizException("존재하지 않는 PdProdRel입니다: " + entity.getProdRelId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pd_prod_rel :: insert or update :: [orm:jpa]
-        PdProdRel result = pdProdRelRepository.save(entity);
-        return result;
+        PdProdRel saved = pdProdRelRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getProdRelId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PdProdRel update(String id, PdProdRel body) {
+        PdProdRel entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "prodRelId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PdProdRel saved = pdProdRelRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PdProdRel updatePartial(PdProdRel entity) {
+        if (entity.getProdRelId() == null) throw new CmBizException("prodRelId 가 필요합니다.");
+        if (!existsById(entity.getProdRelId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdRelId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pdProdRelMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getProdRelId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pdProdRelRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PdProdRel입니다: " + id);
-        // pd_prod_rel :: delete :: id [orm:jpa]
-        pdProdRelRepository.deleteById(id);
+        PdProdRel entity = findById(id);
+        pdProdRelRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
-    /** saveList — 저장 */
+
     @Transactional
-    public void saveList(List<PdProdRel> rows) {
+    public List<PdProdRel> saveList(List<PdProdRel> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PdProdRel row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setProdRelId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_prod_rel"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pdProdRelRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getProdRelId(), "prodRelId must not be null");
-                PdProdRel entity = pdProdRelRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "prodRelId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pdProdRelRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getProdRelId(), "prodRelId must not be null");
-                if (pdProdRelRepository.existsById(id)) pdProdRelRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getProdRelId() != null)
+            .map(PdProdRel::getProdRelId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pdProdRelRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PdProdRel> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getProdRelId() != null)
+            .toList();
+        for (PdProdRel row : updateRows) {
+            PdProdRel entity = findById(row.getProdRelId());
+            VoUtil.voCopyExclude(row, entity, "prodRelId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pdProdRelRepository.save(entity);
+            upsertedIds.add(entity.getProdRelId());
+        }
+        em.flush();
+
+        List<PdProdRel> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PdProdRel row : insertRows) {
+            row.setProdRelId(CmUtil.generateId("pd_prod_rel"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pdProdRelRepository.save(row);
+            upsertedIds.add(row.getProdRelId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PdProdRel> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

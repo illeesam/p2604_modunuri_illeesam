@@ -4,14 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdProdService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-
 /**
  * BO 상품 API
  * GET    /api/bo/ec/pd/prod       — 목록
@@ -31,26 +29,20 @@ public class BoPdProdController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PdProdDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<PdProdDto> result = boPdProdService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<PdProdDto.Item>>> list(@Valid @ModelAttribute PdProdDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<PdProdDto> result = boPdProdService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PdProdDto.PageResponse>> page(@Valid @ModelAttribute PdProdDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdDto>> getById(@PathVariable("id") String id) {
-        PdProdDto result = boPdProdService.getById(id);
+    public ResponseEntity<ApiResponse<PdProdDto.Item>> getById(@PathVariable("id") String id) {
+        PdProdDto.Item result = boPdProdService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -63,14 +55,14 @@ public class BoPdProdController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdDto>> update(@PathVariable("id") String id, @RequestBody PdProd body) {
-        PdProdDto result = boPdProdService.update(id, body);
+    public ResponseEntity<ApiResponse<PdProd>> update(@PathVariable("id") String id, @RequestBody PdProd body) {
+        PdProd result = boPdProdService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdDto>> upsert(@PathVariable("id") String id, @RequestBody PdProd body) {
+    public ResponseEntity<ApiResponse<PdProd>> upsert(@PathVariable("id") String id, @RequestBody PdProd body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdService.update(id, body)));
     }
 
@@ -82,8 +74,7 @@ public class BoPdProdController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdProd> rows) {
-        boPdProdService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<PdProd>>> saveList(@RequestBody List<PdProd> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdService.saveList(rows), "저장되었습니다."));
     }
 }

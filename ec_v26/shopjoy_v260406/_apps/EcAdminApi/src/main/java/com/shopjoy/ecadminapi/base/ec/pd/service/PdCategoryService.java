@@ -4,119 +4,163 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PdCategoryService {
 
-
     private final PdCategoryMapper pdCategoryMapper;
     private final PdCategoryRepository pdCategoryRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PdCategoryDto getById(String id) {
-        // pd_category :: select one :: id [orm:mybatis]
-        PdCategoryDto result = pdCategoryMapper.selectById(id);
-        return result;
+    public PdCategoryDto.Item getById(String id) {
+        PdCategoryDto.Item dto = pdCategoryMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PdCategoryDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pd_category :: select list :: p [orm:mybatis]
-        List<PdCategoryDto> result = pdCategoryMapper.selectList(p);
-        return result;
+    public PdCategory findById(String id) {
+        return pdCategoryRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PdCategoryDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pd_category :: select page :: [orm:mybatis]
-        return PageResult.of(pdCategoryMapper.selectPageList(p), pdCategoryMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pdCategoryRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PdCategory entity) {
-        // pd_category :: update :: [orm:mybatis]
-        int result = pdCategoryMapper.updateSelective(entity);
-        return result;
+    public List<PdCategoryDto.Item> getList(PdCategoryDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pdCategoryMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public PdCategoryDto.PageResponse getPageData(PdCategoryDto.Request req) {
+        PageHelper.addPaging(req);
+        PdCategoryDto.PageResponse res = new PdCategoryDto.PageResponse();
+        List<PdCategoryDto.Item> list = pdCategoryMapper.selectPageList(req);
+        long count = pdCategoryMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public PdCategory create(PdCategory entity) {
-        entity.setCategoryId(CmUtil.generateId("pd_category"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pd_category :: insert or update :: [orm:jpa]
-        PdCategory result = pdCategoryRepository.save(entity);
-        return result;
+    public PdCategory create(PdCategory body) {
+        body.setCategoryId(CmUtil.generateId("pd_category"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PdCategory saved = pdCategoryRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getCategoryId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PdCategory save(PdCategory entity) {
-        if (!pdCategoryRepository.existsById(entity.getCategoryId()))
+        if (!existsById(entity.getCategoryId()))
             throw new CmBizException("존재하지 않는 PdCategory입니다: " + entity.getCategoryId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pd_category :: insert or update :: [orm:jpa]
-        PdCategory result = pdCategoryRepository.save(entity);
-        return result;
+        PdCategory saved = pdCategoryRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getCategoryId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PdCategory update(String id, PdCategory body) {
+        PdCategory entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "categoryId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PdCategory saved = pdCategoryRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PdCategory updatePartial(PdCategory entity) {
+        if (entity.getCategoryId() == null) throw new CmBizException("categoryId 가 필요합니다.");
+        if (!existsById(entity.getCategoryId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCategoryId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pdCategoryMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getCategoryId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pdCategoryRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PdCategory입니다: " + id);
-        // pd_category :: delete :: id [orm:jpa]
-        pdCategoryRepository.deleteById(id);
+        PdCategory entity = findById(id);
+        pdCategoryRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PdCategory> rows) {
+    public List<PdCategory> saveList(List<PdCategory> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PdCategory row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setCategoryId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_category"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pdCategoryRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getCategoryId(), "categoryId must not be null");
-                PdCategory entity = pdCategoryRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "categoryId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pdCategoryRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getCategoryId(), "categoryId must not be null");
-                if (pdCategoryRepository.existsById(id)) pdCategoryRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getCategoryId() != null)
+            .map(PdCategory::getCategoryId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pdCategoryRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PdCategory> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getCategoryId() != null)
+            .toList();
+        for (PdCategory row : updateRows) {
+            PdCategory entity = findById(row.getCategoryId());
+            VoUtil.voCopyExclude(row, entity, "categoryId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pdCategoryRepository.save(entity);
+            upsertedIds.add(entity.getCategoryId());
+        }
+        em.flush();
+
+        List<PdCategory> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PdCategory row : insertRows) {
+            row.setCategoryId(CmUtil.generateId("pd_category"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pdCategoryRepository.save(row);
+            upsertedIds.add(row.getCategoryId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PdCategory> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

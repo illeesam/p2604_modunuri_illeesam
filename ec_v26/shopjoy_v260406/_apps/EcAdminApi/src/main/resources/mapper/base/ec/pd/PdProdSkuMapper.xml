@@ -29,7 +29,7 @@
     </sql>
 
     <!-- 상품 SKU 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto$Item">
         SELECT  /* base.ec.pd :: PdProdSku :: selectById */
               s.*
             , ste.site_nm AS site_nm
@@ -39,7 +39,7 @@
     </select>
 
     <!-- 상품 SKU 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto$Item">
         SELECT  /* base.ec.pd :: PdProdSku :: selectList */
               s.*
             , ste.site_nm AS site_nm
@@ -51,7 +51,7 @@
     </select>
 
     <!-- 상품 SKU 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto$Item">
         SELECT  /* base.ec.pd :: PdProdSku :: selectPageList */
               s.*
             , ste.site_nm AS site_nm

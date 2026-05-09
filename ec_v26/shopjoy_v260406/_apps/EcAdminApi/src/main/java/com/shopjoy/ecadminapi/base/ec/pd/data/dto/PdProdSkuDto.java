@@ -1,31 +1,41 @@
 package com.shopjoy.ecadminapi.base.ec.pd.data.dto;
 
+import com.shopjoy.ecadminapi.common.data.BasePageResponse;
+import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter @NoArgsConstructor
-// 상품 SKU DTO
 public class PdProdSkuDto {
 
-    // ── pd_prod_sku ──────────────────────────────────────────────
-    private String skuId;
-    private String prodId;
-    private String optItemId1;
-    private String optItemId2;
-    private String skuCode;
-    private Long   addPrice;
-    private Integer stock;
-    private String useYn;
-    private Integer sortNo;
-    private String regBy;
-    private LocalDateTime regDate;
-    private String updBy;
-    private LocalDateTime updDate;
+    @Getter @Setter @NoArgsConstructor
+    public static class Request extends BaseRequest {
+        @Size(max = 1) private String useYn;
+        @Size(max = 21) private String skuId;
+    }
 
-    // ── JOIN: pd_prod_opt_item (x2) ──────────────────────────────
-    private String optItemNm1;
-    private String optItemNm2;
+    @Getter @Setter @NoArgsConstructor
+    public static class Item {
+        private String skuId;
+        private String prodId;
+        private String optItemId1;
+        private String optItemId2;
+        private String skuCode;
+        private Long addPrice;
+        private Integer stock;
+        private String useYn;
+        private Integer sortNo;
+        private String regBy;
+        private LocalDateTime regDate;
+        private String updBy;
+        private LocalDateTime updDate;
+        private String optItemNm1;
+        private String optItemNm2;
+    }
+
+    @Getter @Setter @NoArgsConstructor
+    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

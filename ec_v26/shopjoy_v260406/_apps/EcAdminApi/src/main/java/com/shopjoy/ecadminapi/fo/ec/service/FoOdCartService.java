@@ -31,9 +31,10 @@ public class FoOdCartService {
     private final OdCartRepository odCartRepository;
 
     /** getMyCart — 조회 */
-    public List<OdCartDto> getMyCart(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return odCartMapper.selectList(p);
+    public List<OdCartDto.Item> getMyCart(OdCartDto.Request req) {
+        if (req == null) req = new OdCartDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return odCartMapper.selectList(req);
     }
 
     /** addToCart — 추가 */

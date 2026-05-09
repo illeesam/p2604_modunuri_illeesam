@@ -11,13 +11,13 @@ import java.util.Map;
 @Mapper
 public interface PdReviewMapper {
 
-    PdReviewDto selectById(@Param("id") String id);
+    PdReviewDto.Item selectById(@Param("id") String id);
 
-    List<PdReviewDto> selectList(Map<String, Object> p);
+    List<PdReviewDto.Item> selectList(PdReviewDto.Request req);
 
-    List<PdReviewDto> selectPageList(Map<String, Object> p);
+    List<PdReviewDto.Item> selectPageList(PdReviewDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(PdReviewDto.Request req);
 
     int updateSelective(PdReview entity);
 

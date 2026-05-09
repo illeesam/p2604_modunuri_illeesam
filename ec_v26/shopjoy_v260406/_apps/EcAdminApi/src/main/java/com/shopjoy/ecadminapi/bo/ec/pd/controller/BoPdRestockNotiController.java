@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdRestockNotiService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,20 +23,20 @@ public class BoPdRestockNotiController {
 
     /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PdRestockNotiDto>>> list(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdRestockNotiService.getList(p)));
+    public ResponseEntity<ApiResponse<List<PdRestockNotiDto.Item>>> list(@Valid @ModelAttribute PdRestockNotiDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdRestockNotiService.getList(req)));
     }
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PdRestockNotiDto>>> page(@RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(boPdRestockNotiService.getPageData(p)));
+    public ResponseEntity<ApiResponse<PdRestockNotiDto.PageResponse>> page(@Valid @ModelAttribute PdRestockNotiDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdRestockNotiService.getPageData(req)));
     }
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNotiDto>> getById(@PathVariable("id") String id) {
-        PdRestockNotiDto result = boPdRestockNotiService.getById(id);
+    public ResponseEntity<ApiResponse<PdRestockNotiDto.Item>> getById(@PathVariable("id") String id) {
+        PdRestockNotiDto.Item result = boPdRestockNotiService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -48,13 +48,13 @@ public class BoPdRestockNotiController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNotiDto>> update(@PathVariable("id") String id, @RequestBody PdRestockNoti body) {
+    public ResponseEntity<ApiResponse<PdRestockNoti>> update(@PathVariable("id") String id, @RequestBody PdRestockNoti body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdRestockNotiService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNotiDto>> upsert(@PathVariable("id") String id, @RequestBody PdRestockNoti body) {
+    public ResponseEntity<ApiResponse<PdRestockNoti>> upsert(@PathVariable("id") String id, @RequestBody PdRestockNoti body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdRestockNotiService.update(id, body)));
     }
 
@@ -73,8 +73,7 @@ public class BoPdRestockNotiController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdRestockNoti> rows) {
-        boPdRestockNotiService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<PdRestockNoti>>> saveList(@RequestBody List<PdRestockNoti> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdRestockNotiService.saveList(rows), "저장되었습니다."));
     }
 }

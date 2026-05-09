@@ -1,15 +1,15 @@
 package com.shopjoy.ecadminapi.base.ec.pd.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdViewLog;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdhProdViewLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/ec/pd/prod-view-log")
@@ -18,27 +18,46 @@ public class PdhProdViewLogController {
 
     private final PdhProdViewLogService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<PdhProdViewLogDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<PdhProdViewLogDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<PdhProdViewLogDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<PdhProdViewLogDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdhProdViewLogDto>> getById(@PathVariable("id") String id) {
-        PdhProdViewLogDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PdhProdViewLogDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<PdhProdViewLogDto.Item>>> list(@Valid @ModelAttribute PdhProdViewLogDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<PdhProdViewLogDto.PageResponse>> page(@Valid @ModelAttribute PdhProdViewLogDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<PdhProdViewLog>> create(@RequestBody PdhProdViewLog entity) {
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<PdhProdViewLog>> save(@PathVariable("id") String id, @RequestBody PdhProdViewLog entity) {
+        entity.setLogId(id);
+        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<PdhProdViewLog>> updatePartial(@PathVariable("id") String id, @RequestBody PdhProdViewLog entity) {
+        entity.setLogId(id);
+        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
+        service.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<List<PdhProdViewLog>>> saveList(@RequestBody List<PdhProdViewLog> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdProdService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +25,8 @@ public class BoPdBundleController {
 
     /** page — 페이지 */
     @GetMapping("/api/bo/ec/pd/bundle/page")
-    public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(@RequestParam Map<String, Object> p) {
-        p.put("prodTypeCd", "BUNDLE");
-        return ResponseEntity.ok(ApiResponse.ok(boPdProdService.getPageData(p)));
+    public ResponseEntity<ApiResponse<PdProdDto.PageResponse>> page(@Valid @ModelAttribute PdProdDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdProdService.getPageData(req)));
     }
 
     /** create — 생성 */

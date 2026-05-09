@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface PdProdQnaMapper {
 
-    PdProdQnaDto selectById(@Param("id") String id);
+    PdProdQnaDto.Item selectById(@Param("id") String id);
 
-    List<PdProdQnaDto> selectList(Map<String, Object> p);
+    List<PdProdQnaDto.Item> selectList(PdProdQnaDto.Request req);
 
-    List<PdProdQnaDto> selectPageList(Map<String, Object> p);
+    List<PdProdQnaDto.Item> selectPageList(PdProdQnaDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(PdProdQnaDto.Request req);
 
     int updateSelective(PdProdQna entity);
 }

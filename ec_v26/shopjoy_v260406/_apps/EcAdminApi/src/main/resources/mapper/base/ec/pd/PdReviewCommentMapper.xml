@@ -35,7 +35,7 @@
     </sql>
 
     <!-- 리뷰 댓글 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto$Item">
         SELECT  /* base.ec.pd :: PdReviewComment :: selectById */
               c.*
             , ste.site_nm AS site_nm
@@ -47,7 +47,7 @@
     </select>
 
     <!-- 리뷰 댓글 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto$Item">
         SELECT  /* base.ec.pd :: PdReviewComment :: selectList */
               c.*
             , ste.site_nm AS site_nm
@@ -61,7 +61,7 @@
     </select>
 
     <!-- 리뷰 댓글 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto$Item">
         SELECT  /* base.ec.pd :: PdReviewComment :: selectPageList */
               c.*
             , ste.site_nm AS site_nm

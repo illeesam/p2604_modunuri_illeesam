@@ -29,10 +29,8 @@ public class FoOdCartController {
 
     /** myCart */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<OdCartDto>>> myCart(
-            @RequestParam Map<String, Object> p) {
-        List<OdCartDto> result = foOdCartService.getMyCart(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<OdCartDto.Item>>> myCart(@jakarta.validation.Valid @ModelAttribute OdCartDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foOdCartService.getMyCart(req)));
     }
 
     /** add — 추가 */

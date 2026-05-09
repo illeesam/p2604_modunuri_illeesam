@@ -65,7 +65,10 @@ public class FoCmDashboardController {
         int likeCount = likes != null ? likes.size() : 0;
 
         // 4) 주문 — 최근 목록 + 상태 카운트 (한 번 조회 후 분류)
-        List<OdOrderDto> myOrders = safeList(() -> orderService.getMyOrders(new HashMap<>(p)));
+        List<OdOrderDto.Item> myOrders = safeList(() -> {
+            OdOrderDto.Request r = new OdOrderDto.Request();
+            return orderService.getMyOrders(r);
+        });
 
         Map<String, Long> orderStatus = new LinkedHashMap<>();
         orderStatus.put("PAID",      countByStatus(myOrders, "PAID"));
@@ -92,7 +95,7 @@ public class FoCmDashboardController {
     }
 
     /** toRecentOrder — 변환 */
-    private Map<String, Object> toRecentOrder(OdOrderDto o) {
+    private Map<String, Object> toRecentOrder(OdOrderDto.Item o) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("orderId",       o.getOrderId());
         // 화면 호환: 기존 prodSummary 자리는 향후 OrderItem 조인으로 채울 예정
@@ -105,7 +108,7 @@ public class FoCmDashboardController {
     }
 
     /** countByStatus — 건수 */
-    private static long countByStatus(List<OdOrderDto> orders, String statusCd) {
+    private static long countByStatus(List<OdOrderDto.Item> orders, String statusCd) {
         if (orders == null) return 0L;
         return orders.stream().filter(o -> statusCd.equals(o.getOrderStatusCd())).count();
     }

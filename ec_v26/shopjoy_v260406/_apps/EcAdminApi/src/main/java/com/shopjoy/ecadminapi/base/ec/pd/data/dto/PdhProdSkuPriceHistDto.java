@@ -1,26 +1,37 @@
 package com.shopjoy.ecadminapi.base.ec.pd.data.dto;
 
+import com.shopjoy.ecadminapi.common.data.BasePageResponse;
+import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter @NoArgsConstructor
 public class PdhProdSkuPriceHistDto {
 
-    // ── pdh_prod_sku_price_hist ──────────────────────────────────────────
-    private String histId;
-    private String siteId;
-    private String skuId;
-    private String prodId;
-    private Long addPriceBefore;
-    private Long addPriceAfter;
-    private String chgReason;
-    private String chgBy;
-    private LocalDateTime chgDate;
-    private String regBy;
-    private LocalDateTime regDate;
+    @Getter @Setter @NoArgsConstructor
+    public static class Request extends BaseRequest {
+        @Size(max = 21) private String siteId;
+        @Size(max = 21) private String histId;
+    }
 
-    // ── JOIN: 필요 시 추가 ────────────────────────────────────────
+    @Getter @Setter @NoArgsConstructor
+    public static class Item {
+        private String histId;
+        private String siteId;
+        private String skuId;
+        private String prodId;
+        private Long addPriceBefore;
+        private Long addPriceAfter;
+        private String chgReason;
+        private String chgBy;
+        private LocalDateTime chgDate;
+        private String regBy;
+        private LocalDateTime regDate;
+    }
+
+    @Getter @Setter @NoArgsConstructor
+    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

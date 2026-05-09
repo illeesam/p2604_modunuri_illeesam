@@ -35,16 +35,14 @@ public class FoMyController {
 
     /** getOrders — 조회 */
     @GetMapping("/order/list")
-    public ResponseEntity<ApiResponse<List<OdOrderDto>>> getOrders(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyOrders(p)));
+    public ResponseEntity<ApiResponse<List<OdOrderDto.Item>>> getOrders(@jakarta.validation.Valid @ModelAttribute OdOrderDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyOrders(req)));
     }
 
     /** getClaims — 조회 */
     @GetMapping("/claim/list")
-    public ResponseEntity<ApiResponse<List<OdClaimDto>>> getClaims(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyClaims(p)));
+    public ResponseEntity<ApiResponse<List<OdClaimDto.Item>>> getClaims(@jakarta.validation.Valid @ModelAttribute OdClaimDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyClaims(req)));
     }
 
     /** getCoupons — 조회 */

@@ -2,13 +2,10 @@ package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdReviewMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdReviewRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.service.PdReviewService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,81 +13,36 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
+/**
+ * BO 리뷰 서비스 — base PdReviewService 위임 (thin wrapper) + changeStatus.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoPdReviewService {
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PdReviewMapper pdReviewMapper;
+
+    private final PdReviewService pdReviewService;
     private final PdReviewRepository pdReviewRepository;
+
     @PersistenceContext
     private EntityManager em;
 
-    /** getList — 조회 */
-    public List<PdReviewDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return pdReviewMapper.selectList(p);
-    }
+    public PdReviewDto.Item getById(String id) { return pdReviewService.getById(id); }
+    public List<PdReviewDto.Item> getList(PdReviewDto.Request req) { return pdReviewService.getList(req); }
+    public PdReviewDto.PageResponse getPageData(PdReviewDto.Request req) { return pdReviewService.getPageData(req); }
 
-    /** getPageData — 조회 */
-    public PageResult<PdReviewDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(pdReviewMapper.selectPageList(p), pdReviewMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-    }
+    @Transactional public PdReview create(PdReview body) { return pdReviewService.create(body); }
+    @Transactional public PdReview update(String id, PdReview body) { return pdReviewService.update(id, body); }
+    @Transactional public void delete(String id) { pdReviewService.delete(id); }
+    @Transactional public List<PdReview> saveList(List<PdReview> rows) { return pdReviewService.saveList(rows); }
 
-    /** getById — 조회 */
-    public PdReviewDto getById(String id) {
-        PdReviewDto dto = pdReviewMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        return dto;
-    }
-
-    /** create — 생성 */
+    /** changeStatus — reviewStatusCd 변경 (이력 보존) */
     @Transactional
-    public PdReview create(PdReview body) {
-        body.setReviewId("RV" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getAuthUser().authId());
-        body.setRegDate(LocalDateTime.now());
-        body.setUpdBy(SecurityUtil.getAuthUser().authId());
-        body.setUpdDate(LocalDateTime.now());
-        PdReview saved = pdReviewRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        return saved;
-    }
-
-    /** update — 수정 */
-    @Transactional
-    public PdReviewDto update(String id, PdReview body) {
-        PdReview entity = pdReviewRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        VoUtil.voCopyExclude(body, entity, "reviewId^regBy^regDate");
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        PdReview saved = pdReviewRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        em.flush();
-        return getById(id);
-    }
-
-    /** delete — 삭제 */
-    @Transactional
-    public void delete(String id) {
+    public PdReviewDto.Item changeStatus(String id, String statusCd) {
         PdReview entity = pdReviewRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        pdReviewRepository.delete(entity);
-        em.flush();
-        if (pdReviewRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
-    }
-
-    /** changeStatus */
-    @Transactional
-    public PdReviewDto changeStatus(String id, String statusCd) {
-        PdReview entity = pdReviewRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setReviewStatusCdBefore(entity.getReviewStatusCd());
         entity.setReviewStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -98,46 +50,6 @@ public class BoPdReviewService {
         PdReview saved = pdReviewRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return getById(id);
-    }
-    /** saveList — 저장 */
-    @Transactional
-    public void saveList(List<PdReview> rows) {
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
-
-        // 1단계: DELETE 일괄 처리
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getReviewId() != null)
-            .map(PdReview::getReviewId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            pdReviewRepository.deleteAllById(deleteIds);
-            em.flush();
-            em.clear();
-        }
-
-        // 2단계: UPDATE 처리
-        for (PdReview row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = Objects.requireNonNull(row.getReviewId(), "reviewId must not be null");
-            PdReview entity = pdReviewRepository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-            VoUtil.voCopyExclude(row, entity, "reviewId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            pdReviewRepository.save(entity);
-        }
-        em.flush();
-
-        // 3단계: INSERT 처리
-        for (PdReview row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
-            row.setReviewId("RV" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            pdReviewRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        return pdReviewService.getById(id);
     }
 }

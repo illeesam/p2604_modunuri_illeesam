@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface PdReviewCommentMapper {
 
-    PdReviewCommentDto selectById(@Param("id") String id);
+    PdReviewCommentDto.Item selectById(@Param("id") String id);
 
-    List<PdReviewCommentDto> selectList(Map<String, Object> p);
+    List<PdReviewCommentDto.Item> selectList(PdReviewCommentDto.Request req);
 
-    List<PdReviewCommentDto> selectPageList(Map<String, Object> p);
+    List<PdReviewCommentDto.Item> selectPageList(PdReviewCommentDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(PdReviewCommentDto.Request req);
 
     int updateSelective(PdReviewComment entity);
 }

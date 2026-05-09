@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdQnaService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -89,8 +90,7 @@ public class BoPdQnaController {
     }
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdProdQna> rows) {
-        boPdQnaService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<PdProdQna>>> saveList(@RequestBody List<PdProdQna> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.saveList(rows), "저장되었습니다."));
     }
 }

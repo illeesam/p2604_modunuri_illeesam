@@ -10,13 +10,13 @@ import java.util.Map;
 @Mapper
 public interface PdProdHistMapper {
 
-    List<PdProdHistDto> selectOrders(@Param("prodId") String prodId, Map<String, Object> p);
+    List<PdProdHistDto.Item> selectOrders(@Param("prodId") String prodId, Map<String, Object> p);
 
-    List<PdProdHistDto> selectStockHist(@Param("prodId") String prodId, Map<String, Object> p);
+    List<PdProdHistDto.Item> selectStockHist(@Param("prodId") String prodId, Map<String, Object> p);
 
-    List<PdProdHistDto> selectPriceHist(@Param("prodId") String prodId, Map<String, Object> p);
+    List<PdProdHistDto.Item> selectPriceHist(@Param("prodId") String prodId, Map<String, Object> p);
 
-    List<PdProdHistDto> selectStatusHist(@Param("prodId") String prodId, Map<String, Object> p);
+    List<PdProdHistDto.Item> selectStatusHist(@Param("prodId") String prodId, Map<String, Object> p);
 
-    List<PdProdHistDto> selectChangeHist(@Param("prodId") String prodId, Map<String, Object> p);
+    List<PdProdHistDto.Item> selectChangeHist(@Param("prodId") String prodId, Map<String, Object> p);
 }

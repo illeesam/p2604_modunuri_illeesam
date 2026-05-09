@@ -132,15 +132,17 @@ public class FoMyPageService {
     }
 
     /** getMyOrders — 조회 */
-    public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return orderMapper.selectList(p);
+    public List<OdOrderDto.Item> getMyOrders(OdOrderDto.Request req) {
+        if (req == null) req = new OdOrderDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return orderMapper.selectList(req);
     }
 
     /** getMyClaims — 조회 */
-    public List<OdClaimDto> getMyClaims(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().authId());
-        return claimMapper.selectList(p);
+    public List<OdClaimDto.Item> getMyClaims(OdClaimDto.Request req) {
+        if (req == null) req = new OdClaimDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return claimMapper.selectList(req);
     }
 
     /** getMyCoupons — 조회 */

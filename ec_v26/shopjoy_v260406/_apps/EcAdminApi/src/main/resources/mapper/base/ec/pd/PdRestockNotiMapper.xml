@@ -30,7 +30,7 @@
     </sql>
 
     <!-- 재입고 알림 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto$Item">
         SELECT  /* base.ec.pd :: PdRestockNoti :: selectById */
               n.*
             , ste.site_nm AS site_nm
@@ -44,7 +44,7 @@
     </select>
 
     <!-- 재입고 알림 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto$Item">
         SELECT  /* base.ec.pd :: PdRestockNoti :: selectList */
               n.*
             , ste.site_nm AS site_nm
@@ -60,7 +60,7 @@
     </select>
 
     <!-- 재입고 알림 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto$Item">
         SELECT  /* base.ec.pd :: PdRestockNoti :: selectPageList */
               n.*
             , ste.site_nm AS site_nm

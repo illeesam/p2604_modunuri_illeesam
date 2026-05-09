@@ -12,6 +12,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;

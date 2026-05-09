@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdHistDto;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdProdHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

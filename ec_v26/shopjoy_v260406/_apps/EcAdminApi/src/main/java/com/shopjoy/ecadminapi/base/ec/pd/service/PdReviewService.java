@@ -5,126 +5,162 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdReviewMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdReviewRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PdReviewService {
 
-
     private final PdReviewMapper pdReviewMapper;
     private final PdReviewRepository pdReviewRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PdReviewDto getById(String id) {
-        // pd_review :: select one :: id [orm:mybatis]
-        PdReviewDto result = pdReviewMapper.selectById(id);
-        return result;
+    public PdReviewDto.Item getById(String id) {
+        PdReviewDto.Item dto = pdReviewMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PdReviewDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pd_review :: select list :: p [orm:mybatis]
-        List<PdReviewDto> result = pdReviewMapper.selectList(p);
-        return result;
+    public PdReview findById(String id) {
+        return pdReviewRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PdReviewDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pd_review :: select page :: [orm:mybatis]
-        return PageResult.of(pdReviewMapper.selectPageList(p), pdReviewMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pdReviewRepository.existsById(id);
     }
 
-    /**
-     * 상품별 평점 집계 — FO 상품상세 리뷰 요약(summary) 영역용
-     * 반환: { total, avgRating, rate5, rate4, rate3, rate2, rate1 }
-     */
-    public Map<String, Object> getRatingSummary(String prodId) {
-        Map<String, Object> result = pdReviewMapper.selectRatingSummary(prodId);
-        return result != null ? result : new java.util.LinkedHashMap<>();
+    public List<PdReviewDto.Item> getList(PdReviewDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pdReviewMapper.selectList(req);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PdReview entity) {
-        // pd_review :: update :: [orm:mybatis]
-        int result = pdReviewMapper.updateSelective(entity);
-        return result;
+    public PdReviewDto.PageResponse getPageData(PdReviewDto.Request req) {
+        PageHelper.addPaging(req);
+        PdReviewDto.PageResponse res = new PdReviewDto.PageResponse();
+        List<PdReviewDto.Item> list = pdReviewMapper.selectPageList(req);
+        long count = pdReviewMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
-
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
 
     @Transactional
-    public PdReview create(PdReview entity) {
-        entity.setReviewId(CmUtil.generateId("pd_review"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pd_review :: insert or update :: [orm:jpa]
-        PdReview result = pdReviewRepository.save(entity);
-        return result;
+    public PdReview create(PdReview body) {
+        body.setReviewId(CmUtil.generateId("pd_review"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PdReview saved = pdReviewRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getReviewId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PdReview save(PdReview entity) {
-        if (!pdReviewRepository.existsById(entity.getReviewId()))
+        if (!existsById(entity.getReviewId()))
             throw new CmBizException("존재하지 않는 PdReview입니다: " + entity.getReviewId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pd_review :: insert or update :: [orm:jpa]
-        PdReview result = pdReviewRepository.save(entity);
-        return result;
+        PdReview saved = pdReviewRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getReviewId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PdReview update(String id, PdReview body) {
+        PdReview entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "reviewId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PdReview saved = pdReviewRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PdReview updatePartial(PdReview entity) {
+        if (entity.getReviewId() == null) throw new CmBizException("reviewId 가 필요합니다.");
+        if (!existsById(entity.getReviewId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReviewId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pdReviewMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getReviewId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pdReviewRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PdReview입니다: " + id);
-        // pd_review :: delete :: id [orm:jpa]
-        pdReviewRepository.deleteById(id);
+        PdReview entity = findById(id);
+        pdReviewRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PdReview> rows) {
+    public List<PdReview> saveList(List<PdReview> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PdReview row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setReviewId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_review"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pdReviewRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getReviewId(), "reviewId must not be null");
-                PdReview entity = pdReviewRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "reviewId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pdReviewRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getReviewId(), "reviewId must not be null");
-                if (pdReviewRepository.existsById(id)) pdReviewRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getReviewId() != null)
+            .map(PdReview::getReviewId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pdReviewRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PdReview> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getReviewId() != null)
+            .toList();
+        for (PdReview row : updateRows) {
+            PdReview entity = findById(row.getReviewId());
+            VoUtil.voCopyExclude(row, entity, "reviewId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pdReviewRepository.save(entity);
+            upsertedIds.add(entity.getReviewId());
+        }
+        em.flush();
+
+        List<PdReview> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PdReview row : insertRows) {
+            row.setReviewId(CmUtil.generateId("pd_review"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pdReviewRepository.save(row);
+            upsertedIds.add(row.getReviewId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PdReview> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

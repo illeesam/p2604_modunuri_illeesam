@@ -4,119 +4,163 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdRestockNotiMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdRestockNotiRepository;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PdRestockNotiService {
 
-
     private final PdRestockNotiMapper pdRestockNotiMapper;
     private final PdRestockNotiRepository pdRestockNotiRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PdRestockNotiDto getById(String id) {
-        // pd_restock_noti :: select one :: id [orm:mybatis]
-        PdRestockNotiDto result = pdRestockNotiMapper.selectById(id);
-        return result;
+    public PdRestockNotiDto.Item getById(String id) {
+        PdRestockNotiDto.Item dto = pdRestockNotiMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PdRestockNotiDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pd_restock_noti :: select list :: p [orm:mybatis]
-        List<PdRestockNotiDto> result = pdRestockNotiMapper.selectList(p);
-        return result;
+    public PdRestockNoti findById(String id) {
+        return pdRestockNotiRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PdRestockNotiDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pd_restock_noti :: select page :: [orm:mybatis]
-        return PageResult.of(pdRestockNotiMapper.selectPageList(p), pdRestockNotiMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pdRestockNotiRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PdRestockNoti entity) {
-        // pd_restock_noti :: update :: [orm:mybatis]
-        int result = pdRestockNotiMapper.updateSelective(entity);
-        return result;
+    public List<PdRestockNotiDto.Item> getList(PdRestockNotiDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pdRestockNotiMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public PdRestockNotiDto.PageResponse getPageData(PdRestockNotiDto.Request req) {
+        PageHelper.addPaging(req);
+        PdRestockNotiDto.PageResponse res = new PdRestockNotiDto.PageResponse();
+        List<PdRestockNotiDto.Item> list = pdRestockNotiMapper.selectPageList(req);
+        long count = pdRestockNotiMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public PdRestockNoti create(PdRestockNoti entity) {
-        entity.setRestockNotiId(CmUtil.generateId("pd_restock_noti"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pd_restock_noti :: insert or update :: [orm:jpa]
-        PdRestockNoti result = pdRestockNotiRepository.save(entity);
-        return result;
+    public PdRestockNoti create(PdRestockNoti body) {
+        body.setRestockNotiId(CmUtil.generateId("pd_restock_noti"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PdRestockNoti saved = pdRestockNotiRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getRestockNotiId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PdRestockNoti save(PdRestockNoti entity) {
-        if (!pdRestockNotiRepository.existsById(entity.getRestockNotiId()))
+        if (!existsById(entity.getRestockNotiId()))
             throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pd_restock_noti :: insert or update :: [orm:jpa]
-        PdRestockNoti result = pdRestockNotiRepository.save(entity);
-        return result;
+        PdRestockNoti saved = pdRestockNotiRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getRestockNotiId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PdRestockNoti update(String id, PdRestockNoti body) {
+        PdRestockNoti entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "restockNotiId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PdRestockNoti saved = pdRestockNotiRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PdRestockNoti updatePartial(PdRestockNoti entity) {
+        if (entity.getRestockNotiId() == null) throw new CmBizException("restockNotiId 가 필요합니다.");
+        if (!existsById(entity.getRestockNotiId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRestockNotiId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pdRestockNotiMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getRestockNotiId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pdRestockNotiRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + id);
-        // pd_restock_noti :: delete :: id [orm:jpa]
-        pdRestockNotiRepository.deleteById(id);
+        PdRestockNoti entity = findById(id);
+        pdRestockNotiRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<PdRestockNoti> rows) {
+    public List<PdRestockNoti> saveList(List<PdRestockNoti> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PdRestockNoti row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setRestockNotiId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_restock_noti"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pdRestockNotiRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getRestockNotiId(), "restockNotiId must not be null");
-                PdRestockNoti entity = pdRestockNotiRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "restockNotiId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pdRestockNotiRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getRestockNotiId(), "restockNotiId must not be null");
-                if (pdRestockNotiRepository.existsById(id)) pdRestockNotiRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getRestockNotiId() != null)
+            .map(PdRestockNoti::getRestockNotiId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pdRestockNotiRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PdRestockNoti> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getRestockNotiId() != null)
+            .toList();
+        for (PdRestockNoti row : updateRows) {
+            PdRestockNoti entity = findById(row.getRestockNotiId());
+            VoUtil.voCopyExclude(row, entity, "restockNotiId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pdRestockNotiRepository.save(entity);
+            upsertedIds.add(entity.getRestockNotiId());
+        }
+        em.flush();
+
+        List<PdRestockNoti> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PdRestockNoti row : insertRows) {
+            row.setRestockNotiId(CmUtil.generateId("pd_restock_noti"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pdRestockNotiRepository.save(row);
+            upsertedIds.add(row.getRestockNotiId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PdRestockNoti> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

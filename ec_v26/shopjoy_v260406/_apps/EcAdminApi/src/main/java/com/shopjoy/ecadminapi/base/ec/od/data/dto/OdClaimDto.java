@@ -15,6 +15,9 @@ public class OdClaimDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String claimId;
+        @Size(max = 21) private String memberId;
+        @Size(max = 50) private String claimStatusCd;
+        @Size(max = 50) private String claimTypeCd;
     }
 
     @Getter @Setter @NoArgsConstructor

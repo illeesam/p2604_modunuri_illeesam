@@ -80,18 +80,14 @@ public class FoMyPageController {
 
     /** getMyOrders — 조회 */
     @GetMapping("/order")
-    public ResponseEntity<ApiResponse<List<OdOrderDto>>> getMyOrders(
-            @RequestParam Map<String, Object> p) {
-        List<OdOrderDto> result = foMyPageService.getMyOrders(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<OdOrderDto.Item>>> getMyOrders(@jakarta.validation.Valid @ModelAttribute OdOrderDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyOrders(req)));
     }
 
     /** getMyClaims — 조회 */
     @GetMapping("/claim")
-    public ResponseEntity<ApiResponse<List<OdClaimDto>>> getMyClaims(
-            @RequestParam Map<String, Object> p) {
-        List<OdClaimDto> result = foMyPageService.getMyClaims(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<OdClaimDto.Item>>> getMyClaims(@jakarta.validation.Valid @ModelAttribute OdClaimDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyClaims(req)));
     }
 
     /** getMyCoupons — 조회 */

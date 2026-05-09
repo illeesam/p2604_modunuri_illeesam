@@ -4,21 +4,20 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptItemDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOptItem;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdOptItemMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptItemRepository;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -28,93 +27,140 @@ public class PdProdOptItemService {
     private final PdProdOptItemMapper pdProdOptItemMapper;
     private final PdProdOptItemRepository pdProdOptItemRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public PdProdOptItemDto getById(String id) {
-        // pd_prod_opt_item :: select one :: id [orm:mybatis]
-        PdProdOptItemDto result = pdProdOptItemMapper.selectById(id);
-        return result;
+    public PdProdOptItemDto.Item getById(String id) {
+        PdProdOptItemDto.Item dto = pdProdOptItemMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<PdProdOptItemDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // pd_prod_opt_item :: select list :: p [orm:mybatis]
-        List<PdProdOptItemDto> result = pdProdOptItemMapper.selectList(p);
-        return result;
+    public PdProdOptItem findById(String id) {
+        return pdProdOptItemRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<PdProdOptItemDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // pd_prod_opt_item :: select page :: [orm:mybatis]
-        return PageResult.of(pdProdOptItemMapper.selectPageList(p), pdProdOptItemMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return pdProdOptItemRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(PdProdOptItem entity) {
-        // pd_prod_opt_item :: update :: [orm:mybatis]
-        int result = pdProdOptItemMapper.updateSelective(entity);
-        return result;
+    public List<PdProdOptItemDto.Item> getList(PdProdOptItemDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return pdProdOptItemMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public PdProdOptItemDto.PageResponse getPageData(PdProdOptItemDto.Request req) {
+        PageHelper.addPaging(req);
+        PdProdOptItemDto.PageResponse res = new PdProdOptItemDto.PageResponse();
+        List<PdProdOptItemDto.Item> list = pdProdOptItemMapper.selectPageList(req);
+        long count = pdProdOptItemMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public PdProdOptItem create(PdProdOptItem entity) {
-        entity.setOptItemId(CmUtil.generateId("pd_prod_opt_item"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // pd_prod_opt_item :: insert or update :: [orm:jpa]
-        PdProdOptItem result = pdProdOptItemRepository.save(entity);
-        return result;
+    public PdProdOptItem create(PdProdOptItem body) {
+        body.setOptItemId(CmUtil.generateId("pd_prod_opt_item"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        PdProdOptItem saved = pdProdOptItemRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getOptItemId());
     }
 
-    /** save — 저장 */
     @Transactional
     public PdProdOptItem save(PdProdOptItem entity) {
-        if (!pdProdOptItemRepository.existsById(entity.getOptItemId()))
+        if (!existsById(entity.getOptItemId()))
             throw new CmBizException("존재하지 않는 PdProdOptItem입니다: " + entity.getOptItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // pd_prod_opt_item :: insert or update :: [orm:jpa]
-        PdProdOptItem result = pdProdOptItemRepository.save(entity);
-        return result;
+        PdProdOptItem saved = pdProdOptItemRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getOptItemId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public PdProdOptItem update(String id, PdProdOptItem body) {
+        PdProdOptItem entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "optItemId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        PdProdOptItem saved = pdProdOptItemRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public PdProdOptItem updatePartial(PdProdOptItem entity) {
+        if (entity.getOptItemId() == null) throw new CmBizException("optItemId 가 필요합니다.");
+        if (!existsById(entity.getOptItemId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOptItemId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = pdProdOptItemMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getOptItemId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!pdProdOptItemRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 PdProdOptItem입니다: " + id);
-        // pd_prod_opt_item :: delete :: id [orm:jpa]
-        pdProdOptItemRepository.deleteById(id);
+        PdProdOptItem entity = findById(id);
+        pdProdOptItemRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
-    /** saveList — 저장 */
+
     @Transactional
-    public void saveList(List<PdProdOptItem> rows) {
+    public List<PdProdOptItem> saveList(List<PdProdOptItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (PdProdOptItem row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setOptItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("pd_prod_opt_item"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                pdProdOptItemRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getOptItemId(), "optItemId must not be null");
-                PdProdOptItem entity = pdProdOptItemRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "optItemId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                pdProdOptItemRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getOptItemId(), "optItemId must not be null");
-                if (pdProdOptItemRepository.existsById(id)) pdProdOptItemRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getOptItemId() != null)
+            .map(PdProdOptItem::getOptItemId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            pdProdOptItemRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<PdProdOptItem> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getOptItemId() != null)
+            .toList();
+        for (PdProdOptItem row : updateRows) {
+            PdProdOptItem entity = findById(row.getOptItemId());
+            VoUtil.voCopyExclude(row, entity, "optItemId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            pdProdOptItemRepository.save(entity);
+            upsertedIds.add(entity.getOptItemId());
+        }
+        em.flush();
+
+        List<PdProdOptItem> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (PdProdOptItem row : insertRows) {
+            row.setOptItemId(CmUtil.generateId("pd_prod_opt_item"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            pdProdOptItemRepository.save(row);
+            upsertedIds.add(row.getOptItemId());
+        }
+        em.flush();
+        em.clear();
+
+        List<PdProdOptItem> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

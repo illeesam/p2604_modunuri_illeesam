@@ -31,7 +31,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto$Item">
         SELECT  /* base.ec.pd :: PdhProdViewLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
@@ -40,7 +40,7 @@
         WHERE l.log_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto$Item">
         SELECT  /* base.ec.pd :: PdhProdViewLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
@@ -51,7 +51,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto$Item">
         SELECT  /* base.ec.pd :: PdhProdViewLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm
