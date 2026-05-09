@@ -4,86 +4,62 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
 import com.shopjoy.ecadminapi.bo.ec.dp.service.BoDpUiService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
- * BO 전시 UI API
- * GET    /api/bo/ec/dp/ui       — 목록
- * GET    /api/bo/ec/dp/ui/page  — 페이징
- * GET    /api/bo/ec/dp/ui/{id}  — 단건
- * POST   /api/bo/ec/dp/ui       — 등록
- * PUT    /api/bo/ec/dp/ui/{id}  — 수정
- * DELETE /api/bo/ec/dp/ui/{id}  — 삭제
- *
+ * BO DpUi API — /api/bo/ec/dp/ui
  * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/dp/ui")
 @RequiredArgsConstructor
 public class BoDpUiController {
+
     private final BoDpUiService boDpUiService;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<DpUiDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        List<DpUiDto> result = boDpUiService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<DpUiDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        // CmUtil.require(p, "siteId");
-        PageResult<DpUiDto> result = boDpUiService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpUiDto>> getById(@PathVariable("id") String id) {
-        DpUiDto result = boDpUiService.getById(id);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<DpUiDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boDpUiService.getById(id)));
     }
 
-    /** create — 생성 */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<DpUiDto.Item>>> list(@Valid @ModelAttribute DpUiDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boDpUiService.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<DpUiDto.PageResponse>> page(@Valid @ModelAttribute DpUiDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boDpUiService.getPageData(req)));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<DpUi>> create(@RequestBody DpUi body) {
-        DpUi result = boDpUiService.create(body);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(boDpUiService.create(body)));
     }
 
-    /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpUiDto>> update(@PathVariable("id") String id, @RequestBody DpUi body) {
-        DpUiDto result = boDpUiService.update(id, body);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** upsert */
-    @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpUiDto>> upsert(@PathVariable("id") String id, @RequestBody DpUi body) {
+    public ResponseEntity<ApiResponse<DpUi>> update(@PathVariable("id") String id, @RequestBody DpUi body) {
         return ResponseEntity.ok(ApiResponse.ok(boDpUiService.update(id, body)));
     }
 
-    /** delete — 삭제 */
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<DpUi>> upsert(@PathVariable("id") String id, @RequestBody DpUi body) {
+        return ResponseEntity.ok(ApiResponse.ok(boDpUiService.update(id, body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boDpUiService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
-    /** saveList — 저장 */
+
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpUi> rows) {
-        boDpUiService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<DpUi>>> saveList(@RequestBody List<DpUi> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boDpUiService.saveList(rows), "저장되었습니다."));
     }
 }

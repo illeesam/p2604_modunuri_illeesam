@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogReply;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogReplyMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogReplyRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,94 +27,140 @@ public class CmBlogReplyService {
     private final CmBlogReplyMapper cmBlogReplyMapper;
     private final CmBlogReplyRepository cmBlogReplyRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public CmBlogReplyDto getById(String id) {
-        // cm_blog_reply :: select one :: id [orm:mybatis]
-        CmBlogReplyDto result = cmBlogReplyMapper.selectById(id);
-        return result;
+    public CmBlogReplyDto.Item getById(String id) {
+        CmBlogReplyDto.Item dto = cmBlogReplyMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<CmBlogReplyDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // cm_blog_reply :: select list :: p [orm:mybatis]
-        List<CmBlogReplyDto> result = cmBlogReplyMapper.selectList(p);
-        return result;
+    public CmBlogReply findById(String id) {
+        return cmBlogReplyRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<CmBlogReplyDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // cm_blog_reply :: select page :: [orm:mybatis]
-        return PageResult.of(cmBlogReplyMapper.selectPageList(p), cmBlogReplyMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return cmBlogReplyRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(CmBlogReply entity) {
-        // cm_blog_reply :: update :: [orm:mybatis]
-        int result = cmBlogReplyMapper.updateSelective(entity);
-        return result;
+    public List<CmBlogReplyDto.Item> getList(CmBlogReplyDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return cmBlogReplyMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public CmBlogReplyDto.PageResponse getPageData(CmBlogReplyDto.Request req) {
+        PageHelper.addPaging(req);
+        CmBlogReplyDto.PageResponse res = new CmBlogReplyDto.PageResponse();
+        List<CmBlogReplyDto.Item> list = cmBlogReplyMapper.selectPageList(req);
+        long count = cmBlogReplyMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public CmBlogReply create(CmBlogReply entity) {
-        entity.setCommentId(CmUtil.generateId("cm_blog_reply"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // cm_blog_reply :: insert or update :: [orm:jpa]
-        CmBlogReply result = cmBlogReplyRepository.save(entity);
-        return result;
+    public CmBlogReply create(CmBlogReply body) {
+        body.setCommentId(CmUtil.generateId("cm_blog_reply"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        CmBlogReply saved = cmBlogReplyRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getCommentId());
     }
 
-    /** save — 저장 */
     @Transactional
     public CmBlogReply save(CmBlogReply entity) {
-        if (!cmBlogReplyRepository.existsById(entity.getCommentId()))
+        if (!existsById(entity.getCommentId()))
             throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + entity.getCommentId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // cm_blog_reply :: insert or update :: [orm:jpa]
-        CmBlogReply result = cmBlogReplyRepository.save(entity);
-        return result;
+        CmBlogReply saved = cmBlogReplyRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getCommentId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public CmBlogReply update(String id, CmBlogReply body) {
+        CmBlogReply entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "commentId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        CmBlogReply saved = cmBlogReplyRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public CmBlogReply updatePartial(CmBlogReply entity) {
+        if (entity.getCommentId() == null) throw new CmBizException("commentId 가 필요합니다.");
+        if (!existsById(entity.getCommentId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCommentId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = cmBlogReplyMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getCommentId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!cmBlogReplyRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + id);
-        // cm_blog_reply :: delete :: id [orm:jpa]
-        cmBlogReplyRepository.deleteById(id);
+        CmBlogReply entity = findById(id);
+        cmBlogReplyRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<CmBlogReply> rows) {
+    public List<CmBlogReply> saveList(List<CmBlogReply> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (CmBlogReply row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setCommentId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("cm_blog_reply"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                cmBlogReplyRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getCommentId(), "commentId must not be null");
-                CmBlogReply entity = cmBlogReplyRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "commentId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                cmBlogReplyRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getCommentId(), "commentId must not be null");
-                if (cmBlogReplyRepository.existsById(id)) cmBlogReplyRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getCommentId() != null)
+            .map(CmBlogReply::getCommentId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            cmBlogReplyRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<CmBlogReply> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getCommentId() != null)
+            .toList();
+        for (CmBlogReply row : updateRows) {
+            CmBlogReply entity = findById(row.getCommentId());
+            VoUtil.voCopyExclude(row, entity, "commentId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            cmBlogReplyRepository.save(entity);
+            upsertedIds.add(entity.getCommentId());
+        }
+        em.flush();
+
+        List<CmBlogReply> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (CmBlogReply row : insertRows) {
+            row.setCommentId(CmUtil.generateId("cm_blog_reply"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            cmBlogReplyRepository.save(row);
+            upsertedIds.add(row.getCommentId());
+        }
+        em.flush();
+        em.clear();
+
+        List<CmBlogReply> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

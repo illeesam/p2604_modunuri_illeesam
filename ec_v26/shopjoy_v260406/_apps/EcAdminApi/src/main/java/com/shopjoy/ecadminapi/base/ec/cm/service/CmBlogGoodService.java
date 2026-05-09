@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogGood;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogGoodMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogGoodRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,94 +27,140 @@ public class CmBlogGoodService {
     private final CmBlogGoodMapper cmBlogGoodMapper;
     private final CmBlogGoodRepository cmBlogGoodRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public CmBlogGoodDto getById(String id) {
-        // cm_blog_good :: select one :: id [orm:mybatis]
-        CmBlogGoodDto result = cmBlogGoodMapper.selectById(id);
-        return result;
+    public CmBlogGoodDto.Item getById(String id) {
+        CmBlogGoodDto.Item dto = cmBlogGoodMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<CmBlogGoodDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // cm_blog_good :: select list :: p [orm:mybatis]
-        List<CmBlogGoodDto> result = cmBlogGoodMapper.selectList(p);
-        return result;
+    public CmBlogGood findById(String id) {
+        return cmBlogGoodRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<CmBlogGoodDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // cm_blog_good :: select page :: [orm:mybatis]
-        return PageResult.of(cmBlogGoodMapper.selectPageList(p), cmBlogGoodMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return cmBlogGoodRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(CmBlogGood entity) {
-        // cm_blog_good :: update :: [orm:mybatis]
-        int result = cmBlogGoodMapper.updateSelective(entity);
-        return result;
+    public List<CmBlogGoodDto.Item> getList(CmBlogGoodDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return cmBlogGoodMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public CmBlogGoodDto.PageResponse getPageData(CmBlogGoodDto.Request req) {
+        PageHelper.addPaging(req);
+        CmBlogGoodDto.PageResponse res = new CmBlogGoodDto.PageResponse();
+        List<CmBlogGoodDto.Item> list = cmBlogGoodMapper.selectPageList(req);
+        long count = cmBlogGoodMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public CmBlogGood create(CmBlogGood entity) {
-        entity.setLikeId(CmUtil.generateId("cm_blog_good"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // cm_blog_good :: insert or update :: [orm:jpa]
-        CmBlogGood result = cmBlogGoodRepository.save(entity);
-        return result;
+    public CmBlogGood create(CmBlogGood body) {
+        body.setLikeId(CmUtil.generateId("cm_blog_good"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        CmBlogGood saved = cmBlogGoodRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getLikeId());
     }
 
-    /** save — 저장 */
     @Transactional
     public CmBlogGood save(CmBlogGood entity) {
-        if (!cmBlogGoodRepository.existsById(entity.getLikeId()))
+        if (!existsById(entity.getLikeId()))
             throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + entity.getLikeId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // cm_blog_good :: insert or update :: [orm:jpa]
-        CmBlogGood result = cmBlogGoodRepository.save(entity);
-        return result;
+        CmBlogGood saved = cmBlogGoodRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getLikeId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public CmBlogGood update(String id, CmBlogGood body) {
+        CmBlogGood entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "likeId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        CmBlogGood saved = cmBlogGoodRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public CmBlogGood updatePartial(CmBlogGood entity) {
+        if (entity.getLikeId() == null) throw new CmBizException("likeId 가 필요합니다.");
+        if (!existsById(entity.getLikeId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLikeId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = cmBlogGoodMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getLikeId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!cmBlogGoodRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + id);
-        // cm_blog_good :: delete :: id [orm:jpa]
-        cmBlogGoodRepository.deleteById(id);
+        CmBlogGood entity = findById(id);
+        cmBlogGoodRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<CmBlogGood> rows) {
+    public List<CmBlogGood> saveList(List<CmBlogGood> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (CmBlogGood row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setLikeId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("cm_blog_good"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                cmBlogGoodRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getLikeId(), "likeId must not be null");
-                CmBlogGood entity = cmBlogGoodRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "likeId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                cmBlogGoodRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getLikeId(), "likeId must not be null");
-                if (cmBlogGoodRepository.existsById(id)) cmBlogGoodRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getLikeId() != null)
+            .map(CmBlogGood::getLikeId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            cmBlogGoodRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<CmBlogGood> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getLikeId() != null)
+            .toList();
+        for (CmBlogGood row : updateRows) {
+            CmBlogGood entity = findById(row.getLikeId());
+            VoUtil.voCopyExclude(row, entity, "likeId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            cmBlogGoodRepository.save(entity);
+            upsertedIds.add(entity.getLikeId());
+        }
+        em.flush();
+
+        List<CmBlogGood> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (CmBlogGood row : insertRows) {
+            row.setLikeId(CmUtil.generateId("cm_blog_good"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            cmBlogGoodRepository.save(row);
+            upsertedIds.add(row.getLikeId());
+        }
+        em.flush();
+        em.clear();
+
+        List<CmBlogGood> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

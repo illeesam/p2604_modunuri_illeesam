@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface DpWidgetLibMapper {
 
-    DpWidgetLibDto selectById(@Param("id") String id);
+    DpWidgetLibDto.Item selectById(@Param("id") String id);
 
-    List<DpWidgetLibDto> selectList(Map<String, Object> p);
+    List<DpWidgetLibDto.Item> selectList(DpWidgetLibDto.Request req);
 
-    List<DpWidgetLibDto> selectPageList(Map<String, Object> p);
+    List<DpWidgetLibDto.Item> selectPageList(DpWidgetLibDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(DpWidgetLibDto.Request req);
 
     int updateSelective(DpWidgetLib entity);
 }

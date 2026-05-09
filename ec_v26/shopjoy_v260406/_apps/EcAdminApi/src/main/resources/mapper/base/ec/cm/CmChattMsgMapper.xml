@@ -28,7 +28,7 @@
     </sql>
 
     <!-- 채팅 메시지 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto$Item">
         SELECT  /* base.ec.cm :: CmChattMsg :: selectById */
               m.*
             , ste.site_nm AS site_nm
@@ -38,7 +38,7 @@
     </select>
 
     <!-- 채팅 메시지 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto$Item">
         SELECT  /* base.ec.cm :: CmChattMsg :: selectList */
               m.*
             , ste.site_nm AS site_nm
@@ -50,7 +50,7 @@
     </select>
 
     <!-- 채팅 메시지 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto$Item">
         SELECT  /* base.ec.cm :: CmChattMsg :: selectPageList */
               m.*
             , ste.site_nm AS site_nm

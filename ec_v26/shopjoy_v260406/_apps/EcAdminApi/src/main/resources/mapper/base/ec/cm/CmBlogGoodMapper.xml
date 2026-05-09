@@ -28,7 +28,7 @@
     </sql>
 
     <!-- 게시물 좋아요 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto$Item">
         SELECT  /* base.ec.cm :: CmBlogGood :: selectById */
               g.*
             , blt.blog_title AS blog_nm
@@ -38,7 +38,7 @@
     </select>
 
     <!-- 게시물 좋아요 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto$Item">
         SELECT  /* base.ec.cm :: CmBlogGood :: selectList */
               g.*
             , blt.blog_title AS blog_nm
@@ -50,7 +50,7 @@
     </select>
 
     <!-- 게시물 좋아요 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto$Item">
         SELECT  /* base.ec.cm :: CmBlogGood :: selectPageList */
               g.*
             , blt.blog_title AS blog_nm

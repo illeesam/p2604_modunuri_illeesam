@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface DpAreaPanelMapper {
 
-    DpAreaPanelDto selectById(@Param("id") String id);
+    DpAreaPanelDto.Item selectById(@Param("id") String id);
 
-    List<DpAreaPanelDto> selectList(Map<String, Object> p);
+    List<DpAreaPanelDto.Item> selectList(DpAreaPanelDto.Request req);
 
-    List<DpAreaPanelDto> selectPageList(Map<String, Object> p);
+    List<DpAreaPanelDto.Item> selectPageList(DpAreaPanelDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(DpAreaPanelDto.Request req);
 
     int updateSelective(DpAreaPanel entity);
 }

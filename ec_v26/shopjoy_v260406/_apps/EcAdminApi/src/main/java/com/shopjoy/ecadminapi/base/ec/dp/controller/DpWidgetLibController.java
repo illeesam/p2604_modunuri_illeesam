@@ -4,13 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.service.DpWidgetLibService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/ec/dp/widget-lib")
@@ -19,65 +18,46 @@ public class DpWidgetLibController {
 
     private final DpWidgetLibService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<DpWidgetLibDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<DpWidgetLibDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<DpWidgetLibDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<DpWidgetLibDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidgetLibDto>> getById(@PathVariable("id") String id) {
-        DpWidgetLibDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<DpWidgetLibDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
-    /* ── 등록 (JPA) ── */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<DpWidgetLibDto.Item>>> list(@Valid @ModelAttribute DpWidgetLibDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<DpWidgetLibDto.PageResponse>> page(@Valid @ModelAttribute DpWidgetLibDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<DpWidgetLib>> create(@RequestBody DpWidgetLib entity) {
-        DpWidgetLib result = service.create(entity);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
-    /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidgetLib>> save(
-            @PathVariable("id") String id, @RequestBody DpWidgetLib entity) {
+    public ResponseEntity<ApiResponse<DpWidgetLib>> save(@PathVariable("id") String id, @RequestBody DpWidgetLib entity) {
         entity.setWidgetLibId(id);
-        DpWidgetLib result = service.save(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
-    /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable("id") String id, @RequestBody DpWidgetLib entity) {
+    public ResponseEntity<ApiResponse<DpWidgetLib>> updatePartial(@PathVariable("id") String id, @RequestBody DpWidgetLib entity) {
         entity.setWidgetLibId(id);
-        int result = service.update(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
     }
 
-    /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
-    /** saveList — 저장 */
+
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpWidgetLib> rows) {
-        service.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<DpWidgetLib>>> saveList(@RequestBody List<DpWidgetLib> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

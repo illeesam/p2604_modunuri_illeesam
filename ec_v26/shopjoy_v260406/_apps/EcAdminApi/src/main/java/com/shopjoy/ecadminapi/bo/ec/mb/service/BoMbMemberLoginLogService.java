@@ -1,44 +1,30 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.service;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbhMemberLoginLogMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbhMemberLoginLogRepository;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecadminapi.base.ec.mb.service.MbhMemberLoginLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
+/**
+ * BO 회원 로그인 로그 서비스 — base 위임 (thin wrapper) + deleteAll.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoMbMemberLoginLogService {
 
-    private final MbhMemberLoginLogMapper mbhMemberLoginLogMapper;
+    private final MbhMemberLoginLogService mbhMemberLoginLogService;
     private final MbhMemberLoginLogRepository mbhMemberLoginLogRepository;
 
-    /** getList — 조회 */
-    public List<MbhMemberLoginLogDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return mbhMemberLoginLogMapper.selectList(p);
-    }
+    public MbhMemberLoginLogDto.Item getById(String id) { return mbhMemberLoginLogService.getById(id); }
+    public List<MbhMemberLoginLogDto.Item> getList(MbhMemberLoginLogDto.Request req) { return mbhMemberLoginLogService.getList(req); }
+    public MbhMemberLoginLogDto.PageResponse getPageData(MbhMemberLoginLogDto.Request req) { return mbhMemberLoginLogService.getPageData(req); }
 
-    /** getPageData — 조회 */
-    public PageResult<MbhMemberLoginLogDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(mbhMemberLoginLogMapper.selectPageList(p), mbhMemberLoginLogMapper.selectPageCount(p),
-            PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-    }
-
-    /** getById — 조회 */
-    public MbhMemberLoginLogDto getById(String id) {
-        return mbhMemberLoginLogMapper.selectById(id);
-    }
-
-    /** deleteAll — 삭제 */
+    /** deleteAll — 전체 삭제 */
     @Transactional
     public void deleteAll() {
         mbhMemberLoginLogRepository.deleteAllBulk();

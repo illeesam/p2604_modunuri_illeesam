@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface MbMemberGradeMapper {
 
-    MbMemberGradeDto selectById(@Param("id") String id);
+    MbMemberGradeDto.Item selectById(@Param("id") String id);
 
-    List<MbMemberGradeDto> selectList(Map<String, Object> p);
+    List<MbMemberGradeDto.Item> selectList(MbMemberGradeDto.Request req);
 
-    List<MbMemberGradeDto> selectPageList(Map<String, Object> p);
+    List<MbMemberGradeDto.Item> selectPageList(MbMemberGradeDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(MbMemberGradeDto.Request req);
 
     int updateSelective(MbMemberGrade entity);
 }

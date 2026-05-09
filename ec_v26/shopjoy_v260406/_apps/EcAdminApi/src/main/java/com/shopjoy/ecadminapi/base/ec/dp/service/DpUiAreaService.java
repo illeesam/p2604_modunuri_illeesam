@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUiArea;
 import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpUiAreaMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpUiAreaRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,94 +27,140 @@ public class DpUiAreaService {
     private final DpUiAreaMapper dpUiAreaMapper;
     private final DpUiAreaRepository dpUiAreaRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public DpUiAreaDto getById(String id) {
-        // dp_ui_area :: select one :: id [orm:mybatis]
-        DpUiAreaDto result = dpUiAreaMapper.selectById(id);
-        return result;
+    public DpUiAreaDto.Item getById(String id) {
+        DpUiAreaDto.Item dto = dpUiAreaMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<DpUiAreaDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // dp_ui_area :: select list :: p [orm:mybatis]
-        List<DpUiAreaDto> result = dpUiAreaMapper.selectList(p);
-        return result;
+    public DpUiArea findById(String id) {
+        return dpUiAreaRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<DpUiAreaDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // dp_ui_area :: select page :: [orm:mybatis]
-        return PageResult.of(dpUiAreaMapper.selectPageList(p), dpUiAreaMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return dpUiAreaRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(DpUiArea entity) {
-        // dp_ui_area :: update :: [orm:mybatis]
-        int result = dpUiAreaMapper.updateSelective(entity);
-        return result;
+    public List<DpUiAreaDto.Item> getList(DpUiAreaDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return dpUiAreaMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public DpUiAreaDto.PageResponse getPageData(DpUiAreaDto.Request req) {
+        PageHelper.addPaging(req);
+        DpUiAreaDto.PageResponse res = new DpUiAreaDto.PageResponse();
+        List<DpUiAreaDto.Item> list = dpUiAreaMapper.selectPageList(req);
+        long count = dpUiAreaMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public DpUiArea create(DpUiArea entity) {
-        entity.setUiAreaId(CmUtil.generateId("dp_area"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // dp_ui_area :: insert or update :: [orm:jpa]
-        DpUiArea result = dpUiAreaRepository.save(entity);
-        return result;
+    public DpUiArea create(DpUiArea body) {
+        body.setUiAreaId(CmUtil.generateId("dp_ui_area"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        DpUiArea saved = dpUiAreaRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getUiAreaId());
     }
 
-    /** save — 저장 */
     @Transactional
     public DpUiArea save(DpUiArea entity) {
-        if (!dpUiAreaRepository.existsById(entity.getUiAreaId()))
+        if (!existsById(entity.getUiAreaId()))
             throw new CmBizException("존재하지 않는 DpUiArea입니다: " + entity.getUiAreaId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // dp_ui_area :: insert or update :: [orm:jpa]
-        DpUiArea result = dpUiAreaRepository.save(entity);
-        return result;
+        DpUiArea saved = dpUiAreaRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getUiAreaId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public DpUiArea update(String id, DpUiArea body) {
+        DpUiArea entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "uiAreaId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        DpUiArea saved = dpUiAreaRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public DpUiArea updatePartial(DpUiArea entity) {
+        if (entity.getUiAreaId() == null) throw new CmBizException("uiAreaId 가 필요합니다.");
+        if (!existsById(entity.getUiAreaId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUiAreaId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = dpUiAreaMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getUiAreaId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!dpUiAreaRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 DpUiArea입니다: " + id);
-        // dp_ui_area :: delete :: id [orm:jpa]
-        dpUiAreaRepository.deleteById(id);
+        DpUiArea entity = findById(id);
+        dpUiAreaRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<DpUiArea> rows) {
+    public List<DpUiArea> saveList(List<DpUiArea> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (DpUiArea row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setUiAreaId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("dp_area"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                dpUiAreaRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getUiAreaId(), "uiAreaId must not be null");
-                DpUiArea entity = dpUiAreaRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "uiAreaId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                dpUiAreaRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getUiAreaId(), "uiAreaId must not be null");
-                if (dpUiAreaRepository.existsById(id)) dpUiAreaRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getUiAreaId() != null)
+            .map(DpUiArea::getUiAreaId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            dpUiAreaRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<DpUiArea> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getUiAreaId() != null)
+            .toList();
+        for (DpUiArea row : updateRows) {
+            DpUiArea entity = findById(row.getUiAreaId());
+            VoUtil.voCopyExclude(row, entity, "uiAreaId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            dpUiAreaRepository.save(entity);
+            upsertedIds.add(entity.getUiAreaId());
+        }
+        em.flush();
+
+        List<DpUiArea> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (DpUiArea row : insertRows) {
+            row.setUiAreaId(CmUtil.generateId("dp_ui_area"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            dpUiAreaRepository.save(row);
+            upsertedIds.add(row.getUiAreaId());
+        }
+        em.flush();
+        em.clear();
+
+        List<DpUiArea> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

@@ -28,7 +28,7 @@
     </sql>
 
     <!-- SNS 연동 회원 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto$Item">
         SELECT  /* base.ec.mb :: MbMemberSns :: selectById */
               m.*
             , mem.member_nm AS member_nm
@@ -40,7 +40,7 @@
     </select>
 
     <!-- SNS 연동 회원 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto$Item">
         SELECT  /* base.ec.mb :: MbMemberSns :: selectList */
               m.*
             , mem.member_nm AS member_nm
@@ -54,7 +54,7 @@
     </select>
 
     <!-- SNS 연동 회원 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto$Item">
         SELECT  /* base.ec.mb :: MbMemberSns :: selectPageList */
               m.*
             , mem.member_nm AS member_nm

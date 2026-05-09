@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface CmChattMsgMapper {
 
-    CmChattMsgDto selectById(@Param("id") String id);
+    CmChattMsgDto.Item selectById(@Param("id") String id);
 
-    List<CmChattMsgDto> selectList(Map<String, Object> p);
+    List<CmChattMsgDto.Item> selectList(CmChattMsgDto.Request req);
 
-    List<CmChattMsgDto> selectPageList(Map<String, Object> p);
+    List<CmChattMsgDto.Item> selectPageList(CmChattMsgDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(CmChattMsgDto.Request req);
 
     int updateSelective(CmChattMsg entity);
 }

@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbCustInfoService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

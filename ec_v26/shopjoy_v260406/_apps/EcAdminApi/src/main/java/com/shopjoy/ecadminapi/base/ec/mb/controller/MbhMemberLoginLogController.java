@@ -1,15 +1,15 @@
 package com.shopjoy.ecadminapi.base.ec.mb.controller;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto;
+import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbhMemberLoginLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/base/ec/mb/member-login-log")
@@ -18,34 +18,46 @@ public class MbhMemberLoginLogController {
 
     private final MbhMemberLoginLogService service;
 
-    /** list — 목록 */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<MbhMemberLoginLogDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<MbhMemberLoginLogDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** page — 페이지 */
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<MbhMemberLoginLogDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<MbhMemberLoginLogDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbhMemberLoginLogDto>> getById(@PathVariable("id") String id) {
-        MbhMemberLoginLogDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<MbhMemberLoginLogDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
-    /** deleteAll — 삭제 */
-    @DeleteMapping("/all")
-    public ResponseEntity<ApiResponse<Void>> deleteAll() {
-        service.deleteAll();
-        return ResponseEntity.ok(ApiResponse.ok(null));
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<MbhMemberLoginLogDto.Item>>> list(@Valid @ModelAttribute MbhMemberLoginLogDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<MbhMemberLoginLogDto.PageResponse>> page(@Valid @ModelAttribute MbhMemberLoginLogDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<MbhMemberLoginLog>> create(@RequestBody MbhMemberLoginLog entity) {
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<MbhMemberLoginLog>> save(@PathVariable("id") String id, @RequestBody MbhMemberLoginLog entity) {
+        entity.setLogId(id);
+        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<MbhMemberLoginLog>> updatePartial(@PathVariable("id") String id, @RequestBody MbhMemberLoginLog entity) {
+        entity.setLogId(id);
+        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
+        service.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<List<MbhMemberLoginLog>>> saveList(@RequestBody List<MbhMemberLoginLog> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveList(rows), "저장되었습니다."));
     }
 }

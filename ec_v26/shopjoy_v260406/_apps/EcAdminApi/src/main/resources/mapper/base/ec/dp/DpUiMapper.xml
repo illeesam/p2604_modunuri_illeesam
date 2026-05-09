@@ -44,7 +44,7 @@
     </sql>
 
     <!-- 전시 UI 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto$Item">
         SELECT  /* base.ec.dp :: DpUi :: selectById */
               u.*
             , ste.site_nm AS site_nm
@@ -54,7 +54,7 @@
     </select>
 
     <!-- 전시 UI 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto$Item">
         SELECT  /* base.ec.dp :: DpUi :: selectList */
               u.*
             , ste.site_nm AS site_nm
@@ -66,7 +66,7 @@
     </select>
 
     <!-- 전시 UI 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto$Item">
         SELECT  /* base.ec.dp :: DpUi :: selectPageList */
               u.*
             , ste.site_nm AS site_nm

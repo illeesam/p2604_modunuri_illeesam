@@ -33,8 +33,8 @@ public class FoCmContactService {
     private final CmBlogMapper cmBlogMapper;
 
     /** getById — 조회 */
-    public CmBlogDto getById(String id) {
-        CmBlogDto dto = cmBlogMapper.selectById(id);
+    public CmBlogDto.Item getById(String id) {
+        CmBlogDto.Item dto = cmBlogMapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 문의입니다: " + id);
         return dto;
     }

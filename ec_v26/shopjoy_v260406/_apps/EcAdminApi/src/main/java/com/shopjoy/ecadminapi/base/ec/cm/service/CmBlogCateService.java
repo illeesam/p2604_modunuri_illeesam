@@ -2,14 +2,15 @@ package com.shopjoy.ecadminapi.base.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogCate;
-import com.shopjoy.ecadminapi.base.ec.cm.data.vo.CmBlogCateReq;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogCateMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogCateRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -27,110 +27,140 @@ public class CmBlogCateService {
     private final CmBlogCateMapper cmBlogCateMapper;
     private final CmBlogCateRepository cmBlogCateRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public CmBlogCateDto getById(String id) {
-        // cm_blog_cate :: select one :: id [orm:mybatis]
-        CmBlogCateDto result = cmBlogCateMapper.selectById(id);
-        return result;
+    public CmBlogCateDto.Item getById(String id) {
+        CmBlogCateDto.Item dto = cmBlogCateMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<CmBlogCateDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // cm_blog_cate :: select list :: p [orm:mybatis]
-        List<CmBlogCateDto> result = cmBlogCateMapper.selectList(p);
-        return result;
+    public CmBlogCate findById(String id) {
+        return cmBlogCateRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<CmBlogCateDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // cm_blog_cate :: select page :: [orm:mybatis]
-        return PageResult.of(cmBlogCateMapper.selectPageList(p), cmBlogCateMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return cmBlogCateRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(CmBlogCate entity) {
-        // cm_blog_cate :: update :: [orm:mybatis]
-        int result = cmBlogCateMapper.updateSelective(entity);
-        return result;
+    public List<CmBlogCateDto.Item> getList(CmBlogCateDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return cmBlogCateMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public CmBlogCateDto.PageResponse getPageData(CmBlogCateDto.Request req) {
+        PageHelper.addPaging(req);
+        CmBlogCateDto.PageResponse res = new CmBlogCateDto.PageResponse();
+        List<CmBlogCateDto.Item> list = cmBlogCateMapper.selectPageList(req);
+        long count = cmBlogCateMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public CmBlogCate create(CmBlogCate entity) {
-        entity.setBlogCateId(CmUtil.generateId("cm_blog_cate"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // cm_blog_cate :: insert or update :: [orm:jpa]
-        CmBlogCate result = cmBlogCateRepository.save(entity);
-        return result;
+    public CmBlogCate create(CmBlogCate body) {
+        body.setBlogCateId(CmUtil.generateId("cm_blog_cate"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        CmBlogCate saved = cmBlogCateRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getBlogCateId());
     }
 
-    /** save — 저장 */
     @Transactional
     public CmBlogCate save(CmBlogCate entity) {
-        if (!cmBlogCateRepository.existsById(entity.getBlogCateId())) {
-            throw new CmBizException("존재하지 않는 카테고리입니다: " + entity.getBlogCateId());
-        }
+        if (!existsById(entity.getBlogCateId()))
+            throw new CmBizException("존재하지 않는 CmBlogCate입니다: " + entity.getBlogCateId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // cm_blog_cate :: insert or update :: [orm:jpa]
-        CmBlogCate result = cmBlogCateRepository.save(entity);
-        return result;
+        CmBlogCate saved = cmBlogCateRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getBlogCateId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public CmBlogCate update(String id, CmBlogCate body) {
+        CmBlogCate entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "blogCateId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        CmBlogCate saved = cmBlogCateRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public CmBlogCate updatePartial(CmBlogCate entity) {
+        if (entity.getBlogCateId() == null) throw new CmBizException("blogCateId 가 필요합니다.");
+        if (!existsById(entity.getBlogCateId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogCateId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = cmBlogCateMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getBlogCateId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!cmBlogCateRepository.existsById(id)) {
-            throw new CmBizException("존재하지 않는 카테고리입니다: " + id);
+        CmBlogCate entity = findById(id);
+        cmBlogCateRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+    }
+
+    @Transactional
+    public List<CmBlogCate> saveList(List<CmBlogCate> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getBlogCateId() != null)
+            .map(CmBlogCate::getBlogCateId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            cmBlogCateRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
-        // cm_blog_cate :: delete :: id [orm:jpa]
-        cmBlogCateRepository.deleteById(id);
-    }
 
-    // ── _row_status 기반 저장 ────────────────────────────────────
+        List<String> upsertedIds = new ArrayList<>();
+        List<CmBlogCate> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getBlogCateId() != null)
+            .toList();
+        for (CmBlogCate row : updateRows) {
+            CmBlogCate entity = findById(row.getBlogCateId());
+            VoUtil.voCopyExclude(row, entity, "blogCateId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            cmBlogCateRepository.save(entity);
+            upsertedIds.add(entity.getBlogCateId());
+        }
+        em.flush();
 
-    @Transactional
-    public CmBlogCate saveByRowStatus(CmBlogCateReq req) {
-        CmBlogCate result = doSaveByRowStatus(req);
-        return result;
-    }
+        List<CmBlogCate> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (CmBlogCate row : insertRows) {
+            row.setBlogCateId(CmUtil.generateId("cm_blog_cate"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            cmBlogCateRepository.save(row);
+            upsertedIds.add(row.getBlogCateId());
+        }
+        em.flush();
+        em.clear();
 
-    // D → U → I 순서로 처리: 삭제 후 수정, 마지막에 신규 등록하여 유니크 제약 충돌 방지
-    @Transactional
-    public List<CmBlogCate> saveListByRowStatus(List<CmBlogCateReq> list) {
         List<CmBlogCate> result = new ArrayList<>();
-        for (CmBlogCateReq req : list.stream().filter(r -> "D".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
-        for (CmBlogCateReq req : list.stream().filter(r -> "U".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
-        for (CmBlogCateReq req : list.stream().filter(r -> "I".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
         return result;
     }
-
-    /** doSaveByRowStatus — 실행 */
-    private CmBlogCate doSaveByRowStatus(CmBlogCateReq req) {
-        return switch (req.getRowStatus()) {
-            case "I" -> create(req.toEntity());
-            case "U" -> {
-                if (!cmBlogCateRepository.existsById(req.getBlogCateId()))
-                    throw new CmBizException("존재하지 않는 카테고리입니다: " + req.getBlogCateId());
-                yield save(req.toEntity());
-            }
-            case "D" -> {
-                if (!cmBlogCateRepository.existsById(req.getBlogCateId()))
-                    throw new CmBizException("존재하지 않는 카테고리입니다: " + req.getBlogCateId());
-                // cm_blog_cate :: delete :: blogCateId [orm:jpa]
-                cmBlogCateRepository.deleteById(req.getBlogCateId());
-                yield null;
-            }
-            default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus());
-        };
-    }
-
 }

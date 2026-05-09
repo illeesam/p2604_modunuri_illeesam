@@ -3,28 +3,16 @@ package com.shopjoy.ecadminapi.fo.ec.controller;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.fo.ec.service.FoCmBlogService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
- * FO 게시물(블로그/FAQ/공지) API
- * GET    /api/fo/ec/cm/bltn           — 목록 (blogCateId, siteId, kw, useYn 필터)
- * GET    /api/fo/ec/cm/bltn/page      — 페이징 목록
- * GET    /api/fo/ec/cm/bltn/{blogId}  — 상세 (조회수 +1)
- * POST   /api/fo/ec/cm/bltn           — 블로그 글 작성 (MEMBER or USER)
- * PUT    /api/fo/ec/cm/bltn/{blogId}  — 수정 (작성자 본인 or USER)
- * DELETE /api/fo/ec/cm/bltn/{blogId}  — 삭제 (작성자 본인 or USER)
- *
- * 인가:
- *   GET    → USER or MEMBER (SecurityConfig 전역 룰)
- *   POST   → @BoOrFo  (전역 룰 override: 회원도 작성 가능)
- *   PUT/DELETE → @BoOrFo (작성자 본인 여부는 서비스에서 검증)
+ * FO 게시물(블로그/FAQ/공지) API — /api/fo/ec/cm/bltn
  */
 @RestController
 @RequestMapping("/api/fo/ec/cm/bltn")
@@ -33,45 +21,32 @@ public class FoCmBlogController {
 
     private final FoCmBlogService foCmBlogService;
 
-    /** list — 목록 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CmBlogDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<CmBlogDto> result = foCmBlogService.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<CmBlogDto.Item>>> list(@Valid @ModelAttribute CmBlogDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foCmBlogService.getList(req)));
     }
 
-    /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<CmBlogDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<CmBlogDto> result = foCmBlogService.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<CmBlogDto.PageResponse>> page(@Valid @ModelAttribute CmBlogDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foCmBlogService.getPageData(req)));
     }
 
-    /** getById — 조회 */
     @GetMapping("/{blogId}")
-    public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable("blogId") String blogId) {
-        CmBlogDto result = foCmBlogService.getByIdAndIncrView(blogId);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<CmBlogDto.Item>> getById(@PathVariable("blogId") String blogId) {
+        return ResponseEntity.ok(ApiResponse.ok(foCmBlogService.getByIdAndIncrView(blogId)));
     }
 
-    /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<CmBlog>> create(@RequestBody CmBlog entity) {
-        CmBlog result = foCmBlogService.create(entity);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(foCmBlogService.create(entity)));
     }
 
-    /** update — 수정 */
     @PutMapping("/{blogId}")
     public ResponseEntity<ApiResponse<CmBlog>> update(
             @PathVariable("blogId") String blogId, @RequestBody CmBlog entity) {
-        CmBlog result = foCmBlogService.update(blogId, entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(foCmBlogService.update(blogId, entity)));
     }
 
-    /** delete — 삭제 */
     @DeleteMapping("/{blogId}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("blogId") String blogId) {
         foCmBlogService.delete(blogId);

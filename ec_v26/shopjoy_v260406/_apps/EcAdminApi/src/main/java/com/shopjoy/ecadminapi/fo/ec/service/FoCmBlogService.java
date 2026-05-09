@@ -6,10 +6,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -17,17 +15,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 /**
  * FO 게시물(블로그/FAQ/공지) 서비스
  * URL: /api/fo/ec/cm/bltn
  *
  * - 블로그 목록/상세: blogCateId 필터링
- * - FAQ: blogCateId 또는 kw 검색
+ * - FAQ: blogCateId 또는 검색
  * - 상세 조회 시 viewCount 자동 증가
  */
 @Service
@@ -35,26 +30,28 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 @Transactional(readOnly = true)
 public class FoCmBlogService {
 
-
-    private final CmBlogMapper     cmBlogMapper;
+    private final CmBlogMapper cmBlogMapper;
     private final CmBlogRepository cmBlogRepository;
     @PersistenceContext
     private EntityManager em;
 
     /** getList — 조회 */
-    public List<CmBlogDto> getList(Map<String, Object> p) {
-        return cmBlogMapper.selectList(p);
+    public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {
+        return cmBlogMapper.selectList(req);
     }
 
     /** getPageData — 조회 */
-    public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(cmBlogMapper.selectPageList(p), cmBlogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
+        PageHelper.addPaging(req);
+        CmBlogDto.PageResponse res = new CmBlogDto.PageResponse();
+        List<CmBlogDto.Item> list = cmBlogMapper.selectPageList(req);
+        long count = cmBlogMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
-    /** getByIdAndIncrView — 조회 */
+    /** getByIdAndIncrView — 조회 + viewCount 증가 */
     @Transactional
-    public CmBlogDto getByIdAndIncrView(String blogId) {
+    public CmBlogDto.Item getByIdAndIncrView(String blogId) {
         CmBlog entity = cmBlogRepository.findById(blogId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
         entity.setViewCount((entity.getViewCount() != null ? entity.getViewCount() : 0) + 1);
@@ -106,5 +103,4 @@ public class FoCmBlogService {
         cmBlogRepository.deleteById(blogId);
         em.flush();
     }
-
 }

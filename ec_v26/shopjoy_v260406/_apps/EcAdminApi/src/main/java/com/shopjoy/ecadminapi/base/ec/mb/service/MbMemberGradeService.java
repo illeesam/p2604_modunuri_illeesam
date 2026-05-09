@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberGradeMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberGradeRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,87 +27,140 @@ public class MbMemberGradeService {
     private final MbMemberGradeMapper mbMemberGradeMapper;
     private final MbMemberGradeRepository mbMemberGradeRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public MbMemberGradeDto getById(String id) {
-        MbMemberGradeDto result = mbMemberGradeMapper.selectById(id);
-        return result;
+    public MbMemberGradeDto.Item getById(String id) {
+        MbMemberGradeDto.Item dto = mbMemberGradeMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<MbMemberGradeDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<MbMemberGradeDto> result = mbMemberGradeMapper.selectList(p);
-        return result;
+    public MbMemberGrade findById(String id) {
+        return mbMemberGradeRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<MbMemberGradeDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(mbMemberGradeMapper.selectPageList(p), mbMemberGradeMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return mbMemberGradeRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<MbMemberGradeDto.Item> getList(MbMemberGradeDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return mbMemberGradeMapper.selectList(req);
+    }
+
+    public MbMemberGradeDto.PageResponse getPageData(MbMemberGradeDto.Request req) {
+        PageHelper.addPaging(req);
+        MbMemberGradeDto.PageResponse res = new MbMemberGradeDto.PageResponse();
+        List<MbMemberGradeDto.Item> list = mbMemberGradeMapper.selectPageList(req);
+        long count = mbMemberGradeMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(MbMemberGrade entity) {
-        int result = mbMemberGradeMapper.updateSelective(entity);
-        return result;
+    public MbMemberGrade create(MbMemberGrade body) {
+        body.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        MbMemberGrade saved = mbMemberGradeRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getMemberGradeId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public MbMemberGrade create(MbMemberGrade entity) {
-        entity.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        MbMemberGrade result = mbMemberGradeRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public MbMemberGrade save(MbMemberGrade entity) {
-        if (!mbMemberGradeRepository.existsById(entity.getMemberGradeId()))
+        if (!existsById(entity.getMemberGradeId()))
             throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        MbMemberGrade result = mbMemberGradeRepository.save(entity);
-        return result;
+        MbMemberGrade saved = mbMemberGradeRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getMemberGradeId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public MbMemberGrade update(String id, MbMemberGrade body) {
+        MbMemberGrade entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "memberGradeId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        MbMemberGrade saved = mbMemberGradeRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public MbMemberGrade updatePartial(MbMemberGrade entity) {
+        if (entity.getMemberGradeId() == null) throw new CmBizException("memberGradeId 가 필요합니다.");
+        if (!existsById(entity.getMemberGradeId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberGradeId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = mbMemberGradeMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getMemberGradeId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!mbMemberGradeRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + id);
-        mbMemberGradeRepository.deleteById(id);
+        MbMemberGrade entity = findById(id);
+        mbMemberGradeRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<MbMemberGrade> rows) {
+    public List<MbMemberGrade> saveList(List<MbMemberGrade> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (MbMemberGrade row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setMemberGradeId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("mb_member_grade"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                mbMemberGradeRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getMemberGradeId(), "memberGradeId must not be null");
-                MbMemberGrade entity = mbMemberGradeRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "memberGradeId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                mbMemberGradeRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getMemberGradeId(), "memberGradeId must not be null");
-                if (mbMemberGradeRepository.existsById(id)) mbMemberGradeRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getMemberGradeId() != null)
+            .map(MbMemberGrade::getMemberGradeId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            mbMemberGradeRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<MbMemberGrade> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberGradeId() != null)
+            .toList();
+        for (MbMemberGrade row : updateRows) {
+            MbMemberGrade entity = findById(row.getMemberGradeId());
+            VoUtil.voCopyExclude(row, entity, "memberGradeId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            mbMemberGradeRepository.save(entity);
+            upsertedIds.add(entity.getMemberGradeId());
+        }
+        em.flush();
+
+        List<MbMemberGrade> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (MbMemberGrade row : insertRows) {
+            row.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            mbMemberGradeRepository.save(row);
+            upsertedIds.add(row.getMemberGradeId());
+        }
+        em.flush();
+        em.clear();
+
+        List<MbMemberGrade> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

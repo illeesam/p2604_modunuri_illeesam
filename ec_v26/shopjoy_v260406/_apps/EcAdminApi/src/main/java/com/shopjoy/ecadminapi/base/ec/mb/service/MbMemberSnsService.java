@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberSns;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberSnsMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberSnsRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,87 +27,140 @@ public class MbMemberSnsService {
     private final MbMemberSnsMapper mbMemberSnsMapper;
     private final MbMemberSnsRepository mbMemberSnsRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public MbMemberSnsDto getById(String id) {
-        MbMemberSnsDto result = mbMemberSnsMapper.selectById(id);
-        return result;
+    public MbMemberSnsDto.Item getById(String id) {
+        MbMemberSnsDto.Item dto = mbMemberSnsMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<MbMemberSnsDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<MbMemberSnsDto> result = mbMemberSnsMapper.selectList(p);
-        return result;
+    public MbMemberSns findById(String id) {
+        return mbMemberSnsRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<MbMemberSnsDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(mbMemberSnsMapper.selectPageList(p), mbMemberSnsMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return mbMemberSnsRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<MbMemberSnsDto.Item> getList(MbMemberSnsDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return mbMemberSnsMapper.selectList(req);
+    }
+
+    public MbMemberSnsDto.PageResponse getPageData(MbMemberSnsDto.Request req) {
+        PageHelper.addPaging(req);
+        MbMemberSnsDto.PageResponse res = new MbMemberSnsDto.PageResponse();
+        List<MbMemberSnsDto.Item> list = mbMemberSnsMapper.selectPageList(req);
+        long count = mbMemberSnsMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(MbMemberSns entity) {
-        int result = mbMemberSnsMapper.updateSelective(entity);
-        return result;
+    public MbMemberSns create(MbMemberSns body) {
+        body.setMemberSnsId(CmUtil.generateId("mb_member_sns"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        MbMemberSns saved = mbMemberSnsRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getMemberSnsId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public MbMemberSns create(MbMemberSns entity) {
-        entity.setMemberSnsId(CmUtil.generateId("mb_member_sns"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        MbMemberSns result = mbMemberSnsRepository.save(entity);
-        return result;
-    }
-
-    /** save — 저장 */
     @Transactional
     public MbMemberSns save(MbMemberSns entity) {
-        if (!mbMemberSnsRepository.existsById(entity.getMemberSnsId()))
+        if (!existsById(entity.getMemberSnsId()))
             throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + entity.getMemberSnsId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        MbMemberSns result = mbMemberSnsRepository.save(entity);
-        return result;
+        MbMemberSns saved = mbMemberSnsRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getMemberSnsId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public MbMemberSns update(String id, MbMemberSns body) {
+        MbMemberSns entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "memberSnsId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        MbMemberSns saved = mbMemberSnsRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public MbMemberSns updatePartial(MbMemberSns entity) {
+        if (entity.getMemberSnsId() == null) throw new CmBizException("memberSnsId 가 필요합니다.");
+        if (!existsById(entity.getMemberSnsId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberSnsId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = mbMemberSnsMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getMemberSnsId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!mbMemberSnsRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + id);
-        mbMemberSnsRepository.deleteById(id);
+        MbMemberSns entity = findById(id);
+        mbMemberSnsRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<MbMemberSns> rows) {
+    public List<MbMemberSns> saveList(List<MbMemberSns> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (MbMemberSns row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setMemberSnsId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("mb_member_sns"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                mbMemberSnsRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getMemberSnsId(), "memberSnsId must not be null");
-                MbMemberSns entity = mbMemberSnsRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "memberSnsId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                mbMemberSnsRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getMemberSnsId(), "memberSnsId must not be null");
-                if (mbMemberSnsRepository.existsById(id)) mbMemberSnsRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getMemberSnsId() != null)
+            .map(MbMemberSns::getMemberSnsId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            mbMemberSnsRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<MbMemberSns> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberSnsId() != null)
+            .toList();
+        for (MbMemberSns row : updateRows) {
+            MbMemberSns entity = findById(row.getMemberSnsId());
+            VoUtil.voCopyExclude(row, entity, "memberSnsId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            mbMemberSnsRepository.save(entity);
+            upsertedIds.add(entity.getMemberSnsId());
+        }
+        em.flush();
+
+        List<MbMemberSns> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (MbMemberSns row : insertRows) {
+            row.setMemberSnsId(CmUtil.generateId("mb_member_sns"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            mbMemberSnsRepository.save(row);
+            upsertedIds.add(row.getMemberSnsId());
+        }
+        em.flush();
+        em.clear();
+
+        List<MbMemberSns> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

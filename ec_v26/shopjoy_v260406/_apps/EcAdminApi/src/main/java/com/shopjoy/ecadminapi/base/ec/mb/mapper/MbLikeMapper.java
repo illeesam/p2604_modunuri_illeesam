@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface MbLikeMapper {
 
-    MbLikeDto selectById(@Param("id") String id);
+    MbLikeDto.Item selectById(@Param("id") String id);
 
-    List<MbLikeDto> selectList(Map<String, Object> p);
+    List<MbLikeDto.Item> selectList(MbLikeDto.Request req);
 
-    List<MbLikeDto> selectPageList(Map<String, Object> p);
+    List<MbLikeDto.Item> selectPageList(MbLikeDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(MbLikeDto.Request req);
 
     int updateSelective(MbLike entity);
 }

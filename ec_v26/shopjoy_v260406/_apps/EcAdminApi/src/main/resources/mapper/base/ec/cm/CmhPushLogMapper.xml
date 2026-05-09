@@ -35,7 +35,7 @@
     </sql>
 
     <!-- 푸시 발송 이력 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto$Item">
         SELECT  /* base.ec.cm :: CmhPushLog :: selectById */
               l.*
             , tpl.template_nm AS template_nm
@@ -51,7 +51,7 @@
     </select>
 
     <!-- 푸시 발송 이력 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto$Item">
         SELECT  /* base.ec.cm :: CmhPushLog :: selectList */
               l.*
             , tpl.template_nm AS template_nm
@@ -69,7 +69,7 @@
     </select>
 
     <!-- 푸시 발송 이력 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto$Item">
         SELECT  /* base.ec.cm :: CmhPushLog :: selectPageList */
               l.*
             , tpl.template_nm AS template_nm

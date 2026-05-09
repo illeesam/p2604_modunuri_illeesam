@@ -33,7 +33,7 @@
     </sql>
 
     <!-- 게시물 태그 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto$Item">
         SELECT  /* base.ec.cm :: CmBlogTag :: selectById */
               t.*
             , ste.site_nm AS site_nm
@@ -43,7 +43,7 @@
     </select>
 
     <!-- 게시물 태그 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto$Item">
         SELECT  /* base.ec.cm :: CmBlogTag :: selectList */
               t.*
             , ste.site_nm AS site_nm
@@ -55,7 +55,7 @@
     </select>
 
     <!-- 게시물 태그 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto$Item">
         SELECT  /* base.ec.cm :: CmBlogTag :: selectPageList */
               t.*
             , ste.site_nm AS site_nm

@@ -27,7 +27,7 @@
         </choose>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto$Item">
         SELECT  /* base.ec.mb :: MbDeviceToken :: selectById */
               t.*
             , mem.member_nm AS member_nm
@@ -36,7 +36,7 @@
         WHERE t.device_token_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto$Item">
         SELECT  /* base.ec.mb :: MbDeviceToken :: selectList */
               t.*
             , mem.member_nm AS member_nm
@@ -47,7 +47,7 @@
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto$Item">
         SELECT  /* base.ec.mb :: MbDeviceToken :: selectPageList */
               t.*
             , mem.member_nm AS member_nm

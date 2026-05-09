@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
 import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpPanelMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,94 +27,140 @@ public class DpPanelService {
     private final DpPanelMapper dpPanelMapper;
     private final DpPanelRepository dpPanelRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public DpPanelDto getById(String id) {
-        // dp_panel :: select one :: id [orm:mybatis]
-        DpPanelDto result = dpPanelMapper.selectById(id);
-        return result;
+    public DpPanelDto.Item getById(String id) {
+        DpPanelDto.Item dto = dpPanelMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<DpPanelDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // dp_panel :: select list :: p [orm:mybatis]
-        List<DpPanelDto> result = dpPanelMapper.selectList(p);
-        return result;
+    public DpPanel findById(String id) {
+        return dpPanelRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<DpPanelDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // dp_panel :: select page :: [orm:mybatis]
-        return PageResult.of(dpPanelMapper.selectPageList(p), dpPanelMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return dpPanelRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(DpPanel entity) {
-        // dp_panel :: update :: [orm:mybatis]
-        int result = dpPanelMapper.updateSelective(entity);
-        return result;
+    public List<DpPanelDto.Item> getList(DpPanelDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return dpPanelMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public DpPanelDto.PageResponse getPageData(DpPanelDto.Request req) {
+        PageHelper.addPaging(req);
+        DpPanelDto.PageResponse res = new DpPanelDto.PageResponse();
+        List<DpPanelDto.Item> list = dpPanelMapper.selectPageList(req);
+        long count = dpPanelMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public DpPanel create(DpPanel entity) {
-        entity.setPanelId(CmUtil.generateId("dp_panel"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // dp_panel :: insert or update :: [orm:jpa]
-        DpPanel result = dpPanelRepository.save(entity);
-        return result;
+    public DpPanel create(DpPanel body) {
+        body.setPanelId(CmUtil.generateId("dp_panel"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        DpPanel saved = dpPanelRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getPanelId());
     }
 
-    /** save — 저장 */
     @Transactional
     public DpPanel save(DpPanel entity) {
-        if (!dpPanelRepository.existsById(entity.getPanelId()))
+        if (!existsById(entity.getPanelId()))
             throw new CmBizException("존재하지 않는 DpPanel입니다: " + entity.getPanelId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // dp_panel :: insert or update :: [orm:jpa]
-        DpPanel result = dpPanelRepository.save(entity);
-        return result;
+        DpPanel saved = dpPanelRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getPanelId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public DpPanel update(String id, DpPanel body) {
+        DpPanel entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "panelId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        DpPanel saved = dpPanelRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public DpPanel updatePartial(DpPanel entity) {
+        if (entity.getPanelId() == null) throw new CmBizException("panelId 가 필요합니다.");
+        if (!existsById(entity.getPanelId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPanelId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = dpPanelMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getPanelId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!dpPanelRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 DpPanel입니다: " + id);
-        // dp_panel :: delete :: id [orm:jpa]
-        dpPanelRepository.deleteById(id);
+        DpPanel entity = findById(id);
+        dpPanelRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<DpPanel> rows) {
+    public List<DpPanel> saveList(List<DpPanel> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (DpPanel row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setPanelId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("dp_panel"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                dpPanelRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getPanelId(), "panelId must not be null");
-                DpPanel entity = dpPanelRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "panelId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                dpPanelRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getPanelId(), "panelId must not be null");
-                if (dpPanelRepository.existsById(id)) dpPanelRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getPanelId() != null)
+            .map(DpPanel::getPanelId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            dpPanelRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<DpPanel> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getPanelId() != null)
+            .toList();
+        for (DpPanel row : updateRows) {
+            DpPanel entity = findById(row.getPanelId());
+            VoUtil.voCopyExclude(row, entity, "panelId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            dpPanelRepository.save(entity);
+            upsertedIds.add(entity.getPanelId());
+        }
+        em.flush();
+
+        List<DpPanel> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (DpPanel row : insertRows) {
+            row.setPanelId(CmUtil.generateId("dp_panel"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            dpPanelRepository.save(row);
+            upsertedIds.add(row.getPanelId());
+        }
+        em.flush();
+        em.clear();
+
+        List<DpPanel> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }

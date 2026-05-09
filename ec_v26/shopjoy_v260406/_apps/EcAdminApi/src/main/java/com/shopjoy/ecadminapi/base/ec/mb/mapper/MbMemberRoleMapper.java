@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface MbMemberRoleMapper {
 
-    MbMemberRoleDto selectById(@Param("id") String id);
+    MbMemberRoleDto.Item selectById(@Param("id") String id);
 
-    List<MbMemberRoleDto> selectList(Map<String, Object> p);
+    List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request req);
 
-    List<MbMemberRoleDto> selectPageList(Map<String, Object> p);
+    List<MbMemberRoleDto.Item> selectPageList(MbMemberRoleDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(MbMemberRoleDto.Request req);
 
     int updateSelective(MbMemberRole entity);
 }

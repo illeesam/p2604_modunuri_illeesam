@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface CmhPushLogMapper {
 
-    CmhPushLogDto selectById(@Param("id") String id);
+    CmhPushLogDto.Item selectById(@Param("id") String id);
 
-    List<CmhPushLogDto> selectList(Map<String, Object> p);
+    List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request req);
 
-    List<CmhPushLogDto> selectPageList(Map<String, Object> p);
+    List<CmhPushLogDto.Item> selectPageList(CmhPushLogDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(CmhPushLogDto.Request req);
 
     int updateSelective(CmhPushLog entity);
 }

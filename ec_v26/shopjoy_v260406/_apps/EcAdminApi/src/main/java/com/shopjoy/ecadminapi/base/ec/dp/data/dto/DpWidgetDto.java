@@ -1,34 +1,46 @@
 package com.shopjoy.ecadminapi.base.ec.dp.data.dto;
 
+import com.shopjoy.ecadminapi.common.data.BasePageResponse;
+import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter @NoArgsConstructor
 public class DpWidgetDto {
 
-    // ── dp_widget ──────────────────────────────────────────
-    private String widgetId;
-    private String widgetLibId;
-    private String siteId;
-    private String widgetNm;
-    private String widgetTypeCd;
-    private String widgetDesc;
-    private String widgetTitle;
-    private String widgetContent;
-    private String titleShowYn;
-    private String widgetLibRefYn;
-    private String widgetConfigJson;
-    private String previewImgUrl;
-    private Integer sortOrd;
-    private String useYn;
-    private String dispEnv;
-    private String regBy;
-    private LocalDateTime regDate;
-    private String updBy;
-    private LocalDateTime updDate;
+    @Getter @Setter @NoArgsConstructor
+    public static class Request extends BaseRequest {
+        @Size(max = 21) private String siteId;
+        @Size(max = 1) private String useYn;
+        @Size(max = 21) private String widgetId;
+    }
 
-    // ── JOIN: 필요 시 추가 ────────────────────────────────────────
+    @Getter @Setter @NoArgsConstructor
+    public static class Item {
+        private String widgetId;
+        private String widgetLibId;
+        private String siteId;
+        private String widgetNm;
+        private String widgetTypeCd;
+        private String widgetDesc;
+        private String widgetTitle;
+        private String widgetContent;
+        private String titleShowYn;
+        private String widgetLibRefYn;
+        private String widgetConfigJson;
+        private String previewImgUrl;
+        private Integer sortOrd;
+        private String useYn;
+        private String dispEnv;
+        private String regBy;
+        private LocalDateTime regDate;
+        private String updBy;
+        private LocalDateTime updDate;
+    }
+
+    @Getter @Setter @NoArgsConstructor
+    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

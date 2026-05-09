@@ -2,14 +2,15 @@ package com.shopjoy.ecadminapi.base.ec.mb.service;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken;
-import com.shopjoy.ecadminapi.base.ec.mb.data.vo.MbDeviceTokenReq;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbDeviceTokenMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbDeviceTokenRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -27,98 +27,140 @@ public class MbDeviceTokenService {
     private final MbDeviceTokenMapper mbDeviceTokenMapper;
     private final MbDeviceTokenRepository mbDeviceTokenRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public MbDeviceTokenDto getById(String id) {
-        // mb_device_token :: select one :: id [orm:mybatis]
-        return mbDeviceTokenMapper.selectById(id);
+    public MbDeviceTokenDto.Item getById(String id) {
+        MbDeviceTokenDto.Item dto = mbDeviceTokenMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<MbDeviceTokenDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // mb_device_token :: select list :: p [orm:mybatis]
-        return mbDeviceTokenMapper.selectList(p);
+    public MbDeviceToken findById(String id) {
+        return mbDeviceTokenRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<MbDeviceTokenDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // mb_device_token :: select page :: [orm:mybatis]
-        return PageResult.of(mbDeviceTokenMapper.selectPageList(p), mbDeviceTokenMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return mbDeviceTokenRepository.existsById(id);
     }
 
-    /** update — 수정 */
+    public List<MbDeviceTokenDto.Item> getList(MbDeviceTokenDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return mbDeviceTokenMapper.selectList(req);
+    }
+
+    public MbDeviceTokenDto.PageResponse getPageData(MbDeviceTokenDto.Request req) {
+        PageHelper.addPaging(req);
+        MbDeviceTokenDto.PageResponse res = new MbDeviceTokenDto.PageResponse();
+        List<MbDeviceTokenDto.Item> list = mbDeviceTokenMapper.selectPageList(req);
+        long count = mbDeviceTokenMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
     @Transactional
-    public int update(MbDeviceToken entity) {
-        // mb_device_token :: update :: [orm:mybatis]
-        return mbDeviceTokenMapper.updateSelective(entity);
+    public MbDeviceToken create(MbDeviceToken body) {
+        body.setDeviceTokenId(CmUtil.generateId("mb_device_token"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        MbDeviceToken saved = mbDeviceTokenRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getDeviceTokenId());
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
-
-    @Transactional
-    public MbDeviceToken create(MbDeviceToken entity) {
-        entity.setDeviceTokenId(CmUtil.generateId("mb_device_token"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // mb_device_token :: insert or update :: [orm:jpa]
-        return mbDeviceTokenRepository.save(entity);
-    }
-
-    /** save — 저장 */
     @Transactional
     public MbDeviceToken save(MbDeviceToken entity) {
-        // mb_device_token :: select one :: deviceTokenId [orm:jpa]
-        MbDeviceToken existing = mbDeviceTokenRepository.findById(entity.getDeviceTokenId())
-                .orElseThrow(() -> new CmBizException("존재하지 않는 디바이스 토큰입니다: " + entity.getDeviceTokenId()));
-        entity.setRegBy(existing.getRegBy());
-        entity.setRegDate(existing.getRegDate());
+        if (!existsById(entity.getDeviceTokenId()))
+            throw new CmBizException("존재하지 않는 MbDeviceToken입니다: " + entity.getDeviceTokenId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // mb_device_token :: insert or update :: [orm:jpa]
-        return mbDeviceTokenRepository.save(entity);
+        MbDeviceToken saved = mbDeviceTokenRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getDeviceTokenId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public MbDeviceToken update(String id, MbDeviceToken body) {
+        MbDeviceToken entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "deviceTokenId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        MbDeviceToken saved = mbDeviceTokenRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public MbDeviceToken updatePartial(MbDeviceToken entity) {
+        if (entity.getDeviceTokenId() == null) throw new CmBizException("deviceTokenId 가 필요합니다.");
+        if (!existsById(entity.getDeviceTokenId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDeviceTokenId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = mbDeviceTokenMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getDeviceTokenId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!mbDeviceTokenRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 디바이스 토큰입니다: " + id);
-        // mb_device_token :: delete :: id [orm:jpa]
-        mbDeviceTokenRepository.deleteById(id);
+        MbDeviceToken entity = findById(id);
+        mbDeviceTokenRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    // ── _row_status 기반 저장 ────────────────────────────────────
-
     @Transactional
-    public MbDeviceToken saveByRowStatus(MbDeviceTokenReq req) {
-        return doSaveByRowStatus(req);
-    }
+    public List<MbDeviceToken> saveList(List<MbDeviceToken> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
 
-    /** saveListByRowStatus — 저장 */
-    @Transactional
-    public List<MbDeviceToken> saveListByRowStatus(List<MbDeviceTokenReq> list) {
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getDeviceTokenId() != null)
+            .map(MbDeviceToken::getDeviceTokenId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            mbDeviceTokenRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<MbDeviceToken> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getDeviceTokenId() != null)
+            .toList();
+        for (MbDeviceToken row : updateRows) {
+            MbDeviceToken entity = findById(row.getDeviceTokenId());
+            VoUtil.voCopyExclude(row, entity, "deviceTokenId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            mbDeviceTokenRepository.save(entity);
+            upsertedIds.add(entity.getDeviceTokenId());
+        }
+        em.flush();
+
+        List<MbDeviceToken> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (MbDeviceToken row : insertRows) {
+            row.setDeviceTokenId(CmUtil.generateId("mb_device_token"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            mbDeviceTokenRepository.save(row);
+            upsertedIds.add(row.getDeviceTokenId());
+        }
+        em.flush();
+        em.clear();
+
         List<MbDeviceToken> result = new ArrayList<>();
-        for (MbDeviceTokenReq req : list.stream().filter(r -> "D".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
-        for (MbDeviceTokenReq req : list.stream().filter(r -> "U".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
-        for (MbDeviceTokenReq req : list.stream().filter(r -> "I".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
         return result;
     }
-
-    /** doSaveByRowStatus — 실행 */
-    private MbDeviceToken doSaveByRowStatus(MbDeviceTokenReq req) {
-        return switch (req.getRowStatus()) {
-            case "I" -> create(req.toEntity());
-            case "U" -> save(req.toEntity());
-            case "D" -> {
-                delete(req.getDeviceTokenId());
-                yield null;
-            }
-            default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus());
-        };
-    }
-
 }

@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface MbhMemberLoginLogMapper {
 
-    MbhMemberLoginLogDto selectById(@Param("id") String id);
+    MbhMemberLoginLogDto.Item selectById(@Param("id") String id);
 
-    List<MbhMemberLoginLogDto> selectList(Map<String, Object> p);
+    List<MbhMemberLoginLogDto.Item> selectList(MbhMemberLoginLogDto.Request req);
 
-    List<MbhMemberLoginLogDto> selectPageList(Map<String, Object> p);
+    List<MbhMemberLoginLogDto.Item> selectPageList(MbhMemberLoginLogDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(MbhMemberLoginLogDto.Request req);
 
     int updateSelective(MbhMemberLoginLog entity);
 }

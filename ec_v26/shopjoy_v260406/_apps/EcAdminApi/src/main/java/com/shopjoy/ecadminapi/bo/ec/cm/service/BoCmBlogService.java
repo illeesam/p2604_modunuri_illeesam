@@ -2,13 +2,10 @@ package com.shopjoy.ecadminapi.bo.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
-import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,128 +13,46 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+/**
+ * BO CmBlog 서비스 — base CmBlogService 위임 (thin wrapper) + toggleUse.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoCmBlogService {
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final CmBlogMapper cmBlogMapper;
+
+    private final CmBlogService cmBlogService;
     private final CmBlogRepository cmBlogRepository;
+
     @PersistenceContext
     private EntityManager em;
 
-    /** getList — 조회 */
-    public List<CmBlogDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        return cmBlogMapper.selectList(p);
-    }
+    public CmBlogDto.Item getById(String id) { return cmBlogService.getById(id); }
+    public List<CmBlogDto.Item> getList(CmBlogDto.Request req) { return cmBlogService.getList(req); }
+    public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) { return cmBlogService.getPageData(req); }
 
-    /** getPageData — 조회 */
-    public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        return PageResult.of(cmBlogMapper.selectPageList(p), cmBlogMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
-    }
-
-    /** getById — 조회 */
-    public CmBlogDto getById(String id) {
-        CmBlogDto dto = cmBlogMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        return dto;
-    }
-
-    /** create — 생성 */
-    @Transactional
-    public CmBlog create(CmBlog body) {
+    @Transactional public CmBlog create(CmBlog body) {
         if (body.getUseYn() == null) body.setUseYn("Y");
-        body.setBlogId("BL" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getAuthUser().authId());
-        body.setRegDate(LocalDateTime.now());
-        body.setUpdBy(SecurityUtil.getAuthUser().authId());
-        body.setUpdDate(LocalDateTime.now());
-        CmBlog saved = cmBlogRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        return saved;
+        return cmBlogService.create(body);
     }
+    @Transactional public CmBlog update(String id, CmBlog body) { return cmBlogService.update(id, body); }
+    @Transactional public void delete(String id) { cmBlogService.delete(id); }
+    @Transactional public List<CmBlog> saveList(List<CmBlog> rows) { return cmBlogService.saveList(rows); }
 
-    /** update — 수정 */
+    /** toggleUse — useYn 전환 */
     @Transactional
-    public CmBlogDto update(String id, CmBlog body) {
-        CmBlog entity = cmBlogRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        VoUtil.voCopyExclude(body, entity, "blogId^regBy^regDate");
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        CmBlog saved = cmBlogRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
-        em.flush();
-        return getById(id);
-    }
-
-    /** delete — 삭제 */
-    @Transactional
-    public void delete(String id) {
+    public CmBlogDto.Item toggleUse(String id, Map<String, Object> body) {
         CmBlog entity = cmBlogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        cmBlogRepository.delete(entity);
-        em.flush();
-        if (cmBlogRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
-    }
-
-    /** toggleUse — 전환 */
-    @Transactional
-    public CmBlogDto toggleUse(String id, Map<String, Object> body) {
-        CmBlog entity = cmBlogRepository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUseYn((String) body.get("useYn"));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
-        return getById(id);
-    }
-    /** saveList — 저장 */
-    @Transactional
-    public void saveList(List<CmBlog> rows) {
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
-
-        // 1단계: DELETE 일괄 처리
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getBlogId() != null)
-            .map(CmBlog::getBlogId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            cmBlogRepository.deleteAllById(deleteIds);
-            em.flush();
-            em.clear();
-        }
-
-        // 2단계: UPDATE 처리
-        for (CmBlog row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = Objects.requireNonNull(row.getBlogId(), "blogId must not be null");
-            CmBlog entity = cmBlogRepository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-            VoUtil.voCopyExclude(row, entity, "blogId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            cmBlogRepository.save(entity);
-        }
-        em.flush();
-
-        // 3단계: INSERT 처리
-        for (CmBlog row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
-            row.setBlogId("BL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            cmBlogRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        return cmBlogService.getById(id);
     }
 }

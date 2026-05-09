@@ -6,18 +6,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
-
 @Mapper
 public interface CmBlogTagMapper {
 
-    CmBlogTagDto selectById(@Param("id") String id);
+    CmBlogTagDto.Item selectById(@Param("id") String id);
 
-    List<CmBlogTagDto> selectList(Map<String, Object> p);
+    List<CmBlogTagDto.Item> selectList(CmBlogTagDto.Request req);
 
-    List<CmBlogTagDto> selectPageList(Map<String, Object> p);
+    List<CmBlogTagDto.Item> selectPageList(CmBlogTagDto.Request req);
 
-    long selectPageCount(Map<String, Object> p);
+    long selectPageCount(CmBlogTagDto.Request req);
 
     int updateSelective(CmBlogTag entity);
 }

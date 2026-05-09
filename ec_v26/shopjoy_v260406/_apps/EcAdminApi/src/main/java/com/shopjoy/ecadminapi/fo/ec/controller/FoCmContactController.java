@@ -26,7 +26,7 @@ public class FoCmContactController {
 
     /** getById — 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable("id") String id) {
+    public ResponseEntity<ApiResponse<CmBlogDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(foCmContactService.getById(id)));
     }
 

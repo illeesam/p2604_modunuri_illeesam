@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGroup;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemGroupService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -83,8 +84,7 @@ public class BoMbMemGroupController {
 
     /** saveList — 저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<MbMemberGroup> rows) {
-        boMbMemGroupService.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    public ResponseEntity<ApiResponse<List<MbMemberGroup>>> saveList(@RequestBody List<MbMemberGroup> rows) {
+        return ResponseEntity.ok(ApiResponse.ok(boMbMemGroupService.saveList(rows), "저장되었습니다."));
     }
 }

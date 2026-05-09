@@ -5,19 +5,19 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpWidgetLibMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetLibRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,94 +27,140 @@ public class DpWidgetLibService {
     private final DpWidgetLibMapper dpWidgetLibMapper;
     private final DpWidgetLibRepository dpWidgetLibRepository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
+    @PersistenceContext
+    private EntityManager em;
 
-    public DpWidgetLibDto getById(String id) {
-        // dp_widget_lib :: select one :: id [orm:mybatis]
-        DpWidgetLibDto result = dpWidgetLibMapper.selectById(id);
-        return result;
+    public DpWidgetLibDto.Item getById(String id) {
+        DpWidgetLibDto.Item dto = dpWidgetLibMapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        return dto;
     }
 
-    /** getList — 조회 */
-    public List<DpWidgetLibDto> getList(Map<String, Object> p) {
-        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // dp_widget_lib :: select list :: p [orm:mybatis]
-        List<DpWidgetLibDto> result = dpWidgetLibMapper.selectList(p);
-        return result;
+    public DpWidgetLib findById(String id) {
+        return dpWidgetLibRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
     }
 
-    /** getPageData — 조회 */
-    public PageResult<DpWidgetLibDto> getPageData(Map<String, Object> p) {
-        PageHelper.addPaging(p);
-        // dp_widget_lib :: select page :: [orm:mybatis]
-        return PageResult.of(dpWidgetLibMapper.selectPageList(p), dpWidgetLibMapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    public boolean existsById(String id) {
+        return dpWidgetLibRepository.existsById(id);
     }
 
-    /** update — 수정 */
-    @Transactional
-    public int update(DpWidgetLib entity) {
-        // dp_widget_lib :: update :: [orm:mybatis]
-        int result = dpWidgetLibMapper.updateSelective(entity);
-        return result;
+    public List<DpWidgetLibDto.Item> getList(DpWidgetLibDto.Request req) {
+        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        return dpWidgetLibMapper.selectList(req);
     }
 
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
+    public DpWidgetLibDto.PageResponse getPageData(DpWidgetLibDto.Request req) {
+        PageHelper.addPaging(req);
+        DpWidgetLibDto.PageResponse res = new DpWidgetLibDto.PageResponse();
+        List<DpWidgetLibDto.Item> list = dpWidgetLibMapper.selectPageList(req);
+        long count = dpWidgetLibMapper.selectPageCount(req);
+        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
 
     @Transactional
-    public DpWidgetLib create(DpWidgetLib entity) {
-        entity.setWidgetLibId(CmUtil.generateId("dp_widget_lib"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // dp_widget_lib :: insert or update :: [orm:jpa]
-        DpWidgetLib result = dpWidgetLibRepository.save(entity);
-        return result;
+    public DpWidgetLib create(DpWidgetLib body) {
+        body.setWidgetLibId(CmUtil.generateId("dp_widget_lib"));
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
+        DpWidgetLib saved = dpWidgetLibRepository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getWidgetLibId());
     }
 
-    /** save — 저장 */
     @Transactional
     public DpWidgetLib save(DpWidgetLib entity) {
-        if (!dpWidgetLibRepository.existsById(entity.getWidgetLibId()))
+        if (!existsById(entity.getWidgetLibId()))
             throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // dp_widget_lib :: insert or update :: [orm:jpa]
-        DpWidgetLib result = dpWidgetLibRepository.save(entity);
-        return result;
+        DpWidgetLib saved = dpWidgetLibRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(saved.getWidgetLibId());
     }
 
-    /** delete — 삭제 */
+    @Transactional
+    public DpWidgetLib update(String id, DpWidgetLib body) {
+        DpWidgetLib entity = findById(id);
+        VoUtil.voCopyExclude(body, entity, "widgetLibId^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        DpWidgetLib saved = dpWidgetLibRepository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
+        return findById(id);
+    }
+
+    @Transactional
+    public DpWidgetLib updatePartial(DpWidgetLib entity) {
+        if (entity.getWidgetLibId() == null) throw new CmBizException("widgetLibId 가 필요합니다.");
+        if (!existsById(entity.getWidgetLibId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getWidgetLibId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        int affected = dpWidgetLibMapper.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.clear();
+        return findById(entity.getWidgetLibId());
+    }
+
     @Transactional
     public void delete(String id) {
-        if (!dpWidgetLibRepository.existsById(id))
-            throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + id);
-        // dp_widget_lib :: delete :: id [orm:jpa]
-        dpWidgetLibRepository.deleteById(id);
+        DpWidgetLib entity = findById(id);
+        dpWidgetLibRepository.delete(entity);
+        em.flush();
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
-    /** saveList — 저장 */
     @Transactional
-    public void saveList(List<DpWidgetLib> rows) {
+    public List<DpWidgetLib> saveList(List<DpWidgetLib> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (DpWidgetLib row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setWidgetLibId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("dp_widget_lib"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                dpWidgetLibRepository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getWidgetLibId(), "widgetLibId must not be null");
-                DpWidgetLib entity = dpWidgetLibRepository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "widgetLibId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                dpWidgetLibRepository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getWidgetLibId(), "widgetLibId must not be null");
-                if (dpWidgetLibRepository.existsById(id)) dpWidgetLibRepository.deleteById(id);
-            }
+
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getWidgetLibId() != null)
+            .map(DpWidgetLib::getWidgetLibId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            dpWidgetLibRepository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
         }
+
+        List<String> upsertedIds = new ArrayList<>();
+        List<DpWidgetLib> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getWidgetLibId() != null)
+            .toList();
+        for (DpWidgetLib row : updateRows) {
+            DpWidgetLib entity = findById(row.getWidgetLibId());
+            VoUtil.voCopyExclude(row, entity, "widgetLibId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            dpWidgetLibRepository.save(entity);
+            upsertedIds.add(entity.getWidgetLibId());
+        }
+        em.flush();
+
+        List<DpWidgetLib> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (DpWidgetLib row : insertRows) {
+            row.setWidgetLibId(CmUtil.generateId("dp_widget_lib"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            dpWidgetLibRepository.save(row);
+            upsertedIds.add(row.getWidgetLibId());
+        }
+        em.flush();
+        em.clear();
+
+        List<DpWidgetLib> result = new ArrayList<>();
+        for (String id : upsertedIds) {
+            result.add(findById(id));
+        }
+        return result;
     }
 }
