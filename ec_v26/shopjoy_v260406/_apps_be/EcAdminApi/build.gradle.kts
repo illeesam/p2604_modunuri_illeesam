@@ -58,6 +58,10 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+    // Flyway (Database Migration)
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+
     // Swagger/OpenAPI
     // implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
 

@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: shopjoy_db
+    environment:
+      POSTGRES_USER: illeesam
+      POSTGRES_PASSWORD: postgresqlilleesam
+      POSTGRES_DB: shopjoy_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - shopjoy_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U illeesam"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: shopjoy_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - shopjoy_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: shopjoy_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - ec-admin-api
+    networks:
+      - shopjoy_network
+
+  # EC Admin API
+  ec-admin-api:
+    build:
+      context: https://github.com/illeesam/p2604_modunuri_illeesam.git#main:ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
+    container_name: ec_admin_api
+    ports:
+      - "31000:31000"
+    environment:
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shopjoy_db
+      SPRING_DATASOURCE_USERNAME: illeesam
+      SPRING_DATASOURCE_PASSWORD: postgresilleesam
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      
+      # Redis
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: 
+      SPRING_REDIS_TIMEOUT: 2000ms
+      
+      # JPA
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_SHOW_SQL: false
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQL10Dialect
+      
+      # Flyway
+      SPRING_FLYWAY_ENABLED: true
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
+      
+      # JWT
+      JWT_SECRET: your_jwt_secret_key_here_minimum_32_characters
+      JWT_EXPIRATION: 86400000
+      JWT_REFRESH_EXPIRATION: 604800000
+      
+      # 파일 업로드
+      FILE_UPLOAD_PATH: /app/uploads
+      FILE_UPLOAD_MAX_SIZE: 10MB
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 10MB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 50MB
+      
+      # 카카오 API
+      KAKAO_CLIENT_ID: your_kakao_client_id
+      KAKAO_CLIENT_SECRET: your_kakao_client_secret
+      KAKAO_REDIRECT_URI: http://localhost:31000/auth/kakao/callback
+      
+      # 서버
+      SERVER_PORT: 31000
+      SPRING_PROFILES_ACTIVE: dev
+    
+    volumes:
+      - ./uploads:/app/uploads
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    networks:
+      - shopjoy_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  shopjoy_network:
+    driver: bridge
