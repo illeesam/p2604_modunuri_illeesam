@@ -134,6 +134,7 @@ jobs:
           host: ${{ secrets.SYNOLOGY_HOST }}
           port: ${{ secrets.SYNOLOGY_PORT }}
           username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           source: "ec-admin-api.tar.gz"
           target: "/volume1/docker/ec-admin-api/"
@@ -144,6 +145,7 @@ jobs:
           host: ${{ secrets.SYNOLOGY_HOST }}
           port: ${{ secrets.SYNOLOGY_PORT }}
           username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           script: |
             echo "======================================"
@@ -161,6 +163,7 @@ jobs:
           host: ${{ secrets.SYNOLOGY_HOST }}
           port: ${{ secrets.SYNOLOGY_PORT }}
           username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           script: |
             echo "======================================"
