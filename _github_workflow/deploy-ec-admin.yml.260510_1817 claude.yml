@@ -1,0 +1,370 @@
+name: Deploy EcAdminApi to Synology
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ─────────────────────────────────────────
+      # [01-01] 소스코드 체크아웃
+      # ─────────────────────────────────────────
+      - name: "[01-01] 소스코드 체크아웃"
+        uses: actions/checkout@v4
+
+      - name: "[01-02] 체크아웃 확인"
+        run: |
+          echo "======================================"
+          echo "[01-02] 체크아웃 완료"
+          echo "======================================"
+          echo "브랜치  : ${{ github.ref_name }}"
+          echo "커밋SHA : ${{ github.sha }}"
+          echo "작성자  : ${{ github.actor }}"
+          echo "시각    : $(date '+%Y-%m-%d %H:%M:%S')"
+          ls -la ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/
+
+      # ─────────────────────────────────────────
+      # [02-01] JDK 설정
+      # ─────────────────────────────────────────
+      - name: "[02-01] JDK 17 설정"
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # ─────────────────────────────────────────
+      # [03-01] Gradle 빌드
+      # ─────────────────────────────────────────
+      - name: "[03-01] Gradle 실행 권한 부여"
+        working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
+        run: chmod +x gradlew
+
+      - name: "[03-02] Gradle 빌드 (테스트 제외)"
+        working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
+        run: |
+          echo "[03-02] 시작시각: $(date '+%Y-%m-%d %H:%M:%S')"
+          ./gradlew bootJar -x test --no-daemon
+          echo "[03-02] 종료시각: $(date '+%Y-%m-%d %H:%M:%S')"
+
+      - name: "[03-03] 빌드 결과물 확인"
+        working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
+        run: ls -lh build/libs/
+
+      # ─────────────────────────────────────────
+      # [04-01] Docker 이미지 빌드
+      # ─────────────────────────────────────────
+      - name: "[04-01] Docker 이미지 빌드"
+        working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
+        run: |
+          docker build \
+            --tag ec-admin-api:latest \
+            --tag ec-admin-api:${{ github.sha }} \
+            --build-arg BUILD_DATE=$(date '+%Y-%m-%d') \
+            --build-arg GIT_COMMIT=${{ github.sha }} \
+            .
+
+      # ─────────────────────────────────────────
+      # [05-01] Docker 이미지 압축
+      # ─────────────────────────────────────────
+      - name: "[05-01] Docker 이미지 tar 압축"
+        run: |
+          docker save ec-admin-api:latest | gzip > ec-admin-api.tar.gz
+          echo "[05-01] 압축파일 크기: $(du -sh ec-admin-api.tar.gz | cut -f1)"
+
+      # ─────────────────────────────────────────
+      # [06-01] Synology로 이미지 전송
+      # ─────────────────────────────────────────
+      - name: "[06-01] Synology로 Docker 이미지 전송 (SCP)"
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SYNOLOGY_HOST }}
+          port: ${{ secrets.SYNOLOGY_PORT }}
+          username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
+          key: ${{ secrets.SYNOLOGY_SSH_KEY }}
+          source: "ec-admin-api.tar.gz"
+          target: "/volume1/docker/ec-admin-api/"
+
+      # ─────────────────────────────────────────
+      # [07-00] 사전 환경 진단 (★ 핵심 추가 단계)
+      # ─────────────────────────────────────────
+      - name: "[07-00] Synology 사전 환경 진단"
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SYNOLOGY_HOST }}
+          port: ${{ secrets.SYNOLOGY_PORT }}
+          username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
+          key: ${{ secrets.SYNOLOGY_SSH_KEY }}
+          script: |
+            echo "============================================================"
+            echo "[07-00] Synology 사전 환경 진단"
+            echo "============================================================"
+
+            echo ""
+            echo "▶ [A] 현재 접속 사용자"
+            echo "--------------------------------------"
+            whoami
+            id
+
+            echo ""
+            echo "▶ [B] docker 명령어 위치 확인"
+            echo "--------------------------------------"
+            which docker || echo "!! docker 명령어 PATH에 없음"
+            ls -la /usr/bin/docker 2>/dev/null || echo "!! /usr/bin/docker 없음"
+            ls -la /usr/local/bin/docker 2>/dev/null || echo "!! /usr/local/bin/docker 없음"
+
+            echo ""
+            echo "▶ [C] sudo 없이 docker 실행 가능 여부"
+            echo "--------------------------------------"
+            docker version 2>&1 || echo "!! sudo 없이 docker 실행 불가"
+
+            echo ""
+            echo "▶ [D] sudo 방식별 docker 실행 테스트"
+            echo "--------------------------------------"
+            echo "  [D-1] sudo docker (패스워드 없이)"
+            sudo docker version > /dev/null 2>&1 && echo "  ✅ sudo docker 가능" || echo "  ❌ sudo docker 불가 (패스워드 필요)"
+
+            echo "  [D-2] sudo -S docker (stdin 패스워드)"
+            echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker version > /dev/null 2>&1 \
+              && echo "  ✅ sudo -S docker 가능" \
+              || echo "  ❌ sudo -S docker 불가"
+
+            echo "  [D-3] /usr/local/bin/docker 직접 실행"
+            /usr/local/bin/docker version > /dev/null 2>&1 \
+              && echo "  ✅ /usr/local/bin/docker 직접 실행 가능" \
+              || echo "  ❌ /usr/local/bin/docker 직접 실행 불가"
+
+            echo ""
+            echo "▶ [E] docker.sock 권한 확인"
+            echo "--------------------------------------"
+            ls -la /var/run/docker.sock 2>/dev/null || echo "!! /var/run/docker.sock 없음"
+            groups
+
+            echo ""
+            echo "▶ [F] 전송된 파일 확인"
+            echo "--------------------------------------"
+            ls -lh /volume1/docker/ec-admin-api/ 2>/dev/null || echo "!! /volume1/docker/ec-admin-api/ 폴더 없음"
+
+            echo ""
+            echo "▶ [G] .env 파일 존재 여부"
+            echo "--------------------------------------"
+            if [ -f /volume1/docker/ec-admin-api/.env ]; then
+              echo "✅ .env 파일 존재"
+              echo "  (내용 라인수: $(wc -l < /volume1/docker/ec-admin-api/.env))"
+            else
+              echo "❌ .env 파일 없음 ← 컨테이너 실행 실패 원인일 수 있음!"
+            fi
+
+            echo ""
+            echo "▶ [H] 31000 포트 사용 현황"
+            echo "--------------------------------------"
+            netstat -tnlp 2>/dev/null | grep 31000 || ss -tnlp | grep 31000 || echo "  31000 포트 사용 중인 프로세스 없음"
+
+            echo ""
+            echo "▶ [I] 현재 실행중인 전체 Docker 컨테이너"
+            echo "--------------------------------------"
+            docker ps 2>/dev/null || \
+            sudo docker ps 2>/dev/null || \
+            echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker ps 2>/dev/null || \
+            echo "!! docker ps 실행 실패 - docker 접근 권한 문제"
+
+            echo ""
+            echo "[07-00] 진단 완료"
+            echo "============================================================"
+
+      # ─────────────────────────────────────────
+      # [07-01] Synology 컨테이너 배포
+      # ─────────────────────────────────────────
+      - name: "[07-01] Synology 컨테이너 배포"
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SYNOLOGY_HOST }}
+          port: ${{ secrets.SYNOLOGY_PORT }}
+          username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
+          key: ${{ secrets.SYNOLOGY_SSH_KEY }}
+          script: |
+            echo "============================================================"
+            echo "[07-01] 배포 시작: $(date '+%Y-%m-%d %H:%M:%S')"
+            echo "============================================================"
+
+            # ── docker 실행 명령어 자동 감지 ──────────────────────────────
+            # Synology 환경마다 권한이 달라서 작동하는 방식을 자동 탐색
+            DOCKER_CMD=""
+
+            if docker ps > /dev/null 2>&1; then
+              DOCKER_CMD="docker"
+              echo "[권한] sudo 없이 docker 실행 가능 → DOCKER_CMD=docker"
+            elif sudo docker ps > /dev/null 2>&1; then
+              DOCKER_CMD="sudo docker"
+              echo "[권한] sudo (패스워드 불필요) 가능 → DOCKER_CMD=sudo docker"
+            else
+              echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker ps > /dev/null 2>&1
+              if [ $? -eq 0 ]; then
+                # sudo -S 방식은 매번 파이프가 필요해서 함수로 래핑
+                DOCKER_CMD="SUDOS"
+                echo "[권한] sudo -S 방식 사용 → DOCKER_CMD=SUDOS"
+              else
+                echo "❌ [FATAL] docker 실행 방법을 찾지 못했습니다. 배포 중단."
+                echo "   → Synology에서 해당 계정에 docker 권한을 부여해주세요."
+                echo "   → DSM > 제어판 > 사용자 > $USER > 권한 > docker 그룹 추가"
+                exit 1
+              fi
+            fi
+
+            # docker 명령 래퍼 함수
+            run_docker() {
+              if [ "$DOCKER_CMD" = "SUDOS" ]; then
+                echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker "$@"
+              else
+                $DOCKER_CMD "$@"
+              fi
+            }
+
+            echo ""
+            echo "[07-02] 기존 컨테이너 정리"
+            echo "--------------------------------------"
+            run_docker stop ec-admin-api 2>/dev/null && echo "  컨테이너 stop 완료" || echo "  (실행중인 컨테이너 없음 - 정상)"
+            run_docker rm -f ec-admin-api 2>/dev/null && echo "  컨테이너 rm 완료" || echo "  (삭제할 컨테이너 없음 - 정상)"
+
+            echo ""
+            echo "[07-03] 기존 이미지 삭제"
+            echo "--------------------------------------"
+            if run_docker images -q ec-admin-api:latest 2>/dev/null | grep -q .; then
+              run_docker rmi ec-admin-api:latest && echo "  이미지 삭제 완료" || echo "  이미지 삭제 실패 (무시)"
+            else
+              echo "  삭제할 이미지 없음 (정상)"
+            fi
+
+            echo ""
+            echo "[07-04] 새 이미지 로드"
+            echo "--------------------------------------"
+            cd /volume1/docker/ec-admin-api
+            echo "  tar.gz 파일 확인: $(ls -lh ec-admin-api.tar.gz)"
+            run_docker load < ec-admin-api.tar.gz
+            if [ $? -ne 0 ]; then
+              echo "❌ [FATAL] 이미지 로드 실패!"
+              exit 1
+            fi
+            echo "  ✅ 이미지 로드 완료"
+            run_docker images | grep ec-admin-api
+
+            echo ""
+            echo "[07-05] .env 파일 최종 확인"
+            echo "--------------------------------------"
+            ENV_FILE="/volume1/docker/ec-admin-api/.env"
+            if [ ! -f "$ENV_FILE" ]; then
+              echo "❌ [FATAL] .env 파일이 없습니다: $ENV_FILE"
+              echo "   → /volume1/docker/ec-admin-api/.env 파일을 수동으로 업로드해주세요"
+              exit 1
+            fi
+            echo "  ✅ .env 파일 확인됨 ($(wc -l < $ENV_FILE) 라인)"
+
+            echo ""
+            echo "[07-06] 새 컨테이너 실행"
+            echo "--------------------------------------"
+            run_docker run -d \
+              --name ec-admin-api \
+              --restart unless-stopped \
+              --env-file /volume1/docker/ec-admin-api/.env \
+              -p 31000:31000 \
+              ec-admin-api:latest
+
+            if [ $? -ne 0 ]; then
+              echo "❌ [FATAL] 컨테이너 실행 실패!"
+              echo "  ▶ 이미지 목록:"
+              run_docker images | grep ec-admin-api
+              echo "  ▶ .env 내용 (민감정보 마스킹):"
+              grep -v "PASSWORD\|SECRET\|KEY\|TOKEN" $ENV_FILE || true
+              exit 1
+            fi
+            echo "  ✅ 컨테이너 실행 명령 전송 완료"
+
+            echo ""
+            echo "[07-07] 컨테이너 기동 대기 (10초)"
+            echo "--------------------------------------"
+            sleep 10
+
+            echo ""
+            echo "[07-08] 컨테이너 상태 상세 확인"
+            echo "--------------------------------------"
+            CONTAINER_STATUS=$(run_docker inspect ec-admin-api --format '{{.State.Status}}' 2>/dev/null)
+            echo "  컨테이너 Status : $CONTAINER_STATUS"
+
+            run_docker ps -a --filter name=ec-admin-api \
+              --format "  ID={{.ID}} | Status={{.Status}} | Ports={{.Ports}}"
+
+            if [ "$CONTAINER_STATUS" != "running" ]; then
+              echo ""
+              echo "❌ 컨테이너가 running 상태가 아닙니다! (현재: $CONTAINER_STATUS)"
+              echo "  ▶ ExitCode: $(run_docker inspect ec-admin-api --format '{{.State.ExitCode}}')"
+              echo "  ▶ Error   : $(run_docker inspect ec-admin-api --format '{{.State.Error}}')"
+            else
+              echo "  ✅ 컨테이너 정상 실행 중"
+            fi
+
+            echo ""
+            echo "[07-09] 컨테이너 로그 (최근 50줄)"
+            echo "--------------------------------------"
+            run_docker logs ec-admin-api --tail 50 2>&1
+
+            echo ""
+            echo "[07-10] 포트 바인딩 확인"
+            echo "--------------------------------------"
+            run_docker port ec-admin-api 2>/dev/null || echo "  (포트 정보 조회 실패)"
+            netstat -tnlp 2>/dev/null | grep 31000 \
+              || ss -tnlp 2>/dev/null | grep 31000 \
+              || echo "  31000 포트 LISTEN 없음 ← 앱이 아직 기동중이거나 실패"
+
+            echo ""
+            echo "[07-11] 임시 파일 정리"
+            echo "--------------------------------------"
+            rm -f /volume1/docker/ec-admin-api/ec-admin-api.tar.gz
+            echo "  ✅ tar.gz 삭제 완료"
+
+            echo ""
+            echo "============================================================"
+            echo "[07-12] 배포 완료: $(date '+%Y-%m-%d %H:%M:%S')"
+            echo "  접속 URL : http://illeesam.synology.me:31000"
+            echo "============================================================"
+
+      # ─────────────────────────────────────────
+      # [08-01] 배포 결과 요약
+      # ─────────────────────────────────────────
+      - name: "[08-01] 배포 결과 요약"
+        if: always()
+        run: |
+          echo "======================================"
+          echo "[08-01] 배포 파이프라인 결과 요약"
+          echo "======================================"
+          echo "레포    : ${{ github.repository }}"
+          echo "브랜치  : ${{ github.ref_name }}"
+          echo "커밋SHA : ${{ github.sha }}"
+          echo "작성자  : ${{ github.actor }}"
+          echo "결과    : ${{ job.status }}"
+          echo "완료시각: $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "--------------------------------------"
+          echo "📦 컨테이너명 : ec-admin-api"
+          echo "🌐 접속 URL   : http://illeesam.synology.me:31000"
+          echo "======================================"
+          echo ""
+          echo "🔍 [SSH 확인용 명령어 모음]"
+          echo "--------------------------------------"
+          echo "1. 컨테이너 상태:"
+          echo "   sudo docker ps -a | grep ec-admin-api"
+          echo "2. 실시간 로그:"
+          echo "   sudo docker logs -f ec-admin-api"
+          echo "3. 컨테이너 재시작:"
+          echo "   sudo docker restart ec-admin-api"
+          echo "4. 포트 확인:"
+          echo "   sudo netstat -tnlp | grep 31000"
+          echo "5. 컨테이너 상세:"
+          echo "   sudo docker inspect ec-admin-api"
+          echo "======================================"
