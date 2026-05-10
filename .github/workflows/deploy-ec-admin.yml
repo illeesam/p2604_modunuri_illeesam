@@ -188,16 +188,16 @@ jobs:
             echo ""
             echo "[07-02] 기존 컨테이너 강제 정리 (Stop & RM)"
             echo "--------------------------------------"
-            # 이 부분이 요청하신 강제 삭제 로직입니다.
-            docker stop ec-admin-api || true
-            docker rm -f ec-admin-api || true
+            # 권한 문제를 해결하기 위해 모든 docker 명령어 앞에 sudo를 추가합니다.
+            echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker stop ec-admin-api || true
+            echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker rm -f ec-admin-api || true
             echo "[07-02] 정리 완료"
 
             echo ""
             echo "[07-04] 기존 이미지 삭제"
             echo "--------------------------------------"
-            if docker images -q ec-admin-api:latest | grep -q .; then
-              docker rmi ec-admin-api:latest
+            if echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker images -q ec-admin-api:latest | grep -q .; then
+              echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker rmi ec-admin-api:latest
               echo "[07-04] 이미지 삭제 완료"
             else
               echo "[07-04] 삭제할 이미지 없음 (건너뜀)"
@@ -207,14 +207,14 @@ jobs:
             echo "[07-05] 새 이미지 로드"
             echo "--------------------------------------"
             cd /volume1/docker/ec-admin-api
-            docker load < ec-admin-api.tar.gz
+            echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker load < ec-admin-api.tar.gz
             echo "[07-05] 이미지 로드 완료"
-            docker images | grep ec-admin-api
+            echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker images | grep ec-admin-api
 
             echo ""
             echo "[07-06] 새 컨테이너 실행"
             echo "--------------------------------------"
-            docker run -d \
+            echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker run -d \
               --name ec-admin-api \
               --restart unless-stopped \
               --env-file /volume1/docker/ec-admin-api/.env \
@@ -226,13 +226,13 @@ jobs:
             echo "[07-07] 컨테이너 상태 확인"
             echo "--------------------------------------"
             sleep 5
-            docker ps --filter name=ec-admin-api --format \
+            echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker ps --filter name=ec-admin-api --format \
               "컨테이너ID: {{.ID}} | 상태: {{.Status}} | 포트: {{.Ports}}"
 
             echo ""
             echo "[07-08] 컨테이너 초기 로그 확인"
             echo "--------------------------------------"
-            docker logs ec-admin-api --tail 30
+            echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker logs ec-admin-api --tail 30
 
             echo ""
             echo "[07-09] 임시 파일 정리"
@@ -262,4 +262,22 @@ jobs:
           echo "작성자  : ${{ github.actor }}"
           echo "결과    : ${{ job.status }}"
           echo "완료시각: $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "--------------------------------------"
+          echo "📦 컨테이너명 : ec-admin-api"
+          echo "🌐 접속 URL   : http://illeesam.synology.me:31000"
+          echo "======================================"
+          echo ""
+          echo "🔍 [SSH 확인용 명령어 모음]"
+          echo "--------------------------------------"
+          echo "1. 컨테이너 상태 확인:"
+          echo "   sudo docker ps -a | grep ec-admin-api"
+          echo ""
+          echo "2. 실시간 로그 확인 (실행 상태 확인):"
+          echo "   sudo docker logs -f ec-admin-api"
+          echo ""
+          echo "3. 컨테이너 강제 재시작:"
+          echo "   sudo docker restart ec-admin-api"
+          echo ""
+          echo "4. 포트 점검 (31000 사용 여부):"
+          echo "   sudo netstat -tnlp | grep 31000"
           echo "======================================"
