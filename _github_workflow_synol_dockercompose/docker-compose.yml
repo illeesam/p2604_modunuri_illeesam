@@ -1,0 +1,136 @@
+version: '3.8'
+
+# ══════════════════════════════════════════════════════════════════
+# ShopJoy EcAdminApi - Docker Compose (Synology 배포용)
+# 경로: /volume1/docker/ec-admin-api/docker-compose.yml
+#
+# 운영 방식:
+#   - ec-admin-api 이미지는 GitHub Actions에서 빌드 후 tar.gz로 전송
+#   - postgres, redis는 직접 pull
+#   - 기동 순서: postgres → redis → ec-admin-api
+# ══════════════════════════════════════════════════════════════════
+
+services:
+
+  # ──────────────────────────────────────────
+  # PostgreSQL Database
+  # ──────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: shopjoy_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-illeesam}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgresqlilleesam}
+      POSTGRES_DB: ${DB_NAME:-shopjoy_db}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - shopjoy_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-illeesam}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ──────────────────────────────────────────
+  # Redis Cache
+  # ──────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: shopjoy_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - shopjoy_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: redis-server --appendonly yes
+
+  # ──────────────────────────────────────────
+  # EC Admin API (Spring Boot)
+  # 이미지: GitHub Actions에서 빌드 후 docker load로 주입
+  # ──────────────────────────────────────────
+  ec-admin-api:
+    image: ec-admin-api:latest
+    container_name: ec_admin_api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-31000}:31000"
+    env_file:
+      - .env
+    environment:
+      # ── Database ──────────────────────────
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-shopjoy_db}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-illeesam}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgresqlilleesam}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+
+      # ── Redis ─────────────────────────────
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_TIMEOUT: 2000ms
+
+      # ── JPA ───────────────────────────────
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${JPA_DDL_AUTO:-validate}
+      SPRING_JPA_SHOW_SQL: ${JPA_SHOW_SQL:-false}
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+
+      # ── Flyway ────────────────────────────
+      SPRING_FLYWAY_ENABLED: ${FLYWAY_ENABLED:-true}
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
+
+      # ── 서버 ──────────────────────────────
+      SERVER_PORT: 31000
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+      # ── 파일 업로드 ───────────────────────
+      FILE_UPLOAD_PATH: /app/uploads
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10MB}
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: ${MAX_REQUEST_SIZE:-50MB}
+
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - shopjoy_network
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:31000/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# ──────────────────────────────────────────
+# Volumes
+# ──────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ──────────────────────────────────────────
+# Networks
+# ──────────────────────────────────────────
+networks:
+  shopjoy_network:
+    driver: bridge
