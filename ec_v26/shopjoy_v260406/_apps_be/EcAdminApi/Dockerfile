@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . .
 RUN ./gradlew bootJar -x test
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jdk
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 31000
