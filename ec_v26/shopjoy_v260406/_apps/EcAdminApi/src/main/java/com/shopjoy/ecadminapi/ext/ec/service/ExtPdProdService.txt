@@ -1,7 +1,0 @@
-package com.shopjoy.ecadminapi.ext.ec.service;
-
-@Service
-@RequiredArgsConstructor
-public class ExtPdProdService {
-
-}
