@@ -131,7 +131,7 @@ jobs:
       - name: "[06-00] 환경변수 값 출력 p2604_modunuri_illeesam > Secrets and variables > Actions > New repository secret"
         run: |
           echo "======================================"
-          echo "[05-01] Docker 이미지 압축 시작"
+          echo "[06-00] 환경변수 값 출력 p2604_modunuri_illeesam > Secrets and variables > Actions > New repository secret"
           echo "======================================"
           echo "secrets.SYNOLOGY_HOST    : ${{ secrets.SYNOLOGY_HOST }}"
           echo "secrets.SYNOLOGY_PORT    : ${{ secrets.SYNOLOGY_PORT }}"
