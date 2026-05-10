@@ -1,0 +1,249 @@
+# Codemagic CI/CD — ShopJoy FO/BO Capacitor 앱
+#
+# 사용법:
+#   - main 브랜치 push      → Android Debug 자동 빌드
+#   - tag fo-v* push         → FO 앱 Android AAB + iOS IPA + TestFlight 업로드
+#   - tag bo-v* push         → BO 앱 Android AAB + iOS IPA + TestFlight 업로드
+#
+# 필수 환경변수 그룹 (Codemagic 콘솔에서 설정):
+#   - shopjoy_keystore       : CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_PASSWORD, CM_KEY_ALIAS
+#   - google_play            : GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+#   - app_store_connect 통합 : 인증서 자동 관리
+
+definitions:
+  cache_paths: &cache_paths
+    cache_paths:
+      - $CM_BUILD_DIR/_apps/ShopjoyFoApp/node_modules
+      - $CM_BUILD_DIR/_apps/ShopjoyBoApp/node_modules
+      - $HOME/.gradle/caches
+
+  android_env: &android_env
+    node: 20.18.0
+    java: 17
+
+  ios_env: &ios_env
+    node: 20.18.0
+    xcode: 15.4
+    cocoapods: default
+
+workflows:
+  fo-android-debug:
+    name: FO — Android Debug (PR/Push)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      <<: *android_env
+      vars:
+        APP_DIR: "_apps/ShopjoyFoApp"
+    cache: *cache_paths
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+    scripts:
+      - cd $APP_DIR && npm ci
+      - cd $APP_DIR && npm run config:prod && npx cap sync android
+      - cd $APP_DIR/android && ./gradlew assembleDebug
+    artifacts:
+      - $APP_DIR/android/app/build/outputs/apk/**/*.apk
+    publishing:
+      email:
+        recipients: [illeesam@gmail.com]
+
+  fo-android-release:
+    name: FO — Android Release (Play Store)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      <<: *android_env
+      vars:
+        APP_DIR: "_apps/ShopjoyFoApp"
+        PACKAGE_NAME: "com.shopjoy.fo"
+      groups:
+        - shopjoy_keystore
+        - google_play
+    cache: *cache_paths
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: 'fo-v*'
+          include: true
+    scripts:
+      - cd $APP_DIR && npm ci
+      - cd $APP_DIR && npm run config:prod && npx cap sync android
+      - |
+        echo $CM_KEYSTORE | base64 --decode > $CM_BUILD_DIR/$APP_DIR/android/app/release.keystore
+        cat > $CM_BUILD_DIR/$APP_DIR/android/key.properties <<EOF
+        storePassword=$CM_KEYSTORE_PASSWORD
+        keyPassword=$CM_KEY_PASSWORD
+        keyAlias=$CM_KEY_ALIAS
+        storeFile=app/release.keystore
+        EOF
+      - cd $APP_DIR/android && ./gradlew bundleRelease
+    artifacts:
+      - $APP_DIR/android/app/build/outputs/**/*.aab
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+      email:
+        recipients: [illeesam@gmail.com]
+
+  fo-ios-release:
+    name: FO — iOS Release (TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    integrations:
+      app_store_connect: shopjoy_app_store
+    environment:
+      <<: *ios_env
+      vars:
+        APP_DIR: "_apps/ShopjoyFoApp"
+        BUNDLE_ID: "com.shopjoy.fo"
+        XCODE_WORKSPACE: "App.xcworkspace"
+        XCODE_SCHEME: "App"
+        APP_STORE_APPLE_ID: 0000000000   # ← 등록 후 App Store Connect의 앱 ID 로 교체
+    cache: *cache_paths
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: 'fo-v*'
+          include: true
+    scripts:
+      - cd $APP_DIR && npm ci
+      - cd $APP_DIR && npm run config:prod && npx cap sync ios
+      - |
+        keychain initialize
+        app-store-connect fetch-signing-files $BUNDLE_ID --type IOS_APP_STORE --create
+        keychain add-certificates
+        xcode-project use-profiles
+      - |
+        cd $APP_DIR/ios/App
+        BUILD_NUMBER=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
+        agvtool new-version -all $BUILD_NUMBER
+      - |
+        cd $APP_DIR/ios/App
+        xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+    artifacts:
+      - $APP_DIR/ios/App/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+      email:
+        recipients: [illeesam@gmail.com]
+
+  bo-android-debug:
+    name: BO — Android Debug (PR/Push)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      <<: *android_env
+      vars:
+        APP_DIR: "_apps/ShopjoyBoApp"
+    cache: *cache_paths
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+    scripts:
+      - cd $APP_DIR && npm ci
+      - cd $APP_DIR && npm run config:prod && npx cap sync android
+      - cd $APP_DIR/android && ./gradlew assembleDebug
+    artifacts:
+      - $APP_DIR/android/app/build/outputs/apk/**/*.apk
+    publishing:
+      email:
+        recipients: [illeesam@gmail.com]
+
+  bo-android-release:
+    name: BO — Android Release (Play Store)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      <<: *android_env
+      vars:
+        APP_DIR: "_apps/ShopjoyBoApp"
+        PACKAGE_NAME: "com.shopjoy.bo"
+      groups:
+        - shopjoy_keystore_bo
+        - google_play
+    cache: *cache_paths
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: 'bo-v*'
+          include: true
+    scripts:
+      - cd $APP_DIR && npm ci
+      - cd $APP_DIR && npm run config:prod && npx cap sync android
+      - |
+        echo $CM_KEYSTORE | base64 --decode > $CM_BUILD_DIR/$APP_DIR/android/app/release.keystore
+        cat > $CM_BUILD_DIR/$APP_DIR/android/key.properties <<EOF
+        storePassword=$CM_KEYSTORE_PASSWORD
+        keyPassword=$CM_KEY_PASSWORD
+        keyAlias=$CM_KEY_ALIAS
+        storeFile=app/release.keystore
+        EOF
+      - cd $APP_DIR/android && ./gradlew bundleRelease
+    artifacts:
+      - $APP_DIR/android/app/build/outputs/**/*.aab
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+      email:
+        recipients: [illeesam@gmail.com]
+
+  bo-ios-release:
+    name: BO — iOS Release (TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    integrations:
+      app_store_connect: shopjoy_app_store
+    environment:
+      <<: *ios_env
+      vars:
+        APP_DIR: "_apps/ShopjoyBoApp"
+        BUNDLE_ID: "com.shopjoy.bo"
+        XCODE_WORKSPACE: "App.xcworkspace"
+        XCODE_SCHEME: "App"
+        APP_STORE_APPLE_ID: 0000000000   # ← 등록 후 App Store Connect의 앱 ID 로 교체
+    cache: *cache_paths
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: 'bo-v*'
+          include: true
+    scripts:
+      - cd $APP_DIR && npm ci
+      - cd $APP_DIR && npm run config:prod && npx cap sync ios
+      - |
+        keychain initialize
+        app-store-connect fetch-signing-files $BUNDLE_ID --type IOS_APP_STORE --create
+        keychain add-certificates
+        xcode-project use-profiles
+      - |
+        cd $APP_DIR/ios/App
+        BUILD_NUMBER=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
+        agvtool new-version -all $BUILD_NUMBER
+      - |
+        cd $APP_DIR/ios/App
+        xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+    artifacts:
+      - $APP_DIR/ios/App/build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+      email:
+        recipients: [illeesam@gmail.com]

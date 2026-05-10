@@ -1,0 +1,133 @@
+name: ShopjoyFoApp
+options:
+  bundleIdPrefix: com.shopjoy.fo
+  deploymentTarget:
+    iOS: "14.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: ""             # ← Xcode에서 본인 Team ID로 변경
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_BITCODE: NO
+    IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+    TARGETED_DEVICE_FAMILY: "1,2"     # iPhone + iPad
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+configs:
+  Debug-Local: debug
+  Debug-Dev: debug
+  Debug-Prod: debug
+  Release-Local: release
+  Release-Dev: release
+  Release-Prod: release
+
+targets:
+  ShopjoyFoApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: ShopjoyFoApp
+        excludes:
+          - "**/Info.plist"
+    resources:
+      - path: ShopjoyFoApp/Assets.xcassets
+    info:
+      path: ShopjoyFoApp/Info.plist
+      properties:
+        CFBundleDisplayName: $(APP_NAME)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchStoryboardName: LaunchScreen
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+        NSCameraUsageDescription: "상품 사진 촬영을 위해 카메라 접근 권한이 필요합니다."
+        NSPhotoLibraryUsageDescription: "갤러리에서 상품 이미지를 선택하기 위해 권한이 필요합니다."
+        NSUserNotificationsUsageDescription: "주문/배송 알림을 받기 위해 권한이 필요합니다."
+        UIRequiredDeviceCapabilities:
+          - armv7
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIBackgroundModes:
+          - remote-notification
+        # 결제 콜백 URL Scheme
+        CFBundleURLTypes:
+          - CFBundleURLName: com.shopjoy.fo
+            CFBundleURLSchemes:
+              - shopjoy-fo
+        # 외부 앱 호출 허용 (카카오/토스)
+        LSApplicationQueriesSchemes:
+          - kakaotalk
+          - kakaopay
+          - kakaolink
+          - supertoss
+          - tossapp
+          - itmss
+          - itms-apps
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.fo
+      configs:
+        Debug-Local:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG ENV_LOCAL"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.fo.local
+          APP_NAME: "ShopJoy FO Local"
+          BASE_URL: "http://127.0.0.1:5501"
+          INFOPLIST_KEY_BASE_URL: "$(BASE_URL)"
+        Debug-Dev:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG ENV_DEV"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.fo.dev
+          APP_NAME: "ShopJoy FO Dev"
+          BASE_URL: "https://illeesam.netlify.app/mainframe#sj_index"
+          INFOPLIST_KEY_BASE_URL: "$(BASE_URL)"
+        Debug-Prod:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG ENV_PROD"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.fo
+          APP_NAME: "ShopJoy"
+          BASE_URL: "https://illeesam.netlify.app/mainframe#sj_index"
+          INFOPLIST_KEY_BASE_URL: "$(BASE_URL)"
+        Release-Local:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "ENV_LOCAL"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.fo.local
+          APP_NAME: "ShopJoy FO Local"
+          BASE_URL: "http://127.0.0.1:5501"
+          INFOPLIST_KEY_BASE_URL: "$(BASE_URL)"
+        Release-Dev:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "ENV_DEV"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.fo.dev
+          APP_NAME: "ShopJoy FO Dev"
+          BASE_URL: "https://illeesam.netlify.app/mainframe#sj_index"
+          INFOPLIST_KEY_BASE_URL: "$(BASE_URL)"
+        Release-Prod:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "ENV_PROD"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.fo
+          APP_NAME: "ShopJoy"
+          BASE_URL: "https://illeesam.netlify.app/mainframe#sj_index"
+          INFOPLIST_KEY_BASE_URL: "$(BASE_URL)"
+schemes:
+  ShopjoyFoApp-Local:
+    build:
+      targets:
+        ShopjoyFoApp: all
+    run:
+      config: Debug-Local
+    archive:
+      config: Release-Local
+  ShopjoyFoApp-Dev:
+    build:
+      targets:
+        ShopjoyFoApp: all
+    run:
+      config: Debug-Dev
+    archive:
+      config: Release-Dev
+  ShopjoyFoApp-Prod:
+    build:
+      targets:
+        ShopjoyFoApp: all
+    run:
+      config: Debug-Prod
+    archive:
+      config: Release-Prod

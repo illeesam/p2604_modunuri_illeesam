@@ -1,0 +1,92 @@
+# ShopjoyBoApp — Android Native (Kotlin + Gradle)
+
+# ----- Gradle -----
+.gradle/
+build/
+app/build/
+.gradletasknamecache
+.gradle-isolated/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# ----- 로컬 설정 (절대 커밋 금지) -----
+local.properties
+key.properties
+gradle.properties.local
+*.local
+
+# ----- 키스토어 / 인증서 (절대 커밋 금지) -----
+*.keystore
+*.jks
+*.p12
+release.keystore
+debug.keystore.local
+
+# ----- Firebase 운영 키 (절대 커밋 금지) -----
+google-services.json
+app/google-services.json
+app/src/*/google-services.json
+
+# ----- 빌드 산출물 -----
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+captures/
+output-metadata.json
+
+# ----- Native debug symbols -----
+*.so
+*.dSYM
+
+# ----- Android Studio / IntelliJ IDEA -----
+.idea/
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+out/
+.navigation/
+
+# ----- Eclipse -----
+.project
+.classpath
+.settings/
+bin/
+
+# ----- VS Code -----
+.vscode/
+
+# ----- OS -----
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ----- Generated -----
+generated/
+app/generated/
+
+# ----- Lint / Test -----
+lint-results*
+app/test-results/
+app/reports/
+
+# ----- Proguard mapping -----
+mapping.txt
+app/mapping/
+
+# ----- Crashlytics -----
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# ----- 기타 -----
+*.log
+*.bak
+*.tmp
+local-test/
+.cxx/

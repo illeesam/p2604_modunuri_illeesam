@@ -1,0 +1,100 @@
+name: ShopjoyBoApp
+options:
+  bundleIdPrefix: com.shopjoy.bo
+  deploymentTarget:
+    iOS: "14.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_BITCODE: NO
+    IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+configs:
+  Debug-Local: debug
+  Debug-Dev: debug
+  Debug-Prod: debug
+  Release-Local: release
+  Release-Dev: release
+  Release-Prod: release
+
+targets:
+  ShopjoyBoApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: ShopjoyBoApp
+        excludes:
+          - "**/Info.plist"
+    resources:
+      - path: ShopjoyBoApp/Assets.xcassets
+    info:
+      path: ShopjoyBoApp/Info.plist
+      properties:
+        CFBundleDisplayName: $(APP_NAME)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchStoryboardName: LaunchScreen
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+        NSFaceIDUsageDescription: "관리자 빠른 로그인을 위해 Face ID를 사용합니다."
+        NSUserNotificationsUsageDescription: "관리자 알림 (주문/클레임/배송) 수신을 위해 권한이 필요합니다."
+        UIBackgroundModes:
+          - remote-notification
+        CFBundleURLTypes:
+          - CFBundleURLName: com.shopjoy.bo
+            CFBundleURLSchemes:
+              - shopjoy-bo
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.bo
+      configs:
+        Debug-Local:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG ENV_LOCAL"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.bo.local
+          APP_NAME: "ShopJoy BO Local"
+          INFOPLIST_KEY_BASE_URL: "http://127.0.0.1:5501/bo.html"
+        Debug-Dev:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG ENV_DEV"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.bo.dev
+          APP_NAME: "ShopJoy BO Dev"
+          INFOPLIST_KEY_BASE_URL: "https://illeesam.netlify.app/ec_v26/shopjoy_v260406/bo.html"
+        Debug-Prod:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG ENV_PROD"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.bo
+          APP_NAME: "ShopJoy BO"
+          INFOPLIST_KEY_BASE_URL: "https://illeesam.netlify.app/ec_v26/shopjoy_v260406/bo.html"
+        Release-Local:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "ENV_LOCAL"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.bo.local
+          APP_NAME: "ShopJoy BO Local"
+          INFOPLIST_KEY_BASE_URL: "http://127.0.0.1:5501/bo.html"
+        Release-Dev:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "ENV_DEV"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.bo.dev
+          APP_NAME: "ShopJoy BO Dev"
+          INFOPLIST_KEY_BASE_URL: "https://illeesam.netlify.app/ec_v26/shopjoy_v260406/bo.html"
+        Release-Prod:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "ENV_PROD"
+          PRODUCT_BUNDLE_IDENTIFIER: com.shopjoy.bo
+          APP_NAME: "ShopJoy BO"
+          INFOPLIST_KEY_BASE_URL: "https://illeesam.netlify.app/ec_v26/shopjoy_v260406/bo.html"
+schemes:
+  ShopjoyBoApp-Local:
+    build: { targets: { ShopjoyBoApp: all } }
+    run: { config: Debug-Local }
+    archive: { config: Release-Local }
+  ShopjoyBoApp-Dev:
+    build: { targets: { ShopjoyBoApp: all } }
+    run: { config: Debug-Dev }
+    archive: { config: Release-Dev }
+  ShopjoyBoApp-Prod:
+    build: { targets: { ShopjoyBoApp: all } }
+    run: { config: Debug-Prod }
+    archive: { config: Release-Prod }

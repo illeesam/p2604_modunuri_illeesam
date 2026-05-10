@@ -46,11 +46,11 @@ public abstract class BaseRequest {
     private String sort;
 
     @Min(value = 1, message = "pageNo 는 1 이상이어야 합니다.")
-    @Max(value = 50000, message = "pageNo 는 50000 이하여야 합니다.")
+    @Max(value = 100000, message = "pageNo 는 100000 이하여야 합니다.")
     private Integer pageNo;
 
     @Min(value = 1, message = "pageSize 는 1 이상이어야 합니다.")
-    @Max(value = 50000, message = "pageSize 는 50000 이하여야 합니다.")
+    @Max(value = 100000, message = "pageSize 는 100000 이하여야 합니다.")
     private Integer pageSize;
 
     /** PageHelper.addPaging() 호출 시 자동 채워짐 — Mapper XML LIMIT/OFFSET 바인딩용 */

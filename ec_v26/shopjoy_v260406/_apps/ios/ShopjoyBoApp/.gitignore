@@ -1,0 +1,69 @@
+# ShopjoyBoApp — iOS Native (Swift + Xcode + XcodeGen)
+
+# ===== XcodeGen =====
+*.xcodeproj/
+*.xcworkspace/
+
+# ===== Xcode user-specific =====
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+project.xcworkspace/
+
+# ===== Build =====
+build/
+DerivedData/
+*.app
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.hmap
+*.xcarchive
+
+# ===== CocoaPods =====
+Pods/
+Podfile.lock
+*.podspec
+
+# ===== Swift Package Manager =====
+.build/
+.swiftpm/
+Package.resolved
+
+# ===== Apple Developer 인증서 / 프로파일 (절대 커밋 금지) =====
+*.p12
+*.mobileprovision
+*.cer
+*.certSigningRequest
+AuthKey_*.p8
+ExportOptions.plist
+
+# ===== Firebase 운영 키 (절대 커밋 금지) =====
+ShopjoyBoApp/GoogleService-Info.plist
+**/GoogleService-Info.plist
+
+# ===== Fastlane =====
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+fastlane/Match*
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+
+# ===== 디버그 / 임시 =====
+*.log
+*.bak
+*.tmp
+tmp/
+.netrc

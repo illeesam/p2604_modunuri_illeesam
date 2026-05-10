@@ -1,0 +1,117 @@
+# ShopjoyFoApp — React Native (Node + Android + iOS + Metro)
+
+# ===== Node =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ===== React Native =====
+.expo/
+.expo-shared/
+web-build/
+.metro-health-check*
+
+# ===== Metro / Haste =====
+.haste_cache/
+.tmp/
+
+# ===== TypeScript -----
+*.tsbuildinfo
+
+# ===== Android =====
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/captures/
+android/local.properties
+android/key.properties
+android/gradle.properties.local
+
+# Keystore (절대 커밋 금지)
+*.keystore
+*.jks
+*.p12
+android/app/release.keystore
+
+# Firebase 운영 키 (절대 커밋 금지)
+android/app/google-services.json
+android/app/src/*/google-services.json
+
+# RN 번들 (release 빌드 시 자동 생성, 커밋 X)
+android/app/src/main/assets/index.android.bundle
+android/app/src/main/res/drawable-mdpi/
+android/app/src/main/res/drawable-hdpi/
+android/app/src/main/res/drawable-xhdpi/
+android/app/src/main/res/drawable-xxhdpi/
+android/app/src/main/res/drawable-xxxhdpi/
+android/app/src/main/res/raw/
+
+# ===== iOS =====
+ios/build/
+ios/Pods/
+ios/Podfile.lock          # 팀 합의에 따라
+ios/.build/
+ios/DerivedData/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# RN 번들 (release 빌드 시 자동 생성)
+ios/main.jsbundle
+ios/main.jsbundle.map
+
+# Firebase 운영 키
+ios/**/GoogleService-Info.plist
+
+# Apple Developer 인증서 (절대 커밋 금지)
+*.mobileprovision
+*.cer
+AuthKey_*.p8
+ExportOptions.plist
+
+# ===== Fastlane =====
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+
+# ===== 빌드 산출물 =====
+*.apk
+*.aab
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ===== 환경 비밀 =====
+# .env.local / .env.dev / .env.prod 는 커밋 (URL만)
+.env.*.local.private
+.env.*.secret
+.env.production.local
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===== 테스트 / 커버리지 =====
+coverage/
+.nyc_output/
+
+# ===== 디버그 / 임시 =====
+*.log
+*.bak
+*.tmp

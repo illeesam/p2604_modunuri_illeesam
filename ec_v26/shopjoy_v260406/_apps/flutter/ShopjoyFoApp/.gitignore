@@ -1,0 +1,109 @@
+# ShopjoyFoApp — Flutter (Dart + Android + iOS)
+
+# ===== Dart / Flutter =====
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+.fvm/
+
+# pubspec.lock — 앱이므로 커밋 권장 (라이브러리는 무시)
+# pubspec.lock
+
+# Generated (build_runner)
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+*.config.dart
+*.gr.dart
+
+# Flutter Web (사용 시)
+web/build/
+
+# ===== Android =====
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/captures/
+android/key.properties
+android/gradle.properties.local
+android/app/release.keystore
+
+# Keystore (절대 커밋 금지)
+*.keystore
+*.jks
+*.p12
+
+# Firebase 운영 키 (절대 커밋 금지)
+android/app/google-services.json
+android/app/src/*/google-services.json
+
+# ===== iOS =====
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+ios/Flutter/.last_build_id
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Runner.xcworkspace/xcuserdata/
+ios/Runner.xcodeproj/xcuserdata/
+ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+ios/build/
+ios/DerivedData/
+
+# Firebase 운영 키
+ios/Runner/GoogleService-Info.plist
+ios/firebase_app_id_file.json
+
+# Apple Developer 인증서 (절대 커밋 금지)
+*.mobileprovision
+*.cer
+AuthKey_*.p8
+ExportOptions.plist
+
+# ===== 빌드 산출물 =====
+*.apk
+*.aab
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ===== Fastlane / Shorebird =====
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+.shorebird/
+
+# ===== 환경 비밀 =====
+# .env.local / .env.dev / .env.prod 는 커밋 (URL만)
+.env.*.local.private
+.env.*.secret
+firebase_options_secret.dart
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===== 디버그 / 임시 =====
+*.log
+*.swp
+*.bak
+*.tmp
+.history/
