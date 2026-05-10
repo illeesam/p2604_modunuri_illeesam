@@ -126,6 +126,20 @@ jobs:
           echo "[05-01] 압축파일 크기: $(du -sh ec-admin-api.tar.gz | cut -f1)"
 
       # ─────────────────────────────────────────
+      # 환경변수 값 출력 p2604_modunuri_illeesam > Secrets and variables > Actions > New repository secret
+      # ─────────────────────────────────────────
+      - name: "[06-00] 환경변수 값 출력 p2604_modunuri_illeesam > Secrets and variables > Actions > New repository secret"
+        run: |
+          echo "======================================"
+          echo "[05-01] Docker 이미지 압축 시작"
+          echo "======================================"
+          echo "secrets.SYNOLOGY_HOST    : ${{ secrets.SYNOLOGY_HOST }}"
+          echo "secrets.SYNOLOGY_PORT    : ${{ secrets.SYNOLOGY_PORT }}"
+          echo "secrets.SYNOLOGY_USER    : ${{ secrets.SYNOLOGY_USER }}"
+          echo "secrets.SYNOLOGY_PASSWORD : ***** "
+          echo "secrets.SYNOLOGY_SSH_KEY : ${{ secrets.SYNOLOGY_SSH_KEY }}"
+
+      # ─────────────────────────────────────────
       # [06-01] Synology로 이미지 전송
       # ─────────────────────────────────────────
       - name: "[06-01] Synology로 Docker 이미지 전송 (SCP)"
@@ -172,24 +186,12 @@ jobs:
             echo "======================================"
 
             echo ""
-            echo "[07-02] 기존 컨테이너 중지"
+            echo "[07-02] 기존 컨테이너 강제 정리 (Stop & RM)"
             echo "--------------------------------------"
-            if docker ps -q --filter name=ec-admin-api | grep -q .; then
-              docker stop ec-admin-api
-              echo "[07-02] 컨테이너 중지 완료"
-            else
-              echo "[07-02] 실행 중인 컨테이너 없음 (건너뜀)"
-            fi
-
-            echo ""
-            echo "[07-03] 기존 컨테이너 삭제"
-            echo "--------------------------------------"
-            if docker ps -aq --filter name=ec-admin-api | grep -q .; then
-              docker rm ec-admin-api
-              echo "[07-03] 컨테이너 삭제 완료"
-            else
-              echo "[07-03] 삭제할 컨테이너 없음 (건너뜀)"
-            fi
+            # 이 부분이 요청하신 강제 삭제 로직입니다.
+            docker stop ec-admin-api || true
+            docker rm -f ec-admin-api || true
+            echo "[07-02] 정리 완료"
 
             echo ""
             echo "[07-04] 기존 이미지 삭제"
