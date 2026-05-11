@@ -45,9 +45,9 @@ public class SyCodeGrpController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeGrp>> updatePartial(@PathVariable("id") String id, @RequestBody SyCodeGrp entity) {
+    public ResponseEntity<ApiResponse<SyCodeGrp>> updateSelective(@PathVariable("id") String id, @RequestBody SyCodeGrp entity) {
         entity.setCodeGrpId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

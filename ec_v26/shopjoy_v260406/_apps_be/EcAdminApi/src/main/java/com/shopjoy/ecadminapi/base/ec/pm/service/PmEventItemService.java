@@ -96,7 +96,7 @@ public class PmEventItemService {
     }
 
     @Transactional
-    public PmEventItem updatePartial(PmEventItem entity) {
+    public PmEventItem updateSelective(PmEventItem entity) {
         if (entity.getEventItemId() == null) throw new CmBizException("eventItemId 가 필요합니다.");
         if (!existsById(entity.getEventItemId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getEventItemId());

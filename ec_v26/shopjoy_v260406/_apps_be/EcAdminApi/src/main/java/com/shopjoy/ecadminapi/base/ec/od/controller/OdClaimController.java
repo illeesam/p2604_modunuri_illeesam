@@ -45,9 +45,9 @@ public class OdClaimController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdClaim>> updatePartial(@PathVariable("id") String id, @RequestBody OdClaim entity) {
+    public ResponseEntity<ApiResponse<OdClaim>> updateSelective(@PathVariable("id") String id, @RequestBody OdClaim entity) {
         entity.setClaimId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

@@ -45,9 +45,9 @@ public class PdDlivTmpltController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdDlivTmplt>> updatePartial(@PathVariable("id") String id, @RequestBody PdDlivTmplt entity) {
+    public ResponseEntity<ApiResponse<PdDlivTmplt>> updateSelective(@PathVariable("id") String id, @RequestBody PdDlivTmplt entity) {
         entity.setDlivTmpltId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

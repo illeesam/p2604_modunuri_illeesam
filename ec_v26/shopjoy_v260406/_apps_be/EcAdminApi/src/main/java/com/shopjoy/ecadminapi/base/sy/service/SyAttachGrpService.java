@@ -96,7 +96,7 @@ public class SyAttachGrpService {
     }
 
     @Transactional
-    public SyAttachGrp updatePartial(SyAttachGrp entity) {
+    public SyAttachGrp updateSelective(SyAttachGrp entity) {
         if (entity.getAttachGrpId() == null) throw new CmBizException("attachGrpId 가 필요합니다.");
         if (!existsById(entity.getAttachGrpId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAttachGrpId());

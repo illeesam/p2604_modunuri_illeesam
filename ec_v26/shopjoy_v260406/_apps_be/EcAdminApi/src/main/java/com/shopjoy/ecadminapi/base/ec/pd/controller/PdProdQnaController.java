@@ -45,9 +45,9 @@ public class PdProdQnaController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdQna>> updatePartial(@PathVariable("id") String id, @RequestBody PdProdQna entity) {
+    public ResponseEntity<ApiResponse<PdProdQna>> updateSelective(@PathVariable("id") String id, @RequestBody PdProdQna entity) {
         entity.setQnaId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

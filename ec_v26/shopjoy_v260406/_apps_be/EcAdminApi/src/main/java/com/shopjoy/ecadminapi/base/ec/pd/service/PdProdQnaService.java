@@ -96,7 +96,7 @@ public class PdProdQnaService {
     }
 
     @Transactional
-    public PdProdQna updatePartial(PdProdQna entity) {
+    public PdProdQna updateSelective(PdProdQna entity) {
         if (entity.getQnaId() == null) throw new CmBizException("qnaId 가 필요합니다.");
         if (!existsById(entity.getQnaId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getQnaId());

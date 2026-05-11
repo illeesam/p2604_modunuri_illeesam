@@ -96,7 +96,7 @@ public class PmVoucherIssueService {
     }
 
     @Transactional
-    public PmVoucherIssue updatePartial(PmVoucherIssue entity) {
+    public PmVoucherIssue updateSelective(PmVoucherIssue entity) {
         if (entity.getVoucherIssueId() == null) throw new CmBizException("voucherIssueId 가 필요합니다.");
         if (!existsById(entity.getVoucherIssueId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVoucherIssueId());

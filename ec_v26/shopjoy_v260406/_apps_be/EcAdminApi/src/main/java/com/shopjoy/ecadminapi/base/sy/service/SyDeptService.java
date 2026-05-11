@@ -106,7 +106,7 @@ public class SyDeptService {
     }
 
     @Transactional
-    public SyDept updatePartial(SyDept entity) {
+    public SyDept updateSelective(SyDept entity) {
         if (entity.getDeptId() == null) throw new CmBizException("deptId 가 필요합니다.");
         if (!existsById(entity.getDeptId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDeptId());

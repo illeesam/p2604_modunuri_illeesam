@@ -45,9 +45,9 @@ public class SyNoticeController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyNotice>> updatePartial(@PathVariable("id") String id, @RequestBody SyNotice entity) {
+    public ResponseEntity<ApiResponse<SyNotice>> updateSelective(@PathVariable("id") String id, @RequestBody SyNotice entity) {
         entity.setNoticeId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

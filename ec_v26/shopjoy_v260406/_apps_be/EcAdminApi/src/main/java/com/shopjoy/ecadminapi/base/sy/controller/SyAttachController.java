@@ -45,9 +45,9 @@ public class SyAttachController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAttach>> updatePartial(@PathVariable("id") String id, @RequestBody SyAttach entity) {
+    public ResponseEntity<ApiResponse<SyAttach>> updateSelective(@PathVariable("id") String id, @RequestBody SyAttach entity) {
         entity.setAttachId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

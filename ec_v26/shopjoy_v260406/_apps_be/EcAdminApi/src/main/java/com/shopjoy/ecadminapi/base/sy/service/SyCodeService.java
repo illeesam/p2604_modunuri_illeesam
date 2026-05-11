@@ -96,7 +96,7 @@ public class SyCodeService {
     }
 
     @Transactional
-    public SyCode updatePartial(SyCode entity) {
+    public SyCode updateSelective(SyCode entity) {
         if (entity.getCodeId() == null) throw new CmBizException("codeId 가 필요합니다.");
         if (!existsById(entity.getCodeId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCodeId());

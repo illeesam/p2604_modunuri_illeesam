@@ -96,7 +96,7 @@ public class OdhOrderChgHistService {
     }
 
     @Transactional
-    public OdhOrderChgHist updatePartial(OdhOrderChgHist entity) {
+    public OdhOrderChgHist updateSelective(OdhOrderChgHist entity) {
         if (entity.getOrderChgHistId() == null) throw new CmBizException("orderChgHistId 가 필요합니다.");
         if (!existsById(entity.getOrderChgHistId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOrderChgHistId());

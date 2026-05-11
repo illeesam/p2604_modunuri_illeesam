@@ -96,7 +96,7 @@ public class SyI18nMsgService {
     }
 
     @Transactional
-    public SyI18nMsg updatePartial(SyI18nMsg entity) {
+    public SyI18nMsg updateSelective(SyI18nMsg entity) {
         if (entity.getI18nMsgId() == null) throw new CmBizException("i18nMsgId 가 필요합니다.");
         if (!existsById(entity.getI18nMsgId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getI18nMsgId());

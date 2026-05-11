@@ -45,9 +45,9 @@ public class SyCodeController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCode>> updatePartial(@PathVariable("id") String id, @RequestBody SyCode entity) {
+    public ResponseEntity<ApiResponse<SyCode>> updateSelective(@PathVariable("id") String id, @RequestBody SyCode entity) {
         entity.setCodeId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

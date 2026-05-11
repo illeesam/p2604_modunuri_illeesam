@@ -96,7 +96,7 @@ public class PdProdImgService {
     }
 
     @Transactional
-    public PdProdImg updatePartial(PdProdImg entity) {
+    public PdProdImg updateSelective(PdProdImg entity) {
         if (entity.getProdImgId() == null) throw new CmBizException("prodImgId 가 필요합니다.");
         if (!existsById(entity.getProdImgId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdImgId());

@@ -96,7 +96,7 @@ public class SyBatchService {
     }
 
     @Transactional
-    public SyBatch updatePartial(SyBatch entity) {
+    public SyBatch updateSelective(SyBatch entity) {
         if (entity.getBatchId() == null) throw new CmBizException("batchId 가 필요합니다.");
         if (!existsById(entity.getBatchId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBatchId());

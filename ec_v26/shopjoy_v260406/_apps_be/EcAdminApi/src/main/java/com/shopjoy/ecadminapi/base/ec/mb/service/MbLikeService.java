@@ -96,7 +96,7 @@ public class MbLikeService {
     }
 
     @Transactional
-    public MbLike updatePartial(MbLike entity) {
+    public MbLike updateSelective(MbLike entity) {
         if (entity.getLikeId() == null) throw new CmBizException("likeId 가 필요합니다.");
         if (!existsById(entity.getLikeId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLikeId());

@@ -96,7 +96,7 @@ public class CmBlogReplyService {
     }
 
     @Transactional
-    public CmBlogReply updatePartial(CmBlogReply entity) {
+    public CmBlogReply updateSelective(CmBlogReply entity) {
         if (entity.getCommentId() == null) throw new CmBizException("commentId 가 필요합니다.");
         if (!existsById(entity.getCommentId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCommentId());

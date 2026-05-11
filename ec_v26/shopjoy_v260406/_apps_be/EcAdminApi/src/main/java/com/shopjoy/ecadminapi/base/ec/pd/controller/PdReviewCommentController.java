@@ -45,9 +45,9 @@ public class PdReviewCommentController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewComment>> updatePartial(@PathVariable("id") String id, @RequestBody PdReviewComment entity) {
+    public ResponseEntity<ApiResponse<PdReviewComment>> updateSelective(@PathVariable("id") String id, @RequestBody PdReviewComment entity) {
         entity.setReviewCommentId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

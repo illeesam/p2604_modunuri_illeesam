@@ -96,7 +96,7 @@ public class PdTagService {
     }
 
     @Transactional
-    public PdTag updatePartial(PdTag entity) {
+    public PdTag updateSelective(PdTag entity) {
         if (entity.getTagId() == null) throw new CmBizException("tagId 가 필요합니다.");
         if (!existsById(entity.getTagId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getTagId());

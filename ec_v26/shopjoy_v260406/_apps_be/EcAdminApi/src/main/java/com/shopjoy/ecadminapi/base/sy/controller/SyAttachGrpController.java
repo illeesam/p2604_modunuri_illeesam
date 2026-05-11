@@ -45,9 +45,9 @@ public class SyAttachGrpController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAttachGrp>> updatePartial(@PathVariable("id") String id, @RequestBody SyAttachGrp entity) {
+    public ResponseEntity<ApiResponse<SyAttachGrp>> updateSelective(@PathVariable("id") String id, @RequestBody SyAttachGrp entity) {
         entity.setAttachGrpId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

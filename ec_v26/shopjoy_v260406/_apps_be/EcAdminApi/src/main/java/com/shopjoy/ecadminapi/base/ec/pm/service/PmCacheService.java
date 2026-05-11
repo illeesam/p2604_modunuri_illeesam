@@ -96,7 +96,7 @@ public class PmCacheService {
     }
 
     @Transactional
-    public PmCache updatePartial(PmCache entity) {
+    public PmCache updateSelective(PmCache entity) {
         if (entity.getCacheId() == null) throw new CmBizException("cacheId 가 필요합니다.");
         if (!existsById(entity.getCacheId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCacheId());

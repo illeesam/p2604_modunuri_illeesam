@@ -96,7 +96,7 @@ public class OdDlivService {
     }
 
     @Transactional
-    public OdDliv updatePartial(OdDliv entity) {
+    public OdDliv updateSelective(OdDliv entity) {
         if (entity.getDlivId() == null) throw new CmBizException("dlivId 가 필요합니다.");
         if (!existsById(entity.getDlivId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDlivId());

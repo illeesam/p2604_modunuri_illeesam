@@ -45,9 +45,9 @@ public class StReconController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<StRecon>> updatePartial(@PathVariable("id") String id, @RequestBody StRecon entity) {
+    public ResponseEntity<ApiResponse<StRecon>> updateSelective(@PathVariable("id") String id, @RequestBody StRecon entity) {
         entity.setReconId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

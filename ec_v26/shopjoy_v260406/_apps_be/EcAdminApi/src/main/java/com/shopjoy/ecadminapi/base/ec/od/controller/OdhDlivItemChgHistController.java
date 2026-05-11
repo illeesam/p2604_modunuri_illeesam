@@ -45,9 +45,9 @@ public class OdhDlivItemChgHistController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhDlivItemChgHist>> updatePartial(@PathVariable("id") String id, @RequestBody OdhDlivItemChgHist entity) {
+    public ResponseEntity<ApiResponse<OdhDlivItemChgHist>> updateSelective(@PathVariable("id") String id, @RequestBody OdhDlivItemChgHist entity) {
         entity.setDlivItemChgHistId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

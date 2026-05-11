@@ -96,7 +96,7 @@ public class StReconService {
     }
 
     @Transactional
-    public StRecon updatePartial(StRecon entity) {
+    public StRecon updateSelective(StRecon entity) {
         if (entity.getReconId() == null) throw new CmBizException("reconId 가 필요합니다.");
         if (!existsById(entity.getReconId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReconId());

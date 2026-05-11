@@ -96,7 +96,7 @@ public class PmDiscntItemService {
     }
 
     @Transactional
-    public PmDiscntItem updatePartial(PmDiscntItem entity) {
+    public PmDiscntItem updateSelective(PmDiscntItem entity) {
         if (entity.getDiscntItemId() == null) throw new CmBizException("discntItemId 가 필요합니다.");
         if (!existsById(entity.getDiscntItemId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDiscntItemId());

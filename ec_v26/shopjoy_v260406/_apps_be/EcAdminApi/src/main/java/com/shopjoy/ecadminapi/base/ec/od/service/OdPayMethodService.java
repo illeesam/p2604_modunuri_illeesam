@@ -96,7 +96,7 @@ public class OdPayMethodService {
     }
 
     @Transactional
-    public OdPayMethod updatePartial(OdPayMethod entity) {
+    public OdPayMethod updateSelective(OdPayMethod entity) {
         if (entity.getPayMethodId() == null) throw new CmBizException("payMethodId 가 필요합니다.");
         if (!existsById(entity.getPayMethodId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPayMethodId());

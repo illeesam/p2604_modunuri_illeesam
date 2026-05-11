@@ -96,7 +96,7 @@ public class OdClaimService {
     }
 
     @Transactional
-    public OdClaim updatePartial(OdClaim entity) {
+    public OdClaim updateSelective(OdClaim entity) {
         if (entity.getClaimId() == null) throw new CmBizException("claimId 가 필요합니다.");
         if (!existsById(entity.getClaimId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getClaimId());

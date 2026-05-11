@@ -96,7 +96,7 @@ public class DpAreaService {
     }
 
     @Transactional
-    public DpArea updatePartial(DpArea entity) {
+    public DpArea updateSelective(DpArea entity) {
         if (entity.getAreaId() == null) throw new CmBizException("areaId 가 필요합니다.");
         if (!existsById(entity.getAreaId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAreaId());

@@ -96,7 +96,7 @@ public class CmhPushLogService {
     }
 
     @Transactional
-    public CmhPushLog updatePartial(CmhPushLog entity) {
+    public CmhPushLog updateSelective(CmhPushLog entity) {
         if (entity.getLogId() == null) throw new CmBizException("logId 가 필요합니다.");
         if (!existsById(entity.getLogId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLogId());

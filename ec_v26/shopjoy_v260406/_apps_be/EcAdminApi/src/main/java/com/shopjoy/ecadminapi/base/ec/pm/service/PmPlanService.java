@@ -96,7 +96,7 @@ public class PmPlanService {
     }
 
     @Transactional
-    public PmPlan updatePartial(PmPlan entity) {
+    public PmPlan updateSelective(PmPlan entity) {
         if (entity.getPlanId() == null) throw new CmBizException("planId 가 필요합니다.");
         if (!existsById(entity.getPlanId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPlanId());

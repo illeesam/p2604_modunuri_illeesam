@@ -45,9 +45,9 @@ public class OdDlivController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdDliv>> updatePartial(@PathVariable("id") String id, @RequestBody OdDliv entity) {
+    public ResponseEntity<ApiResponse<OdDliv>> updateSelective(@PathVariable("id") String id, @RequestBody OdDliv entity) {
         entity.setDlivId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

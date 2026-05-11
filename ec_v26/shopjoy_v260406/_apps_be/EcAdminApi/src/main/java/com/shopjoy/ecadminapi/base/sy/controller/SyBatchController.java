@@ -45,9 +45,9 @@ public class SyBatchController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBatch>> updatePartial(@PathVariable("id") String id, @RequestBody SyBatch entity) {
+    public ResponseEntity<ApiResponse<SyBatch>> updateSelective(@PathVariable("id") String id, @RequestBody SyBatch entity) {
         entity.setBatchId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

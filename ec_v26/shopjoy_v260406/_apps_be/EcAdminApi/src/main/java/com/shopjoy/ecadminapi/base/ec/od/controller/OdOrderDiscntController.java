@@ -45,9 +45,9 @@ public class OdOrderDiscntController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdOrderDiscnt>> updatePartial(@PathVariable("id") String id, @RequestBody OdOrderDiscnt entity) {
+    public ResponseEntity<ApiResponse<OdOrderDiscnt>> updateSelective(@PathVariable("id") String id, @RequestBody OdOrderDiscnt entity) {
         entity.setOrderDiscntId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

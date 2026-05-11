@@ -100,7 +100,7 @@ public class SyUserRoleService {
     }
 
     @Transactional
-    public SyUserRole updatePartial(SyUserRole entity) {
+    public SyUserRole updateSelective(SyUserRole entity) {
         if (entity.getUserRoleId() == null) throw new CmBizException("userRoleId 가 필요합니다.");
         if (!existsById(entity.getUserRoleId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUserRoleId());

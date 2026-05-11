@@ -96,7 +96,7 @@ public class StSettleConfigService {
     }
 
     @Transactional
-    public StSettleConfig updatePartial(StSettleConfig entity) {
+    public StSettleConfig updateSelective(StSettleConfig entity) {
         if (entity.getSettleConfigId() == null) throw new CmBizException("settleConfigId 가 필요합니다.");
         if (!existsById(entity.getSettleConfigId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleConfigId());

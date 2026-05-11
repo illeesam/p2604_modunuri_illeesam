@@ -96,7 +96,7 @@ public class PdProdSkuService {
     }
 
     @Transactional
-    public PdProdSku updatePartial(PdProdSku entity) {
+    public PdProdSku updateSelective(PdProdSku entity) {
         if (entity.getSkuId() == null) throw new CmBizException("skuId 가 필요합니다.");
         if (!existsById(entity.getSkuId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSkuId());

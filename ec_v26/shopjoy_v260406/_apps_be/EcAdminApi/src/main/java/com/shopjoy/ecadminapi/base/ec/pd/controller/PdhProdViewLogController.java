@@ -45,9 +45,9 @@ public class PdhProdViewLogController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdhProdViewLog>> updatePartial(@PathVariable("id") String id, @RequestBody PdhProdViewLog entity) {
+    public ResponseEntity<ApiResponse<PdhProdViewLog>> updateSelective(@PathVariable("id") String id, @RequestBody PdhProdViewLog entity) {
         entity.setLogId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

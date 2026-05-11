@@ -96,7 +96,7 @@ public class PdCategoryService {
     }
 
     @Transactional
-    public PdCategory updatePartial(PdCategory entity) {
+    public PdCategory updateSelective(PdCategory entity) {
         if (entity.getCategoryId() == null) throw new CmBizException("categoryId 가 필요합니다.");
         if (!existsById(entity.getCategoryId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCategoryId());

@@ -96,7 +96,7 @@ public class SyCodeGrpService {
     }
 
     @Transactional
-    public SyCodeGrp updatePartial(SyCodeGrp entity) {
+    public SyCodeGrp updateSelective(SyCodeGrp entity) {
         if (entity.getCodeGrpId() == null) throw new CmBizException("codeGrpId 가 필요합니다.");
         if (!existsById(entity.getCodeGrpId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCodeGrpId());

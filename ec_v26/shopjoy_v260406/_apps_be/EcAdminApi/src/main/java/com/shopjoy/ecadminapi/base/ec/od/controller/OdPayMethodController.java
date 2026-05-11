@@ -45,9 +45,9 @@ public class OdPayMethodController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdPayMethod>> updatePartial(@PathVariable("id") String id, @RequestBody OdPayMethod entity) {
+    public ResponseEntity<ApiResponse<OdPayMethod>> updateSelective(@PathVariable("id") String id, @RequestBody OdPayMethod entity) {
         entity.setPayMethodId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

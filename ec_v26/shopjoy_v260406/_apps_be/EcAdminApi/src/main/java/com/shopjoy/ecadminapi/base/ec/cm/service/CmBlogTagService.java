@@ -96,7 +96,7 @@ public class CmBlogTagService {
     }
 
     @Transactional
-    public CmBlogTag updatePartial(CmBlogTag entity) {
+    public CmBlogTag updateSelective(CmBlogTag entity) {
         if (entity.getBlogTagId() == null) throw new CmBizException("blogTagId 가 필요합니다.");
         if (!existsById(entity.getBlogTagId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogTagId());

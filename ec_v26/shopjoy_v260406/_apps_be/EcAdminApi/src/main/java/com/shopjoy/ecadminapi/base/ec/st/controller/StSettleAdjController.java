@@ -45,9 +45,9 @@ public class StSettleAdjController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleAdj>> updatePartial(@PathVariable("id") String id, @RequestBody StSettleAdj entity) {
+    public ResponseEntity<ApiResponse<StSettleAdj>> updateSelective(@PathVariable("id") String id, @RequestBody StSettleAdj entity) {
         entity.setSettleAdjId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

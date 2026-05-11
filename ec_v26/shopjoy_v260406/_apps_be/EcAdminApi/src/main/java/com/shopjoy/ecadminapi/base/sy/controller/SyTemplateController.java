@@ -45,9 +45,9 @@ public class SyTemplateController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyTemplate>> updatePartial(@PathVariable("id") String id, @RequestBody SyTemplate entity) {
+    public ResponseEntity<ApiResponse<SyTemplate>> updateSelective(@PathVariable("id") String id, @RequestBody SyTemplate entity) {
         entity.setTemplateId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

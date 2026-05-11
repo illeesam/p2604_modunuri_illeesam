@@ -45,9 +45,9 @@ public class SyContactController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyContact>> updatePartial(@PathVariable("id") String id, @RequestBody SyContact entity) {
+    public ResponseEntity<ApiResponse<SyContact>> updateSelective(@PathVariable("id") String id, @RequestBody SyContact entity) {
         entity.setContactId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

@@ -45,9 +45,9 @@ public class MbMemberRoleController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberRole>> updatePartial(@PathVariable("id") String id, @RequestBody MbMemberRole entity) {
+    public ResponseEntity<ApiResponse<MbMemberRole>> updateSelective(@PathVariable("id") String id, @RequestBody MbMemberRole entity) {
         entity.setMemberRoleId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

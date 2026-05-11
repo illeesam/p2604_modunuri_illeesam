@@ -96,7 +96,7 @@ public class CmChattRoomService {
     }
 
     @Transactional
-    public CmChattRoom updatePartial(CmChattRoom entity) {
+    public CmChattRoom updateSelective(CmChattRoom entity) {
         if (entity.getChattRoomId() == null) throw new CmBizException("chattRoomId 가 필요합니다.");
         if (!existsById(entity.getChattRoomId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getChattRoomId());

@@ -45,9 +45,9 @@ public class CmBlogFileController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogFile>> updatePartial(@PathVariable("id") String id, @RequestBody CmBlogFile entity) {
+    public ResponseEntity<ApiResponse<CmBlogFile>> updateSelective(@PathVariable("id") String id, @RequestBody CmBlogFile entity) {
         entity.setBlogImgId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

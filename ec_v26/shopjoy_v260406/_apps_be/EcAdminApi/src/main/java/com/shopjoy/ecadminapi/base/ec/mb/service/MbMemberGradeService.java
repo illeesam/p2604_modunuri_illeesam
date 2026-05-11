@@ -96,7 +96,7 @@ public class MbMemberGradeService {
     }
 
     @Transactional
-    public MbMemberGrade updatePartial(MbMemberGrade entity) {
+    public MbMemberGrade updateSelective(MbMemberGrade entity) {
         if (entity.getMemberGradeId() == null) throw new CmBizException("memberGradeId 가 필요합니다.");
         if (!existsById(entity.getMemberGradeId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberGradeId());

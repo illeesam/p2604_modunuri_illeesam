@@ -45,9 +45,9 @@ public class PdReviewAttachController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewAttach>> updatePartial(@PathVariable("id") String id, @RequestBody PdReviewAttach entity) {
+    public ResponseEntity<ApiResponse<PdReviewAttach>> updateSelective(@PathVariable("id") String id, @RequestBody PdReviewAttach entity) {
         entity.setReviewAttachId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

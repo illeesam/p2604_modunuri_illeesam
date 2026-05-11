@@ -96,7 +96,7 @@ public class SyPropService {
     }
 
     @Transactional
-    public SyProp updatePartial(SyProp entity) {
+    public SyProp updateSelective(SyProp entity) {
         if (entity.getPropId() == null) throw new CmBizException("propId 가 필요합니다.");
         if (!existsById(entity.getPropId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPropId());

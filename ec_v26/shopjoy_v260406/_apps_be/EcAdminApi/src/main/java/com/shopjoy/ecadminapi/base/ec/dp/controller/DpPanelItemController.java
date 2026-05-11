@@ -45,9 +45,9 @@ public class DpPanelItemController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpPanelItem>> updatePartial(@PathVariable("id") String id, @RequestBody DpPanelItem entity) {
+    public ResponseEntity<ApiResponse<DpPanelItem>> updateSelective(@PathVariable("id") String id, @RequestBody DpPanelItem entity) {
         entity.setPanelItemId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

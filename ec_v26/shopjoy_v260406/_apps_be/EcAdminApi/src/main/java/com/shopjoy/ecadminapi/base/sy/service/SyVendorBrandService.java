@@ -96,7 +96,7 @@ public class SyVendorBrandService {
     }
 
     @Transactional
-    public SyVendorBrand updatePartial(SyVendorBrand entity) {
+    public SyVendorBrand updateSelective(SyVendorBrand entity) {
         if (entity.getVendorBrandId() == null) throw new CmBizException("vendorBrandId 가 필요합니다.");
         if (!existsById(entity.getVendorBrandId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorBrandId());

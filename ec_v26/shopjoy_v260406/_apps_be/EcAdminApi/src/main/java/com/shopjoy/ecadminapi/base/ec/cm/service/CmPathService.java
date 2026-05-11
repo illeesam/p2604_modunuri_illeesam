@@ -95,7 +95,7 @@ public class CmPathService {
     }
 
     @Transactional
-    public CmPath updatePartial(CmPath entity) {
+    public CmPath updateSelective(CmPath entity) {
         if (entity.getBizCd() == null) throw new CmBizException("bizCd 가 필요합니다.");
         if (!existsById(entity.getBizCd()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBizCd());

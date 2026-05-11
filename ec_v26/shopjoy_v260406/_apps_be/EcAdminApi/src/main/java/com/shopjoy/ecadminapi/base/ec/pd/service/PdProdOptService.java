@@ -96,7 +96,7 @@ public class PdProdOptService {
     }
 
     @Transactional
-    public PdProdOpt updatePartial(PdProdOpt entity) {
+    public PdProdOpt updateSelective(PdProdOpt entity) {
         if (entity.getOptId() == null) throw new CmBizException("optId 가 필요합니다.");
         if (!existsById(entity.getOptId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOptId());

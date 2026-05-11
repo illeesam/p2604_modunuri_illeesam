@@ -101,7 +101,7 @@ public class SyRoleMenuService {
     }
 
     @Transactional
-    public SyRoleMenu updatePartial(SyRoleMenu entity) {
+    public SyRoleMenu updateSelective(SyRoleMenu entity) {
         if (entity.getRoleMenuId() == null) throw new CmBizException("roleMenuId 가 필요합니다.");
         if (!existsById(entity.getRoleMenuId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRoleMenuId());

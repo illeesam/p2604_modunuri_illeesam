@@ -96,7 +96,7 @@ public class OdhClaimChgHistService {
     }
 
     @Transactional
-    public OdhClaimChgHist updatePartial(OdhClaimChgHist entity) {
+    public OdhClaimChgHist updateSelective(OdhClaimChgHist entity) {
         if (entity.getClaimChgHistId() == null) throw new CmBizException("claimChgHistId 가 필요합니다.");
         if (!existsById(entity.getClaimChgHistId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getClaimChgHistId());

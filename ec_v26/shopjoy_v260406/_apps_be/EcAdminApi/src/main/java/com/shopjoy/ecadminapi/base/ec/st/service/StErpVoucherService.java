@@ -96,7 +96,7 @@ public class StErpVoucherService {
     }
 
     @Transactional
-    public StErpVoucher updatePartial(StErpVoucher entity) {
+    public StErpVoucher updateSelective(StErpVoucher entity) {
         if (entity.getErpVoucherId() == null) throw new CmBizException("erpVoucherId 가 필요합니다.");
         if (!existsById(entity.getErpVoucherId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getErpVoucherId());

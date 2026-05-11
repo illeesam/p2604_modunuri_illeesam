@@ -45,9 +45,9 @@ public class OdCartController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdCart>> updatePartial(@PathVariable("id") String id, @RequestBody OdCart entity) {
+    public ResponseEntity<ApiResponse<OdCart>> updateSelective(@PathVariable("id") String id, @RequestBody OdCart entity) {
         entity.setCartId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

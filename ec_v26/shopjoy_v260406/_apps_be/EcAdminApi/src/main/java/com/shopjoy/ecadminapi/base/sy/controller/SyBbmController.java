@@ -45,9 +45,9 @@ public class SyBbmController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBbm>> updatePartial(@PathVariable("id") String id, @RequestBody SyBbm entity) {
+    public ResponseEntity<ApiResponse<SyBbm>> updateSelective(@PathVariable("id") String id, @RequestBody SyBbm entity) {
         entity.setBbmId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

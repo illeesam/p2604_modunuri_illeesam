@@ -45,9 +45,9 @@ public class CmChattMsgController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmChattMsg>> updatePartial(@PathVariable("id") String id, @RequestBody CmChattMsg entity) {
+    public ResponseEntity<ApiResponse<CmChattMsg>> updateSelective(@PathVariable("id") String id, @RequestBody CmChattMsg entity) {
         entity.setChattMsgId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

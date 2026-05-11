@@ -45,9 +45,9 @@ public class SyUserRoleController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyUserRole>> updatePartial(@PathVariable("id") String id, @RequestBody SyUserRole entity) {
+    public ResponseEntity<ApiResponse<SyUserRole>> updateSelective(@PathVariable("id") String id, @RequestBody SyUserRole entity) {
         entity.setUserRoleId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

@@ -45,9 +45,9 @@ public class SyI18nMsgController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18nMsg>> updatePartial(@PathVariable("id") String id, @RequestBody SyI18nMsg entity) {
+    public ResponseEntity<ApiResponse<SyI18nMsg>> updateSelective(@PathVariable("id") String id, @RequestBody SyI18nMsg entity) {
         entity.setI18nMsgId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

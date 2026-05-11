@@ -96,7 +96,7 @@ public class DpWidgetService {
     }
 
     @Transactional
-    public DpWidget updatePartial(DpWidget entity) {
+    public DpWidget updateSelective(DpWidget entity) {
         if (entity.getWidgetId() == null) throw new CmBizException("widgetId 가 필요합니다.");
         if (!existsById(entity.getWidgetId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getWidgetId());

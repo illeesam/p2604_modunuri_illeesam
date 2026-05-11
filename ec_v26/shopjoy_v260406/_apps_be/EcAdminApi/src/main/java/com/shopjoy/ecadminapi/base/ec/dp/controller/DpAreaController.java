@@ -45,9 +45,9 @@ public class DpAreaController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpArea>> updatePartial(@PathVariable("id") String id, @RequestBody DpArea entity) {
+    public ResponseEntity<ApiResponse<DpArea>> updateSelective(@PathVariable("id") String id, @RequestBody DpArea entity) {
         entity.setAreaId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

@@ -96,7 +96,7 @@ public class MbMemberGroupService {
     }
 
     @Transactional
-    public MbMemberGroup updatePartial(MbMemberGroup entity) {
+    public MbMemberGroup updateSelective(MbMemberGroup entity) {
         if (entity.getMemberGroupId() == null) throw new CmBizException("memberGroupId 가 필요합니다.");
         if (!existsById(entity.getMemberGroupId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberGroupId());

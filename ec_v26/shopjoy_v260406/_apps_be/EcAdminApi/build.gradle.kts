@@ -12,6 +12,9 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+// QueryDSL Q클래스 생성 경로
+val querydslDir = "$buildDir/generated/querydsl"  // 추가
+
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
@@ -30,8 +33,16 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    // QueryDSL
+    implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
+    implementation("com.querydsl:querydsl-core:5.0.0")
+    annotationProcessor("com.querydsl:querydsl-apt:5.0.0:jakarta")
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+
     // MyBatis
     implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3")
+    implementation("org.mybatis:mybatis:3.5.15")
 
     // PostgreSQL
     runtimeOnly("org.postgresql:postgresql")
@@ -59,8 +70,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // Flyway (Database Migration)
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.flywaydb:flyway-core:10.0.1")
+    implementation("org.flywaydb:flyway-database-postgresql:10.0.1")
 
     // Swagger/OpenAPI
     // implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
@@ -76,12 +87,37 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
 }
 
+// APT로 생성된 Q클래스를 소스셋에 포함
+sourceSets {
+    main {
+        java {
+            srcDir(querydslDir)
+        }
+    }
+}
+
+// 컴파일 시 Q클래스 생성 경로 지정
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+    options.compilerArgs.add("-parameters")
+    options.generatedSourceOutputDirectory.set(file(querydslDir))  // 추가
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+tasks.named<Jar>("jar") {
+    enabled = false
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
+    options.compilerArgs.add("-parameters")
 }
 
 tasks.named<Jar>("jar") {

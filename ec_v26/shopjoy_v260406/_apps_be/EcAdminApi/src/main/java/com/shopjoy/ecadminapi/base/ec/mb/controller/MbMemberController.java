@@ -45,9 +45,9 @@ public class MbMemberController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMember>> updatePartial(@PathVariable("id") String id, @RequestBody MbMember entity) {
+    public ResponseEntity<ApiResponse<MbMember>> updateSelective(@PathVariable("id") String id, @RequestBody MbMember entity) {
         entity.setMemberId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

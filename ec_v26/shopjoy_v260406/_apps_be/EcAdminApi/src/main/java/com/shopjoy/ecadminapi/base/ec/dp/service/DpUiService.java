@@ -96,7 +96,7 @@ public class DpUiService {
     }
 
     @Transactional
-    public DpUi updatePartial(DpUi entity) {
+    public DpUi updateSelective(DpUi entity) {
         if (entity.getUiId() == null) throw new CmBizException("uiId 가 필요합니다.");
         if (!existsById(entity.getUiId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUiId());

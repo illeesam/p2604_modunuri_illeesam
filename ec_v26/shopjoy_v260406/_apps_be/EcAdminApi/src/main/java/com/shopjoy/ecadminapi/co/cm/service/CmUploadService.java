@@ -358,7 +358,7 @@ public class CmUploadService {
         SyAttachDto.Item dto = syAttachService.getById(attachId);
         if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId);
         SyAttach entity = SyAttach.builder().attachId(attachId).sortOrd(sortOrd).build();
-        syAttachService.updatePartial(entity);
+        syAttachService.updateSelective(entity);
     }
 
     /** resolveAttachGrp — 결정 */

@@ -96,7 +96,7 @@ public class MbMemberAddrService {
     }
 
     @Transactional
-    public MbMemberAddr updatePartial(MbMemberAddr entity) {
+    public MbMemberAddr updateSelective(MbMemberAddr entity) {
         if (entity.getMemberAddrId() == null) throw new CmBizException("memberAddrId 가 필요합니다.");
         if (!existsById(entity.getMemberAddrId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberAddrId());

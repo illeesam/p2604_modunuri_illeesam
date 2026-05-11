@@ -55,11 +55,11 @@ public class SyDeptController {
         return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
-    /** updatePartial — 선택 필드 수정 (MyBatis selective) */
+    /** updateSelective — 선택 필드 수정 (MyBatis selective) */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyDept>> updatePartial(@PathVariable("id") String id, @RequestBody SyDept entity) {
+    public ResponseEntity<ApiResponse<SyDept>> updateSelective(@PathVariable("id") String id, @RequestBody SyDept entity) {
         entity.setDeptId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     /** delete — 삭제 */

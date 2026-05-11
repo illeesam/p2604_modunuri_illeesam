@@ -45,9 +45,9 @@ public class SyBrandController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBrand>> updatePartial(@PathVariable("id") String id, @RequestBody SyBrand entity) {
+    public ResponseEntity<ApiResponse<SyBrand>> updateSelective(@PathVariable("id") String id, @RequestBody SyBrand entity) {
         entity.setBrandId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

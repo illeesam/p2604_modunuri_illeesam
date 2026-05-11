@@ -58,9 +58,9 @@ public class SyAlarmController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAlarm>> updatePartial(@PathVariable("id") String id, @RequestBody SyAlarm entity) {
+    public ResponseEntity<ApiResponse<SyAlarm>> updateSelective(@PathVariable("id") String id, @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

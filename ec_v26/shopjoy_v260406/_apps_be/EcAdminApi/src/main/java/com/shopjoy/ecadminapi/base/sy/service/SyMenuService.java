@@ -96,7 +96,7 @@ public class SyMenuService {
     }
 
     @Transactional
-    public SyMenu updatePartial(SyMenu entity) {
+    public SyMenu updateSelective(SyMenu entity) {
         if (entity.getMenuId() == null) throw new CmBizException("menuId 가 필요합니다.");
         if (!existsById(entity.getMenuId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMenuId());

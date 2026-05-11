@@ -45,9 +45,9 @@ public class OdhPayStatusHistController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhPayStatusHist>> updatePartial(@PathVariable("id") String id, @RequestBody OdhPayStatusHist entity) {
+    public ResponseEntity<ApiResponse<OdhPayStatusHist>> updateSelective(@PathVariable("id") String id, @RequestBody OdhPayStatusHist entity) {
         entity.setPayStatusHistId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

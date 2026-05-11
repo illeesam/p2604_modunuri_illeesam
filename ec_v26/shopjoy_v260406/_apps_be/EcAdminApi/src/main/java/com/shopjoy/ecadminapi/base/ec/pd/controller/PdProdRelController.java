@@ -45,9 +45,9 @@ public class PdProdRelController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdRel>> updatePartial(@PathVariable("id") String id, @RequestBody PdProdRel entity) {
+    public ResponseEntity<ApiResponse<PdProdRel>> updateSelective(@PathVariable("id") String id, @RequestBody PdProdRel entity) {
         entity.setProdRelId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

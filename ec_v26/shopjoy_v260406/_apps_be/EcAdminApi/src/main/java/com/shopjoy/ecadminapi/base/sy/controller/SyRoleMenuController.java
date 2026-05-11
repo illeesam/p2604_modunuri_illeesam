@@ -45,9 +45,9 @@ public class SyRoleMenuController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyRoleMenu>> updatePartial(@PathVariable("id") String id, @RequestBody SyRoleMenu entity) {
+    public ResponseEntity<ApiResponse<SyRoleMenu>> updateSelective(@PathVariable("id") String id, @RequestBody SyRoleMenu entity) {
         entity.setRoleMenuId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

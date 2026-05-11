@@ -96,7 +96,7 @@ public class OdPayService {
     }
 
     @Transactional
-    public OdPay updatePartial(OdPay entity) {
+    public OdPay updateSelective(OdPay entity) {
         if (entity.getPayId() == null) throw new CmBizException("payId 가 필요합니다.");
         if (!existsById(entity.getPayId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPayId());

@@ -45,9 +45,9 @@ public class CmhPushLogController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmhPushLog>> updatePartial(@PathVariable("id") String id, @RequestBody CmhPushLog entity) {
+    public ResponseEntity<ApiResponse<CmhPushLog>> updateSelective(@PathVariable("id") String id, @RequestBody CmhPushLog entity) {
         entity.setLogId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

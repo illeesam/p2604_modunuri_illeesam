@@ -49,12 +49,12 @@ public class ZzSample2Controller {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, entity)));
     }
 
-    /** updatePartial — 부분 수정 */
+    /** updateSelective — 부분 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> updatePartial(
+    public ResponseEntity<ApiResponse<Integer>> updateSelective(
             @PathVariable("id") String id, @RequestBody ZzSample2 entity) {
         entity.setSample2Id(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     /** delete — 삭제 */

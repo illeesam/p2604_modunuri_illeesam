@@ -53,12 +53,12 @@ public class SySiteController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    /** updatePartial — 선택 필드 수정 (MyBatis selective) */
+    /** updateSelective — 선택 필드 수정 (MyBatis selective) */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SySite>> updatePartial(
+    public ResponseEntity<ApiResponse<SySite>> updateSelective(
             @PathVariable("id") String id, @RequestBody SySite entity) {
         entity.setSiteId(id);
-        SySite result = service.updatePartial(entity);
+        SySite result = service.updateSelective(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

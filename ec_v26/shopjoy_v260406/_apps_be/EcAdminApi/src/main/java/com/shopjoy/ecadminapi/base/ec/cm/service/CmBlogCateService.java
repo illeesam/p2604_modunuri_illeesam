@@ -96,7 +96,7 @@ public class CmBlogCateService {
     }
 
     @Transactional
-    public CmBlogCate updatePartial(CmBlogCate entity) {
+    public CmBlogCate updateSelective(CmBlogCate entity) {
         if (entity.getBlogCateId() == null) throw new CmBizException("blogCateId 가 필요합니다.");
         if (!existsById(entity.getBlogCateId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogCateId());

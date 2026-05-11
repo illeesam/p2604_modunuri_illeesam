@@ -45,9 +45,9 @@ public class PdRestockNotiController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNoti>> updatePartial(@PathVariable("id") String id, @RequestBody PdRestockNoti entity) {
+    public ResponseEntity<ApiResponse<PdRestockNoti>> updateSelective(@PathVariable("id") String id, @RequestBody PdRestockNoti entity) {
         entity.setRestockNotiId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

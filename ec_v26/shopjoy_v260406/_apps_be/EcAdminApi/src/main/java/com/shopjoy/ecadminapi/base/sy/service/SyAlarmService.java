@@ -96,7 +96,7 @@ public class SyAlarmService {
     }
 
     @Transactional
-    public SyAlarm updatePartial(SyAlarm entity) {
+    public SyAlarm updateSelective(SyAlarm entity) {
         if (entity.getAlarmId() == null) throw new CmBizException("alarmId 가 필요합니다.");
         if (!existsById(entity.getAlarmId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAlarmId());

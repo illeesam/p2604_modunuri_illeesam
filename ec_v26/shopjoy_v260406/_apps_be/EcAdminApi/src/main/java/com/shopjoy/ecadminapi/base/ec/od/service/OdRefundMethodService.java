@@ -96,7 +96,7 @@ public class OdRefundMethodService {
     }
 
     @Transactional
-    public OdRefundMethod updatePartial(OdRefundMethod entity) {
+    public OdRefundMethod updateSelective(OdRefundMethod entity) {
         if (entity.getRefundMethodId() == null) throw new CmBizException("refundMethodId 가 필요합니다.");
         if (!existsById(entity.getRefundMethodId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRefundMethodId());

@@ -96,7 +96,7 @@ public class DpAreaPanelService {
     }
 
     @Transactional
-    public DpAreaPanel updatePartial(DpAreaPanel entity) {
+    public DpAreaPanel updateSelective(DpAreaPanel entity) {
         if (entity.getAreaPanelId() == null) throw new CmBizException("areaPanelId 가 필요합니다.");
         if (!existsById(entity.getAreaPanelId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAreaPanelId());

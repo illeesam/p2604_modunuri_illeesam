@@ -45,9 +45,9 @@ public class PdTagController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdTag>> updatePartial(@PathVariable("id") String id, @RequestBody PdTag entity) {
+    public ResponseEntity<ApiResponse<PdTag>> updateSelective(@PathVariable("id") String id, @RequestBody PdTag entity) {
         entity.setTagId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

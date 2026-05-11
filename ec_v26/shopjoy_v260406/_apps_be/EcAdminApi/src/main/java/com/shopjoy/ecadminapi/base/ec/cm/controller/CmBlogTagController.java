@@ -45,9 +45,9 @@ public class CmBlogTagController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogTag>> updatePartial(@PathVariable("id") String id, @RequestBody CmBlogTag entity) {
+    public ResponseEntity<ApiResponse<CmBlogTag>> updateSelective(@PathVariable("id") String id, @RequestBody CmBlogTag entity) {
         entity.setBlogTagId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

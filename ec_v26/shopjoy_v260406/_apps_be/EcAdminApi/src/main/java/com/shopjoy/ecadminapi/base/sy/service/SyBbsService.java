@@ -96,7 +96,7 @@ public class SyBbsService {
     }
 
     @Transactional
-    public SyBbs updatePartial(SyBbs entity) {
+    public SyBbs updateSelective(SyBbs entity) {
         if (entity.getBbsId() == null) throw new CmBizException("bbsId 가 필요합니다.");
         if (!existsById(entity.getBbsId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBbsId());

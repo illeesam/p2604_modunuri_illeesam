@@ -96,7 +96,7 @@ public class SyVendorService {
     }
 
     @Transactional
-    public SyVendor updatePartial(SyVendor entity) {
+    public SyVendor updateSelective(SyVendor entity) {
         if (entity.getVendorId() == null) throw new CmBizException("vendorId 가 필요합니다.");
         if (!existsById(entity.getVendorId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorId());

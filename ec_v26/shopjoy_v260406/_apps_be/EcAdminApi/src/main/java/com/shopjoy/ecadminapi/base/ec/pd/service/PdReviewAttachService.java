@@ -96,7 +96,7 @@ public class PdReviewAttachService {
     }
 
     @Transactional
-    public PdReviewAttach updatePartial(PdReviewAttach entity) {
+    public PdReviewAttach updateSelective(PdReviewAttach entity) {
         if (entity.getReviewAttachId() == null) throw new CmBizException("reviewAttachId 가 필요합니다.");
         if (!existsById(entity.getReviewAttachId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReviewAttachId());

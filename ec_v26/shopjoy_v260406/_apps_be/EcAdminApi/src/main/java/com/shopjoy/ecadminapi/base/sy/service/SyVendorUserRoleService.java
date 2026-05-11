@@ -98,7 +98,7 @@ public class SyVendorUserRoleService {
     }
 
     @Transactional
-    public SyVendorUserRole updatePartial(SyVendorUserRole entity) {
+    public SyVendorUserRole updateSelective(SyVendorUserRole entity) {
         if (entity.getVendorUserRoleId() == null) throw new CmBizException("vendorUserRoleId 가 필요합니다.");
         if (!existsById(entity.getVendorUserRoleId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorUserRoleId());

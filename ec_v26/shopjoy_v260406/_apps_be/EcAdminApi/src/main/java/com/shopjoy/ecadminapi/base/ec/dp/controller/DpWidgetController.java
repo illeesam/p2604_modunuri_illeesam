@@ -45,9 +45,9 @@ public class DpWidgetController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidget>> updatePartial(@PathVariable("id") String id, @RequestBody DpWidget entity) {
+    public ResponseEntity<ApiResponse<DpWidget>> updateSelective(@PathVariable("id") String id, @RequestBody DpWidget entity) {
         entity.setWidgetId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

@@ -96,7 +96,7 @@ public class PmDiscntUsageService {
     }
 
     @Transactional
-    public PmDiscntUsage updatePartial(PmDiscntUsage entity) {
+    public PmDiscntUsage updateSelective(PmDiscntUsage entity) {
         if (entity.getDiscntUsageId() == null) throw new CmBizException("discntUsageId 가 필요합니다.");
         if (!existsById(entity.getDiscntUsageId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDiscntUsageId());

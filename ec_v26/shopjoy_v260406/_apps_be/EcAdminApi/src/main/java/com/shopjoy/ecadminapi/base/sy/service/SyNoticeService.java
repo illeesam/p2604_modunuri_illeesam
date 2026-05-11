@@ -96,7 +96,7 @@ public class SyNoticeService {
     }
 
     @Transactional
-    public SyNotice updatePartial(SyNotice entity) {
+    public SyNotice updateSelective(SyNotice entity) {
         if (entity.getNoticeId() == null) throw new CmBizException("noticeId 가 필요합니다.");
         if (!existsById(entity.getNoticeId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getNoticeId());

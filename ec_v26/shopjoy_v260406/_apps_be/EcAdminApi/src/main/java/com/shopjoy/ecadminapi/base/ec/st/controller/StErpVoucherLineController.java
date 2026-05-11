@@ -45,9 +45,9 @@ public class StErpVoucherLineController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<StErpVoucherLine>> updatePartial(@PathVariable("id") String id, @RequestBody StErpVoucherLine entity) {
+    public ResponseEntity<ApiResponse<StErpVoucherLine>> updateSelective(@PathVariable("id") String id, @RequestBody StErpVoucherLine entity) {
         entity.setErpVoucherLineId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

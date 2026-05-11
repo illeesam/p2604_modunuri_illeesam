@@ -96,7 +96,7 @@ public class MbMemberRoleService {
     }
 
     @Transactional
-    public MbMemberRole updatePartial(MbMemberRole entity) {
+    public MbMemberRole updateSelective(MbMemberRole entity) {
         if (entity.getMemberRoleId() == null) throw new CmBizException("memberRoleId 가 필요합니다.");
         if (!existsById(entity.getMemberRoleId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberRoleId());

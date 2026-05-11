@@ -96,7 +96,7 @@ public class MbMemberSnsService {
     }
 
     @Transactional
-    public MbMemberSns updatePartial(MbMemberSns entity) {
+    public MbMemberSns updateSelective(MbMemberSns entity) {
         if (entity.getMemberSnsId() == null) throw new CmBizException("memberSnsId 가 필요합니다.");
         if (!existsById(entity.getMemberSnsId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberSnsId());

@@ -45,9 +45,9 @@ public class CmPathController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmPath>> updatePartial(@PathVariable("id") String id, @RequestBody CmPath entity) {
+    public ResponseEntity<ApiResponse<CmPath>> updateSelective(@PathVariable("id") String id, @RequestBody CmPath entity) {
         entity.setBizCd(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

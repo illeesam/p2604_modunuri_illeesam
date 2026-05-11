@@ -96,7 +96,7 @@ public class PdhProdContentChgHistService {
     }
 
     @Transactional
-    public PdhProdContentChgHist updatePartial(PdhProdContentChgHist entity) {
+    public PdhProdContentChgHist updateSelective(PdhProdContentChgHist entity) {
         if (entity.getHistId() == null) throw new CmBizException("histId 가 필요합니다.");
         if (!existsById(entity.getHistId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getHistId());

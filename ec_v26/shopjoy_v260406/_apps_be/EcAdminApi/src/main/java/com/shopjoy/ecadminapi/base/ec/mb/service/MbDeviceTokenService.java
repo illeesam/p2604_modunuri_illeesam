@@ -96,7 +96,7 @@ public class MbDeviceTokenService {
     }
 
     @Transactional
-    public MbDeviceToken updatePartial(MbDeviceToken entity) {
+    public MbDeviceToken updateSelective(MbDeviceToken entity) {
         if (entity.getDeviceTokenId() == null) throw new CmBizException("deviceTokenId 가 필요합니다.");
         if (!existsById(entity.getDeviceTokenId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDeviceTokenId());

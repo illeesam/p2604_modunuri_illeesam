@@ -45,9 +45,9 @@ public class PdProdSkuController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdSku>> updatePartial(@PathVariable("id") String id, @RequestBody PdProdSku entity) {
+    public ResponseEntity<ApiResponse<PdProdSku>> updateSelective(@PathVariable("id") String id, @RequestBody PdProdSku entity) {
         entity.setSkuId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

@@ -45,9 +45,9 @@ public class MbDeviceTokenController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbDeviceToken>> updatePartial(@PathVariable("id") String id, @RequestBody MbDeviceToken entity) {
+    public ResponseEntity<ApiResponse<MbDeviceToken>> updateSelective(@PathVariable("id") String id, @RequestBody MbDeviceToken entity) {
         entity.setDeviceTokenId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

@@ -96,7 +96,7 @@ public class SyRoleService {
     }
 
     @Transactional
-    public SyRole updatePartial(SyRole entity) {
+    public SyRole updateSelective(SyRole entity) {
         if (entity.getRoleId() == null) throw new CmBizException("roleId 가 필요합니다.");
         if (!existsById(entity.getRoleId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRoleId());

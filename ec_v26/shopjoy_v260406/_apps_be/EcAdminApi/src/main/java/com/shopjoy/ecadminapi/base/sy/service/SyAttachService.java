@@ -96,7 +96,7 @@ public class SyAttachService {
     }
 
     @Transactional
-    public SyAttach updatePartial(SyAttach entity) {
+    public SyAttach updateSelective(SyAttach entity) {
         if (entity.getAttachId() == null) throw new CmBizException("attachId 가 필요합니다.");
         if (!existsById(entity.getAttachId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAttachId());

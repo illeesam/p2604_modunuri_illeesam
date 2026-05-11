@@ -96,7 +96,7 @@ public class SyVendorUserService {
     }
 
     @Transactional
-    public SyVendorUser updatePartial(SyVendorUser entity) {
+    public SyVendorUser updateSelective(SyVendorUser entity) {
         if (entity.getVendorUserId() == null) throw new CmBizException("vendorUserId 가 필요합니다.");
         if (!existsById(entity.getVendorUserId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorUserId());

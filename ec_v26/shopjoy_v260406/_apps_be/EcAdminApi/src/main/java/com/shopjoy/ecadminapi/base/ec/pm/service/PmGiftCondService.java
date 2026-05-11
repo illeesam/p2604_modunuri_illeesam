@@ -96,7 +96,7 @@ public class PmGiftCondService {
     }
 
     @Transactional
-    public PmGiftCond updatePartial(PmGiftCond entity) {
+    public PmGiftCond updateSelective(PmGiftCond entity) {
         if (entity.getGiftCondId() == null) throw new CmBizException("giftCondId 가 필요합니다.");
         if (!existsById(entity.getGiftCondId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getGiftCondId());

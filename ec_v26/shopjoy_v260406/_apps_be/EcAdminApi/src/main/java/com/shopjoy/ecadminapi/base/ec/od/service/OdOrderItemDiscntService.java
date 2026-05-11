@@ -96,7 +96,7 @@ public class OdOrderItemDiscntService {
     }
 
     @Transactional
-    public OdOrderItemDiscnt updatePartial(OdOrderItemDiscnt entity) {
+    public OdOrderItemDiscnt updateSelective(OdOrderItemDiscnt entity) {
         if (entity.getItemDiscntId() == null) throw new CmBizException("itemDiscntId 가 필요합니다.");
         if (!existsById(entity.getItemDiscntId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getItemDiscntId());

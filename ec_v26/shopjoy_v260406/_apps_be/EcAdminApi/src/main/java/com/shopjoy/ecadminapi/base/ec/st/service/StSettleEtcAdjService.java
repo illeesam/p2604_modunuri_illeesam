@@ -96,7 +96,7 @@ public class StSettleEtcAdjService {
     }
 
     @Transactional
-    public StSettleEtcAdj updatePartial(StSettleEtcAdj entity) {
+    public StSettleEtcAdj updateSelective(StSettleEtcAdj entity) {
         if (entity.getSettleEtcAdjId() == null) throw new CmBizException("settleEtcAdjId 가 필요합니다.");
         if (!existsById(entity.getSettleEtcAdjId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleEtcAdjId());

@@ -96,7 +96,7 @@ public class OdCartService {
     }
 
     @Transactional
-    public OdCart updatePartial(OdCart entity) {
+    public OdCart updateSelective(OdCart entity) {
         if (entity.getCartId() == null) throw new CmBizException("cartId 가 필요합니다.");
         if (!existsById(entity.getCartId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCartId());

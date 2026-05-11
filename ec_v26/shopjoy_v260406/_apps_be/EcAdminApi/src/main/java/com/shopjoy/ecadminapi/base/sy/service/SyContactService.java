@@ -96,7 +96,7 @@ public class SyContactService {
     }
 
     @Transactional
-    public SyContact updatePartial(SyContact entity) {
+    public SyContact updateSelective(SyContact entity) {
         if (entity.getContactId() == null) throw new CmBizException("contactId 가 필요합니다.");
         if (!existsById(entity.getContactId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getContactId());

@@ -96,7 +96,7 @@ public class PdProdBundleItemService {
     }
 
     @Transactional
-    public PdProdBundleItem updatePartial(PdProdBundleItem entity) {
+    public PdProdBundleItem updateSelective(PdProdBundleItem entity) {
         if (entity.getBundleItemId() == null) throw new CmBizException("bundleItemId 가 필요합니다.");
         if (!existsById(entity.getBundleItemId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBundleItemId());

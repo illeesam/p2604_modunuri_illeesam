@@ -45,9 +45,9 @@ public class MbMemberSnsController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberSns>> updatePartial(@PathVariable("id") String id, @RequestBody MbMemberSns entity) {
+    public ResponseEntity<ApiResponse<MbMemberSns>> updateSelective(@PathVariable("id") String id, @RequestBody MbMemberSns entity) {
         entity.setMemberSnsId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

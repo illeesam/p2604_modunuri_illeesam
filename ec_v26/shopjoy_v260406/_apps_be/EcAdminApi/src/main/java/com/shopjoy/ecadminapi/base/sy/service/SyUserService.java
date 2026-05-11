@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyUserMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyUserRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -25,7 +24,6 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class SyUserService {
 
-    private final SyUserMapper syUserMapper;
     private final SyUserRepository syUserRepository;
 
     @PersistenceContext
@@ -33,9 +31,9 @@ public class SyUserService {
 
     // ── 조회 (MyBatis - JOIN 필드 포함) ──────────────────────────
 
-    /** getById — 단건조회 (MyBatis, JOIN 필드 포함된 Item) */
+    /** getById — 단건조회 (QueryDSL, JOIN 필드 포함된 Item) */
     public SyUserDto.Item getById(String id) {
-        SyUserDto.Item dto = syUserMapper.selectById(id);
+        SyUserDto.Item dto = syUserRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
@@ -51,20 +49,16 @@ public class SyUserService {
         return syUserRepository.existsById(id);
     }
 
-    /** getList — 목록조회 (DTO Request 받아 Map 변환 후 Mapper 호출 — DTO 타입 안전 + Mapper missing field 안전) */
+    /** getList — 목록조회 (QueryDSL Request 받아 Map 변환 후 Repository 호출 — DTO 타입 안전 + Repository missing field 안전) */
     public List<SyUserDto.Item> getList(SyUserDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syUserMapper.selectList(VoUtil.voToMap(req));
+        return syUserRepository.selectList(req);
     }
 
-    /** getPageData — 페이징조회 (DTO Request → Map 변환 후 Mapper 호출) */
+    /** getPageData — 페이징조회 (QueryDSL Request → Repository 호출) */
     public SyUserDto.PageResponse getPageData(SyUserDto.Request req) {
         PageHelper.addPaging(req);
-        SyUserDto.PageResponse res = new SyUserDto.PageResponse();
-        Map<String, Object> p = VoUtil.voToMap(req);
-        List<SyUserDto.Item> list = syUserMapper.selectPageList(p);
-        long count = syUserMapper.selectPageCount(p);
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syUserRepository.selectPageList(req);
     }
 
     // ── 변경 (JPA - SyUser 엔티티 반환) ──────────────────────────
@@ -109,18 +103,18 @@ public class SyUserService {
         return saved;
     }
 
-    /** updatePartial — 선택 필드 수정 (MyBatis selective UPDATE) */
+    /** updateSelective — 선택 필드 수정 (QueryDSL selective UPDATE) */
     @Transactional
-    public SyUser updatePartial(SyUser entity) {
+    public SyUser updateSelective(SyUser entity) {
         if (entity.getUserId() == null)
             throw new CmBizException("userId 가 필요합니다.");
         if (!syUserRepository.existsById(entity.getUserId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUserId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = syUserMapper.updateSelective(entity);
+        int affected = syUserRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
-        // MyBatis 가 직접 SQL 수행했으므로 영속성 컨텍스트와 DB 상태 불일치 가능 → clear 후 재조회
+        // QueryDSL 벌크연산 후 영속성 컨텍스트 동기화
         em.clear();
         return entity;
     }

@@ -96,7 +96,7 @@ public class PmSaveUsageService {
     }
 
     @Transactional
-    public PmSaveUsage updatePartial(PmSaveUsage entity) {
+    public PmSaveUsage updateSelective(PmSaveUsage entity) {
         if (entity.getSaveUsageId() == null) throw new CmBizException("saveUsageId 가 필요합니다.");
         if (!existsById(entity.getSaveUsageId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSaveUsageId());

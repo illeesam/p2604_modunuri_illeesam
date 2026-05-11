@@ -45,9 +45,9 @@ public class PmGiftCondController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmGiftCond>> updatePartial(@PathVariable("id") String id, @RequestBody PmGiftCond entity) {
+    public ResponseEntity<ApiResponse<PmGiftCond>> updateSelective(@PathVariable("id") String id, @RequestBody PmGiftCond entity) {
         entity.setGiftCondId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

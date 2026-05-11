@@ -96,7 +96,7 @@ public class PdProdRelService {
     }
 
     @Transactional
-    public PdProdRel updatePartial(PdProdRel entity) {
+    public PdProdRel updateSelective(PdProdRel entity) {
         if (entity.getProdRelId() == null) throw new CmBizException("prodRelId 가 필요합니다.");
         if (!existsById(entity.getProdRelId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdRelId());

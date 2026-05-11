@@ -96,7 +96,7 @@ public class PdProdTagService {
     }
 
     @Transactional
-    public PdProdTag updatePartial(PdProdTag entity) {
+    public PdProdTag updateSelective(PdProdTag entity) {
         if (entity.getProdTagId() == null) throw new CmBizException("prodTagId 가 필요합니다.");
         if (!existsById(entity.getProdTagId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdTagId());

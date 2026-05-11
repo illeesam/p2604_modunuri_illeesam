@@ -96,7 +96,7 @@ public class PmEventBenefitService {
     }
 
     @Transactional
-    public PmEventBenefit updatePartial(PmEventBenefit entity) {
+    public PmEventBenefit updateSelective(PmEventBenefit entity) {
         if (entity.getBenefitId() == null) throw new CmBizException("benefitId 가 필요합니다.");
         if (!existsById(entity.getBenefitId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBenefitId());

@@ -45,9 +45,9 @@ public class PdCategoryController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdCategory>> updatePartial(@PathVariable("id") String id, @RequestBody PdCategory entity) {
+    public ResponseEntity<ApiResponse<PdCategory>> updateSelective(@PathVariable("id") String id, @RequestBody PdCategory entity) {
         entity.setCategoryId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

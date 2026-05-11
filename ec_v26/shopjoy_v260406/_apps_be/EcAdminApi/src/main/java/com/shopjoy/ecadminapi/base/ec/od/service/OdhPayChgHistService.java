@@ -96,7 +96,7 @@ public class OdhPayChgHistService {
     }
 
     @Transactional
-    public OdhPayChgHist updatePartial(OdhPayChgHist entity) {
+    public OdhPayChgHist updateSelective(OdhPayChgHist entity) {
         if (entity.getPayChgHistId() == null) throw new CmBizException("payChgHistId 가 필요합니다.");
         if (!existsById(entity.getPayChgHistId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPayChgHistId());

@@ -96,7 +96,7 @@ public class CmChattMsgService {
     }
 
     @Transactional
-    public CmChattMsg updatePartial(CmChattMsg entity) {
+    public CmChattMsg updateSelective(CmChattMsg entity) {
         if (entity.getChattMsgId() == null) throw new CmBizException("chattMsgId 가 필요합니다.");
         if (!existsById(entity.getChattMsgId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getChattMsgId());

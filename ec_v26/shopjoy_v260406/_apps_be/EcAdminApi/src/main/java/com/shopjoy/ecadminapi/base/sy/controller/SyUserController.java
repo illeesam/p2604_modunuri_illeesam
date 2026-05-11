@@ -59,10 +59,10 @@ public class SyUserController {
 
     /* ── 선택 필드 수정 (MyBatis selective) ── */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyUser>> updatePartial(
+    public ResponseEntity<ApiResponse<SyUser>> updateSelective(
             @PathVariable("id") String id, @RequestBody SyUser entity) {
         entity.setUserId(id);
-        SyUser result = service.updatePartial(entity);
+        SyUser result = service.updateSelective(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

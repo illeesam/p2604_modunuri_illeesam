@@ -45,9 +45,9 @@ public class SyVocController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVoc>> updatePartial(@PathVariable("id") String id, @RequestBody SyVoc entity) {
+    public ResponseEntity<ApiResponse<SyVoc>> updateSelective(@PathVariable("id") String id, @RequestBody SyVoc entity) {
         entity.setVocId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

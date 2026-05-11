@@ -108,9 +108,9 @@ public class SySiteService {
         return saved;
     }
 
-    /** updatePartial — 선택 필드 수정 (MyBatis selective UPDATE) */
+    /** updateSelective — 선택 필드 수정 (MyBatis selective UPDATE) */
     @Transactional
-    public SySite updatePartial(SySite entity) {
+    public SySite updateSelective(SySite entity) {
         if (entity.getSiteId() == null)
             throw new CmBizException("siteId 가 필요합니다.");
         if (!existsById(entity.getSiteId()))

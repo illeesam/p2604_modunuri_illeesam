@@ -45,9 +45,9 @@ public class PmCacheController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCache>> updatePartial(@PathVariable("id") String id, @RequestBody PmCache entity) {
+    public ResponseEntity<ApiResponse<PmCache>> updateSelective(@PathVariable("id") String id, @RequestBody PmCache entity) {
         entity.setCacheId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

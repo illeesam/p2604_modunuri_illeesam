@@ -45,9 +45,9 @@ public class SyVendorUserRoleController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorUserRole>> updatePartial(@PathVariable("id") String id, @RequestBody SyVendorUserRole entity) {
+    public ResponseEntity<ApiResponse<SyVendorUserRole>> updateSelective(@PathVariable("id") String id, @RequestBody SyVendorUserRole entity) {
         entity.setVendorUserRoleId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

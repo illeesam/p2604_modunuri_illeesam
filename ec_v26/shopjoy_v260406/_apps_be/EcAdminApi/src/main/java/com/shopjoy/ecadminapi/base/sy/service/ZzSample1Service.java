@@ -99,9 +99,9 @@ public class ZzSample1Service {
         return saved;
     }
 
-    /** updatePartial — 부분 수정 (selective) */
+    /** updateSelective — 부분 수정 (selective) */
     @Transactional
-    public int updatePartial(ZzSample1 entity) {
+    public int updateSelective(ZzSample1 entity) {
         return zzSample1Mapper.updateSelective(entity);
     }
 

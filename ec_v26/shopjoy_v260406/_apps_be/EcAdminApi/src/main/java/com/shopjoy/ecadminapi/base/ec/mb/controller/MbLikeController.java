@@ -45,9 +45,9 @@ public class MbLikeController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbLike>> updatePartial(@PathVariable("id") String id, @RequestBody MbLike entity) {
+    public ResponseEntity<ApiResponse<MbLike>> updateSelective(@PathVariable("id") String id, @RequestBody MbLike entity) {
         entity.setLikeId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

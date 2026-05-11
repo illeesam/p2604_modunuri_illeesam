@@ -96,7 +96,7 @@ public class SyVocService {
     }
 
     @Transactional
-    public SyVoc updatePartial(SyVoc entity) {
+    public SyVoc updateSelective(SyVoc entity) {
         if (entity.getVocId() == null) throw new CmBizException("vocId 가 필요합니다.");
         if (!existsById(entity.getVocId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVocId());

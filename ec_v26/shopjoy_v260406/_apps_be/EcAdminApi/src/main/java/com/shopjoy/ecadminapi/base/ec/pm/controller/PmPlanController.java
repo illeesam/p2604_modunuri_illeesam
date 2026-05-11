@@ -45,9 +45,9 @@ public class PmPlanController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmPlan>> updatePartial(@PathVariable("id") String id, @RequestBody PmPlan entity) {
+    public ResponseEntity<ApiResponse<PmPlan>> updateSelective(@PathVariable("id") String id, @RequestBody PmPlan entity) {
         entity.setPlanId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

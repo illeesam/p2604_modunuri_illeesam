@@ -45,9 +45,9 @@ public class MbhMemberTokenLogController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbhMemberTokenLog>> updatePartial(@PathVariable("id") String id, @RequestBody MbhMemberTokenLog entity) {
+    public ResponseEntity<ApiResponse<MbhMemberTokenLog>> updateSelective(@PathVariable("id") String id, @RequestBody MbhMemberTokenLog entity) {
         entity.setLogId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

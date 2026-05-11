@@ -96,7 +96,7 @@ public class PdProdSetItemService {
     }
 
     @Transactional
-    public PdProdSetItem updatePartial(PdProdSetItem entity) {
+    public PdProdSetItem updateSelective(PdProdSetItem entity) {
         if (entity.getSetItemId() == null) throw new CmBizException("setItemId 가 필요합니다.");
         if (!existsById(entity.getSetItemId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSetItemId());

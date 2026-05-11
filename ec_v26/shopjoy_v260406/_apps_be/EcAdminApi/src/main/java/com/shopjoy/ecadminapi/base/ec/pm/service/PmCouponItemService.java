@@ -96,7 +96,7 @@ public class PmCouponItemService {
     }
 
     @Transactional
-    public PmCouponItem updatePartial(PmCouponItem entity) {
+    public PmCouponItem updateSelective(PmCouponItem entity) {
         if (entity.getCouponItemId() == null) throw new CmBizException("couponItemId 가 필요합니다.");
         if (!existsById(entity.getCouponItemId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCouponItemId());

@@ -45,9 +45,9 @@ public class PmCouponController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCoupon>> updatePartial(@PathVariable("id") String id, @RequestBody PmCoupon entity) {
+    public ResponseEntity<ApiResponse<PmCoupon>> updateSelective(@PathVariable("id") String id, @RequestBody PmCoupon entity) {
         entity.setCouponId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

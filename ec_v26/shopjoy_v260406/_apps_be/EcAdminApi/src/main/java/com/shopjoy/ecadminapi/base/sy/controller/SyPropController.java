@@ -45,9 +45,9 @@ public class SyPropController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyProp>> updatePartial(@PathVariable("id") String id, @RequestBody SyProp entity) {
+    public ResponseEntity<ApiResponse<SyProp>> updateSelective(@PathVariable("id") String id, @RequestBody SyProp entity) {
         entity.setPropId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

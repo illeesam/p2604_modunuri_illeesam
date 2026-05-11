@@ -96,7 +96,7 @@ public class PdDlivTmpltService {
     }
 
     @Transactional
-    public PdDlivTmplt updatePartial(PdDlivTmplt entity) {
+    public PdDlivTmplt updateSelective(PdDlivTmplt entity) {
         if (entity.getDlivTmpltId() == null) throw new CmBizException("dlivTmpltId 가 필요합니다.");
         if (!existsById(entity.getDlivTmpltId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDlivTmpltId());

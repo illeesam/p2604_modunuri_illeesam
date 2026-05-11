@@ -45,9 +45,9 @@ public class PmSaveUsageController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSaveUsage>> updatePartial(@PathVariable("id") String id, @RequestBody PmSaveUsage entity) {
+    public ResponseEntity<ApiResponse<PmSaveUsage>> updateSelective(@PathVariable("id") String id, @RequestBody PmSaveUsage entity) {
         entity.setSaveUsageId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")

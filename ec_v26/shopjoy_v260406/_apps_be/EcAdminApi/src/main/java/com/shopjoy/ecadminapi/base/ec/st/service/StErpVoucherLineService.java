@@ -96,7 +96,7 @@ public class StErpVoucherLineService {
     }
 
     @Transactional
-    public StErpVoucherLine updatePartial(StErpVoucherLine entity) {
+    public StErpVoucherLine updateSelective(StErpVoucherLine entity) {
         if (entity.getErpVoucherLineId() == null) throw new CmBizException("erpVoucherLineId 가 필요합니다.");
         if (!existsById(entity.getErpVoucherLineId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getErpVoucherLineId());

@@ -45,9 +45,9 @@ public class MbMemberGroupController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGroup>> updatePartial(@PathVariable("id") String id, @RequestBody MbMemberGroup entity) {
+    public ResponseEntity<ApiResponse<MbMemberGroup>> updateSelective(@PathVariable("id") String id, @RequestBody MbMemberGroup entity) {
         entity.setMemberGroupId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updatePartial(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
     @DeleteMapping("/{id}")
