@@ -5,6 +5,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -136,7 +137,38 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         if (StringUtils.hasText(s.getSiteId())) b.and(syUser.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getDeptId())) b.and(syUser.deptId.eq(s.getDeptId()));
         if (StringUtils.hasText(s.getStatus())) b.and(syUser.userStatusCd.eq(s.getStatus()));
-        // 추가 검색 조건은 MyBatis처럼 복잡하므로 간단히 구현. 필요시 확장
+        // 추가 검색 조건은 MyBatis처럼 복잡하므로 간단히 구현. 필요시 확장// 1. siteId 조건 (exists 사용)
+        // if (StringUtils.hasText(s.getSiteId())) {
+        //     b.and(JPAExpressions
+        //             .selectOne()
+        //             .from(sySite)
+        //             .where(sySite.siteId.eq(syUser.siteId)
+        //                     .and(sySite.siteId.eq(s.getSiteId())))
+        //             .exists());
+        // }
+
+        // // 2. deptId 조건 (exists 사용)
+        // if (StringUtils.hasText(s.getDeptId())) {
+        //     b.and(JPAExpressions
+        //             .selectOne()
+        //             .from(syDept)
+        //             .where(syDept.deptId.eq(syUser.deptId)
+        //                     .and(syDept.deptId.eq(s.getDeptId())))
+        //             .exists());
+        // }
+
+        // // 3. status 조건 (단일 테이블 내 exists 혹은 eq)
+        // // userStatusCd는 syUser의 컬럼이므로 exists로 돌리려면 자기 자신을 조회하거나 
+        // // 공통 코드 테이블(syCode) 기준으로 체크해야 합니다.
+        // if (StringUtils.hasText(s.getStatus())) {
+        //     b.and(JPAExpressions
+        //             .selectOne()
+        //             .from(syCode_userStatusCd)
+        //             .where(syCode_userStatusCd.codeGrp.eq("USER_STATUS")
+        //                     .and(syCode_userStatusCd.codeValue.eq(syUser.userStatusCd))
+        //                     .and(syCode_userStatusCd.codeValue.eq(s.getStatus())))
+        //             .exists());
+        // }
         return b;
     }
 

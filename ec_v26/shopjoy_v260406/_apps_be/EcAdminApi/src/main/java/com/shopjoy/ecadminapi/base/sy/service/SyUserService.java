@@ -51,7 +51,6 @@ public class SyUserService {
 
     /** getList — 목록조회 (QueryDSL Request 받아 Map 변환 후 Repository 호출 — DTO 타입 안전 + Repository missing field 안전) */
     public List<SyUserDto.Item> getList(SyUserDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
         return syUserRepository.selectList(req);
     }
 
