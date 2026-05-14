@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.base.ec.cm.repository;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogCate;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogCateRepository;
 
 public interface CmBlogCateRepository extends JpaRepository<CmBlogCate, String>, QCmBlogCateRepository {
 }

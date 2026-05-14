@@ -1,0 +1,175 @@
+package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
+
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDiscntDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItemDiscnt;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItem;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItemDiscnt;
+import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderItemDiscntRepository;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/** OdOrderItemDiscnt QueryDSL Custom 구현체 */
+@RequiredArgsConstructor
+public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepository {
+
+    private final JPAQueryFactory queryFactory;
+    private static final QOdOrderItemDiscnt d   = QOdOrderItemDiscnt.odOrderItemDiscnt;
+    private static final QSySite            ste = new QSySite("ste");
+    private static final QOdOrder           ord = new QOdOrder("ord");
+    private static final QOdOrderItem       ite = new QOdOrderItem("ite");
+    private static final QPmCoupon          cpn = new QPmCoupon("cpn");
+    private static final QSyCode            cdOidt = new QSyCode("cd_oidt");
+
+    @Override
+    public Optional<OdOrderItemDiscntDto.Item> selectById(String itemDiscntId) {
+        OdOrderItemDiscntDto.Item dto = baseListQuery()
+                .where(d.itemDiscntId.eq(itemDiscntId))
+                .fetchOne();
+        return Optional.ofNullable(dto);
+    }
+
+    @Override
+    public List<OdOrderItemDiscntDto.Item> selectList(OdOrderItemDiscntDto.Request search) {
+        BooleanBuilder where = buildCondition(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+
+        JPAQuery<OdOrderItemDiscntDto.Item> query = baseListQuery().where(where);
+        if (!orderList.isEmpty()) {
+            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
+        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
+            int offset = (pageNo - 1) * pageSize;
+            query.offset(offset).limit(pageSize);
+        }
+        return query.fetch();
+    }
+
+    @Override
+    public OdOrderItemDiscntDto.PageResponse selectPageList(OdOrderItemDiscntDto.Request search) {
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int offset   = (pageNo - 1) * pageSize;
+
+        BooleanBuilder where = buildCondition(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+
+        JPAQuery<OdOrderItemDiscntDto.Item> query = baseListQuery().where(where);
+        if (!orderList.isEmpty()) {
+            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        List<OdOrderItemDiscntDto.Item> content = query.offset(offset).limit(pageSize).fetch();
+
+        Long total = queryFactory
+                .select(d.count())
+                .from(d)
+                .where(where)
+                .fetchOne();
+
+        OdOrderItemDiscntDto.PageResponse res = new OdOrderItemDiscntDto.PageResponse();
+        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+    }
+
+    /** 목록/페이지/단건 공용 base query */
+    private JPAQuery<OdOrderItemDiscntDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(OdOrderItemDiscntDto.Item.class,
+                        d.itemDiscntId, d.siteId, d.orderId, d.orderItemId,
+                        d.discntTypeCd, d.couponId, d.couponIssueId,
+                        d.discntRate, d.unitDiscntAmt, d.totalDiscntAmt, d.orderQty,
+                        d.regBy, d.regDate
+                ))
+                .from(d)
+                .leftJoin(ste).on(ste.siteId.eq(d.siteId))
+                .leftJoin(ord).on(ord.orderId.eq(d.orderId))
+                .leftJoin(ite).on(ite.orderItemId.eq(d.orderItemId))
+                .leftJoin(cpn).on(cpn.couponId.eq(d.couponId))
+                .leftJoin(cdOidt).on(cdOidt.codeGrp.eq("ORDER_ITEM_DISCNT_TYPE").and(cdOidt.codeValue.eq(d.discntTypeCd)));
+    }
+
+    private BooleanBuilder buildCondition(OdOrderItemDiscntDto.Request s) {
+        BooleanBuilder w = new BooleanBuilder();
+        if (s == null) return w;
+
+        if (StringUtils.hasText(s.getSiteId()))       w.and(d.siteId.eq(s.getSiteId()));
+        if (StringUtils.hasText(s.getItemDiscntId())) w.and(d.itemDiscntId.eq(s.getItemDiscntId()));
+
+        // dateType + dateStart + dateEnd
+        if (StringUtils.hasText(s.getDateType())
+                && StringUtils.hasText(s.getDateStart())
+                && StringUtils.hasText(s.getDateEnd())) {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
+            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+            switch (s.getDateType()) {
+                case "reg_date":
+                    w.and(d.regDate.goe(start)).and(d.regDate.lt(endExcl)); break;
+                case "upd_date":
+                    w.and(d.updDate.goe(start)).and(d.updDate.lt(endExcl)); break;
+                default: break;
+            }
+        }
+        return w;
+    }
+
+    @SuppressWarnings({"rawtypes","unchecked"})
+    private List<OrderSpecifier<?>> buildOrder(OdOrderItemDiscntDto.Request s) {
+        List<OrderSpecifier<?>> orders = new ArrayList<>();
+        String sort = s == null ? null : s.getSort();
+        if (!StringUtils.hasText(sort)) {
+            orders.add(new OrderSpecifier(Order.DESC, d.regDate));
+            return orders;
+        }
+        switch (sort) {
+            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  d.itemDiscntId)); break;
+            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, d.itemDiscntId)); break;
+            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  d.regDate));      break;
+            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, d.regDate));      break;
+            default:         orders.add(new OrderSpecifier(Order.DESC, d.regDate));      break;
+        }
+        return orders;
+    }
+
+    @Override
+    public int updateSelective(OdOrderItemDiscnt entity) {
+        if (entity.getItemDiscntId() == null) return 0;
+
+        JPAUpdateClause update = queryFactory.update(d);
+        boolean hasAny = false;
+
+        if (entity.getSiteId()         != null) { update.set(d.siteId,         entity.getSiteId());         hasAny = true; }
+        if (entity.getOrderId()        != null) { update.set(d.orderId,        entity.getOrderId());        hasAny = true; }
+        if (entity.getOrderItemId()    != null) { update.set(d.orderItemId,    entity.getOrderItemId());    hasAny = true; }
+        if (entity.getDiscntTypeCd()   != null) { update.set(d.discntTypeCd,   entity.getDiscntTypeCd());   hasAny = true; }
+        if (entity.getCouponId()       != null) { update.set(d.couponId,       entity.getCouponId());       hasAny = true; }
+        if (entity.getCouponIssueId()  != null) { update.set(d.couponIssueId,  entity.getCouponIssueId());  hasAny = true; }
+        if (entity.getDiscntRate()     != null) { update.set(d.discntRate,     entity.getDiscntRate());     hasAny = true; }
+        if (entity.getUnitDiscntAmt()  != null) { update.set(d.unitDiscntAmt,  entity.getUnitDiscntAmt());  hasAny = true; }
+        if (entity.getTotalDiscntAmt() != null) { update.set(d.totalDiscntAmt, entity.getTotalDiscntAmt()); hasAny = true; }
+        if (entity.getOrderQty()       != null) { update.set(d.orderQty,       entity.getOrderQty());       hasAny = true; }
+
+        if (!hasAny) return 0;
+
+        long affected = update.where(d.itemDiscntId.eq(entity.getItemDiscntId())).execute();
+        return (int) affected;
+    }
+}
