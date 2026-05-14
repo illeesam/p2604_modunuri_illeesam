@@ -147,6 +147,10 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyVendorUserDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -155,14 +159,21 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
             orders.add(new OrderSpecifier(Order.DESC, u.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  u.vendorUserId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, u.vendorUserId)); break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  u.memberNm));     break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, u.memberNm));     break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  u.joinDate));     break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, u.joinDate));     break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, u.regDate));      break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("vendorUserId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, u.vendorUserId));
+                } else if ("memberNm".equals(field)) {
+                    orders.add(new OrderSpecifier(order, u.memberNm));
+                } else if ("joinDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, u.joinDate));
+                }
+            }
         }
         return orders;
     }

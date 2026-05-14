@@ -191,9 +191,8 @@ window.SyCodeMng = {
 
     // grpSortKey → API sort 파라미터 매핑
     const GRP_SORT_MAP = {
-      codeGrp:     { asc: 'code_grp_asc',  desc: 'code_grp_desc'  },
-      grpNm:       { asc: 'nm_asc',         desc: 'nm_desc'         },
-      description: { asc: 'desc_asc',        desc: 'desc_desc'       },
+      codeGrp: { asc: 'codeGrp asc', desc: 'codeGrp desc' },
+      grpNm:   { asc: 'grpNm asc',   desc: 'grpNm desc'   },
     };
 
     const cfGrpSortParam = () => {

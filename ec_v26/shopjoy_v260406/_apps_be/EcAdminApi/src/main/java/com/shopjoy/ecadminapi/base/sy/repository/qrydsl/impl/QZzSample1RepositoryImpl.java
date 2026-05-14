@@ -123,6 +123,10 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(ZzSample1Dto.Request search) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -131,12 +135,19 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
             orders.add(new OrderSpecifier(Order.DESC, s.regDt));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  s.sample1Id)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, s.sample1Id)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  s.regDt));     break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, s.regDt));     break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, s.regDt));     break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("sample1Id".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.sample1Id));
+                } else if ("regDt".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.regDt));
+                }
+            }
         }
         return orders;
     }

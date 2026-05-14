@@ -216,6 +216,10 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(StSettleRawDto.Request c) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -224,14 +228,21 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
             orders.add(new OrderSpecifier(Order.DESC, r.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  r.settleRawId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, r.settleRawId)); break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  r.prodNm));      break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, r.prodNm));      break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  r.orderDate));   break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, r.orderDate));   break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, r.regDate));     break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("settleRawId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, r.settleRawId));
+                } else if ("prodNm".equals(field)) {
+                    orders.add(new OrderSpecifier(order, r.prodNm));
+                } else if ("orderDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, r.orderDate));
+                }
+            }
         }
         return orders;
     }

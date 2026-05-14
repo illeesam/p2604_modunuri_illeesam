@@ -176,6 +176,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
+    @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyUserDto.Request s) {
         if (!StringUtils.hasText(s.getSort())) return new ArrayList<>();
         String[] sortParts = s.getSort().split(",");
@@ -187,25 +188,16 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 String field = fieldAndDir[0];
                 String dir = fieldAndDir[1];
                 Order order = "desc".equalsIgnoreCase(dir) ? Order.DESC : Order.ASC;
-                switch (field) {
-                    case "userId":
-                        orders.add(new OrderSpecifier(order, syUser.userId));
-                        break;
-                    case "userNm":
-                        orders.add(new OrderSpecifier(order, syUser.userNm));
-                        break;
-                    case "loginId":
-                        orders.add(new OrderSpecifier(order, syUser.loginId));
-                        break;
-                    case "regDate":
-                        orders.add(new OrderSpecifier(order, syUser.regDate));
-                        break;
-                    case "updDate":
-                        orders.add(new OrderSpecifier(order, syUser.updDate));
-                        break;
-                    default:
-                        // 기본 정렬 없음
-                        break;
+                if ("userId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, syUser.userId));
+                } else if ("userNm".equals(field)) {
+                    orders.add(new OrderSpecifier(order, syUser.userNm));
+                } else if ("loginId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, syUser.loginId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, syUser.regDate));
+                } else if ("updDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, syUser.updDate));
                 }
             }
         }

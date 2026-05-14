@@ -138,8 +138,8 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     }
 
     /**
-     * 정렬조건 빌드 — Mapper XML 정렬절과 동일 토큰
-     * @param withSortOrd selectList 의 default 는 sort_ord asc, reg_date desc 이지만 selectPageList 는 reg_date desc
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdReviewAttachDto.Request s, boolean withSortOrd) {
@@ -154,19 +154,21 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
             }
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  a.reviewAttachId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, a.reviewAttachId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  a.regDate));        break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, a.regDate));        break;
-            default:
-                if (withSortOrd) {
-                    orders.add(new OrderSpecifier(Order.ASC, a.sortOrd));
-                    orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-                } else {
-                    orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-                }
-                break;
+        if ("id_asc".equals(sort)) {
+            orders.add(new OrderSpecifier(Order.ASC,  a.reviewAttachId));
+        } else if ("id_desc".equals(sort)) {
+            orders.add(new OrderSpecifier(Order.DESC, a.reviewAttachId));
+        } else if ("reg_asc".equals(sort)) {
+            orders.add(new OrderSpecifier(Order.ASC,  a.regDate));
+        } else if ("reg_desc".equals(sort)) {
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+        } else {
+            if (withSortOrd) {
+                orders.add(new OrderSpecifier(Order.ASC, a.sortOrd));
+                orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            } else {
+                orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            }
         }
         return orders;
     }

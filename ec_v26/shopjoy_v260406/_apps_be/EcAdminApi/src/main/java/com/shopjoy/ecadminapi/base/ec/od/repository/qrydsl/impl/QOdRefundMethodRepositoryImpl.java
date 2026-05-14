@@ -131,6 +131,10 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(OdRefundMethodDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -139,12 +143,19 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
             orders.add(new OrderSpecifier(Order.DESC, m.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  m.refundMethodId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, m.refundMethodId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  m.regDate));        break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, m.regDate));        break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, m.regDate));        break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("refundMethodId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, m.refundMethodId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, m.regDate));
+                }
+            }
         }
         return orders;
     }

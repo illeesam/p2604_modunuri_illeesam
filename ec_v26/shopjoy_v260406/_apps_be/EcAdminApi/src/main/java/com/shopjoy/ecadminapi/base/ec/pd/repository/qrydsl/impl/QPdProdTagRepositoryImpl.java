@@ -117,6 +117,10 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdProdTagDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -125,12 +129,19 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
             orders.add(new OrderSpecifier(Order.DESC, t.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  t.prodTagId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, t.prodTagId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  t.regDate));   break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, t.regDate));   break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, t.regDate));   break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("prodTagId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, t.prodTagId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, t.regDate));
+                }
+            }
         }
         return orders;
     }

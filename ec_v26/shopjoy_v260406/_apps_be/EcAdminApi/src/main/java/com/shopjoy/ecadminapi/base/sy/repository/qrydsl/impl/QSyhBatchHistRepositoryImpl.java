@@ -144,6 +144,10 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyhBatchHistDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -152,14 +156,21 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
             orders.add(new OrderSpecifier(Order.DESC, h.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  h.batchHistId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, h.batchHistId)); break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  h.batchNm));     break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, h.batchNm));     break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  h.regDate));     break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, h.regDate));     break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, h.regDate));     break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("batchHistId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, h.batchHistId));
+                } else if ("batchNm".equals(field)) {
+                    orders.add(new OrderSpecifier(order, h.batchNm));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, h.regDate));
+                }
+            }
         }
         return orders;
     }

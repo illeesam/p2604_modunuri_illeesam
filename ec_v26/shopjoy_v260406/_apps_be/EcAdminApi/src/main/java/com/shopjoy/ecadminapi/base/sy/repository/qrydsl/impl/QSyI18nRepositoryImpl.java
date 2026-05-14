@@ -105,6 +105,10 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyI18nDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -113,12 +117,19 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
             orders.add(new OrderSpecifier(Order.DESC, i.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  i.i18nId));  break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, i.i18nId));  break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  i.regDate)); break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, i.regDate)); break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, i.regDate)); break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("i18nId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, i.i18nId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, i.regDate));
+                }
+            }
         }
         return orders;
     }

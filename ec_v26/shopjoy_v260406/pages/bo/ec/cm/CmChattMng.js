@@ -37,7 +37,7 @@ window.CmChattMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};

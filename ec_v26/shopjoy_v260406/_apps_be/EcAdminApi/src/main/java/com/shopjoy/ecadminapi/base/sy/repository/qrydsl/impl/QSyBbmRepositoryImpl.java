@@ -118,6 +118,10 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyBbmDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -126,14 +130,21 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
             orders.add(new OrderSpecifier(Order.DESC, b.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  b.bbmId));   break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, b.bbmId));   break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  b.bbmNm));   break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, b.bbmNm));   break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  b.regDate)); break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, b.regDate)); break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, b.regDate)); break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("bbmId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, b.bbmId));
+                } else if ("bbmNm".equals(field)) {
+                    orders.add(new OrderSpecifier(order, b.bbmNm));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, b.regDate));
+                }
+            }
         }
         return orders;
     }

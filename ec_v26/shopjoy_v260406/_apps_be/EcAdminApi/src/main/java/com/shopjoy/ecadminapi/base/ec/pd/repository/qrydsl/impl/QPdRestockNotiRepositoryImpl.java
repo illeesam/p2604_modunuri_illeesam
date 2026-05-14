@@ -121,6 +121,10 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdRestockNotiDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -129,12 +133,19 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
             orders.add(new OrderSpecifier(Order.DESC, n.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  n.restockNotiId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, n.restockNotiId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  n.regDate));       break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, n.regDate));       break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, n.regDate));       break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("restockNotiId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, n.restockNotiId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, n.regDate));
+                }
+            }
         }
         return orders;
     }

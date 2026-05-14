@@ -129,6 +129,10 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(OdOrderDiscntDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -137,12 +141,19 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
             orders.add(new OrderSpecifier(Order.DESC, d.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  d.orderDiscntId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, d.orderDiscntId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  d.regDate));       break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, d.regDate));       break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, d.regDate));       break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("orderDiscntId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, d.orderDiscntId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, d.regDate));
+                }
+            }
         }
         return orders;
     }

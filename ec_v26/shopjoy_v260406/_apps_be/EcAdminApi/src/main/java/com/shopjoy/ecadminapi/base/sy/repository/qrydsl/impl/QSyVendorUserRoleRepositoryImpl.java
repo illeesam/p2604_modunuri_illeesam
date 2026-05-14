@@ -130,6 +130,10 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyVendorUserRoleDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -138,12 +142,19 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
             orders.add(new OrderSpecifier(Order.DESC, r.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  r.vendorUserRoleId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, r.vendorUserRoleId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  r.regDate));          break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, r.regDate));          break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, r.regDate));          break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("vendorUserRoleId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, r.vendorUserRoleId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, r.regDate));
+                }
+            }
         }
         return orders;
     }

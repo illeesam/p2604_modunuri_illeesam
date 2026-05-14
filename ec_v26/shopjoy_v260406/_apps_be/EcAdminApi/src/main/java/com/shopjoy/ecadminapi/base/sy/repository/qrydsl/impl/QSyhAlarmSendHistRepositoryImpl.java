@@ -134,6 +134,10 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyhAlarmSendHistDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -142,12 +146,19 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
             orders.add(new OrderSpecifier(Order.DESC, h.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  h.sendHistId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, h.sendHistId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  h.sendDate));   break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, h.sendDate));   break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, h.regDate));    break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("sendHistId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, h.sendHistId));
+                } else if ("sendDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, h.sendDate));
+                }
+            }
         }
         return orders;
     }

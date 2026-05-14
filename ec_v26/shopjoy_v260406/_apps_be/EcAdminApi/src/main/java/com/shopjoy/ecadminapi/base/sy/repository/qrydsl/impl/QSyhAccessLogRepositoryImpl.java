@@ -124,10 +124,18 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyhAccessLogDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        orders.add(new OrderSpecifier(Order.DESC, l.reqDt));
+        String sort = s == null ? null : s.getSort();
+        if (!StringUtils.hasText(sort)) {
+            orders.add(new OrderSpecifier(Order.DESC, l.reqDt));
+            return orders;
+        }
         return orders;
     }
 }

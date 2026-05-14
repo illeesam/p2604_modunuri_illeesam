@@ -122,6 +122,10 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(StSettleAdjDto.Request c) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -130,12 +134,19 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
             orders.add(new OrderSpecifier(Order.DESC, a.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  a.settleAdjId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, a.settleAdjId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  a.regDate));     break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, a.regDate));     break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, a.regDate));     break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("settleAdjId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, a.settleAdjId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, a.regDate));
+                }
+            }
         }
         return orders;
     }

@@ -154,6 +154,10 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PmCouponIssueDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -162,12 +166,19 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
             orders.add(new OrderSpecifier(Order.DESC, ci.issueDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  ci.issueId));   break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, ci.issueId));   break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  ci.issueDate)); break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, ci.issueDate)); break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, ci.issueDate)); break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("issueId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, ci.issueId));
+                } else if ("issueDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, ci.issueDate));
+                }
+            }
         }
         return orders;
     }

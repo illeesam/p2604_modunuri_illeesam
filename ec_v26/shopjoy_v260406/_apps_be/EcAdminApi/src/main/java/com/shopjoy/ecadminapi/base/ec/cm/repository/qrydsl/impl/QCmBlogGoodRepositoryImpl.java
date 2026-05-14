@@ -121,8 +121,11 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         return w;
     }
 
-    /** 정렬조건 빌드 */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
+    @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(CmBlogGoodDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
@@ -130,12 +133,19 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
             orders.add(new OrderSpecifier(Order.DESC, g.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  g.likeId));   break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, g.likeId));   break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  g.regDate));  break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, g.regDate));  break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, g.regDate));  break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("likeId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, g.likeId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, g.regDate));
+                }
+            }
         }
         return orders;
     }

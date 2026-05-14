@@ -111,26 +111,33 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(ZzSample0Dto.Request search) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = search == null ? null : search.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC,  s.sortOrd));
-            orders.add(new OrderSpecifier(Order.DESC, s.regDate));
+            orders.add(new OrderSpecifier(Order.ASC, s.sortOrd));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  s.sample0Id));  break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, s.sample0Id));  break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  s.sampleName)); break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, s.sampleName)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  s.regDate));    break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, s.regDate));    break;
-            default:
-                orders.add(new OrderSpecifier(Order.ASC,  s.sortOrd));
-                orders.add(new OrderSpecifier(Order.DESC, s.regDate));
-                break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("sample0Id".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.sample0Id));
+                } else if ("sampleName".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.sampleName));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.regDate));
+                }
+            }
         }
         return orders;
     }

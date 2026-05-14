@@ -103,19 +103,33 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         return w2;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(DpWidgetDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
-        if (!StringUtils.hasText(sort)) { orders.add(new OrderSpecifier(Order.DESC, w.regDate)); return orders; }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  w.widgetId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, w.widgetId)); break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  w.widgetNm)); break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, w.widgetNm)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  w.regDate));  break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, w.regDate));  break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, w.regDate));  break;
+        if (!StringUtils.hasText(sort)) {
+            orders.add(new OrderSpecifier(Order.DESC, w.regDate));
+            return orders;
+        }
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("widgetId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, w.widgetId));
+                } else if ("widgetNm".equals(field)) {
+                    orders.add(new OrderSpecifier(order, w.widgetNm));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, w.regDate));
+                }
+            }
         }
         return orders;
     }

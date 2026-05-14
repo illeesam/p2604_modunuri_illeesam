@@ -161,6 +161,10 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyhUserTokenLogDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -169,12 +173,19 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
             orders.add(new OrderSpecifier(Order.DESC, l.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  l.logId));   break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, l.logId));   break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  l.regDate)); break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, l.regDate)); break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, l.regDate)); break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("logId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, l.logId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, l.regDate));
+                }
+            }
         }
         return orders;
     }

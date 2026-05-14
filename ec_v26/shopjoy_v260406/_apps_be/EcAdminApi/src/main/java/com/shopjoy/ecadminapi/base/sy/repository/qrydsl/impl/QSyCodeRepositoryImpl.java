@@ -130,25 +130,28 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyCodeDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
-        if (!StringUtils.hasText(sort)) {
-            // 기본 정렬: sort_ord ASC (NULLS LAST), code_id ASC
-            orders.add(new OrderSpecifier(Order.ASC, c.sortOrd).nullsLast());
-            orders.add(new OrderSpecifier(Order.ASC, c.codeId));
-            return orders;
-        }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  c.codeId));  break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, c.codeId));  break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  c.regDate)); break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, c.regDate)); break;
-            default:
-                orders.add(new OrderSpecifier(Order.ASC, c.sortOrd).nullsLast());
-                orders.add(new OrderSpecifier(Order.ASC, c.codeId));
-                break;
+        if (!StringUtils.hasText(sort)) return orders;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("codeId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, c.codeId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, c.regDate));
+                }
+            }
         }
         return orders;
     }

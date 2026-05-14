@@ -132,6 +132,10 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SySiteDto.Request q) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -140,14 +144,21 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
             orders.add(new OrderSpecifier(Order.DESC, s.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  s.siteId));  break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, s.siteId));  break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  s.siteNm));  break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, s.siteNm));  break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  s.regDate)); break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, s.regDate)); break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, s.regDate)); break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("siteId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.siteId));
+                } else if ("siteNm".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.siteNm));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.regDate));
+                }
+            }
         }
         return orders;
     }

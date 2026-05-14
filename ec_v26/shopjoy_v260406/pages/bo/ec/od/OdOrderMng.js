@@ -16,7 +16,7 @@ window.OdOrderMng = {
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
 
-    const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const SORT_MAP = { reg: { asc: 'orderDate asc', desc: 'orderDate desc' } };
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};

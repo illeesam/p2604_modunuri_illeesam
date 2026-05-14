@@ -106,6 +106,10 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyPropDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -114,12 +118,19 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
             orders.add(new OrderSpecifier(Order.DESC, p.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  p.propId));  break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, p.propId));  break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  p.regDate)); break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, p.regDate)); break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, p.regDate)); break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("propId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, p.propId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, p.regDate));
+                }
+            }
         }
         return orders;
     }

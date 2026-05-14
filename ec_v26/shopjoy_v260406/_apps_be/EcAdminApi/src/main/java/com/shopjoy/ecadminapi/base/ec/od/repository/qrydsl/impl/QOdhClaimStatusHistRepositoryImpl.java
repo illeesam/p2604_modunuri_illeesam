@@ -105,6 +105,10 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(OdhClaimStatusHistDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -113,12 +117,19 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
             orders.add(new OrderSpecifier(Order.DESC, h.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  h.claimStatusHistId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, h.claimStatusHistId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  h.regDate));           break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, h.regDate));           break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, h.regDate));           break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("claimStatusHistId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, h.claimStatusHistId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, h.regDate));
+                }
+            }
         }
         return orders;
     }

@@ -14,7 +14,7 @@ window.SyContactMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ contact_status: [], contact_categories: [], date_range_opts: [] });
 
-    const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};

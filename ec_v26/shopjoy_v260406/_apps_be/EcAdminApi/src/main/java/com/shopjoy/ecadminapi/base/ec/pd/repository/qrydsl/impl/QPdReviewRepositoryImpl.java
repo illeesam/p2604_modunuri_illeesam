@@ -133,7 +133,10 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         return w;
     }
 
-    /** 정렬조건 빌드 — Mapper XML pdReviewSort 와 동일 토큰 */
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdReviewDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -142,14 +145,21 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
             orders.add(new OrderSpecifier(Order.DESC, r.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  r.reviewId));    break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, r.reviewId));    break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  r.reviewTitle)); break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, r.reviewTitle)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  r.regDate));     break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, r.regDate));     break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, r.regDate));     break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("reviewId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, r.reviewId));
+                } else if ("reviewTitle".equals(field)) {
+                    orders.add(new OrderSpecifier(order, r.reviewTitle));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, r.regDate));
+                }
+            }
         }
         return orders;
     }

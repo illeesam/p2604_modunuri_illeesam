@@ -36,7 +36,7 @@ window.PdDlivTmpltMng = {
     const _initSearchParam = () => ({ method: '', use: '' });
     const searchParam = reactive(_initSearchParam());
 
-    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' } };
+    const SORT_MAP = { nm: { asc: 'dlivTmpltNm asc', desc: 'dlivTmpltNm desc' } };
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};

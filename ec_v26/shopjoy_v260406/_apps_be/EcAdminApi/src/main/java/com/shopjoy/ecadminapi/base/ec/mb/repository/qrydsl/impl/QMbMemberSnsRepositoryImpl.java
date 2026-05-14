@@ -97,17 +97,31 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(MbMemberSnsDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
-        if (!StringUtils.hasText(sort)) { orders.add(new OrderSpecifier(Order.DESC, m.regDate)); return orders; }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  m.memberSnsId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, m.memberSnsId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  m.regDate));     break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, m.regDate));     break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, m.regDate));     break;
+        if (!StringUtils.hasText(sort)) {
+            orders.add(new OrderSpecifier(Order.DESC, m.regDate));
+            return orders;
+        }
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("memberSnsId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, m.memberSnsId));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, m.regDate));
+                }
+            }
         }
         return orders;
     }

@@ -160,6 +160,10 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(OdOrderItemDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -168,14 +172,21 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
             orders.add(new OrderSpecifier(Order.DESC, oi.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  oi.orderItemId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, oi.orderItemId)); break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  oi.prodNm));      break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, oi.prodNm));      break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  oi.regDate));     break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, oi.regDate));     break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, oi.regDate));     break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("orderItemId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, oi.orderItemId));
+                } else if ("prodNm".equals(field)) {
+                    orders.add(new OrderSpecifier(order, oi.prodNm));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, oi.regDate));
+                }
+            }
         }
         return orders;
     }

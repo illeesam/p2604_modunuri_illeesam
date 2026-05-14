@@ -129,6 +129,10 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyCodeGrpDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -137,18 +141,23 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
             orders.add(new OrderSpecifier(Order.DESC, g.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":        orders.add(new OrderSpecifier(Order.ASC,  g.codeGrpId));   break;
-            case "id_desc":       orders.add(new OrderSpecifier(Order.DESC, g.codeGrpId));   break;
-            case "nm_asc":        orders.add(new OrderSpecifier(Order.ASC,  g.grpNm));       break;
-            case "nm_desc":       orders.add(new OrderSpecifier(Order.DESC, g.grpNm));       break;
-            case "code_grp_asc":  orders.add(new OrderSpecifier(Order.ASC,  g.codeGrp));     break;
-            case "code_grp_desc": orders.add(new OrderSpecifier(Order.DESC, g.codeGrp));     break;
-            case "desc_asc":      orders.add(new OrderSpecifier(Order.ASC,  g.codeGrpDesc).nullsLast()); break;
-            case "desc_desc":     orders.add(new OrderSpecifier(Order.DESC, g.codeGrpDesc).nullsLast()); break;
-            case "reg_asc":       orders.add(new OrderSpecifier(Order.ASC,  g.regDate));     break;
-            case "reg_desc":      orders.add(new OrderSpecifier(Order.DESC, g.regDate));     break;
-            default:              orders.add(new OrderSpecifier(Order.DESC, g.regDate));     break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("codeGrpId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, g.codeGrpId));
+                } else if ("grpNm".equals(field)) {
+                    orders.add(new OrderSpecifier(order, g.grpNm));
+                } else if ("codeGrp".equals(field)) {
+                    orders.add(new OrderSpecifier(order, g.codeGrp));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, g.regDate));
+                }
+            }
         }
         return orders;
     }

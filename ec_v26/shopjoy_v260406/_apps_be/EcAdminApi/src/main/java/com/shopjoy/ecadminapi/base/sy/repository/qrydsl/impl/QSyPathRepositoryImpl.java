@@ -93,6 +93,10 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder() {
         List<OrderSpecifier<?>> orders = new ArrayList<>();

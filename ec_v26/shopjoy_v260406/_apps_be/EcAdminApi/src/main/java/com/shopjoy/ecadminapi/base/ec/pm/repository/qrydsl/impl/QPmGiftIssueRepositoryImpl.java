@@ -134,6 +134,10 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PmGiftIssueDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -142,12 +146,19 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
             orders.add(new OrderSpecifier(Order.DESC, i.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  i.giftIssueId)); break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, i.giftIssueId)); break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  i.issueDate));   break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, i.issueDate));   break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, i.regDate));     break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("giftIssueId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, i.giftIssueId));
+                } else if ("issueDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, i.issueDate));
+                }
+            }
         }
         return orders;
     }

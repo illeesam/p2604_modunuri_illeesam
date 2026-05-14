@@ -133,6 +133,10 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         return w;
     }
 
+    /**
+     * 정렬조건 빌드
+     * 예: "userId asc, userNm desc, regDate asc"
+     */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyAlarmDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -141,14 +145,21 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
             orders.add(new OrderSpecifier(Order.DESC, a.regDate));
             return orders;
         }
-        switch (sort) {
-            case "id_asc":   orders.add(new OrderSpecifier(Order.ASC,  a.alarmId));       break;
-            case "id_desc":  orders.add(new OrderSpecifier(Order.DESC, a.alarmId));       break;
-            case "nm_asc":   orders.add(new OrderSpecifier(Order.ASC,  a.alarmTitle));    break;
-            case "nm_desc":  orders.add(new OrderSpecifier(Order.DESC, a.alarmTitle));    break;
-            case "reg_asc":  orders.add(new OrderSpecifier(Order.ASC,  a.alarmSendDate)); break;
-            case "reg_desc": orders.add(new OrderSpecifier(Order.DESC, a.alarmSendDate)); break;
-            default:         orders.add(new OrderSpecifier(Order.DESC, a.regDate));       break;
+        String[] sortParts = sort.split(",");
+        for (String part : sortParts) {
+            String trimmed = part.trim();
+            String[] fieldAndDir = trimmed.split(" ");
+            if (fieldAndDir.length == 2) {
+                String field = fieldAndDir[0];
+                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
+                if ("alarmId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, a.alarmId));
+                } else if ("alarmTitle".equals(field)) {
+                    orders.add(new OrderSpecifier(order, a.alarmTitle));
+                } else if ("alarmSendDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, a.alarmSendDate));
+                }
+            }
         }
         return orders;
     }
