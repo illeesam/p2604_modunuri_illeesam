@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pm.service;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponIssue;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCouponIssueMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponIssueRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PmCouponIssueService {
 
-    private final PmCouponIssueMapper pmCouponIssueMapper;
     private final PmCouponIssueRepository pmCouponIssueRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PmCouponIssueDto.Item getById(String id) {
-        PmCouponIssueDto.Item dto = pmCouponIssueMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PmCouponIssueDto.Item dto = pmCouponIssueRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmCouponIssueDto.Item getByIdOrNull(String id) {
+        return pmCouponIssueRepository.selectById(id).orElse(null);
     }
 
     public PmCouponIssue findById(String id) {
         return pmCouponIssueRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmCouponIssue findByIdOrNull(String id) {
+        return pmCouponIssueRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pmCouponIssueRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pmCouponIssueRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PmCouponIssueDto.Item> getList(PmCouponIssueDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmCouponIssueMapper.selectList(VoUtil.voToMap(req));
+        return pmCouponIssueRepository.selectList(req);
     }
 
     public PmCouponIssueDto.PageResponse getPageData(PmCouponIssueDto.Request req) {
         PageHelper.addPaging(req);
-        PmCouponIssueDto.PageResponse res = new PmCouponIssueDto.PageResponse();
-        List<PmCouponIssueDto.Item> list = pmCouponIssueMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pmCouponIssueMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pmCouponIssueRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PmCouponIssueService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PmCouponIssue saved = pmCouponIssueRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PmCouponIssueService {
     @Transactional
     public PmCouponIssue save(PmCouponIssue entity) {
         if (!existsById(entity.getIssueId()))
-            throw new CmBizException("존재하지 않는 PmCouponIssue입니다: " + entity.getIssueId());
+            throw new CmBizException("존재하지 않는 PmCouponIssue입니다: " + entity.getIssueId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmCouponIssue saved = pmCouponIssueRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PmCouponIssueService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmCouponIssue saved = pmCouponIssueRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PmCouponIssue updateSelective(PmCouponIssue entity) {
-        if (entity.getIssueId() == null) throw new CmBizException("issueId 가 필요합니다.");
+        if (entity.getIssueId() == null) throw new CmBizException("issueId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getIssueId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getIssueId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getIssueId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pmCouponIssueMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pmCouponIssueRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PmCouponIssueService {
         PmCouponIssue entity = findById(id);
         pmCouponIssueRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

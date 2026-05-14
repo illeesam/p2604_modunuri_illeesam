@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdTagDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdTag;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdTagMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdTagRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PdProdTagService {
 
-    private final PdProdTagMapper pdProdTagMapper;
     private final PdProdTagRepository pdProdTagRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PdProdTagDto.Item getById(String id) {
-        PdProdTagDto.Item dto = pdProdTagMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PdProdTagDto.Item dto = pdProdTagRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdProdTagDto.Item getByIdOrNull(String id) {
+        return pdProdTagRepository.selectById(id).orElse(null);
     }
 
     public PdProdTag findById(String id) {
         return pdProdTagRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdProdTag findByIdOrNull(String id) {
+        return pdProdTagRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pdProdTagRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pdProdTagRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PdProdTagDto.Item> getList(PdProdTagDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdProdTagMapper.selectList(VoUtil.voToMap(req));
+        return pdProdTagRepository.selectList(req);
     }
 
     public PdProdTagDto.PageResponse getPageData(PdProdTagDto.Request req) {
         PageHelper.addPaging(req);
-        PdProdTagDto.PageResponse res = new PdProdTagDto.PageResponse();
-        List<PdProdTagDto.Item> list = pdProdTagMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pdProdTagMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pdProdTagRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PdProdTagService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PdProdTag saved = pdProdTagRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PdProdTagService {
     @Transactional
     public PdProdTag save(PdProdTag entity) {
         if (!existsById(entity.getProdTagId()))
-            throw new CmBizException("존재하지 않는 PdProdTag입니다: " + entity.getProdTagId());
+            throw new CmBizException("존재하지 않는 PdProdTag입니다: " + entity.getProdTagId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdTag saved = pdProdTagRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PdProdTagService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdTag saved = pdProdTagRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PdProdTag updateSelective(PdProdTag entity) {
-        if (entity.getProdTagId() == null) throw new CmBizException("prodTagId 가 필요합니다.");
+        if (entity.getProdTagId() == null) throw new CmBizException("prodTagId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getProdTagId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdTagId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdTagId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pdProdTagMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pdProdTagRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PdProdTagService {
         PdProdTag entity = findById(id);
         pdProdTagRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

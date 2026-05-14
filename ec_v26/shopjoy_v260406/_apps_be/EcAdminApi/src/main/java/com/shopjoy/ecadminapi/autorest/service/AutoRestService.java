@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 @Slf4j
 @Service
@@ -156,7 +157,7 @@ public class AutoRestService {
         if (ids == null || ids.isEmpty()) return 0;
         for (String id : ids) {
             if (!id.matches("[a-zA-Z0-9_\\-]{1,50}")) {
-                throw new CmBizException("유효하지 않은 ID: " + id);
+                throw new CmBizException("유효하지 않은 ID: " + id + "::" + CmUtil.svcCallerInfo(this));
             }
         }
         TableConfig cfg = registry.getConfig(table);
@@ -191,7 +192,7 @@ public class AutoRestService {
     /** doSaveByRowStatus — 실행 */
     private RowMap doSaveByRowStatus(String table, RowMap body) {
         String rowStatus = (String) body.remove("_row_status");
-        if (rowStatus == null) throw new CmBizException("_row_status 값이 없습니다.");
+        if (rowStatus == null) throw new CmBizException("_row_status 값이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
 
         TableConfig cfg = registry.getConfig(table);
         String pkCol = cfg.getPkColumn();
@@ -200,16 +201,16 @@ public class AutoRestService {
             case "I" -> create(table, body);
             case "U" -> {
                 String id = (String) body.get(pkCol);
-                if (id == null || id.isBlank()) throw new CmBizException(pkCol + " 값이 없습니다.");
+                if (id == null || id.isBlank()) throw new CmBizException(pkCol + " 값이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
                 yield update(table, id, body);
             }
             case "D" -> {
                 String id = (String) body.get(pkCol);
-                if (id == null || id.isBlank()) throw new CmBizException(pkCol + " 값이 없습니다.");
+                if (id == null || id.isBlank()) throw new CmBizException(pkCol + " 값이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
                 delete(table, id);
                 yield null;
             }
-            default -> throw new CmBizException("올바르지 않은 _row_status: " + rowStatus);
+            default -> throw new CmBizException("올바르지 않은 _row_status: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
         };
     }
 
@@ -332,7 +333,7 @@ public class AutoRestService {
         for (String f : cfg.getRequiredFields()) {
             Object v = body.get(f);
             if (v == null || v.toString().isBlank()) {
-                throw new CmBizException("필수 항목 누락: " + f);
+                throw new CmBizException("필수 항목 누락: " + f + "::" + CmUtil.svcCallerInfo(this));
             }
         }
     }

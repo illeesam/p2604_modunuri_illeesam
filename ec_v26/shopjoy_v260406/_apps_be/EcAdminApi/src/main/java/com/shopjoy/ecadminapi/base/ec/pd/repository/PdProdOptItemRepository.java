@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
 
-public interface PdProdOptItemRepository extends JpaRepository<PdProdOptItem, String> {
+public interface PdProdOptItemRepository extends JpaRepository<PdProdOptItem, String>, QPdProdOptItemRepository {
 
     void deleteByOptIdIn(Collection<String> optIds);
 }

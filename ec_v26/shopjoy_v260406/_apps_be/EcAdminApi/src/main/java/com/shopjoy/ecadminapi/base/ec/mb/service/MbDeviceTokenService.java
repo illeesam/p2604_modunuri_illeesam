@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.mb.service;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbDeviceTokenMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbDeviceTokenRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class MbDeviceTokenService {
 
-    private final MbDeviceTokenMapper mbDeviceTokenMapper;
     private final MbDeviceTokenRepository mbDeviceTokenRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public MbDeviceTokenDto.Item getById(String id) {
-        MbDeviceTokenDto.Item dto = mbDeviceTokenMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        MbDeviceTokenDto.Item dto = mbDeviceTokenRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbDeviceTokenDto.Item getByIdOrNull(String id) {
+        return mbDeviceTokenRepository.selectById(id).orElse(null);
     }
 
     public MbDeviceToken findById(String id) {
         return mbDeviceTokenRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbDeviceToken findByIdOrNull(String id) {
+        return mbDeviceTokenRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return mbDeviceTokenRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!mbDeviceTokenRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<MbDeviceTokenDto.Item> getList(MbDeviceTokenDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbDeviceTokenMapper.selectList(VoUtil.voToMap(req));
+        return mbDeviceTokenRepository.selectList(req);
     }
 
     public MbDeviceTokenDto.PageResponse getPageData(MbDeviceTokenDto.Request req) {
         PageHelper.addPaging(req);
-        MbDeviceTokenDto.PageResponse res = new MbDeviceTokenDto.PageResponse();
-        List<MbDeviceTokenDto.Item> list = mbDeviceTokenMapper.selectPageList(VoUtil.voToMap(req));
-        long count = mbDeviceTokenMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return mbDeviceTokenRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class MbDeviceTokenService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         MbDeviceToken saved = mbDeviceTokenRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class MbDeviceTokenService {
     @Transactional
     public MbDeviceToken save(MbDeviceToken entity) {
         if (!existsById(entity.getDeviceTokenId()))
-            throw new CmBizException("존재하지 않는 MbDeviceToken입니다: " + entity.getDeviceTokenId());
+            throw new CmBizException("존재하지 않는 MbDeviceToken입니다: " + entity.getDeviceTokenId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbDeviceToken saved = mbDeviceTokenRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class MbDeviceTokenService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbDeviceToken saved = mbDeviceTokenRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public MbDeviceToken updateSelective(MbDeviceToken entity) {
-        if (entity.getDeviceTokenId() == null) throw new CmBizException("deviceTokenId 가 필요합니다.");
+        if (entity.getDeviceTokenId() == null) throw new CmBizException("deviceTokenId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getDeviceTokenId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDeviceTokenId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDeviceTokenId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = mbDeviceTokenMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = mbDeviceTokenRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class MbDeviceTokenService {
         MbDeviceToken entity = findById(id);
         mbDeviceTokenRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

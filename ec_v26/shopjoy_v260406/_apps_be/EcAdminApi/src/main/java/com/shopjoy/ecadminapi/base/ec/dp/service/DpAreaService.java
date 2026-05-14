@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.dp.service;
 
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
-import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpAreaMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpAreaRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -24,38 +23,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class DpAreaService {
 
-    private final DpAreaMapper dpAreaMapper;
     private final DpAreaRepository dpAreaRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public DpAreaDto.Item getById(String id) {
-        DpAreaDto.Item dto = dpAreaMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        DpAreaDto.Item dto = dpAreaRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public DpAreaDto.Item getByIdOrNull(String id) {
+        return dpAreaRepository.selectById(id).orElse(null);
     }
 
     public DpArea findById(String id) {
         return dpAreaRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public DpArea findByIdOrNull(String id) {
+        return dpAreaRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return dpAreaRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!dpAreaRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<DpAreaDto.Item> getList(DpAreaDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return dpAreaMapper.selectList(VoUtil.voToMap(req));
+        return dpAreaRepository.selectList(req);
     }
 
     public DpAreaDto.PageResponse getPageData(DpAreaDto.Request req) {
         PageHelper.addPaging(req);
-        DpAreaDto.PageResponse res = new DpAreaDto.PageResponse();
-        List<DpAreaDto.Item> list = dpAreaMapper.selectPageList(VoUtil.voToMap(req));
-        long count = dpAreaMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return dpAreaRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +76,7 @@ public class DpAreaService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         DpArea saved = dpAreaRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +84,11 @@ public class DpAreaService {
     @Transactional
     public DpArea save(DpArea entity) {
         if (!existsById(entity.getAreaId()))
-            throw new CmBizException("존재하지 않는 DpArea입니다: " + entity.getAreaId());
+            throw new CmBizException("존재하지 않는 DpArea입니다: " + entity.getAreaId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpArea saved = dpAreaRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +100,20 @@ public class DpAreaService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpArea saved = dpAreaRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public DpArea updateSelective(DpArea entity) {
-        if (entity.getAreaId() == null) throw new CmBizException("areaId 가 필요합니다.");
+        if (entity.getAreaId() == null) throw new CmBizException("areaId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getAreaId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAreaId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAreaId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = dpAreaMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = dpAreaRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +123,7 @@ public class DpAreaService {
         DpArea entity = findById(id);
         dpAreaRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 @Slf4j
 @Service
@@ -161,8 +162,8 @@ public class CmUploadService {
     @Transactional
     public Map<String, Object> uploadMulti(MultipartFile[] files, String businessCode,
                                             String grpNm, String attachGrpId) {
-        if (files == null || files.length == 0) throw new CmBizException("업로드할 파일을 선택해주세요.");
-        if (files.length > 10) throw new CmBizException("한 번에 최대 10개 파일만 업로드 가능합니다.");
+        if (files == null || files.length == 0) throw new CmBizException("업로드할 파일을 선택해주세요." + "::" + CmUtil.svcCallerInfo(this));
+        if (files.length > 10) throw new CmBizException("한 번에 최대 10개 파일만 업로드 가능합니다." + "::" + CmUtil.svcCallerInfo(this));
 
         try {
             SyAttachGrp savedGrp = resolveAttachGrp(businessCode, grpNm, attachGrpId);
@@ -339,7 +340,7 @@ public class CmUploadService {
     @Transactional
     public void deleteAttach(String attachId) {
         SyAttachDto.Item dto = syAttachService.getById(attachId);
-        if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId);
+        if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId + "::" + CmUtil.svcCallerInfo(this));
 
         syAttachService.delete(attachId);
 
@@ -356,7 +357,7 @@ public class CmUploadService {
     @Transactional
     public void updateAttachSort(String attachId, Integer sortOrd) {
         SyAttachDto.Item dto = syAttachService.getById(attachId);
-        if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId);
+        if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId + "::" + CmUtil.svcCallerInfo(this));
         SyAttach entity = SyAttach.builder().attachId(attachId).sortOrd(sortOrd).build();
         syAttachService.updateSelective(entity);
     }
@@ -365,7 +366,7 @@ public class CmUploadService {
     private SyAttachGrp resolveAttachGrp(String businessCode, String grpNm, String attachGrpId) {
         if (attachGrpId != null && !attachGrpId.isBlank()) {
             com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachGrpDto.Item existing = syAttachGrpService.getById(attachGrpId);
-            if (existing == null) throw new CmBizException("존재하지 않는 첨부 그룹입니다: " + attachGrpId);
+            if (existing == null) throw new CmBizException("존재하지 않는 첨부 그룹입니다: " + attachGrpId + "::" + CmUtil.svcCallerInfo(this));
             return SyAttachGrp.builder()
                     .attachGrpId(existing.getAttachGrpId())
                     .attachGrpCode(existing.getAttachGrpCode())

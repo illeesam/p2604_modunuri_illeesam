@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.od.service;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
-import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -24,38 +23,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class OdOrderService {
 
-    private final OdOrderMapper odOrderMapper;
     private final OdOrderRepository odOrderRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public OdOrderDto.Item getById(String id) {
-        OdOrderDto.Item dto = odOrderMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        OdOrderDto.Item dto = odOrderRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public OdOrderDto.Item getByIdOrNull(String id) {
+        return odOrderRepository.selectById(id).orElse(null);
     }
 
     public OdOrder findById(String id) {
         return odOrderRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public OdOrder findByIdOrNull(String id) {
+        return odOrderRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return odOrderRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!odOrderRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<OdOrderDto.Item> getList(OdOrderDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odOrderMapper.selectList(VoUtil.voToMap(req));
+        return odOrderRepository.selectList(req);
     }
 
     public OdOrderDto.PageResponse getPageData(OdOrderDto.Request req) {
         PageHelper.addPaging(req);
-        OdOrderDto.PageResponse res = new OdOrderDto.PageResponse();
-        List<OdOrderDto.Item> list = odOrderMapper.selectPageList(VoUtil.voToMap(req));
-        long count = odOrderMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return odOrderRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +76,7 @@ public class OdOrderService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         OdOrder saved = odOrderRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +84,11 @@ public class OdOrderService {
     @Transactional
     public OdOrder save(OdOrder entity) {
         if (!existsById(entity.getOrderId()))
-            throw new CmBizException("존재하지 않는 OdOrder입니다: " + entity.getOrderId());
+            throw new CmBizException("존재하지 않는 OdOrder입니다: " + entity.getOrderId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdOrder saved = odOrderRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +100,20 @@ public class OdOrderService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdOrder saved = odOrderRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public OdOrder updateSelective(OdOrder entity) {
-        if (entity.getOrderId() == null) throw new CmBizException("orderId 가 필요합니다.");
+        if (entity.getOrderId() == null) throw new CmBizException("orderId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getOrderId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOrderId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOrderId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = odOrderMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = odOrderRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +123,7 @@ public class OdOrderService {
         OdOrder entity = findById(id);
         odOrderRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.st.service;
 
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleConfig;
-import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleConfigMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleConfigRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class StSettleConfigService {
 
-    private final StSettleConfigMapper stSettleConfigMapper;
     private final StSettleConfigRepository stSettleConfigRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public StSettleConfigDto.Item getById(String id) {
-        StSettleConfigDto.Item dto = stSettleConfigMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        StSettleConfigDto.Item dto = stSettleConfigRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StSettleConfigDto.Item getByIdOrNull(String id) {
+        return stSettleConfigRepository.selectById(id).orElse(null);
     }
 
     public StSettleConfig findById(String id) {
         return stSettleConfigRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StSettleConfig findByIdOrNull(String id) {
+        return stSettleConfigRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return stSettleConfigRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!stSettleConfigRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<StSettleConfigDto.Item> getList(StSettleConfigDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stSettleConfigMapper.selectList(VoUtil.voToMap(req));
+        return stSettleConfigRepository.selectList(req);
     }
 
     public StSettleConfigDto.PageResponse getPageData(StSettleConfigDto.Request req) {
         PageHelper.addPaging(req);
-        StSettleConfigDto.PageResponse res = new StSettleConfigDto.PageResponse();
-        List<StSettleConfigDto.Item> list = stSettleConfigMapper.selectPageList(VoUtil.voToMap(req));
-        long count = stSettleConfigMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return stSettleConfigRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class StSettleConfigService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         StSettleConfig saved = stSettleConfigRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class StSettleConfigService {
     @Transactional
     public StSettleConfig save(StSettleConfig entity) {
         if (!existsById(entity.getSettleConfigId()))
-            throw new CmBizException("존재하지 않는 StSettleConfig입니다: " + entity.getSettleConfigId());
+            throw new CmBizException("존재하지 않는 StSettleConfig입니다: " + entity.getSettleConfigId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleConfig saved = stSettleConfigRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class StSettleConfigService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleConfig saved = stSettleConfigRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public StSettleConfig updateSelective(StSettleConfig entity) {
-        if (entity.getSettleConfigId() == null) throw new CmBizException("settleConfigId 가 필요합니다.");
+        if (entity.getSettleConfigId() == null) throw new CmBizException("settleConfigId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getSettleConfigId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleConfigId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleConfigId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = stSettleConfigMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = stSettleConfigRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class StSettleConfigService {
         StSettleConfig entity = findById(id);
         stSettleConfigRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

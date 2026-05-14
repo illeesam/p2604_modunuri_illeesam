@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyBatchMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SyBatchService {
 
-    private final SyBatchMapper syBatchMapper;
     private final SyBatchRepository syBatchRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public SyBatchDto.Item getById(String id) {
-        SyBatchDto.Item dto = syBatchMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        SyBatchDto.Item dto = syBatchRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyBatchDto.Item getByIdOrNull(String id) {
+        return syBatchRepository.selectById(id).orElse(null);
     }
 
     public SyBatch findById(String id) {
         return syBatchRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyBatch findByIdOrNull(String id) {
+        return syBatchRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return syBatchRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!syBatchRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<SyBatchDto.Item> getList(SyBatchDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syBatchMapper.selectList(VoUtil.voToMap(req));
+        return syBatchRepository.selectList(req);
     }
 
     public SyBatchDto.PageResponse getPageData(SyBatchDto.Request req) {
         PageHelper.addPaging(req);
-        SyBatchDto.PageResponse res = new SyBatchDto.PageResponse();
-        List<SyBatchDto.Item> list = syBatchMapper.selectPageList(VoUtil.voToMap(req));
-        long count = syBatchMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syBatchRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class SyBatchService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyBatch saved = syBatchRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class SyBatchService {
     @Transactional
     public SyBatch save(SyBatch entity) {
         if (!existsById(entity.getBatchId()))
-            throw new CmBizException("존재하지 않는 SyBatch입니다: " + entity.getBatchId());
+            throw new CmBizException("존재하지 않는 SyBatch입니다: " + entity.getBatchId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyBatch saved = syBatchRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class SyBatchService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyBatch saved = syBatchRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public SyBatch updateSelective(SyBatch entity) {
-        if (entity.getBatchId() == null) throw new CmBizException("batchId 가 필요합니다.");
+        if (entity.getBatchId() == null) throw new CmBizException("batchId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getBatchId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBatchId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBatchId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = syBatchMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = syBatchRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class SyBatchService {
         SyBatch entity = findById(id);
         syBatchRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

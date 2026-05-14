@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.st.service;
 
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StRecon;
-import com.shopjoy.ecadminapi.base.ec.st.mapper.StReconMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StReconRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class StReconService {
 
-    private final StReconMapper stReconMapper;
     private final StReconRepository stReconRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public StReconDto.Item getById(String id) {
-        StReconDto.Item dto = stReconMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        StReconDto.Item dto = stReconRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StReconDto.Item getByIdOrNull(String id) {
+        return stReconRepository.selectById(id).orElse(null);
     }
 
     public StRecon findById(String id) {
         return stReconRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StRecon findByIdOrNull(String id) {
+        return stReconRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return stReconRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!stReconRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<StReconDto.Item> getList(StReconDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stReconMapper.selectList(VoUtil.voToMap(req));
+        return stReconRepository.selectList(req);
     }
 
     public StReconDto.PageResponse getPageData(StReconDto.Request req) {
         PageHelper.addPaging(req);
-        StReconDto.PageResponse res = new StReconDto.PageResponse();
-        List<StReconDto.Item> list = stReconMapper.selectPageList(VoUtil.voToMap(req));
-        long count = stReconMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return stReconRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class StReconService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         StRecon saved = stReconRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class StReconService {
     @Transactional
     public StRecon save(StRecon entity) {
         if (!existsById(entity.getReconId()))
-            throw new CmBizException("존재하지 않는 StRecon입니다: " + entity.getReconId());
+            throw new CmBizException("존재하지 않는 StRecon입니다: " + entity.getReconId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StRecon saved = stReconRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class StReconService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StRecon saved = stReconRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public StRecon updateSelective(StRecon entity) {
-        if (entity.getReconId() == null) throw new CmBizException("reconId 가 필요합니다.");
+        if (entity.getReconId() == null) throw new CmBizException("reconId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getReconId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReconId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReconId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = stReconMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = stReconRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class StReconService {
         StRecon entity = findById(id);
         stReconRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdStatusHist;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdhProdStatusHistMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdhProdStatusHistRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PdhProdStatusHistService {
 
-    private final PdhProdStatusHistMapper pdhProdStatusHistMapper;
     private final PdhProdStatusHistRepository pdhProdStatusHistRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PdhProdStatusHistDto.Item getById(String id) {
-        PdhProdStatusHistDto.Item dto = pdhProdStatusHistMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PdhProdStatusHistDto.Item dto = pdhProdStatusHistRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdhProdStatusHistDto.Item getByIdOrNull(String id) {
+        return pdhProdStatusHistRepository.selectById(id).orElse(null);
     }
 
     public PdhProdStatusHist findById(String id) {
         return pdhProdStatusHistRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdhProdStatusHist findByIdOrNull(String id) {
+        return pdhProdStatusHistRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pdhProdStatusHistRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pdhProdStatusHistRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PdhProdStatusHistDto.Item> getList(PdhProdStatusHistDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdhProdStatusHistMapper.selectList(VoUtil.voToMap(req));
+        return pdhProdStatusHistRepository.selectList(req);
     }
 
     public PdhProdStatusHistDto.PageResponse getPageData(PdhProdStatusHistDto.Request req) {
         PageHelper.addPaging(req);
-        PdhProdStatusHistDto.PageResponse res = new PdhProdStatusHistDto.PageResponse();
-        List<PdhProdStatusHistDto.Item> list = pdhProdStatusHistMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pdhProdStatusHistMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pdhProdStatusHistRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PdhProdStatusHistService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PdhProdStatusHist saved = pdhProdStatusHistRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PdhProdStatusHistService {
     @Transactional
     public PdhProdStatusHist save(PdhProdStatusHist entity) {
         if (!existsById(entity.getProdStatusHistId()))
-            throw new CmBizException("존재하지 않는 PdhProdStatusHist입니다: " + entity.getProdStatusHistId());
+            throw new CmBizException("존재하지 않는 PdhProdStatusHist입니다: " + entity.getProdStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdhProdStatusHist saved = pdhProdStatusHistRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PdhProdStatusHistService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdhProdStatusHist saved = pdhProdStatusHistRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PdhProdStatusHist updateSelective(PdhProdStatusHist entity) {
-        if (entity.getProdStatusHistId() == null) throw new CmBizException("prodStatusHistId 가 필요합니다.");
+        if (entity.getProdStatusHistId() == null) throw new CmBizException("prodStatusHistId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getProdStatusHistId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdStatusHistId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pdhProdStatusHistMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pdhProdStatusHistRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PdhProdStatusHistService {
         PdhProdStatusHist entity = findById(id);
         pdhProdStatusHistRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

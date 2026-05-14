@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewComment;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdReviewCommentMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdReviewCommentRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PdReviewCommentService {
 
-    private final PdReviewCommentMapper pdReviewCommentMapper;
     private final PdReviewCommentRepository pdReviewCommentRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PdReviewCommentDto.Item getById(String id) {
-        PdReviewCommentDto.Item dto = pdReviewCommentMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PdReviewCommentDto.Item dto = pdReviewCommentRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdReviewCommentDto.Item getByIdOrNull(String id) {
+        return pdReviewCommentRepository.selectById(id).orElse(null);
     }
 
     public PdReviewComment findById(String id) {
         return pdReviewCommentRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdReviewComment findByIdOrNull(String id) {
+        return pdReviewCommentRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pdReviewCommentRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pdReviewCommentRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PdReviewCommentDto.Item> getList(PdReviewCommentDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdReviewCommentMapper.selectList(VoUtil.voToMap(req));
+        return pdReviewCommentRepository.selectList(req);
     }
 
     public PdReviewCommentDto.PageResponse getPageData(PdReviewCommentDto.Request req) {
         PageHelper.addPaging(req);
-        PdReviewCommentDto.PageResponse res = new PdReviewCommentDto.PageResponse();
-        List<PdReviewCommentDto.Item> list = pdReviewCommentMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pdReviewCommentMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pdReviewCommentRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PdReviewCommentService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PdReviewComment saved = pdReviewCommentRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PdReviewCommentService {
     @Transactional
     public PdReviewComment save(PdReviewComment entity) {
         if (!existsById(entity.getReviewCommentId()))
-            throw new CmBizException("존재하지 않는 PdReviewComment입니다: " + entity.getReviewCommentId());
+            throw new CmBizException("존재하지 않는 PdReviewComment입니다: " + entity.getReviewCommentId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdReviewComment saved = pdReviewCommentRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PdReviewCommentService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdReviewComment saved = pdReviewCommentRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PdReviewComment updateSelective(PdReviewComment entity) {
-        if (entity.getReviewCommentId() == null) throw new CmBizException("reviewCommentId 가 필요합니다.");
+        if (entity.getReviewCommentId() == null) throw new CmBizException("reviewCommentId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getReviewCommentId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReviewCommentId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReviewCommentId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pdReviewCommentMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pdReviewCommentRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PdReviewCommentService {
         PdReviewComment entity = findById(id);
         pdReviewCommentRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

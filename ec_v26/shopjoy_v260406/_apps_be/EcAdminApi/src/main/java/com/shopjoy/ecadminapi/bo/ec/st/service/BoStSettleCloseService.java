@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 정산마감 서비스 — base StSettleCloseService 위임 (thin wrapper) + reopen.
@@ -42,12 +43,12 @@ public class BoStSettleCloseService {
     @Transactional
     public StSettleCloseDto.Item reopen(String id) {
         StSettleClose entity = stSettleCloseRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setCloseStatusCd("OPEN");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleClose saved = stSettleCloseRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return stSettleCloseService.getById(id);
     }

@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.st.service;
 
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleCloseDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
-import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleCloseMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleCloseRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class StSettleCloseService {
 
-    private final StSettleCloseMapper stSettleCloseMapper;
     private final StSettleCloseRepository stSettleCloseRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public StSettleCloseDto.Item getById(String id) {
-        StSettleCloseDto.Item dto = stSettleCloseMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        StSettleCloseDto.Item dto = stSettleCloseRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StSettleCloseDto.Item getByIdOrNull(String id) {
+        return stSettleCloseRepository.selectById(id).orElse(null);
     }
 
     public StSettleClose findById(String id) {
         return stSettleCloseRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StSettleClose findByIdOrNull(String id) {
+        return stSettleCloseRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return stSettleCloseRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!stSettleCloseRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<StSettleCloseDto.Item> getList(StSettleCloseDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stSettleCloseMapper.selectList(VoUtil.voToMap(req));
+        return stSettleCloseRepository.selectList(req);
     }
 
     public StSettleCloseDto.PageResponse getPageData(StSettleCloseDto.Request req) {
         PageHelper.addPaging(req);
-        StSettleCloseDto.PageResponse res = new StSettleCloseDto.PageResponse();
-        List<StSettleCloseDto.Item> list = stSettleCloseMapper.selectPageList(VoUtil.voToMap(req));
-        long count = stSettleCloseMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return stSettleCloseRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class StSettleCloseService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         StSettleClose saved = stSettleCloseRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class StSettleCloseService {
     @Transactional
     public StSettleClose save(StSettleClose entity) {
         if (!existsById(entity.getSettleCloseId()))
-            throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId());
+            throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleClose saved = stSettleCloseRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class StSettleCloseService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleClose saved = stSettleCloseRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public StSettleClose updateSelective(StSettleClose entity) {
-        if (entity.getSettleCloseId() == null) throw new CmBizException("settleCloseId 가 필요합니다.");
+        if (entity.getSettleCloseId() == null) throw new CmBizException("settleCloseId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getSettleCloseId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleCloseId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = stSettleCloseMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = stSettleCloseRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class StSettleCloseService {
         StSettleClose entity = findById(id);
         stSettleCloseRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

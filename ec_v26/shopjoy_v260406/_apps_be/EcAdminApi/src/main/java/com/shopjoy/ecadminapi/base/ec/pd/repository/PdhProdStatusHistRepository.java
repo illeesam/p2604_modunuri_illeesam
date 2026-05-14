@@ -3,5 +3,5 @@ package com.shopjoy.ecadminapi.base.ec.pd.repository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdStatusHist;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PdhProdStatusHistRepository extends JpaRepository<PdhProdStatusHist, String> {
+public interface PdhProdStatusHistRepository extends JpaRepository<PdhProdStatusHist, String>, QPdhProdStatusHistRepository {
 }

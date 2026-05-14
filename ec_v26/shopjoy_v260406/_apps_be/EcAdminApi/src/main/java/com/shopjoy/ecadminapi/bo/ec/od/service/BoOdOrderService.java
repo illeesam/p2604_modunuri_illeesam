@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 주문 서비스 — base OdOrderService 위임 (thin wrapper) + changeStatus.
@@ -45,13 +46,13 @@ public class BoOdOrderService {
     @Transactional
     public OdOrderDto.Item changeStatus(String id, String statusCd) {
         OdOrder entity = odOrderRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setOrderStatusCdBefore(entity.getOrderStatusCd());
         entity.setOrderStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdOrder saved = odOrderRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return odOrderService.getById(id);
     }

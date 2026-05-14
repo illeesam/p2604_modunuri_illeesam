@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorContentDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorContent;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyVendorContentMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorContentRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SyVendorContentService {
 
-    private final SyVendorContentMapper syVendorContentMapper;
     private final SyVendorContentRepository syVendorContentRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public SyVendorContentDto.Item getById(String id) {
-        SyVendorContentDto.Item dto = syVendorContentMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        SyVendorContentDto.Item dto = syVendorContentRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyVendorContentDto.Item getByIdOrNull(String id) {
+        return syVendorContentRepository.selectById(id).orElse(null);
     }
 
     public SyVendorContent findById(String id) {
         return syVendorContentRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyVendorContent findByIdOrNull(String id) {
+        return syVendorContentRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return syVendorContentRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!syVendorContentRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<SyVendorContentDto.Item> getList(SyVendorContentDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syVendorContentMapper.selectList(VoUtil.voToMap(req));
+        return syVendorContentRepository.selectList(req);
     }
 
     public SyVendorContentDto.PageResponse getPageData(SyVendorContentDto.Request req) {
         PageHelper.addPaging(req);
-        SyVendorContentDto.PageResponse res = new SyVendorContentDto.PageResponse();
-        List<SyVendorContentDto.Item> list = syVendorContentMapper.selectPageList(VoUtil.voToMap(req));
-        long count = syVendorContentMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syVendorContentRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class SyVendorContentService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyVendorContent saved = syVendorContentRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class SyVendorContentService {
     @Transactional
     public SyVendorContent save(SyVendorContent entity) {
         if (!existsById(entity.getVendorContentId()))
-            throw new CmBizException("존재하지 않는 SyVendorContent입니다: " + entity.getVendorContentId());
+            throw new CmBizException("존재하지 않는 SyVendorContent입니다: " + entity.getVendorContentId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendorContent saved = syVendorContentRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class SyVendorContentService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendorContent saved = syVendorContentRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public SyVendorContent updateSelective(SyVendorContent entity) {
-        if (entity.getVendorContentId() == null) throw new CmBizException("vendorContentId 가 필요합니다.");
+        if (entity.getVendorContentId() == null) throw new CmBizException("vendorContentId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getVendorContentId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorContentId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorContentId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = syVendorContentMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = syVendorContentRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class SyVendorContentService {
         SyVendorContent entity = findById(id);
         syVendorContentRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

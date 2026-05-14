@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-public interface SyhUserTokenLogRepository extends JpaRepository<SyhUserTokenLog, String> {
+public interface SyhUserTokenLogRepository extends JpaRepository<SyhUserTokenLog, String>, QSyhUserTokenLogRepository {
     @Modifying
     @Query("DELETE FROM SyhUserTokenLog")
     void deleteAllBulk();

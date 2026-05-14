@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,35 +30,48 @@ public class SyUserRoleService {
     private EntityManager em;
 
     public SyUserRoleDto.Item getById(String id) {
-        SyUserRoleDto.Item dto = syUserRoleMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        SyUserRoleDto.Item dto = syUserRoleRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyUserRoleDto.Item getByIdOrNull(String id) {
+        return syUserRoleRepository.selectById(id).orElse(null);
     }
 
     public SyUserRole findById(String id) {
         return syUserRoleRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyUserRole findByIdOrNull(String id) {
+        return syUserRoleRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return syUserRoleRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!syUserRoleRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
+    /** userId 기준 조회 — MyBatis 전용 (Repository 미적용) */
     public List<SyUserRoleDto.Item> getRolesByUserId(String userId) {
         return syUserRoleMapper.selectByUserId(userId);
     }
 
     public List<SyUserRoleDto.Item> getList(SyUserRoleDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syUserRoleMapper.selectList(VoUtil.voToMap(req));
+        return syUserRoleRepository.selectList(req);
     }
 
     public SyUserRoleDto.PageResponse getPageData(SyUserRoleDto.Request req) {
         PageHelper.addPaging(req);
-        SyUserRoleDto.PageResponse res = new SyUserRoleDto.PageResponse();
-        List<SyUserRoleDto.Item> list = syUserRoleMapper.selectPageList(VoUtil.voToMap(req));
-        long count = syUserRoleMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syUserRoleRepository.selectPageList(req);
     }
 
     @Transactional
@@ -70,7 +82,7 @@ public class SyUserRoleService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyUserRole saved = syUserRoleRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -78,11 +90,11 @@ public class SyUserRoleService {
     @Transactional
     public SyUserRole save(SyUserRole entity) {
         if (!existsById(entity.getUserRoleId()))
-            throw new CmBizException("존재하지 않는 SyUserRole입니다: " + entity.getUserRoleId());
+            throw new CmBizException("존재하지 않는 SyUserRole입니다: " + entity.getUserRoleId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyUserRole saved = syUserRoleRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -94,20 +106,20 @@ public class SyUserRoleService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyUserRole saved = syUserRoleRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public SyUserRole updateSelective(SyUserRole entity) {
-        if (entity.getUserRoleId() == null) throw new CmBizException("userRoleId 가 필요합니다.");
+        if (entity.getUserRoleId() == null) throw new CmBizException("userRoleId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getUserRoleId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUserRoleId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUserRoleId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = syUserRoleMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = syUserRoleRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -117,7 +129,7 @@ public class SyUserRoleService {
         SyUserRole entity = findById(id);
         syUserRoleRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

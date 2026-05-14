@@ -3,5 +3,5 @@ package com.shopjoy.ecadminapi.base.sy.repository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SyNoticeRepository extends JpaRepository<SyNotice, String> {
+public interface SyNoticeRepository extends JpaRepository<SyNotice, String>, QSyNoticeRepository {
 }

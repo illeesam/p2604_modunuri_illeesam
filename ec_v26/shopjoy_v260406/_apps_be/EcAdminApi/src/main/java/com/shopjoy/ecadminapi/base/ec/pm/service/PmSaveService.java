@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pm.service;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmSaveMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PmSaveService {
 
-    private final PmSaveMapper pmSaveMapper;
     private final PmSaveRepository pmSaveRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PmSaveDto.Item getById(String id) {
-        PmSaveDto.Item dto = pmSaveMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PmSaveDto.Item dto = pmSaveRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmSaveDto.Item getByIdOrNull(String id) {
+        return pmSaveRepository.selectById(id).orElse(null);
     }
 
     public PmSave findById(String id) {
         return pmSaveRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmSave findByIdOrNull(String id) {
+        return pmSaveRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pmSaveRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pmSaveRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PmSaveDto.Item> getList(PmSaveDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmSaveMapper.selectList(VoUtil.voToMap(req));
+        return pmSaveRepository.selectList(req);
     }
 
     public PmSaveDto.PageResponse getPageData(PmSaveDto.Request req) {
         PageHelper.addPaging(req);
-        PmSaveDto.PageResponse res = new PmSaveDto.PageResponse();
-        List<PmSaveDto.Item> list = pmSaveMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pmSaveMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pmSaveRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PmSaveService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PmSave saved = pmSaveRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PmSaveService {
     @Transactional
     public PmSave save(PmSave entity) {
         if (!existsById(entity.getSaveId()))
-            throw new CmBizException("존재하지 않는 PmSave입니다: " + entity.getSaveId());
+            throw new CmBizException("존재하지 않는 PmSave입니다: " + entity.getSaveId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmSave saved = pmSaveRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PmSaveService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmSave saved = pmSaveRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PmSave updateSelective(PmSave entity) {
-        if (entity.getSaveId() == null) throw new CmBizException("saveId 가 필요합니다.");
+        if (entity.getSaveId() == null) throw new CmBizException("saveId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getSaveId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSaveId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSaveId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pmSaveMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pmSaveRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PmSaveService {
         PmSave entity = findById(id);
         pmSaveRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

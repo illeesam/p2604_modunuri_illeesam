@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-public interface SyhAccessLogRepository extends JpaRepository<SyhAccessLog, String> {
+public interface SyhAccessLogRepository extends JpaRepository<SyhAccessLog, String>, QSyhAccessLogRepository {
     @Modifying
     @Query("DELETE FROM SyhAccessLog")
     void deleteAllBulk();

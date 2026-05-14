@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO ERP 전표 서비스 — base StErpVoucherService 위임 (thin wrapper) + gen + resend + getReconPageData.
@@ -49,7 +50,7 @@ public class BoStErpService {
     @Transactional
     public void resend(String id) {
         StErpVoucher entity = stErpVoucherRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 전표입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 전표입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setErpVoucherStatusCd("PENDING");
         entity.setErpSendDate(null);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());

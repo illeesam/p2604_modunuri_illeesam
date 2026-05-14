@@ -1,9 +1,7 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
-import com.shopjoy.ecadminapi.base.ec.od.mapper.OdCartMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdCartRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -25,14 +23,13 @@ import java.util.List;
 public class FoOdCartService {
 
 
-    private final OdCartMapper     odCartMapper;
     private final OdCartRepository odCartRepository;
 
     /** getMyCart — 조회 */
     public List<OdCartDto.Item> getMyCart(OdCartDto.Request req) {
         if (req == null) req = new OdCartDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return odCartMapper.selectList(VoUtil.voToMap(req));
+        return odCartRepository.selectList(req);
     }
 
     /** addToCart — 추가 */
@@ -45,7 +42,7 @@ public class FoOdCartService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdCart saved = odCartRepository.save(entity);
-        if (saved == null) throw new CmBizException("장바구니 추가에 실패했습니다.");
+        if (saved == null) throw new CmBizException("장바구니 추가에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
     }
 
@@ -53,14 +50,14 @@ public class FoOdCartService {
     @Transactional
     public OdCart updateQty(String cartId, int qty) {
         OdCart cart = odCartRepository.findById(cartId)
-                .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId));
+                .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId + "::" + CmUtil.svcCallerInfo(this)));
         if (!cart.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
-            throw new CmBizException("접근 권한이 없습니다.");
+            throw new CmBizException("접근 권한이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         cart.setOrderQty(qty);
         cart.setUpdBy(SecurityUtil.getAuthUser().authId());
         cart.setUpdDate(LocalDateTime.now());
         OdCart saved = odCartRepository.save(cart);
-        if (saved == null) throw new CmBizException("수량 변경에 실패했습니다.");
+        if (saved == null) throw new CmBizException("수량 변경에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
     }
 
@@ -68,9 +65,9 @@ public class FoOdCartService {
     @Transactional
     public void removeFromCart(String cartId) {
         OdCart cart = odCartRepository.findById(cartId)
-                .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId));
+                .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId + "::" + CmUtil.svcCallerInfo(this)));
         if (!cart.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
-            throw new CmBizException("접근 권한이 없습니다.");
+            throw new CmBizException("접근 권한이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         odCartRepository.deleteById(cartId);
     }
 

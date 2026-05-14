@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.st.service;
 
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
-import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleAdjMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleAdjRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class StSettleAdjService {
 
-    private final StSettleAdjMapper stSettleAdjMapper;
     private final StSettleAdjRepository stSettleAdjRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public StSettleAdjDto.Item getById(String id) {
-        StSettleAdjDto.Item dto = stSettleAdjMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        StSettleAdjDto.Item dto = stSettleAdjRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StSettleAdjDto.Item getByIdOrNull(String id) {
+        return stSettleAdjRepository.selectById(id).orElse(null);
     }
 
     public StSettleAdj findById(String id) {
         return stSettleAdjRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StSettleAdj findByIdOrNull(String id) {
+        return stSettleAdjRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return stSettleAdjRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!stSettleAdjRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<StSettleAdjDto.Item> getList(StSettleAdjDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stSettleAdjMapper.selectList(VoUtil.voToMap(req));
+        return stSettleAdjRepository.selectList(req);
     }
 
     public StSettleAdjDto.PageResponse getPageData(StSettleAdjDto.Request req) {
         PageHelper.addPaging(req);
-        StSettleAdjDto.PageResponse res = new StSettleAdjDto.PageResponse();
-        List<StSettleAdjDto.Item> list = stSettleAdjMapper.selectPageList(VoUtil.voToMap(req));
-        long count = stSettleAdjMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return stSettleAdjRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class StSettleAdjService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         StSettleAdj saved = stSettleAdjRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class StSettleAdjService {
     @Transactional
     public StSettleAdj save(StSettleAdj entity) {
         if (!existsById(entity.getSettleAdjId()))
-            throw new CmBizException("존재하지 않는 StSettleAdj입니다: " + entity.getSettleAdjId());
+            throw new CmBizException("존재하지 않는 StSettleAdj입니다: " + entity.getSettleAdjId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleAdj saved = stSettleAdjRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class StSettleAdjService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleAdj saved = stSettleAdjRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public StSettleAdj updateSelective(StSettleAdj entity) {
-        if (entity.getSettleAdjId() == null) throw new CmBizException("settleAdjId 가 필요합니다.");
+        if (entity.getSettleAdjId() == null) throw new CmBizException("settleAdjId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getSettleAdjId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleAdjId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleAdjId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = stSettleAdjMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = stSettleAdjRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class StSettleAdjService {
         StSettleAdj entity = findById(id);
         stSettleAdjRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

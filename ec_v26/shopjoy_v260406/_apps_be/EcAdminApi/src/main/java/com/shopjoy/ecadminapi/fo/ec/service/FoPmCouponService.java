@@ -1,8 +1,7 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCouponIssueMapper;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponIssueRepository;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,13 +18,13 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class FoPmCouponService {
 
-    private final PmCouponIssueMapper pmCouponIssueMapper;
+    private final PmCouponIssueRepository pmCouponIssueRepository;
 
     /** getAvailableCoupons — 조회 */
     public List<PmCouponIssueDto.Item> getAvailableCoupons(PmCouponIssueDto.Request req) {
         if (req == null) req = new PmCouponIssueDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         req.setUseYn("N");
-        return pmCouponIssueMapper.selectList(VoUtil.voToMap(req));
+        return pmCouponIssueRepository.selectList(req);
     }
 }

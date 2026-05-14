@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-public interface MbhMemberTokenLogRepository extends JpaRepository<MbhMemberTokenLog, String> {
+public interface MbhMemberTokenLogRepository extends JpaRepository<MbhMemberTokenLog, String>, QMbhMemberTokenLogRepository {
     @Modifying
     @Query("DELETE FROM MbhMemberTokenLog")
     void deleteAllBulk();

@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyBbmMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBbmRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SyBbmService {
 
-    private final SyBbmMapper syBbmMapper;
     private final SyBbmRepository syBbmRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public SyBbmDto.Item getById(String id) {
-        SyBbmDto.Item dto = syBbmMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        SyBbmDto.Item dto = syBbmRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyBbmDto.Item getByIdOrNull(String id) {
+        return syBbmRepository.selectById(id).orElse(null);
     }
 
     public SyBbm findById(String id) {
         return syBbmRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyBbm findByIdOrNull(String id) {
+        return syBbmRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return syBbmRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!syBbmRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<SyBbmDto.Item> getList(SyBbmDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syBbmMapper.selectList(VoUtil.voToMap(req));
+        return syBbmRepository.selectList(req);
     }
 
     public SyBbmDto.PageResponse getPageData(SyBbmDto.Request req) {
         PageHelper.addPaging(req);
-        SyBbmDto.PageResponse res = new SyBbmDto.PageResponse();
-        List<SyBbmDto.Item> list = syBbmMapper.selectPageList(VoUtil.voToMap(req));
-        long count = syBbmMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syBbmRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class SyBbmService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyBbm saved = syBbmRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class SyBbmService {
     @Transactional
     public SyBbm save(SyBbm entity) {
         if (!existsById(entity.getBbmId()))
-            throw new CmBizException("존재하지 않는 SyBbm입니다: " + entity.getBbmId());
+            throw new CmBizException("존재하지 않는 SyBbm입니다: " + entity.getBbmId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyBbm saved = syBbmRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class SyBbmService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyBbm saved = syBbmRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public SyBbm updateSelective(SyBbm entity) {
-        if (entity.getBbmId() == null) throw new CmBizException("bbmId 가 필요합니다.");
+        if (entity.getBbmId() == null) throw new CmBizException("bbmId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getBbmId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBbmId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBbmId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = syBbmMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = syBbmRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class SyBbmService {
         SyBbm entity = findById(id);
         syBbmRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

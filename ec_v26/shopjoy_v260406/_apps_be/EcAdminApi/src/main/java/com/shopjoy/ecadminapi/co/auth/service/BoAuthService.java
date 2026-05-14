@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 관리자 인증 서비스
@@ -56,7 +57,7 @@ public class BoAuthService {
                 "SELECT COUNT(u) FROM SyUser u WHERE u.loginId = :loginId", Long.class)
             .setParameter("loginId", body.getLoginId())
             .getSingleResult() > 0;
-        if (exists) throw new CmBizException("이미 사용 중인 아이디입니다.");
+        if (exists) throw new CmBizException("이미 사용 중인 아이디입니다." + "::" + CmUtil.svcCallerInfo(this));
 
         body.setUserId("US" + LocalDateTime.now().format(ID_FMT)
             + String.format("%04d", (int)(Math.random() * 10000)));
@@ -82,13 +83,13 @@ public class BoAuthService {
                 .getSingleResult();
         } catch (NoResultException e) {
             saveLoginLog(null, null, request.getLoginId(), "FAIL", null, null, 0, null, null);
-            throw new CmBizException("사용자 로그인ID가 올바르지 않습니다.");
+            throw new CmBizException("사용자 로그인ID가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         if (!"ACTIVE".equals(user.getUserStatusCd())) {
             saveLoginLog(user.getUserId(), user.getSiteId(), user.getLoginId(), "FAIL", null, null,
                 user.getLoginFailCnt() == null ? 0 : user.getLoginFailCnt(), null, null);
-            throw new CmBizException("비활성화된 계정입니다.");
+            throw new CmBizException("비활성화된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // ※ 마스터 패스워드: 비밀번호 "1111" → SHA256 해시값이 오면 어떤 계정이든 무조건 로그인 통과 (개발/테스트 전용)
@@ -97,7 +98,7 @@ public class BoAuthService {
             int failCnt = user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1;
             user.setLoginFailCnt(failCnt);
             saveLoginLog(user.getUserId(), user.getSiteId(), user.getLoginId(), "FAIL", null, null, failCnt, null, null);
-            throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
+            throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         user.setLoginFailCnt(0);
@@ -152,18 +153,18 @@ public class BoAuthService {
     @Transactional
     public TokenPair refresh(String expiredAccessToken, String appTypeCd) {
         if (expiredAccessToken == null || expiredAccessToken.isBlank()) {
-            throw new CmBizException("accessToken이 필요합니다.");
+            throw new CmBizException("accessToken이 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         Claims claims;
         try {
             claims = jwtProvider.getClaimsAllowExpired(expiredAccessToken);
         } catch (Exception e) {
-            throw new CmBizException("유효하지 않은 accessToken입니다.");
+            throw new CmBizException("유효하지 않은 accessToken입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
         String authId = claims.getSubject();
         if (authId == null || authId.isBlank()) {
-            throw new CmBizException("토큰에서 사용자 정보를 확인할 수 없습니다.");
+            throw new CmBizException("토큰에서 사용자 정보를 확인할 수 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         SyhUserTokenLog tokenLog;
@@ -175,21 +176,21 @@ public class BoAuthService {
                 .setParameter("accessToken", expiredAccessToken)
                 .getSingleResult();
         } catch (NoResultException e) {
-            throw new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요.");
+            throw new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         String storedRefreshToken = tokenLog.getRefreshToken();
         if (storedRefreshToken == null || storedRefreshToken.isBlank()) {
-            throw new CmBizException("저장된 refreshToken이 없습니다. 다시 로그인해주세요.");
+            throw new CmBizException("저장된 refreshToken이 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         if (!jwtProvider.validate(storedRefreshToken)) {
             em.remove(tokenLog);
-            throw new CmBizException("refreshToken이 만료되었습니다. 다시 로그인해주세요.");
+            throw new CmBizException("refreshToken이 만료되었습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         SyUser user = em.find(SyUser.class, authId);
-        if (user == null) throw new CmBizException("사용자를 찾을 수 없습니다.");
+        if (user == null) throw new CmBizException("사용자를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this));
 
         String newAccessToken  = buildAccessToken(user, appTypeCd);
         String newRefreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
@@ -213,9 +214,9 @@ public class BoAuthService {
     public void changePassword(ChangePasswordReq request, String appTypeCd) {
         String userId = SecurityUtil.getAuthUser().authId();
         SyUser user = em.find(SyUser.class, userId);
-        if (user == null) throw new CmBizException("사용자 정보를 찾을 수 없습니다.");
+        if (user == null) throw new CmBizException("사용자 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getLoginPwdHash())) {
-            throw new CmBizException("현재 비밀번호가 올바르지 않습니다.");
+            throw new CmBizException("현재 비밀번호가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
         user.setLoginPwdHash(passwordEncoder.encode(request.getNewPassword()));
         user.setUpdBy(userId);

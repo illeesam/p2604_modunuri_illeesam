@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmhPushLog;
-import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmhPushLogMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmhPushLogRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CmhPushLogService {
 
-    private final CmhPushLogMapper cmhPushLogMapper;
     private final CmhPushLogRepository cmhPushLogRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public CmhPushLogDto.Item getById(String id) {
-        CmhPushLogDto.Item dto = cmhPushLogMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        CmhPushLogDto.Item dto = cmhPushLogRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public CmhPushLogDto.Item getByIdOrNull(String id) {
+        return cmhPushLogRepository.selectById(id).orElse(null);
     }
 
     public CmhPushLog findById(String id) {
         return cmhPushLogRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public CmhPushLog findByIdOrNull(String id) {
+        return cmhPushLogRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return cmhPushLogRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!cmhPushLogRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<CmhPushLogDto.Item> getList(CmhPushLogDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return cmhPushLogMapper.selectList(VoUtil.voToMap(req));
+        return cmhPushLogRepository.selectList(req);
     }
 
     public CmhPushLogDto.PageResponse getPageData(CmhPushLogDto.Request req) {
         PageHelper.addPaging(req);
-        CmhPushLogDto.PageResponse res = new CmhPushLogDto.PageResponse();
-        List<CmhPushLogDto.Item> list = cmhPushLogMapper.selectPageList(VoUtil.voToMap(req));
-        long count = cmhPushLogMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return cmhPushLogRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class CmhPushLogService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         CmhPushLog saved = cmhPushLogRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class CmhPushLogService {
     @Transactional
     public CmhPushLog save(CmhPushLog entity) {
         if (!existsById(entity.getLogId()))
-            throw new CmBizException("존재하지 않는 CmhPushLog입니다: " + entity.getLogId());
+            throw new CmBizException("존재하지 않는 CmhPushLog입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmhPushLog saved = cmhPushLogRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class CmhPushLogService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmhPushLog saved = cmhPushLogRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public CmhPushLog updateSelective(CmhPushLog entity) {
-        if (entity.getLogId() == null) throw new CmBizException("logId 가 필요합니다.");
+        if (entity.getLogId() == null) throw new CmBizException("logId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getLogId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLogId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = cmhPushLogMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = cmhPushLogRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class CmhPushLogService {
         CmhPushLog entity = findById(id);
         cmhPushLogRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

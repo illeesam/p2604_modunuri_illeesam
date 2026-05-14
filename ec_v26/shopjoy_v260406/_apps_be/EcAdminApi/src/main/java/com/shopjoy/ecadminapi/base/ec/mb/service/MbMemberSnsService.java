@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.mb.service;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberSns;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberSnsMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberSnsRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class MbMemberSnsService {
 
-    private final MbMemberSnsMapper mbMemberSnsMapper;
     private final MbMemberSnsRepository mbMemberSnsRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public MbMemberSnsDto.Item getById(String id) {
-        MbMemberSnsDto.Item dto = mbMemberSnsMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        MbMemberSnsDto.Item dto = mbMemberSnsRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbMemberSnsDto.Item getByIdOrNull(String id) {
+        return mbMemberSnsRepository.selectById(id).orElse(null);
     }
 
     public MbMemberSns findById(String id) {
         return mbMemberSnsRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbMemberSns findByIdOrNull(String id) {
+        return mbMemberSnsRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return mbMemberSnsRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!mbMemberSnsRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<MbMemberSnsDto.Item> getList(MbMemberSnsDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbMemberSnsMapper.selectList(VoUtil.voToMap(req));
+        return mbMemberSnsRepository.selectList(req);
     }
 
     public MbMemberSnsDto.PageResponse getPageData(MbMemberSnsDto.Request req) {
         PageHelper.addPaging(req);
-        MbMemberSnsDto.PageResponse res = new MbMemberSnsDto.PageResponse();
-        List<MbMemberSnsDto.Item> list = mbMemberSnsMapper.selectPageList(VoUtil.voToMap(req));
-        long count = mbMemberSnsMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return mbMemberSnsRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class MbMemberSnsService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         MbMemberSns saved = mbMemberSnsRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class MbMemberSnsService {
     @Transactional
     public MbMemberSns save(MbMemberSns entity) {
         if (!existsById(entity.getMemberSnsId()))
-            throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + entity.getMemberSnsId());
+            throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + entity.getMemberSnsId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberSns saved = mbMemberSnsRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class MbMemberSnsService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberSns saved = mbMemberSnsRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public MbMemberSns updateSelective(MbMemberSns entity) {
-        if (entity.getMemberSnsId() == null) throw new CmBizException("memberSnsId 가 필요합니다.");
+        if (entity.getMemberSnsId() == null) throw new CmBizException("memberSnsId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getMemberSnsId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberSnsId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberSnsId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = mbMemberSnsMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = mbMemberSnsRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class MbMemberSnsService {
         MbMemberSns entity = findById(id);
         mbMemberSnsRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

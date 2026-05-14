@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUserRole;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyVendorUserRoleMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorUserRoleRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SyVendorUserRoleService {
 
-    private final SyVendorUserRoleMapper syVendorUserRoleMapper;
     private final SyVendorUserRoleRepository syVendorUserRoleRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public SyVendorUserRoleDto.Item getById(String id) {
-        SyVendorUserRoleDto.Item dto = syVendorUserRoleMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        SyVendorUserRoleDto.Item dto = syVendorUserRoleRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyVendorUserRoleDto.Item getByIdOrNull(String id) {
+        return syVendorUserRoleRepository.selectById(id).orElse(null);
     }
 
     public SyVendorUserRole findById(String id) {
         return syVendorUserRoleRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyVendorUserRole findByIdOrNull(String id) {
+        return syVendorUserRoleRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return syVendorUserRoleRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!syVendorUserRoleRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<SyVendorUserRoleDto.Item> getList(SyVendorUserRoleDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syVendorUserRoleMapper.selectList(VoUtil.voToMap(req));
+        return syVendorUserRoleRepository.selectList(req);
     }
 
     public SyVendorUserRoleDto.PageResponse getPageData(SyVendorUserRoleDto.Request req) {
         PageHelper.addPaging(req);
-        SyVendorUserRoleDto.PageResponse res = new SyVendorUserRoleDto.PageResponse();
-        List<SyVendorUserRoleDto.Item> list = syVendorUserRoleMapper.selectPageList(VoUtil.voToMap(req));
-        long count = syVendorUserRoleMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syVendorUserRoleRepository.selectPageList(req);
     }
 
     @Transactional
@@ -68,7 +77,7 @@ public class SyVendorUserRoleService {
         body.setRegBy(authId);
         body.setRegDate(now);
         SyVendorUserRole saved = syVendorUserRoleRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -76,11 +85,11 @@ public class SyVendorUserRoleService {
     @Transactional
     public SyVendorUserRole save(SyVendorUserRole entity) {
         if (!existsById(entity.getVendorUserRoleId()))
-            throw new CmBizException("존재하지 않는 SyVendorUserRole입니다: " + entity.getVendorUserRoleId());
+            throw new CmBizException("존재하지 않는 SyVendorUserRole입니다: " + entity.getVendorUserRoleId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendorUserRole saved = syVendorUserRoleRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -92,20 +101,20 @@ public class SyVendorUserRoleService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendorUserRole saved = syVendorUserRoleRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public SyVendorUserRole updateSelective(SyVendorUserRole entity) {
-        if (entity.getVendorUserRoleId() == null) throw new CmBizException("vendorUserRoleId 가 필요합니다.");
+        if (entity.getVendorUserRoleId() == null) throw new CmBizException("vendorUserRoleId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getVendorUserRoleId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorUserRoleId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorUserRoleId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = syVendorUserRoleMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = syVendorUserRoleRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -115,7 +124,7 @@ public class SyVendorUserRoleService {
         SyVendorUserRole entity = findById(id);
         syVendorUserRoleRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

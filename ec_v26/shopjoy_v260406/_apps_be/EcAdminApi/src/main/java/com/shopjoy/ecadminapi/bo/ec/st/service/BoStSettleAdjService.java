@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 정산조정 서비스 — base StSettleAdjService 위임 (thin wrapper) + approve.
@@ -43,12 +44,12 @@ public class BoStSettleAdjService {
     @Transactional
     public StSettleAdjDto.Item approve(String id, StSettleAdjApproveDto.Request req) {
         StSettleAdj entity = stSettleAdjRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setAprvStatusCd(req.getAprvStatusCd() != null ? req.getAprvStatusCd() : "승인");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleAdj saved = stSettleAdjRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return stSettleAdjService.getById(id);
     }

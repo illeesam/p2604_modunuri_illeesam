@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyVendorMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SyVendorService {
 
-    private final SyVendorMapper syVendorMapper;
     private final SyVendorRepository syVendorRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public SyVendorDto.Item getById(String id) {
-        SyVendorDto.Item dto = syVendorMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        SyVendorDto.Item dto = syVendorRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyVendorDto.Item getByIdOrNull(String id) {
+        return syVendorRepository.selectById(id).orElse(null);
     }
 
     public SyVendor findById(String id) {
         return syVendorRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyVendor findByIdOrNull(String id) {
+        return syVendorRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return syVendorRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!syVendorRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<SyVendorDto.Item> getList(SyVendorDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syVendorMapper.selectList(VoUtil.voToMap(req));
+        return syVendorRepository.selectList(req);
     }
 
     public SyVendorDto.PageResponse getPageData(SyVendorDto.Request req) {
         PageHelper.addPaging(req);
-        SyVendorDto.PageResponse res = new SyVendorDto.PageResponse();
-        List<SyVendorDto.Item> list = syVendorMapper.selectPageList(VoUtil.voToMap(req));
-        long count = syVendorMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syVendorRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class SyVendorService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyVendor saved = syVendorRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class SyVendorService {
     @Transactional
     public SyVendor save(SyVendor entity) {
         if (!existsById(entity.getVendorId()))
-            throw new CmBizException("존재하지 않는 SyVendor입니다: " + entity.getVendorId());
+            throw new CmBizException("존재하지 않는 SyVendor입니다: " + entity.getVendorId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendor saved = syVendorRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class SyVendorService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendor saved = syVendorRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public SyVendor updateSelective(SyVendor entity) {
-        if (entity.getVendorId() == null) throw new CmBizException("vendorId 가 필요합니다.");
+        if (entity.getVendorId() == null) throw new CmBizException("vendorId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getVendorId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = syVendorMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = syVendorRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class SyVendorService {
         SyVendor entity = findById(id);
         syVendorRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

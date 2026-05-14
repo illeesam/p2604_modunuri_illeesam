@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdRestockNotiMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdRestockNotiRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PdRestockNotiService {
 
-    private final PdRestockNotiMapper pdRestockNotiMapper;
     private final PdRestockNotiRepository pdRestockNotiRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PdRestockNotiDto.Item getById(String id) {
-        PdRestockNotiDto.Item dto = pdRestockNotiMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PdRestockNotiDto.Item dto = pdRestockNotiRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdRestockNotiDto.Item getByIdOrNull(String id) {
+        return pdRestockNotiRepository.selectById(id).orElse(null);
     }
 
     public PdRestockNoti findById(String id) {
         return pdRestockNotiRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdRestockNoti findByIdOrNull(String id) {
+        return pdRestockNotiRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pdRestockNotiRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pdRestockNotiRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PdRestockNotiDto.Item> getList(PdRestockNotiDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdRestockNotiMapper.selectList(VoUtil.voToMap(req));
+        return pdRestockNotiRepository.selectList(req);
     }
 
     public PdRestockNotiDto.PageResponse getPageData(PdRestockNotiDto.Request req) {
         PageHelper.addPaging(req);
-        PdRestockNotiDto.PageResponse res = new PdRestockNotiDto.PageResponse();
-        List<PdRestockNotiDto.Item> list = pdRestockNotiMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pdRestockNotiMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pdRestockNotiRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PdRestockNotiService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PdRestockNoti saved = pdRestockNotiRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PdRestockNotiService {
     @Transactional
     public PdRestockNoti save(PdRestockNoti entity) {
         if (!existsById(entity.getRestockNotiId()))
-            throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId());
+            throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdRestockNoti saved = pdRestockNotiRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PdRestockNotiService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdRestockNoti saved = pdRestockNotiRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PdRestockNoti updateSelective(PdRestockNoti entity) {
-        if (entity.getRestockNotiId() == null) throw new CmBizException("restockNotiId 가 필요합니다.");
+        if (entity.getRestockNotiId() == null) throw new CmBizException("restockNotiId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getRestockNotiId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRestockNotiId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRestockNotiId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pdRestockNotiMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pdRestockNotiRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PdRestockNotiService {
         PdRestockNoti entity = findById(id);
         pdRestockNotiRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

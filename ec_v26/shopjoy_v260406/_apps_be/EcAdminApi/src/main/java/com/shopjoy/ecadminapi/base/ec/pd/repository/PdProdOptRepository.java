@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface PdProdOptRepository extends JpaRepository<PdProdOpt, String> {
+public interface PdProdOptRepository extends JpaRepository<PdProdOpt, String>, QPdProdOptRepository {
 
     List<PdProdOpt> findByProdId(String prodId);
 

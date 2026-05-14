@@ -5,7 +5,6 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nMsgDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18nMsg;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyI18nMsgMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyI18nMsgRepository;
 import com.shopjoy.ecadminapi.base.sy.service.SyI18nService;
 import com.shopjoy.ecadminapi.cache.redisstore.SyI18nRedisStore;
@@ -25,7 +24,6 @@ import java.util.Map;
 public class BoSyI18nService {
 
     private final SyI18nService syI18nService;
-    private final SyI18nMsgMapper syI18nMsgMapper;
     private final SyI18nMsgRepository syI18nMsgRepository;
     private final SyI18nRedisStore i18nCache;
 
@@ -66,7 +64,7 @@ public class BoSyI18nService {
             SyI18nMsgDto.Request req = new SyI18nMsgDto.Request();
             req.setI18nId(i18nId);
             req.setLangCd(langCd);
-            List<SyI18nMsgDto.Item> existing = syI18nMsgMapper.selectList(VoUtil.voToMap(req));
+            List<SyI18nMsgDto.Item> existing = syI18nMsgRepository.selectList(req);
 
             if (!existing.isEmpty()) {
                 SyI18nMsgDto.Item dto = existing.get(0);

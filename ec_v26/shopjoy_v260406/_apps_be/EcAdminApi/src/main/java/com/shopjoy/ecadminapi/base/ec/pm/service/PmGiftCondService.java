@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pm.service;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftCondDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftCond;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmGiftCondMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmGiftCondRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PmGiftCondService {
 
-    private final PmGiftCondMapper pmGiftCondMapper;
     private final PmGiftCondRepository pmGiftCondRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PmGiftCondDto.Item getById(String id) {
-        PmGiftCondDto.Item dto = pmGiftCondMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PmGiftCondDto.Item dto = pmGiftCondRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmGiftCondDto.Item getByIdOrNull(String id) {
+        return pmGiftCondRepository.selectById(id).orElse(null);
     }
 
     public PmGiftCond findById(String id) {
         return pmGiftCondRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmGiftCond findByIdOrNull(String id) {
+        return pmGiftCondRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pmGiftCondRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pmGiftCondRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PmGiftCondDto.Item> getList(PmGiftCondDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmGiftCondMapper.selectList(VoUtil.voToMap(req));
+        return pmGiftCondRepository.selectList(req);
     }
 
     public PmGiftCondDto.PageResponse getPageData(PmGiftCondDto.Request req) {
         PageHelper.addPaging(req);
-        PmGiftCondDto.PageResponse res = new PmGiftCondDto.PageResponse();
-        List<PmGiftCondDto.Item> list = pmGiftCondMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pmGiftCondMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pmGiftCondRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PmGiftCondService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PmGiftCond saved = pmGiftCondRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PmGiftCondService {
     @Transactional
     public PmGiftCond save(PmGiftCond entity) {
         if (!existsById(entity.getGiftCondId()))
-            throw new CmBizException("존재하지 않는 PmGiftCond입니다: " + entity.getGiftCondId());
+            throw new CmBizException("존재하지 않는 PmGiftCond입니다: " + entity.getGiftCondId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmGiftCond saved = pmGiftCondRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PmGiftCondService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmGiftCond saved = pmGiftCondRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PmGiftCond updateSelective(PmGiftCond entity) {
-        if (entity.getGiftCondId() == null) throw new CmBizException("giftCondId 가 필요합니다.");
+        if (entity.getGiftCondId() == null) throw new CmBizException("giftCondId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getGiftCondId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getGiftCondId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getGiftCondId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pmGiftCondMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pmGiftCondRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PmGiftCondService {
         PmGiftCond entity = findById(id);
         pmGiftCondRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
-import com.shopjoy.ecadminapi.base.sy.mapper.SySiteMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,34 +15,39 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SySiteService {
 
-    private final SySiteMapper sySiteMapper;
     private final SySiteRepository sySiteRepository;
 
     @PersistenceContext
     private EntityManager em;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
-    /** getById — 단건조회 (MyBatis, JOIN 필드 포함) */
+    /** getById — 단건조회 (QueryDSL, JOIN 필드 포함) */
     public SySiteDto.Item getById(String id) {
-        SySiteDto.Item dto = sySiteMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        SySiteDto.Item dto = sySiteRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SySiteDto.Item getByIdOrNull(String id) {
+        return sySiteRepository.selectById(id).orElse(null);
     }
 
     /** findById — 단건조회 (JPA) */
     public SySite findById(String id) {
         return sySiteRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SySite findByIdOrNull(String id) {
+        return sySiteRepository.findById(id).orElse(null);
     }
 
     /** existsById — 존재 여부 확인 (JPA) */
@@ -51,19 +55,21 @@ public class SySiteService {
         return sySiteRepository.existsById(id);
     }
 
-    /** getList — 목록조회 */
-    public List<SySiteDto.Item> getList(SySiteDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return sySiteMapper.selectList(VoUtil.voToMap(req));
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!sySiteRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
     }
 
-    /** getPageData — 페이징조회 */
+    /** getList — 목록조회 (QueryDSL) */
+    public List<SySiteDto.Item> getList(SySiteDto.Request req) {
+        return sySiteRepository.selectList(req);
+    }
+
+    /** getPageData — 페이징조회 (QueryDSL) */
     public SySiteDto.PageResponse getPageData(SySiteDto.Request req) {
         PageHelper.addPaging(req);
-        SySiteDto.PageResponse res = new SySiteDto.PageResponse();
-        List<SySiteDto.Item> list = sySiteMapper.selectPageList(VoUtil.voToMap(req));
-        long count = sySiteMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return sySiteRepository.selectPageList(req);
     }
 
     // ── 변경 ────────────────────────────────────────────────────
@@ -77,7 +83,7 @@ public class SySiteService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SySite saved = sySiteRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -86,11 +92,11 @@ public class SySiteService {
     @Transactional
     public SySite save(SySite entity) {
         if (!existsById(entity.getSiteId()))
-            throw new CmBizException("존재하지 않는 SySite입니다: " + entity.getSiteId());
+            throw new CmBizException("존재하지 않는 SySite입니다: " + entity.getSiteId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SySite saved = sySiteRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -103,22 +109,22 @@ public class SySiteService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SySite saved = sySiteRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
-    /** updateSelective — 선택 필드 수정 (MyBatis selective UPDATE) */
+    /** updateSelective — 선택 필드 수정 (QueryDSL selective UPDATE) */
     @Transactional
     public SySite updateSelective(SySite entity) {
         if (entity.getSiteId() == null)
-            throw new CmBizException("siteId 가 필요합니다.");
+            throw new CmBizException("siteId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getSiteId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSiteId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSiteId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = sySiteMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = sySiteRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -130,7 +136,7 @@ public class SySiteService {
         sySiteRepository.delete(entity);
         em.flush();
         if (existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+            throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     /** saveList — 일괄 저장 */

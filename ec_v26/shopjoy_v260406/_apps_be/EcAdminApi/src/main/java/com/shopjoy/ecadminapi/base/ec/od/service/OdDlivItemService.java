@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.od.service;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDlivItem;
-import com.shopjoy.ecadminapi.base.ec.od.mapper.OdDlivItemMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdDlivItemRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class OdDlivItemService {
 
-    private final OdDlivItemMapper odDlivItemMapper;
     private final OdDlivItemRepository odDlivItemRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public OdDlivItemDto.Item getById(String id) {
-        OdDlivItemDto.Item dto = odDlivItemMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        OdDlivItemDto.Item dto = odDlivItemRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public OdDlivItemDto.Item getByIdOrNull(String id) {
+        return odDlivItemRepository.selectById(id).orElse(null);
     }
 
     public OdDlivItem findById(String id) {
         return odDlivItemRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public OdDlivItem findByIdOrNull(String id) {
+        return odDlivItemRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return odDlivItemRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!odDlivItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<OdDlivItemDto.Item> getList(OdDlivItemDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odDlivItemMapper.selectList(VoUtil.voToMap(req));
+        return odDlivItemRepository.selectList(req);
     }
 
     public OdDlivItemDto.PageResponse getPageData(OdDlivItemDto.Request req) {
         PageHelper.addPaging(req);
-        OdDlivItemDto.PageResponse res = new OdDlivItemDto.PageResponse();
-        List<OdDlivItemDto.Item> list = odDlivItemMapper.selectPageList(VoUtil.voToMap(req));
-        long count = odDlivItemMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return odDlivItemRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class OdDlivItemService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         OdDlivItem saved = odDlivItemRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class OdDlivItemService {
     @Transactional
     public OdDlivItem save(OdDlivItem entity) {
         if (!existsById(entity.getDlivItemId()))
-            throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + entity.getDlivItemId());
+            throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + entity.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdDlivItem saved = odDlivItemRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class OdDlivItemService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdDlivItem saved = odDlivItemRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public OdDlivItem updateSelective(OdDlivItem entity) {
-        if (entity.getDlivItemId() == null) throw new CmBizException("dlivItemId 가 필요합니다.");
+        if (entity.getDlivItemId() == null) throw new CmBizException("dlivItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getDlivItemId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDlivItemId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = odDlivItemMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = odDlivItemRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class OdDlivItemService {
         OdDlivItem entity = findById(id);
         odDlivItemRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

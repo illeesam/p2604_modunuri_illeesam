@@ -24,6 +24,7 @@ public class EcAdminApiApplication {
 
     /** main */
     public static void main(String[] args) {
+        long startedAt = System.currentTimeMillis();
         log.info("[EcAdminApi] ===== 애플리케이션 시작 중 =====");
         ConfigurableApplicationContext ctx = SpringApplication.run(EcAdminApiApplication.class, args);
         String profiles = String.join(", ", ctx.getEnvironment().getActiveProfiles());
@@ -33,6 +34,9 @@ public class EcAdminApiApplication {
         checkDatabaseConnection(ctx);
         checkRedisConnection(ctx);
         checkFileStorageConfiguration(ctx);
+
+        long elapsedMs = System.currentTimeMillis() - startedAt;
+        log.info("⏱  [구동 소요 시간] {}.{}초 ({} ms)", elapsedMs / 1000, String.format("%03d", elapsedMs % 1000), elapsedMs);
     }
 
     /** checkDatabaseConnection — 검증 */

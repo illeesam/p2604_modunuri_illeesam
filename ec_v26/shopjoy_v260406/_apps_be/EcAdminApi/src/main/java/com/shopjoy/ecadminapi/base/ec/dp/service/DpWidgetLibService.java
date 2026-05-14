@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.dp.service;
 
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
-import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpWidgetLibMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetLibRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class DpWidgetLibService {
 
-    private final DpWidgetLibMapper dpWidgetLibMapper;
     private final DpWidgetLibRepository dpWidgetLibRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public DpWidgetLibDto.Item getById(String id) {
-        DpWidgetLibDto.Item dto = dpWidgetLibMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        DpWidgetLibDto.Item dto = dpWidgetLibRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public DpWidgetLibDto.Item getByIdOrNull(String id) {
+        return dpWidgetLibRepository.selectById(id).orElse(null);
     }
 
     public DpWidgetLib findById(String id) {
         return dpWidgetLibRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public DpWidgetLib findByIdOrNull(String id) {
+        return dpWidgetLibRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return dpWidgetLibRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!dpWidgetLibRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<DpWidgetLibDto.Item> getList(DpWidgetLibDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return dpWidgetLibMapper.selectList(VoUtil.voToMap(req));
+        return dpWidgetLibRepository.selectList(req);
     }
 
     public DpWidgetLibDto.PageResponse getPageData(DpWidgetLibDto.Request req) {
         PageHelper.addPaging(req);
-        DpWidgetLibDto.PageResponse res = new DpWidgetLibDto.PageResponse();
-        List<DpWidgetLibDto.Item> list = dpWidgetLibMapper.selectPageList(VoUtil.voToMap(req));
-        long count = dpWidgetLibMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return dpWidgetLibRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class DpWidgetLibService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         DpWidgetLib saved = dpWidgetLibRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class DpWidgetLibService {
     @Transactional
     public DpWidgetLib save(DpWidgetLib entity) {
         if (!existsById(entity.getWidgetLibId()))
-            throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId());
+            throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpWidgetLib saved = dpWidgetLibRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class DpWidgetLibService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpWidgetLib saved = dpWidgetLibRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public DpWidgetLib updateSelective(DpWidgetLib entity) {
-        if (entity.getWidgetLibId() == null) throw new CmBizException("widgetLibId 가 필요합니다.");
+        if (entity.getWidgetLibId() == null) throw new CmBizException("widgetLibId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getWidgetLibId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getWidgetLibId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getWidgetLibId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = dpWidgetLibMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = dpWidgetLibRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class DpWidgetLibService {
         DpWidgetLib entity = findById(id);
         dpWidgetLibRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

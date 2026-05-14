@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 클레임 서비스 — base OdClaimService 위임 (thin wrapper) + 일괄 처리 메서드.
@@ -43,13 +44,13 @@ public class BoOdClaimService {
     @Transactional
     public OdClaimDto.Item changeStatus(String id, String statusCd) {
         OdClaim entity = odClaimRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setClaimStatusCdBefore(entity.getClaimStatusCd());
         entity.setClaimStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdClaim saved = odClaimRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return odClaimService.getById(id);
     }
@@ -66,7 +67,7 @@ public class BoOdClaimService {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
         }
     }
@@ -82,7 +83,7 @@ public class BoOdClaimService {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
         }
     }
@@ -97,7 +98,7 @@ public class BoOdClaimService {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
         }
     }
@@ -112,7 +113,7 @@ public class BoOdClaimService {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
         }
     }

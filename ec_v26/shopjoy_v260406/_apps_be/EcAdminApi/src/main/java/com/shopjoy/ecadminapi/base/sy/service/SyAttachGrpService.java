@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachGrpDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttachGrp;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyAttachGrpMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachGrpRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SyAttachGrpService {
 
-    private final SyAttachGrpMapper syAttachGrpMapper;
     private final SyAttachGrpRepository syAttachGrpRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public SyAttachGrpDto.Item getById(String id) {
-        SyAttachGrpDto.Item dto = syAttachGrpMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        SyAttachGrpDto.Item dto = syAttachGrpRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyAttachGrpDto.Item getByIdOrNull(String id) {
+        return syAttachGrpRepository.selectById(id).orElse(null);
     }
 
     public SyAttachGrp findById(String id) {
         return syAttachGrpRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyAttachGrp findByIdOrNull(String id) {
+        return syAttachGrpRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return syAttachGrpRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!syAttachGrpRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<SyAttachGrpDto.Item> getList(SyAttachGrpDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syAttachGrpMapper.selectList(VoUtil.voToMap(req));
+        return syAttachGrpRepository.selectList(req);
     }
 
     public SyAttachGrpDto.PageResponse getPageData(SyAttachGrpDto.Request req) {
         PageHelper.addPaging(req);
-        SyAttachGrpDto.PageResponse res = new SyAttachGrpDto.PageResponse();
-        List<SyAttachGrpDto.Item> list = syAttachGrpMapper.selectPageList(VoUtil.voToMap(req));
-        long count = syAttachGrpMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syAttachGrpRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class SyAttachGrpService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyAttachGrp saved = syAttachGrpRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class SyAttachGrpService {
     @Transactional
     public SyAttachGrp save(SyAttachGrp entity) {
         if (!existsById(entity.getAttachGrpId()))
-            throw new CmBizException("존재하지 않는 SyAttachGrp입니다: " + entity.getAttachGrpId());
+            throw new CmBizException("존재하지 않는 SyAttachGrp입니다: " + entity.getAttachGrpId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyAttachGrp saved = syAttachGrpRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class SyAttachGrpService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyAttachGrp saved = syAttachGrpRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public SyAttachGrp updateSelective(SyAttachGrp entity) {
-        if (entity.getAttachGrpId() == null) throw new CmBizException("attachGrpId 가 필요합니다.");
+        if (entity.getAttachGrpId() == null) throw new CmBizException("attachGrpId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getAttachGrpId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAttachGrpId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAttachGrpId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = syAttachGrpMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = syAttachGrpRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class SyAttachGrpService {
         SyAttachGrp entity = findById(id);
         syAttachGrpRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewAttach;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdReviewAttachMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdReviewAttachRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PdReviewAttachService {
 
-    private final PdReviewAttachMapper pdReviewAttachMapper;
     private final PdReviewAttachRepository pdReviewAttachRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PdReviewAttachDto.Item getById(String id) {
-        PdReviewAttachDto.Item dto = pdReviewAttachMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PdReviewAttachDto.Item dto = pdReviewAttachRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdReviewAttachDto.Item getByIdOrNull(String id) {
+        return pdReviewAttachRepository.selectById(id).orElse(null);
     }
 
     public PdReviewAttach findById(String id) {
         return pdReviewAttachRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdReviewAttach findByIdOrNull(String id) {
+        return pdReviewAttachRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pdReviewAttachRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pdReviewAttachRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PdReviewAttachDto.Item> getList(PdReviewAttachDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdReviewAttachMapper.selectList(VoUtil.voToMap(req));
+        return pdReviewAttachRepository.selectList(req);
     }
 
     public PdReviewAttachDto.PageResponse getPageData(PdReviewAttachDto.Request req) {
         PageHelper.addPaging(req);
-        PdReviewAttachDto.PageResponse res = new PdReviewAttachDto.PageResponse();
-        List<PdReviewAttachDto.Item> list = pdReviewAttachMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pdReviewAttachMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pdReviewAttachRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PdReviewAttachService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PdReviewAttach saved = pdReviewAttachRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PdReviewAttachService {
     @Transactional
     public PdReviewAttach save(PdReviewAttach entity) {
         if (!existsById(entity.getReviewAttachId()))
-            throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + entity.getReviewAttachId());
+            throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + entity.getReviewAttachId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdReviewAttach saved = pdReviewAttachRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PdReviewAttachService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdReviewAttach saved = pdReviewAttachRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PdReviewAttach updateSelective(PdReviewAttach entity) {
-        if (entity.getReviewAttachId() == null) throw new CmBizException("reviewAttachId 가 필요합니다.");
+        if (entity.getReviewAttachId() == null) throw new CmBizException("reviewAttachId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getReviewAttachId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReviewAttachId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReviewAttachId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pdReviewAttachMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pdReviewAttachRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PdReviewAttachService {
         PdReviewAttach entity = findById(id);
         pdReviewAttachRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

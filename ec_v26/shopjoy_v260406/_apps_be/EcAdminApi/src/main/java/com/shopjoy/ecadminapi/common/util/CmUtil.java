@@ -16,6 +16,43 @@ public class CmUtil {
 
     private CmUtil() {}
 
+    /**
+     * Service 빈의 도메인 이름을 추출. (CmBizException 메시지에 ::도메인 접미사 용도)
+     * <pre>
+     * SyCodeGrpService → syCodeGrp
+     * FoMyPageService  → foMyPage
+     * </pre>
+     * Spring CGLIB 프록시 클래스명("XxxService$$EnhancerBySpringCGLIB$$...") 도 안전 처리.
+     */
+    public static String svcDomain(Object svc) {
+        if (svc == null) return "";
+        String name = svc.getClass().getSimpleName();
+        // CGLIB 프록시 처리: 'XxxService$$EnhancerBySpringCGLIB$$abcd1234' → 'XxxService'
+        int dollarIdx = name.indexOf('$');
+        if (dollarIdx >= 0) name = name.substring(0, dollarIdx);
+        // 'Service' 접미사 제거
+        if (name.endsWith("Service")) name = name.substring(0, name.length() - "Service".length());
+        if (name.isEmpty()) return "";
+        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
+    }
+
+    /**
+     * Service 빈의 도메인 + 호출 메서드명 + 라인번호 추출.
+     * <pre>
+     * SyCodeGrpService.getById:31 호출 → "syCodeGrp::getById:31"
+     * FoMyPageService.changePassword:80 호출 → "foMyPage::changePassword:80"
+     * </pre>
+     * StackWalker (Java 9+) 사용. CGLIB 프록시 클래스명도 안전 처리.
+     */
+    public static String svcCallerInfo(Object svc) {
+        String domain = svcDomain(svc);
+        StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+        // skip(1) — svcCallerInfo 자체 프레임 제외 → 호출자 = Service 메서드
+        StackWalker.StackFrame frame = walker.walk(s -> s.skip(1).findFirst().orElse(null));
+        if (frame == null) return domain;
+        return domain + "::" + frame.getMethodName() + ":" + frame.getLineNumber();
+    }
+
     /** @deprecated PageHelper.addPaging(p) 사용 */
     @Deprecated
     public static void addPaging(Map<String, Object> p) {

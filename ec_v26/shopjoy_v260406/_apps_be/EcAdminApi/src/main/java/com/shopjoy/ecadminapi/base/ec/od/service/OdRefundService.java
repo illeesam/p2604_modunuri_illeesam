@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.od.service;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefund;
-import com.shopjoy.ecadminapi.base.ec.od.mapper.OdRefundMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdRefundRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class OdRefundService {
 
-    private final OdRefundMapper odRefundMapper;
     private final OdRefundRepository odRefundRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public OdRefundDto.Item getById(String id) {
-        OdRefundDto.Item dto = odRefundMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        OdRefundDto.Item dto = odRefundRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public OdRefundDto.Item getByIdOrNull(String id) {
+        return odRefundRepository.selectById(id).orElse(null);
     }
 
     public OdRefund findById(String id) {
         return odRefundRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public OdRefund findByIdOrNull(String id) {
+        return odRefundRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return odRefundRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!odRefundRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<OdRefundDto.Item> getList(OdRefundDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return odRefundMapper.selectList(VoUtil.voToMap(req));
+        return odRefundRepository.selectList(req);
     }
 
     public OdRefundDto.PageResponse getPageData(OdRefundDto.Request req) {
         PageHelper.addPaging(req);
-        OdRefundDto.PageResponse res = new OdRefundDto.PageResponse();
-        List<OdRefundDto.Item> list = odRefundMapper.selectPageList(VoUtil.voToMap(req));
-        long count = odRefundMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return odRefundRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class OdRefundService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         OdRefund saved = odRefundRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class OdRefundService {
     @Transactional
     public OdRefund save(OdRefund entity) {
         if (!existsById(entity.getRefundId()))
-            throw new CmBizException("존재하지 않는 OdRefund입니다: " + entity.getRefundId());
+            throw new CmBizException("존재하지 않는 OdRefund입니다: " + entity.getRefundId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdRefund saved = odRefundRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class OdRefundService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdRefund saved = odRefundRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public OdRefund updateSelective(OdRefund entity) {
-        if (entity.getRefundId() == null) throw new CmBizException("refundId 가 필요합니다.");
+        if (entity.getRefundId() == null) throw new CmBizException("refundId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getRefundId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRefundId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRefundId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = odRefundMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = odRefundRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class OdRefundService {
         OdRefund entity = findById(id);
         odRefundRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

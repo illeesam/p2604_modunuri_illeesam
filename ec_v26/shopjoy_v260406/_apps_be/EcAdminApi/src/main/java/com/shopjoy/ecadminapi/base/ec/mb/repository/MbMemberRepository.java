@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface MbMemberRepository extends JpaRepository<MbMember, String> {
+public interface MbMemberRepository extends JpaRepository<MbMember, String>, QMbMemberRepository {
     Optional<MbMember> findByLoginId(String loginId);
 }

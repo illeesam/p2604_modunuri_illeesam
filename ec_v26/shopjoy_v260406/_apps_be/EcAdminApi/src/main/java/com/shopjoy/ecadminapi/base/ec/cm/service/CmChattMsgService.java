@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
-import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmChattMsgMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattMsgRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CmChattMsgService {
 
-    private final CmChattMsgMapper cmChattMsgMapper;
     private final CmChattMsgRepository cmChattMsgRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public CmChattMsgDto.Item getById(String id) {
-        CmChattMsgDto.Item dto = cmChattMsgMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        CmChattMsgDto.Item dto = cmChattMsgRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public CmChattMsgDto.Item getByIdOrNull(String id) {
+        return cmChattMsgRepository.selectById(id).orElse(null);
     }
 
     public CmChattMsg findById(String id) {
         return cmChattMsgRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public CmChattMsg findByIdOrNull(String id) {
+        return cmChattMsgRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return cmChattMsgRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!cmChattMsgRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<CmChattMsgDto.Item> getList(CmChattMsgDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return cmChattMsgMapper.selectList(VoUtil.voToMap(req));
+        return cmChattMsgRepository.selectList(req);
     }
 
     public CmChattMsgDto.PageResponse getPageData(CmChattMsgDto.Request req) {
         PageHelper.addPaging(req);
-        CmChattMsgDto.PageResponse res = new CmChattMsgDto.PageResponse();
-        List<CmChattMsgDto.Item> list = cmChattMsgMapper.selectPageList(VoUtil.voToMap(req));
-        long count = cmChattMsgMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return cmChattMsgRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class CmChattMsgService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         CmChattMsg saved = cmChattMsgRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class CmChattMsgService {
     @Transactional
     public CmChattMsg save(CmChattMsg entity) {
         if (!existsById(entity.getChattMsgId()))
-            throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getChattMsgId());
+            throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getChattMsgId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmChattMsg saved = cmChattMsgRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class CmChattMsgService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmChattMsg saved = cmChattMsgRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public CmChattMsg updateSelective(CmChattMsg entity) {
-        if (entity.getChattMsgId() == null) throw new CmBizException("chattMsgId 가 필요합니다.");
+        if (entity.getChattMsgId() == null) throw new CmBizException("chattMsgId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getChattMsgId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getChattMsgId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getChattMsgId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = cmChattMsgMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = cmChattMsgRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class CmChattMsgService {
         CmChattMsg entity = findById(id);
         cmChattMsgRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

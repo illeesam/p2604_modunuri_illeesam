@@ -3,7 +3,6 @@ package com.shopjoy.ecadminapi.fo.ec.service;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmContactSubmitDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
-import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -28,19 +27,18 @@ public class FoCmContactService {
     private static final String CONTACT_CATE = "CONTACT";
 
     private final CmBlogRepository cmBlogRepository;
-    private final CmBlogMapper cmBlogMapper;
 
     /** getById — 조회 */
     public CmBlogDto.Item getById(String id) {
-        CmBlogDto.Item dto = cmBlogMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 문의입니다: " + id);
+        CmBlogDto.Item dto = cmBlogRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 문의입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
     }
 
     /** submit — 제출 */
     @Transactional
     public CmBlog submit(CmContactSubmitDto.Request req) {
-        if (req == null) throw new CmBizException("요청 데이터가 비어있습니다.");
+        if (req == null) throw new CmBizException("요청 데이터가 비어있습니다." + "::" + CmUtil.svcCallerInfo(this));
         CmBlog entity = new CmBlog();
         entity.setBlogId(CmUtil.generateId("fo_contact"));
         entity.setBlogCateId(CONTACT_CATE);
@@ -57,7 +55,7 @@ public class FoCmContactService {
         entity.setUpdBy(authId);
         entity.setUpdDate(LocalDateTime.now());
         CmBlog saved = cmBlogRepository.save(entity);
-        if (saved == null) throw new CmBizException("문의 접수에 실패했습니다.");
+        if (saved == null) throw new CmBizException("문의 접수에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
     }
 

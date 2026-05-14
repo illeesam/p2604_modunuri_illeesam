@@ -1,9 +1,7 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendMsgLog;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyhSendMsgLogMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhSendMsgLogRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import lombok.RequiredArgsConstructor;
@@ -17,32 +15,27 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SyhSendMsgLogService {
 
-    private final SyhSendMsgLogMapper syhSendMsgLogMapper;
     private final SyhSendMsgLogRepository syhSendMsgLogRepository;
 
     /** getById — 단건조회 */
     public SyhSendMsgLogDto.Item getById(String id) {
-        return syhSendMsgLogMapper.selectById(id);
+        return syhSendMsgLogRepository.selectById(id).orElse(null);
     }
 
     /** getList — 목록조회 */
     public List<SyhSendMsgLogDto.Item> getList(SyhSendMsgLogDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syhSendMsgLogMapper.selectList(VoUtil.voToMap(req));
+        return syhSendMsgLogRepository.selectList(req);
     }
 
     /** getPageData — 페이징조회 */
     public SyhSendMsgLogDto.PageResponse getPageData(SyhSendMsgLogDto.Request req) {
         PageHelper.addPaging(req);
-        SyhSendMsgLogDto.PageResponse res = new SyhSendMsgLogDto.PageResponse();
-        List<SyhSendMsgLogDto.Item> list = syhSendMsgLogMapper.selectPageList(VoUtil.voToMap(req));
-        long count = syhSendMsgLogMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syhSendMsgLogRepository.selectPageList(req);
     }
 
     /** update — 수정 */
     @Transactional
     public int update(SyhSendMsgLog entity) {
-        return syhSendMsgLogMapper.updateSelective(entity);
+        return syhSendMsgLogRepository.updateSelective(entity);
     }
 }

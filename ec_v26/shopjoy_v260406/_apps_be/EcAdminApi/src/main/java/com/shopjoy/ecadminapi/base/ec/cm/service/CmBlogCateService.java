@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogCate;
-import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogCateMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogCateRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CmBlogCateService {
 
-    private final CmBlogCateMapper cmBlogCateMapper;
     private final CmBlogCateRepository cmBlogCateRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public CmBlogCateDto.Item getById(String id) {
-        CmBlogCateDto.Item dto = cmBlogCateMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        CmBlogCateDto.Item dto = cmBlogCateRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public CmBlogCateDto.Item getByIdOrNull(String id) {
+        return cmBlogCateRepository.selectById(id).orElse(null);
     }
 
     public CmBlogCate findById(String id) {
         return cmBlogCateRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public CmBlogCate findByIdOrNull(String id) {
+        return cmBlogCateRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return cmBlogCateRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!cmBlogCateRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<CmBlogCateDto.Item> getList(CmBlogCateDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return cmBlogCateMapper.selectList(VoUtil.voToMap(req));
+        return cmBlogCateRepository.selectList(req);
     }
 
     public CmBlogCateDto.PageResponse getPageData(CmBlogCateDto.Request req) {
         PageHelper.addPaging(req);
-        CmBlogCateDto.PageResponse res = new CmBlogCateDto.PageResponse();
-        List<CmBlogCateDto.Item> list = cmBlogCateMapper.selectPageList(VoUtil.voToMap(req));
-        long count = cmBlogCateMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return cmBlogCateRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class CmBlogCateService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         CmBlogCate saved = cmBlogCateRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class CmBlogCateService {
     @Transactional
     public CmBlogCate save(CmBlogCate entity) {
         if (!existsById(entity.getBlogCateId()))
-            throw new CmBizException("존재하지 않는 CmBlogCate입니다: " + entity.getBlogCateId());
+            throw new CmBizException("존재하지 않는 CmBlogCate입니다: " + entity.getBlogCateId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogCate saved = cmBlogCateRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class CmBlogCateService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogCate saved = cmBlogCateRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public CmBlogCate updateSelective(CmBlogCate entity) {
-        if (entity.getBlogCateId() == null) throw new CmBizException("blogCateId 가 필요합니다.");
+        if (entity.getBlogCateId() == null) throw new CmBizException("blogCateId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getBlogCateId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogCateId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogCateId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = cmBlogCateMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = cmBlogCateRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class CmBlogCateService {
         CmBlogCate entity = findById(id);
         cmBlogCateRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 회원 서비스 — base MbMemberService 위임 (thin wrapper) + changeStatus.
@@ -42,7 +43,7 @@ public class BoMbMemberService {
     @Transactional
     public MbMemberDto.Item changeStatus(String id, String statusCd) {
         MbMember entity = mbMemberRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setMemberStatusCdBefore(entity.getMemberStatusCd());
         entity.setMemberStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());

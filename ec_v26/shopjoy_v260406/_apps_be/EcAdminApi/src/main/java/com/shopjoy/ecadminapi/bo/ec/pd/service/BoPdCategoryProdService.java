@@ -1,10 +1,8 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryProdMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryProdRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -24,7 +22,6 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class BoPdCategoryProdService {
 
-    private final PdCategoryProdMapper pdCategoryProdMapper;
     private final PdCategoryProdRepository pdCategoryProdRepository;
 
     @PersistenceContext
@@ -33,10 +30,7 @@ public class BoPdCategoryProdService {
     /** getPageData — 조회 */
     public PdCategoryProdDto.PageResponse getPageData(PdCategoryProdDto.Request req) {
         PageHelper.addPaging(req);
-        PdCategoryProdDto.PageResponse res = new PdCategoryProdDto.PageResponse();
-        List<PdCategoryProdDto.Item> list = pdCategoryProdMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pdCategoryProdMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pdCategoryProdRepository.selectPageList(req);
     }
 
     /** saveProds — 저장 */
@@ -74,7 +68,7 @@ public class BoPdCategoryProdService {
                 entity.setRegDate(now);
             } else {
                 entity = pdCategoryProdRepository.findById(id)
-                        .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+                        .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
             }
 
             entity.setCategoryId(row.getCategoryId());

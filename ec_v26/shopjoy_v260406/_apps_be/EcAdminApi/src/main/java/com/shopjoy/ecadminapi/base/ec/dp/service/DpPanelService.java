@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.dp.service;
 
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
-import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpPanelMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class DpPanelService {
 
-    private final DpPanelMapper dpPanelMapper;
     private final DpPanelRepository dpPanelRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public DpPanelDto.Item getById(String id) {
-        DpPanelDto.Item dto = dpPanelMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        DpPanelDto.Item dto = dpPanelRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public DpPanelDto.Item getByIdOrNull(String id) {
+        return dpPanelRepository.selectById(id).orElse(null);
     }
 
     public DpPanel findById(String id) {
         return dpPanelRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public DpPanel findByIdOrNull(String id) {
+        return dpPanelRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return dpPanelRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!dpPanelRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<DpPanelDto.Item> getList(DpPanelDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return dpPanelMapper.selectList(VoUtil.voToMap(req));
+        return dpPanelRepository.selectList(req);
     }
 
     public DpPanelDto.PageResponse getPageData(DpPanelDto.Request req) {
         PageHelper.addPaging(req);
-        DpPanelDto.PageResponse res = new DpPanelDto.PageResponse();
-        List<DpPanelDto.Item> list = dpPanelMapper.selectPageList(VoUtil.voToMap(req));
-        long count = dpPanelMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return dpPanelRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class DpPanelService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         DpPanel saved = dpPanelRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class DpPanelService {
     @Transactional
     public DpPanel save(DpPanel entity) {
         if (!existsById(entity.getPanelId()))
-            throw new CmBizException("존재하지 않는 DpPanel입니다: " + entity.getPanelId());
+            throw new CmBizException("존재하지 않는 DpPanel입니다: " + entity.getPanelId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpPanel saved = dpPanelRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class DpPanelService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpPanel saved = dpPanelRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public DpPanel updateSelective(DpPanel entity) {
-        if (entity.getPanelId() == null) throw new CmBizException("panelId 가 필요합니다.");
+        if (entity.getPanelId() == null) throw new CmBizException("panelId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getPanelId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPanelId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPanelId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = dpPanelMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = dpPanelRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class DpPanelService {
         DpPanel entity = findById(id);
         dpPanelRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

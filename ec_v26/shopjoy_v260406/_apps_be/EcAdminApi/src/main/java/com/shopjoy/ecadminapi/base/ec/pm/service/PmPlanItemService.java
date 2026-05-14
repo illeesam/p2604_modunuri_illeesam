@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pm.service;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlanItem;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmPlanItemMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmPlanItemRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PmPlanItemService {
 
-    private final PmPlanItemMapper pmPlanItemMapper;
     private final PmPlanItemRepository pmPlanItemRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PmPlanItemDto.Item getById(String id) {
-        PmPlanItemDto.Item dto = pmPlanItemMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PmPlanItemDto.Item dto = pmPlanItemRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmPlanItemDto.Item getByIdOrNull(String id) {
+        return pmPlanItemRepository.selectById(id).orElse(null);
     }
 
     public PmPlanItem findById(String id) {
         return pmPlanItemRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmPlanItem findByIdOrNull(String id) {
+        return pmPlanItemRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pmPlanItemRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pmPlanItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PmPlanItemDto.Item> getList(PmPlanItemDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmPlanItemMapper.selectList(VoUtil.voToMap(req));
+        return pmPlanItemRepository.selectList(req);
     }
 
     public PmPlanItemDto.PageResponse getPageData(PmPlanItemDto.Request req) {
         PageHelper.addPaging(req);
-        PmPlanItemDto.PageResponse res = new PmPlanItemDto.PageResponse();
-        List<PmPlanItemDto.Item> list = pmPlanItemMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pmPlanItemMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pmPlanItemRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PmPlanItemService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PmPlanItem saved = pmPlanItemRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PmPlanItemService {
     @Transactional
     public PmPlanItem save(PmPlanItem entity) {
         if (!existsById(entity.getPlanItemId()))
-            throw new CmBizException("존재하지 않는 PmPlanItem입니다: " + entity.getPlanItemId());
+            throw new CmBizException("존재하지 않는 PmPlanItem입니다: " + entity.getPlanItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmPlanItem saved = pmPlanItemRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PmPlanItemService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmPlanItem saved = pmPlanItemRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PmPlanItem updateSelective(PmPlanItem entity) {
-        if (entity.getPlanItemId() == null) throw new CmBizException("planItemId 가 필요합니다.");
+        if (entity.getPlanItemId() == null) throw new CmBizException("planItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getPlanItemId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPlanItemId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPlanItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pmPlanItemMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pmPlanItemRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PmPlanItemService {
         PmPlanItem entity = findById(id);
         pmPlanItemRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

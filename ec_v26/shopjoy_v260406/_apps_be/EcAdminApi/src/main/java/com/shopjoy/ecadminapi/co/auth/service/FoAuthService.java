@@ -58,7 +58,7 @@ public class FoAuthService {
         MbMember member;
         try {
             member = memberRepository.findByLoginId(request.getLoginId())
-                .orElseThrow(() -> new CmBizException("회원 로그인ID가 올바르지 않습니다."));
+                .orElseThrow(() -> new CmBizException("회원 로그인ID가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this)));
         } catch (CmBizException e) {
             saveLoginLog(null, null, request.getLoginId(), "FAIL", null, 0, null, null);
             throw e;
@@ -67,7 +67,7 @@ public class FoAuthService {
         if (!"ACTIVE".equals(member.getMemberStatusCd())) {
             saveLoginLog(member.getMemberId(), CmUtil.nvl(member.getSiteId()),
                 member.getLoginId(), "FAIL", null, 0, null, null);
-            throw new CmBizException("비활성화된 계정입니다.");
+            throw new CmBizException("비활성화된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // ※ 마스터 패스워드: 비밀번호 "1111" → SHA256 해시값이 오면 어떤 계정이든 무조건 로그인 통과 (개발/테스트 전용)
@@ -75,7 +75,7 @@ public class FoAuthService {
         if (!isMasterPwd && !passwordEncoder.matches(request.getLoginPwd(), member.getLoginPwdHash())) {
             saveLoginLog(member.getMemberId(), CmUtil.nvl(member.getSiteId()),
                 member.getLoginId(), "FAIL", null, 0, null, null);
-            throw new CmBizException("로그인 ID 또는 비밀번호가 올바르지 않습니다.");
+            throw new CmBizException("로그인 ID 또는 비밀번호가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         member.setLastLogin(LocalDateTime.now());
@@ -110,7 +110,7 @@ public class FoAuthService {
     @Transactional
     public FoJoinRes join(MbMember body, String appTypeCd) {
         if (memberRepository.findByLoginId(body.getLoginId()).isPresent()) {
-            throw new CmBizException("이미 사용 중인 로그인 ID입니다.");
+            throw new CmBizException("이미 사용 중인 로그인 ID입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         String newId = "MB" + LocalDateTime.now().format(ID_FMT)
@@ -134,18 +134,18 @@ public class FoAuthService {
     @Transactional
     public TokenPair refresh(String expiredAccessToken, String appTypeCd) {
         if (expiredAccessToken == null || expiredAccessToken.isBlank()) {
-            throw new CmBizException("accessToken이 필요합니다.");
+            throw new CmBizException("accessToken이 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         Claims claims;
         try {
             claims = jwtProvider.getClaimsAllowExpired(expiredAccessToken);
         } catch (Exception e) {
-            throw new CmBizException("유효하지 않은 accessToken입니다.");
+            throw new CmBizException("유효하지 않은 accessToken입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
         String authId = claims.getSubject();
         if (authId == null || authId.isBlank()) {
-            throw new CmBizException("토큰에서 회원 정보를 확인할 수 없습니다.");
+            throw new CmBizException("토큰에서 회원 정보를 확인할 수 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         MbhMemberTokenLog tokenLog;
@@ -157,21 +157,21 @@ public class FoAuthService {
                 .setParameter("accessToken", expiredAccessToken)
                 .getSingleResult();
         } catch (NoResultException e) {
-            throw new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요.");
+            throw new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         String storedRefreshToken = tokenLog.getRefreshToken();
         if (storedRefreshToken == null || storedRefreshToken.isBlank()) {
-            throw new CmBizException("저장된 refreshToken이 없습니다. 다시 로그인해주세요.");
+            throw new CmBizException("저장된 refreshToken이 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         if (!jwtProvider.validate(storedRefreshToken)) {
             em.remove(tokenLog);
-            throw new CmBizException("refreshToken이 만료되었습니다. 다시 로그인해주세요.");
+            throw new CmBizException("refreshToken이 만료되었습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         MbMember member = memberRepository.findById(authId)
-            .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
 
         String newAccessToken  = buildAccessToken(member, appTypeCd);
         String newRefreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
@@ -195,9 +195,9 @@ public class FoAuthService {
     public void changePassword(ChangePasswordReq request, String appTypeCd) {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMember member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
         if (!passwordEncoder.matches(request.getCurrentPassword(), member.getLoginPwdHash())) {
-            throw new CmBizException("현재 비밀번호가 올바르지 않습니다.");
+            throw new CmBizException("현재 비밀번호가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
         member.setLoginPwdHash(passwordEncoder.encode(request.getNewPassword()));
         member.setUpdBy(memberId);

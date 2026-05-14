@@ -1,14 +1,19 @@
 package com.shopjoy.ecadminapi.cache.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryMapper;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nMsgDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
-import com.shopjoy.ecadminapi.base.sy.mapper.*;
+import com.shopjoy.ecadminapi.base.sy.repository.SyCodeRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyI18nMsgRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyRoleMenuRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import com.shopjoy.ecadminapi.cache.redisstore.*;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -64,16 +69,16 @@ public class CacheRedisReloadService {
     private final EcDpDispRedisStore      ecDpDispCache;
     private final EcDpDispItemRedisStore  ecDpDispItemCache;
 
-    // ── SY Mapper (DB 재조회) ─────────────────────────────────────
-    private final SyCodeMapper         codeMapper;
-    private final SyMenuMapper         menuMapper;
-    private final SyRoleMapper         roleMapper;
-    private final SyRoleMenuMapper     roleMenuMapper;
-    private final SyPropMapper         propMapper;
-    private final SyI18nMsgMapper      i18nMsgMapper;
+    // ── SY Repository (DB 재조회) ─────────────────────────────────
+    private final SyCodeRepository     codeRepository;
+    private final SyMenuRepository     menuRepository;
+    private final SyRoleRepository     roleRepository;
+    private final SyRoleMenuRepository roleMenuRepository;
+    private final SyPropRepository     propRepository;
+    private final SyI18nMsgRepository  i18nMsgRepository;
 
     // ── EC Mapper (DB 재조회 — 카테고리만 full reload 지원) ────────
-    private final PdCategoryMapper     categoryMapper;
+    private final PdCategoryRepository categoryRepository;
 
     private final RedisUtil      redis;
     private final ObjectMapper   objectMapper;
@@ -119,7 +124,7 @@ public class CacheRedisReloadService {
     public int reloadCode() {
         if (!redis.isEnabled()) return 0;
         codeCache.evictAll();
-        List<SyCodeDto.Item> list = codeMapper.selectList(new java.util.HashMap<>());
+        List<SyCodeDto.Item> list = codeRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto.Request());
         Map<String, List<Map<String, Object>>> grouped = list.stream()
             .collect(Collectors.groupingBy(
                 dto -> dto.getCodeGrp(),
@@ -135,7 +140,7 @@ public class CacheRedisReloadService {
     public int reloadMenu() {
         if (!redis.isEnabled()) return 0;
         menuCache.evictAll();
-        List<SyMenuDto.Item> list = menuMapper.selectList(new java.util.HashMap<>());
+        List<SyMenuDto.Item> list = menuRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto.Request());
         menuCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] sy-menu 리로드 완료 — {}건", list.size());
         return list.size();
@@ -145,7 +150,7 @@ public class CacheRedisReloadService {
     public int reloadRole() {
         if (!redis.isEnabled()) return 0;
         roleCache.evictAll();
-        List<SyRoleDto.Item> list = roleMapper.selectList(new java.util.HashMap<>());
+        List<SyRoleDto.Item> list = roleRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto.Request());
         roleCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] sy-role 리로드 완료 — {}건", list.size());
         return list.size();
@@ -155,7 +160,7 @@ public class CacheRedisReloadService {
     public int reloadRoleMenu() {
         if (!redis.isEnabled()) return 0;
         roleMenuCache.evictAll();
-        List<SyRoleMenuDto.Item> list = roleMenuMapper.selectList(new java.util.HashMap<>());
+        List<SyRoleMenuDto.Item> list = roleMenuRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto.Request());
         list.stream()
             .collect(Collectors.groupingBy(
                 dto -> dto.getRoleId(),
@@ -170,7 +175,7 @@ public class CacheRedisReloadService {
     public int reloadProp() {
         if (!redis.isEnabled()) return 0;
         propCache.evictAll();
-        List<SyPropDto.Item> list = propMapper.selectList(new java.util.HashMap<>());
+        List<SyPropDto.Item> list = propRepository.selectList(new SyPropDto.Request());
         Map<String, String> propMap = list.stream()
             .filter(dto -> dto.getPropKey() != null)
             .collect(Collectors.toMap(
@@ -188,7 +193,7 @@ public class CacheRedisReloadService {
     public int reloadI18n() {
         if (!redis.isEnabled()) return 0;
         i18nCache.evictAll();
-        List<SyI18nMsgDto.Item> list = i18nMsgMapper.selectList(new java.util.HashMap<>());
+        List<SyI18nMsgDto.Item> list = i18nMsgRepository.selectList(new SyI18nMsgDto.Request());
         Map<String, Map<String, String>> i18nMap = list.stream()
             .filter(dto -> dto.getLangCd() != null && dto.getI18nId() != null)
             .collect(Collectors.groupingBy(
@@ -210,7 +215,7 @@ public class CacheRedisReloadService {
     public int reloadEcPdCate() {
         if (!redis.isEnabled()) return 0;
         ecPdCateCache.evictAll();
-        List<com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Item> list = categoryMapper.selectList(new java.util.HashMap<>());
+        List<com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Item> list = categoryRepository.selectList(new com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Request());
         ecPdCateCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] ec-pd-cate 리로드 완료 — {}건", list.size());
         return list.size();

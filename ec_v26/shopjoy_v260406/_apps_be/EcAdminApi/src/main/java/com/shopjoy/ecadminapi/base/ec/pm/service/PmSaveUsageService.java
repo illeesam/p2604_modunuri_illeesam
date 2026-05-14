@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pm.service;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveUsageDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveUsage;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmSaveUsageMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveUsageRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PmSaveUsageService {
 
-    private final PmSaveUsageMapper pmSaveUsageMapper;
     private final PmSaveUsageRepository pmSaveUsageRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PmSaveUsageDto.Item getById(String id) {
-        PmSaveUsageDto.Item dto = pmSaveUsageMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PmSaveUsageDto.Item dto = pmSaveUsageRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmSaveUsageDto.Item getByIdOrNull(String id) {
+        return pmSaveUsageRepository.selectById(id).orElse(null);
     }
 
     public PmSaveUsage findById(String id) {
         return pmSaveUsageRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmSaveUsage findByIdOrNull(String id) {
+        return pmSaveUsageRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pmSaveUsageRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pmSaveUsageRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PmSaveUsageDto.Item> getList(PmSaveUsageDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmSaveUsageMapper.selectList(VoUtil.voToMap(req));
+        return pmSaveUsageRepository.selectList(req);
     }
 
     public PmSaveUsageDto.PageResponse getPageData(PmSaveUsageDto.Request req) {
         PageHelper.addPaging(req);
-        PmSaveUsageDto.PageResponse res = new PmSaveUsageDto.PageResponse();
-        List<PmSaveUsageDto.Item> list = pmSaveUsageMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pmSaveUsageMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pmSaveUsageRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PmSaveUsageService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PmSaveUsage saved = pmSaveUsageRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PmSaveUsageService {
     @Transactional
     public PmSaveUsage save(PmSaveUsage entity) {
         if (!existsById(entity.getSaveUsageId()))
-            throw new CmBizException("존재하지 않는 PmSaveUsage입니다: " + entity.getSaveUsageId());
+            throw new CmBizException("존재하지 않는 PmSaveUsage입니다: " + entity.getSaveUsageId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmSaveUsage saved = pmSaveUsageRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PmSaveUsageService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmSaveUsage saved = pmSaveUsageRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PmSaveUsage updateSelective(PmSaveUsage entity) {
-        if (entity.getSaveUsageId() == null) throw new CmBizException("saveUsageId 가 필요합니다.");
+        if (entity.getSaveUsageId() == null) throw new CmBizException("saveUsageId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getSaveUsageId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSaveUsageId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSaveUsageId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pmSaveUsageMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pmSaveUsageRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PmSaveUsageService {
         PmSaveUsage entity = findById(id);
         pmSaveUsageRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

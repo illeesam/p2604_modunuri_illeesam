@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 배송 서비스 — base OdDlivService 위임 (thin wrapper) + 일괄 처리 메서드.
@@ -46,13 +47,13 @@ public class BoOdDlivService {
     @Transactional
     public OdDlivDto.Item changeStatus(String id, String statusCd) {
         OdDliv entity = odDlivRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setDlivStatusCdBefore(entity.getDlivStatusCd());
         entity.setDlivStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdDliv saved = odDlivRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return odDlivService.getById(id);
     }
@@ -70,7 +71,7 @@ public class BoOdDlivService {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdDliv saved = odDlivRepository.save(e);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
         }
     }
@@ -89,7 +90,7 @@ public class BoOdDlivService {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdDliv saved = odDlivRepository.save(e);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
         }
     }
@@ -104,7 +105,7 @@ public class BoOdDlivService {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdDliv saved = odDlivRepository.save(e);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
         }
     }
@@ -119,7 +120,7 @@ public class BoOdDlivService {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdDliv saved = odDlivRepository.save(e);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
         }
     }

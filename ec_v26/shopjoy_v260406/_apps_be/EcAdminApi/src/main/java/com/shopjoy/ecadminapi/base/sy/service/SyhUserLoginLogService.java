@@ -1,9 +1,7 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserLoginLog;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyhUserLoginLogMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhUserLoginLogRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import lombok.RequiredArgsConstructor;
@@ -17,33 +15,28 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SyhUserLoginLogService {
 
-    private final SyhUserLoginLogMapper syhUserLoginLogMapper;
     private final SyhUserLoginLogRepository syhUserLoginLogRepository;
 
     /** getById — 단건조회 */
     public SyhUserLoginLogDto.Item getById(String id) {
-        return syhUserLoginLogMapper.selectById(id);
+        return syhUserLoginLogRepository.selectById(id).orElse(null);
     }
 
     /** getList — 목록조회 */
     public List<SyhUserLoginLogDto.Item> getList(SyhUserLoginLogDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return syhUserLoginLogMapper.selectList(VoUtil.voToMap(req));
+        return syhUserLoginLogRepository.selectList(req);
     }
 
     /** getPageData — 페이징조회 */
     public SyhUserLoginLogDto.PageResponse getPageData(SyhUserLoginLogDto.Request req) {
         PageHelper.addPaging(req);
-        SyhUserLoginLogDto.PageResponse res = new SyhUserLoginLogDto.PageResponse();
-        List<SyhUserLoginLogDto.Item> list = syhUserLoginLogMapper.selectPageList(VoUtil.voToMap(req));
-        long count = syhUserLoginLogMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return syhUserLoginLogRepository.selectPageList(req);
     }
 
     /** update — 수정 */
     @Transactional
     public int update(SyhUserLoginLog entity) {
-        return syhUserLoginLogMapper.updateSelective(entity);
+        return syhUserLoginLogRepository.updateSelective(entity);
     }
 
     /** deleteAll — 삭제 */

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 상품 Q&A 서비스 — base PdProdQnaService 위임 (thin wrapper) + saveAnswer.
@@ -43,13 +44,13 @@ public class BoPdQnaService {
     @Transactional
     public PdProdQnaDto.Item saveAnswer(String id, PdProdQnaAnswerDto.Request req) {
         PdProdQna entity = pdProdQnaRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setAnswContent(req.getAnswContent());
         entity.setAnswDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdQna saved = pdProdQnaRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return pdProdQnaService.getById(id);
     }

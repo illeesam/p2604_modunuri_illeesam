@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 정산 서비스 — base StSettleService 위임 (thin wrapper) + changeStatus.
@@ -42,13 +43,13 @@ public class BoStSettleService {
     @Transactional
     public StSettleDto.Item changeStatus(String id, String statusCd) {
         StSettle entity = stSettleRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setSettleStatusCdBefore(entity.getSettleStatusCd());
         entity.setSettleStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettle saved = stSettleRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return stSettleService.getById(id);
     }

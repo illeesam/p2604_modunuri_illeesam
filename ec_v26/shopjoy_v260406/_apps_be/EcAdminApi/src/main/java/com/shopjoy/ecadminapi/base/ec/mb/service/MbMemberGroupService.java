@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.mb.service;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGroupDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGroup;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberGroupMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberGroupRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class MbMemberGroupService {
 
-    private final MbMemberGroupMapper mbMemberGroupMapper;
     private final MbMemberGroupRepository mbMemberGroupRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public MbMemberGroupDto.Item getById(String id) {
-        MbMemberGroupDto.Item dto = mbMemberGroupMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        MbMemberGroupDto.Item dto = mbMemberGroupRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbMemberGroupDto.Item getByIdOrNull(String id) {
+        return mbMemberGroupRepository.selectById(id).orElse(null);
     }
 
     public MbMemberGroup findById(String id) {
         return mbMemberGroupRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbMemberGroup findByIdOrNull(String id) {
+        return mbMemberGroupRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return mbMemberGroupRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!mbMemberGroupRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<MbMemberGroupDto.Item> getList(MbMemberGroupDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbMemberGroupMapper.selectList(VoUtil.voToMap(req));
+        return mbMemberGroupRepository.selectList(req);
     }
 
     public MbMemberGroupDto.PageResponse getPageData(MbMemberGroupDto.Request req) {
         PageHelper.addPaging(req);
-        MbMemberGroupDto.PageResponse res = new MbMemberGroupDto.PageResponse();
-        List<MbMemberGroupDto.Item> list = mbMemberGroupMapper.selectPageList(VoUtil.voToMap(req));
-        long count = mbMemberGroupMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return mbMemberGroupRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class MbMemberGroupService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         MbMemberGroup saved = mbMemberGroupRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class MbMemberGroupService {
     @Transactional
     public MbMemberGroup save(MbMemberGroup entity) {
         if (!existsById(entity.getMemberGroupId()))
-            throw new CmBizException("존재하지 않는 MbMemberGroup입니다: " + entity.getMemberGroupId());
+            throw new CmBizException("존재하지 않는 MbMemberGroup입니다: " + entity.getMemberGroupId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberGroup saved = mbMemberGroupRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class MbMemberGroupService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberGroup saved = mbMemberGroupRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public MbMemberGroup updateSelective(MbMemberGroup entity) {
-        if (entity.getMemberGroupId() == null) throw new CmBizException("memberGroupId 가 필요합니다.");
+        if (entity.getMemberGroupId() == null) throw new CmBizException("memberGroupId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getMemberGroupId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberGroupId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberGroupId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = mbMemberGroupMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = mbMemberGroupRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class MbMemberGroupService {
         MbMemberGroup entity = findById(id);
         mbMemberGroupRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

@@ -34,19 +34,35 @@ public class SyUserService {
     /** getById — 단건조회 (QueryDSL, JOIN 필드 포함된 Item) */
     public SyUserDto.Item getById(String id) {
         SyUserDto.Item dto = syUserRepository.selectById(id).orElse(null);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyUserDto.Item getByIdOrNull(String id) {
+        return syUserRepository.selectById(id).orElse(null);
     }
 
     /** findById — 단건조회 (JPA, 영속성 컨텍스트 동기화된 SyUser 엔티티). 변경 메서드의 저장 후 응답에 사용. */
     public SyUser findById(String id) {
         return syUserRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public SyUser findByIdOrNull(String id) {
+        return syUserRepository.findById(id).orElse(null);
     }
 
     /** existsById — 존재 여부 확인 (JPA) */
     public boolean existsById(String id) {
         return syUserRepository.existsById(id);
+    }
+
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!syUserRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
     }
 
     /** getList — 목록조회 (QueryDSL Request 받아 Map 변환 후 Repository 호출 — DTO 타입 안전 + Repository missing field 안전) */
@@ -71,7 +87,7 @@ public class SyUserService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyUser saved = syUserRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -80,11 +96,11 @@ public class SyUserService {
     @Transactional
     public SyUser save(SyUser entity) {
         if (!syUserRepository.existsById(entity.getUserId()))
-            throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId());
+            throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyUser saved = syUserRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -97,7 +113,7 @@ public class SyUserService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyUser saved = syUserRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -106,13 +122,13 @@ public class SyUserService {
     @Transactional
     public SyUser updateSelective(SyUser entity) {
         if (entity.getUserId() == null)
-            throw new CmBizException("userId 가 필요합니다.");
+            throw new CmBizException("userId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!syUserRepository.existsById(entity.getUserId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUserId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = syUserRepository.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         // QueryDSL 벌크연산 후 영속성 컨텍스트 동기화
         em.clear();
         return entity;
@@ -125,7 +141,7 @@ public class SyUserService {
         syUserRepository.delete(entity);
         em.flush();
         if (syUserRepository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
+            throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     /** saveList — 일괄 저장 (DELETE/UPDATE/INSERT 단계별 처리). 처리된 row 들의 최신 SyUser 반환 */

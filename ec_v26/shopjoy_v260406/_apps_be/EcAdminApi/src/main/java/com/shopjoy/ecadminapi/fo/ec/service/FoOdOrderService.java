@@ -1,9 +1,7 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
-import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
@@ -25,14 +23,13 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class FoOdOrderService {
 
-    private final OdOrderMapper odOrderMapper;
     private final OdOrderRepository odOrderRepository;
 
     /** getMyOrders — 조회 */
     public List<OdOrderDto.Item> getMyOrders(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return odOrderMapper.selectList(VoUtil.voToMap(req));
+        return odOrderRepository.selectList(req);
     }
 
     /** getMyOrderPage — 조회 */
@@ -40,18 +37,15 @@ public class FoOdOrderService {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         PageHelper.addPaging(req);
-        OdOrderDto.PageResponse res = new OdOrderDto.PageResponse();
-        List<OdOrderDto.Item> list = odOrderMapper.selectPageList(VoUtil.voToMap(req));
-        long count = odOrderMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return odOrderRepository.selectPageList(req);
     }
 
     /** getById — 조회 */
     public OdOrderDto.Item getById(String orderId) {
-        OdOrderDto.Item dto = odOrderMapper.selectById(orderId);
-        if (dto == null) throw new CmBizException("존재하지 않는 주문입니다: " + orderId);
+        OdOrderDto.Item dto = odOrderRepository.selectById(orderId).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 주문입니다: " + orderId + "::" + CmUtil.svcCallerInfo(this));
         if (!dto.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
-            throw new CmBizException("접근 권한이 없습니다.");
+            throw new CmBizException("접근 권한이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         return dto;
     }
 
@@ -66,7 +60,7 @@ public class FoOdOrderService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdOrder saved = odOrderRepository.save(entity);
-        if (saved == null) throw new CmBizException("주문 생성에 실패했습니다.");
+        if (saved == null) throw new CmBizException("주문 생성에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
     }
 }

@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -24,38 +23,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PdCategoryService {
 
-    private final PdCategoryMapper pdCategoryMapper;
     private final PdCategoryRepository pdCategoryRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PdCategoryDto.Item getById(String id) {
-        PdCategoryDto.Item dto = pdCategoryMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PdCategoryDto.Item dto = pdCategoryRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdCategoryDto.Item getByIdOrNull(String id) {
+        return pdCategoryRepository.selectById(id).orElse(null);
     }
 
     public PdCategory findById(String id) {
         return pdCategoryRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdCategory findByIdOrNull(String id) {
+        return pdCategoryRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pdCategoryRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pdCategoryRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PdCategoryDto.Item> getList(PdCategoryDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdCategoryMapper.selectList(VoUtil.voToMap(req));
+        return pdCategoryRepository.selectList(req);
     }
 
     public PdCategoryDto.PageResponse getPageData(PdCategoryDto.Request req) {
         PageHelper.addPaging(req);
-        PdCategoryDto.PageResponse res = new PdCategoryDto.PageResponse();
-        List<PdCategoryDto.Item> list = pdCategoryMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pdCategoryMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pdCategoryRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +76,7 @@ public class PdCategoryService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PdCategory saved = pdCategoryRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +84,11 @@ public class PdCategoryService {
     @Transactional
     public PdCategory save(PdCategory entity) {
         if (!existsById(entity.getCategoryId()))
-            throw new CmBizException("존재하지 않는 PdCategory입니다: " + entity.getCategoryId());
+            throw new CmBizException("존재하지 않는 PdCategory입니다: " + entity.getCategoryId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdCategory saved = pdCategoryRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +100,20 @@ public class PdCategoryService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdCategory saved = pdCategoryRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PdCategory updateSelective(PdCategory entity) {
-        if (entity.getCategoryId() == null) throw new CmBizException("categoryId 가 필요합니다.");
+        if (entity.getCategoryId() == null) throw new CmBizException("categoryId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getCategoryId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCategoryId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCategoryId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pdCategoryMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pdCategoryRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +123,7 @@ public class PdCategoryService {
         PdCategory entity = findById(id);
         pdCategoryRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

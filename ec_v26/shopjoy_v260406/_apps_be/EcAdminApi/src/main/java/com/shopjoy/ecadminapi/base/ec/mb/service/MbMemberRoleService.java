@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.mb.service;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberRoleDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberRole;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberRoleMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRoleRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class MbMemberRoleService {
 
-    private final MbMemberRoleMapper mbMemberRoleMapper;
     private final MbMemberRoleRepository mbMemberRoleRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public MbMemberRoleDto.Item getById(String id) {
-        MbMemberRoleDto.Item dto = mbMemberRoleMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        MbMemberRoleDto.Item dto = mbMemberRoleRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbMemberRoleDto.Item getByIdOrNull(String id) {
+        return mbMemberRoleRepository.selectById(id).orElse(null);
     }
 
     public MbMemberRole findById(String id) {
         return mbMemberRoleRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbMemberRole findByIdOrNull(String id) {
+        return mbMemberRoleRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return mbMemberRoleRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!mbMemberRoleRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<MbMemberRoleDto.Item> getList(MbMemberRoleDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbMemberRoleMapper.selectList(VoUtil.voToMap(req));
+        return mbMemberRoleRepository.selectList(req);
     }
 
     public MbMemberRoleDto.PageResponse getPageData(MbMemberRoleDto.Request req) {
         PageHelper.addPaging(req);
-        MbMemberRoleDto.PageResponse res = new MbMemberRoleDto.PageResponse();
-        List<MbMemberRoleDto.Item> list = mbMemberRoleMapper.selectPageList(VoUtil.voToMap(req));
-        long count = mbMemberRoleMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return mbMemberRoleRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class MbMemberRoleService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         MbMemberRole saved = mbMemberRoleRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class MbMemberRoleService {
     @Transactional
     public MbMemberRole save(MbMemberRole entity) {
         if (!existsById(entity.getMemberRoleId()))
-            throw new CmBizException("존재하지 않는 MbMemberRole입니다: " + entity.getMemberRoleId());
+            throw new CmBizException("존재하지 않는 MbMemberRole입니다: " + entity.getMemberRoleId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberRole saved = mbMemberRoleRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class MbMemberRoleService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberRole saved = mbMemberRoleRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public MbMemberRole updateSelective(MbMemberRole entity) {
-        if (entity.getMemberRoleId() == null) throw new CmBizException("memberRoleId 가 필요합니다.");
+        if (entity.getMemberRoleId() == null) throw new CmBizException("memberRoleId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getMemberRoleId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberRoleId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberRoleId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = mbMemberRoleMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = mbMemberRoleRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class MbMemberRoleService {
         MbMemberRole entity = findById(id);
         mbMemberRoleRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

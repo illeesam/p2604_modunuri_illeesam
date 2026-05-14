@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.mb.service;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberAddr;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberAddrMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberAddrRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class MbMemberAddrService {
 
-    private final MbMemberAddrMapper mbMemberAddrMapper;
     private final MbMemberAddrRepository mbMemberAddrRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public MbMemberAddrDto.Item getById(String id) {
-        MbMemberAddrDto.Item dto = mbMemberAddrMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        MbMemberAddrDto.Item dto = mbMemberAddrRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbMemberAddrDto.Item getByIdOrNull(String id) {
+        return mbMemberAddrRepository.selectById(id).orElse(null);
     }
 
     public MbMemberAddr findById(String id) {
         return mbMemberAddrRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbMemberAddr findByIdOrNull(String id) {
+        return mbMemberAddrRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return mbMemberAddrRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!mbMemberAddrRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<MbMemberAddrDto.Item> getList(MbMemberAddrDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbMemberAddrMapper.selectList(VoUtil.voToMap(req));
+        return mbMemberAddrRepository.selectList(req);
     }
 
     public MbMemberAddrDto.PageResponse getPageData(MbMemberAddrDto.Request req) {
         PageHelper.addPaging(req);
-        MbMemberAddrDto.PageResponse res = new MbMemberAddrDto.PageResponse();
-        List<MbMemberAddrDto.Item> list = mbMemberAddrMapper.selectPageList(VoUtil.voToMap(req));
-        long count = mbMemberAddrMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return mbMemberAddrRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class MbMemberAddrService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         MbMemberAddr saved = mbMemberAddrRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class MbMemberAddrService {
     @Transactional
     public MbMemberAddr save(MbMemberAddr entity) {
         if (!existsById(entity.getMemberAddrId()))
-            throw new CmBizException("존재하지 않는 MbMemberAddr입니다: " + entity.getMemberAddrId());
+            throw new CmBizException("존재하지 않는 MbMemberAddr입니다: " + entity.getMemberAddrId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberAddr saved = mbMemberAddrRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class MbMemberAddrService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberAddr saved = mbMemberAddrRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public MbMemberAddr updateSelective(MbMemberAddr entity) {
-        if (entity.getMemberAddrId() == null) throw new CmBizException("memberAddrId 가 필요합니다.");
+        if (entity.getMemberAddrId() == null) throw new CmBizException("memberAddrId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getMemberAddrId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberAddrId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberAddrId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = mbMemberAddrMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = mbMemberAddrRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class MbMemberAddrService {
         MbMemberAddr entity = findById(id);
         mbMemberAddrRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

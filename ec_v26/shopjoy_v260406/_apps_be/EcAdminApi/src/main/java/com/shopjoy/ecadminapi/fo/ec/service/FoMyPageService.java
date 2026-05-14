@@ -4,20 +4,18 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberAddr;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberAddrMapper;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberAddrRepository;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
-import com.shopjoy.ecadminapi.base.ec.od.mapper.OdClaimMapper;
-import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper;
+import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimRepository;
+import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCacheMapper;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCouponMapper;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCacheRepository;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
@@ -39,14 +37,12 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class FoMyPageService {
 
-    private final MbMemberRepository    memberRepository;
+    private final MbMemberRepository     memberRepository;
     private final MbMemberAddrRepository addrRepository;
-    private final MbMemberMapper         memberMapper;
-    private final MbMemberAddrMapper     addrMapper;
-    private final OdOrderMapper          orderMapper;
-    private final OdClaimMapper          claimMapper;
-    private final PmCouponMapper         couponMapper;
-    private final PmCacheMapper          cacheMapper;
+    private final OdOrderRepository      orderRepository;
+    private final OdClaimRepository      claimRepository;
+    private final PmCouponRepository     couponRepository;
+    private final PmCacheRepository      cacheRepository;
     private final PasswordEncoder        passwordEncoder;
     @PersistenceContext
     private EntityManager em;
@@ -54,8 +50,8 @@ public class FoMyPageService {
     /** getMyInfo — 조회 */
     public MbMemberDto.Item getMyInfo() {
         String memberId = SecurityUtil.getAuthUser().authId();
-        MbMemberDto.Item dto = memberMapper.selectById(memberId);
-        if (dto == null) throw new CmBizException("회원 정보를 찾을 수 없습니다.");
+        MbMemberDto.Item dto = memberRepository.selectById(memberId).orElse(null);
+        if (dto == null) throw new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         return dto;
     }
 
@@ -64,15 +60,15 @@ public class FoMyPageService {
     public MbMemberDto.Item updateMyInfo(MbMember body) {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMember member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
 
         VoUtil.voCopyInclude(body, member, "memberNm^memberPhone^memberGender^birthDate^memberZipCode^memberAddr^memberAddrDetail");
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
         MbMember saved = memberRepository.save(member);
-        if (saved == null) throw new CmBizException("회원정보 수정에 실패했습니다.");
+        if (saved == null) throw new CmBizException("회원정보 수정에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
-        return memberMapper.selectById(memberId);
+        return memberRepository.selectById(memberId).orElse(null);
     }
 
     /** changePassword */
@@ -80,16 +76,16 @@ public class FoMyPageService {
     public void changePassword(String currentPassword, String newPassword) {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMember member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
 
         if (!passwordEncoder.matches(currentPassword, member.getLoginPwdHash())) {
-            throw new CmBizException("현재 비밀번호가 올바르지 않습니다.");
+            throw new CmBizException("현재 비밀번호가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
         member.setLoginPwdHash(passwordEncoder.encode(newPassword));
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
         MbMember saved = memberRepository.save(member);
-        if (saved == null) throw new CmBizException("비밀번호 변경에 실패했습니다.");
+        if (saved == null) throw new CmBizException("비밀번호 변경에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
     }
 
@@ -98,7 +94,7 @@ public class FoMyPageService {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMemberAddrDto.Request req = new MbMemberAddrDto.Request();
         req.setMemberId(memberId);
-        return addrMapper.selectList(VoUtil.voToMap(req));
+        return addrRepository.selectList(req);
     }
 
     /** saveAddr — 저장 */
@@ -114,7 +110,7 @@ public class FoMyPageService {
         body.setUpdBy(memberId);
         body.setUpdDate(LocalDateTime.now());
         MbMemberAddr saved = addrRepository.save(body);
-        if (saved == null) throw new CmBizException("주소 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("주소 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
     }
 
@@ -123,9 +119,9 @@ public class FoMyPageService {
     public void deleteAddr(String addrId) {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMemberAddr addr = addrRepository.findById(addrId)
-                .orElseThrow(() -> new CmBizException("주소를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CmBizException("주소를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
         if (!memberId.equals(addr.getMemberId()))
-            throw new CmBizException("접근 권한이 없습니다.");
+            throw new CmBizException("접근 권한이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         addrRepository.delete(addr);
     }
 
@@ -133,27 +129,27 @@ public class FoMyPageService {
     public List<OdOrderDto.Item> getMyOrders(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return orderMapper.selectList(VoUtil.voToMap(req));
+        return orderRepository.selectList(req);
     }
 
     /** getMyClaims — 조회 */
     public List<OdClaimDto.Item> getMyClaims(OdClaimDto.Request req) {
         if (req == null) req = new OdClaimDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return claimMapper.selectList(VoUtil.voToMap(req));
+        return claimRepository.selectList(req);
     }
 
     /** getMyCoupons — 조회 */
     public List<PmCouponDto.Item> getMyCoupons(PmCouponDto.Request req) {
         if (req == null) req = new PmCouponDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return couponMapper.selectList(VoUtil.voToMap(req));
+        return couponRepository.selectList(req);
     }
 
     /** getMyCacheHistory — 조회 */
     public List<PmCacheDto.Item> getMyCacheHistory(PmCacheDto.Request req) {
         if (req == null) req = new PmCacheDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return cacheMapper.selectList(VoUtil.voToMap(req));
+        return cacheRepository.selectList(req);
     }
 }

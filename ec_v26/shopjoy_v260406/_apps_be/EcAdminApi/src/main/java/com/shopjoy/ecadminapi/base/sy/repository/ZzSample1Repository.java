@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ZzSample1Repository extends JpaRepository<ZzSample1, String> {
+public interface ZzSample1Repository extends JpaRepository<ZzSample1, String>, QZzSample1Repository {
 }

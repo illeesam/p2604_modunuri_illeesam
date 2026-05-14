@@ -1,8 +1,7 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.*;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.*;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
@@ -19,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 
 /**
@@ -40,7 +40,7 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class FoPdProdService {
 
-    private final PdProdMapper          pdProdMapper;
+    private final PdProdRepository      pdProdRepository;
     private final PdProdService         pdProdService;
     private final PdProdImgService      pdProdImgService;
     private final PdProdOptService      pdProdOptService;
@@ -59,7 +59,7 @@ public class FoPdProdService {
     /* ── 목록 ────────────────────────────────────────────────── */
 
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
-        return pdProdMapper.selectList(VoUtil.voToMap(req));
+        return pdProdRepository.selectList(req);
     }
 
     /** getPageData — 조회 */
@@ -70,8 +70,8 @@ public class FoPdProdService {
     /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
 
     public Map<String, Object> getDetail(String prodId) {
-        PdProdDto.Item prod = pdProdMapper.selectById(prodId);
-        if (prod == null) throw new CmBizException("존재하지 않는 상품입니다: " + prodId);
+        PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
+        if (prod == null) throw new CmBizException("존재하지 않는 상품입니다: " + prodId + "::" + CmUtil.svcCallerInfo(this));
 
         PdProdImgDto.Request     imgReq  = new PdProdImgDto.Request();
         imgReq.setProdId(prodId);
@@ -167,7 +167,7 @@ public class FoPdProdService {
      * 응답: { coupons, discnts, gifts, events }
      */
     public Map<String, Object> getPromotions(String prodId) {
-        PdProdDto.Item prod = pdProdMapper.selectById(prodId);
+        PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
         String siteId = prod != null ? prod.getSiteId() : null;
 
         PmCouponDto.Request couponReq = new PmCouponDto.Request();

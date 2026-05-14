@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.mb.service;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbhMemberLoginLogMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbhMemberLoginLogRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class MbhMemberLoginLogService {
 
-    private final MbhMemberLoginLogMapper mbhMemberLoginLogMapper;
     private final MbhMemberLoginLogRepository mbhMemberLoginLogRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public MbhMemberLoginLogDto.Item getById(String id) {
-        MbhMemberLoginLogDto.Item dto = mbhMemberLoginLogMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        MbhMemberLoginLogDto.Item dto = mbhMemberLoginLogRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbhMemberLoginLogDto.Item getByIdOrNull(String id) {
+        return mbhMemberLoginLogRepository.selectById(id).orElse(null);
     }
 
     public MbhMemberLoginLog findById(String id) {
         return mbhMemberLoginLogRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public MbhMemberLoginLog findByIdOrNull(String id) {
+        return mbhMemberLoginLogRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return mbhMemberLoginLogRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!mbhMemberLoginLogRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<MbhMemberLoginLogDto.Item> getList(MbhMemberLoginLogDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return mbhMemberLoginLogMapper.selectList(VoUtil.voToMap(req));
+        return mbhMemberLoginLogRepository.selectList(req);
     }
 
     public MbhMemberLoginLogDto.PageResponse getPageData(MbhMemberLoginLogDto.Request req) {
         PageHelper.addPaging(req);
-        MbhMemberLoginLogDto.PageResponse res = new MbhMemberLoginLogDto.PageResponse();
-        List<MbhMemberLoginLogDto.Item> list = mbhMemberLoginLogMapper.selectPageList(VoUtil.voToMap(req));
-        long count = mbhMemberLoginLogMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return mbhMemberLoginLogRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class MbhMemberLoginLogService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         MbhMemberLoginLog saved = mbhMemberLoginLogRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class MbhMemberLoginLogService {
     @Transactional
     public MbhMemberLoginLog save(MbhMemberLoginLog entity) {
         if (!existsById(entity.getLogId()))
-            throw new CmBizException("존재하지 않는 MbhMemberLoginLog입니다: " + entity.getLogId());
+            throw new CmBizException("존재하지 않는 MbhMemberLoginLog입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbhMemberLoginLog saved = mbhMemberLoginLogRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class MbhMemberLoginLogService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbhMemberLoginLog saved = mbhMemberLoginLogRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public MbhMemberLoginLog updateSelective(MbhMemberLoginLog entity) {
-        if (entity.getLogId() == null) throw new CmBizException("logId 가 필요합니다.");
+        if (entity.getLogId() == null) throw new CmBizException("logId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getLogId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLogId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = mbhMemberLoginLogMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = mbhMemberLoginLogRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class MbhMemberLoginLogService {
         MbhMemberLoginLog entity = findById(id);
         mbhMemberLoginLogRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

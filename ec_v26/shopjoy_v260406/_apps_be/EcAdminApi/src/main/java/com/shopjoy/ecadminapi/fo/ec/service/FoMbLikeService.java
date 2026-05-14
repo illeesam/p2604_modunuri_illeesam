@@ -1,9 +1,7 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbLike;
-import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbLikeMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbLikeRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -27,7 +25,6 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class FoMbLikeService {
 
-    private final MbLikeMapper     mbLikeMapper;
     private final MbLikeRepository mbLikeRepository;
 
     /** getMyLikes — 조회 (현재 회원 찜 목록) */
@@ -35,7 +32,7 @@ public class FoMbLikeService {
         if (req == null) req = new MbLikeDto.Request();
         // memberId는 보안 컨텍스트에서 강제
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return mbLikeMapper.selectList(VoUtil.voToMap(req));
+        return mbLikeRepository.selectList(req);
     }
 
     /** 찜 토글: 없으면 추가, 있으면 삭제 → true=추가됨 false=취소됨 */
@@ -64,7 +61,7 @@ public class FoMbLikeService {
             like.setUpdBy(authId);
             like.setUpdDate(LocalDateTime.now());
             MbLike saved = mbLikeRepository.save(like);
-            if (saved == null) throw new CmBizException("찜 추가에 실패했습니다.");
+            if (saved == null) throw new CmBizException("찜 추가에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return true;
         }
     }

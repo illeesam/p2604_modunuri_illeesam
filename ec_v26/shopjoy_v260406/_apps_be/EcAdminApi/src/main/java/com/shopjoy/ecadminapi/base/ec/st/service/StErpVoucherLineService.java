@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.st.service;
 
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherLineDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucherLine;
-import com.shopjoy.ecadminapi.base.ec.st.mapper.StErpVoucherLineMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StErpVoucherLineRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class StErpVoucherLineService {
 
-    private final StErpVoucherLineMapper stErpVoucherLineMapper;
     private final StErpVoucherLineRepository stErpVoucherLineRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public StErpVoucherLineDto.Item getById(String id) {
-        StErpVoucherLineDto.Item dto = stErpVoucherLineMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        StErpVoucherLineDto.Item dto = stErpVoucherLineRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StErpVoucherLineDto.Item getByIdOrNull(String id) {
+        return stErpVoucherLineRepository.selectById(id).orElse(null);
     }
 
     public StErpVoucherLine findById(String id) {
         return stErpVoucherLineRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public StErpVoucherLine findByIdOrNull(String id) {
+        return stErpVoucherLineRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return stErpVoucherLineRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!stErpVoucherLineRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<StErpVoucherLineDto.Item> getList(StErpVoucherLineDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return stErpVoucherLineMapper.selectList(VoUtil.voToMap(req));
+        return stErpVoucherLineRepository.selectList(req);
     }
 
     public StErpVoucherLineDto.PageResponse getPageData(StErpVoucherLineDto.Request req) {
         PageHelper.addPaging(req);
-        StErpVoucherLineDto.PageResponse res = new StErpVoucherLineDto.PageResponse();
-        List<StErpVoucherLineDto.Item> list = stErpVoucherLineMapper.selectPageList(VoUtil.voToMap(req));
-        long count = stErpVoucherLineMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return stErpVoucherLineRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class StErpVoucherLineService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         StErpVoucherLine saved = stErpVoucherLineRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class StErpVoucherLineService {
     @Transactional
     public StErpVoucherLine save(StErpVoucherLine entity) {
         if (!existsById(entity.getErpVoucherLineId()))
-            throw new CmBizException("존재하지 않는 StErpVoucherLine입니다: " + entity.getErpVoucherLineId());
+            throw new CmBizException("존재하지 않는 StErpVoucherLine입니다: " + entity.getErpVoucherLineId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StErpVoucherLine saved = stErpVoucherLineRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class StErpVoucherLineService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StErpVoucherLine saved = stErpVoucherLineRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public StErpVoucherLine updateSelective(StErpVoucherLine entity) {
-        if (entity.getErpVoucherLineId() == null) throw new CmBizException("erpVoucherLineId 가 필요합니다.");
+        if (entity.getErpVoucherLineId() == null) throw new CmBizException("erpVoucherLineId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getErpVoucherLineId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getErpVoucherLineId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getErpVoucherLineId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = stErpVoucherLineMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = stErpVoucherLineRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class StErpVoucherLineService {
         StErpVoucherLine entity = findById(id);
         stErpVoucherLineRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

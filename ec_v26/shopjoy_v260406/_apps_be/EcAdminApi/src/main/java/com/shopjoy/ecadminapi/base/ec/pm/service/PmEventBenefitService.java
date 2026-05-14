@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pm.service;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventBenefitMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventBenefitRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,38 +22,49 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PmEventBenefitService {
 
-    private final PmEventBenefitMapper pmEventBenefitMapper;
     private final PmEventBenefitRepository pmEventBenefitRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PmEventBenefitDto.Item getById(String id) {
-        PmEventBenefitDto.Item dto = pmEventBenefitMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PmEventBenefitDto.Item dto = pmEventBenefitRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmEventBenefitDto.Item getByIdOrNull(String id) {
+        return pmEventBenefitRepository.selectById(id).orElse(null);
     }
 
     public PmEventBenefit findById(String id) {
         return pmEventBenefitRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PmEventBenefit findByIdOrNull(String id) {
+        return pmEventBenefitRepository.findById(id).orElse(null);
     }
 
     public boolean existsById(String id) {
         return pmEventBenefitRepository.existsById(id);
     }
 
+    /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
+    public boolean existsByIdOrThrow(String id) {
+        if (!pmEventBenefitRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        return true;
+    }
+
     public List<PmEventBenefitDto.Item> getList(PmEventBenefitDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pmEventBenefitMapper.selectList(VoUtil.voToMap(req));
+        return pmEventBenefitRepository.selectList(req);
     }
 
     public PmEventBenefitDto.PageResponse getPageData(PmEventBenefitDto.Request req) {
         PageHelper.addPaging(req);
-        PmEventBenefitDto.PageResponse res = new PmEventBenefitDto.PageResponse();
-        List<PmEventBenefitDto.Item> list = pmEventBenefitMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pmEventBenefitMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pmEventBenefitRepository.selectPageList(req);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class PmEventBenefitService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         PmEventBenefit saved = pmEventBenefitRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -74,11 +83,11 @@ public class PmEventBenefitService {
     @Transactional
     public PmEventBenefit save(PmEventBenefit entity) {
         if (!existsById(entity.getBenefitId()))
-            throw new CmBizException("존재하지 않는 PmEventBenefit입니다: " + entity.getBenefitId());
+            throw new CmBizException("존재하지 않는 PmEventBenefit입니다: " + entity.getBenefitId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmEventBenefit saved = pmEventBenefitRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
@@ -90,20 +99,20 @@ public class PmEventBenefitService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmEventBenefit saved = pmEventBenefitRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }
 
     @Transactional
     public PmEventBenefit updateSelective(PmEventBenefit entity) {
-        if (entity.getBenefitId() == null) throw new CmBizException("benefitId 가 필요합니다.");
+        if (entity.getBenefitId() == null) throw new CmBizException("benefitId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getBenefitId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBenefitId());
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBenefitId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        int affected = pmEventBenefitMapper.updateSelective(entity);
-        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다.");
+        int affected = pmEventBenefitRepository.updateSelective(entity);
+        if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
     }
@@ -113,7 +122,7 @@ public class PmEventBenefitService {
         PmEventBenefit entity = findById(id);
         pmEventBenefitRepository.delete(entity);
         em.flush();
-        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다.");
+        if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
     @Transactional

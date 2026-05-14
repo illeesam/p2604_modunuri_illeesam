@@ -1,9 +1,7 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuStockHistDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuStockHist;
-import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdhProdSkuStockHistMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdhProdSkuStockHistRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -26,34 +24,39 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PdhProdSkuStockHistService {
 
-    private final PdhProdSkuStockHistMapper pdhProdSkuStockHistMapper;
     private final PdhProdSkuStockHistRepository pdhProdSkuStockHistRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public PdhProdSkuStockHistDto.Item getById(String id) {
-        PdhProdSkuStockHistDto.Item dto = pdhProdSkuStockHistMapper.selectById(id);
-        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+        PdhProdSkuStockHistDto.Item dto = pdhProdSkuStockHistRepository.selectById(id).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
+    }
+
+    /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdhProdSkuStockHistDto.Item getByIdOrNull(String id) {
+        return pdhProdSkuStockHistRepository.selectById(id).orElse(null);
     }
 
     public PdhProdSkuStockHist findById(String id) {
         return pdhProdSkuStockHistRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    }
+
+    /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
+    public PdhProdSkuStockHist findByIdOrNull(String id) {
+        return pdhProdSkuStockHistRepository.findById(id).orElse(null);
     }
 
     public List<PdhProdSkuStockHistDto.Item> getList(PdhProdSkuStockHistDto.Request req) {
-        if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
-        return pdhProdSkuStockHistMapper.selectList(VoUtil.voToMap(req));
+        return pdhProdSkuStockHistRepository.selectList(req);
     }
 
     public PdhProdSkuStockHistDto.PageResponse getPageData(PdhProdSkuStockHistDto.Request req) {
         PageHelper.addPaging(req);
-        PdhProdSkuStockHistDto.PageResponse res = new PdhProdSkuStockHistDto.PageResponse();
-        List<PdhProdSkuStockHistDto.Item> list = pdhProdSkuStockHistMapper.selectPageList(VoUtil.voToMap(req));
-        long count = pdhProdSkuStockHistMapper.selectPageCount(VoUtil.voToMap(req));
-        return res.setPageInfo(list, count, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+        return pdhProdSkuStockHistRepository.selectPageList(req);
     }
 
     @Transactional
@@ -62,7 +65,7 @@ public class PdhProdSkuStockHistService {
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         PdhProdSkuStockHist saved = pdhProdSkuStockHistRepository.save(body);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return saved;
     }

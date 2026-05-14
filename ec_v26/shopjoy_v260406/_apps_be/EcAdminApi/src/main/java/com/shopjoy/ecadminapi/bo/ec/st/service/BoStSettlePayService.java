@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * BO 정산결제 서비스 — base StSettlePayService 위임 (thin wrapper) + pay.
@@ -42,14 +43,14 @@ public class BoStSettlePayService {
     @Transactional
     public StSettlePayDto.Item pay(String id) {
         StSettlePay entity = stSettlePayRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setPayStatusCdBefore(entity.getPayStatusCd());
         entity.setPayStatusCd("PAID");
         entity.setPayDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettlePay saved = stSettlePayRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
         return stSettlePayService.getById(id);
     }

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface SyBatchRepository extends JpaRepository<SyBatch, String> {
+public interface SyBatchRepository extends JpaRepository<SyBatch, String>, QSyBatchRepository {
     List<SyBatch> findByBatchStatusCd(String batchStatusCd);
     Optional<SyBatch> findByBatchCode(String batchCode);
 }
