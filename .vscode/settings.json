@@ -27,4 +27,8 @@
     },
     "liveServer.settings.port": 5502,
     "livePreview.defaultPreviewPath": "/mainFrame.html",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "editor.formatOnSave": true
 }
