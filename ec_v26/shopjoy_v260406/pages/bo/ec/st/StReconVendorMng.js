@@ -29,16 +29,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
             const dateEnd   = ref('');
 
     /* handleDateRangeChange */
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const rows = reactive([]);
 

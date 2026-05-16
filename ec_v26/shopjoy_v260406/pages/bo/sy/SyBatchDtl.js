@@ -30,13 +30,13 @@ window.SyBatchDtl = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ── watch ────────────────────────────────────────────────────────────────
 
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const form = reactive({
       batchId: null, batchNm: '', batchCode: '', batchDesc: '', cronExpr: '0 0 * * *', batchStatusCd: '활성',
     });

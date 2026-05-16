@@ -96,7 +96,7 @@
   const login = async (loginId, loginPwd) => {
     state.loading = true;
     try {
-      const loginPwdHash = await coUtil.sha256(loginPwd);
+      const loginPwdHash = await coUtil.cofSha256(loginPwd);
       const res = await coApiSvc.foAuth.login({ loginId, loginPwd: loginPwdHash }, '로그인', '이메일로그인');
       if (res.data?.data) {
         const d = res.data.data;
@@ -138,7 +138,7 @@
   const signup = async (memberNm, loginId, phone, extra = {}) => {
     state.loading = true;
     try {
-      const passwordHash = await coUtil.sha256(extra.password || '');
+      const passwordHash = await coUtil.cofSha256(extra.password || '');
       const body = { memberNm, loginId, loginPwdHash: passwordHash, ...extra };
       const res = await coApiSvc.foAuth.join(body, '회원가입', '가입');
       if (res.data?.data) {

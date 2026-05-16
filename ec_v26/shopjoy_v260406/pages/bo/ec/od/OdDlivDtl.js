@@ -28,7 +28,7 @@ window.OdDlivDtl = {
       codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     const cfIsNew = computed(() => !props.dtlId);

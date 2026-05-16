@@ -32,7 +32,7 @@ window.BlogView = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     const cfPostId = computed(() => Number(props.dtlId) || 1);

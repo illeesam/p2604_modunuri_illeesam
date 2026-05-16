@@ -19,7 +19,7 @@ window.SyTemplateDtl = {
     /* 미리보기 / 발송 모달 */
     const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false });
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const form = reactive({
       templateId: null, templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', templateSubject: '', templateContent: '', useYn: 'Y', sampleParams: '{}',
     });

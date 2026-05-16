@@ -30,7 +30,7 @@ window.OdClaimHist = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ── watch ────────────────────────────────────────────────────────────────
 

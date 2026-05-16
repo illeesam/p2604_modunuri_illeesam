@@ -55,7 +55,7 @@
       // 로그인
       async saLogin(loginId, loginPwd, authMethod = '메인') {
         try {
-          const loginPwdHash = await coUtil.sha256(loginPwd);
+          const loginPwdHash = await coUtil.cofSha256(loginPwd);
           const res = await coApiSvc.boAuth.login({ loginId, loginPwd: loginPwdHash, authMethod }, '로그인', '이메일로그인');
 
           const loginData = res.data?.data || {};

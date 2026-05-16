@@ -34,7 +34,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // -- watch ----------------------------------------------------------------
@@ -54,13 +54,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* onDateRangeChange */
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
-        const r = boUtil.getDateRange(uiState.dateRange);
+        const r = boUtil.bofGetDateRange(uiState.dateRange);
         uiState.dateStart = r ? r.from : '';
         uiState.dateEnd   = r ? r.to   : '';
       }
     };
     /* 초기 날짜 설정 */
-    (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     /* -- 원본 데이터 -- */
     const orderList = reactive([]);
@@ -286,7 +286,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     }[s] || 'badge-gray');
 
     /* fnTypeBadge */
-    const fnTypeBadge = t => ({ '취소':'badge-red', '반품':'badge-orange', '교환':'badge-purple' }[t] || 'badge-gray');
+    const _CLAIM_TYPE_KR_FB = { '취소':'badge-red', '반품':'badge-orange', '교환':'badge-purple' };
+    const fnTypeBadge = t => coUtil.cofCodeBadge('CLAIM_TYPE_KR', t, _CLAIM_TYPE_KR_FB[t] || 'badge-gray');
 
     /* 입력값(uiState.*) → 적용 스냅샷(applied.*) 동기화 */
     const fnSyncApplied = () => {

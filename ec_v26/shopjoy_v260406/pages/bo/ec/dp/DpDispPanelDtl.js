@@ -31,7 +31,7 @@ window.DpDispPanelDtl = {
       codes.disp_areas = codeStore.sgGetGrpCodes('DISP_AREA');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // 코드 주입
 
@@ -99,7 +99,7 @@ window.DpDispPanelDtl = {
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
 
     /* fnPathLabel */
-    const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.dtlId);
             const PREVIEW_MODES = [

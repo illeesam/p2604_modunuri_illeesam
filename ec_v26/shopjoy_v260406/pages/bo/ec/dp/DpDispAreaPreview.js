@@ -174,11 +174,11 @@ window.DpDispAreaPreview = {
       codes.disp_envs = codeStore.sgGetGrpCodes('DISP_ENV');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // 코드 주입
 
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {

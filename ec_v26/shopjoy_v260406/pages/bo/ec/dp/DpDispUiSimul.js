@@ -24,7 +24,7 @@ window.DpDispUiSimul = {
     const displays = reactive([]);
     const sites = reactive([]);
     const members = reactive([]);
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -59,7 +59,7 @@ window.DpDispUiSimul = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });

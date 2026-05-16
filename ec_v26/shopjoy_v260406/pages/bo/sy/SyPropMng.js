@@ -19,7 +19,7 @@ window.SyPropMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     const cfSiteId = computed(() => boCommonFilter?.siteId || null);
@@ -43,7 +43,7 @@ window.SyPropMng = {
     };
 
     /* 시스템 속성 pathLabel */
-    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* -- 검색 -- */
     const searchParam = reactive({ searchType: '', searchValue: '', useFlt: '', typeFlt: '' });

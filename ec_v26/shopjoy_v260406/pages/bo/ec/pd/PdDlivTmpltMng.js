@@ -31,7 +31,7 @@ window.PdDlivTmpltMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     /* 배송 템플릿 _initSearchParam */

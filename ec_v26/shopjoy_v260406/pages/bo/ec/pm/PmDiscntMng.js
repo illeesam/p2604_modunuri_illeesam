@@ -34,7 +34,7 @@ window.PmDiscntMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // onMounted에서 API 로드
@@ -96,10 +96,10 @@ window.PmDiscntMng = {
 
     /* 할인 handleDateRangeChange */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
      // 'list' | 'card'
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
@@ -134,7 +134,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     const fnTypeBadge   = t => ({ '정률': 'badge-blue', '정액': 'badge-green', '장바구니': 'badge-orange' }[t] || 'badge-gray');
 
     /* 할인 fnStatusBadge */
-    const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red' }[s] || 'badge-gray');
+    const _DISCNT_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red' };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _DISCNT_STATUS_FB[s] || 'badge-gray');
 
     /* 할인 목록조회 */
     const onSearch = async () => {
@@ -176,7 +177,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     };
 
     /* 할인 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(discounts,
+    const exportExcel = () => coUtil.cofExportCsv(discounts,
       [{label:'ID',key:'discntId'},{label:'할인명',key:'discntNm'},{label:'유형',key:'discntTypeCd'},{label:'할인값',key:'discntValue'},{label:'상태',key:'discntStatusCd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '할인목록.csv');
 

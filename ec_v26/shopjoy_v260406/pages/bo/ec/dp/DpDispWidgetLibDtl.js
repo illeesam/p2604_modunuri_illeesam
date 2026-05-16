@@ -25,7 +25,7 @@ window.DpDispWidgetLibDtl = {
       codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // 코드 주입
 
@@ -42,7 +42,7 @@ window.DpDispWidgetLibDtl = {
     const onPathPicked = (pathId) => { form.pathId = pathId; };
 
     /* pathLabel */
-    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
     const cfIsNew = computed(() => !props.dtlId);
 
     /* -- 폼 초기값 -- */

@@ -30,7 +30,7 @@ window.OdClaimDtl = {
       codes.claim_types = codeStore.sgGetGrpCodes('CLAIM_TYPE');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     const form = reactive({

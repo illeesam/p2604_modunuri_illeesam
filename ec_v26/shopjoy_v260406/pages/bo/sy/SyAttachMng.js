@@ -32,7 +32,7 @@ window.SyAttachMng = {
 
     /* 첨부파일 onDateRangeChange */
     const onDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
     };
 
     // 그룹 목록 로드 (검색어는 API 파라미터로 전달 — 서버 조회)
@@ -95,7 +95,7 @@ window.SyAttachMng = {
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
     onMounted(async () => {
@@ -104,7 +104,7 @@ window.SyAttachMng = {
       handleSearchData();
     });
 
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* -- 검색 / 페이징 -- */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
@@ -153,10 +153,10 @@ window.SyAttachMng = {
       if (!grpForm.attachGrpNm || !grpForm.attachGrpCode) { showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       try {
         if (uiState.grpEditId === null) {
-          await boApi.post('/bo/sy/attach-grp', { ...grpForm }, coUtil.apiHdr('첨부파일관리', '그룹등록'));
+          await boApi.post('/bo/sy/attach-grp', { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹등록'));
           showToast('그룹이 등록되었습니다.', 'success');
         } else {
-          await boApi.put(`/bo/sy/attach-grp/${uiState.grpEditId}`, { ...grpForm }, coUtil.apiHdr('첨부파일관리', '그룹수정'));
+          await boApi.put(`/bo/sy/attach-grp/${uiState.grpEditId}`, { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹수정'));
           showToast('저장되었습니다.', 'success');
         }
         uiState.grpEditMode = false;
@@ -171,7 +171,7 @@ window.SyAttachMng = {
       const ok = await showConfirm('그룹 삭제', `[${g.attachGrpNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        await boApi.delete(`/bo/sy/attach-grp/${g.attachGrpId}`, coUtil.apiHdr('첨부파일관리', '그룹삭제'));
+        await boApi.delete(`/bo/sy/attach-grp/${g.attachGrpId}`, coUtil.cofApiHdr('첨부파일관리', '그룹삭제'));
         if (uiState.selectedGrpId === g.attachGrpId) { uiState.selectedGrpId = null; attaches.splice(0, attaches.length); pager.totalCount = 0; }
         showToast('삭제되었습니다.', 'success');
         await handleLoadGrps();
@@ -210,10 +210,10 @@ window.SyAttachMng = {
       if (!fileForm.fileNm || !fileForm.attachGrpId) { showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
       try {
         if (uiState.fileEditId === null) {
-          await boApi.post('/bo/sy/attach', { ...fileForm }, coUtil.apiHdr('첨부파일관리', '파일등록'));
+          await boApi.post('/bo/sy/attach', { ...fileForm }, coUtil.cofApiHdr('첨부파일관리', '파일등록'));
           showToast('파일이 등록되었습니다.', 'success');
         } else {
-          await boApi.put(`/bo/sy/attach/${uiState.fileEditId}`, { ...fileForm }, coUtil.apiHdr('첨부파일관리', '파일수정'));
+          await boApi.put(`/bo/sy/attach/${uiState.fileEditId}`, { ...fileForm }, coUtil.cofApiHdr('첨부파일관리', '파일수정'));
           showToast('저장되었습니다.', 'success');
         }
         uiState.fileEditMode = false;
@@ -229,7 +229,7 @@ window.SyAttachMng = {
       const ok = await showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        await boApi.delete(`/bo/sy/attach/${a.attachId}`, coUtil.apiHdr('첨부파일관리', '파일삭제'));
+        await boApi.delete(`/bo/sy/attach/${a.attachId}`, coUtil.cofApiHdr('첨부파일관리', '파일삭제'));
         showToast('삭제되었습니다.', 'success');
         await handleSearchData();
       } catch (err) {
@@ -246,7 +246,8 @@ window.SyAttachMng = {
     };
 
     /* 첨부파일 fnStatusBadge */
-    const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray', 'ACTIVE': 'badge-green', 'INACTIVE': 'badge-gray' }[s] || 'badge-gray');
+    const _USE_YN_FB = { '활성': 'badge-green', '비활성': 'badge-gray', 'ACTIVE': 'badge-green', 'INACTIVE': 'badge-gray' };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('USE_YN', s, _USE_YN_FB[s] || 'badge-gray');
 
     // -- return ---------------------------------------------------------------
     return {

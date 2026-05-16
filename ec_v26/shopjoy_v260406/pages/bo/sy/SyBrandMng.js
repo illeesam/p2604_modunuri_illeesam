@@ -71,7 +71,7 @@ window.SyBrandMng = {
     };
 
     /* 브랜드 pathLabel */
-    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
@@ -87,7 +87,7 @@ window.SyBrandMng = {
     /* 브랜드 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
@@ -108,7 +108,7 @@ window.SyBrandMng = {
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     /* 브랜드 makeRow */
@@ -259,7 +259,7 @@ window.SyBrandMng = {
 ;
 
     /* 브랜드 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(
+    const exportExcel = () => coUtil.cofExportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [
         { label: 'ID',       key: 'brandId' },

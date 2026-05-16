@@ -71,7 +71,7 @@ window.OdOrderDtl = {
       codes.pay_statuses = codeStore.sgGetGrpCodes('PAY_STATUS');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];
@@ -84,11 +84,12 @@ window.OdOrderDtl = {
     });
     const PAY_STATUS_FALLBACK = ['미결제','부분결제','결제완료','결제실패','환불중','부분환불','환불완료'];
 
-    /* 주문 fnPayStatusBadge */
-    const fnPayStatusBadge = (s) => ({
+    /* 주문 fnPayStatusBadge — 공통코드 PAY_STATUS 우선, 미매칭 시 로컬 fallback */
+    const _PAY_STATUS_FB = {
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
-    }[s] || 'badge-gray');
+    };
+    const fnPayStatusBadge = s => coUtil.cofCodeBadge('PAY_STATUS', s, _PAY_STATUS_FB[s] || 'badge-gray');
     const errors = reactive({});
 
     const schema = yup.object({

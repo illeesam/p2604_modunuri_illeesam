@@ -25,7 +25,7 @@ window.PdCategoryDtl = {
       codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // onMounted에서 API 로드

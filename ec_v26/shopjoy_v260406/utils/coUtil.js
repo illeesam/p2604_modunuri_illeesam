@@ -6,21 +6,21 @@
  *
  * 사용법:
  *   ✅ 기본 (자동으로 파일명, 함수명, 라인번호, TraceId, 라이센스 생성)
- *   boApi.get('/path', coUtil.apiHdr('회원관리', '목록조회'))
+ *   boApi.get('/path', coUtil.cofApiHdr('회원관리', '목록조회'))
  *
  *   ✅ 사용자/사이트 정보 오버라이드
- *   boApi.post('/path', data, coUtil.apiHdr('상품관리', '저장', { userId: 'user-001', siteId: 'SITE-001', siteNo: '01' }))
+ *   boApi.post('/path', data, coUtil.cofApiHdr('상품관리', '저장', { userId: 'user-001', siteId: 'SITE-001', siteNo: '01' }))
  *
  *   ✅ 커스텀 TraceId (기본: 자동 생성)
- *   boApi.get('/path', coUtil.apiHdr('주문관리', '조회', { traceId: 'custom-trace-123' }))
+ *   boApi.get('/path', coUtil.cofApiHdr('주문관리', '조회', { traceId: 'custom-trace-123' }))
  */
 (function (global) {
   'use strict';
 
   // ====== 내부 헬퍼 객체 (격리된 인터페이스) ======
-  const apiInfo = {
+  const cofApiInfo = {
     // TraceId 생성: YYYYMMDD_hhmmss_rand4
-    generateTraceId() {
+    cofGenerateTraceId() {
       const now = new Date();
       const yyyy = now.getFullYear();
       const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -143,9 +143,9 @@
   };
 
   // ====== 공개 API ======
-  function apiHdr(uiNm, cmdNm, options = {}) {
+  function cofApiHdr(uiNm, cmdNm, options = {}) {
     if (!uiNm || !cmdNm) {
-      console.warn('[coUtil.apiHdr] Missing required parameters: uiNm or cmdNm', { uiNm, cmdNm });
+      console.warn('[coUtil.cofApiHdr] Missing required parameters: uiNm or cmdNm', { uiNm, cmdNm });
     }
 
     // 필수 헤더
@@ -155,7 +155,7 @@
     };
 
     // 자동 수집: 호출 정보
-    const callerInfo = apiInfo.extractCallerInfo();
+    const callerInfo = cofApiInfo.extractCallerInfo();
     if (callerInfo.fileNm) {
       headers['X-File-Nm'] = callerInfo.fileNm;
     }
@@ -167,10 +167,10 @@
     }
 
     // 자동 생성: TraceId (커스텀 값이 없을 때만)
-    headers['X-Trace-Id'] = options.traceId || apiInfo.generateTraceId();
+    headers['X-Trace-Id'] = options.traceId || cofApiInfo.cofGenerateTraceId();
 
     // 자동 수집: 클라이언트 정보
-    const clientInfo = apiInfo.getClientInfo();
+    const clientInfo = cofApiInfo.getClientInfo();
     if (clientInfo.userAgent) {
       headers['X-User-Agent'] = clientInfo.userAgent;
     }
@@ -179,25 +179,25 @@
     // (클라이언트는 직접 IP 취득 불가)
 
     // 자동 수집: 사용자 정보 (옵션으로 오버라이드 가능)
-    const userId = options.userId || apiInfo.getCurrentUser();
+    const userId = options.userId || cofApiInfo.getCurrentUser();
     if (userId) {
       headers['X-User-Id'] = userId;
     }
 
     // 자동 수집: 사이트 ID (DB 사이트 아이디)
-    const siteId = options.siteId || apiInfo.getCurrentSiteId();
+    const siteId = options.siteId || cofApiInfo.getCurrentSiteId();
     if (siteId) {
       headers['X-Site-Id'] = siteId;
     }
 
     // 자동 수집: 사이트 NO (사이트 구분 번호: 01/02/03)
-    const siteNo = options.siteNo || apiInfo.getCurrentSiteNo();
+    const siteNo = options.siteNo || cofApiInfo.getCurrentSiteNo();
     if (siteNo) {
       headers['X-Site-No'] = siteNo;
     }
 
     // 자동 수집: 라이센스 번호
-    const licenseNo = options.licenseNo || apiInfo.getCurrentLicenseNo();
+    const licenseNo = options.licenseNo || cofApiInfo.getCurrentLicenseNo();
     if (licenseNo) {
       headers['X-License-No'] = licenseNo;
     }
@@ -206,17 +206,17 @@
   }
 
   // 디버깅용: 호출자 정보 반환
-  function getCallerInfo() {
-    const callerInfo = apiInfo.extractCallerInfo();
-    const clientInfo = apiInfo.getClientInfo();
+  function cofGetCallerInfo() {
+    const callerInfo = cofApiInfo.extractCallerInfo();
+    const clientInfo = cofApiInfo.getClientInfo();
     return {
       ...callerInfo,
       userAgent: clientInfo.userAgent,
-      userId: apiInfo.getCurrentUser(),
-      siteId: apiInfo.getCurrentSiteId(),
-      siteNo: apiInfo.getCurrentSiteNo(),
-      licenseNo: apiInfo.getCurrentLicenseNo(),
-      traceId: apiInfo.generateTraceId(),
+      userId: cofApiInfo.getCurrentUser(),
+      siteId: cofApiInfo.getCurrentSiteId(),
+      siteNo: cofApiInfo.getCurrentSiteNo(),
+      licenseNo: cofApiInfo.getCurrentLicenseNo(),
+      traceId: cofApiInfo.cofGenerateTraceId(),
     };
   }
 
@@ -224,14 +224,14 @@
    * API 호출 전 _id 검증 유틸
    *
    * _id 가 null/undefined/빈문자열이면 toast 출력 후 rejected Promise 반환.
-   * 정상이면 null 반환 → 호출부에서 `chkId(...) || api.xxx(...)` 패턴으로 사용.
+   * 정상이면 null 반환 → 호출부에서 `cofChkId(...) || api.xxx(...)` 패턴으로 사용.
    *
    * 사용법 (boApiSvc.js / coApiSvc.js / foApiSvc.js 내부):
    *   getById(_id, uiNm, cmdNm) {
-   *     return coUtil.chkId(_id, uiNm, cmdNm) || global.boApi.get(`/path/${_id}`, hdr(uiNm, cmdNm));
+   *     return coUtil.cofChkId(_id, uiNm, cmdNm) || global.boApi.get(`/path/${_id}`, hdr(uiNm, cmdNm));
    *   }
    */
-  function chkId(_id, uiNm, cmdNm) {
+  function cofChkId(_id, uiNm, cmdNm) {
     if (_id != null && _id !== '') return null;
     const label = [uiNm, cmdNm].filter(Boolean).join(' > ');
     const msg = `[${label || 'API'}] ID 값이 없습니다.`;
@@ -247,11 +247,11 @@
    *
    * 사용법:
    *   saveList(rows, uiNm, cmdNm) {
-   *     return coUtil.chkRowIds(rows, 'gradeId', uiNm, cmdNm) ||
+   *     return coUtil.cofChkRowIds(rows, 'gradeId', uiNm, cmdNm) ||
    *            global.boApi.post('/path/save-list', rows, hdr(uiNm, cmdNm));
    *   }
    */
-  function chkRowIds(rows, idKey, uiNm, cmdNm) {
+  function cofChkRowIds(rows, idKey, uiNm, cmdNm) {
     const bad = (rows || []).filter(r => (r.rowStatus === 'U' || r.rowStatus === 'D') && !r[idKey]);
     if (!bad.length) return null;
     const label = [uiNm, cmdNm].filter(Boolean).join(' > ');
@@ -277,7 +277,7 @@
    * @param {string} plain 평문 비밀번호
    * @returns {Promise<string>} 소문자 hex 문자열 (64자)
    */
-  async function sha256(plain) {
+  async function cofSha256(plain) {
     if (window.CryptoJS) return CryptoJS.SHA256(plain).toString();
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(plain));
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -295,10 +295,10 @@
    *   - useBoAppInitStore / sfGetBoCodeStore 존재 → BO
    *
    * 사용법:
-   *   const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+   *   const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
    *   onMounted(() => { if (isAppReady.value) fnLoadCodes(); ... });
    */
-  function useAppCodeReady(uiState, fnLoadCodes) {
+  function cofUseAppCodeReady(uiState, fnLoadCodes) {
     const { computed, watch, onUnmounted } = Vue;
     const isAppReady = computed(() => {
       // FO/BO 자동 판별 — 정의된 store 만 호출
@@ -313,7 +313,7 @@
       if (!v || _called) return;
       _called = true;
       try { fnLoadCodes(); }
-      catch (err) { console.error('[useAppCodeReady] fnLoadCodes failed:', err); }
+      catch (err) { console.error('[cofUseAppCodeReady] fnLoadCodes failed:', err); }
       finally {
         // throw 여부와 무관하게 플래그를 세워 재트리거 차단
         try { uiState.isPageCodeLoad = true; } catch (_) {}
@@ -328,35 +328,64 @@
   /* ─────────────────────────────────────────────────────────────────────
    * 공통 코드 헬퍼 (FO/BO 공통, 순수 함수)
    * ───────────────────────────────────────────────────────────────────── */
-  function codesByGroup(config, grp) {
+  function cofCodesByGroup(config, grp) {
     const codes = (config && config.codes) || [];
     return codes
       .filter(c => c.codeGrp === grp)
       .sort((a, b) => (a.codeId || 0) - (b.codeId || 0));
   }
 
-  function codesByGroupOrStringList(config, grp, fallbackStrings) {
-    const rows = codesByGroup(config, grp);
+  function cofCodesByGroupOrStringList(config, grp, fallbackStrings) {
+    const rows = cofCodesByGroup(config, grp);
     if (rows.length) return rows;
     const list = (fallbackStrings || []).filter(x => typeof x === 'string');
     return list.map((x, i) => ({ codeId: i + 1, codeGrp: grp, codeValue: x, codeLabel: x }));
   }
 
-  function codesByGroupOrRows(config, grp, fallbackRows) {
-    const rows = codesByGroup(config, grp);
+  function cofCodesByGroupOrRows(config, grp, fallbackRows) {
+    const rows = cofCodesByGroup(config, grp);
     if (rows.length) return rows;
     return (fallbackRows && fallbackRows.length) ? fallbackRows : [];
   }
 
-  function listImgSrc(src) {
+  function cofListImgSrc(src) {
     return typeof window.imageThumbnailSrc === 'function' ? window.imageThumbnailSrc(src) : src;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+   * 공통코드 기반 배지/라벨 헬퍼 (FO/BO 공통)
+   *  - 코드그룹의 code_opt1 에 저장된 배지 클래스(badge-green 등)를 반환
+   *  - fnStatusBadge/fnTypeBadge 류 하드코딩 매핑 대체용
+   *
+   *   cofCodeBadge('CLAIM_STATUS_KR', '완료')           → 'badge-green' (없으면 'badge-gray')
+   *   cofCodeBadge('ORDER_STATUS_KR', s, 'badge-blue')  → fallback 지정
+   *   cofCodeNm('CLAIM_TYPE_KR', 'CANCEL')              → '취소' (없으면 입력값 그대로)
+   * ───────────────────────────────────────────────────────────────────── */
+  function _codeStore() {
+    try {
+      if (typeof window.sfGetBoCodeStore === 'function') return window.sfGetBoCodeStore();
+      if (typeof window.sfGetFoCodeStore === 'function') return window.sfGetFoCodeStore();
+    } catch (_) {}
+    return null;
+  }
+  function cofCodeBadge(grp, codeVal, fallback) {
+    const fb = fallback || 'badge-gray';
+    if (codeVal == null || codeVal === '') return fb;
+    const st = _codeStore();
+    const opt1 = st && typeof st.sgGetCodeOpt1 === 'function' ? st.sgGetCodeOpt1(grp, codeVal) : '';
+    return opt1 || fb;
+  }
+  function cofCodeNm(grp, codeVal) {
+    if (codeVal == null || codeVal === '') return codeVal;
+    const st = _codeStore();
+    return st && typeof st.sgGetCodeNmByVal === 'function' ? st.sgGetCodeNmByVal(grp, codeVal) : codeVal;
   }
 
   /* ─────────────────────────────────────────────────────────────────────
    * CSV/엑셀 다운로드 (FO/BO 공통)
    * columns: [{ label:'표시명', key:'필드명' } | { label:'표시명', value: row => ... }]
    * ───────────────────────────────────────────────────────────────────── */
-  function exportCsv(rows, columns, filename) {
+  function cofExportCsv(rows, columns, filename) {
     const header = columns.map(c => `"${c.label}"`).join(',');
     const body = (rows || []).map(row =>
       columns.map(c => {
@@ -376,7 +405,7 @@
    * 일반 트리 빌더 (FO/BO 공통, 순수 함수)
    * items 배열을 부모-자식 트리로 변환. useYn !== 'N' 만 포함.
    * ───────────────────────────────────────────────────────────────────── */
-  function buildGenericTree(items, idKey, parentKey, labelKey, sortKey) {
+  function cofBuildGenericTree(items, idKey, parentKey, labelKey, sortKey) {
     const list = (items || []).filter(x => x.useYn !== 'N');
     const byParent = {};
     list.forEach(x => {
@@ -403,7 +432,7 @@
   }
 
   /* 트리 후손 ID Set */
-  function collectDescendantIds(items, idKey, parentKey, rootId) {
+  function cofCollectDescendantIds(items, idKey, parentKey, rootId) {
     if (rootId == null) return null;
     const set = new Set([rootId]);
     let added = true;
@@ -417,7 +446,7 @@
   }
 
   /* 트리에서 N레벨까지 펼친 pathId Set 반환 (root=null 포함) */
-  function collectExpandedToDepth(tree, maxDepth) {
+  function cofCollectExpandedToDepth(tree, maxDepth) {
     const set = new Set([null]);
 
     /* walk */
@@ -431,22 +460,25 @@
 
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
-  global.coUtil.apiHdr = global.coUtil.apiHdr || apiHdr;
-  global.coUtil.getCallerInfo = global.coUtil.getCallerInfo || getCallerInfo;
-  global.coUtil.generateTraceId = global.coUtil.generateTraceId || (() => apiInfo.generateTraceId());
-  global.coUtil.apiInfo = global.coUtil.apiInfo || apiInfo;
-  global.coUtil.chkId = global.coUtil.chkId || chkId;
-  global.coUtil.chkRowIds = global.coUtil.chkRowIds || chkRowIds;
-  global.coUtil.sha256 = global.coUtil.sha256 || sha256;
-  global.coUtil.useAppCodeReady = global.coUtil.useAppCodeReady || useAppCodeReady;
+  global.coUtil.cofApiHdr = global.coUtil.cofApiHdr || cofApiHdr;
+  global.coUtil.cofGetCallerInfo = global.coUtil.cofGetCallerInfo || cofGetCallerInfo;
+  global.coUtil.cofGenerateTraceId = global.coUtil.cofGenerateTraceId || (() => cofApiInfo.cofGenerateTraceId());
+  global.coUtil.cofApiInfo = global.coUtil.cofApiInfo || cofApiInfo;
+  global.coUtil.cofChkId = global.coUtil.cofChkId || cofChkId;
+  global.coUtil.cofChkRowIds = global.coUtil.cofChkRowIds || cofChkRowIds;
+  global.coUtil.cofSha256 = global.coUtil.cofSha256 || cofSha256;
+  global.coUtil.cofUseAppCodeReady = global.coUtil.cofUseAppCodeReady || cofUseAppCodeReady;
   // 코드 그룹 헬퍼 (FO/BO 공통)
-  global.coUtil.codesByGroup = global.coUtil.codesByGroup || codesByGroup;
-  global.coUtil.codesByGroupOrStringList = global.coUtil.codesByGroupOrStringList || codesByGroupOrStringList;
-  global.coUtil.codesByGroupOrRows = global.coUtil.codesByGroupOrRows || codesByGroupOrRows;
-  global.coUtil.listImgSrc = global.coUtil.listImgSrc || listImgSrc;
+  global.coUtil.cofCodesByGroup = global.coUtil.cofCodesByGroup || cofCodesByGroup;
+  global.coUtil.cofCodesByGroupOrStringList = global.coUtil.cofCodesByGroupOrStringList || cofCodesByGroupOrStringList;
+  global.coUtil.cofCodesByGroupOrRows = global.coUtil.cofCodesByGroupOrRows || cofCodesByGroupOrRows;
+  global.coUtil.cofListImgSrc = global.coUtil.cofListImgSrc || cofListImgSrc;
+  // 공통코드 배지/라벨 헬퍼
+  global.coUtil.cofCodeBadge = global.coUtil.cofCodeBadge || cofCodeBadge;
+  global.coUtil.cofCodeNm = global.coUtil.cofCodeNm || cofCodeNm;
   // CSV/트리 헬퍼
-  global.coUtil.exportCsv = global.coUtil.exportCsv || exportCsv;
-  global.coUtil.buildGenericTree = global.coUtil.buildGenericTree || buildGenericTree;
-  global.coUtil.collectDescendantIds = global.coUtil.collectDescendantIds || collectDescendantIds;
-  global.coUtil.collectExpandedToDepth = global.coUtil.collectExpandedToDepth || collectExpandedToDepth;
+  global.coUtil.cofExportCsv = global.coUtil.cofExportCsv || cofExportCsv;
+  global.coUtil.cofBuildGenericTree = global.coUtil.cofBuildGenericTree || cofBuildGenericTree;
+  global.coUtil.cofCollectDescendantIds = global.coUtil.cofCollectDescendantIds || cofCollectDescendantIds;
+  global.coUtil.cofCollectExpandedToDepth = global.coUtil.cofCollectExpandedToDepth || cofCollectExpandedToDepth;
 })(typeof window !== 'undefined' ? window : this);

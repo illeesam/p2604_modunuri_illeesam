@@ -54,7 +54,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     const _today = new Date();

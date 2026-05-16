@@ -162,7 +162,7 @@ window.DpDispWidgetLibPreview = {
       return codeStore?.sgGetGrpCodes?.('DISP_WIDGET_TYPE') || [];
     });
     const widgetLibs = reactive([]);
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {

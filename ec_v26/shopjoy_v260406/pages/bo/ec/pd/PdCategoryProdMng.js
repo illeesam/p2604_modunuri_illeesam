@@ -31,7 +31,7 @@ window.PdCategoryProdMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     /* 선택된 카테고리 (watch 이전에 선언 필수) */

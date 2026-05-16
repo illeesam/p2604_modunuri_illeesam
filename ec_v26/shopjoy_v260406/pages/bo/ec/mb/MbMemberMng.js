@@ -164,7 +164,7 @@ window.MbMemberMng = {
         };
         if (isNewMember && !payload.loginPwdHash) {
           /* 신규 등록 시 임시 비밀번호 = 'init1234' 의 sha256 (회원에게 별도 안내 후 변경 유도) */
-          payload.loginPwdHash = await coUtil.sha256('init1234');
+          payload.loginPwdHash = await coUtil.cofSha256('init1234');
         }
         const res = await (isNewMember
           ? boApiSvc.mbMember.create(payload, '회원관리', '등록')
@@ -201,10 +201,12 @@ window.MbMemberMng = {
     };
 
     /* 회원 fnGradeBadge */
-    const fnGradeBadge = g => ({ 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' }[g] || 'badge-gray');
+    const _MEMBER_GRADE_FB = { 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' };
+    const fnGradeBadge = g => coUtil.cofCodeBadge('MEMBER_GRADE', g, _MEMBER_GRADE_FB[g] || 'badge-gray');
 
     /* 회원 fnStatusBadge */
-    const fnStatusBadge = s => ({ '활성': 'badge-green', '정지': 'badge-red' }[s] || 'badge-gray');
+    const _MEMBER_STATUS_FB = { '활성': 'badge-green', '정지': 'badge-red' };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('MEMBER_STATUS', s, _MEMBER_STATUS_FB[s] || 'badge-gray');
 
     /* 회원 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };

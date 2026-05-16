@@ -28,7 +28,7 @@ window.DpDispUiMng = {
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // 코드 주입
 
@@ -96,7 +96,7 @@ window.DpDispUiMng = {
     });
 
     /* pathLabel */
-    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* -- 표시경로 트리 -- */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList('DEFAULT'); };
@@ -104,7 +104,7 @@ window.DpDispUiMng = {
     /* handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd   = r ? r.to   : '';
       }

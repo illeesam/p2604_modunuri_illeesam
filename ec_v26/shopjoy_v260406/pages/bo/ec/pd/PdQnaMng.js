@@ -28,7 +28,7 @@ window.PdQnaMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // onMounted에서 API 로드
@@ -110,7 +110,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
 
     /* fnAnswLabel */
     const fnAnswLabel = answYn => answYn === 'Y' ? '답변완료' : '미답변';
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     // -- return ---------------------------------------------------------------
 

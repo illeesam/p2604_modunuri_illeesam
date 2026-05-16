@@ -119,7 +119,7 @@ window.OrderDetailModal = {
     return { uiState, codes };
   },
   computed: {
-    siteNm() { return boUtil.getSiteNm(); },
+    siteNm() { return boUtil.bofGetSiteNm(); },
   },
   methods: {
     fnStatusColor(s) {
@@ -588,7 +588,7 @@ window.SiteSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 10;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ searchType: '', searchValue: '' });
@@ -674,7 +674,7 @@ window.VendorSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ searchType: '', searchValue: '' });
@@ -754,7 +754,7 @@ window.BoUserSelectModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { computed, reactive, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     const depts = reactive([]);
     const uiState = reactive({ loading: false, deptSearchValue: '', selectedDeptId: null });
@@ -1021,7 +1021,7 @@ window.MemberSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ searchType: '', searchValue: '' });
@@ -1102,7 +1102,7 @@ window.OrderSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ searchType: '', searchValue: '' });
@@ -1183,7 +1183,7 @@ window.BbmSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 6;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ searchType: '', searchValue: '' });
@@ -1312,7 +1312,7 @@ window.TemplatePreviewModal = {
 
     /* setup에서 tmpl을 반환해 템플릿에서 직접 접근 가능하게 */
     const fmtKey = k => '{{' + k + '}}';
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     return { cfSiteNm, tmpl: computed(() => props.tmpl), cfRenderedSubject, cfRenderedContent, cfIsHtml, cfTypeBadge, cfParamList, fmtKey };
   },
@@ -1378,7 +1378,7 @@ window.TemplateSendModal = {
   emits: ['close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     const searchParam = reactive({ type: 'member', searchValue: '' });
     const selected = reactive([]);
@@ -1739,7 +1739,7 @@ window.RoleTreeModal = {
 
     /* onSelectNone */
     const onSelectNone = () => emit('select', { roleId: null, roleNm: '' });
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     return { cfSiteNm, uiState, cfFlatTree, onSelect, onSelectNone };
   },
   template: /* html */`
@@ -1848,7 +1848,7 @@ window.MenuTreeModal = {
 
     /* onSelectNone */
     const onSelectNone = () => emit('select', { menuId: null, menuNm: '' });
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     return { cfSiteNm, uiState, cfFlatTree, onSelect, onSelectNone };
   },
@@ -1989,7 +1989,7 @@ window.DeptTreeModal = {
 
     /* selectNone */
     const selectNone = () => emit('select', { deptId: null, deptNm: '' });
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     return { cfSiteNm, uiState, cfFlatTree, select, selectNone };
   },
@@ -2134,7 +2134,7 @@ window.CategoryTreeModal = {
 
     /* selectNone */
     const selectNone = () => emit('select', { categoryId: null, categoryNm: '' });
-    const cfSiteNm   = computed(() => boUtil.getSiteNm());
+    const cfSiteNm   = computed(() => boUtil.bofGetSiteNm());
     return { cfSiteNm, uiState, cfFlatTree, select, selectNone };
   },
   template: /* html */`
@@ -3543,7 +3543,7 @@ window.PathPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const cfTree = computed(() => boUtil.buildPathTree(props.bizCd));
+    const cfTree = computed(() => boUtil.bofBuildPathTree(props.bizCd));
     const expanded = reactive(new Set([null]));
 
     /* toggle */
@@ -3657,7 +3657,7 @@ window.PathPickModal = {
     };
 
     /* labelOf */
-    const labelOf = (id) => boUtil.getPathLabel(id);
+    const labelOf = (id) => boUtil.bofGetPathLabel(id);
 
     /* hover 효과 헬퍼 — 인라인 표현식 SyntaxError 회피 */
     const onRootHover = (evt) => {
@@ -3915,7 +3915,7 @@ window.BizPickModal = {
     /* 좌측 표시경로 트리 (sy_biz) */
     const selectedPathId = ref(null);
     const expanded = reactive(new Set([null]));
-    const cfTree = computed(() => boUtil.buildPathTree('sy_biz'));
+    const cfTree = computed(() => boUtil.bofBuildPathTree('sy_biz'));
 
     /* toggleNode */
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
@@ -3923,10 +3923,10 @@ window.BizPickModal = {
     /* selectNode */
     const selectNode = (id) => { selectedPathId.value = id; };
     Vue.onMounted(() => {
-      const initSet = coUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const cfAllowedPathIds = computed(() => selectedPathId.value == null ? null : boUtil.getPathDescendants('sy_biz', selectedPathId.value));
+    const cfAllowedPathIds = computed(() => selectedPathId.value == null ? null : boUtil.bofGetPathDescendants('sy_biz', selectedPathId.value));
 
     const cfFiltered = computed(() => bizs.filter(b => {
       const k = searchParam.searchValue.trim().toLowerCase();

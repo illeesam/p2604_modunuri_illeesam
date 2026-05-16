@@ -1248,7 +1248,7 @@
   fd.append('businessCode', 'USER_PROFILE');
   fd.append('grpNm', '사용자 프로필');
   if (profileForm.profileAttachId) fd.append('attachGrpId', profileForm.profileAttachId);
-  const res = await window.boApi.post('co/cm/upload/multi', fd, window.coUtil.apiHdr('프로필', '사진변경'));
+  const res = await window.boApi.post('co/cm/upload/multi', fd, window.coUtil.cofApiHdr('프로필', '사진변경'));
   const d = res.data?.data;
   const uploaded = (d?.files || [])[0];
   if (uploaded) { profileImg.attachId = uploaded.attachId; profileImg.cdnImgUrl = uploaded.cdnImgUrl || ''; }
@@ -1287,8 +1287,8 @@
   if (pwForm.next.length < 6) { pwError.value = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
   if (pwForm.next !== pwForm.confirm) { pwError.value = '새 비밀번호가 일치하지 않습니다.'; return; }
   try {
-  const currentPwdHash = await coUtil.sha256(pwForm.current);
-  const newPwdHash  = await coUtil.sha256(pwForm.next);
+  const currentPwdHash = await coUtil.cofSha256(pwForm.current);
+  const newPwdHash  = await coUtil.cofSha256(pwForm.next);
   await coApiSvc.boAuth.changePassword(
   { currentPassword: currentPwdHash, newPassword: newPwdHash },
   '비밀번호변경', '변경',

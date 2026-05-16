@@ -51,7 +51,7 @@ window.SyBatchMng = {
     };
 
     /* 배치 pathLabel */
-    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* -- 좌측 표시경로 트리 -- */
@@ -67,7 +67,7 @@ window.SyBatchMng = {
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted
@@ -87,7 +87,7 @@ window.SyBatchMng = {
     /* 배치 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
@@ -364,18 +364,19 @@ window.SyBatchMng = {
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     /* 배치 fnStatusBadge */
-    const fnStatusBadge  = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+    const _USE_YN_FB = { '활성': 'badge-green', '비활성': 'badge-gray' };
+    const fnStatusBadge  = s => coUtil.cofCodeBadge('USE_YN', s, _USE_YN_FB[s] || 'badge-gray');
 
     /* 배치 fnRunBadge */
     const fnRunBadge     = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
 
     /* 배치 fnStatusClass */
     const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-    const cfSiteNm     = computed(() => boUtil.getSiteNm());
+    const cfSiteNm     = computed(() => boUtil.bofGetSiteNm());
 
 
     /* 배치 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(
+    const exportExcel = () => coUtil.cofExportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'batchId'},{label:'배치명',key:'batchNm'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cronExpr'},{label:'최근실행',key:'batchLastRun'},{label:'실행횟수',key:'batchRunCount'},{label:'활성',key:'batchStatusCd'},{label:'실행상태',key:'batchRunStatus'},{label:'설명',key:'batchDesc'}],
       '배치목록.csv'

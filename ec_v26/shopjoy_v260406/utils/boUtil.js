@@ -15,7 +15,7 @@
   /* 기본값: siteId 는 hard-coded default ('2604010000000001'). 로그인 후 boAppInitStore 가 실제 첫 사이트로 갱신 */
 
   /* ── 등록기간 옵션 ── */
-  const DATE_RANGE_OPTIONS = [
+  const bofDateRangeOptions = [
     { value: '1day',       label: '최근 1일' },
     { value: '3days',      label: '최근 3일' },
     { value: '1week',      label: '최근 1주' },
@@ -37,7 +37,7 @@
     const d = new Date(base); d.setMonth(d.getMonth() + m); return d.toISOString().slice(0, 10);
   }
 
-  function getDateRange(range) {
+  function bofGetDateRange(range) {
     const today = new Date().toISOString().slice(0, 10);
     const year  = new Date(today).getFullYear();
     if (range === 'all') return null;
@@ -57,10 +57,10 @@
   }
 
   /* dateStr 이 range 범위 내에 있으면 true. dateStr 없으면 항상 true */
-  function isInRange(dateStr, range) {
+  function bofIsInRange(dateStr, range) {
     if (!dateStr) return true;
     if (!range || range === 'all') return true;
-    const r = getDateRange(range);
+    const r = bofGetDateRange(range);
     if (!r) return true;
     const d = String(dateStr).slice(0, 10);
     return d >= r.from && d <= r.to;
@@ -73,7 +73,7 @@
     return max + 1;
   }
 
-  const boUtil = { DATE_RANGE_OPTIONS, getDateRange, isInRange, nextId: nextIdFn };
+  const boUtil = { bofDateRangeOptions, bofGetDateRange, bofIsInRange, bofNextId: nextIdFn };
 
   /* ── 공개 대상(Visibility) 유틸 ──
    * 저장 포맷: '^MEMBER^VIP^' (양끝 ^ 래핑). 공개 안 함=''.
@@ -129,19 +129,19 @@
     },
   };
 
-  boUtil.getSiteNm = function() {
+  boUtil.bofGetSiteNm = function() {
     if (!boCommonFilter.siteId) return 'ShopJoy';
     const sites = window._boCmSites || [];
     const site = sites.find(s => s.siteId === boCommonFilter.siteId);
     return site?.siteNm || 'ShopJoy';
   };
 
-  /* exportCsv → coUtil.exportCsv 로 통합. 호출처에서 coUtil.exportCsv 사용. */
+  /* exportCsv → coUtil.cofExportCsv 로 통합. 호출처에서 coUtil.cofExportCsv 사용. */
 
   /* ──────────────────────────────────────────────
      sy_path 기반 트리 헬퍼 (공통)
   ────────────────────────────────────────────── */
-  boUtil.buildPathTree = function (bizCd) {
+  boUtil.bofBuildPathTree = function (bizCd) {
     const list = (window._boCmPaths || [])
       .filter(p => p.bizCd === bizCd && p.useYn !== 'N');
     const byParent = {};
@@ -171,7 +171,7 @@
     return root;
   };
 
-  boUtil.getPathDescendants = function (bizCd, pathId) {
+  boUtil.bofGetPathDescendants = function (bizCd, pathId) {
     if (pathId == null) return null;
     const set = new Set([pathId]);
     const list = (window._boCmPaths || []).filter(p => p.bizCd === bizCd);
@@ -187,20 +187,20 @@
 
   /* buildGenericTree / collectDescendantIds / collectExpandedToDepth → coUtil 로 통합.
    * BO 전용 트리(buildDeptTree/MenuTree/RoleTree)는 BO store 의존이므로 boUtil 에 유지하되 coUtil 호출. */
-  boUtil.buildDeptTree = function () {
+  boUtil.bofBuildDeptTree = function () {
     const depts = window.useBoDeptStore?.()?.depts || window._boCmDepts || [];
-    return window.coUtil.buildGenericTree(depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
+    return window.coUtil.cofBuildGenericTree(depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
   };
-  boUtil.buildMenuTree = function () {
+  boUtil.bofBuildMenuTree = function () {
     const menus = window.useBoMenuStore?.()?.svMenus || window._boCmMenus || [];
-    return window.coUtil.buildGenericTree(menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
+    return window.coUtil.cofBuildGenericTree(menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
   };
-  boUtil.buildRoleTree = function () {
+  boUtil.bofBuildRoleTree = function () {
     const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
-    return window.coUtil.buildGenericTree(roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
+    return window.coUtil.cofBuildGenericTree(roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
   };
 
-  boUtil.getPathLabel = function (pathId) {
+  boUtil.bofGetPathLabel = function (pathId) {
     if (pathId == null) return '';
     const list = window._boCmPaths || [];
     const byId = Object.fromEntries(list.map(p => [p.pathId, p]));
@@ -210,7 +210,7 @@
     return labels.join(' > ');
   };
 
-  /* useAppCodeReady → coUtil.useAppCodeReady 로 통합. 호출처에서 coUtil 직접 호출 사용. */
+  /* useAppCodeReady → coUtil.cofUseAppCodeReady 로 통합. 호출처에서 coUtil 직접 호출 사용. */
 
   global.boUtil = boUtil;
   global.boCommonFilter = boCommonFilter;

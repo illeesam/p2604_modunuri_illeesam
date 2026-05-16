@@ -37,13 +37,13 @@ window.SyBbmDtl = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ── watch ────────────────────────────────────────────────────────────────
 
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const form = reactive({
       bbmId: null, bbmCode: '', bbmNm: '', bbmTypeCd: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
@@ -65,7 +65,7 @@ window.SyBbmDtl = {
     const onPathPicked = (pathId) => { form.pathId = pathId; pathPickModal.show = false; };
 
     /* 게시판 마스터 pathLabel */
-    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const schema = yup.object({
       bbmCode: yup.string().required('게시판코드를 입력해주세요.'),

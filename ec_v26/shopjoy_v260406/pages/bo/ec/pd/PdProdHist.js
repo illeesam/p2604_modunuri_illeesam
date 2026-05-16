@@ -32,7 +32,7 @@ window.PdProdHist = {
 
     /* 상품 fnLoadCodes */
     const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* 상품 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
@@ -49,7 +49,7 @@ window.PdProdHist = {
     const BASE = (tab) => `/bo/ec/pd/prod/${props.prodId}/hist/${tab}`;
 
     /* 상품 HDR */
-    const HDR  = (cmd) => coUtil.apiHdr('상품관리', cmd);
+    const HDR  = (cmd) => coUtil.cofApiHdr('상품관리', cmd);
 
     /* 상품 fnPickPageList */
     const fnPickPageList = (res) => {

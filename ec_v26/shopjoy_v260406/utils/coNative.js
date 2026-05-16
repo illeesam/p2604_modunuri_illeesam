@@ -68,8 +68,8 @@
           deviceOs: `${info.platform} ${info.osVersion || ''}`.trim(),
           appVersion: global.__APP_VERSION__ || '1.0.0',
         };
-        const hdr = global.coUtil && typeof global.coUtil.apiHdr === 'function'
-          ? global.coUtil.apiHdr(opts.uiNm, opts.cmdNm)
+        const hdr = global.coUtil && typeof global.coUtil.cofApiHdr === 'function'
+          ? global.coUtil.cofApiHdr(opts.uiNm, opts.cmdNm)
           : {};
         await opts.apiClient.post(opts.apiPath, body, hdr);
         console.log('[coNative] 푸시 토큰 등록 완료');

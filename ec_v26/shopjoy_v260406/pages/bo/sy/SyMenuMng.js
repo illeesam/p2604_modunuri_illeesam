@@ -51,7 +51,7 @@ window.SyMenuMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted
@@ -62,7 +62,7 @@ window.SyMenuMng = {
 
     const cfAllowedTreeIds = computed(() => {
       if (uiState.selectedTreeId == null) return null;
-      return coUtil.collectDescendantIds(menus, 'menuId', 'parentMenuId', uiState.selectedTreeId);
+      return coUtil.cofCollectDescendantIds(menus, 'menuId', 'parentMenuId', uiState.selectedTreeId);
     });
 
 
@@ -230,7 +230,7 @@ window.SyMenuMng = {
       menuTreeModal.show = false;
     };
 
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
 
@@ -247,7 +247,7 @@ window.SyMenuMng = {
     const fnTypeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
 
     /* 메뉴 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(
+    const exportExcel = () => coUtil.cofExportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentMenuId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'menuRemark'}],
       '메뉴목록.csv'

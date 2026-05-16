@@ -116,7 +116,7 @@ window.BaseAttachGrp = {
         fd.append('grpNm', props.grpNm);
         if (props.modelValue) fd.append('attachGrpId', props.modelValue);
 
-        const hdr = window.coUtil.apiHdr('첨부파일', '업로드');
+        const hdr = window.coUtil.cofApiHdr('첨부파일', '업로드');
         // Content-Type은 axios가 FormData boundary 포함해서 자동 설정
         // boApi.post는 path 앞에 http://host:3000/api/ 자동 추가
         const res = await window.boApi.post('co/cm/upload/multi', fd, hdr);
@@ -242,7 +242,7 @@ window.BaseAttachGrp = {
       files.forEach((f, i) => { f.sortOrd = i + 1; });
       try {
         await Promise.all(files.map((f, i) =>
-          window.boApi.patch(`co/cm/upload/attach/${f.attachId}/sort`, { sortOrd: i + 1 }, window.coUtil.apiHdr('첨부파일', '순서변경'))
+          window.boApi.patch(`co/cm/upload/attach/${f.attachId}/sort`, { sortOrd: i + 1 }, window.coUtil.cofApiHdr('첨부파일', '순서변경'))
         ));
       } catch(e) { console.warn('[BaseAttachGrp] sort update failed', e); }
     };
@@ -418,7 +418,7 @@ window.BaseAttachOne = {
         fd.append('businessCode', props.grpCode);
         fd.append('grpNm', props.grpNm);
         if (props.modelValue) fd.append('attachGrpId', props.modelValue);
-        const hdr = window.coUtil.apiHdr('첨부파일', '업로드');
+        const hdr = window.coUtil.cofApiHdr('첨부파일', '업로드');
         const res = await window.boApi.post('co/cm/upload/multi', fd, hdr);
         const d = res.data?.data;
         if (!d) throw new Error('업로드 응답 없음');

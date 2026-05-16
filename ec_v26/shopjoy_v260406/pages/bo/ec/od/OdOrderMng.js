@@ -14,7 +14,7 @@ window.OdOrderMng = {
     const members = reactive([]);
     const claims = reactive([]);
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
-    const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [], order_date_types: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
+    const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [], order_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'orderDate asc', desc: 'orderDate desc' } };
 
@@ -82,13 +82,13 @@ window.OdOrderMng = {
     /* 주문 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 주문 fnLoadCodes */
@@ -98,10 +98,12 @@ window.OdOrderMng = {
       codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
       codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
       codes.order_date_types = codeStore.sgGetGrpCodes('ORDER_DATE_TYPE');
+      codes.approval_actions = codeStore.sgGetGrpCodes('APPROVAL_ACTION');
+      codes.req_targets = codeStore.sgGetGrpCodes('REQ_TARGET');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted
@@ -138,18 +140,20 @@ window.OdOrderMng = {
     /* 주문 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 주문 fnStatusBadge */
-    const fnStatusBadge = s => ({
+    /* 주문 fnStatusBadge — 공통코드 ORDER_STATUS code_opt1 우선, 미매칭 시 로컬 fallback */
+    const _ORDER_STATUS_FB = {
       '입금대기': 'badge-orange', '결제완료': 'badge-blue', '상품준비중': 'badge-orange',
       '배송중': 'badge-blue', '배송완료': 'badge-green', '구매확정': 'badge-gray',
       '취소': 'badge-red', '자동취소': 'badge-red',
-    }[s] || 'badge-gray');
+    };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('ORDER_STATUS', s, _ORDER_STATUS_FB[s] || 'badge-gray');
 
     /* 주문 fnPayStatusBadge */
-    const fnPayStatusBadge = s => ({
+    const _PAY_STATUS_FB = {
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
-    }[s] || 'badge-gray');
+    };
+    const fnPayStatusBadge = s => coUtil.cofCodeBadge('PAY_STATUS', s, _PAY_STATUS_FB[s] || 'badge-gray');
 
     /* 주문 목록조회 */
     const onSearch = async () => {
@@ -196,7 +200,7 @@ window.OdOrderMng = {
     };
 
     /* 주문 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(orders, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
+    const exportExcel = () => coUtil.cofExportCsv(orders, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
 
     /* 클레임 조회 */
     const claimByOrder = (orderId) =>
@@ -532,7 +536,7 @@ window.OdOrderMng = {
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
               <option value="">선택하세요</option>
-              <option v-for="a in codes.approval_actions" :key="Math.random()" :value="a">{{ a }}</option>
+              <option v-for="a in codes.approval_actions" :key="a.codeValue" :value="a.codeValue">{{ a.codeLabel }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -562,7 +566,7 @@ window.OdOrderMng = {
             <div class="form-group">
               <label class="form-label">요청대상</label>
               <select class="form-control" v-model="bulkForm.reqTarget" @change="onReqTargetChange">
-                <option v-for="t in codes.req_targets" :key="Math.random()" :value="t">{{ t }}</option>
+                <option v-for="t in codes.req_targets" :key="t.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
               </select>
             </div>
             <div class="form-group">

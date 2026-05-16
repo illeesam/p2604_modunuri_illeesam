@@ -61,7 +61,7 @@ window.SyRoleMng = {
     };
 
     /* 역할(권한) pathLabel */
-    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* -- 좌측 표시경로 트리 -- */
@@ -73,7 +73,7 @@ window.SyRoleMng = {
     /* 역할(권한) selectNode */
     const selectNode = (path) => { uiState.selectedPath = path; handleSearchList(); };
     const cfTree = computed(() => {
-      const t = boUtil.buildRoleTree();
+      const t = boUtil.bofBuildRoleTree();
       const rolesById = Object.fromEntries((roles || []).map(r => [r.roleId, r]));
       const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
                           SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
@@ -100,7 +100,7 @@ window.SyRoleMng = {
     /* 선택 권한 + 자손 roleId Set */
     const cfAllowedRoleIds = computed(() => {
       if (uiState.selectedPath == null) return null;
-      return coUtil.collectDescendantIds(roles, 'roleId', 'parentRoleId', uiState.selectedPath);
+      return coUtil.cofCollectDescendantIds(roles, 'roleId', 'parentRoleId', uiState.selectedPath);
     });
 
     /* 역할(권한) expandAll */
@@ -118,19 +118,19 @@ window.SyRoleMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       fnLoadMenusAndUsers();
-      const initSet = coUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       handleSearchList('DEFAULT');
     });
 
-    const cfSiteNm  = computed(() => boUtil.getSiteNm());
+    const cfSiteNm  = computed(() => boUtil.bofGetSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
     const ROLE_CAT_COLOR = { ADMIN:'#7c3aed', SITE:'#2563eb', SALES:'#16a34a', DLIV:'#f59e0b' };
     /* 루트 역할코드 → 자동 카테고리 매핑 */
@@ -545,7 +545,7 @@ window.SyRoleMng = {
     });
 
     /* 역할(권한) exportExcel */
-    const exportExcel = () => coUtil.exportCsv(
+    const exportExcel = () => coUtil.cofExportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentRoleId'},{label:'유형',key:'roleTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'roleRemark'}],
       '역할목록.csv'

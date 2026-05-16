@@ -35,7 +35,7 @@ window.CmNoticeMng = {
 
     // -- computed --------------------------------------------------------------
 
-    const cfSiteNm       = computed(() => boUtil.getSiteNm());             // 현재 사이트명
+    const cfSiteNm       = computed(() => boUtil.bofGetSiteNm());             // 현재 사이트명
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId); // 신규 시 null, 수정 시 ID
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__'); // 조회 모드 여부
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`); // 상세 컴포넌트 강제 재마운트 키
@@ -58,7 +58,7 @@ window.CmNoticeMng = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -84,7 +84,7 @@ window.CmNoticeMng = {
     // 날짜범위 옵션 변경 — 선택된 옵션으로 dateStart·dateEnd 자동 세팅
     const onDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd   = r ? r.to   : '';
       }
@@ -183,13 +183,15 @@ window.CmNoticeMng = {
     };
 
     // 상태 코드 → badge 클래스 변환
-    const fnStatusBadge = s => ({ '게시': 'badge-green', '예약': 'badge-blue', '종료': 'badge-gray', '임시': 'badge-orange' }[s] || 'badge-gray');
+    const _NOTICE_STATUS_FB = { '게시': 'badge-green', '예약': 'badge-blue', '종료': 'badge-gray', '임시': 'badge-orange' };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('NOTICE_STATUS', s, _NOTICE_STATUS_FB[s] || 'badge-gray');
 
     // 유형 코드 → badge 클래스 변환
-    const fnTypeBadge   = t => ({ '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' }[t] || 'badge-gray');
+    const _NOTICE_TYPE_FB = { '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' };
+    const fnTypeBadge   = t => coUtil.cofCodeBadge('NOTICE_TYPE', t, _NOTICE_TYPE_FB[t] || 'badge-gray');
 
     // 현재 목록을 CSV로 내보내기
-    const exportExcel = () => coUtil.exportCsv(
+    const exportExcel = () => coUtil.cofExportCsv(
       notices,
       [{ label: 'ID', key: 'noticeId' }, { label: '제목', key: 'noticeTitle' }, { label: '유형', key: 'noticeTypeCd' },
        { label: '상태', key: 'noticeStatusCd' }, { label: '조회수', key: 'viewCount' }, { label: '등록일', key: 'regDate' }],

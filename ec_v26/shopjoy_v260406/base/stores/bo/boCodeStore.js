@@ -23,10 +23,17 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
       return s.svCodes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
     },
     // 특정 코드명 조회
+    // 코드명 조회 — codeVal 우선, 없으면 codeNm(라벨)으로도 매칭 (목업이 라벨을 코드값 자리에 넣는 경우 대응)
     sgGetCodeNmByVal: (s) => (grpVal, codeVal) => {
       if (!Array.isArray(s.svCodes)) return codeVal;
-      const code = s.svCodes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
+      const code = s.svCodes.find(c => c.codeGrp === grpVal && (c.codeVal === codeVal || c.codeNm === codeVal));
       return code?.codeNm || codeVal;
+    },
+    // codeOpt1 조회 (배지 클래스 등) — codeVal 우선, 없으면 codeNm(라벨)으로도 매칭
+    sgGetCodeOpt1: (s) => (grpVal, codeVal) => {
+      if (!Array.isArray(s.svCodes)) return '';
+      const code = s.svCodes.find(c => c.codeGrp === grpVal && (c.codeVal === codeVal || c.codeNm === codeVal));
+      return code?.codeOpt1 || '';
     },
     // 코드 그룹을 { codeValue, codeLabel } 형식으로 변환
     sgGetGrpCodes: (s) => (grpVal) => {
@@ -127,6 +134,8 @@ const _boCodeStoreFallback = {
   sgGetGrpCodes: () => [],
   sgGetGrpCodesFirstOpt: (g, iv, il) => iv && il ? [{ codeValue: iv, codeLabel: il }] : [],
   sgGetGrpCodesByLevel: () => [],
+  sgGetCodeNmByVal: (g, v) => v,
+  sgGetCodeOpt1: () => '',
 };
 window.sfGetBoCodeStore = () => {
   try {

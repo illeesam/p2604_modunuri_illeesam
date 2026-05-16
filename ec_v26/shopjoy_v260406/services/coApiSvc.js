@@ -36,14 +36,14 @@
 
   /* uiNm/cmdNm 둘 다 있을 때만 apiHdr 생성, 없으면 빈 객체 */
   function hdr(uiNm, cmdNm) {
-    return uiNm && cmdNm ? coUtil.apiHdr(uiNm, cmdNm) : {};
+    return uiNm && cmdNm ? coUtil.cofApiHdr(uiNm, cmdNm) : {};
   }
 
-  /* _id / saveList rows 검증은 coUtil.chkId / coUtil.chkRowIds 위임 */
-  const chkId     = (...a) => coUtil.chkId(...a);
+  /* _id / saveList rows 검증은 coUtil.cofChkId / coUtil.cofChkRowIds 위임 */
+  const chkId     = (...a) => coUtil.cofChkId(...a);
 
   /* chkRowIds */
-  const chkRowIds = (...a) => coUtil.chkRowIds(...a);
+  const chkRowIds = (...a) => coUtil.cofChkRowIds(...a);
 
   const coApiSvc = {};
 

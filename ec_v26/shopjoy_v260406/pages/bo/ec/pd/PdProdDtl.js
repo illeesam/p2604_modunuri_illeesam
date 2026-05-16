@@ -46,7 +46,7 @@ window.PdProdDtl = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // -- 탭별 페이징 상태
@@ -86,7 +86,7 @@ window.PdProdDtl = {
     const TAB_BASE = () => `/bo/ec/pd/prod/${props.dtlId}`;
 
     /* 상품 HDR */
-    const HDR = (cmd) => coUtil.apiHdr('상품관리', cmd);
+    const HDR = (cmd) => coUtil.cofApiHdr('상품관리', cmd);
 
     // 보조 데이터(사용자/카테고리) + 기본정보 + 탭 전체 동시 조회
     const handleLoadData = async () => {

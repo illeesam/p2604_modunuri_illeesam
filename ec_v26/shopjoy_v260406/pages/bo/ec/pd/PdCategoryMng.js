@@ -31,7 +31,7 @@ window.PdCategoryMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     /* -- 검색 파라미터 -- (siteId는 필수, 기본값 우선순위: boCommonFilter > boAppStore.svBoSiteId > _boCmSites[0] > '2604010000000001') */

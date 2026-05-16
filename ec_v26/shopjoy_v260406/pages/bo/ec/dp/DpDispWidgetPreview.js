@@ -23,7 +23,7 @@ const _WP_DispWidgetPreview = {
         uiState.isPageCodeLoad = true;
       }
     };
-    coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* -- 위젯 유형 (DTO / UI 호환 별칭 모두 지원) -- */
     const cfType = computed(() => {
@@ -405,14 +405,14 @@ window.DpDispWidgetPreview = {
       } catch (_) {}
     };
 
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
     });
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);

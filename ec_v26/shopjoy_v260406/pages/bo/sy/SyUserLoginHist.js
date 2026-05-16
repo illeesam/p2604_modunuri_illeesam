@@ -20,11 +20,11 @@ window.SyUserLoginHist = {
       searchUiNm: '', searchTraceId: '',
     });
 
-    (() => { const r = boUtil.getDateRange('1week'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = boUtil.bofGetDateRange('1week'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     /* onDateRangeChange */
     const onDateRangeChange = () => {
-      if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
 
     const codes = reactive({ login_results: [], token_actions: [], date_range_opts: [] });
@@ -37,7 +37,7 @@ window.SyUserLoginHist = {
       codes.token_actions   = cs?.sgGetGrpCodes('TOKEN_ACTION')   || [];
       codes.date_range_opts = cs?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ── 페이저 ────────────────────────────────────────────────────────────
     const pager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes:[10,20,50,100], pageCond:{} });
@@ -150,8 +150,8 @@ window.SyUserLoginHist = {
       const ok = await props.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
       if (!ok) return;
       try {
-        if (uiState.activeTab==='log') await window.boApi.delete('/bo/sy/user-login-log/all', coUtil.apiHdr('사용자로그인이력', '로그비우기'));
-        else                           await window.boApi.delete('/bo/sy/user-token-log/all', coUtil.apiHdr('사용자로그인이력', '로그비우기'));
+        if (uiState.activeTab==='log') await window.boApi.delete('/bo/sy/user-login-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기'));
+        else                           await window.boApi.delete('/bo/sy/user-token-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기'));
         props.showToast(`${tabNm} 전체 삭제 완료`, 'success');
         if (uiState.activeTab==='log') { logList.splice(0); tabCounts.log=0; }
         else                           { tokenList.splice(0); tabCounts.token=0; }

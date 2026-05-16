@@ -45,7 +45,7 @@ window.SyCodeMng = {
     const parentOpts     = reactive([]);
     const flatTree       = reactive([]);
 
-    const siteNm = boUtil.getSiteNm();   // 매 행마다 호출 방지용 상수 캐시
+    const siteNm = boUtil.bofGetSiteNm();   // 매 행마다 호출 방지용 상수 캐시
 
     let _tempId    = -1;
     let _grpTempId = -1;
@@ -125,7 +125,7 @@ window.SyCodeMng = {
       uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     onMounted(() => {
       checkAndLoadCodes();
@@ -154,7 +154,7 @@ window.SyCodeMng = {
     /* handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : '';
       }
     };
@@ -395,7 +395,7 @@ window.SyCodeMng = {
         const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({
           ...r, rowStatus: r._row_status,
         }));
-        await boApi.post('/bo/sy/code/save-list', saveRows, coUtil.apiHdr('공통코드관리', '저장'));
+        await boApi.post('/bo/sy/code/save-list', saveRows, coUtil.cofApiHdr('공통코드관리', '저장'));
         const toastParts = [];
         if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
         if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
@@ -517,7 +517,7 @@ window.SyCodeMng = {
     const statusBadgeCls = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     /* exportExcel */
-    const exportExcel = () => coUtil.exportCsv(
+    const exportExcel = () => coUtil.cofExportCsv(
       uiState.gridRows.filter(r => r._row_status !== 'D'),
       [{ label: 'ID', key: 'codeId' }, { label: '코드그룹', key: 'codeGrp' }, { label: '코드라벨', key: 'codeLabel' },
        { label: '코드값', key: 'codeValue' }, { label: '순서', key: 'sortOrd' }, { label: '사용여부', key: 'useYn' }, { label: '비고', key: 'codeRemark' }],
@@ -525,7 +525,7 @@ window.SyCodeMng = {
     );
 
     /* pathLabel */
-    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* PathPick 버튼 hover 효과 — 인라인 할당식 회피 */
     const onPathBtnHover = (g, evt) => {

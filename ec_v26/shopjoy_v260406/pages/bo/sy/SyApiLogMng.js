@@ -36,11 +36,11 @@ window.SyApiLogMng = {
       codes.app_types      = codeStore?.sgGetGrpCodes('APP_TYPE')      || [];
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // 기본 기간: 최근 1주일
     (() => {
-      const r = boUtil.getDateRange('1week');
+      const r = boUtil.bofGetDateRange('1week');
       uiState.dateStart = r.from;
       uiState.dateEnd   = r.to;
     })();
@@ -48,7 +48,7 @@ window.SyApiLogMng = {
     /* onDateRangeChange */
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
-        const r = boUtil.getDateRange(uiState.dateRange);
+        const r = boUtil.bofGetDateRange(uiState.dateRange);
         uiState.dateStart = r ? r.from : '';
         uiState.dateEnd   = r ? r.to   : '';
       }
@@ -165,8 +165,8 @@ window.SyApiLogMng = {
       const ok = await window.boApp.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
       if (!ok) return;
       try {
-        if (uiState.activeTab === 'access') await window.boApi.delete('/bo/sy/access-log/all', coUtil.apiHdr('API로그조회', '로그비우기'));
-        else                                await window.boApi.delete('/bo/sy/access-error-log/all', coUtil.apiHdr('API로그조회', '로그비우기'));
+        if (uiState.activeTab === 'access') await window.boApi.delete('/bo/sy/access-log/all', coUtil.cofApiHdr('API로그조회', '로그비우기'));
+        else                                await window.boApi.delete('/bo/sy/access-error-log/all', coUtil.cofApiHdr('API로그조회', '로그비우기'));
         if (showToast) showToast(`${tabNm} 전체 삭제 완료`, 'success');
         if (uiState.activeTab === 'access') { accessLogs.splice(0); tabCounts.access = 0; }
         else                                { errorLogs.splice(0);  tabCounts.error  = 0; }
@@ -187,7 +187,7 @@ window.SyApiLogMng = {
         searchAppTypeCd:'', searchUiNm:'', searchTraceId:'',
         dateRange:'1week', srchOpen:false,
       });
-      const r = boUtil.getDateRange('1week');
+      const r = boUtil.bofGetDateRange('1week');
       uiState.dateStart = r.from; uiState.dateEnd = r.to;
       pager.pageNo = 1;
       handleSearchList();

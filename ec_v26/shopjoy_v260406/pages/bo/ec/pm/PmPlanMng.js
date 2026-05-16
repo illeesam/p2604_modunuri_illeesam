@@ -30,7 +30,7 @@ window.PmPlanMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // onMounted에서 API 로드
@@ -87,10 +87,10 @@ window.PmPlanMng = {
 
     /* 프로모션 플랜 handleDateRangeChange */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
      // 'list' | 'card'
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const CATEGORIES = [
@@ -132,7 +132,8 @@ const CATEGORIES = [
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 프로모션 플랜 fnStatusBadge */
-    const fnStatusBadge = s => ({ '활성': 'badge-green', '예정': 'badge-blue', '비활성': 'badge-gray', '종료': 'badge-gray' }[s] || 'badge-gray');
+    const _PLAN_STATUS_FB = { '활성': 'badge-green', '예정': 'badge-blue', '비활성': 'badge-gray', '종료': 'badge-gray' };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('PLAN_STATUS_KR', s, _PLAN_STATUS_FB[s] || 'badge-gray');
 
     /* 프로모션 플랜 목록조회 */
     const onSearch = async () => {
@@ -174,7 +175,7 @@ const CATEGORIES = [
     };
 
     /* 프로모션 플랜 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(plans, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'제목',key:'planTitle'},{label:'유형',key:'planTypeCd'},{label:'상태',key:'planStatusCd'},{label:'정렬',key:'sortOrd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
+    const exportExcel = () => coUtil.cofExportCsv(plans, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'제목',key:'planTitle'},{label:'유형',key:'planTypeCd'},{label:'상태',key:'planStatusCd'},{label:'정렬',key:'sortOrd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 

@@ -64,7 +64,7 @@
           if (lic.licenseCode) cfg.headers['X-License-Code'] = lic.licenseCode;
         }
       } catch (_) {}
-      /* coUtil.apiHdr 미사용 호출 대비 — X-Trace-Id / X-File-Nm / X-Func-Nm / X-Line-No 자동 보충 */
+      /* coUtil.cofApiHdr 미사용 호출 대비 — X-Trace-Id / X-File-Nm / X-Func-Nm / X-Line-No 자동 보충 */
       try {
         if (!cfg.headers['X-Trace-Id'] && !cfg.headers['x-trace-id']) {
           var now = new Date();

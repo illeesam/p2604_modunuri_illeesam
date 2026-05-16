@@ -13,7 +13,7 @@ window.OdDlivMng = {
     const deliveries = reactive([]);
     const members = reactive([]);
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
-    const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [], courier_codes: [], dliv_date_types: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
+    const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [], courier_codes: [], dliv_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
@@ -77,13 +77,13 @@ window.OdDlivMng = {
     /* 배송 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 배송 fnLoadCodes */
@@ -95,10 +95,12 @@ window.OdDlivMng = {
       codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
       codes.courier_codes = codeStore.sgGetGrpCodes('COURIER');
       codes.dliv_date_types = codeStore.sgGetGrpCodes('DLIV_DATE_TYPE');
+      codes.approval_actions = codeStore.sgGetGrpCodes('APPROVAL_ACTION');
+      codes.req_targets = codeStore.sgGetGrpCodes('REQ_TARGET');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted
@@ -136,11 +138,12 @@ window.OdDlivMng = {
     /* 목록 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 배송 fnStatusBadge */
-    const fnStatusBadge = s => ({
+    /* 배송 fnStatusBadge — 공통코드 DLIV_STATUS 우선, 미매칭 시 로컬 fallback */
+    const _DLIV_STATUS_FB = {
       '준비중': 'badge-orange', '출고완료': 'badge-blue', '배송중': 'badge-blue',
       '배송완료': 'badge-green', '배송실패': 'badge-red',
-    }[s] || 'badge-gray');
+    };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('DLIV_STATUS', s, _DLIV_STATUS_FB[s] || 'badge-gray');
 
     /* 배송 목록조회 */
     const onSearch = async () => {
@@ -187,7 +190,7 @@ window.OdDlivMng = {
     };
 
     /* 배송 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(deliveries, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
+    const exportExcel = () => coUtil.cofExportCsv(deliveries, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
@@ -541,7 +544,7 @@ window.OdDlivMng = {
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
               <option value="">선택하세요</option>
-              <option v-for="a in codes.approval_actions" :key="Math.random()" :value="a">{{ a }}</option>
+              <option v-for="a in codes.approval_actions" :key="a.codeValue" :value="a.codeValue">{{ a.codeLabel }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -571,7 +574,7 @@ window.OdDlivMng = {
             <div class="form-group">
               <label class="form-label">요청대상</label>
               <select class="form-control" v-model="bulkForm.reqTarget" @change="onReqTargetChange">
-                <option v-for="t in codes.req_targets" :key="Math.random()" :value="t">{{ t }}</option>
+                <option v-for="t in codes.req_targets" :key="t.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
               </select>
             </div>
             <div class="form-group">

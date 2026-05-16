@@ -22,7 +22,7 @@ window.SyContactDtl = {
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ contact_categories: [], contact_statuses: [] });
     const cfIsNew = computed(() => !props.dtlId);
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
 watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
@@ -38,7 +38,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       codes.contact_statuses = codeStore.sgGetGrpCodes('CONTACT_STATUS_KR');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     const form = reactive({
@@ -91,9 +91,10 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     };
 
     /* 문의 fnStatusBadge */
-    const fnStatusBadge = s => ({
+    const _CONTACT_STATUS_KR_FB = {
       '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray'
-    }[s] || 'badge-gray');
+    };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('CONTACT_STATUS_KR', s, _CONTACT_STATUS_KR_FB[s] || 'badge-gray');
 
     const cfCurId       = computed(() => props.dtlId || form.contactId || null);
     const cfHasId       = computed(() => !!cfCurId.value);

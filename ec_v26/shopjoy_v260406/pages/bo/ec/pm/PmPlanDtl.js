@@ -65,7 +65,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     const _today = new Date();

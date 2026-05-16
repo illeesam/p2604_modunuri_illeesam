@@ -25,7 +25,7 @@ window.CmNoticeDtl = {
       codes.noticeStatuses = codeStore.sgGetGrpCodes('NOTICE_STATUS');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);

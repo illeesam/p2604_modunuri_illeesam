@@ -13,7 +13,7 @@ window.OdClaimMng = {
     const claims = reactive([]);
     const members = reactive([]);
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
-    const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [], claim_date_types: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
+    const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [], claim_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
@@ -79,13 +79,13 @@ window.OdClaimMng = {
     /* 클레임(취소/반품/교환) handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 클레임(취소/반품/교환) fnLoadCodes */
@@ -97,10 +97,12 @@ window.OdClaimMng = {
       codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
       codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
       codes.claim_date_types = codeStore.sgGetGrpCodes('CLAIM_DATE_TYPE');
+      codes.approval_actions = codeStore.sgGetGrpCodes('APPROVAL_ACTION');
+      codes.req_targets = codeStore.sgGetGrpCodes('REQ_TARGET');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
     // ★ onMounted
@@ -137,15 +139,17 @@ window.OdClaimMng = {
     /* 클레임(취소/반품/교환) fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 클레임(취소/반품/교환) fnTypeBadge */
-    const fnTypeBadge = t => ({ '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' }[t] || 'badge-gray');
+    /* 클레임(취소/반품/교환) fnTypeBadge — 공통코드 CLAIM_TYPE_KR 우선, 미매칭 시 로컬 fallback */
+    const _CLAIM_TYPE_FB = { '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' };
+    const fnTypeBadge = t => coUtil.cofCodeBadge('CLAIM_TYPE_KR', t, _CLAIM_TYPE_FB[t] || 'badge-gray');
 
-    /* 클레임(취소/반품/교환) fnStatusBadge */
-    const fnStatusBadge = s => ({
+    /* 클레임(취소/반품/교환) fnStatusBadge — 공통코드 CLAIM_STATUS_KR 우선, 미매칭 시 로컬 fallback */
+    const _CLAIM_STATUS_FB = {
       '신청': 'badge-orange', '승인': 'badge-blue', '수거중': 'badge-blue',
       '처리중': 'badge-purple', '환불대기': 'badge-orange',
       '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
-    }[s] || 'badge-gray');
+    };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('CLAIM_STATUS_KR', s, _CLAIM_STATUS_FB[s] || 'badge-gray');
 
     /* 클레임(취소/반품/교환) 목록조회 */
     const onSearch = async () => {
@@ -192,7 +196,7 @@ window.OdClaimMng = {
     };
 
     /* 클레임(취소/반품/교환) exportExcel */
-    const exportExcel = () => coUtil.exportCsv(claims, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
+    const exportExcel = () => coUtil.cofExportCsv(claims, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
@@ -570,7 +574,7 @@ window.OdClaimMng = {
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
               <option value="">선택하세요</option>
-              <option v-for="a in codes.approval_actions" :key="Math.random()" :value="a">{{ a }}</option>
+              <option v-for="a in codes.approval_actions" :key="a.codeValue" :value="a.codeValue">{{ a.codeLabel }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -600,7 +604,7 @@ window.OdClaimMng = {
             <div class="form-group">
               <label class="form-label">요청대상</label>
               <select class="form-control" v-model="bulkForm.reqTarget" @change="onReqTargetChange">
-                <option v-for="t in codes.req_targets" :key="Math.random()" :value="t">{{ t }}</option>
+                <option v-for="t in codes.req_targets" :key="t.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
               </select>
             </div>
             <div class="form-group">
