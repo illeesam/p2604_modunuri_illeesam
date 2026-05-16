@@ -14,6 +14,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReviewAttach;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewAttachRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -111,6 +112,9 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     private BooleanBuilder buildCondition(PdReviewAttachDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+
+        if (!CollectionUtils.isEmpty(s.getReviewIds())) w.and(a.reviewId.in(s.getReviewIds()));
+        if (StringUtils.hasText(s.getReviewId()))       w.and(a.reviewId.eq(s.getReviewId()));
 
         if (StringUtils.hasText(s.getSiteId()))         w.and(a.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getReviewAttachId())) w.and(a.reviewAttachId.eq(s.getReviewAttachId()));

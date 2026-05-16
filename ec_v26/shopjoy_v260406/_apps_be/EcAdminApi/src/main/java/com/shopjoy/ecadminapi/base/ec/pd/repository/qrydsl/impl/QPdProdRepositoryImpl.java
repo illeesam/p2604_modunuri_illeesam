@@ -20,6 +20,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -190,6 +191,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
 
+        if (!CollectionUtils.isEmpty(s.getProdIds())) w.and(p.prodId.in(s.getProdIds()));
         if (StringUtils.hasText(s.getSiteId()))     w.and(p.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getProdId()))     w.and(p.prodId.eq(s.getProdId()));
         if (StringUtils.hasText(s.getBrandId()))    w.and(p.brandId.eq(s.getBrandId()));

@@ -1,5 +1,7 @@
 package com.shopjoy.ecadminapi.base.ec.od.data.dto;
 
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto;
 import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
@@ -41,6 +43,9 @@ public class OdCartDto {
         private String prodNm;
         private String optNm1;
         private String optNm2;
+        // ── 연관정보 (목록 시 채움) ──
+        private PdProdDto.Item    prod;   // 상품 단건
+        private PdProdSkuDto.Item sku;    // SKU 단건
     }
 
     @Getter @Setter @NoArgsConstructor

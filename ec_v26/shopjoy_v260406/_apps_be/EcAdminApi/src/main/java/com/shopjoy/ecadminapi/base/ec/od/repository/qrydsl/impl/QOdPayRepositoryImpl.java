@@ -15,6 +15,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdPay;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdPayRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -170,6 +171,8 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
 
+        if (!CollectionUtils.isEmpty(s.getOrderIds())) w.and(p.orderId.in(s.getOrderIds()));
+        if (StringUtils.hasText(s.getOrderId())) w.and(p.orderId.eq(s.getOrderId()));
         if (StringUtils.hasText(s.getSiteId())) w.and(p.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getPayId()))  w.and(p.payId.eq(s.getPayId()));
 

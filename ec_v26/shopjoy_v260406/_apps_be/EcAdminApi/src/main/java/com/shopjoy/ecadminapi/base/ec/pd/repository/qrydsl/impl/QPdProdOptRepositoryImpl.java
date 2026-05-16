@@ -14,6 +14,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdOptRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -114,6 +115,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         BooleanBuilder w = new BooleanBuilder();
         if (req == null) return w;
 
+        if (!CollectionUtils.isEmpty(req.getProdIds())) w.and(o.prodId.in(req.getProdIds()));
         if (StringUtils.hasText(req.getProdId())) w.and(o.prodId.eq(req.getProdId()));
         if (StringUtils.hasText(req.getSiteId())) w.and(o.siteId.eq(req.getSiteId()));
         if (StringUtils.hasText(req.getOptId()))  w.and(o.optId.eq(req.getOptId()));

@@ -12,6 +12,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdImgRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -107,6 +108,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         BooleanBuilder w = new BooleanBuilder();
         if (req == null) return w;
 
+        if (!CollectionUtils.isEmpty(req.getProdIds())) w.and(i.prodId.in(req.getProdIds()));
         if (StringUtils.hasText(req.getProdId()))    w.and(i.prodId.eq(req.getProdId()));
         if (StringUtils.hasText(req.getSiteId()))    w.and(i.siteId.eq(req.getSiteId()));
         if (StringUtils.hasText(req.getProdImgId())) w.and(i.prodImgId.eq(req.getProdImgId()));

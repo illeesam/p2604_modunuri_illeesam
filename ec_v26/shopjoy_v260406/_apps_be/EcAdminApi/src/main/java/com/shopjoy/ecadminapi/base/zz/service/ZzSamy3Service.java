@@ -94,17 +94,20 @@ public class ZzSamy3Service {
 
         // 각 항목에 분배
         for (ZzSamy3Dto.Item item : list) {
-            item.setSamy1(samy1Map.get(item.getSamy1Id()));
-            item.setSamy2(samy2Map.get(item.getSamy2Id()));
+            item.setSamy1(samy1Map.get(item.getSamy1Id())); // samy1 단건
+            item.setSamy2(samy2Map.get(item.getSamy2Id())); // samy2 단건
         }
     }
 
     /** 상위 계층(samy1 / samy2) 채우기 */
     private void _itemFillRelations(ZzSamy3Dto.Item item) {
+        // 상위 samy1 단건 조회 (samy1Id 기준)
         if (StringUtils.hasText(item.getSamy1Id()))
-            item.setSamy1(zzSamy1Mapper.selectById(item.getSamy1Id()));
+            item.setSamy1(zzSamy1Mapper.selectById(item.getSamy1Id())); // samy1 단건
+
+        // 상위 samy2 단건 조회 (samy2Id 기준)
         if (StringUtils.hasText(item.getSamy2Id()))
-            item.setSamy2(zzSamy2Mapper.selectById(item.getSamy2Id()));
+            item.setSamy2(zzSamy2Mapper.selectById(item.getSamy2Id())); // samy2 단건
     }
 
     /** create — 생성 */

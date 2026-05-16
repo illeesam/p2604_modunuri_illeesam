@@ -84,17 +84,20 @@ public class ZzExmy3Service {
 
         // 각 항목에 분배
         for (ZzExmy3Dto.Item item : list) {
-            item.setExmy1(exmy1Map.get(item.getExmy1Id()));
-            item.setExmy2(exmy2Map.get(item.getExmy1Id() + "|" + item.getExmy2Id()));
+            item.setExmy1(exmy1Map.get(item.getExmy1Id())); // exmy1 단건
+            item.setExmy2(exmy2Map.get(item.getExmy1Id() + "|" + item.getExmy2Id())); // exmy2 단건
         }
     }
 
     /** 상위 계층(exmy1 / exmy2) 채우기 */
     private void _itemFillRelations(ZzExmy3Dto.Item item) {
+        // 상위 exmy1 단건 조회 (exmy1Id 기준)
         if (StringUtils.hasText(item.getExmy1Id()))
-            item.setExmy1(zzExmy1Mapper.selectById(item.getExmy1Id()));
+            item.setExmy1(zzExmy1Mapper.selectById(item.getExmy1Id())); // exmy1 단건
+
+        // 상위 exmy2 단건 조회 (exmy1Id + exmy2Id 기준)
         if (StringUtils.hasText(item.getExmy1Id()) && StringUtils.hasText(item.getExmy2Id()))
-            item.setExmy2(zzExmy2Mapper.selectById(item.getExmy1Id(), item.getExmy2Id()));
+            item.setExmy2(zzExmy2Mapper.selectById(item.getExmy1Id(), item.getExmy2Id())); // exmy2 단건
     }
 
     /** create — 생성 */

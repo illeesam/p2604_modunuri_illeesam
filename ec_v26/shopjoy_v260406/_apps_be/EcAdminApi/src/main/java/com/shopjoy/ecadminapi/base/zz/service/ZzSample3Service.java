@@ -118,8 +118,8 @@ public class ZzSample3Service {
 
         // 각 항목에 분배
         for (ZzSample3Dto.Item item : list) {
-            item.setSample1(sample1Map.get(item.getSample1Id()));
-            item.setSample2(sample2Map.get(item.getSample2Id()));
+            item.setSample1(sample1Map.get(item.getSample1Id())); // sample1 단건
+            item.setSample2(sample2Map.get(item.getSample2Id())); // sample2 단건
         }
     }
 
@@ -137,10 +137,13 @@ public class ZzSample3Service {
 
     /** 상위 계층(sample1 / sample2) 채우기 */
     private void _itemFillRelations(ZzSample3Dto.Item item) {
+        // 상위 sample1 단건 조회 (sample1Id 기준)
         if (StringUtils.hasText(item.getSample1Id()))
-            item.setSample1(zzSample1Repository.selectById(item.getSample1Id()).orElse(null));
+            item.setSample1(zzSample1Repository.selectById(item.getSample1Id()).orElse(null)); // sample1 단건
+
+        // 상위 sample2 단건 조회 (sample2Id 기준)
         if (StringUtils.hasText(item.getSample2Id()))
-            item.setSample2(zzSample2Repository.selectById(item.getSample2Id()).orElse(null));
+            item.setSample2(zzSample2Repository.selectById(item.getSample2Id()).orElse(null)); // sample2 단건
     }
 
     /** create — 생성 */

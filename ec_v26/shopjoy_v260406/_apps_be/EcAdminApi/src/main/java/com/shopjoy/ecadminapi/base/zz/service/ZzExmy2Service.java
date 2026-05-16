@@ -84,20 +84,23 @@ public class ZzExmy2Service {
 
         // 각 항목에 분배
         for (ZzExmy2Dto.Item item : list) {
-            item.setExmy1(exmy1Map.get(item.getExmy1Id()));
+            item.setExmy1(exmy1Map.get(item.getExmy1Id())); // exmy1 단건
             item.setExmy3s(exmy3Map.getOrDefault(
-                item.getExmy1Id() + "|" + item.getExmy2Id(), List.of()));
+                item.getExmy1Id() + "|" + item.getExmy2Id(), List.of())); // exmy3 목록
         }
     }
 
     /** 상위 계층(exmy1) / 하위 계층(exmy3s) 채우기 */
     private void _itemFillRelations(ZzExmy2Dto.Item item) {
+        // 상위 exmy1 단건 조회 (exmy1Id 기준)
         if (StringUtils.hasText(item.getExmy1Id()))
-            item.setExmy1(zzExmy1Mapper.selectById(item.getExmy1Id()));
+            item.setExmy1(zzExmy1Mapper.selectById(item.getExmy1Id())); // exmy1 단건
+
+        // 하위 exmy3 목록 조회 (exmy1Id + exmy2Id 기준)
         ZzExmy3Dto.Request req3 = new ZzExmy3Dto.Request();
         req3.setExmy1Id(item.getExmy1Id());
         req3.setExmy2Id(item.getExmy2Id());
-        item.setExmy3s(zzExmy3Mapper.selectList(req3));
+        item.setExmy3s(zzExmy3Mapper.selectList(req3)); // exmy3 목록
     }
 
     /** create — 생성 */

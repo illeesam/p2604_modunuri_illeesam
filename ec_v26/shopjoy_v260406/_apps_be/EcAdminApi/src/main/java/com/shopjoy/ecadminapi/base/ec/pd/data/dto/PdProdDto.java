@@ -9,6 +9,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 public class PdProdDto {
 
@@ -16,6 +18,7 @@ public class PdProdDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String prodId;
+        private List<String> prodIds;                  // PK 다건 IN
         @Size(max = 21) private String brandId;
         @Size(max = 21) private String vendorId;
         @Size(max = 21) private String categoryId;
@@ -82,6 +85,10 @@ public class PdProdDto {
         private String prodStatusCdNm;
         private String prodTypeCdNm;
         private String sizeInfoCdNm;
+        // ── Tier 1 상세 연관정보 (getDetail 시 채움) ──
+        private List<PdProdImgDto.Item> images;   // 상품 이미지 목록
+        private Map<String, Object>     opts;     // 옵션 { groups, items }
+        private List<PdProdSkuDto.Item> skus;     // SKU 목록
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -16,6 +16,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -112,6 +113,8 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
 
+        if (!CollectionUtils.isEmpty(s.getOrderIds())) w.and(d.orderId.in(s.getOrderIds()));
+        if (StringUtils.hasText(s.getOrderId()))       w.and(d.orderId.eq(s.getOrderId()));
         if (StringUtils.hasText(s.getSiteId()))        w.and(d.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getOrderDiscntId())) w.and(d.orderDiscntId.eq(s.getOrderDiscntId()));
 

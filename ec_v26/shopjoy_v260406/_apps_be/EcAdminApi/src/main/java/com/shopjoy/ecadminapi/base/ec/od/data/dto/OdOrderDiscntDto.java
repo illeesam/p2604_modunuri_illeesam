@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class OdOrderDiscntDto {
 
@@ -16,6 +17,8 @@ public class OdOrderDiscntDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String orderDiscntId;
+        @Size(max = 21) private String orderId;        // 상위 FK 필터
+        private List<String> orderIds;                 // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor

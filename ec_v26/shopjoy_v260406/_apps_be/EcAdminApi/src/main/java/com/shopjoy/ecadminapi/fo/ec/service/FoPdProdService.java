@@ -60,45 +60,116 @@ public class FoPdProdService {
 
     /* 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
-        return pdProdRepository.selectList(req);
+        List<PdProdDto.Item> list = pdProdRepository.selectList(req);
+        _listFillRelations(list);
+        return list;
     }
 
     /** getPageData — 조회 */
     public PdProdDto.PageResponse getPageData(PdProdDto.Request req) {
-        return pdProdService.getPageData(req);
+        PdProdDto.PageResponse res = pdProdService.getPageData(req);
+        _listFillRelations(res.getPageList());
+        return res;
+    }
+
+    /**
+     * _listFillRelations — 목록 일괄 연관조회 (images/opts/skus 를 각각 한 번의 쿼리로 조회 후 분배)
+     * 행마다 쿼리하는 _itemFillRelations 와 달리, N개 행이라도 img 1회 + opt 1회 + optItem 1회 + sku 1회만 조회한다.
+     */
+    private void _listFillRelations(List<PdProdDto.Item> list) {
+        if (list == null || list.isEmpty()) return;
+
+        // 부모 키 수집 (중복 제거)
+        List<String> prodIds = list.stream()
+            .map(PdProdDto.Item::getProdId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+        if (prodIds.isEmpty()) return;
+
+        // 이미지 일괄조회 → Map<prodId, List<img>>
+        PdProdImgDto.Request imgReq = new PdProdImgDto.Request();
+        imgReq.setProdIds(prodIds);
+        Map<String, List<PdProdImgDto.Item>> imgMap = pdProdImgService.getList(imgReq).stream()
+            .collect(java.util.stream.Collectors.groupingBy(PdProdImgDto.Item::getProdId));
+
+        // 옵션그룹 일괄조회 → Map<prodId, List<group>> + optId→prodId 매핑
+        PdProdOptDto.Request optReq = new PdProdOptDto.Request();
+        optReq.setProdIds(prodIds);
+        List<PdProdOptDto.Item> allGroups = pdProdOptService.getList(optReq);
+        Map<String, List<PdProdOptDto.Item>> groupMap = allGroups.stream()
+            .collect(java.util.stream.Collectors.groupingBy(PdProdOptDto.Item::getProdId));
+        Map<String, String> optIdToProdId = allGroups.stream()
+            .collect(java.util.stream.Collectors.toMap(
+                PdProdOptDto.Item::getOptId, PdProdOptDto.Item::getProdId, (a, b) -> a));
+
+        // 옵션아이템 일괄조회 → optId 경유로 prodId 그룹핑 (optItem 에는 prodId 필드 없음)
+        PdProdOptItemDto.Request itemReq = new PdProdOptItemDto.Request();
+        itemReq.setProdIds(prodIds);
+        Map<String, List<PdProdOptItemDto.Item>> itemMap = pdProdOptItemService.getList(itemReq).stream()
+            .filter(it -> optIdToProdId.get(it.getOptId()) != null)
+            .collect(java.util.stream.Collectors.groupingBy(it -> optIdToProdId.get(it.getOptId())));
+
+        // SKU 일괄조회 → Map<prodId, List<sku>>
+        PdProdSkuDto.Request skuReq = new PdProdSkuDto.Request();
+        skuReq.setProdIds(prodIds);
+        Map<String, List<PdProdSkuDto.Item>> skuMap = pdProdSkuService.getList(skuReq).stream()
+            .collect(java.util.stream.Collectors.groupingBy(PdProdSkuDto.Item::getProdId));
+
+        // 각 항목에 분배
+        for (PdProdDto.Item prod : list) {
+            String pid = prod.getProdId();
+            Map<String, Object> opts = new LinkedHashMap<>();
+            opts.put("groups", groupMap.getOrDefault(pid, List.of()));
+            opts.put("items",  itemMap.getOrDefault(pid, List.of()));
+            prod.setImages(imgMap.getOrDefault(pid, List.of())); // 이미지목록
+            prod.setOpts(opts); // 옵션(그룹/항목)
+            prod.setSkus(skuMap.getOrDefault(pid, List.of())); // SKU목록
+        }
     }
 
     /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
 
     /* getDetail */
-    public Map<String, Object> getDetail(String prodId) {
+    public PdProdDto.Item getDetail(String prodId) {
         PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
         if (prod == null) throw new CmBizException("존재하지 않는 상품입니다: " + prodId + "::" + CmUtil.svcCallerInfo(this));
+        _itemFillRelations(prod);
+        return prod;
+    }
 
-        PdProdImgDto.Request     imgReq  = new PdProdImgDto.Request();
+    /** _itemFillRelations — 단건 연관조회 (images/opts/skus 채우기) */
+    private void _itemFillRelations(PdProdDto.Item prod) {
+        String prodId = prod.getProdId();
+
+        // 하위 상품이미지 목록 조회 (prodId 기준)
+        PdProdImgDto.Request imgReq = new PdProdImgDto.Request();
         imgReq.setProdId(prodId);
-        PdProdOptDto.Request     optReq  = new PdProdOptDto.Request();
+        List<PdProdImgDto.Item> images = pdProdImgService.getList(imgReq);
+
+        // 하위 옵션그룹 목록 조회 (prodId 기준)
+        PdProdOptDto.Request optReq = new PdProdOptDto.Request();
         optReq.setProdId(prodId);
+        List<PdProdOptDto.Item> groups = pdProdOptService.getList(optReq);
+
+        // 하위 옵션항목 목록 조회 (prodId 기준)
         PdProdOptItemDto.Request itemReq = new PdProdOptItemDto.Request();
         itemReq.setProdId(prodId);
-        PdProdSkuDto.Request     skuReq  = new PdProdSkuDto.Request();
+        List<PdProdOptItemDto.Item> items = pdProdOptItemService.getList(itemReq);
+
+        // 하위 SKU 목록 조회 (prodId 기준)
+        PdProdSkuDto.Request skuReq = new PdProdSkuDto.Request();
         skuReq.setProdId(prodId);
+        List<PdProdSkuDto.Item> skus = pdProdSkuService.getList(skuReq);
 
-        List<PdProdImgDto.Item>     images = pdProdImgService.getList(imgReq);
-        List<PdProdOptDto.Item>     groups = pdProdOptService.getList(optReq);
-        List<PdProdOptItemDto.Item> items  = pdProdOptItemService.getList(itemReq);
-        List<PdProdSkuDto.Item>     skus   = pdProdSkuService.getList(skuReq);
-
+        // 옵션 그룹/항목 묶음 구성 후 분배
         Map<String, Object> opts = new LinkedHashMap<>();
         opts.put("groups", groups);
         opts.put("items",  items);
 
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("prod",   prod);
-        result.put("images", images);
-        result.put("opts",   opts);
-        result.put("skus",   skus);
-        return result;
+        prod.setImages(images); // 이미지목록
+        prod.setOpts(opts); // 옵션(그룹/항목)
+        prod.setSkus(skus); // SKU목록
     }
 
     /* ── Tier 2: lazy load ──────────────────────────────────── */

@@ -12,6 +12,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdSkuRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -102,6 +103,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         BooleanBuilder w = new BooleanBuilder();
         if (req == null) return w;
 
+        if (!CollectionUtils.isEmpty(req.getProdIds())) w.and(s.prodId.in(req.getProdIds()));
         if (StringUtils.hasText(req.getProdId())) w.and(s.prodId.eq(req.getProdId()));
         if (StringUtils.hasText(req.getSiteId())) w.and(s.siteId.eq(req.getSiteId()));
         if (StringUtils.hasText(req.getSkuId()))  w.and(s.skuId.eq(req.getSkuId()));

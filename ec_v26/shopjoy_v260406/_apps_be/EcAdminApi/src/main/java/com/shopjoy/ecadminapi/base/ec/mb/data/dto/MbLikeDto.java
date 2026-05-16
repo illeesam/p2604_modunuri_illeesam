@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.data.dto;
 
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
@@ -31,6 +32,8 @@ public class MbLikeDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
+        // ── 연관정보 (목록 시 채움, targetTypeCd=PROD 인 경우) ──
+        private PdProdDto.Item prod;   // 찜 대상 상품 단건
     }
 
     @Getter @Setter @NoArgsConstructor

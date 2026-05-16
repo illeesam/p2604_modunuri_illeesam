@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class OdDlivDto {
 
@@ -15,6 +16,8 @@ public class OdDlivDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String dlivId;
+        @Size(max = 21) private String orderId;        // 상위 FK 필터
+        private List<String> orderIds;                 // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor
@@ -56,6 +59,8 @@ public class OdDlivDto {
         private String dlivDivCdNm;
         private String outboundCourierCdNm;
         private String inboundCourierCdNm;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<OdDlivItemDto.Item> dlivItems;   // 배송상품 목록
     }
 
     @Getter @Setter @NoArgsConstructor

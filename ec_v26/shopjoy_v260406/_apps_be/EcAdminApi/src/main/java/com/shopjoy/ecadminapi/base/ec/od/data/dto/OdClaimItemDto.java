@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class OdClaimItemDto {
 
@@ -15,6 +16,8 @@ public class OdClaimItemDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String claimItemId;
+        @Size(max = 21) private String claimId;        // 상위 FK 필터
+        private List<String> claimIds;                 // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor

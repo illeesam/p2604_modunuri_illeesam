@@ -110,22 +110,22 @@ public class ZzExam2Service {
 
         // 각 항목에 분배
         for (ZzExam2Dto.Item item : list) {
-            item.setExam1(exam1Map.get(item.getExam1Id()));
+            item.setExam1(exam1Map.get(item.getExam1Id())); // exam1 단건
             item.setExam3s(exam3Map.getOrDefault(
-                item.getExam1Id() + "|" + item.getExam2Id(), List.of()));
+                item.getExam1Id() + "|" + item.getExam2Id(), List.of())); // exam3 목록
         }
     }
 
     /** 상위 계층(exam1) + 하위 계층(exam3s) 채우기 */
     private void _itemFillRelations(ZzExam2Dto.Item item) {
-        // 상위 exam1 단건
-        item.setExam1(zzExam1Repository.selectById(item.getExam1Id()).orElse(null));
+        // 상위 exam1 단건 조회 (exam1Id 기준)
+        item.setExam1(zzExam1Repository.selectById(item.getExam1Id()).orElse(null)); // exam1 단건
 
-        // 하위 exam3 목록 (동일 exam1Id + exam2Id)
+        // 하위 exam3 목록 조회 (exam1Id + exam2Id 기준)
         ZzExam3Dto.Request req3 = new ZzExam3Dto.Request();
         req3.setExam1Id(item.getExam1Id());
         req3.setExam2Id(item.getExam2Id());
-        item.setExam3s(zzExam3Repository.selectList(req3));
+        item.setExam3s(zzExam3Repository.selectList(req3)); // exam3 목록
     }
 
     /** create — 생성 */

@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PdReviewDto {
 
@@ -37,6 +38,9 @@ public class PdReviewDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<PdReviewCommentDto.Item> comments;   // 리뷰 댓글 목록
+        private List<PdReviewAttachDto.Item> attaches;   // 리뷰 첨부 목록
     }
 
     @Getter @Setter @NoArgsConstructor

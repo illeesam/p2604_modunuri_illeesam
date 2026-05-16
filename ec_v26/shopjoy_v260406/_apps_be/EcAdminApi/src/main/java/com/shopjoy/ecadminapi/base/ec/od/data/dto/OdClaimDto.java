@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class OdClaimDto {
 
@@ -115,6 +116,8 @@ public class OdClaimDto {
         private String exchangeCourierCdNm;
         private String apprStatusCdNm;
         private String apprTargetCdNm;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<OdClaimItemDto.Item> claimItems;   // 클레임상품 목록
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReviewComment;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewCommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -95,6 +96,9 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     private BooleanBuilder buildCondition(PdReviewCommentDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+
+        if (!CollectionUtils.isEmpty(s.getReviewIds())) w.and(c.reviewId.in(s.getReviewIds()));
+        if (StringUtils.hasText(s.getReviewId()))       w.and(c.reviewId.eq(s.getReviewId()));
 
         if (StringUtils.hasText(s.getSiteId()))          w.and(c.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getReviewCommentId())) w.and(c.reviewCommentId.eq(s.getReviewCommentId()));

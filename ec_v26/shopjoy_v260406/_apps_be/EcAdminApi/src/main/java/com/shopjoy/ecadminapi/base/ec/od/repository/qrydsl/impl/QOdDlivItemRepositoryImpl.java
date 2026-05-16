@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdDlivItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdDlivItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -99,6 +100,9 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     private BooleanBuilder buildCondition(OdDlivItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+
+        if (!CollectionUtils.isEmpty(s.getDlivIds())) w.and(i.dlivId.in(s.getDlivIds()));
+        if (StringUtils.hasText(s.getDlivId()))       w.and(i.dlivId.eq(s.getDlivId()));
 
         if (StringUtils.hasText(s.getSiteId()))     w.and(i.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getDlivItemId())) w.and(i.dlivItemId.eq(s.getDlivItemId()));

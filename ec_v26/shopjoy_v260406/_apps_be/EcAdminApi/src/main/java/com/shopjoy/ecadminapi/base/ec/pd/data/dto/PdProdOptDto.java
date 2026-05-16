@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PdProdOptDto {
 
@@ -16,6 +17,7 @@ public class PdProdOptDto {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String optId;
         @Size(max = 21) private String prodId;
+        private List<String> prodIds;                  // PK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor

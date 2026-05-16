@@ -115,20 +115,22 @@ public class ZzSample1Service {
 
         // 각 항목에 분배
         for (ZzSample1Dto.Item item : list) {
-            item.setSample2s(sample2Map.getOrDefault(item.getSample1Id(), List.of()));
-            item.setSample3s(sample3Map.getOrDefault(item.getSample1Id(), List.of()));
+            item.setSample2s(sample2Map.getOrDefault(item.getSample1Id(), List.of())); // sample2 목록
+            item.setSample3s(sample3Map.getOrDefault(item.getSample1Id(), List.of())); // sample3 목록
         }
     }
 
     /** 하위 계층(sample2s/sample3s) 채우기 */
     private void _itemFillRelations(ZzSample1Dto.Item item) {
+        // 하위 sample2 목록 조회 (sample1Id 기준)
         ZzSample2Dto.Request req2 = new ZzSample2Dto.Request();
         req2.setSample1Id(item.getSample1Id());
-        item.setSample2s(zzSample2Repository.selectList(req2));
+        item.setSample2s(zzSample2Repository.selectList(req2)); // sample2 목록
 
+        // 하위 sample3 목록 조회 (sample1Id 기준)
         ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
         req3.setSample1Id(item.getSample1Id());
-        item.setSample3s(zzSample3Repository.selectList(req3));
+        item.setSample3s(zzSample3Repository.selectList(req3)); // sample3 목록
     }
 
     /** create — 생성 */

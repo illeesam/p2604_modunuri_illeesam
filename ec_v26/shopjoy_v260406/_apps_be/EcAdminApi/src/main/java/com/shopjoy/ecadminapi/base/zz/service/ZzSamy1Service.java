@@ -84,20 +84,22 @@ public class ZzSamy1Service {
 
         // 각 항목에 분배
         for (ZzSamy1Dto.Item item : list) {
-            item.setSamy2s(samy2Map.getOrDefault(item.getSamy1Id(), List.of()));
-            item.setSamy3s(samy3Map.getOrDefault(item.getSamy1Id(), List.of()));
+            item.setSamy2s(samy2Map.getOrDefault(item.getSamy1Id(), List.of())); // samy2 목록
+            item.setSamy3s(samy3Map.getOrDefault(item.getSamy1Id(), List.of())); // samy3 목록
         }
     }
 
     /** 하위 계층(samy2s/samy3s) 채우기 */
     private void _itemFillRelations(ZzSamy1Dto.Item item) {
+        // 하위 samy2 목록 조회 (samy1Id 기준)
         ZzSamy2Dto.Request req2 = new ZzSamy2Dto.Request();
         req2.setSamy1Id(item.getSamy1Id());
-        item.setSamy2s(zzSamy2Mapper.selectList(req2));
+        item.setSamy2s(zzSamy2Mapper.selectList(req2)); // samy2 목록
 
+        // 하위 samy3 목록 조회 (samy1Id 기준)
         ZzSamy3Dto.Request req3 = new ZzSamy3Dto.Request();
         req3.setSamy1Id(item.getSamy1Id());
-        item.setSamy3s(zzSamy3Mapper.selectList(req3));
+        item.setSamy3s(zzSamy3Mapper.selectList(req3)); // samy3 목록
     }
 
     /** create — 생성 */

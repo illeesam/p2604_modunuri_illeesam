@@ -118,8 +118,8 @@ public class ZzSample2Service {
 
         // 각 항목에 분배
         for (ZzSample2Dto.Item item : list) {
-            item.setSample1(sample1Map.get(item.getSample1Id()));
-            item.setSample3s(sample3Map.getOrDefault(item.getSample2Id(), List.of()));
+            item.setSample1(sample1Map.get(item.getSample1Id())); // sample1 단건
+            item.setSample3s(sample3Map.getOrDefault(item.getSample2Id(), List.of())); // sample3 목록
         }
     }
 
@@ -137,14 +137,14 @@ public class ZzSample2Service {
 
     /** 상위 계층(sample1) + 하위 계층(sample3s) 채우기 */
     private void _itemFillRelations(ZzSample2Dto.Item item) {
-        // 상위 sample1 단건 (sample1_id FK)
+        // 상위 sample1 단건 조회 (sample1Id 기준)
         if (StringUtils.hasText(item.getSample1Id()))
-            item.setSample1(zzSample1Repository.selectById(item.getSample1Id()).orElse(null));
+            item.setSample1(zzSample1Repository.selectById(item.getSample1Id()).orElse(null)); // sample1 단건
 
-        // 하위 sample3 목록 (sample2_id FK)
+        // 하위 sample3 목록 조회 (sample2Id 기준)
         ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
         req3.setSample2Id(item.getSample2Id());
-        item.setSample3s(zzSample3Repository.selectList(req3));
+        item.setSample3s(zzSample3Repository.selectList(req3)); // sample3 목록
     }
 
     /** create — 생성 */

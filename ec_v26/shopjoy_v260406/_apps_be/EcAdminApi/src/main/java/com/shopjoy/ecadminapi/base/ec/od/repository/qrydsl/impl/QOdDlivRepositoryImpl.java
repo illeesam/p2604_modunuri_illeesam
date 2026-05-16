@@ -15,6 +15,7 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdDlivRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -132,6 +133,8 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
 
+        if (!CollectionUtils.isEmpty(s.getOrderIds())) w.and(d.orderId.in(s.getOrderIds()));
+        if (StringUtils.hasText(s.getOrderId())) w.and(d.orderId.eq(s.getOrderId()));
         if (StringUtils.hasText(s.getSiteId())) w.and(d.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getDlivId())) w.and(d.dlivId.eq(s.getDlivId()));
 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class OdOrderDto {
 
@@ -77,6 +78,11 @@ public class OdOrderDto {
         private String apprStatusCdNm;
         private String refundBankCdNm;
         private String apprTargetCdNm;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<OdOrderItemDto.Item>   items;     // 주문상품 목록
+        private List<OdPayDto.Item>         pays;      // 결제 목록
+        private List<OdDlivDto.Item>        dlivs;     // 배송 목록
+        private List<OdOrderDiscntDto.Item> discnts;   // 주문할인 목록
     }
 
     @Getter @Setter @NoArgsConstructor

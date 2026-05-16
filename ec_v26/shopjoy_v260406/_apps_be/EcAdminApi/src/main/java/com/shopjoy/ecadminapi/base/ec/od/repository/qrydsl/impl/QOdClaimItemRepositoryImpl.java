@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdClaimItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -100,6 +101,9 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
     private BooleanBuilder buildCondition(OdClaimItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+
+        if (!CollectionUtils.isEmpty(s.getClaimIds())) w.and(i.claimId.in(s.getClaimIds()));
+        if (StringUtils.hasText(s.getClaimId()))       w.and(i.claimId.eq(s.getClaimId()));
 
         if (StringUtils.hasText(s.getSiteId()))      w.and(i.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getClaimItemId())) w.and(i.claimItemId.eq(s.getClaimItemId()));

@@ -110,15 +110,18 @@ public class ZzExam3Service {
 
         // 각 항목에 분배
         for (ZzExam3Dto.Item item : list) {
-            item.setExam1(exam1Map.get(item.getExam1Id()));
-            item.setExam2(exam2Map.get(item.getExam1Id() + "|" + item.getExam2Id()));
+            item.setExam1(exam1Map.get(item.getExam1Id())); // exam1 단건
+            item.setExam2(exam2Map.get(item.getExam1Id() + "|" + item.getExam2Id())); // exam2 단건
         }
     }
 
     /** 상위 계층(exam1 / exam2) 채우기 */
     private void _itemFillRelations(ZzExam3Dto.Item item) {
-        item.setExam1(zzExam1Repository.selectById(item.getExam1Id()).orElse(null));
-        item.setExam2(zzExam2Repository.selectById(item.getExam1Id(), item.getExam2Id()).orElse(null));
+        // 상위 exam1 단건 조회 (exam1Id 기준)
+        item.setExam1(zzExam1Repository.selectById(item.getExam1Id()).orElse(null)); // exam1 단건
+
+        // 상위 exam2 단건 조회 (exam1Id + exam2Id 기준)
+        item.setExam2(zzExam2Repository.selectById(item.getExam1Id(), item.getExam2Id()).orElse(null)); // exam2 단건
     }
 
     /** create — 생성 */
