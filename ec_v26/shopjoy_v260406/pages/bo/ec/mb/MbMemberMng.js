@@ -24,7 +24,7 @@ window.MbMemberMng = {
       show: false,
       isNew: false,
       dtlId: null,
-      form: { memberId: null, email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성', joinDate: '', memo: '' }
+      form: { memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: '', memberMemo: '' }
     });
 
     // 2️⃣ computed 선언
@@ -98,9 +98,9 @@ window.MbMemberMng = {
     /* 회원 fnApplyForm */
     const fnApplyForm = (d) => {
       Object.assign(detailModal.form, {
-        memberId: d.memberId, email: d.email || '', memberNm: d.memberNm || '',
-        phone: d.phone || '', gradeCd: d.gradeCd || '', statusCd: d.statusCd || '',
-        joinDate: fnFmtDate(d.joinDate), memo: d.memo || ''
+        memberId: d.memberId, loginId: d.loginId || '', memberNm: d.memberNm || '',
+        memberPhone: d.memberPhone || '', gradeCd: d.gradeCd || '', memberStatusCd: d.memberStatusCd || '',
+        joinDate: fnFmtDate(d.joinDate), memberMemo: d.memberMemo || ''
       });
     };
 
@@ -121,7 +121,7 @@ window.MbMemberMng = {
 
     /* 회원 openNew */
     const openNew = () => {
-      Object.assign(detailModal.form, { memberId: null, email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memo: '' });
+      Object.assign(detailModal.form, { memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memberMemo: '' });
       detailModal.dtlId = '__new__';
       detailModal.isNew = true;
       detailModal.show = true;
@@ -135,7 +135,7 @@ window.MbMemberMng = {
 
     /* 회원 저장 */
     const handleSave = async () => {
-      if (!detailModal.form.email) { showToast('이메일은 필수입니다.', 'error'); return; }
+      if (!detailModal.form.loginId) { showToast('이메일은 필수입니다.', 'error'); return; }
       if (!detailModal.form.memberNm) { showToast('이름은 필수입니다.', 'error'); return; }
       const isNewMember = detailModal.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
@@ -143,7 +143,7 @@ window.MbMemberMng = {
       if (isNewMember) {
         detailModal.form.memberId = 'MB' + String(Date.now()).slice(-6);
         detailModal.form.orderCount = 0;
-        detailModal.form.totalPurchase = 0;
+        detailModal.form.totalPurchaseAmt = 0;
         members.unshift({ ...detailModal.form });
         detailModal.dtlId = detailModal.form.memberId;
         detailModal.isNew = false;
@@ -160,8 +160,7 @@ window.MbMemberMng = {
         const payload = {
           ...detailModal.form,
           joinDate: fnToDateTime(detailModal.form.joinDate),
-          /* DB NOT NULL: login_id = email, login_pwd_hash = 임시 비밀번호 해시 (BO 등록 시 자동 생성) */
-          loginId: detailModal.form.email,
+          /* loginId 는 form.loginId(이메일=로그인ID) 그대로 전송. login_pwd_hash 는 신규 시 임시 해시 자동 생성 */
         };
         if (isNewMember && !payload.loginPwdHash) {
           /* 신규 등록 시 임시 비밀번호 = 'init1234' 의 sha256 (회원에게 별도 안내 후 변경 유도) */
@@ -284,13 +283,13 @@ window.MbMemberMng = {
         <tr v-for="(row, idx) in members" :key="row?.memberId" :class="{active:selectedId===row.memberId}" style="cursor:pointer">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="title-link" @click="openDetail(row)">{{ row.memberNm }}</span></td>
-          <td style="font-size:12px">{{ row.email }}</td>
-          <td style="font-size:12px">{{ row.phone }}</td>
+          <td style="font-size:12px">{{ row.loginId }}</td>
+          <td style="font-size:12px">{{ row.memberPhone }}</td>
           <td><span class="badge" :class="fnGradeBadge(row.gradeCd)">{{ row.gradeCd }}</span></td>
-          <td><span class="badge" :class="fnStatusBadge(row.statusCd)">{{ row.statusCd }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(row.memberStatusCd)">{{ row.memberStatusCd }}</span></td>
           <td style="font-size:12px">{{ fnFmtDate(row.joinDate) }}</td>
           <td style="text-align:right;font-size:12px">{{ (row.orderCount||0) }}건</td>
-          <td style="text-align:right;font-size:12px">{{ (row.totalPurchase||0).toLocaleString() }}원</td>
+          <td style="text-align:right;font-size:12px">{{ (row.totalPurchaseAmt||0).toLocaleString() }}원</td>
           <td style="text-align:center"><button class="btn btn-blue btn-sm" @click.stop="openDetail(row)">수정</button></td>
         </tr>
         <tr v-if="!members.length"><td colspan="10" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>

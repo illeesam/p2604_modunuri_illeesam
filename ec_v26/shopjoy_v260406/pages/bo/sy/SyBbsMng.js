@@ -201,7 +201,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* 게시판 게시물 삭제 */
     const handleDelete = async (b) => {
-      const ok = await showConfirm('삭제', `[${b.title}]을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${b.bbsTitle}]을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = bbss.findIndex(x => x.bbsId === b.bbsId);
       if (idx !== -1) bbss.splice(idx, 1);
@@ -219,7 +219,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     };
 
     /* 게시판 게시물 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(bbss, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
+    const exportExcel = () => coUtil.exportCsv(bbss, [{label:'ID',key:'bbsId'},{label:'제목',key:'bbsTitle'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'bbsStatusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
 
@@ -277,12 +277,12 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <tr v-else v-for="(b, idx) in bbss" :key="b.bbsId" :style="detailModal.dtlId===b.bbsId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="badge badge-gray">{{ bbmNm(b.bbmId) }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(b.bbsId)" :style="detailModal.dtlId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.title }}<span v-if="detailModal.dtlId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(b.bbsId)" :style="detailModal.dtlId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.bbsTitle }}<span v-if="detailModal.dtlId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ b.authorNm }}</td>
           <td style="text-align:center;">{{ b.viewCount }}</td>
           <td style="text-align:center;">{{ b.commentCount }}</td>
           <td style="font-size:11px;color:#888;">{{ b.attachGrpId || '-' }}</td>
-          <td><span class="badge" :class="fnStatusBadge(b.statusCd)">{{ b.statusCd }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(b.bbsStatusCd)">{{ b.bbsStatusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td>{{ String(b.regDate||'').slice(0,10) }}</td>
           <td><div class="actions">

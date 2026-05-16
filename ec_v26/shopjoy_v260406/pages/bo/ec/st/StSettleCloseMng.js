@@ -47,10 +47,10 @@ window.StSettleCloseMng = {
             searchValue: searchValue.value, status: searchStatus.value, pageNo: 1, pageSize: 100
           }, '정산마감관리', '이력조회'),
         ]);
-        orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
-        claims.splice(0, claims.length, ...(resC.data?.data?.list || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
-        closeList.splice(0, closeList.length, ...(resCL.data?.data?.list || []));
+        orders.splice(0, orders.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(resC.data?.data?.pageList || resC.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
+        closeList.splice(0, closeList.length, ...(resCL.data?.data?.pageList || resCL.data?.data?.list || []));
       } catch (_) { console.error('[catch-info]', _); }
     };
 
@@ -119,7 +119,7 @@ window.StSettleCloseMng = {
       if (!ok) return;
       r.status = '마감취소';
       try {
-        const res = await boApiSvc.stSettleClose.reopen(r.closeId, {}, '정산마감관리', '상태변경');
+        const res = await boApiSvc.stSettleClose.reopen(r.settleCloseId || r.closeId, {}, '정산마감관리', '상태변경');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('마감이 취소되었습니다.', 'success');
       } catch (err) {

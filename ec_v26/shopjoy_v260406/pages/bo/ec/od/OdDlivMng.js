@@ -215,8 +215,8 @@ window.OdDlivMng = {
 
     /* 배송 onApprToChange */
     const onApprToChange = () => {
-      const m = (members).find(x => String(x.userId) === String(bulkForm.apprToUserId));
-      if (m) { bulkForm.apprToNm = m.userNm || ''; bulkForm.apprToPhone = m.phone || ''; bulkForm.apprToEmail = m.email || ''; }
+      const m = (members).find(x => String(x.memberId) === String(bulkForm.apprToUserId));
+      if (m) { bulkForm.apprToNm = m.memberNm || ''; bulkForm.apprToPhone = m.memberPhone || ''; bulkForm.apprToEmail = m.memberEmail || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
 
@@ -257,21 +257,21 @@ window.OdDlivMng = {
       let rows = [];
       if (uiState.bulkTab === 'status') {
         if (!bulkForm.status) return '';
-        rows = selected.map(d => `- [${d.dlivId} / ${d.receiver || d.userNm}] [배송관리] 배송상태 변경: ${d.status || '-'} → ${bulkForm.status}`);
+        rows = selected.map(d => `- [${d.dlivId} / ${d.recvNm || d.memberNm}] [배송관리] 배송상태 변경: ${d.dlivStatusCd || '-'} → ${bulkForm.status}`);
       } else if (uiState.bulkTab === 'courier') {
         if (!bulkForm.courier && !bulkForm.trackingNo) return '';
         rows = selected.map(d => {
           const parts = [];
-          if (bulkForm.courier) parts.push(`택배사: ${d.courier || '-'} → ${bulkForm.courier}`);
-          if (bulkForm.trackingNo) parts.push(`운송장: ${d.trackingNo || '-'} → ${bulkForm.trackingNo}`);
-          return `- [${d.dlivId} / ${d.receiver || d.userNm}] [배송관리] 택배정보 변경: ${parts.join(', ')}`;
+          if (bulkForm.courier) parts.push(`택배사: ${d.outboundCourierCd || '-'} → ${bulkForm.courier}`);
+          if (bulkForm.trackingNo) parts.push(`운송장: ${d.outboundTrackingNo || '-'} → ${bulkForm.trackingNo}`);
+          return `- [${d.dlivId} / ${d.recvNm || d.memberNm}] [배송관리] 택배정보 변경: ${parts.join(', ')}`;
         });
       } else if (uiState.bulkTab === 'approval') {
         if (!bulkForm.apprAction) return '';
-        rows = selected.map(d => `- [${d.dlivId} / ${d.receiver || d.userNm}] [배송관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
+        rows = selected.map(d => `- [${d.dlivId} / ${d.recvNm || d.memberNm}] [배송관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
       } else if (uiState.bulkTab === 'approvalReq') {
         if (!bulkForm.apprToUserId) return '';
-        rows = selected.map(d => `- [${d.dlivId} / ${d.receiver || d.userNm}] [배송관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
+        rows = selected.map(d => `- [${d.dlivId} / ${d.recvNm || d.memberNm}] [배송관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
       }
       if (!rows.length) return '';
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
@@ -285,7 +285,7 @@ window.OdDlivMng = {
         if (!bulkForm.status) { showToast('변경할 배송상태를 선택하세요.', 'error'); return; }
         const ok = await showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
         if (!ok) return;
-        window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
+        window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) d.dlivStatusCd = bulkForm.status; });
         checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odDliv.bulkStatus({ ids, status: bulkForm.status }, '배송관리', '일괄처리');
@@ -303,8 +303,8 @@ window.OdDlivMng = {
         if (!ok) return;
         window.safeArrayUtils.safeForEach(deliveries, d => {
           if (ids.includes(d.dlivId)) {
-            if (bulkForm.courier) d.courier = bulkForm.courier;
-            if (bulkForm.trackingNo) d.trackingNo = bulkForm.trackingNo;
+            if (bulkForm.courier) d.outboundCourierCd = bulkForm.courier;
+            if (bulkForm.trackingNo) d.outboundTrackingNo = bulkForm.trackingNo;
           }
         });
         checked = new Set(); uiState.bulkOpen = false;
@@ -465,12 +465,12 @@ window.OdDlivMng = {
             </span>
           </td>
           <td><span class="ref-link" @click="showRefModal('order', d.orderId)">{{ d.orderId }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('member', d.userId)">{{ d.userNm }}</span></td>
-          <td>{{ d.receiver }}</td>
-          <td>{{ d.courier }}</td>
-          <td>{{ d.trackingNo || '-' }}</td>
-          <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ d.address }}</td>
-          <td><span class="badge" :class="fnStatusBadge(d.status)">{{ d.status }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', d.memberId)">{{ d.memberNm }}</span></td>
+          <td>{{ d.recvNm }}</td>
+          <td>{{ d.outboundCourierCdNm || d.outboundCourierCd }}</td>
+          <td>{{ d.outboundTrackingNo || '-' }}</td>
+          <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ d.recvAddr }}</td>
+          <td><span class="badge" :class="fnStatusBadge(d.dlivStatusCd)">{{ d.dlivStatusCdNm || d.dlivStatusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.dlivId)">수정</button>
@@ -553,7 +553,7 @@ window.OdDlivMng = {
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">
               <option value="">선택하세요</option>
-              <option v-for="m in members" :key="m?.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
+              <option v-for="m in members" :key="m?.memberId" :value="m.memberId">{{ m.memberNm }} ({{ m.memberId }})</option>
             </select>
           </div>
           <div class="form-row">

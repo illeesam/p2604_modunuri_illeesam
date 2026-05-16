@@ -163,7 +163,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     };
 
     /* 게시판 마스터 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
+    const exportExcel = () => coUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
     // -- return ---------------------------------------------------------------
 
@@ -236,11 +236,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
               </td>
               <td><code style="font-size:11px;color:#555;">{{ b.bbmCode }}</code></td>
               <td><span class="title-link" @click="handleLoadDetail(b.bbmId)" :style="detailModal.dtlId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmNm }}<span v-if="detailModal.dtlId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-              <td><span class="badge" :class="fnTypeBadge(b.bbmType)">{{ b.bbmType }}</span></td>
+              <td><span class="badge" :class="fnTypeBadge(b.bbmTypeCd)">{{ b.bbmTypeCd }}</span></td>
               <td><span class="badge" :class="fnCommentBadge(b.allowComment)">{{ b.allowComment || '불가' }}</span></td>
               <td><span class="badge" :class="fnAttachBadge(b.allowAttach)">{{ b.allowAttach || '불가' }}</span></td>
-              <td><span class="badge" :class="fnContentBadge(b.contentType)">{{ b.contentType || '-' }}</span></td>
-              <td><span class="badge" :class="fnScopeBadge(b.scopeType)">{{ b.scopeType || '-' }}</span></td>
+              <td><span class="badge" :class="fnContentBadge(b.contentTypeCd)">{{ b.contentTypeCd || '-' }}</span></td>
+              <td><span class="badge" :class="fnScopeBadge(b.scopeTypeCd)">{{ b.scopeTypeCd || '-' }}</span></td>
               <td><span class="badge" :class="fnYnBadge(b.allowLike)">{{ b.allowLike==='Y'?'허용':'불가' }}</span></td>
               <td style="text-align:center;">{{ b.bbsCount || 0 }}</td>
               <td style="text-align:center;">{{ b.sortOrd }}</td>

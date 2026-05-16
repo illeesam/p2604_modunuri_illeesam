@@ -230,8 +230,8 @@ window.OdClaimMng = {
 
     /* 클레임(취소/반품/교환) onApprToChange */
     const onApprToChange = () => {
-      const m = (members).find(x => String(x.userId) === String(bulkForm.apprToUserId));
-      if (m) { bulkForm.apprToNm = m.userNm || ''; bulkForm.apprToPhone = m.phone || ''; bulkForm.apprToEmail = m.email || ''; }
+      const m = (members).find(x => String(x.memberId) === String(bulkForm.apprToUserId));
+      if (m) { bulkForm.apprToNm = m.memberNm || ''; bulkForm.apprToPhone = m.memberPhone || ''; bulkForm.apprToEmail = m.memberEmail || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
 
@@ -254,7 +254,7 @@ window.OdClaimMng = {
     });
     const cfCheckedByType = computed(() => {
       const r = { '취소':[], '반품':[], '교환':[] };
-      window.safeArrayUtils.safeForEach(claims, c => { if (checked.has(c.claimId) && r[c.type]) r[c.type].push(c.claimId); });
+      window.safeArrayUtils.safeForEach(claims, c => { if (checked.has(c.claimId) && r[c.claimTypeCd]) r[c.claimTypeCd].push(c.claimId); });
       return r;
     });
 
@@ -277,17 +277,17 @@ window.OdClaimMng = {
       let rows = [];
       if (uiState.bulkTab === 'status') {
         rows = selected
-          .filter(c => bulkForm.statusByType[c.type])
-          .map(c => `- [${c.claimId} / ${c.userNm} (${c.type})] [클레임관리] 클레임상태 변경: ${c.status || '-'} → ${bulkForm.statusByType[c.type]}`);
+          .filter(c => bulkForm.statusByType[c.claimTypeCd])
+          .map(c => `- [${c.claimId} / ${c.memberNm} (${c.claimTypeCd})] [클레임관리] 클레임상태 변경: ${c.claimStatusCd || '-'} → ${bulkForm.statusByType[c.claimTypeCd]}`);
       } else if (uiState.bulkTab === 'type') {
         if (!bulkForm.type) return '';
-        rows = selected.map(c => `- [${c.claimId} / ${c.userNm}] [클레임관리] 클레임유형 변경: ${c.type || '-'} → ${bulkForm.type}`);
+        rows = selected.map(c => `- [${c.claimId} / ${c.memberNm}] [클레임관리] 클레임유형 변경: ${c.claimTypeCd || '-'} → ${bulkForm.type}`);
       } else if (uiState.bulkTab === 'approval') {
         if (!bulkForm.apprAction) return '';
-        rows = selected.map(c => `- [${c.claimId} / ${c.userNm}] [클레임관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
+        rows = selected.map(c => `- [${c.claimId} / ${c.memberNm}] [클레임관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
       } else if (uiState.bulkTab === 'approvalReq') {
         if (!bulkForm.apprToUserId) return '';
-        rows = selected.map(c => `- [${c.claimId} / ${c.userNm}] [클레임관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
+        rows = selected.map(c => `- [${c.claimId} / ${c.memberNm}] [클레임관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
       }
       if (!rows.length) return '';
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
@@ -306,7 +306,7 @@ window.OdClaimMng = {
         const ok = await showConfirm('일괄 클레임상태 변경', `${msg}\n\n총 ${totalCnt}건을 변경하시겠습니까?`);
         if (!ok) return;
         window.safeArrayUtils.safeForEach(changes, ch => {
-          window.safeArrayUtils.safeForEach(claims, c => { if (ch.ids.includes(c.claimId)) c.status = ch.status; });
+          window.safeArrayUtils.safeForEach(claims, c => { if (ch.ids.includes(c.claimId)) c.claimStatusCd = ch.status; });
         });
         checked = new Set();
         uiState.bulkOpen = false;
@@ -326,7 +326,7 @@ window.OdClaimMng = {
         const ids = Array.from(checked);
         const ok = await showConfirm('일괄 클레임유형 변경', `선택한 ${ids.length}건의 클레임유형을 [${val}](으)로 변경하시겠습니까?`);
         if (!ok) return;
-        window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) c.type = val; });
+        window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) c.claimTypeCd = val; });
         checked = new Set();
         uiState.bulkOpen = false;
         try {
@@ -486,20 +486,20 @@ window.OdClaimMng = {
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(c.claimId)" @change="toggleCheck(c.claimId)" /></td>
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="title-link" @click="handleLoadDetail(c.claimId)" :style="selectedId===c.claimId?'color:#e8587a;font-weight:700;':''">{{ c.claimId }}<span v-if="selectedId===c.claimId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
           <td><span class="ref-link" @click="showRefModal('order', c.orderId)">{{ c.orderId }}</span></td>
           <td>{{ c.prodNm }}</td>
-          <td>{{ c.reason }}</td>
+          <td>{{ c.reasonDetail }}</td>
           <td>
             <span style="display:inline-flex;align-items:center;gap:3px;">
               <span :style="{
                 fontSize:'10px',padding:'2px 8px',borderRadius:'10px',color:'#fff',fontWeight:700,
-                background: c.type==='취소' ? '#ef4444' : c.type==='반품' ? '#FFBB00' : '#3b82f6',
-              }">{{ c.type }}</span>
-              <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ c.status }}</span>
+                background: c.claimTypeCd==='취소' ? '#ef4444' : c.claimTypeCd==='반품' ? '#FFBB00' : '#3b82f6',
+              }">{{ c.claimTypeCdNm || c.claimTypeCd }}</span>
+              <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ c.claimStatusCdNm || c.claimStatusCd }}</span>
             </span>
           </td>
-          <td>{{ c.requestDate.slice(0,10) }}</td>
+          <td>{{ (c.requestDate||'').slice(0,10) }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.claimId)">수정</button>
@@ -582,7 +582,7 @@ window.OdClaimMng = {
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">
               <option value="">선택하세요</option>
-              <option v-for="m in members" :key="m?.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
+              <option v-for="m in members" :key="m?.memberId" :value="m.memberId">{{ m.memberNm }} ({{ m.memberId }})</option>
             </select>
           </div>
           <div class="form-row">

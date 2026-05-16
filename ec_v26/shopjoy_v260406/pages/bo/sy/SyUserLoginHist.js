@@ -67,7 +67,7 @@ window.SyUserLoginHist = {
     const toggleExpandAll = () => {
       const list = uiState.activeTab==='log' ? logList : tokenList;
       if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
-      else { list.forEach((r,i) => expandedRows.add(r.logId||r.tokenLogId||i)); allExpanded.value = true; }
+      else { list.forEach((r,i) => expandedRows.add(r.logId||i)); allExpanded.value = true; }
     };
 
     // ── 검색 ─────────────────────────────────────────────────────────────
@@ -277,7 +277,7 @@ window.SyUserLoginHist = {
               <td style="text-align:center;font-size:11px;color:#999">{{ (pager.pageNo-1)*pager.pageSize+idx+1 }}</td>
               <td style="text-align:center;color:#bbb;font-size:11px;user-select:none">{{ isExpanded(r.logId||idx)?'▲':'▼' }}</td>
               <td style="font-family:monospace;font-size:11px;color:#888">{{ r.logId||'-' }}</td>
-              <td style="white-space:nowrap;font-size:12px">{{ String(r.loginDt||r.regDate||'').slice(0,19) }}</td>
+              <td style="white-space:nowrap;font-size:12px">{{ String(r.loginDate||r.regDate||'').slice(0,19) }}</td>
               <td><div style="font-weight:600">{{ r.userNm||r.userId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ r.userId }}</div></td>
               <td style="font-size:12px;color:#555">{{ r.loginId||'-' }}</td>
               <td><span class="badge" :class="fnResultBadge(r.resultCd)">{{ fnResultLabel(r.resultCd) }}</span></td>
@@ -299,7 +299,7 @@ window.SyUserLoginHist = {
                   <div>
                     <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px">📡 접속 정보</div>
                     <table style="width:100%;border-collapse:collapse">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">로그인일시</td><td>{{ String(r.loginDt||r.regDate||'').slice(0,19) }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">로그인일시</td><td>{{ String(r.loginDate||r.regDate||'').slice(0,19) }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">IP</td><td style="font-family:monospace">{{ r.ip||'-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">OS</td><td>{{ r.os||'-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">브라우저</td><td>{{ r.browser||'-' }}</td></tr>
@@ -350,11 +350,11 @@ window.SyUserLoginHist = {
           <tr v-if="cfCurrentList.length===0">
             <td colspan="13" style="text-align:center;color:#999;padding:30px">데이터가 없습니다.</td>
           </tr>
-          <template v-else v-for="(r,idx) in cfCurrentList" :key="r.tokenLogId||r.logId||idx">
-            <tr style="cursor:pointer" :style="isExpanded(r.tokenLogId||idx)?'background:#fafbff':''" @click="toggleRow(r.tokenLogId||idx)">
+          <template v-else v-for="(r,idx) in cfCurrentList" :key="r.logId||idx">
+            <tr style="cursor:pointer" :style="isExpanded(r.logId||idx)?'background:#fafbff':''" @click="toggleRow(r.logId||idx)">
               <td style="text-align:center;font-size:11px;color:#999">{{ (pager.pageNo-1)*pager.pageSize+idx+1 }}</td>
-              <td style="text-align:center;color:#bbb;font-size:11px;user-select:none">{{ isExpanded(r.tokenLogId||idx)?'▲':'▼' }}</td>
-              <td style="font-family:monospace;font-size:11px;color:#888">{{ r.tokenLogId||r.logId||'-' }}</td>
+              <td style="text-align:center;color:#bbb;font-size:11px;user-select:none">{{ isExpanded(r.logId||idx)?'▲':'▼' }}</td>
+              <td style="font-family:monospace;font-size:11px;color:#888">{{ r.logId||'-' }}</td>
               <td style="white-space:nowrap;font-size:12px">{{ String(r.regDate||'').slice(0,19) }}</td>
               <td><div style="font-weight:600">{{ r.userNm||r.userId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ r.userId }}</div></td>
               <td><span class="badge" :class="fnActionBadge(r.actionCd)">{{ fnActionLabel(r.actionCd) }}</span></td>
@@ -371,7 +371,7 @@ window.SyUserLoginHist = {
               <td style="font-family:monospace;font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="r.traceId">{{ r.traceId||'-' }}</td>
               <td style="font-size:12px;color:#e74c3c">{{ r.revokeReason||'-' }}</td>
             </tr>
-            <tr v-if="isExpanded(r.tokenLogId||idx)">
+            <tr v-if="isExpanded(r.logId||idx)">
               <td colspan="13" style="background:#f4f6fb;padding:16px 20px;border-top:none">
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
                   <div>
@@ -400,7 +400,7 @@ window.SyUserLoginHist = {
                   <div>
                     <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px">🔐 토큰 해시</div>
                     <table style="width:100%;border-collapse:collapse">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">현재 토큰</td><td style="font-family:monospace;font-size:11px;word-break:break-all;color:#555">{{ r.token||'-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">현재 토큰</td><td style="font-family:monospace;font-size:11px;word-break:break-all;color:#555">{{ r.accessToken||'-' }}</td></tr>
                       <tr v-if="r.prevToken"><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">이전 토큰</td><td style="font-family:monospace;font-size:11px;word-break:break-all;color:#aaa">{{ r.prevToken }}</td></tr>
                     </table>
                     <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">ℹ SHA-256 해시. 원문 복원 불가 — syh_user_token_log</div>

@@ -146,7 +146,7 @@ window.PmEventMng = {
 
     /* 이벤트 삭제 */
     const handleDelete = async (e) => {
-      const ok = await showConfirm('삭제', `[${e.title}]을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${e.eventTitle}]을 삭제하시겠습니까?`);
       if (!ok) return;
       if (!Array.isArray(events)) return;
       const idx = events.findIndex(x => x.eventId === e.eventId);
@@ -165,7 +165,7 @@ window.PmEventMng = {
     };
 
     /* 이벤트 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(events, [{label:'ID',key:'eventId'},{label:'이벤트명',key:'eventNm'},{label:'유형',key:'eventType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '이벤트목록.csv');
+    const exportExcel = () => coUtil.exportCsv(events, [{label:'ID',key:'eventId'},{label:'이벤트명',key:'eventNm'},{label:'제목',key:'eventTitle'},{label:'유형',key:'eventTypeCd'},{label:'상태',key:'eventStatusCd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '이벤트목록.csv');
 
     const tabMode = ref('list');
 
@@ -208,11 +208,11 @@ window.PmEventMng = {
         <tr v-if="events.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-else v-for="(e, idx) in events" :key="e?.eventId" :style="uiStateDetail.selectedId===e.eventId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(e.eventId)" :style="uiStateDetail.selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.title }}<span v-if="uiStateDetail.selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(e.eventId)" :style="uiStateDetail.selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.eventTitle }}<span v-if="uiStateDetail.selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ (e.targetProducts||[]).length }}개 상품</td>
           <td><span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'">{{ e.authRequired ? '필요' : '불필요' }}</span></td>
           <td>{{ e.startDate }}</td><td>{{ e.endDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(e.status)">{{ e.status }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(e.eventStatusCd)">{{ e.eventStatusCd }}</span></td>
           <td>{{ e.regDate }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions" style="display:flex;gap:6px;align-items:center;">
@@ -234,9 +234,9 @@ window.PmEventMng = {
         <div v-if="e.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="e.bannerImage"></div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">이벤트 #{{ e.eventId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(e.eventId)" :style="uiStateDetail.selectedId===e.eventId?{color:'#e8587a'}:{}">{{ e.title }}<span v-if="uiStateDetail.selectedId===e.eventId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(e.eventId)" :style="uiStateDetail.selectedId===e.eventId?{color:'#e8587a'}:{}">{{ e.eventTitle }}<span v-if="uiStateDetail.selectedId===e.eventId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="fnStatusBadge(e.status)" style="font-size:11px;">{{ e.status }}</span>
+            <span class="badge" :class="fnStatusBadge(e.eventStatusCd)" style="font-size:11px;">{{ e.eventStatusCd }}</span>
             <span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'" style="font-size:11px;">{{ e.authRequired ? '인증필요' : '인증불필요' }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">

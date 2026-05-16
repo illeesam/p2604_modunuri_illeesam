@@ -169,7 +169,7 @@ window.PmVoucherMng = {
     };
 
     /* 바우처(상품권) exportExcel */
-    const exportExcel = () => coUtil.exportCsv(vouchers, [{label:'ID',key:'voucherId'},{label:'상품권명',key:'voucherNm'},{label:'액면가',key:'voucherAmt'},{label:'판매가',key:'salePrice'},{label:'발행매수',key:'issueQty'},{label:'판매매수',key:'soldQty'},{label:'상태',key:'voucherStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '상품권목록.csv');
+    const exportExcel = () => coUtil.exportCsv(vouchers, [{label:'ID',key:'voucherId'},{label:'상품권명',key:'voucherNm'},{label:'액면가',key:'voucherValue'},{label:'유형',key:'voucherTypeCd'},{label:'최소주문금액',key:'minOrderAmt'},{label:'최대할인금액',key:'maxDiscntAmt'},{label:'유효개월',key:'expireMonth'},{label:'상태',key:'voucherStatusCd'}], '상품권목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
@@ -222,14 +222,14 @@ window.PmVoucherMng = {
         <tr v-else v-for="(v, idx) in vouchers" :key="v?.voucherId" :style="selectedId===v.voucherId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="title-link" @click="handleLoadDetail(v.voucherId)" :style="selectedId===v.voucherId?'color:#e8587a;font-weight:700;':''">{{ v.voucherNm }}<span v-if="selectedId===v.voucherId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="text-align:right;">{{ (v.voucherAmt||0).toLocaleString() }}원</td>
+          <td style="text-align:right;">{{ (v.voucherValue||0).toLocaleString() }}원</td>
           <td style="text-align:right;">{{ (v.salePrice||0).toLocaleString() }}원</td>
           <td style="text-align:center;">{{ (v.issueQty||0).toLocaleString() }}개</td>
           <td style="text-align:center;">{{ (v.soldQty||0).toLocaleString() }}개</td>
           <td style="text-align:center;">{{ ((v.issueQty||0) - (v.soldQty||0)).toLocaleString() }}개</td>
           <td>{{ v.startDate }}</td>
           <td>{{ v.endDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(v.voucherStatus)">{{ v.voucherStatus }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(v.voucherStatusCd)">{{ v.voucherStatusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(v.voucherId)">수정</button>
@@ -249,10 +249,10 @@ window.PmVoucherMng = {
           <div style="font-size:12px;color:#999;margin-bottom:6px;">상품권 #{{ v.voucherId }}</div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(v.voucherId)" :style="selectedId===v.voucherId?{color:'#e8587a'}:{}">{{ v.voucherNm }}<span v-if="selectedId===v.voucherId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="fnStatusBadge(v.voucherStatus)" style="font-size:11px;">{{ v.voucherStatus }}</span>
+            <span class="badge" :class="fnStatusBadge(v.voucherStatusCd)" style="font-size:11px;">{{ v.voucherStatusCd }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>💰 액면 {{ (v.voucherAmt||0).toLocaleString() }}원 / 판매 {{ (v.salePrice||0).toLocaleString() }}원</div>
+            <div>💰 액면 {{ (v.voucherValue||0).toLocaleString() }}원 / 판매 {{ (v.salePrice||0).toLocaleString() }}원</div>
             <div>📅 {{ v.startDate }} ~ {{ v.endDate }}</div>
             <div style="color:#999;margin-top:4px;">발행 {{ (v.issueQty||0).toLocaleString() }}개 / 판매 {{ (v.soldQty||0).toLocaleString() }}개</div>
           </div>

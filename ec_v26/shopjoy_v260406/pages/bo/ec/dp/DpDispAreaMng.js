@@ -206,16 +206,16 @@ const searchParam = reactive(_initSearchParam());
         <tbody>
           <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
           <tr v-else-if="!areas.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-          <tr v-for="(a, idx) in areas" :key="a?.codeId">
+          <tr v-for="(a, idx) in areas" :key="a?.areaId">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td><code style="font-size:11px;">{{ a.codeValue }}</code></td>
-            <td class="title-link" @click="loadView(a.codeId)">{{ a.codeLabel }}</td>
-            <td>{{ a.areaType }}</td>
+            <td><code style="font-size:11px;">{{ a.areaCd }}</code></td>
+            <td class="title-link" @click="loadView(a.areaId)">{{ a.areaNm }}</td>
+            <td>{{ a.areaTypeCd }}</td>
             <td><span :class="'badge '+(a.useYn==='Y'?'badge-green':'badge-gray')">{{ a.useYn==='Y'?'사용':'미사용' }}</span></td>
             <td>{{ (a.regDate||'').slice(0,10) }}</td>
             <td class="actions">
-              <button class="btn btn-sm btn-secondary" @click="loadView(a.codeId)">상세</button>
-              <button class="btn btn-sm btn-primary" @click="handleLoadDetail(a.codeId)">수정</button>
+              <button class="btn btn-sm btn-secondary" @click="loadView(a.areaId)">상세</button>
+              <button class="btn btn-sm btn-primary" @click="handleLoadDetail(a.areaId)">수정</button>
             </td>
           </tr>
         </tbody>

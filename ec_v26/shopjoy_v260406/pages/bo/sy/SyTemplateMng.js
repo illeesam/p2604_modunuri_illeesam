@@ -284,7 +284,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <td><span class="badge" :class="fnTypeBadge(t.templateTypeCd)">{{ t.templateTypeCd }}</span></td>
           <td><code style="font-size:11px;color:#555;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ t.templateCode || '-' }}</code></td>
           <td><span class="title-link" @click="handleLoadDetail(t.templateId)" :style="selectedId===t.templateId?'color:#e8587a;font-weight:700;':''">{{ t.templateNm }}<span v-if="selectedId===t.templateId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="font-size:12px;color:#555;">{{ t.subject || '-' }}</td>
+          <td style="font-size:12px;color:#555;">{{ t.templateSubject || '-' }}</td>
           <td><span class="badge" :class="fnUseYnBadge(t.useYn)">{{ t.useYn === 'Y' ? '사용' : '미사용' }}</span></td>
           <td>{{ t.regDate }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>

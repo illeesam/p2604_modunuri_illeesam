@@ -41,11 +41,11 @@ window.OdOrderDtl = {
         const o = orderRes.data?.data || orderRes.data || {};
         Object.assign(form, { ...o });
         if (!form.orderId) form.orderId = props.dtlId;
-        if (o.status) form.statusCd = o.status;
-        if (o.payMethod) form.payMethodCd = o.payMethod;
+        if (o.orderStatusCd) form.orderStatusCd = o.orderStatusCd;
+        if (o.payMethodCd) form.payMethodCd = o.payMethodCd;
         if (o.payStatus) form.payStatusCd = o.payStatus;
-        else if (['취소','자동취소'].includes(o.status)) form.payStatusCd = '환불완료';
-        else if (['입금대기'].includes(o.status)) form.payStatusCd = '미결제';
+        else if (['취소','자동취소'].includes(o.orderStatusCd)) form.payStatusCd = '환불완료';
+        else if (['입금대기'].includes(o.orderStatusCd)) form.payStatusCd = '미결제';
         else form.payStatusCd = '결제완료';
         if (!form.payDate) form.payDate = o.orderDate || '';
         if (!form.apprNo)   form.apprNo  = 'APR-' + String(o.orderId||'').slice(-6) + '01';
@@ -77,8 +77,8 @@ window.OdOrderDtl = {
     const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];
 
     const form = reactive({
-      orderId: '', userId: '', userNm: '', orderDate: '', prodNm: '',
-      totalPrice: 0, payMethodCd: '무통장입금', statusCd: '입금대기',
+      orderId: '', memberId: '', memberNm: '', orderDate: '', prodNm: '',
+      totalAmt: 0, payMethodCd: '무통장입금', orderStatusCd: '입금대기',
       payStatusCd: '결제완료', payDate: '', apprNo: '', payIssuer: '',
       memo: '',
     });
@@ -93,15 +93,15 @@ window.OdOrderDtl = {
 
     const schema = yup.object({
       orderId: yup.string().required('주문ID를 입력해주세요.'),
-      userId: yup.string().required('회원ID를 입력해주세요.'),
+      memberId: yup.string().required('회원ID를 입력해주세요.'),
     });
 
     const cfCurrentStepIdx = computed(() => {
-      const idx = ORDER_STEPS.indexOf(form.statusCd);
+      const idx = ORDER_STEPS.indexOf(form.orderStatusCd);
       return idx !== -1 ? idx : -1;
     });
 
-    const cfIsCanceled = computed(() => form.statusCd === '취소됨');
+    const cfIsCanceled = computed(() => form.orderStatusCd === '취소됨');
 
     /* 주문 저장 */
     const handleSave = async () => {
@@ -119,8 +119,8 @@ window.OdOrderDtl = {
       if (!ok) return;
       try {
         const res = await (isNewOrder
-          ? boApiSvc.odOrder.create({ ...form, totalPrice: Number(form.totalPrice) }, '주문관리', '등록')
-          : boApiSvc.odOrder.update(form.orderId, { ...form, totalPrice: Number(form.totalPrice) }, '주문관리', '저장'));
+          ? boApiSvc.odOrder.create({ ...form, totalAmt: Number(form.totalAmt) }, '주문관리', '등록')
+          : boApiSvc.odOrder.update(form.orderId, { ...form, totalAmt: Number(form.totalAmt) }, '주문관리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odOrderMng', { reload: true });
@@ -139,7 +139,7 @@ window.OdOrderDtl = {
     /* 주문 sampleOrderItems */
     const sampleOrderItems = () => {
       const base = form.prodNm || '주문상품';
-      const total = Number(form.totalPrice || 0);
+      const total = Number(form.totalAmt || 0);
       const shares = [0.55, 0.30, 0.15];
       const discRates = [0.10, 0.05, 0.20];
       const discLabels = ['신규10%', '쿠폰5%', '시즌20%'];
@@ -228,10 +228,10 @@ window.OdOrderDtl = {
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
 
-    const cfPaymentList = computed(() => form.totalPrice ? [{
-      payMethod: form.payMethodCd || form.payMethod || '-',
+    const cfPaymentList = computed(() => form.totalAmt ? [{
+      payMethod: form.payMethodCd || '-',
       payStatus: form.payStatusCd || '-',
-      amount: form.totalPrice, payDate: form.payDate || form.orderDate || '-',
+      amount: form.totalAmt, payDate: form.payDate || form.orderDate || '-',
       apprNo: form.apprNo || '-', issuer: form.payIssuer || '-',
     }] : []);
     const cfStatusHistList = computed(() => {
@@ -241,8 +241,8 @@ window.OdOrderDtl = {
         { date: d+' 09:00', user:'시스템', from:'-', to:'입금대기', memo:'주문 접수' },
         { date: d+' 10:15', user:'bo', from:'입금대기', to:'결제완료', memo:'결제 승인' },
       ];
-      if (form.status && !['입금대기','결제완료'].includes(form.status)) {
-        rows.push({ date: d+' 14:30', user:'bo', from:'결제완료', to: form.status, memo:'상태 변경' });
+      if (form.orderStatusCd && !['입금대기','결제완료'].includes(form.orderStatusCd)) {
+        rows.push({ date: d+' 14:30', user:'bo', from:'결제완료', to: form.orderStatusCd, memo:'상태 변경' });
       }
       return rows;
     });
@@ -453,16 +453,16 @@ window.OdOrderDtl = {
       <div class="form-group">
         <label class="form-label">회원ID <span v-if="!cfDtlMode" class="req">*</span></label>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="form-control" v-model="form.userId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.userId ? 'is-invalid' : ''" />
-          <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
+          <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
+          <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', form.memberId)">보기</span>
         </div>
-        <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
+        <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">회원명</label>
-        <input class="form-control" v-model="form.userNm" :readonly="cfDtlMode" />
+        <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">주문일시</label>
@@ -485,7 +485,7 @@ window.OdOrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">결제금액</label>
-        <input class="form-control" type="number" v-model.number="form.totalPrice" :readonly="cfDtlMode" />
+        <input class="form-control" type="number" v-model.number="form.totalAmt" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">결제수단</label>
@@ -509,7 +509,7 @@ window.OdOrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.orderStatusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -572,7 +572,7 @@ window.OdOrderDtl = {
           <td><span v-if="it.discInfo" style="font-size:11px;padding:2px 7px;border-radius:8px;background:#fff3e0;color:#e65100;font-weight:600;">{{ it.discInfo }}</span><span v-else style="color:#bbb;">-</span></td>
           <td style="text-align:right;color:#d84315;font-weight:600;">{{ it.discAmount ? '-'+fmt(it.discAmount) : '-' }}</td>
           <td style="text-align:right;font-weight:700;color:#1a1a1a;">{{ fmt(it.price) }}</td>
-          <td style="text-align:center;"><span style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">{{ form.statusCd || form.status || '-' }}</span></td>
+          <td style="text-align:center;"><span style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">{{ form.orderStatusCd || '-' }}</span></td>
           <td style="text-align:center;">
             <span v-if="cfRelatedClaim" style="display:inline-flex;align-items:center;gap:3px;">
               <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[cfRelatedClaim.type]||'#9ca3af'}">{{ cfRelatedClaim.type }}</span>

@@ -340,7 +340,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       });
       if (isNewSet) { uiState.dtlMode = 'edit'; uiState.editSetId = newProdId; }
       try {
-        const res = await (isNewSet ? boApiSvc.pdSet.create({ prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }, '세트상품관리', '등록') : boApiSvc.pdSet.updateItems(setProdId, { items: dtlItems }, '세트상품관리', '저장'));
+        /* PdProdSetSaveDto: CreateRequest {prodNm, siteId, items[]}, UpdateItemsRequest {items[]}, Item {prodId, qty, sortOrd} */
+        const setItems = dtlItems.map(d => ({ prodId: d.itemProdId || null, qty: d.itemQty, sortOrd: d.sortOrd }));
+        const res = await (isNewSet
+          ? boApiSvc.pdSet.create({ prodNm: newForm.prodNm, siteId: newForm.siteId || null, items: setItems }, '세트상품관리', '등록')
+          : boApiSvc.pdSet.updateItems(setProdId, { items: setItems }, '세트상품관리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast(isNewSet ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {

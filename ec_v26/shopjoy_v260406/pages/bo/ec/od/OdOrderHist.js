@@ -28,9 +28,9 @@ window.OdOrderHist = {
           boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '클레임관리', '이력조회'),
           boApiSvc.odDliv.getPage({ pageNo: 1, pageSize: 10000 }, '배송관리', '이력조회'),
         ]);
-        orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
-        claims.splice(0, claims.length, ...(resC.data?.data?.list || []));
-        deliveries.splice(0, deliveries.length, ...(resD.data?.data?.list || []));
+        orders.splice(0, orders.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(resC.data?.data?.pageList || resC.data?.data?.list || []));
+        deliveries.splice(0, deliveries.length, ...(resD.data?.data?.pageList || resD.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -62,7 +62,7 @@ window.OdOrderHist = {
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       if (o) {
         orderItems.splice(0, orderItems.length,
-          { no: 1, prodNm: o.prodNm, optionNm: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
+          { no: 1, prodNm: o.prodNm || '-', optionNm: '-', qty: 1, unitPrice: o.payAmt, totalPrice: o.payAmt, statusCd: o.orderStatusCdNm || o.orderStatusCd },
         );
       }
       handleSearchData();
@@ -75,7 +75,7 @@ window.OdOrderHist = {
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       return [
         { date: o && o.orderDate ? o.orderDate.slice(0, 10) : '-', status: '상품준비중', location: '물류센터', memo: '상품 포장 완료' },
-        { date: cfRelatedDliv.value.shipDate || '-', status: '배송중', location: cfRelatedDliv.value.courierCd || '-', memo: '출고 완료' },
+        { date: cfRelatedDliv.value.dlivShipDate || '-', status: '배송중', location: cfRelatedDliv.value.outboundCourierCd || '-', memo: '출고 완료' },
       ].filter(h => h.date !== '-');
     });
 
@@ -124,9 +124,9 @@ window.OdOrderHist = {
     <template v-if="cfRelatedDliv">
       <div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;">
         <div style="font-size:13px;">
-          <span style="color:#888;">수령인</span> <b>{{ cfRelatedDliv.receiver }}</b>
-          &nbsp;·&nbsp;<span style="color:#888;">택배사</span> <b>{{ cfRelatedDliv.courier }}</b>
-          &nbsp;·&nbsp;<span style="color:#888;">운송장</span> <b>{{ cfRelatedDliv.trackingNo || '-' }}</b>
+          <span style="color:#888;">수령인</span> <b>{{ cfRelatedDliv.recvNm }}</b>
+          &nbsp;·&nbsp;<span style="color:#888;">택배사</span> <b>{{ cfRelatedDliv.outboundCourierCdNm || cfRelatedDliv.outboundCourierCd }}</b>
+          &nbsp;·&nbsp;<span style="color:#888;">운송장</span> <b>{{ cfRelatedDliv.outboundTrackingNo || '-' }}</b>
         </div>
         <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:cfRelatedDliv.dlivId})">배송 수정</button>
       </div>
@@ -154,11 +154,11 @@ window.OdOrderHist = {
       <tbody>
         <tr v-for="c in cfRelatedClaims" :key="c?.claimId">
           <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
-          <td>{{ c.type }}</td>
-          <td>{{ c.statusCd }}</td>
+          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
+          <td>{{ c.claimTypeCdNm || c.claimTypeCd }}</td>
+          <td>{{ c.claimStatusCdNm || c.claimStatusCd }}</td>
           <td>{{ c.reasonCd }}</td>
-          <td>{{ c.requestDate.slice(0,10) }}</td>
+          <td>{{ (c.requestDate||'').slice(0,10) }}</td>
           <td><button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:c.claimId})">상세</button></td>
         </tr>
       </tbody>

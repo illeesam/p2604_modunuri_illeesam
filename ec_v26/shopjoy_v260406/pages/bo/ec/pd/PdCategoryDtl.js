@@ -44,7 +44,7 @@ window.PdCategoryDtl = {
     };
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const form = reactive({
-      categoryId: null, parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
+      categoryId: null, parentCategoryId: null, categoryNm: '', categoryDepth: 1, sortOrd: 1, categoryStatusCd: 'ACTIVE', categoryDesc: '', imgUrl: '',
     });
     const errors = reactive({});
 
@@ -85,11 +85,11 @@ window.PdCategoryDtl = {
 
     /* 상품 카테고리 onParentChange */
     const onParentChange = () => {
-      if (form.parentId === null || form.parentId === '') {
-        form.depth = 1;
+      if (form.parentCategoryId === null || form.parentCategoryId === '') {
+        form.categoryDepth = 1;
       } else {
-        const parent = window.safeArrayUtils.safeFind(categories, c => c.categoryId === Number(form.parentId));
-        form.depth = parent ? parent.depth + 1 : 1;
+        const parent = window.safeArrayUtils.safeFind(categories, c => c.categoryId === form.parentCategoryId);
+        form.categoryDepth = parent ? (parent.categoryDepth || 0) + 1 : 1;
       }
     };
 
@@ -104,7 +104,6 @@ window.PdCategoryDtl = {
         showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const parentId = form.parentId ? Number(form.parentId) : null;
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
@@ -134,9 +133,9 @@ window.PdCategoryDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상위카테고리</label>
-        <select class="form-control" v-model="form.parentId" @change="onParentChange">
+        <select class="form-control" v-model="form.parentCategoryId" @change="onParentChange">
           <option :value="null">없음 (최상위)</option>
-          <option v-for="c in cfParentOptions" :key="c?.categoryId" :value="c.categoryId">{{ '　'.repeat(c.depth-1) }}{{ c.categoryNm }} (depth {{ c.depth }})</option>
+          <option v-for="c in cfParentOptions" :key="c?.categoryId" :value="c.categoryId">{{ '　'.repeat((c.categoryDepth||1)-1) }}{{ c.categoryNm }} (depth {{ c.categoryDepth }})</option>
         </select>
       </div>
       <div class="form-group">
@@ -148,7 +147,7 @@ window.PdCategoryDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">depth (자동산정)</label>
-        <input class="form-control" type="number" v-model.number="form.depth" min="1" readonly style="background:#f5f5f5;" />
+        <input class="form-control" type="number" v-model.number="form.categoryDepth" min="1" readonly style="background:#f5f5f5;" />
       </div>
       <div class="form-group">
         <label class="form-label">정렬순서</label>
@@ -158,7 +157,7 @@ window.PdCategoryDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status">
+        <select class="form-control" v-model="form.categoryStatusCd">
           <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -170,7 +169,7 @@ window.PdCategoryDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">설명</label>
-        <input class="form-control" v-model="form.description" />
+        <input class="form-control" v-model="form.categoryDesc" />
       </div>
     </div>
     <div class="form-actions" v-if="!cfDtlMode">

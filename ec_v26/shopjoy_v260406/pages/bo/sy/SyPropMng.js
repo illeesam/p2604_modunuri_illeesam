@@ -111,10 +111,10 @@ window.SyPropMng = {
         propKey: 'new_key',
         propLabel: '신규 프로퍼티',
         propValue: '',
-        propType: 'STRING',
+        propTypeCd: 'STRING',
         sortOrd: 99,
         useYn: 'Y',
-        remark: '',
+        propRemark: '',
         _status: 'I',
       });
       rows.push(newRow);
@@ -173,7 +173,7 @@ window.SyPropMng = {
       const header = ['ID','표시경로','키','값','라벨','타입','정렬','사용','비고'];
       const lines = [header.join(',')];
       cfGridRows.value.forEach(r => {
-        lines.push([r.propId, r.pathId, r.propKey, r.propValue, r.propLabel, r.propType, r.sortOrd, r.useYn, r.remark || '']
+        lines.push([r.propId, r.pathId, r.propKey, r.propValue, r.propLabel, r.propTypeCd, r.sortOrd, r.useYn, r.propRemark || '']
           .map(c => '"' + String(c).replace(/"/g,'""') + '"').join(','));
       });
       const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -302,7 +302,7 @@ window.SyPropMng = {
             <td><input class="grid-input" :value="r.propValue" @input="onChange(r,'propValue',$event.target.value)"></td>
             <td><input class="grid-input" :value="r.propLabel" @input="onChange(r,'propLabel',$event.target.value)"></td>
             <td>
-              <select class="grid-select" :value="r.propType" @change="onChange(r,'propType',$event.target.value)">
+              <select class="grid-select" :value="r.propTypeCd" @change="onChange(r,'propTypeCd',$event.target.value)">
                 <option v-for="t in codes.prop_types" :key="t" :value="t">{{ t }}</option>
               </select>
             </td>
@@ -312,7 +312,7 @@ window.SyPropMng = {
                 <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </td>
-            <td><input class="grid-input" :value="r.remark" @input="onChange(r,'remark',$event.target.value)"></td>
+            <td><input class="grid-input" :value="r.propRemark" @input="onChange(r,'propRemark',$event.target.value)"></td>
             <td class="col-act-delete-val">
               <button class="btn btn-xs btn-danger" @click="delRow(r)">{{ r._status==='D' ? '복원' : '삭제' }}</button>
             </td>

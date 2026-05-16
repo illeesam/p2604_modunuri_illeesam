@@ -101,8 +101,21 @@ window.DpDispAreaDtl = {
     /* -- 로드 -- */
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
-        const a = areas.find(c => String(c.codeId) === String(props.dtlId) && c.codeGrp === 'DISP_AREA');
-        if (a) Object.assign(form, { ...a });
+        const a = areas.find(c => String(c.areaId || c.codeId) === String(props.dtlId));
+        if (a) {
+          Object.assign(form, { ...a });
+          /* DpAreaDto.Item → form 별칭 매핑 (Entity 기준) */
+          form.codeId       = a.areaId       ?? form.codeId;
+          form.codeValue    = a.areaCd       ?? form.codeValue;
+          form.codeLabel    = a.areaNm       ?? form.codeLabel;
+          form.areaType     = a.areaTypeCd   ?? form.areaType;
+          form.remark       = a.areaDesc     ?? form.remark;
+          form.sortOrd      = a.sortOrd      ?? form.sortOrd;
+          form.useYn        = a.useYn        ?? form.useYn;
+          form.useStartDate = a.useStartDate ?? form.useStartDate;
+          form.useEndDate   = a.useEndDate   ?? form.useEndDate;
+          form.pathId       = a.pathId       ?? form.pathId;
+        }
       } else {
         const areaList = areas.filter(c => c.codeGrp === 'DISP_AREA');
         form.sortOrd = areaList.length ? Math.max(...areaList.map(c => c.sortOrd || 0)) + 1 : 1;
@@ -241,15 +254,20 @@ window.DpDispAreaDtl = {
       const isNewArea = cfIsNew.value;
       const ok = await showConfirm('저장', isNewArea ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?');
       if (!ok) return;
-      if (isNewArea) {
-        const newId = boUtil.nextId(areas, 'codeId');
-        areas.push({ ...form, codeId: newId });
-      } else {
-        const idx = areas.findIndex(c => c.codeId === form.codeId);
-        if (idx !== -1) Object.assign(areas[idx], form);
-      }
+      /* form 별칭 → DpArea Entity 필드 매핑 */
+      const body = { ...form };
+      body.areaId       = form.codeId    || form.areaId || null;
+      body.areaCd       = form.codeValue || form.areaCd;
+      body.areaNm       = form.codeLabel || form.areaNm;
+      body.areaTypeCd   = form.areaType  || form.areaTypeCd;
+      body.areaDesc     = form.remark    || form.areaDesc;
+      body.sortOrd      = form.sortOrd;
+      body.useYn        = form.useYn;
+      body.useStartDate = form.useStartDate;
+      body.useEndDate   = form.useEndDate;
+      body.pathId       = form.pathId;
       try {
-        const res = await (isNewArea ? boApiSvc.dpArea.create({ ...form }, '전시영역관리', '등록') : boApiSvc.dpArea.update(form.codeId, { ...form }, '전시영역관리', '저장'));
+        const res = await (isNewArea ? boApiSvc.dpArea.create(body, '전시영역관리', '등록') : boApiSvc.dpArea.update(body.areaId, body, '전시영역관리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispAreaMng', { reload: true });

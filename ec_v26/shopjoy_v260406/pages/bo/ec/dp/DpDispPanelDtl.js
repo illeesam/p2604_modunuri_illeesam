@@ -42,7 +42,25 @@ window.DpDispPanelDtl = {
       try {
         const res = await boApiSvc.dpPanel.getById(props.dtlId, '전시패널관리', '상세조회');
         const data = res.data?.data;
-        if (data) Object.assign(form, data);
+        if (data) {
+          Object.assign(form, data);
+          /* DpPanelDto.Item → form 별칭 매핑 (Entity 기준) */
+          form.dispId                 = data.panelId            ?? form.dispId;
+          form.name                   = data.panelNm            ?? form.name;
+          form.layoutType             = data.panelTypeCd        ?? form.layoutType;
+          form.status                 = data.dispPanelStatusCd  ?? form.status;
+          form.panelVisibilityTargets = data.visibilityTargets  ?? form.panelVisibilityTargets;
+          form.useStartDate           = data.useStartDate       ?? form.useStartDate;
+          form.useEndDate             = data.useEndDate         ?? form.useEndDate;
+          form.pathId                 = data.pathId             ?? form.pathId;
+          /* 위젯 목록은 content_json 에 직렬화되어 저장됨 */
+          if (data.contentJson) {
+            try {
+              const parsed = JSON.parse(data.contentJson);
+              if (Array.isArray(parsed?.rows)) { rows.splice(0, rows.length, ...parsed.rows); }
+            } catch (e) { /* contentJson 파싱 실패 무시 */ }
+          }
+        }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -438,7 +456,19 @@ window.DpDispPanelDtl = {
       const ok = await showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (isNewPanel ? boApiSvc.dpPanel.create({ ...form, rows: rows.map(r => ({ ...r })) }, '전시패널관리', '등록') : boApiSvc.dpPanel.update(form.dispId, { ...form, rows: rows.map(r => ({ ...r })) }, '전시패널관리', '저장'));
+        /* form 별칭 → DpPanel Entity 필드 매핑 (위젯 목록은 content_json 직렬화) */
+        const _rows = rows.map(r => ({ ...r }));
+        const body = { ...form, rows: _rows };
+        body.panelId            = form.dispId || form.panelId || null;
+        body.panelNm            = form.name || form.panelNm;
+        body.panelTypeCd        = form.layoutType || form.panelTypeCd;
+        body.dispPanelStatusCd  = form.status || form.dispPanelStatusCd;
+        body.visibilityTargets  = form.panelVisibilityTargets || form.visibilityTargets;
+        body.useStartDate       = form.useStartDate;
+        body.useEndDate         = form.useEndDate;
+        body.pathId             = form.pathId;
+        body.contentJson        = JSON.stringify({ rows: _rows });
+        const res = await (isNewPanel ? boApiSvc.dpPanel.create(body, '전시패널관리', '등록') : boApiSvc.dpPanel.update(body.panelId, body, '전시패널관리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispPanelMng', { reload: true });

@@ -38,7 +38,7 @@ window.CmChattDtl = {
       try {
         const res = await boApiSvc.cmChatt.getById(props.dtlId, '채팅관리', '상세조회');
         uiState.chat = res.data?.data || null;
-        if (uiState.chat) uiState.chat.unread = 0;
+        if (uiState.chat) uiState.chat.memberUnreadCnt = 0;
         scrollToBottom();
       } catch (err) {
         console.error('[catch-info]', err);
@@ -117,11 +117,11 @@ window.CmChattDtl = {
     });
 
     /* 신규 채팅 form */
-    const form = reactive({ chatId: null, userId: '', userNm: '', subject: '', status: '진행중' });
+    const form = reactive({ chattRoomId: null, memberId: '', memberNm: '', subject: '', chattStatusCd: '' });
     const errors = reactive({});
 
     const schema = yup.object({
-      userId: yup.string().required('회원ID를 입력해주세요.'),
+      memberId: yup.string().required('회원ID를 입력해주세요.'),
       subject: yup.string().required('제목을 입력해주세요.'),
     });
 
@@ -140,7 +140,7 @@ window.CmChattDtl = {
     /* closeChat */
     const closeChat = () => {
       if (!uiState.chat) return;
-      uiState.chat.status = '종료';
+      uiState.chat.chattStatusCd = '종료';
       showToast('채팅이 종료되었습니다.');
     };
 
@@ -158,8 +158,13 @@ window.CmChattDtl = {
       const ok = await showConfirm('등록', '등록하시겠습니까?');
       if (!ok) return;
       try {
-        /* DB 컬럼명: cm_chatt_room.member_id / member_nm (NOT NULL) — form.userId/userNm 매핑 */
-        const payload = { ...form, memberId: form.userId, memberNm: form.userNm };
+        /* CmChattRoom 엔티티 필드명에 맞춰 전송 */
+        const payload = {
+          memberId: form.memberId,
+          memberNm: form.memberNm,
+          subject: form.subject,
+          chattStatusCd: form.chattStatusCd,
+        };
         const res = await boApiSvc.cmChatt.create(payload, '채팅관리', '등록');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('등록되었습니다.', 'success');
@@ -195,7 +200,7 @@ window.CmChattDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '채팅 등록' : '채팅 상세' }}<span v-if="!cfIsNew && chat" style="font-size:12px;color:#999;margin-left:8px;">#{{ chat.chatId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '채팅 등록' : '채팅 상세' }}<span v-if="!cfIsNew && chat" style="font-size:12px;color:#999;margin-left:8px;">#{{ chat.chattRoomId }}</span></div>
 
   <!-- -- 채팅 상세 ---------------------------------------------------------- -->
   <div v-if="!cfIsNew">
@@ -222,12 +227,12 @@ window.CmChattDtl = {
           <div>
             <div style="font-size:15px;font-weight:700;">{{ chat.subject }}</div>
             <div style="font-size:12px;color:#888;margin-top:3px;">
-              <span class="ref-link" @click="showRefModal('member', chat.userId)">{{ chat.userNm }}</span>
-              &nbsp;·&nbsp;{{ chat.date }}
-              &nbsp;·&nbsp;<span class="badge" :class="chat.status==='진행중'?'badge-green':'badge-gray'">{{ chat.status }}</span>
+              <span class="ref-link" @click="showRefModal('member', chat.memberId)">{{ chat.memberNm }}</span>
+              &nbsp;·&nbsp;{{ chat.regDate }}
+              &nbsp;·&nbsp;<span class="badge" :class="chat.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ chat.chattStatusCd }}</span>
             </div>
           </div>
-          <button v-if="chat.status==='진행중'" class="btn btn-secondary btn-sm" @click="closeChat">채팅 종료</button>
+          <button v-if="chat.chattStatusCd==='진행중'" class="btn btn-secondary btn-sm" @click="closeChat">채팅 종료</button>
         </div>
 
         <!-- -- 메시지 목록 --------------------------------------------------- -->
@@ -243,7 +248,7 @@ window.CmChattDtl = {
         </div>
 
         <!-- -- 답변 입력 ---------------------------------------------------- -->
-        <div v-if="chat.status==='진행중'" style="display:flex;gap:8px;margin-top:12px;">
+        <div v-if="chat.chattStatusCd==='진행중'" style="display:flex;gap:8px;margin-top:12px;">
           <textarea class="form-control" v-model="replyText" rows="2" placeholder="답변을 입력하고 Enter..." style="resize:none;"
             @keydown.enter.exact.prevent="() => sendReply?.()"></textarea>
           <button class="btn btn-primary" @click="sendReply" style="white-space:nowrap;">전송</button>
@@ -262,18 +267,18 @@ window.CmChattDtl = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 채팅 이력 <span class="tab-count">{{ cfMemberChats.length }}</span></div>
       <div v-if="chat" style="margin-bottom:14px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;align-items:center;gap:12px;">
         <span style="font-size:13px;color:#555;">
-          <span class="ref-link" @click="showRefModal('member', chat.userId)">{{ chat.userNm }}</span> 의 다른 채팅
+          <span class="ref-link" @click="showRefModal('member', chat.memberId)">{{ chat.memberNm }}</span> 의 다른 채팅
         </span>
       </div>
       <table class="bo-table" v-if="cfMemberChats.length">
         <thead><tr><th>제목</th><th>상태</th><th>최근 메시지</th><th>일시</th><th>관리</th></tr></thead>
         <tbody>
-          <tr v-for="c in cfMemberChats" :key="c?.chatId">
+          <tr v-for="c in cfMemberChats" :key="c?.chattRoomId">
             <td>{{ c.subject }}</td>
-            <td><span class="badge" :class="c.status==='진행중'?'badge-green':'badge-gray'">{{ c.status }}</span></td>
-            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.lastMsg || '-' }}</td>
-            <td>{{ c.date }}</td>
-            <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:c.chatId})">상세</button></td>
+            <td><span class="badge" :class="c.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ c.chattStatusCd }}</span></td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.lastMsgDate || '-' }}</td>
+            <td>{{ c.regDate }}</td>
+            <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:c.chattRoomId})">상세</button></td>
           </tr>
         </tbody>
       </table>
@@ -296,14 +301,14 @@ window.CmChattDtl = {
           <div class="form-group">
             <label class="form-label">회원ID <span class="req">*</span></label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserChange" :class="errors.userId ? 'is-invalid' : ''" />
-              <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
+              <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserChange" :class="errors.memberId ? 'is-invalid' : ''" />
+              <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', form.memberId)">보기</span>
             </div>
-            <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
+            <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
           </div>
           <div class="form-group">
             <label class="form-label">회원명</label>
-            <div class="readonly-field">{{ form.userNm || '-' }}</div>
+            <input class="form-control" v-model="form.memberNm" placeholder="회원명" />
           </div>
         </div>
         <div class="form-group">
@@ -313,7 +318,7 @@ window.CmChattDtl = {
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" style="max-width:200px;" v-model="form.status">
+          <select class="form-control" style="max-width:200px;" v-model="form.chattStatusCd">
             <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
@@ -332,12 +337,12 @@ window.CmChattDtl = {
           <table class="bo-table">
             <thead><tr><th>제목</th><th>상태</th><th>최근 메시지</th><th>일시</th><th>보기</th></tr></thead>
             <tbody>
-              <tr v-for="c in cfUserChats" :key="c?.chatId">
+              <tr v-for="c in cfUserChats" :key="c?.chattRoomId">
                 <td>{{ c.subject }}</td>
-                <td><span class="badge" :class="c.status==='진행중'?'badge-green':'badge-gray'">{{ c.status }}</span></td>
-                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.lastMsg || '-' }}</td>
-                <td>{{ c.date }}</td>
-                <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:c.chatId})">보기</button></td>
+                <td><span class="badge" :class="c.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ c.chattStatusCd }}</span></td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.lastMsgDate || '-' }}</td>
+                <td>{{ c.regDate }}</td>
+                <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:c.chattRoomId})">보기</button></td>
               </tr>
             </tbody>
           </table>

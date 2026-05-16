@@ -29,6 +29,11 @@ window.PmGiftDtl = {
         const res = await boApiSvc.pmGift.getById(props.dtlId, '선물관리', '상세조회');
         const g = res.data?.data || res.data;
         if (g) Object.assign(form, g);
+        // Entity minOrderAmt/minOrderQty → UI 단일 condVal 매핑
+        if (g) {
+          if (g.giftTypeCd === '수량조건') form.condVal = Number(g.minOrderQty) || 0;
+          else form.condVal = Number(g.minOrderAmt) || 0;
+        }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -64,9 +69,9 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
 
     const form = reactive({
-      giftId: null, giftNm: '', giftType: '구매조건', condVal: 0,
-      giftStatus: '활성', stock: 0, startDate: DEFAULT_START, endDate: DEFAULT_END,
-      giftProdId: null, remark: '',
+      giftId: null, giftNm: '', giftTypeCd: '구매조건', condVal: 0,
+      giftStatusCd: '활성', giftStock: 0, startDate: DEFAULT_START, endDate: DEFAULT_END,
+      prodId: null, giftDesc: '', minOrderAmt: 0, minOrderQty: 0,
       visibilityTargets: '^PUBLIC^',
       vendorId: '', chargeStaff: '',
     });
@@ -74,7 +79,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
     const schema = yup.object({
       giftNm: yup.string().required('사은품명을 입력해주세요.'),
-      stock:  yup.number().min(0, '재고는 0 이상이어야 합니다.').required('재고를 입력해주세요.'),
+      giftStock:  yup.number().min(0, '재고는 0 이상이어야 합니다.').required('재고를 입력해주세요.'),
     });
 
     // ★ onMounted
@@ -115,9 +120,9 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     };
 
     const cfCondValLabel = computed(() => {
-      if (form.giftType === '금액조건') return '기준금액 (원 이상)';
-      if (form.giftType === '수량조건') return '기준수량 (개 이상)';
-      if (form.giftType === '구매조건') return '기준금액 (원 이상)';
+      if (form.giftTypeCd === '금액조건') return '기준금액 (원 이상)';
+      if (form.giftTypeCd === '수량조건') return '기준수량 (개 이상)';
+      if (form.giftTypeCd === '구매조건') return '기준금액 (원 이상)';
       return '조건값';
     });
 
@@ -160,6 +165,9 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
         if (!ok) return;
         try {
           const payload = { ...form };
+          // UI 단일 condVal → Entity minOrderQty / minOrderAmt 매핑
+          if (form.giftTypeCd === '수량조건') { payload.minOrderQty = form.condVal; }
+          else { payload.minOrderAmt = form.condVal; }
           const res = isCreate
             ? await boApiSvc.pmGift.create(payload, '선물관리', '등록')
             : await boApiSvc.pmGift.update(cfCurId.value, payload, '선물관리', '기본정보저장');
@@ -224,11 +232,11 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">조건유형</label>
-          <select class="form-control" v-model="form.giftType">
+          <select class="form-control" v-model="form.giftTypeCd">
             <option v-for="c in codes.gift_cond_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
-        <div class="form-group" v-if="form.giftType !== '무조건'">
+        <div class="form-group" v-if="form.giftTypeCd !== '무조건'">
           <label class="form-label">{{ cfCondValLabel }}</label>
           <input class="form-control" type="number" v-model.number="form.condVal" placeholder="0" />
         </div>
@@ -236,12 +244,12 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">재고 <span class="req">*</span></label>
-          <input class="form-control" type="number" v-model.number="form.stock" placeholder="0" :class="errors.stock ? 'is-invalid' : ''" />
-          <span v-if="errors.stock" class="field-error">{{ errors.stock }}</span>
+          <input class="form-control" type="number" v-model.number="form.giftStock" placeholder="0" :class="errors.giftStock ? 'is-invalid' : ''" />
+          <span v-if="errors.giftStock" class="field-error">{{ errors.giftStock }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.giftStatus">
+          <select class="form-control" v-model="form.giftStatusCd">
             <option v-for="c in codes.gift_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
@@ -258,7 +266,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
       </div>
       <div class="form-group">
         <label class="form-label">비고</label>
-        <textarea class="form-control" v-model="form.remark" rows="2" placeholder="비고 입력"></textarea>
+        <textarea class="form-control" v-model="form.giftDesc" rows="2" placeholder="비고 입력"></textarea>
       </div>
       <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <div class="form-group">
@@ -331,10 +339,10 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">🎁 {{ form.giftNm || '사은품명' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
         <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #f59e0b;">
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">조건: <span style="font-weight:700;color:#f59e0b;">{{ form.giftType }}</span></div>
-          <div v-if="form.giftType !== '무조건'" style="font-size:13px;color:#666;margin-bottom:4px;">조건값: <span style="font-weight:700;">{{ form.giftType === '금액조건' ? (form.condVal||0).toLocaleString() + '원↑' : form.giftType === '수량조건' ? (form.condVal||0) + '개↑' : form.condVal||0 }}</span></div>
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">재고: <span style="font-weight:700;">{{ (form.stock||0).toLocaleString() }}개</span></div>
-          <div style="font-size:13px;color:#666;">상태: <span style="font-weight:700;">{{ form.giftStatus }}</span></div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">조건: <span style="font-weight:700;color:#f59e0b;">{{ form.giftTypeCd }}</span></div>
+          <div v-if="form.giftTypeCd !== '무조건'" style="font-size:13px;color:#666;margin-bottom:4px;">조건값: <span style="font-weight:700;">{{ form.giftTypeCd === '금액조건' ? (form.condVal||0).toLocaleString() + '원↑' : form.giftTypeCd === '수량조건' ? (form.condVal||0) + '개↑' : form.condVal||0 }}</span></div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">재고: <span style="font-weight:700;">{{ (form.giftStock||0).toLocaleString() }}개</span></div>
+          <div style="font-size:13px;color:#666;">상태: <span style="font-weight:700;">{{ form.giftStatusCd }}</span></div>
         </div>
         <button class="btn btn-primary" @click="showToast('사은품을 확인하였습니다.', 'success')">사은품 확인</button>
       </div>

@@ -98,7 +98,7 @@ window.SyBrandMng = {
     let   _tempId    = -1;
     
 
-    const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'pathId', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'pathId', 'logoUrl', 'sortOrd', 'useYn', 'brandRemark'];
 
     /* 브랜드 fnLoadCodes */
     const fnLoadCodes = () => {
@@ -146,7 +146,7 @@ window.SyBrandMng = {
       const newRow = {
         brandId: _tempId--, brandCode: '', brandNm: '', brandEnNm: '',
         pathId: uiState.selectedPath || 'fashion.misc',
-        logoUrl: '', sortOrd: gridRows.length + 1, useYn: 'Y', remark: '',
+        logoUrl: '', sortOrd: gridRows.length + 1, useYn: 'Y', brandRemark: '',
         _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
@@ -270,7 +270,7 @@ window.SyBrandMng = {
         { label: '로고URL',   key: 'logoUrl' },
         { label: '순서',      key: 'sortOrd' },
         { label: '사용여부',  key: 'useYn' },
-        { label: '비고',      key: 'remark' },
+        { label: '비고',      key: 'brandRemark' },
       ],
       '브랜드목록.csv'
     );

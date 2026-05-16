@@ -71,7 +71,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (!ok) return;
       r.sendStatus = '전송완료'; r.erpRef = 'ERP-JE-RESEND-' + Date.now();
       try {
-        const res = await boApiSvc.stErp.resend(r.slipId, {}, 'ERP전표조회', '전송');
+        const res = await boApiSvc.stErp.resend(r.erpVoucherId || r.slipId, {}, 'ERP전표조회', '전송');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('재전송이 완료되었습니다.', 'success');
       } catch (err) {

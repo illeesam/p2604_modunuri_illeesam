@@ -172,7 +172,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     /* 사은품 exportExcel */
     const exportExcel = () => coUtil.exportCsv(gifts,
-      [{label:'ID',key:'giftId'},{label:'사은품명',key:'giftNm'},{label:'유형',key:'giftType'},{label:'조건값',key:'condVal'},{label:'재고',key:'stock'},{label:'상태',key:'giftStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
+      [{label:'ID',key:'giftId'},{label:'사은품명',key:'giftNm'},{label:'유형',key:'giftTypeCd'},{label:'최소주문금액',key:'minOrderAmt'},{label:'최소주문수량',key:'minOrderQty'},{label:'재고',key:'giftStock'},{label:'상태',key:'giftStatusCd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '사은품목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
@@ -227,12 +227,12 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         <tr v-else v-for="(g, idx) in gifts" :key="g?.giftId" :style="selectedId===g.giftId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="title-link" @click="handleLoadDetail(g.giftId)" :style="selectedId===g.giftId?'color:#e8587a;font-weight:700;':''">{{ g.giftNm }}<span v-if="selectedId===g.giftId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="badge" :class="fnTypeBadge(g.giftType)">{{ g.giftType }}</span></td>
-          <td>{{ g.giftType === '금액조건' ? (g.condVal||0).toLocaleString() + '원↑' : g.giftType === '수량조건' ? (g.condVal||0) + '개↑' : '-' }}</td>
-          <td>{{ (g.stock||0).toLocaleString() }}개</td>
+          <td><span class="badge" :class="fnTypeBadge(g.giftTypeCd)">{{ g.giftTypeCd }}</span></td>
+          <td>{{ g.giftTypeCd === '금액조건' ? (g.minOrderAmt||0).toLocaleString() + '원↑' : g.giftTypeCd === '수량조건' ? (g.minOrderQty||0) + '개↑' : '-' }}</td>
+          <td>{{ (g.giftStock||0).toLocaleString() }}개</td>
           <td>{{ g.startDate }}</td>
           <td>{{ g.endDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(g.giftStatus)">{{ g.giftStatus }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(g.giftStatusCd)">{{ g.giftStatusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(g.giftId)">수정</button>
@@ -252,13 +252,13 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
           <div style="font-size:12px;color:#999;margin-bottom:6px;">사은품 #{{ g.giftId }}</div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(g.giftId)" :style="selectedId===g.giftId?{color:'#e8587a'}:{}">{{ g.giftNm }}<span v-if="selectedId===g.giftId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="fnTypeBadge(g.giftType)" style="font-size:11px;">{{ g.giftType }}</span>
-            <span class="badge" :class="fnStatusBadge(g.giftStatus)" style="font-size:11px;">{{ g.giftStatus }}</span>
+            <span class="badge" :class="fnTypeBadge(g.giftTypeCd)" style="font-size:11px;">{{ g.giftTypeCd }}</span>
+            <span class="badge" :class="fnStatusBadge(g.giftStatusCd)" style="font-size:11px;">{{ g.giftStatusCd }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>🎯 {{ g.giftType === '금액조건' ? (g.condVal||0).toLocaleString() + '원↑' : g.giftType === '수량조건' ? (g.condVal||0) + '개↑' : '-' }}</div>
+            <div>🎯 {{ g.giftTypeCd === '금액조건' ? (g.minOrderAmt||0).toLocaleString() + '원↑' : g.giftTypeCd === '수량조건' ? (g.minOrderQty||0) + '개↑' : '-' }}</div>
             <div>📅 {{ g.startDate }} ~ {{ g.endDate }}</div>
-            <div style="color:#999;margin-top:4px;">재고 {{ (g.stock||0).toLocaleString() }}개</div>
+            <div style="color:#999;margin-top:4px;">재고 {{ (g.giftStock||0).toLocaleString() }}개</div>
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">

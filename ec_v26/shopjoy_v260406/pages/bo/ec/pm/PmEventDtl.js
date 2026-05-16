@@ -77,7 +77,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     const DEFAULT_END   = `${_today.getFullYear()+3}-12-31`;
 
     const form = reactive({
-      title: '', status: '진행중', startDate: DEFAULT_START, endDate: DEFAULT_END,
+      eventTitle: '', eventStatusCd: '진행중', startDate: DEFAULT_START, endDate: DEFAULT_END,
       authRequired: false, targetProducts: [], visibilityTargets: '^PUBLIC^',
       bannerImage: '', content1: '', content2: '', content3: '', content4: '', content5: '',
       vendorId: '', chargeStaff: '',
@@ -85,7 +85,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     const errors = reactive({});
 
     const schema = yup.object({
-      title: yup.string().required('이벤트 제목을 입력해주세요.'),
+      eventTitle: yup.string().required('이벤트 제목을 입력해주세요.'),
     });
 
     /* 이벤트 onTabChange */
@@ -286,8 +286,8 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-group">
         <label class="form-label">이벤트 제목 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" :readonly="cfDtlMode" :class="errors.title ? 'is-invalid' : ''" />
-        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
+        <input class="form-control" v-model="form.eventTitle" placeholder="이벤트 제목을 입력하세요" :readonly="cfDtlMode" :class="errors.eventTitle ? 'is-invalid' : ''" />
+        <span v-if="errors.eventTitle" class="field-error">{{ errors.eventTitle }}</span>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -302,7 +302,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status" :disabled="cfDtlMode">
+          <select class="form-control" v-model="form.eventStatusCd" :disabled="cfDtlMode">
             <option v-for="c in codes.event_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
@@ -460,7 +460,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         <!-- -- 배너 미리보기 -------------------------------------------------- -->
         <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage"></div>
 
-        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.title || '이벤트 제목' }}</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.eventTitle || '이벤트 제목' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
         <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content1 || '<p style=color:#aaa>이벤트 내용 1이 여기에 표시됩니다.</p>'"></div>
         <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content2"></div>

@@ -42,14 +42,14 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
 
     const form = reactive({
-      inquiryId: null, userId: '', userNm: '', date: '', categoryCd: '배송 문의',
-      title: '', content: '', statusCd: '요청', answer: '',
+      contactId: null, memberId: '', memberNm: '', contactDate: '', categoryCd: '배송 문의',
+      contactTitle: '', contactContent: '', contactStatusCd: '요청', contactAnswer: '',
     });
     const errors = reactive({});
 
     const schema = yup.object({
-      title: yup.string().required('제목을 입력해주세요.'),
-      content: yup.string().required('문의 내용을 입력해주세요.'),
+      contactTitle: yup.string().required('제목을 입력해주세요.'),
+      contactContent: yup.string().required('문의 내용을 입력해주세요.'),
     });
 
     /* 문의 상세조회 */
@@ -61,7 +61,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
         const data = res.data?.data;
         if (data) {
           Object.assign(form, data);
-          if (form.answer) uiState.tab = 'answer';
+          if (form.contactAnswer) uiState.tab = 'answer';
         }
         uiState.error = null;
       } catch (err) {
@@ -86,8 +86,8 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
     /* 문의 onUserIdChange */
     const onUserIdChange = () => {
-      const m = getMember.value(Number(form.userId));
-      if (m) form.userNm = m.memberNm;
+      const m = getMember.value(Number(form.memberId));
+      if (m) form.memberNm = m.memberNm;
     };
 
     /* 문의 fnStatusBadge */
@@ -95,7 +95,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray'
     }[s] || 'badge-gray');
 
-    const cfCurId       = computed(() => props.dtlId || form.inquiryId || null);
+    const cfCurId       = computed(() => props.dtlId || form.contactId || null);
     const cfHasId       = computed(() => !!cfCurId.value);
     /* 첫 탭 = content. answer/history 탭은 ID 없으면 비활성. */
     const cfSaveDisabled = computed(() => uiState.tab !== 'content' && !cfHasId.value);
@@ -137,8 +137,8 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
             ? await boApiSvc.syContact.create(payload, '문의관리', '등록')
             : await boApiSvc.syContact.update(cfCurId.value, payload, '문의관리', '문의내용저장');
           if (isCreate) {
-            const newId = res.data?.data?.inquiryId || res.data?.inquiryId || null;
-            if (newId) form.inquiryId = newId;
+            const newId = res.data?.data?.contactId || res.data?.contactId || null;
+            if (newId) form.contactId = newId;
           }
           _afterApiOk(res, isCreate ? '등록되었습니다. 답변 탭에서 답변을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
@@ -158,7 +158,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       const ok = await showConfirm('답변 저장', '답변을 저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await boApiSvc.syContact.update(cfCurId.value, { answer: form.answer, statusCd: form.statusCd }, '문의관리', '답변저장');
+        const res = await boApiSvc.syContact.update(cfCurId.value, { contactAnswer: form.contactAnswer, contactStatusCd: form.contactStatusCd }, '문의관리', '답변저장');
         _afterApiOk(res, '답변이 저장되었습니다.');
       } catch (err) { _afterApiErr(err); }
     };
@@ -172,7 +172,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '문의 등록' : (cfDtlMode ? '문의 상세' : '문의 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.inquiryId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '문의 등록' : (cfDtlMode ? '문의 상세' : '문의 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.contactId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -184,7 +184,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='content'}" :disabled="tabMode2!=='tab'" @click="tab='content'">📋 문의 내용</button>
         <button class="tab-btn" :class="{active:tab==='answer'}"  :disabled="tabMode2!=='tab'" @click="tab='answer'">💬 답변</button>
-        <button v-if="!cfIsNew && form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">🕒 회원 문의 이력</button>
+        <button v-if="!cfIsNew && form.memberId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">🕒 회원 문의 이력</button>
       </div>
       <div class="tab-modes">
         <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
@@ -203,13 +203,13 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
         <div class="form-group">
           <label class="form-label">회원ID</label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" />
-            <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
+            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" />
+            <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', Number(form.memberId))">보기</span>
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">회원명</label>
-          <div class="readonly-field">{{ form.userNm || '-' }}</div>
+          <div class="readonly-field">{{ form.memberNm || '-' }}</div>
         </div>
       </div>
       <div class="form-row">
@@ -221,21 +221,21 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
+          <select class="form-control" v-model="form.contactStatusCd" :disabled="cfDtlMode">
             <option v-for="c in codes.contact_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">제목 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.title" :readonly="cfDtlMode" :class="errors.title ? 'is-invalid' : ''" />
-        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
+        <input class="form-control" v-model="form.contactTitle" :readonly="cfDtlMode" :class="errors.contactTitle ? 'is-invalid' : ''" />
+        <span v-if="errors.contactTitle" class="field-error">{{ errors.contactTitle }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">문의 내용 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
-        <base-html-editor v-else v-model="form.content" height="220px" />
-        <span v-if="errors.content" class="field-error">{{ errors.content }}</span>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.contactContent || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.contactContent" height="220px" />
+        <span v-if="errors.contactContent" class="field-error">{{ errors.contactContent }}</span>
       </div>
       <div class="form-actions">
         <template v-if="cfDtlMode">
@@ -253,14 +253,14 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     <div class="card" v-show="showTab('answer')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 답변</div>
       <div v-if="!cfIsNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
-        <div style="font-size:12px;color:#888;margin-bottom:6px;">{{ form.categoryCd }} · {{ form.date }}</div>
-        <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.title }}</div>
-        <div style="font-size:13px;color:#555;white-space:pre-line;">{{ form.content }}</div>
+        <div style="font-size:12px;color:#888;margin-bottom:6px;">{{ form.categoryCd }} · {{ form.contactDate }}</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.contactTitle }}</div>
+        <div style="font-size:13px;color:#555;white-space:pre-line;">{{ form.contactContent }}</div>
       </div>
       <div class="form-group">
-        <label class="form-label">답변 내용 <span v-if="!form.answer" class="badge badge-orange" style="margin-left:4px;">미답변</span></label>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.answer || '<span style=color:#bbb>-</span>'"></div>
-        <base-html-editor v-else v-model="form.answer" height="240px" />
+        <label class="form-label">답변 내용 <span v-if="!form.contactAnswer" class="badge badge-orange" style="margin-left:4px;">미답변</span></label>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.contactAnswer || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
       </div>
       <div class="form-actions">
         <template v-if="cfDtlMode">

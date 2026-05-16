@@ -226,7 +226,7 @@ window.PdProdDtl = {
       categoryId: '', brandId: '', vendorId: '',
       mdUserId: '',
       prodTypeCd: 'SINGLE', prodStatusCd: 'DRAFT', unsaleMsg: '',
-      dlvTmpltId: '',
+      dlivTmpltId: '',
       listPrice: 0, salePrice: 0, purchasePrice: null, marginRate: null,
       platformFeeRate: null, platformFeeAmount: null,
       prodStock: 0,
@@ -236,7 +236,7 @@ window.PdProdDtl = {
       couponUseYn: 'Y', saveUseYn: 'Y', discntUseYn: 'Y',
       advrtStmt: '', advrtStartDate: '', advrtEndDate: '',
       weight: null, sizeInfoCd: '',
-      isNew_: 'N', isBest: 'N',
+      isNew: 'N', isBest: 'N',
       contentHtml: '',
     });
     const errors = reactive({});
@@ -846,7 +846,7 @@ window.PdProdDtl = {
           form.prodTypeCd     = p.prodTypeCd || 'SINGLE';
           form.prodStatusCd   = p.prodStatusCd || 'DRAFT';
           form.unsaleMsg      = p.unsaleMsg || '';
-          form.dlvTmpltId     = p.dlivTmpltId || p.dlvTmpltId || '';
+          form.dlivTmpltId    = p.dlivTmpltId || '';
           form.listPrice      = p.listPrice || 0;
           form.salePrice      = p.salePrice || 0;
           form.purchasePrice  = p.purchasePrice || null;
@@ -870,7 +870,7 @@ window.PdProdDtl = {
           form.advrtEndDate   = p.advrtEndDate || '';
           form.weight         = p.weight || null;
           form.sizeInfoCd     = p.sizeInfoCd || '';
-          form.isNew_         = p.isNew_ || 'N';
+          form.isNew          = p.isNew || 'N';
           form.isBest         = p.isBest || 'N';
           form.contentHtml    = p.contentHtml || p.description || '';
           // 이미지 — tabData에서 채움 (handleLoadData에서 이미 로드)
@@ -1264,7 +1264,7 @@ window.PdProdDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">배송템플릿 (dliv_tmplt_id)</label>
-        <select class="form-control" v-model="form.dlvTmpltId">
+        <select class="form-control" v-model="form.dlivTmpltId">
           <option value="">-- 선택 --</option>
           <option v-for="t in ([]||[])" :key="t?.dlivTmpltId" :value="t.dlivTmpltId">{{ t.dlivTmpltNm }}</option>
         </select>
@@ -1375,7 +1375,7 @@ window.PdProdDtl = {
     <!-- -- 체크박스 그룹 ------------------------------------------------------ -->
     <div style="display:flex;flex-wrap:wrap;gap:20px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" :checked="form.isNew_==='Y'" @change="form.isNew_=$event.target.checked?'Y':'N'" />신상품
+        <input type="checkbox" :checked="form.isNew==='Y'" @change="form.isNew=$event.target.checked?'Y':'N'" />신상품
       </label>
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
         <input type="checkbox" :checked="form.isBest==='Y'" @change="form.isBest=$event.target.checked?'Y':'N'" />베스트

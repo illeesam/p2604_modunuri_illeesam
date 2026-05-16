@@ -96,13 +96,13 @@ window.SyBatchMng = {
     const gridRows = reactive([]);
     let _tempId = -1;
 
-    const EDIT_FIELDS = ['batchNm', 'batchCode', 'cron', 'statusCd', 'description'];
+    const EDIT_FIELDS = ['batchNm', 'batchCode', 'cronExpr', 'batchStatusCd', 'batchDesc'];
 
     /* 배치 makeRow */
     const makeRow = (b) => ({
       ...b,
       _row_status: 'N', _row_check: false,
-      _row_org: { batchNm: b.batchNm, batchCode: b.batchCode, cron: b.cron, statusCd: b.statusCd, description: b.description },
+      _row_org: { batchNm: b.batchNm, batchCode: b.batchCode, cronExpr: b.cronExpr, batchStatusCd: b.batchStatusCd, batchDesc: b.batchDesc },
     });
 
 
@@ -131,9 +131,9 @@ window.SyBatchMng = {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
         batchId: _tempId--, batchNm: '', batchCode: '',
-        cron: ref ? ref.cron : '0 0 * * *',
-        statusCd: '활성', description: '',
-        lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기',
+        cronExpr: ref ? ref.cronExpr : '0 0 * * *',
+        batchStatusCd: '활성', batchDesc: '',
+        batchLastRun: '-', batchNextRun: '-', batchRunCount: 0, batchRunStatus: '대기',
         _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
@@ -190,7 +190,7 @@ window.SyBatchMng = {
       const dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.batchNm || !r.batchCode || !r.cron) { showToast('배치명, 배치코드, Cron 표현식은 필수 항목입니다.', 'error'); return; }
+        if (!r.batchNm || !r.batchCode || !r.cronExpr) { showToast('배치명, 배치코드, Cron 표현식은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
@@ -213,13 +213,13 @@ window.SyBatchMng = {
       const ok = await showConfirm('즉시 실행', `[${row.batchNm}] 배치를 즉시 실행하시겠습니까?`);
       if (!ok) return;
       const src = batches.find(x => x.batchId === row.batchId);
-      row.runStatus = '실행중';
-      if (src) src.runStatus = '실행중';
+      row.batchRunStatus = '실행중';
+      if (src) src.batchRunStatus = '실행중';
       showToast('배치 실행을 시작했습니다.');
       setTimeout(() => {
         const now = new Date().toLocaleString('ko-KR').slice(0, 16);
-        row.runStatus = '성공'; row.lastRun = now; row.runCount = (row.runCount || 0) + 1;
-        if (src) { src.runStatus = '성공'; src.lastRun = now; src.runCount = row.runCount; }
+        row.batchRunStatus = '성공'; row.batchLastRun = now; row.batchRunCount = (row.batchRunCount || 0) + 1;
+        if (src) { src.batchRunStatus = '성공'; src.batchLastRun = now; src.batchRunCount = row.batchRunCount; }
       }, 1500);
     };
 
@@ -318,13 +318,13 @@ window.SyBatchMng = {
       const row = gridRows[realIdx];
       if (!row || row._row_status === 'D') return;
       cronPicker.rowIdx = realIdx;
-      const pts = (row.cron || '0 0 * * *').split(' ');
+      const pts = (row.cronExpr || '0 0 * * *').split(' ');
       cronPicker.minute  = pts[0] || '*';
       cronPicker.hour    = pts[1] || '*';
       cronPicker.day     = pts[2] || '*';
       cronPicker.month   = pts[3] || '*';
       cronPicker.weekday = pts[4] || '*';
-      cronPicker.preview = row.cron || '0 0 * * *';
+      cronPicker.preview = row.cronExpr || '0 0 * * *';
       cronPicker.show = true;
     };
 
@@ -340,7 +340,7 @@ window.SyBatchMng = {
     const applyCron = () => {
       if (cronPicker.rowIdx !== null) {
         const row = gridRows[cronPicker.rowIdx];
-        if (row) { row.cron = cronPicker.preview; onCellChange(row); }
+        if (row) { row.cronExpr = cronPicker.preview; onCellChange(row); }
       }
       cronPicker.show = false;
     };
@@ -377,7 +377,7 @@ window.SyBatchMng = {
     /* 배치 exportExcel */
     const exportExcel = () => coUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'batchId'},{label:'배치명',key:'batchNm'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'statusCd'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
+      [{label:'ID',key:'batchId'},{label:'배치명',key:'batchNm'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cronExpr'},{label:'최근실행',key:'batchLastRun'},{label:'실행횟수',key:'batchRunCount'},{label:'활성',key:'batchStatusCd'},{label:'실행상태',key:'batchRunStatus'},{label:'설명',key:'batchDesc'}],
       '배치목록.csv'
     );
     /* 트리 path 변경 시 자동 fetch */
@@ -518,18 +518,18 @@ window.SyBatchMng = {
           <td><input class="grid-input grid-mono" v-model="row.batchCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="BATCH_CODE" style="text-transform:uppercase;" /></td>
           <td>
             <div style="display:flex;align-items:center;gap:3px;">
-              <input class="grid-input grid-mono" v-model="row.cron" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
+              <input class="grid-input grid-mono" v-model="row.cronExpr" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs" style="flex-shrink:0;padding:2px 5px;font-size:11px;" title="Cron 편집" @click.stop="openCronPicker(idx)">🕐</button>
             </div>
           </td>
           <td>
-            <select class="grid-select" v-model="row.statusCd" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px;">
+            <select class="grid-select" v-model="row.batchStatusCd" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px;">
               <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
           </td>
-          <td><input class="grid-input" v-model="row.description" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="설명" /></td>
-          <td style="font-size:11px;color:#555;text-align:center;white-space:nowrap;">{{ row.lastRun }}</td>
-          <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(row.runStatus)">{{ row.runStatus }}</span></td>
+          <td><input class="grid-input" v-model="row.batchDesc" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="설명" /></td>
+          <td style="font-size:11px;color:#555;text-align:center;white-space:nowrap;">{{ row.batchLastRun }}</td>
+          <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(row.batchRunStatus)">{{ row.batchRunStatus }}</span></td>
           <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td style="text-align:center;">
             <button v-if="row._row_status!=='I' && row._row_status!=='D'" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>

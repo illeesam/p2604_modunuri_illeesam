@@ -63,7 +63,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }, '업체-정산 대사', '목록조회');
         const data = res.data?.data;
-        rows.splice(0, rows.length, ...(data?.list || rows));
+        rows.splice(0, rows.length, ...(data?.pageList || data?.list || rows));
         pager.pageTotalCount = data?.pageTotalCount || rows.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPagerNums();

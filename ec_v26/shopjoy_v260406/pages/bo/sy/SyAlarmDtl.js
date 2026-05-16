@@ -40,14 +40,14 @@ window.SyAlarmDtl = {
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
-      alarmId: null, title: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
-      message: '', sendDate: '', statusCd: '임시',
+      alarmId: null, alarmTitle: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
+      alarmMsg: '', alarmSendDate: '', alarmStatusCd: '임시',
     });
     const errors = reactive({});
 
     const schema = yup.object({
-      title: yup.string().required('제목을 입력해주세요.'),
-      message: yup.string().required('메시지를 입력해주세요.'),
+      alarmTitle: yup.string().required('제목을 입력해주세요.'),
+      alarmMsg: yup.string().required('메시지를 입력해주세요.'),
     });
 
     /* 알람 상세조회 */
@@ -125,8 +125,8 @@ window.SyAlarmDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:2">
         <label class="form-label">제목 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="알림 제목" :readonly="cfDtlMode" :class="errors.title ? 'is-invalid' : ''" />
-        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
+        <input class="form-control" v-model="form.alarmTitle" placeholder="알림 제목" :readonly="cfDtlMode" :class="errors.alarmTitle ? 'is-invalid' : ''" />
+        <span v-if="errors.alarmTitle" class="field-error">{{ errors.alarmTitle }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>
@@ -136,7 +136,7 @@ window.SyAlarmDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.alarmStatusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.alarm_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -154,13 +154,13 @@ window.SyAlarmDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">발송일시</label>
-        <bo-date-time-picker v-model="form.sendDate" :readonly="cfDtlMode" />
+        <bo-date-time-picker v-model="form.alarmSendDate" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">메시지 <span v-if="!cfDtlMode" class="req">*</span></label>
-      <textarea class="form-control" v-model="form.message" rows="4" placeholder="알림 메시지 내용" :readonly="cfDtlMode" :class="errors.message ? 'is-invalid' : ''"></textarea>
-      <span v-if="errors.message" class="field-error">{{ errors.message }}</span>
+      <textarea class="form-control" v-model="form.alarmMsg" rows="4" placeholder="알림 메시지 내용" :readonly="cfDtlMode" :class="errors.alarmMsg ? 'is-invalid' : ''"></textarea>
+      <span v-if="errors.alarmMsg" class="field-error">{{ errors.alarmMsg }}</span>
     </div>
     <div class="form-actions" v-if="!cfDtlMode">
       <template v-if="cfDtlMode">

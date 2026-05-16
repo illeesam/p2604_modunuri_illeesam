@@ -57,14 +57,14 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
 
     const form = reactive({
-      cacheId: null, userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
-      vendorId: '', chargeStaff: '',
+      cacheId: null, memberId: '', memberNm: '', cacheDate: '', cacheTypeCd: '충전', cacheAmt: 0, balanceAmt: 0, cacheDesc: '',
+      refId: '', procUserId: '',
     });
     const errors = reactive({});
 
     const schema = yup.object({
-      userId: yup.string().required('회원ID를 입력해주세요.'),
-      desc: yup.string().required('내용을 입력해주세요.'),
+      memberId: yup.string().required('회원ID를 입력해주세요.'),
+      cacheDesc: yup.string().required('내용을 입력해주세요.'),
     });
 
     // ★ onMounted
@@ -82,7 +82,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
     /* 같은 회원의 캐쉬 내역 */
     const cfMemberCacheHistory = computed(() => form.memberCacheHistory || []);
 
-    const cfTotalBalance = computed(() => form.balance || 0);
+    const cfTotalBalance = computed(() => form.balanceAmt || 0);
 
     /* 캐시(충전금) 저장 */
     const handleSave = async () => {
@@ -112,8 +112,8 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
     /* 캐시(충전금) onUserIdChange */
     const onUserIdChange = () => {
-      const m = getMember.value(Number(form.userId));
-      if (m) form.userNm = m.memberNm;
+      const m = getMember.value(Number(form.memberId));
+      if (m) form.memberNm = m.memberNm;
     };
 
     const cfSelectedVendorNm = computed(() => {
@@ -146,7 +146,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
-        <button v-if="form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">
+        <button v-if="form.memberId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">
           🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span>
         </button>
       </div>
@@ -167,42 +167,42 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         <div class="form-group">
           <label class="form-label">회원ID <span v-if="!cfDtlMode" class="req">*</span></label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" :class="errors.userId ? 'is-invalid' : ''" />
-            <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
+            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
+            <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', Number(form.memberId))">보기</span>
           </div>
-          <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
+          <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">회원명</label>
-          <div class="readonly-field">{{ form.userNm || '-' }}</div>
+          <div class="readonly-field">{{ form.memberNm || '-' }}</div>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">유형</label>
-          <select class="form-control" v-model="form.type" :disabled="cfDtlMode">
+          <select class="form-control" v-model="form.cacheTypeCd" :disabled="cfDtlMode">
             <option v-for="c in codes.cache_trans_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">일시</label>
-          <input class="form-control" v-model="form.date" placeholder="2026-04-08 10:00" :readonly="cfDtlMode" />
+          <input class="form-control" v-model="form.cacheDate" placeholder="2026-04-08 10:00" :readonly="cfDtlMode" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">금액 <span v-if="!cfDtlMode" class="req">*</span> <span style="font-size:11px;color:#888;">(사용/소멸은 음수)</span></label>
-          <input class="form-control" type="number" v-model.number="form.amount" :readonly="cfDtlMode" />
+          <input class="form-control" type="number" v-model.number="form.cacheAmt" :readonly="cfDtlMode" />
         </div>
         <div class="form-group">
           <label class="form-label">처리 후 잔액</label>
-          <input class="form-control" type="number" v-model.number="form.balance" :readonly="cfDtlMode" />
+          <input class="form-control" type="number" v-model.number="form.balanceAmt" :readonly="cfDtlMode" />
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">내용 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.desc" placeholder="내용 입력" :readonly="cfDtlMode" :class="errors.desc ? 'is-invalid' : ''" />
-        <span v-if="errors.desc" class="field-error">{{ errors.desc }}</span>
+        <input class="form-control" v-model="form.cacheDesc" placeholder="내용 입력" :readonly="cfDtlMode" :class="errors.cacheDesc ? 'is-invalid' : ''" />
+        <span v-if="errors.cacheDesc" class="field-error">{{ errors.cacheDesc }}</span>
       </div>
       <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <div class="form-group">
@@ -263,7 +263,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span></div>
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:13px;color:#555;">
-          <span class="ref-link" @click="showRefModal('member', Number(form.userId))">{{ form.userNm }}</span> 현재 잔액
+          <span class="ref-link" @click="showRefModal('member', Number(form.memberId))">{{ form.memberNm }}</span> 현재 잔액
         </span>
         <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ cfTotalBalance.toLocaleString() }}원</span>
       </div>
@@ -271,13 +271,13 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         <thead><tr><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th></tr></thead>
         <tbody>
           <tr v-for="c in cfMemberCacheHistory" :key="c?.cacheId">
-            <td>{{ c.date }}</td>
-            <td><span class="badge" :class="fnTypeBadge(c.type)">{{ c.type }}</span></td>
-            <td :style="c.amount>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
-              {{ c.amount > 0 ? '+' : '' }}{{ c.amount.toLocaleString() }}원
+            <td>{{ c.cacheDate }}</td>
+            <td><span class="badge" :class="fnTypeBadge(c.cacheTypeCd)">{{ c.cacheTypeCd }}</span></td>
+            <td :style="c.cacheAmt>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
+              {{ c.cacheAmt > 0 ? '+' : '' }}{{ (c.cacheAmt||0).toLocaleString() }}원
             </td>
-            <td>{{ c.balance.toLocaleString() }}원</td>
-            <td>{{ c.desc }}</td>
+            <td>{{ (c.balanceAmt||0).toLocaleString() }}원</td>
+            <td>{{ c.cacheDesc }}</td>
           </tr>
         </tbody>
       </table>

@@ -145,11 +145,11 @@ window.CmChattMng = {
     const handleDelete = async (c) => {
       const ok = await showConfirm('삭제', `[${c.subject}] 채팅을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = chatts.findIndex(x => x.chatId === c.chatId);
+      const idx = chatts.findIndex(x => x.chattRoomId === c.chattRoomId);
       if (idx !== -1) chatts.splice(idx, 1);
-      if (uiStateDetail.selectedId === c.chatId) uiStateDetail.selectedId = null;
+      if (uiStateDetail.selectedId === c.chattRoomId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApiSvc.cmChatt.remove(c.chatId, '채팅관리', '삭제');
+        const res = await boApiSvc.cmChatt.remove(c.chattRoomId, '채팅관리', '삭제');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -161,7 +161,7 @@ window.CmChattMng = {
     };
 
     /* exportExcel */
-    const exportExcel = () => coUtil.exportCsv(chatts, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
+    const exportExcel = () => coUtil.exportCsv(chatts, [{label:'채팅ID',key:'chattRoomId'},{label:'회원명',key:'memberNm'},{label:'상태',key:'chattStatusCd'},{label:'마지막메시지일시',key:'lastMsgDate'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
     // -- return ---------------------------------------------------------------
 
@@ -215,21 +215,21 @@ window.CmChattMng = {
       </tr></thead>
       <tbody>
         <tr v-if="chatts.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(c, idx) in chatts" :key="c?.chatId" :style="uiStateDetail.selectedId===c.chatId?'background:#fff8f9;':''">
+        <tr v-else v-for="(c, idx) in chatts" :key="c?.chattRoomId" :style="uiStateDetail.selectedId===c.chattRoomId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(c.chatId)" :style="uiStateDetail.selectedId===c.chatId?'color:#e8587a;font-weight:700;':''">{{ c.subject }}<span v-if="uiStateDetail.selectedId===c.chatId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888;">{{ c.lastMsg || '-' }}</td>
-          <td>{{ (c.messages||[]).length }}개</td>
+          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
+          <td><span class="title-link" @click="handleLoadDetail(c.chattRoomId)" :style="uiStateDetail.selectedId===c.chattRoomId?'color:#e8587a;font-weight:700;':''">{{ c.subject }}<span v-if="uiStateDetail.selectedId===c.chattRoomId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888;">{{ c.lastMsgDate || '-' }}</td>
+          <td>{{ (c.adminUnreadCnt||0) + (c.memberUnreadCnt||0) }}개</td>
           <td>
-            <span v-if="c.unread > 0" class="badge badge-red">{{ c.unread }}</span>
+            <span v-if="c.memberUnreadCnt > 0" class="badge badge-red">{{ c.memberUnreadCnt }}</span>
             <span v-else class="badge badge-gray">0</span>
           </td>
-          <td><span class="badge" :class="fnStatusBadge(c.status)">{{ c.status }}</span></td>
-          <td>{{ c.date }}</td>
+          <td><span class="badge" :class="fnStatusBadge(c.chattStatusCd)">{{ c.chattStatusCd }}</span></td>
+          <td>{{ c.regDate }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.chatId)">보기</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.chattRoomId)">보기</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
           </div></td>
         </tr>

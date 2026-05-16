@@ -83,7 +83,7 @@ window.SyRoleMng = {
       const enrich = (n) => {
         if (n._raw && n._raw.roleId != null) {
           let cur = n._raw;
-          while (cur && cur.parentId) cur = rolesById[cur.parentId];
+          while (cur && cur.parentRoleId) cur = rolesById[cur.parentRoleId];
           n._badge = cur ? ROOT_MAP[cur.roleCode] : null;
         }
         (n.children || []).forEach(enrich);
@@ -100,7 +100,7 @@ window.SyRoleMng = {
     /* 선택 권한 + 자손 roleId Set */
     const cfAllowedRoleIds = computed(() => {
       if (uiState.selectedPath == null) return null;
-      return coUtil.collectDescendantIds(roles, 'roleId', 'parentId', uiState.selectedPath);
+      return coUtil.collectDescendantIds(roles, 'roleId', 'parentRoleId', uiState.selectedPath);
     });
 
     /* 역할(권한) expandAll */
@@ -141,7 +141,7 @@ window.SyRoleMng = {
       const rolesData = roles || [];
       const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
       let cur = role;
-      while (cur && cur.parentId) cur = m[cur.parentId];
+      while (cur && cur.parentRoleId) cur = m[cur.parentRoleId];
       const code = cur && ROOT_CAT_MAP[cur.roleCode];
       return code ? [code] : [];
     };
@@ -161,7 +161,7 @@ window.SyRoleMng = {
       if (!r) return [];
       if (r.roleCat && r.roleCat.length) return r.roleCat;
       const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
-      let cur = r; while (cur && cur.parentId) cur = m[cur.parentId];
+      let cur = r; while (cur && cur.parentRoleId) cur = m[cur.parentRoleId];
       const code = cur && ROOT_CAT_MAP[cur.roleCode];
       return code ? [code] : [];
     };
@@ -191,7 +191,7 @@ window.SyRoleMng = {
     let   _tempId    = -1;
         
 
-    const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentId', 'roleType', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'remark'];
+    const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentRoleId', 'roleTypeCd', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'roleRemark'];
 
     /* -- 트리 정렬 -- */
     const buildTreeRows = (items) => {
@@ -199,7 +199,7 @@ window.SyRoleMng = {
       items.forEach(r => { map[r.roleId] = { ...r, _children: [] }; });
       const roots = [];
       items.forEach(r => {
-        if (r.parentId && map[r.parentId]) map[r.parentId]._children.push(map[r.roleId]);
+        if (r.parentRoleId && map[r.parentRoleId]) map[r.parentRoleId]._children.push(map[r.roleId]);
         else roots.push(map[r.roleId]);
       });
       const result = [];
@@ -222,10 +222,10 @@ window.SyRoleMng = {
       return { ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
         restrictPerm: r.restrictPerm || '없음',
         roleCat: cat,
-        _row_org: { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId,
-                 roleType: r.roleType, sortOrd: r.sortOrd, useYn: r.useYn,
+        _row_org: { roleCode: r.roleCode, roleNm: r.roleNm, parentRoleId: r.parentRoleId,
+                 roleTypeCd: r.roleTypeCd, sortOrd: r.sortOrd, useYn: r.useYn,
                  restrictPerm: r.restrictPerm || '없음',
-                 roleCat: JSON.stringify(cat), remark: r.remark },
+                 roleCat: JSON.stringify(cat), roleRemark: r.roleRemark },
       };
     };
 
@@ -338,10 +338,10 @@ window.SyRoleMng = {
     const addRow = () => {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
-        roleId: _tempId--, roleCode: '', roleNm: '', parentId: ref ? ref.parentId : null,
-        roleType: ref ? ref.roleType : '업무',
+        roleId: _tempId--, roleCode: '', roleNm: '', parentRoleId: ref ? ref.parentRoleId : null,
+        roleTypeCd: ref ? ref.roleTypeCd : '업무',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
-        useYn: 'Y', restrictPerm: '없음', roleCat: [], remark: '',
+        useYn: 'Y', restrictPerm: '없음', roleCat: [], roleRemark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
@@ -427,10 +427,10 @@ window.SyRoleMng = {
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     /* 역할(권한) parentNm */
-    const parentNm = (parentId) => {
-      if (!parentId) return '';
-      const p = roles.find(r => r.roleId === parentId);
-      return p ? p.roleNm : `ID:${parentId}`;
+    const parentNm = (parentRoleId) => {
+      if (!parentRoleId) return '';
+      const p = roles.find(r => r.roleId === parentRoleId);
+      return p ? p.roleNm : `ID:${parentRoleId}`;
     };
 
     const roleTreeModal = reactive({ show: false, targetRow: null });
@@ -440,14 +440,14 @@ window.SyRoleMng = {
 
     /* 역할(권한) onParentSelect */
     const onParentSelect  = (role) => {
-      if (roleTreeModal.targetRow) { roleTreeModal.targetRow.parentId = role.roleId; roleTreeModal.targetRow._depth = 0; onCellChange(roleTreeModal.targetRow); }
+      if (roleTreeModal.targetRow) { roleTreeModal.targetRow.parentRoleId = role.roleId; roleTreeModal.targetRow._depth = 0; onCellChange(roleTreeModal.targetRow); }
       roleTreeModal.show = false;
     };
 
     /* -- 하단: 메뉴 배분 -- */
         const buildMenuTree = (items, parentId, depth) => {
       return items
-        .filter(m => (m.parentId || null) === (parentId || null) && m.useYn === 'Y')
+        .filter(m => (m.parentMenuId || null) === (parentId || null) && m.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(m => ({ ...m, _depth: depth, _kids: buildMenuTree(items, m.menuId, depth + 1) }));
     };
@@ -547,7 +547,7 @@ window.SyRoleMng = {
     /* 역할(권한) exportExcel */
     const exportExcel = () => coUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
+      [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentRoleId'},{label:'유형',key:'roleTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'roleRemark'}],
       '역할목록.csv'
     );
 
@@ -688,9 +688,9 @@ window.SyRoleMng = {
           <!-- -- 상위역할 --------------------------------------------------- -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
-              <span v-if="row.parentId"
+              <span v-if="row.parentRoleId"
                 style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
+                :title="parentNm(row.parentRoleId)">{{ parentNm(row.parentRoleId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
                 style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위역할 선택"
@@ -712,7 +712,7 @@ window.SyRoleMng = {
               <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
             </select>
           </td>
-          <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td><input class="grid-input" v-model="row.roleRemark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"

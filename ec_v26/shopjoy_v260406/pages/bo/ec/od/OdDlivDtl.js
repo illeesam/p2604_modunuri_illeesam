@@ -41,8 +41,8 @@ window.OdDlivDtl = {
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const form = reactive({
-      dlivId: '', orderId: '', userId: '', userNm: '', receiver: '',
-      address: '', phone: '', courierCd: '', trackingNo: '', statusCd: '준비중', regDate: '', memo: '',
+      dlivId: '', orderId: '', memberId: '', memberNm: '', recvNm: '',
+      recvAddr: '', recvPhone: '', outboundCourierCd: '', outboundTrackingNo: '', dlivStatusCd: '준비중', regDate: '', dlivMemo: '',
     });
     const errors = reactive({});
 
@@ -60,8 +60,8 @@ window.OdDlivDtl = {
         const d = res.data?.data || res.data || {};
         Object.assign(form, { ...d });
         if (!form.dlivId) form.dlivId = props.dtlId;
-        if (d.status) form.statusCd = d.status;
-        if (d.courier) form.courierCd = d.courier;
+        if (d.dlivStatusCd) form.dlivStatusCd = d.dlivStatusCd;
+        if (d.outboundCourierCd) form.outboundCourierCd = d.outboundCourierCd;
         // 연관 클레임 로드 (주문ID 기준)
         if (form.orderId) {
           try {
@@ -114,7 +114,7 @@ window.OdDlivDtl = {
 
     /* 배송 sampleDlivItems */
     const sampleDlivItems = () => {
-      const base = form.prodNm || form.receiver || '배송상품';
+      const base = form.prodNm || form.recvNm || '배송상품';
       const total = 30000;
       const shares = [0.50, 0.30, 0.20];
       const discRates = [0.10, 0.08, 0.00];
@@ -175,7 +175,7 @@ window.OdDlivDtl = {
     };
     const DLIV_STEPS = ['준비중', '출고완료', '배송중', '배송완료'];
     const cfCurrentStepIdx = computed(() => {
-      const i = DLIV_STEPS.indexOf(form.statusCd);
+      const i = DLIV_STEPS.indexOf(form.dlivStatusCd);
       return i;
     });
     const cfPaymentList = computed(() => form.orderId ? [{
@@ -189,14 +189,14 @@ window.OdDlivDtl = {
       const rows = [
         { date: d+' 09:00', user:'시스템', from:'-',     to:'준비중',   memo:'배송 등록' },
       ];
-      if (['출고완료','배송중','배송완료'].includes(form.statusCd)) rows.push({ date:d+' 10:00', user:'bo', from:'준비중', to:'출고완료', memo:(form.courierCd||'-')+' 출고' });
-      if (['배송중','배송완료'].includes(form.statusCd)) rows.push({ date:d+' 11:30', user:'시스템', from:'출고완료', to:'배송중', memo:'배송 중' });
-      if (form.statusCd === '배송완료') rows.push({ date:d+' 15:20', user:'시스템', from:'배송중', to:'배송완료', memo:'수령 완료' });
+      if (['출고완료','배송중','배송완료'].includes(form.dlivStatusCd)) rows.push({ date:d+' 10:00', user:'bo', from:'준비중', to:'출고완료', memo:(form.outboundCourierCd||'-')+' 출고' });
+      if (['배송중','배송완료'].includes(form.dlivStatusCd)) rows.push({ date:d+' 11:30', user:'시스템', from:'출고완료', to:'배송중', memo:'배송 중' });
+      if (form.dlivStatusCd === '배송완료') rows.push({ date:d+' 15:20', user:'시스템', from:'배송중', to:'배송완료', memo:'수령 완료' });
       return rows;
     });
     const cfEditHistList = computed(() => form.dlivId ? [
-      { date: String(form.regDate||'').slice(0,10)+' 10:05', user:'bo', field:'운송장번호', before:'-', after: form.trackingNo || '-' },
-      { date: String(form.regDate||'').slice(0,10)+' 10:08', user:'bo', field:'택배사',     before:'-', after: form.courierCd || '-' },
+      { date: String(form.regDate||'').slice(0,10)+' 10:05', user:'bo', field:'운송장번호', before:'-', after: form.outboundTrackingNo || '-' },
+      { date: String(form.regDate||'').slice(0,10)+' 10:08', user:'bo', field:'택배사',     before:'-', after: form.outboundCourierCd || '-' },
     ] : []);
     const cfTabs = computed(() => [
       { id:'info',     label:'상세정보',      icon:'📋' },
@@ -266,7 +266,7 @@ window.OdDlivDtl = {
         <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#0ea5e9;">🚚 배송</span>
         <span style="font-size:13px;font-weight:700;color:#222;">{{ form.dlivId }}</span>
         <span v-if="form.orderId" style="font-size:11px;color:#888;">주문: {{ form.orderId }}</span>
-        <span v-if="form.courierCd && form.trackingNo" style="font-size:11px;color:#888;margin-left:auto;">{{ form.courierCd }} · {{ form.trackingNo }}</span>
+        <span v-if="form.outboundCourierCd && form.outboundTrackingNo" style="font-size:11px;color:#888;margin-left:auto;">{{ form.outboundCourierCd }} · {{ form.outboundTrackingNo }}</span>
       </div>
       <div style="display:flex;align-items:flex-start;overflow-x:auto;">
         <template v-for="(step, idx) in DLIV_STEPS" :key="step">
@@ -283,17 +283,17 @@ window.OdDlivDtl = {
               color: idx === cfCurrentStepIdx ? '#0284c7' : (idx < cfCurrentStepIdx ? '#444' : '#bbb'),
               whiteSpace:'nowrap',
             }">{{ step }}</div>
-            <span v-if="step==='배송완료' && form.trackingNo"
-              @click="openTracking(form.courierCd, form.trackingNo)"
+            <span v-if="step==='배송완료' && form.outboundTrackingNo"
+              @click="openTracking(form.outboundCourierCd, form.outboundTrackingNo)"
               title="배송조회 창 열기"
               style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
-              {{ (form.courierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
+              {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
             </span>
-            <span v-else-if="step==='배송중' && form.trackingNo && cfCurrentStepIdx < 2"
-              @click="openTracking(form.courierCd, form.trackingNo)"
+            <span v-else-if="step==='배송중' && form.outboundTrackingNo && cfCurrentStepIdx < 2"
+              @click="openTracking(form.outboundCourierCd, form.outboundTrackingNo)"
               title="배송조회 창 열기"
               style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
-              {{ (form.courierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송중 🔍
+              {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송중 🔍
             </span>
           </div>
           <div v-if="idx < DLIV_STEPS.length - 1"
@@ -324,35 +324,35 @@ window.OdDlivDtl = {
         <div class="form-group">
           <label class="form-label">회원명</label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userNm" :readonly="cfDtlMode" />
-            <span v-if="form.userId" class="ref-link" @click="showRefModal('member', form.userId)">보기</span>
+            <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
+            <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', form.memberId)">보기</span>
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">수령인</label>
-          <input class="form-control" v-model="form.receiver" :readonly="cfDtlMode" />
+          <input class="form-control" v-model="form.recvNm" :readonly="cfDtlMode" />
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">배송지 주소</label>
-        <input class="form-control" v-model="form.address" placeholder="주소 입력" :readonly="cfDtlMode" />
+        <input class="form-control" v-model="form.recvAddr" placeholder="주소 입력" :readonly="cfDtlMode" />
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">연락처</label>
-          <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" :readonly="cfDtlMode" />
+          <input class="form-control" v-model="form.recvPhone" placeholder="010-0000-0000" :readonly="cfDtlMode" />
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
+          <select class="form-control" v-model="form.dlivStatusCd" :disabled="cfDtlMode">
             <option v-for="c in codes.dliv_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">메모</label>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
-        <base-html-editor v-else v-model="form.memo" height="180px" />
+        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.dlivMemo || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.dlivMemo" height="180px" />
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
@@ -372,11 +372,11 @@ window.OdDlivDtl = {
   <div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 배송항목 <span class="tab-count">{{ dlivItems.length }}</span></div>
     <div style="background:#f9fafb;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:14px;font-size:12px;">
-      <span><b style="color:#888;">택배사:</b> {{ form.courier || '미지정' }}</span>
-      <span><b style="color:#888;">운송장번호:</b> {{ form.trackingNo || '-' }}</span>
-      <a v-if="form.courier==='CJ대한통운' && form.trackingNo" :href="'https://trace.cjlogistics.com/next/tracking.html?wblNo='+form.trackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
-      <a v-else-if="form.courier==='롯데택배' && form.trackingNo" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.trackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
-      <a v-else-if="form.courier==='한진택배' && form.trackingNo" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.trackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
+      <span><b style="color:#888;">택배사:</b> {{ form.outboundCourierCd || '미지정' }}</span>
+      <span><b style="color:#888;">운송장번호:</b> {{ form.outboundTrackingNo || '-' }}</span>
+      <a v-if="form.outboundCourierCd==='CJ대한통운' && form.outboundTrackingNo" :href="'https://trace.cjlogistics.com/next/tracking.html?wblNo='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
+      <a v-else-if="form.outboundCourierCd==='롯데택배' && form.outboundTrackingNo" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
+      <a v-else-if="form.outboundCourierCd==='한진택배' && form.outboundTrackingNo" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
     </div>
     <table class="bo-table" v-if="dlivItems.length">
       <thead><tr>

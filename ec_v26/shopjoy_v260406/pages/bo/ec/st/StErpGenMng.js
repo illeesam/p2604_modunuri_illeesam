@@ -47,9 +47,9 @@ window.StErpGenMng = {
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, 'ERP전표생성', '목록조회'),
           boApiSvc.stErp.getGenPage({ targetMon: targetMon.value, pageNo: 1, pageSize: 100 }, 'ERP전표생성', '이력조회'),
         ]);
-        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
-        genHistory.splice(0, genHistory.length, ...(resH.data?.data?.list || []));
+        orderList.splice(0, orderList.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
+        genHistory.splice(0, genHistory.length, ...(resH.data?.data?.pageList || resH.data?.data?.list || []));
       } catch (_) { console.error('[catch-info]', _); }
     };
 

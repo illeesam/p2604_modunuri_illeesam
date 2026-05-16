@@ -177,7 +177,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     /* 할인 exportExcel */
     const exportExcel = () => coUtil.exportCsv(discounts,
-      [{label:'ID',key:'discntId'},{label:'할인명',key:'discntNm'},{label:'유형',key:'discntType'},{label:'할인값',key:'discntVal'},{label:'상태',key:'discntStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
+      [{label:'ID',key:'discntId'},{label:'할인명',key:'discntNm'},{label:'유형',key:'discntTypeCd'},{label:'할인값',key:'discntValue'},{label:'상태',key:'discntStatusCd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '할인목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
@@ -232,12 +232,12 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         <tr v-else v-for="(d, idx) in discounts" :key="d?.discntId" :style="selectedId===d.discntId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="title-link" @click="handleLoadDetail(d.discntId)" :style="selectedId===d.discntId?'color:#e8587a;font-weight:700;':''">{{ d.discntNm }}<span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="badge" :class="fnTypeBadge(d.discntType)">{{ d.discntType }}</span></td>
-          <td>{{ d.discntType === '정률' ? (d.discntVal + '%') : (d.discntVal||0).toLocaleString() + '원' }}</td>
-          <td style="font-size:12px;color:#555;">{{ d.applyTarget || '전체상품' }}</td>
+          <td><span class="badge" :class="fnTypeBadge(d.discntTypeCd)">{{ d.discntTypeCd }}</span></td>
+          <td>{{ d.discntTypeCd === '정률' ? (d.discntValue + '%') : (d.discntValue||0).toLocaleString() + '원' }}</td>
+          <td style="font-size:12px;color:#555;">{{ d.discntTargetCd || '전체상품' }}</td>
           <td>{{ d.startDate }}</td>
           <td>{{ d.endDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(d.discntStatus)">{{ d.discntStatus }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(d.discntStatusCd)">{{ d.discntStatusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)">수정</button>
@@ -257,13 +257,13 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
           <div style="font-size:12px;color:#999;margin-bottom:6px;">할인 #{{ d.discntId }}</div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(d.discntId)" :style="selectedId===d.discntId?{color:'#e8587a'}:{}">{{ d.discntNm }}<span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="fnTypeBadge(d.discntType)" style="font-size:11px;">{{ d.discntType }}</span>
-            <span class="badge" :class="fnStatusBadge(d.discntStatus)" style="font-size:11px;">{{ d.discntStatus }}</span>
+            <span class="badge" :class="fnTypeBadge(d.discntTypeCd)" style="font-size:11px;">{{ d.discntTypeCd }}</span>
+            <span class="badge" :class="fnStatusBadge(d.discntStatusCd)" style="font-size:11px;">{{ d.discntStatusCd }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>🎯 {{ d.discntType === '정률' ? (d.discntVal + '%') : (d.discntVal||0).toLocaleString() + '원' }}</div>
+            <div>🎯 {{ d.discntTypeCd === '정률' ? (d.discntValue + '%') : (d.discntValue||0).toLocaleString() + '원' }}</div>
             <div>📅 {{ d.startDate }} ~ {{ d.endDate }}</div>
-            <div style="color:#999;margin-top:4px;">{{ d.applyTarget || '전체상품' }}</div>
+            <div style="color:#999;margin-top:4px;">{{ d.discntTargetCd || '전체상품' }}</div>
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">

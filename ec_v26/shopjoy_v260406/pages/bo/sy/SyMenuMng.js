@@ -62,7 +62,7 @@ window.SyMenuMng = {
 
     const cfAllowedTreeIds = computed(() => {
       if (uiState.selectedTreeId == null) return null;
-      return coUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
+      return coUtil.collectDescendantIds(menus, 'menuId', 'parentMenuId', uiState.selectedTreeId);
     });
 
 
@@ -73,7 +73,7 @@ window.SyMenuMng = {
     let   _tempId    = -1;
     
 
-    const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentId', 'menuUrl', 'menuType', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentMenuId', 'menuUrl', 'menuTypeCd', 'sortOrd', 'useYn', 'menuRemark'];
 
     /* -- 트리 정렬 -- */
     const buildTreeRows = (items) => {
@@ -81,7 +81,7 @@ window.SyMenuMng = {
       items.forEach(m => { map[m.menuId] = { ...m, _children: [] }; });
       const roots = [];
       items.forEach(m => {
-        if (m.parentId && map[m.parentId]) map[m.parentId]._children.push(map[m.menuId]);
+        if (m.parentMenuId && map[m.parentMenuId]) map[m.parentMenuId]._children.push(map[m.menuId]);
         else roots.push(map[m.menuId]);
       });
       const result = [];
@@ -98,8 +98,8 @@ window.SyMenuMng = {
     /* 메뉴 makeRow */
     const makeRow = (m) => ({
       ...m, _depth: m._depth || 0, _row_status: 'N', _row_check: false,
-      _row_org: { menuCode: m.menuCode, menuNm: m.menuNm, parentId: m.parentId,
-               menuUrl: m.menuUrl, menuType: m.menuType, sortOrd: m.sortOrd, useYn: m.useYn, remark: m.remark },
+      _row_org: { menuCode: m.menuCode, menuNm: m.menuNm, parentMenuId: m.parentMenuId,
+               menuUrl: m.menuUrl, menuTypeCd: m.menuTypeCd, sortOrd: m.sortOrd, useYn: m.useYn, menuRemark: m.menuRemark },
     });
 
 
@@ -128,10 +128,10 @@ window.SyMenuMng = {
     const addRow = () => {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
-        menuId: _tempId--, menuCode: '', menuNm: '', parentId: ref ? ref.parentId : null,
-        menuUrl: '', menuType: ref ? ref.menuType : '페이지',
+        menuId: _tempId--, menuCode: '', menuNm: '', parentMenuId: ref ? ref.parentMenuId : null,
+        menuUrl: '', menuTypeCd: ref ? ref.menuTypeCd : '페이지',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
-        useYn: 'Y', remark: '',
+        useYn: 'Y', menuRemark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
@@ -226,7 +226,7 @@ window.SyMenuMng = {
 
     /* 메뉴 onParentSelect */
     const onParentSelect  = (menu) => {
-      if (menuTreeModal.targetRow) { menuTreeModal.targetRow.parentId = menu.menuId; menuTreeModal.targetRow._depth = 0; onCellChange(menuTreeModal.targetRow); }
+      if (menuTreeModal.targetRow) { menuTreeModal.targetRow.parentMenuId = menu.menuId; menuTreeModal.targetRow._depth = 0; onCellChange(menuTreeModal.targetRow); }
       menuTreeModal.show = false;
     };
 
@@ -249,7 +249,7 @@ window.SyMenuMng = {
     /* 메뉴 exportExcel */
     const exportExcel = () => coUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
+      [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentMenuId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'menuRemark'}],
       '메뉴목록.csv'
     );
 
@@ -372,9 +372,9 @@ window.SyMenuMng = {
           <!-- -- 상위메뉴 --------------------------------------------------- -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
-              <span v-if="row.parentId"
+              <span v-if="row.parentMenuId"
                 style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
+                :title="parentNm(row.parentMenuId)">{{ parentNm(row.parentMenuId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
                 style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위메뉴 선택"
@@ -384,7 +384,7 @@ window.SyMenuMng = {
 
           <td><input class="grid-input" v-model="row.menuUrl" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="/path" /></td>
           <td>
-            <select class="grid-select" v-model="row.menuType" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+            <select class="grid-select" v-model="row.menuTypeCd" :disabled="row._row_status==='D'" @change="onCellChange(row)">
               <option v-for="t in codes.menu_types" :key="t">{{ t }}</option>
             </select>
           </td>
@@ -394,7 +394,7 @@ window.SyMenuMng = {
               <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
             </select>
           </td>
-          <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td><input class="grid-input" v-model="row.menuRemark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"

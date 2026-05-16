@@ -241,8 +241,8 @@ window.OdOrderMng = {
 
     /* 주문 onApprToChange */
     const onApprToChange = () => {
-      const m = (members).find(x => String(x.userId) === String(bulkForm.apprToUserId));
-      if (m) { bulkForm.apprToNm = m.userNm || ''; bulkForm.apprToPhone = m.phone || ''; bulkForm.apprToEmail = m.email || ''; }
+      const m = (members).find(x => String(x.memberId) === String(bulkForm.apprToUserId));
+      if (m) { bulkForm.apprToNm = m.memberNm || ''; bulkForm.apprToPhone = m.memberPhone || ''; bulkForm.apprToEmail = m.memberEmail || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
 
@@ -283,16 +283,16 @@ window.OdOrderMng = {
       let rows = [];
       if (uiState.bulkTab === 'status') {
         if (!bulkForm.status) return '';
-        rows = selected.map(o => `- [${o.orderId} / ${o.userNm}] [주문관리] 주문상태 변경: ${o.status || '-'} → ${bulkForm.status}`);
+        rows = selected.map(o => `- [${o.orderId} / ${o.memberNm}] [주문관리] 주문상태 변경: ${o.orderStatusCd || '-'} → ${bulkForm.status}`);
       } else if (uiState.bulkTab === 'payMethod') {
         if (!bulkForm.payMethod) return '';
-        rows = selected.map(o => `- [${o.orderId} / ${o.userNm}] [주문관리] 결제수단 변경: ${o.payMethod || '-'} → ${bulkForm.payMethod}`);
+        rows = selected.map(o => `- [${o.orderId} / ${o.memberNm}] [주문관리] 결제수단 변경: ${o.payMethodCd || '-'} → ${bulkForm.payMethod}`);
       } else if (uiState.bulkTab === 'approval') {
         if (!bulkForm.apprAction) return '';
-        rows = selected.map(o => `- [${o.orderId} / ${o.userNm}] [주문관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
+        rows = selected.map(o => `- [${o.orderId} / ${o.memberNm}] [주문관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
       } else if (uiState.bulkTab === 'approvalReq') {
         if (!bulkForm.apprToUserId) return '';
-        rows = selected.map(o => `- [${o.orderId} / ${o.userNm}] [주문관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
+        rows = selected.map(o => `- [${o.orderId} / ${o.memberNm}] [주문관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
       }
       if (!rows.length) return '';
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
@@ -312,8 +312,8 @@ window.OdOrderMng = {
       if (!val) { showToast(`${cfg.label} 입력값을 확인하세요.`, 'error'); return; }
       const ok = await showConfirm(`일괄 ${cfg.label}`, `선택한 ${ids.length}건에 대해 ${cfg.label} 작업을 진행하시겠습니까?`);
       if (!ok) return;
-      if (uiState.bulkTab === 'status')    window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.status = bulkForm.status; });
-      if (uiState.bulkTab === 'payMethod') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.payMethod = bulkForm.payMethod; });
+      if (uiState.bulkTab === 'status')    window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.orderStatusCd = bulkForm.status; });
+      if (uiState.bulkTab === 'payMethod') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.payMethodCd = bulkForm.payMethod; });
       if (uiState.bulkTab === 'approval')  window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) { o.apprStatus = bulkForm.apprAction; o.apprComment = bulkForm.apprComment; } });
       if (uiState.bulkTab === 'approvalReq') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) {
         o.apprToUserId = bulkForm.apprToUserId; o.apprToNm = bulkForm.apprToNm;
@@ -436,34 +436,34 @@ window.OdOrderMng = {
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(o.orderId)" @change="toggleCheck(o.orderId)" /></td>
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="title-link" @click="handleLoadDetail(o.orderId)" :style="selectedId===o.orderId?'color:#e8587a;font-weight:700;':''">{{ o.orderId }}<span v-if="selectedId===o.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userNm }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', o.memberId)">{{ o.memberNm }}</span></td>
           <td>{{ o.orderDate }}</td>
           <td>
             {{ o.prodNm }}
             <span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:#e5e7eb;color:#555;font-weight:700;margin-left:4px;vertical-align:middle;">{{ getItemCount(o) }}개</span>
           </td>
-          <td>{{ (o.totalPrice||0).toLocaleString() }}원</td>
+          <td>{{ (o.payAmt||0).toLocaleString() }}원</td>
           <td>
             <span :style="{
               fontSize:'11px',padding:'2px 8px',borderRadius:'10px',fontWeight:600,
-              background: o.payMethod==='계좌이체'?'#e3f2fd':o.payMethod==='카드결제'?'#f3e5f5':o.payMethod==='캐쉬'?'#fff3e0':'#e8f5e9',
-              color: o.payMethod==='계좌이체'?'#1565c0':o.payMethod==='카드결제'?'#6a1b9a':o.payMethod==='캐쉬'?'#e65100':'#2e7d32',
-            }">{{ o.payMethod || '-' }}</span>
+              background: o.payMethodCd==='계좌이체'?'#e3f2fd':o.payMethodCd==='카드결제'?'#f3e5f5':o.payMethodCd==='캐쉬'?'#fff3e0':'#e8f5e9',
+              color: o.payMethodCd==='계좌이체'?'#1565c0':o.payMethodCd==='카드결제'?'#6a1b9a':o.payMethodCd==='캐쉬'?'#e65100':'#2e7d32',
+            }">{{ o.payMethodCdNm || o.payMethodCd || '-' }}</span>
           </td>
           <td>
-            <span class="badge" :class="fnPayStatusBadge(o.payStatus || (o.status==='취소'||o.status==='자동취소'?'환불완료':o.status==='입금대기'?'미결제':'결제완료'))">
-              {{ o.payStatus || (o.status==='취소'||o.status==='자동취소'?'환불완료':o.status==='입금대기'?'미결제':'결제완료') }}
+            <span class="badge" :class="fnPayStatusBadge(o.orderStatusCd==='취소'||o.orderStatusCd==='자동취소'?'환불완료':o.orderStatusCd==='입금대기'?'미결제':'결제완료')">
+              {{ o.orderStatusCd==='취소'||o.orderStatusCd==='자동취소'?'환불완료':o.orderStatusCd==='입금대기'?'미결제':'결제완료' }}
             </span>
           </td>
-          <td><span class="badge" :class="fnStatusBadge(o.status)">{{ o.status }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(o.orderStatusCd)">{{ o.orderStatusCdNm || o.orderStatusCd }}</span></td>
           <td>
             <span v-if="claimByOrder(o.orderId)" style="display:inline-flex;align-items:center;gap:3px;">
               <span :style="{
                 fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,
-                background: fnClaimTypeColor(claimByOrder(o.orderId).type)
-              }">{{ claimByOrder(o.orderId).type }}</span>
+                background: fnClaimTypeColor(claimByOrder(o.orderId).claimTypeCd)
+              }">{{ claimByOrder(o.orderId).claimTypeCd }}</span>
               <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">
-                {{ claimByOrder(o.orderId).status }}
+                {{ claimByOrder(o.orderId).claimStatusCdNm || claimByOrder(o.orderId).claimStatusCd }}
               </span>
             </span>
             <span v-else style="font-size:11px;color:#ccc;">-</span>
@@ -544,7 +544,7 @@ window.OdOrderMng = {
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">
               <option value="">선택하세요</option>
-              <option v-for="m in members" :key="m?.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
+              <option v-for="m in members" :key="m?.memberId" :value="m.memberId">{{ m.memberNm }} ({{ m.memberId }})</option>
             </select>
           </div>
           <div class="form-row">

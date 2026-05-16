@@ -144,13 +144,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
 
     /* 문의 삭제 */
     const handleDelete = async (c) => {
-      const ok = await showConfirm('삭제', `[${c.title}]을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${c.contactTitle}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = contacts.findIndex(x => x.inquiryId === c.inquiryId);
+      const idx = contacts.findIndex(x => x.contactId === c.contactId);
       if (idx !== -1) contacts.splice(idx, 1);
-      if (detailModal.dtlId === c.inquiryId) { detailModal.show = false; detailModal.dtlId = null; }
+      if (detailModal.dtlId === c.contactId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
-        const res = await boApiSvc.syContact.remove(c.inquiryId, '문의관리', '삭제');
+        const res = await boApiSvc.syContact.remove(c.contactId, '문의관리', '삭제');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -162,7 +162,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     };
 
     /* 문의 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(contacts, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
+    const exportExcel = () => coUtil.exportCsv(contacts, [{label:'ID',key:'contactId'},{label:'회원명',key:'memberNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'contactTitle'},{label:'상태',key:'contactStatusCd'},{label:'등록일',key:'contactDate'}], '문의목록.csv');
 
     // -- return ---------------------------------------------------------------
 
@@ -212,16 +212,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       </tr></thead>
       <tbody>
         <tr v-if="contacts.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(c, idx) in contacts" :key="c.inquiryId" :style="detailModal.dtlId===c.inquiryId?'background:#fff8f9;':''">
+        <tr v-else v-for="(c, idx) in contacts" :key="c.contactId" :style="detailModal.dtlId===c.contactId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
           <td><span class="tag">{{ c.categoryCd }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(c.inquiryId)" :style="detailModal.dtlId===c.inquiryId?'color:#e8587a;font-weight:700;':''">{{ c.title }}<span v-if="detailModal.dtlId===c.inquiryId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="badge" :class="fnStatusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
-          <td>{{ String(c.regDate||c.date||'').slice(0,10) }}</td>
+          <td><span class="title-link" @click="handleLoadDetail(c.contactId)" :style="detailModal.dtlId===c.contactId?'color:#e8587a;font-weight:700;':''">{{ c.contactTitle }}<span v-if="detailModal.dtlId===c.contactId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="badge" :class="fnStatusBadge(c.contactStatusCd)">{{ c.contactStatusCd }}</span></td>
+          <td>{{ String(c.regDate||c.contactDate||'').slice(0,10) }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.inquiryId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.contactId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
           </div></td>
         </tr>

@@ -379,7 +379,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       categoryProds.splice(0, categoryProds.length, ...newCategoryProds);
       if (isNewBundle) { uiState.dtlMode = 'edit'; uiState.editBundleId = newProdId; }
       try {
-        const res = await (isNewBundle ? boApiSvc.pdBundle.create({ prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }, '묶음상품관리', '등록') : boApiSvc.pdBundle.updateItems(bundleProdId, { items: dtlItems }, '묶음상품관리', '저장'));
+        /* PdProdBundleSaveDto: CreateRequest {prodNm, siteId, items[]}, UpdateItemsRequest {items[]}, Item {prodId, qty, sortOrd} */
+        const bundleItems = dtlItems.map(d => ({ prodId: d.itemProdId, qty: d.itemQty, sortOrd: d.sortOrd }));
+        const res = await (isNewBundle
+          ? boApiSvc.pdBundle.create({ prodNm: newForm.prodNm, siteId: newForm.siteId || null, items: bundleItems }, '묶음상품관리', '등록')
+          : boApiSvc.pdBundle.updateItems(bundleProdId, { items: bundleItems }, '묶음상품관리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast(isNewBundle ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {

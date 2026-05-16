@@ -43,7 +43,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         }
         const res = await boApiSvc.stSettlePay.getPage(params, '정산지급관리', '목록조회');
         const data = res.data?.data;
-        payList.splice(0, payList.length, ...(data?.list || []));
+        payList.splice(0, payList.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || payList.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPagerNums();
@@ -89,7 +89,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (!ok) return;
       r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = new Date().toISOString().slice(0,10);
       try {
-        const res = await boApiSvc.stSettlePay.pay(r.payId, { payAmt: r.settleAmt }, '정산지급관리', '저장');
+        const res = await boApiSvc.stSettlePay.pay(r.settlePayId || r.payId, { payAmt: r.payAmt ?? r.settleAmt }, '정산지급관리', '저장');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('지급처리가 완료되었습니다.', 'success');
       } catch (err) {

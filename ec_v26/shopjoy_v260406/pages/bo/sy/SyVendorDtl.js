@@ -40,16 +40,16 @@ window.SyVendorDtl = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const form = reactive({
-      vendorId: null, vendorType: '판매업체', vendorNm: '', ceo: '', bizNo: '', phone: '', email: '',
-      zipcode: '', address: '', addressDetail: '',
-      contractDate: '', statusCd: '활성', memo: '',
+      vendorId: null, vendorType: '판매업체', vendorNm: '', ceoNm: '', vendorNo: '', vendorPhone: '', vendorEmail: '',
+      vendorZipCode: '', vendorAddr: '', vendorAddrDetail: '',
+      contractDate: '', vendorStatusCd: '활성', vendorRemark: '',
     });
     const errors = reactive({});
     const addrDetailRef = ref(null);
 
     const schema = yup.object({
       vendorNm: yup.string().required('업체명을 입력해주세요.'),
-      bizNo: yup.string().required('사업자등록번호를 입력해주세요.'),
+      vendorNo: yup.string().required('사업자등록번호를 입력해주세요.'),
     });
 
     /* 업체(판매자) 상세조회 */
@@ -87,8 +87,8 @@ window.SyVendorDtl = {
       const run = () => {
         new window.daum.Postcode({
           oncomplete(data) {
-            form.zipcode = data.zonecode;
-            form.address = data.roadAddress || data.jibunAddress;
+            form.vendorZipCode = data.zonecode;
+            form.vendorAddr = data.roadAddress || data.jibunAddress;
             if (addrDetailRef.value) addrDetailRef.value.focus();
           },
         }).open();
@@ -159,22 +159,22 @@ window.SyVendorDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">대표자명</label>
-        <input class="form-control" v-model="form.ceo" :readonly="cfDtlMode" />
+        <input class="form-control" v-model="form.ceoNm" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">사업자등록번호 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.bizNo" placeholder="000-00-00000" :readonly="cfDtlMode" :class="errors.bizNo ? 'is-invalid' : ''" />
-        <span v-if="errors.bizNo" class="field-error">{{ errors.bizNo }}</span>
+        <input class="form-control" v-model="form.vendorNo" placeholder="000-00-00000" :readonly="cfDtlMode" :class="errors.vendorNo ? 'is-invalid' : ''" />
+        <span v-if="errors.vendorNo" class="field-error">{{ errors.vendorNo }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">전화번호</label>
-        <input class="form-control" v-model="form.phone" :readonly="cfDtlMode" />
+        <input class="form-control" v-model="form.vendorPhone" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">이메일</label>
-        <input class="form-control" v-model="form.email" :readonly="cfDtlMode" />
+        <input class="form-control" v-model="form.vendorEmail" :readonly="cfDtlMode" />
       </div>
     </div>
 
@@ -182,14 +182,14 @@ window.SyVendorDtl = {
     <div class="form-group">
       <label class="form-label">주소</label>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-        <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
+        <input class="form-control" v-model="form.vendorZipCode" placeholder="우편번호"
           style="width:110px;flex-shrink:0;" readonly />
         <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
           style="white-space:nowrap;">🔍 주소 검색</button>
       </div>
-      <input class="form-control" v-model="form.address" placeholder="기본주소 (주소 검색 후 자동 입력)"
+      <input class="form-control" v-model="form.vendorAddr" placeholder="기본주소 (주소 검색 후 자동 입력)"
         style="margin-bottom:6px;" readonly />
-      <input class="form-control" v-model="form.addressDetail" ref="addrDetailRef"
+      <input class="form-control" v-model="form.vendorAddrDetail" ref="addrDetailRef"
         placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
     </div>
 
@@ -200,7 +200,7 @@ window.SyVendorDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.vendorStatusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -208,8 +208,8 @@ window.SyVendorDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">메모</label>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
-        <base-html-editor v-else v-model="form.memo" height="180px" />
+        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.vendorRemark" height="180px" />
       </div>
     </div>
     <div class="form-actions" v-if="!cfDtlMode">

@@ -51,21 +51,21 @@ window.MbMemberDtl = {
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
-      <div class="form-group"><label class="form-label">이메일 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.email" placeholder="이메일 주소"></div>
+      <div class="form-group"><label class="form-label">이메일 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.loginId" placeholder="이메일 주소"></div>
       <div class="form-group"><label class="form-label">이름 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.memberNm" placeholder="이름"></div>
-      <div class="form-group"><label class="form-label">연락처</label><input class="form-control" v-model="detailModal.form.phone" placeholder="010-0000-0000"></div>
+      <div class="form-group"><label class="form-label">연락처</label><input class="form-control" v-model="detailModal.form.memberPhone" placeholder="010-0000-0000"></div>
       <div class="form-group"><label class="form-label">등급</label>
         <select class="form-control" v-model="detailModal.form.gradeCd">
           <option v-for="c in codes.member_grades" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group"><label class="form-label">상태</label>
-        <select class="form-control" v-model="detailModal.form.statusCd">
+        <select class="form-control" v-model="detailModal.form.memberStatusCd">
           <option v-for="c in codes.member_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group"><label class="form-label">가입일</label><input class="form-control" type="date" v-model="detailModal.form.joinDate"></div>
-      <div class="form-group" style="grid-column:1/-1"><label class="form-label">메모</label><textarea class="form-control" rows="6" v-model="detailModal.form.memo" placeholder="관리자 메모"></textarea></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">메모</label><textarea class="form-control" rows="6" v-model="detailModal.form.memberMemo" placeholder="관리자 메모"></textarea></div>
     </div>
   </div>
 

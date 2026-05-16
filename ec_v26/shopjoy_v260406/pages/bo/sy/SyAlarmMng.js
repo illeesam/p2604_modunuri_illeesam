@@ -183,7 +183,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* 알람 삭제 */
     const handleDelete = async (a) => {
-      const ok = await showConfirm('삭제', `[${a.title}]을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${a.alarmTitle}]을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = alarms.findIndex(x => x.alarmId === a.alarmId);
       if (idx !== -1) alarms.splice(idx, 1);
@@ -201,7 +201,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     };
 
     /* 알람 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(alarms, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channelCd'},{label:'내용',key:'content'},{label:'상태',key:'statusCd'},{label:'발송일',key:'sendDate'}], '알림목록.csv');
+    const exportExcel = () => coUtil.exportCsv(alarms, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channelCd'},{label:'제목',key:'alarmTitle'},{label:'메시지',key:'alarmMsg'},{label:'상태',key:'alarmStatusCd'},{label:'발송일',key:'alarmSendDate'}], '알림목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
 
@@ -275,11 +275,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:a.pathId!=null?'#374151':'#9ca3af',fontWeight:a.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(a.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(a)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
           <td><span class="badge" :class="fnTypeBadge(a.alarmTypeCd)">{{ a.alarmTypeCd }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(a.alarmId)" :style="detailModal.dtlId===a.alarmId?'color:#e8587a;font-weight:700;':''">{{ a.title }}<span v-if="detailModal.dtlId===a.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.message }}</td>
+          <td><span class="title-link" @click="handleLoadDetail(a.alarmId)" :style="detailModal.dtlId===a.alarmId?'color:#e8587a;font-weight:700;':''">{{ a.alarmTitle }}<span v-if="detailModal.dtlId===a.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.alarmMsg }}</td>
           <td><span class="badge" :class="fnTargetBadge(a.targetTypeCd)">{{ a.targetTypeCd }}</span></td>
-          <td>{{ a.sendDate || '-' }}</td>
-          <td><span class="badge" :class="fnStatusBadge(a.statusCd)">{{ a.statusCd }}</span></td>
+          <td>{{ a.alarmSendDate || '-' }}</td>
+          <td><span class="badge" :class="fnStatusBadge(a.alarmStatusCd)">{{ a.alarmStatusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td>{{ a.regDate }}</td>
           <td><div class="actions">

@@ -91,9 +91,22 @@ window.DpDispUiDtl = {
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
         /* displays가 아직 비어 있을 수 있으므로 handleLoadData 완료 후 재시도 */
-        const findInDisplays = () => displays.find(d => String(d.dispId || d.codeId) === String(props.dtlId));
+        const findInDisplays = () => displays.find(d => String(d.uiId || d.dispId || d.codeId) === String(props.dtlId));
         let u = findInDisplays();
-        if (u) Object.assign(form, { ...u });
+        if (u) {
+          Object.assign(form, { ...u });
+          /* DpUiDto.Item → form 별칭 매핑 (Entity 기준) */
+          form.codeId       = u.uiId         ?? form.codeId;
+          form.codeValue    = u.uiCd         ?? form.codeValue;
+          form.codeLabel    = u.uiNm         ?? form.codeLabel;
+          form.uiType       = u.deviceTypeCd ?? form.uiType;
+          form.remark       = u.uiDesc       ?? form.remark;
+          form.sortOrd      = u.sortOrd      ?? form.sortOrd;
+          form.useYn        = u.useYn        ?? form.useYn;
+          form.useStartDate = u.useStartDate ?? form.useStartDate;
+          form.useEndDate   = u.useEndDate   ?? form.useEndDate;
+          form.pathId       = u.pathId       ?? form.pathId;
+        }
       } else {
         const uis = displays;
         form.sortOrd = uis.length ? Math.max(...uis.map(c => c.sortOrd || 0)) + 1 : 1;
@@ -306,9 +319,20 @@ window.DpDispUiDtl = {
       const isNewUi = cfIsNew.value;
       const ok = await showConfirm('저장', isNewUi ? '신규 UI를 등록하시겠습니까?' : 'UI 정보를 수정하시겠습니까?');
       if (!ok) return;
-      /* 로컬 캐시 업데이트 (선택) */
+      /* form 별칭 → DpUi Entity 필드 매핑 */
+      const body = { ...form };
+      body.uiId         = form.codeId    || form.uiId || null;
+      body.uiCd         = form.codeValue || form.uiCd;
+      body.uiNm         = form.codeLabel || form.uiNm;
+      body.deviceTypeCd = form.uiType    || form.deviceTypeCd;
+      body.uiDesc       = form.remark    || form.uiDesc;
+      body.sortOrd      = form.sortOrd;
+      body.useYn        = form.useYn;
+      body.useStartDate = form.useStartDate;
+      body.useEndDate   = form.useEndDate;
+      body.pathId       = form.pathId;
       try {
-        const res = await (isNewUi ? boApiSvc.dpUi.create({ ...form }, '전시UI관리', '등록') : boApiSvc.dpUi.update(form.codeId, { ...form }, '전시UI관리', '저장'));
+        const res = await (isNewUi ? boApiSvc.dpUi.create(body, '전시UI관리', '등록') : boApiSvc.dpUi.update(body.uiId, body, '전시UI관리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispUiMng', { reload: true });

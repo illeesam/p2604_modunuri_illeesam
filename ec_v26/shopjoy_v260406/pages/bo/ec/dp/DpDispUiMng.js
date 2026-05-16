@@ -71,7 +71,7 @@ window.DpDispUiMng = {
           ...getSortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
-          ...(type     ? { uiType: type }  : {}),
+          ...(type     ? { deviceTypeCd: type }  : {}),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
         const res = await boApiSvc.dpUi.getPage(params, '전시UI관리', '조회');
@@ -198,15 +198,15 @@ window.DpDispUiMng = {
         <tbody>
           <tr v-if="uiState.loading"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
           <tr v-else-if="!displays.length"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-          <tr v-for="(d, idx) in displays" :key="d?.dispId">
+          <tr v-for="(d, idx) in displays" :key="d?.uiId">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td class="title-link" @click="loadView(d.dispId)">{{ d.name }}</td>
-            <td>{{ d.uiType }}</td>
+            <td class="title-link" @click="loadView(d.uiId)">{{ d.uiNm }}</td>
+            <td>{{ d.deviceTypeCd }}</td>
             <td><span :class="'badge '+(d.useYn==='Y'?'badge-green':'badge-gray')">{{ d.useYn==='Y'?'사용':'미사용' }}</span></td>
             <td>{{ (d.regDate||'').slice(0,10) }}</td>
             <td class="actions">
-              <button class="btn btn-sm btn-secondary" @click="loadView(d.dispId)">상세</button>
-              <button class="btn btn-sm btn-primary" @click="handleLoadDetail(d.dispId)">수정</button>
+              <button class="btn btn-sm btn-secondary" @click="loadView(d.uiId)">상세</button>
+              <button class="btn btn-sm btn-primary" @click="handleLoadDetail(d.uiId)">수정</button>
             </td>
           </tr>
         </tbody>

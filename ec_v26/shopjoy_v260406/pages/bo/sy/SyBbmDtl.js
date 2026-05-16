@@ -45,10 +45,10 @@ window.SyBbmDtl = {
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
-      bbmId: null, bbmCode: '', bbmNm: '', bbmType: '일반',
+      bbmId: null, bbmCode: '', bbmNm: '', bbmTypeCd: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
-      contentType: 'textarea', scopeType: '공개',
-      sortOrd: 1, useYn: 'Y', remark: '', pathId: null,
+      contentTypeCd: 'textarea', scopeTypeCd: '공개',
+      sortOrd: 1, useYn: 'Y', bbmRemark: '', pathId: null,
     });
     const errors = reactive({});
 
@@ -157,7 +157,7 @@ window.SyBbmDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.bbmType" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.bbmTypeCd" :disabled="cfDtlMode">
           <option v-for="c in codes.bbm_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -185,13 +185,13 @@ window.SyBbmDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">내용입력</label>
-        <select class="form-control" v-model="form.contentType" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.contentTypeCd" :disabled="cfDtlMode">
           <option v-for="c in codes.bbm_content_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">공개범위</label>
-        <select class="form-control" v-model="form.scopeType" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.scopeTypeCd" :disabled="cfDtlMode">
           <option v-for="c in codes.bbm_scope_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -222,7 +222,7 @@ window.SyBbmDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">비고</label>
-        <input class="form-control" v-model="form.remark" placeholder="비고" :readonly="cfDtlMode" />
+        <input class="form-control" v-model="form.bbmRemark" placeholder="비고" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-actions" v-if="!cfDtlMode">

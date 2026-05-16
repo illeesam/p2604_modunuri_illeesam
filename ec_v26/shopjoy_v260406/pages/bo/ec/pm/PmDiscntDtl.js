@@ -65,9 +65,9 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
 
     const form = reactive({
-      discntId: null, discntNm: '', discntType: '정률', discntVal: 0,
-      discntStatus: '활성', startDate: DEFAULT_START, endDate: DEFAULT_END,
-      applyTarget: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0, remark: '',
+      discntId: null, discntNm: '', discntTypeCd: '정률', discntValue: 0,
+      discntStatusCd: '활성', startDate: DEFAULT_START, endDate: DEFAULT_END,
+      discntTargetCd: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0, discntDesc: '',
       visibilityTargets: '^PUBLIC^',
       vendorId: '', chargeStaff: '',
     });
@@ -75,7 +75,7 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
     const schema = yup.object({
       discntNm: yup.string().required('할인명을 입력해주세요.'),
-      discntVal: yup.number().min(0, '할인값은 0 이상이어야 합니다.').required('할인값을 입력해주세요.'),
+      discntValue: yup.number().min(0, '할인값은 0 이상이어야 합니다.').required('할인값을 입력해주세요.'),
     });
 
     // ★ onMounted
@@ -156,7 +156,7 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
       if (!ok) return;
       let payload = null;
       switch (tabId) {
-        case 'target':  payload = { applyTarget: form.applyTarget, visibilityTargets: form.visibilityTargets }; break;
+        case 'target':  payload = { discntTargetCd: form.discntTargetCd, visibilityTargets: form.visibilityTargets }; break;
         default:        payload = {}; break;
       }
       try {
@@ -217,14 +217,14 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">할인유형</label>
-          <select class="form-control" v-model="form.discntType">
+          <select class="form-control" v-model="form.discntTypeCd">
             <option v-for="c in codes.discnt_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">할인값 <span class="req">*</span></label>
-          <input class="form-control" type="number" v-model.number="form.discntVal" :placeholder="form.discntType==='정률' ? '% 입력 (예: 10)' : '원 입력 (예: 5000)'" :class="errors.discntVal ? 'is-invalid' : ''" />
-          <span v-if="errors.discntVal" class="field-error">{{ errors.discntVal }}</span>
+          <input class="form-control" type="number" v-model.number="form.discntValue" :placeholder="form.discntTypeCd==='정률' ? '% 입력 (예: 10)' : '원 입력 (예: 5000)'" :class="errors.discntValue ? 'is-invalid' : ''" />
+          <span v-if="errors.discntValue" class="field-error">{{ errors.discntValue }}</span>
         </div>
       </div>
       <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
@@ -327,13 +327,13 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">⚙️ 상태 및 비고</h3>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.discntStatus">
+          <select class="form-control" v-model="form.discntStatusCd">
             <option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">비고</label>
-          <textarea class="form-control" v-model="form.remark" rows="2" placeholder="비고 입력"></textarea>
+          <textarea class="form-control" v-model="form.discntDesc" rows="2" placeholder="비고 입력"></textarea>
         </div>
       </div>
 
@@ -349,21 +349,21 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
       <div class="form-group">
         <label class="form-label">적용 대상 선택</label>
-        <select class="form-control" v-model="form.applyTarget">
+        <select class="form-control" v-model="form.discntTargetCd">
           <option v-for="c in codes.discnt_apply_targets" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
 
       <div style="margin-top:16px;padding:12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;margin-bottom:20px;">
-        <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">선택된 대상: <span style="color:#e8587a;">{{ form.applyTarget }}</span></div>
+        <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">선택된 대상: <span style="color:#e8587a;">{{ form.discntTargetCd }}</span></div>
         <div style="font-size:13px;color:#888;">
-          <template v-if="form.applyTarget==='전체상품'">
+          <template v-if="form.discntTargetCd==='전체상품'">
             모든 상품에 이 할인을 적용합니다.
           </template>
-          <template v-else-if="form.applyTarget==='선택상품'">
+          <template v-else-if="form.discntTargetCd==='선택상품'">
             선택한 상품에만 이 할인을 적용합니다. 아래에서 상품을 추가하세요.
           </template>
-          <template v-else-if="form.applyTarget==='카테고리'">
+          <template v-else-if="form.discntTargetCd==='카테고리'">
             선택한 카테고리의 상품에만 이 할인을 적용합니다. 아래에서 카테고리를 선택하세요.
           </template>
         </div>
@@ -371,12 +371,12 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">📦 상품목록</h3>
-        <div v-if="form.applyTarget==='선택상품'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
+        <div v-if="form.discntTargetCd==='선택상품'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
           <div style="text-align:center;color:#999;padding:30px;font-size:13px;">
             선택된 상품이 없습니다. 상품 추가 버튼을 클릭하여 상품을 선택하세요.
           </div>
         </div>
-        <div v-else-if="form.applyTarget==='카테고리'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
+        <div v-else-if="form.discntTargetCd==='카테고리'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
           <div style="text-align:center;color:#999;padding:30px;font-size:13px;">
             선택된 카테고리가 없습니다. 카테고리 선택 버튼을 클릭하여 카테고리를 선택하세요.
           </div>
@@ -401,8 +401,8 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.discntNm || '할인명' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
         <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #e8587a;">
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">할인유형: <span style="font-weight:700;color:#e8587a;">{{ form.discntType }}</span></div>
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">할인값: <span style="font-weight:700;color:#e8587a;">{{ form.discntType === '정률' ? (form.discntVal + '%') : (form.discntVal||0).toLocaleString() + '원' }}</span></div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">할인유형: <span style="font-weight:700;color:#e8587a;">{{ form.discntTypeCd }}</span></div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">할인값: <span style="font-weight:700;color:#e8587a;">{{ form.discntTypeCd === '정률' ? (form.discntValue + '%') : (form.discntValue||0).toLocaleString() + '원' }}</span></div>
           <div style="font-size:13px;color:#666;">최소주문금액: <span style="font-weight:700;">{{ (form.minOrderAmt||0).toLocaleString() }}원</span></div>
         </div>
         <div v-if="form.maxDiscntAmt > 0" style="font-size:12px;color:#888;padding:8px;background:#fff7e6;border-radius:6px;margin-bottom:12px;">

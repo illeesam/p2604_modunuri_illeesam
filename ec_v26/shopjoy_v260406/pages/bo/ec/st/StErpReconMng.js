@@ -67,7 +67,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         }, 'ERP전표대사', '목록조회');
         const data = res.data?.data;
-        reconList.splice(0, reconList.length, ...(data?.list || []));
+        reconList.splice(0, reconList.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || 1;
         fnBuildPagerNums();

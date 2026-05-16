@@ -42,14 +42,14 @@ window.SyBbsDtl = {
     
     /* ── 폼 ── */
     const form = reactive({
-      bbsId: null, bbmId: null, title: '', authorNm: '', statusCd: '게시',
+      bbsId: null, bbmId: null, bbsTitle: '', authorNm: '', bbsStatusCd: '게시',
       attachGrpId: null, contentHtml: '', viewCount: 0, commentCount: 0,
     });
     const errors = reactive({});
 
     const schema = yup.object({
       bbmId: yup.number().required('게시판을 선택해주세요.').min(1, '게시판을 선택해주세요.'),
-      title: yup.string().required('제목을 입력해주세요.'),
+      bbsTitle: yup.string().required('제목을 입력해주세요.'),
     });
 
     /* ── 게시판 선택 팝업 ── */
@@ -62,15 +62,15 @@ window.SyBbsDtl = {
       uiState.selectedBbm = b;
       form.bbmId = b.bbmId;
       /* 게시판 변경 시 레이아웃 초기화 */
-      form.title       = '';
+      form.bbsTitle    = '';
       form.authorNm      = '';
-      form.statusCd    = '게시';
+      form.bbsStatusCd = '게시';
       form.attachGrpId = null;
       form.contentHtml = '';
     };
 
     /* 게시판 contentType 에 따른 내용 입력 방식 */
-    const cfContentType = computed(() => uiState.selectedBbm?.contentType || 'textarea');
+    const cfContentType = computed(() => uiState.selectedBbm?.contentTypeCd || 'textarea');
     const cfAllowAttach = computed(() => uiState.selectedBbm?.allowAttach || '불가');
 
     /* ── 초기화 ── */
@@ -194,8 +194,8 @@ window.SyBbsDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:2">
         <label class="form-label">제목 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="게시글 제목" :readonly="cfDtlMode" :class="errors.title ? 'is-invalid' : ''" />
-        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
+        <input class="form-control" v-model="form.bbsTitle" placeholder="게시글 제목" :readonly="cfDtlMode" :class="errors.bbsTitle ? 'is-invalid' : ''" />
+        <span v-if="errors.bbsTitle" class="field-error">{{ errors.bbsTitle }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">작성자</label>
@@ -203,7 +203,7 @@ window.SyBbsDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.bbsStatusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.bbs_post_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -282,7 +282,7 @@ window.SyBbsDtl = {
       <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value">{{ selectedBbm.bbmType }}</span></div>
       <div class="detail-row"><span class="detail-label">댓글허용</span><span class="detail-value">{{ selectedBbm.allowComment }}</span></div>
       <div class="detail-row"><span class="detail-label">첨부허용</span><span class="detail-value">{{ selectedBbm.allowAttach }}</span></div>
-      <div class="detail-row"><span class="detail-label">내용입력</span><span class="detail-value">{{ selectedBbm.contentType }}</span></div>
+      <div class="detail-row"><span class="detail-label">내용입력</span><span class="detail-value">{{ selectedBbm.contentTypeCd }}</span></div>
       <div class="detail-row"><span class="detail-label">공개범위</span><span class="detail-value">{{ selectedBbm.scopeType }}</span></div>
       <div class="detail-row"><span class="detail-label">좋아요허용</span><span class="detail-value">{{ selectedBbm.allowLike==='Y'?'허용':'불가' }}</span></div>
       <div class="detail-row"><span class="detail-label">사용여부</span><span class="detail-value">{{ selectedBbm.useYn==='Y'?'사용':'미사용' }}</span></div>

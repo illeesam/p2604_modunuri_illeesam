@@ -38,8 +38,13 @@ window.PmCouponDtl = {
         const res = await boApiSvc.pmCoupon.getById(props.dtlId, '쿠폰관리', '상세조회');
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
-        if (!form.startDate) form.startDate = DEFAULT_START;
-        if (!form.endDate) form.endDate = DEFAULT_END;
+        // Entity discountRate/discountAmt → UI 단일 입력 매핑
+        if (c) {
+          if (c.discountRate != null && c.discountRate !== '') { form.discountType = 'percent'; form.discountVal = Number(c.discountRate) || 0; }
+          else { form.discountType = 'amount'; form.discountVal = Number(c.discountAmt) || 0; }
+        }
+        if (!form.validFrom) form.validFrom = DEFAULT_START;
+        if (!form.validTo) form.validTo = DEFAULT_END;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -67,11 +72,11 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
 
     const form = reactive({
-      couponId: null, couponType: '상품할인쿠폰', couponCode: '', couponNm: '',
-      discountType: 'amount', discountVal: 0, minOrderAmt: 0, maxDiscountAmt: 0,
-      status: '활성', startDate: '', endDate: '', totalIssue: 0, useLimit: 'unlimited',
-      issueTo: '상품', issueTargets: [],
-      issueMethods: 'auto', issueCondition: 'all', issueGrades: [],
+      couponId: null, couponTypeCd: '상품할인쿠폰', couponCd: '', couponNm: '',
+      discountType: 'amount', discountVal: 0, discountRate: null, discountAmt: null, minOrderAmt: 0, maxDiscountAmt: 0,
+      couponStatusCd: '활성', validFrom: '', validTo: '', issueLimit: 0, useLimit: 'unlimited',
+      targetTypeCd: '상품', issueTargets: [],
+      issueMethods: 'auto', issueCondition: 'all', memGradeCd: '', issueGrades: [],
       useScope: 'all', useExclude: '', useRemark: '',
       memo: '',
       vendorId: '', chargeStaff: '',
@@ -87,16 +92,16 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     const schema = yup.object({
       couponNm: yup.string().required('쿠폰명을 입력해주세요.'),
-      couponCode: yup.string().required('쿠폰코드를 입력해주세요.'),
+      couponCd: yup.string().required('쿠폰코드를 입력해주세요.'),
       discountVal: yup.number().min(0).required('할인값을 입력해주세요.'),
-      endDate: yup.string().required('만료일을 입력해주세요.'),
+      validTo: yup.string().required('만료일을 입력해주세요.'),
     });
 
     /* 쿠폰 handleInitForm */
     const handleInitForm = () => {
       if (cfIsNew.value) {
-        if (!form.startDate) form.startDate = DEFAULT_START;
-        if (!form.endDate) form.endDate = DEFAULT_END;
+        if (!form.validFrom) form.validFrom = DEFAULT_START;
+        if (!form.validTo) form.validTo = DEFAULT_END;
       }
     };
 
@@ -139,7 +144,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         if (pt === 'barcode' && uiState.barcodeContainer && typeof JsBarcode !== 'undefined') {
           try {
             barcodeContainer.value.innerHTML = '';
-            JsBarcode(uiState.barcodeContainer, form.couponCode || 'SAMPLE', {
+            JsBarcode(uiState.barcodeContainer, form.couponCd || 'SAMPLE', {
               format: 'CODE128',
               width: 2,
               height: 60,
@@ -151,7 +156,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
           qrcodeContainer.value.innerHTML = '';
           try {
             new QRCode(uiState.qrcodeContainer, {
-              text: form.couponCode ? `https://shopjoy.com/coupon/${form.couponCode}` : 'https://shopjoy.com/coupon/sample',
+              text: form.couponCd ? `https://shopjoy.com/coupon/${form.couponCd}` : 'https://shopjoy.com/coupon/sample',
               width: 150,
               height: 150,
               colorDark: '#222222',
@@ -167,7 +172,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       if (uiState.barcodeContainer && typeof JsBarcode !== 'undefined') {
         try {
           barcodeContainer.value.innerHTML = '';
-          JsBarcode(uiState.barcodeContainer, form.couponCode || 'SAMPLE', {
+          JsBarcode(uiState.barcodeContainer, form.couponCd || 'SAMPLE', {
             format: 'CODE128',
             width: 2,
             height: 60,
@@ -183,7 +188,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         try {
           qrcodeContainer.value.innerHTML = '';
           new QRCode(uiState.qrcodeContainer, {
-            text: form.couponCode ? `https://shopjoy.com/coupon/${form.couponCode}` : 'https://shopjoy.com/coupon/sample',
+            text: form.couponCd ? `https://shopjoy.com/coupon/${form.couponCd}` : 'https://shopjoy.com/coupon/sample',
             width: 150,
             height: 150,
             colorDark: '#222222',
@@ -249,6 +254,9 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       if (!ok) return;
       try {
         const payload = { ...form };
+        // UI 단일 입력 → Entity discountRate / discountAmt 매핑
+        if (form.discountType === 'percent') { payload.discountRate = form.discountVal; payload.discountAmt = null; }
+        else { payload.discountAmt = form.discountVal; payload.discountRate = null; }
         const res = isCreate
           ? await boApiSvc.pmCoupon.create(payload, '쿠폰관리', '등록')
           : await boApiSvc.pmCoupon.update(cfCurId.value, payload, '쿠폰관리', tabId === 'info' ? '기본정보저장' : '상세정보저장');
@@ -299,7 +307,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">쿠폰 타입</label>
-          <select class="form-control" v-model="form.couponType">
+          <select class="form-control" v-model="form.couponTypeCd">
             <option v-for="t in codes.coupon_types" :key="Math.random()">{{ t }}</option>
           </select>
         </div>
@@ -312,12 +320,12 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">쿠폰코드 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.couponCode" placeholder="코드 자동생성/직접입력" :class="errors.couponCode ? 'is-invalid' : ''" />
-          <span v-if="errors.couponCode" class="field-error">{{ errors.couponCode }}</span>
+          <input class="form-control" v-model="form.couponCd" placeholder="코드 자동생성/직접입력" :class="errors.couponCd ? 'is-invalid' : ''" />
+          <span v-if="errors.couponCd" class="field-error">{{ errors.couponCd }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status">
+          <select class="form-control" v-model="form.couponStatusCd">
             <option v-for="c in codes.coupon_statuses_dtl" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
@@ -348,18 +356,18 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">시작일</label>
-          <input class="form-control" type="date" v-model="form.startDate" />
+          <input class="form-control" type="date" v-model="form.validFrom" />
         </div>
         <div class="form-group">
           <label class="form-label">만료일 <span class="req">*</span></label>
-          <input class="form-control" type="date" v-model="form.endDate" :class="errors.endDate ? 'is-invalid' : ''" />
-          <span v-if="errors.endDate" class="field-error">{{ errors.endDate }}</span>
+          <input class="form-control" type="date" v-model="form.validTo" :class="errors.validTo ? 'is-invalid' : ''" />
+          <span v-if="errors.validTo" class="field-error">{{ errors.validTo }}</span>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">총 발급수량</label>
-          <input class="form-control" type="number" v-model.number="form.totalIssue" placeholder="0 = 무제한" />
+          <input class="form-control" type="number" v-model.number="form.issueLimit" placeholder="0 = 무제한" />
         </div>
         <div class="form-group">
           <label class="form-label">사용 제한</label>
@@ -428,9 +436,9 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
             <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">📊 바코드</div>
             <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
               <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.couponNm }}</div>
-              <div style="font-size:9px;">🏷️ {{ form.couponCode || 'SAMPLE' }}</div>
+              <div style="font-size:9px;">🏷️ {{ form.couponCd || 'SAMPLE' }}</div>
               <div style="font-weight:600;color:#e8587a;margin:4px 0;">{{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}</div>
-              <div style="font-size:9px;color:#999;">📅 {{ form.startDate }} ~ {{ form.endDate }}</div>
+              <div style="font-size:9px;color:#999;">📅 {{ form.validFrom }} ~ {{ form.validTo }}</div>
               <div style="font-size:9px;color:#999;">💳 최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
             </div>
             <div ref="barcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:1px solid #ddd;border-radius:4px;width:100%;position:relative;z-index:1;">
@@ -444,9 +452,9 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
             <div style="background:#fff;padding:12px;border:1px solid #e0e0e0;border-radius:6px;text-align:left;font-size:10px;line-height:1.6;color:#333;width:100%;position:relative;z-index:1;">
               <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">ShopJoy</div>
               <div style="font-weight:600;margin-bottom:6px;">🎁 {{ form.couponNm }}</div>
-              <div style="color:#666;margin:3px 0;">쿠폰번호: {{ form.couponCode || 'SAMPLE' }}</div>
+              <div style="color:#666;margin:3px 0;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
               <div style="color:#666;margin:3px 0;">할인: {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}</div>
-              <div style="color:#666;margin:3px 0;">유효기간: {{ form.startDate }} ~ {{ form.endDate }}</div>
+              <div style="color:#666;margin:3px 0;">유효기간: {{ form.validFrom }} ~ {{ form.validTo }}</div>
               <div style="color:#666;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
               <div style="color:#999;font-size:9px;margin-top:6px;">ShopJoy에서 확인하기 &gt;</div>
             </div>
@@ -468,11 +476,11 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
                 <div style="color:#666;margin:6px 0;">ShopJoy에서 특별한 쿠폰을 준비했습니다.</div>
                 <div style="background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;margin:8px 0;">
                   <div style="font-weight:600;color:#e8587a;margin-bottom:4px;">🎁 {{ form.couponNm }}</div>
-                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰번호: {{ form.couponCode || 'SAMPLE' }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
                   <div style="color:#666;font-size:8px;margin:3px 0;">할인: {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}</div>
-                  <div style="color:#666;font-size:8px;margin:3px 0;">유효기간: {{ form.startDate }} ~ {{ form.endDate }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">유효기간: {{ form.validFrom }} ~ {{ form.validTo }}</div>
                   <div style="color:#666;font-size:8px;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
-                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰타입: {{ form.couponType }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰타입: {{ form.couponTypeCd }}</div>
                 </div>
                 <div style="color:#666;margin:6px 0;">지금 바로 ShopJoy에서 확인하세요!</div>
                 <div style="color:#999;font-size:8px;margin-top:8px;text-align:center;padding-top:8px;border-top:1px solid #e8e8e8;">© 2026 ShopJoy | 문의: 010-1234-5678 | demo@mail.com</div>
@@ -488,8 +496,8 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
             <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">📱 QR코드</div>
             <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
               <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.couponNm }}</div>
-              <div style="font-family:monospace;font-size:9px;background:#f5f5f5;padding:4px;border-radius:3px;margin:4px 0;">{{ form.couponCode || '---' }}</div>
-              <div style="font-size:9px;">🏷️ {{ form.couponType }}</div>
+              <div style="font-family:monospace;font-size:9px;background:#f5f5f5;padding:4px;border-radius:3px;margin:4px 0;">{{ form.couponCd || '---' }}</div>
+              <div style="font-size:9px;">🏷️ {{ form.couponTypeCd }}</div>
               <div style="font-size:9px;color:#999;">⏱️ {{ form.useLimit }}</div>
             </div>
             <div ref="qrcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;position:relative;z-index:1;">
@@ -508,8 +516,8 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
               </div>
               <div style="text-align:center;background:rgba(255,255,255,0.5);padding:4px;border-radius:4px;">
                 <div style="font-size:13px;color:#333;font-weight:700;">{{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}</div>
-                <div style="font-size:8px;color:#666;">{{ form.startDate }} ~ {{ form.endDate }}</div>
-                <div style="font-size:7px;color:#999;margin-top:2px;">쿠폰번호: {{ form.couponCode || 'SAMPLE' }}</div>
+                <div style="font-size:8px;color:#666;">{{ form.validFrom }} ~ {{ form.validTo }}</div>
+                <div style="font-size:7px;color:#999;margin-top:2px;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
               </div>
               <div style="display:flex;gap:6px;font-size:7px;color:#999;">
                 <div style="flex:1;height:20px;background:#fff;border:1px solid #ddd;border-radius:2px;display:flex;align-items:center;justify-content:center;">바코드</div>
@@ -531,25 +539,25 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         <div class="form-group">
           <label class="form-label">발급 대상 종류</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <label v-for="t in codes.issue_targets" :key="Math.random()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:form.issueTo===t?'#e3f2fd':'#fff';">
-              <input type="radio" :value="t" v-model="form.issueTo" />
+            <label v-for="t in codes.issue_targets" :key="Math.random()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:form.targetTypeCd===t?'#e3f2fd':'#fff';">
+              <input type="radio" :value="t" v-model="form.targetTypeCd" />
               {{ t }}
             </label>
           </div>
         </div>
         <div style="margin-top:16px;padding:12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
-          <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">선택된 대상: <span style="color:#e8587a;">{{ form.issueTo }}</span></div>
+          <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">선택된 대상: <span style="color:#e8587a;">{{ form.targetTypeCd }}</span></div>
           <div style="font-size:13px;color:#888;">
-            <template v-if="form.issueTo==='상품'">
+            <template v-if="form.targetTypeCd==='상품'">
               선택한 상품에만 쿠폰을 발급합니다. 상품 추가 버튼으로 대상 상품을 선택하세요.
             </template>
-            <template v-else-if="form.issueTo==='판매업체'">
+            <template v-else-if="form.targetTypeCd==='판매업체'">
               선택한 판매업체의 상품에만 적용되는 쿠폰입니다.
             </template>
-            <template v-else-if="form.issueTo==='브랜드'">
+            <template v-else-if="form.targetTypeCd==='브랜드'">
               선택한 브랜드의 상품에만 적용되는 쿠폰입니다.
             </template>
-            <template v-else-if="form.issueTo==='카테고리'">
+            <template v-else-if="form.targetTypeCd==='카테고리'">
               선택한 카테고리의 상품에만 적용되는 쿠폰입니다.
             </template>
           </div>

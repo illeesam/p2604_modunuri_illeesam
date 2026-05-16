@@ -186,7 +186,7 @@ window.PdCategoryProdMng = {
     const totalProdCount = (catId) => categoryProds.filter(cp => cp.categoryId === catId).length;
     const cfTypeCountMap = computed(() => {
       const map = {};
-      TYPE_TABS.forEach(t => { map[t.cd] = categoryProds.filter(cp => cp.typeCd === t.cd).length; });
+      TYPE_TABS.forEach(t => { map[t.cd] = categoryProds.filter(cp => cp.categoryProdTypeCd === t.cd).length; });
       return map;
     });
     const cfFilteredRows = computed(() => {
@@ -194,7 +194,7 @@ window.PdCategoryProdMng = {
       return categoryProds.filter(cp => {
         const isSameCategory = cp.categoryId === cfSelectedCatId.value;
         const isChildCategory = categories.some(c => c.parentCategoryId === cfSelectedCatId.value && cp.categoryId === c.categoryId);
-        const isSameType = cp.typeCd === uiState.activeTypeCd;
+        const isSameType = cp.categoryProdTypeCd === uiState.activeTypeCd;
         return (isSameCategory || isChildCategory) && isSameType;
       });
     });
@@ -222,12 +222,12 @@ window.PdCategoryProdMng = {
 
     /* -- 상품 정보 조회 헬퍼 -- */
     const getProdNm = (prodId) => {
-      const prod = products.find(p => p.prodId === prodId || p.productId === prodId);
-      return prod?.prodNm || prod?.productName || `[${prodId}]`;
+      const prod = products.find(p => p.prodId === prodId);
+      return prod?.prodNm || `[${prodId}]`;
     };
 
     /* 카테고리-상품 매핑 getProd */
-    const getProd = (prodId) => products.find(p => p.prodId === prodId || p.productId === prodId);
+    const getProd = (prodId) => products.find(p => p.prodId === prodId);
 
     /* 카테고리-상품 매핑 getCatPath */
     const getCatPath = (catId) => {
@@ -251,7 +251,7 @@ window.PdCategoryProdMng = {
 
     /* -- 상품 추가 -- */
     const addProd = (prod) => {
-      const exists = categoryProds.some(cp => cp.prodId === prod.productId && cp.categoryId === cfSelectedCatId.value && cp.typeCd === uiState.activeTypeCd);
+      const exists = categoryProds.some(cp => cp.prodId === prod.prodId && cp.categoryId === cfSelectedCatId.value && cp.categoryProdTypeCd === uiState.activeTypeCd);
       if (exists) {
         if (showToast) showToast('이미 추가된 상품입니다.', 'warning');
         return;
@@ -259,9 +259,10 @@ window.PdCategoryProdMng = {
       const newRow = {
         _id: Math.random(),
         _isNew: true,
-        prodId: prod.productId,
+        rowStatus: 'I',
+        prodId: prod.prodId,
         categoryId: cfSelectedCatId.value,
-        typeCd: uiState.activeTypeCd,
+        categoryProdTypeCd: uiState.activeTypeCd,
         emphasisCd: '',
         dispStartDate: defaultDispStartDate(),
         dispEndDate: defaultDispEndDate(),
@@ -280,8 +281,8 @@ window.PdCategoryProdMng = {
       return products.filter(p => {
         const hits = [];
         if (types.includes('def_nm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
-        if (types.includes('def_id'))  hits.push(String(p.prodId || p.productId || '').includes(q));
-        if (types.includes('def_cat')) hits.push((p.categoryNm || p.categoryPath || '').toLowerCase().includes(q));
+        if (types.includes('def_id'))  hits.push(String(p.prodId || '').includes(q));
+        if (types.includes('def_cat')) hits.push((p.cateNm || '').toLowerCase().includes(q));
         return hits.some(Boolean);
       }).slice(0, 50);
     });
@@ -366,8 +367,8 @@ window.PdCategoryProdMng = {
         <!-- -- 카테고리명 + 저장/추가 버튼 ----------------------------------------- -->
         <div class="toolbar" style="margin-bottom:0">
           <span class="list-title">
-            <span :style="{ color: fnDepthColor((cfSelectedCat?.depth||1)-1), fontWeight:700, marginRight:'4px' }">
-              {{ fnDepthBullet((cfSelectedCat?.depth||1)-1) }}
+            <span :style="{ color: fnDepthColor((cfSelectedCat?.categoryDepth||1)-1), fontWeight:700, marginRight:'4px' }">
+              {{ fnDepthBullet((cfSelectedCat?.categoryDepth||1)-1) }}
             </span>
             {{ cfSelectedCat?.categoryNm }}
             <span v-if="!cfIsLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">(하위 포함)</span>
@@ -446,15 +447,15 @@ window.PdCategoryProdMng = {
                 {{ getCatPath(row.categoryId) }}
               </td>
               <td style="text-align:right;font-size:12px">
-                {{ ((getProd(row.prodId)?.salePrice||getProd(row.prodId)?.price||0)).toLocaleString() }}원
+                {{ ((getProd(row.prodId)?.salePrice||0)).toLocaleString() }}원
               </td>
-              <td style="text-align:center;font-size:12px">{{ ((getProd(row.prodId) || {}).stock != null ? (getProd(row.prodId) || {}).stock : '-') }}</td>
+              <td style="text-align:center;font-size:12px">{{ ((getProd(row.prodId) || {}).prodStock != null ? (getProd(row.prodId) || {}).prodStock : '-') }}</td>
               <td style="text-align:center">
                 <span :class="['badge',
-                       getProd(row.prodId)?.status==='판매중' ? 'badge-green' :
-                       getProd(row.prodId)?.status==='품절'   ? 'badge-red'   : 'badge-gray']"
+                       getProd(row.prodId)?.prodStatusCdNm==='판매중' ? 'badge-green' :
+                       getProd(row.prodId)?.prodStatusCdNm==='품절'   ? 'badge-red'   : 'badge-gray']"
                       style="font-size:11px">
-                  {{ getProd(row.prodId)?.status || '-' }}
+                  {{ getProd(row.prodId)?.prodStatusCdNm || '-' }}
                 </span>
               </td>
               <td v-if="uiState.activeTypeCd!=='NORMAL'">
@@ -521,14 +522,14 @@ window.PdCategoryProdMng = {
             <!-- -- 가격/재고/상태 --------------------------------------------- -->
             <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap">
               <span style="font-size:12px;font-weight:700;color:#e8587a">
-                {{ ((getProd(row.prodId)?.salePrice||getProd(row.prodId)?.price||0)).toLocaleString() }}원
+                {{ ((getProd(row.prodId)?.salePrice||0)).toLocaleString() }}원
               </span>
-              <span style="font-size:10px;color:#999">재고 {{ ((getProd(row.prodId) || {}).stock != null ? (getProd(row.prodId) || {}).stock : '-') }}</span>
+              <span style="font-size:10px;color:#999">재고 {{ ((getProd(row.prodId) || {}).prodStock != null ? (getProd(row.prodId) || {}).prodStock : '-') }}</span>
               <span :class="['badge',
-                     getProd(row.prodId)?.status==='판매중' ? 'badge-green' :
-                     getProd(row.prodId)?.status==='품절'   ? 'badge-red'   : 'badge-gray']"
+                     getProd(row.prodId)?.prodStatusCdNm==='판매중' ? 'badge-green' :
+                     getProd(row.prodId)?.prodStatusCdNm==='품절'   ? 'badge-red'   : 'badge-gray']"
                     style="font-size:10px">
-                {{ getProd(row.prodId)?.status || '-' }}
+                {{ getProd(row.prodId)?.prodStatusCdNm || '-' }}
               </span>
             </div>
             <!-- -- 강조옵션 chips ------------------------------------------- -->
@@ -607,12 +608,12 @@ window.PdCategoryProdMng = {
               <th style="width:56px;text-align:center">추가</th>
             </tr></thead>
             <tbody>
-              <tr v-for="p in cfPickerList" :key="(p && p.productId)">
-                <td style="color:#aaa;font-size:12px">{{ p.productId }}</td>
-                <td>{{ p.prodNm || p.productName }}</td>
-                <td style="text-align:center;font-size:12px;color:#888">{{ p.category || '-' }}</td>
-                <td style="text-align:right;font-size:12px">{{ (p.salePrice||p.price||0).toLocaleString() }}원</td>
-                <td style="text-align:center;font-size:12px">{{ p.stock != null ? p.stock : '-' }}</td>
+              <tr v-for="p in cfPickerList" :key="(p && p.prodId)">
+                <td style="color:#aaa;font-size:12px">{{ p.prodId }}</td>
+                <td>{{ p.prodNm }}</td>
+                <td style="text-align:center;font-size:12px;color:#888">{{ p.cateNm || '-' }}</td>
+                <td style="text-align:right;font-size:12px">{{ (p.salePrice||0).toLocaleString() }}원</td>
+                <td style="text-align:center;font-size:12px">{{ p.prodStock != null ? p.prodStock : '-' }}</td>
                 <td style="text-align:center">
                   <button class="btn btn-blue btn-xs" @click="addProd(p)">추가</button>
                 </td>

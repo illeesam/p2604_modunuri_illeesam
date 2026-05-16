@@ -96,7 +96,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 배치 onExpandAll */
     const onExpandAll = () => {
       uiState.expandedSet.clear();
-      batchLogs.forEach(l => uiState.expandedSet.add(l.logId));
+      batchLogs.forEach(l => uiState.expandedSet.add(l.batchLogId));
     };
 
     /* 배치 onCollapseAll */
@@ -170,15 +170,15 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <td colspan="9" style="text-align:center;color:#aaa;padding:24px;">실행이력이 없습니다.</td>
       </tr>
 
-      <template v-for="(log, idx) in batchLogs" :key="log.logId">
+      <template v-for="(log, idx) in batchLogs" :key="log.batchLogId">
         <!-- ── 데이터 행 ──────────────────────────────────────────────────── -->
         <tr :style="log.runStatus==='실패' ? 'background:#fff5f5;' : log.runStatus==='실행중' ? 'background:#f0f8ff;' : ''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td style="color:#aaa;">{{ log.logId }}</td>
+          <td style="color:#aaa;">{{ log.batchLogId }}</td>
           <td style="font-weight:500;">{{ log.batchNm }}</td>
           <td><code style="font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ log.batchCode }}</code></td>
           <td style="color:#555;font-family:monospace;font-size:11px;">{{ log.runAt }}</td>
-          <td style="text-align:center;color:#666;">{{ fnFmtDuration(log.duration) }}</td>
+          <td style="text-align:center;color:#666;">{{ fnFmtDuration(log.durationMs) }}</td>
           <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(log.runStatus)">{{ log.runStatus }}</span></td>
           <td style="font-size:11px;max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
             :style="log.runStatus==='실패' ? 'color:#dc2626;' : 'color:#555;'">
@@ -186,17 +186,17 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </td>
           <td style="text-align:center;padding:0 4px;">
             <button
-              @click="toggleExpand(log.logId)"
-              :title="isExpanded(log.logId) ? '접기' : '상세 펼치기'"
+              @click="toggleExpand(log.batchLogId)"
+              :title="isExpanded(log.batchLogId) ? '접기' : '상세 펼치기'"
               style="background:none;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;padding:2px 5px;font-size:11px;color:#888;line-height:1;transition:all .15s;"
-              :style="isExpanded(log.logId) ? 'background:#f0f8ff;border-color:#2563eb;color:#2563eb;' : ''">
-              {{ isExpanded(log.logId) ? '▲' : '▼' }}
+              :style="isExpanded(log.batchLogId) ? 'background:#f0f8ff;border-color:#2563eb;color:#2563eb;' : ''">
+              {{ isExpanded(log.batchLogId) ? '▲' : '▼' }}
             </button>
           </td>
         </tr>
 
         <!-- ── 상세 펼침 행 ────────────────────────────────────────────────── -->
-        <tr v-if="isExpanded(log.logId)"
+        <tr v-if="isExpanded(log.batchLogId)"
           :style="log.runStatus==='실패' ? 'background:#fff0f0;' : 'background:#f8faff;'">
           <td colspan="8" style="padding:0;">
             <div style="padding:12px 16px 14px;border-top:1px dashed #e0e0e0;">
@@ -216,7 +216,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
                 </div>
                 <div>
                   <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">소요시간</span>
-                  <span style="font-size:12px;color:#555;">{{ fnFmtDuration(log.duration) }}</span>
+                  <span style="font-size:12px;color:#555;">{{ fnFmtDuration(log.durationMs) }}</span>
                 </div>
                 <div>
                   <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">실행결과</span>

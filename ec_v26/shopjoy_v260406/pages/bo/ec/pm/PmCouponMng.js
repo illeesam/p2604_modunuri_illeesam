@@ -131,7 +131,7 @@ window.PmCouponMng = {
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 쿠폰 discountLabel */
-    const discountLabel = c => c.discountTypeCd === 'rate' ? (c.discountValue||0) + '%' : c.discountTypeCd === 'shipping' ? '무료배송' : (c.discountValue||0).toLocaleString() + '원';
+    const discountLabel = c => c.discountRate ? (c.discountRate||0) + '%' : (c.discountAmt||0).toLocaleString() + '원';
 
     /* 쿠폰 fnStatusBadge */
     const fnStatusBadge = s => ({ '활성': 'badge-green', '만료': 'badge-red', '비활성': 'badge-gray' }[s] || 'badge-gray');
@@ -158,7 +158,7 @@ window.PmCouponMng = {
 
     /* 쿠폰 삭제 */
     const handleDelete = async (c) => {
-      const ok = await showConfirm('삭제', `[${c.name}]을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${c.couponNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
       if (!Array.isArray(coupons)) return;
       const idx = coupons.findIndex(x => x.couponId === c.couponId);
@@ -177,7 +177,7 @@ window.PmCouponMng = {
     };
 
     /* 쿠폰 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(coupons, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'유형',key:'discountTypeCd'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'statusCd'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
+    const exportExcel = () => coUtil.exportCsv(coupons, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'코드',key:'couponCd'},{label:'유형',key:'couponTypeCdNm'},{label:'할인율',key:'discountRate'},{label:'할인액',key:'discountAmt'},{label:'최소금액',key:'minOrderAmt'},{label:'상태',key:'couponStatusCdNm'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
@@ -230,14 +230,14 @@ window.PmCouponMng = {
         <tr v-if="coupons.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-else v-for="(c, idx) in coupons" :key="c?.couponId" :style="selectedId===c.couponId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?'color:#e8587a;font-weight:700;':''">{{ c.name }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;">{{ c.code }}</code></td>
+          <td><span class="title-link" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?'color:#e8587a;font-weight:700;':''">{{ c.couponNm }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;">{{ c.couponCd }}</code></td>
           <td>{{ discountLabel(c) }}</td>
-          <td>{{ c.minOrder ? c.minOrder.toLocaleString()+'원↑' : '-' }}</td>
-          <td>{{ c.issueTo }}</td>
-          <td>{{ c.issueCount }} / {{ c.useCount }}</td>
-          <td>{{ c.expiry }}</td>
-          <td><span class="badge" :class="fnStatusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
+          <td>{{ c.minOrderAmt ? c.minOrderAmt.toLocaleString()+'원↑' : '-' }}</td>
+          <td>{{ c.targetTypeCdNm || '-' }}</td>
+          <td>{{ c.issueCnt || 0 }} / {{ c.issueLimit || 0 }}</td>
+          <td>{{ c.validTo }}</td>
+          <td><span class="badge" :class="fnStatusBadge(c.couponStatusCdNm || c.couponStatusCd)">{{ c.couponStatusCdNm || c.couponStatusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.couponId)">수정</button>
@@ -255,14 +255,14 @@ window.PmCouponMng = {
         @click="handleLoadDetail(c.couponId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">쿠폰 #{{ c.couponId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?{color:'#e8587a'}:{}">{{ c.name }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?{color:'#e8587a'}:{}">{{ c.couponNm }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="fnStatusBadge(c.statusCd)" style="font-size:11px;">{{ c.statusCd }}</span>
+            <span class="badge" :class="fnStatusBadge(c.couponStatusCdNm || c.couponStatusCd)" style="font-size:11px;">{{ c.couponStatusCdNm || c.couponStatusCd }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
             <div>💰 {{ discountLabel(c) }}</div>
             <div>📅 {{ c.validFrom }} ~ {{ c.validTo }}</div>
-            <div style="color:#999;margin-top:4px;">만료 {{ c.expiry }}</div>
+            <div style="color:#999;margin-top:4px;">만료 {{ c.validTo }}</div>
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">

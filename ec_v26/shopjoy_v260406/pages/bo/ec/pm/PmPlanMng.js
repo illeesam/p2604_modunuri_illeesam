@@ -174,7 +174,7 @@ const CATEGORIES = [
     };
 
     /* 프로모션 플랜 exportExcel */
-    const exportExcel = () => coUtil.exportCsv(plans, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'카테고리',key:'category'},{label:'테마',key:'theme'},{label:'상품수',key:'productCount'},{label:'상태',key:'status'},{label:'조회수',key:'viewCount'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
+    const exportExcel = () => coUtil.exportCsv(plans, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'제목',key:'planTitle'},{label:'유형',key:'planTypeCd'},{label:'상태',key:'planStatusCd'},{label:'정렬',key:'sortOrd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
@@ -223,7 +223,7 @@ const CATEGORIES = [
           <td><span style="font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:2px 8px;">{{ p.category }}</span></td>
           <td>{{ p.theme }}</td>
           <td>{{ (p.productIds||[]).length }}개</td>
-          <td><span class="badge" :class="fnStatusBadge(p.status)">{{ p.status }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(p.planStatusCd)">{{ p.planStatusCd }}</span></td>
           <td>{{ (p.viewCount||0).toLocaleString() }}</td>
           <td style="font-size:11px;color:#666;">{{ p.startDate }} ~ {{ p.endDate }}</td>
           <td>{{ p.regDate }}</td>
@@ -249,7 +249,7 @@ const CATEGORIES = [
           <div style="font-size:12px;color:#999;margin-bottom:6px;">기획전 #{{ p.planId }}</div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?{color:'#e8587a'}:{}">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="fnStatusBadge(p.status)" style="font-size:11px;">{{ p.status }}</span>
+            <span class="badge" :class="fnStatusBadge(p.planStatusCd)" style="font-size:11px;">{{ p.planStatusCd }}</span>
             <span class="badge badge-blue" style="font-size:11px;">{{ p.category }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">

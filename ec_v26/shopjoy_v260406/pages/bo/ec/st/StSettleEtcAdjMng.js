@@ -60,9 +60,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             return boApiSvc.stSettleEtcAdj.getPage(params, '정산기타조정', '목록조회');
           })()
         ]);
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
         const data = resA.data?.data;
-        etcAdjList.splice(0, etcAdjList.length, ...(data?.list || []));
+        etcAdjList.splice(0, etcAdjList.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || etcAdjList.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPagerNums();

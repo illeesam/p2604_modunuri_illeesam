@@ -21,7 +21,7 @@ window.SyTemplateDtl = {
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
-      templateId: null, templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
+      templateId: null, templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', templateSubject: '', templateContent: '', useYn: 'Y', sampleParams: '{}',
     });
     const errors = reactive({});
 
@@ -59,7 +59,7 @@ window.SyTemplateDtl = {
     const schema = yup.object({
       templateCode: yup.string().required('템플릿코드를 입력해주세요.'),
       templateNm: yup.string().required('템플릿명을 입력해주세요.'),
-      content: yup.string().required('내용을 입력해주세요.'),
+      templateContent: yup.string().required('내용을 입력해주세요.'),
     });
 
     /* 템플릿 저장 */
@@ -152,7 +152,7 @@ window.SyTemplateDtl = {
     <div class="form-row" v-if="cfNeedSubject">
       <div class="form-group" style="flex:1">
         <label class="form-label">제목 (Subject)</label>
-        <input class="form-control" v-model="form.subject" placeholder="메일/MMS/시스템 제목" :readonly="cfDtlMode" />
+        <input class="form-control" v-model="form.templateSubject" placeholder="메일/MMS/시스템 제목" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-row">
@@ -162,16 +162,16 @@ window.SyTemplateDtl = {
         </label>
         <!-- -- HTML 에디터 (메일, 시스템알림) ------------------------------------- -->
         <template v-if="cfUseHtmlEditor">
-          <div v-if="cfDtlMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
-          <base-html-editor v-else v-model="form.content" height="320px" />
+          <div v-if="cfDtlMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.templateContent || '<span style=color:#bbb>-</span>'"></div>
+          <base-html-editor v-else v-model="form.templateContent" height="320px" />
         </template>
         <!-- -- 텍스트 영역 --------------------------------------------------- -->
-        <textarea v-else class="form-control" v-model="form.content"
+        <textarea v-else class="form-control" v-model="form.templateContent"
           :rows="cfIsLongContent ? 10 : 5"
           placeholder="템플릿 내용 입력"
           :readonly="cfDtlMode"
-          :class="errors.content ? 'is-invalid' : ''"></textarea>
-        <span v-if="errors.content" class="field-error">{{ errors.content }}</span>
+          :class="errors.templateContent ? 'is-invalid' : ''"></textarea>
+        <span v-if="errors.templateContent" class="field-error">{{ errors.templateContent }}</span>
       </div>
     </div>
     <div class="form-row">

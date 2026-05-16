@@ -74,11 +74,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           boApiSvc.pmCoupon.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
           boApiSvc.pmCache.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
         ]);
-        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
-        claimList.splice(0, claimList.length, ...(resC.data?.data?.list || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
-        couponList.splice(0, couponList.length, ...(resCp.data?.data?.list || []));
-        cacheDataList.splice(0, cacheDataList.length, ...(resCa.data?.data?.list || []));
+        orderList.splice(0, orderList.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
+        claimList.splice(0, claimList.length, ...(resC.data?.data?.pageList || resC.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
+        couponList.splice(0, couponList.length, ...(resCp.data?.data?.pageList || resCp.data?.data?.list || []));
+        cacheDataList.splice(0, cacheDataList.length, ...(resCa.data?.data?.pageList || resCa.data?.data?.list || []));
       } catch (_) {}
     };
 

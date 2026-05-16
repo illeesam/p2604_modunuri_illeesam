@@ -155,7 +155,7 @@ window.PmCacheMng = {
 
     /* 캐시(충전금) 삭제 */
     const handleDelete = async (c) => {
-      const ok = await showConfirm('삭제', `[${c.desc}] 내역을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${c.cacheDesc}] 내역을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = caches.findIndex(x => x.cacheId === c.cacheId);
       if (idx !== -1) caches.splice(idx, 1);
@@ -173,7 +173,7 @@ window.PmCacheMng = {
     };
 
     /* 캐시(충전금) exportExcel */
-    const exportExcel = () => coUtil.exportCsv(caches, [{label:'ID',key:'cacheId'},{label:'회원명',key:'userNm'},{label:'유형',key:'cacheType'},{label:'금액',key:'amount'},{label:'설명',key:'description'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
+    const exportExcel = () => coUtil.exportCsv(caches, [{label:'ID',key:'cacheId'},{label:'회원명',key:'memberNm'},{label:'유형',key:'cacheTypeCd'},{label:'금액',key:'cacheAmt'},{label:'잔액',key:'balanceAmt'},{label:'설명',key:'cacheDesc'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
@@ -227,12 +227,12 @@ window.PmCacheMng = {
         <tr v-if="caches.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-else v-for="(c, idx) in caches" :key="c?.cacheId" :style="selectedId===c.cacheId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
-          <td>{{ c.date }}</td>
-          <td><span class="badge" :class="fnTypeBadge(c.type)">{{ c.type }}</span></td>
-          <td :style="(c.amount||0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600'">{{ (c.amount||0) > 0 ? '+' : '' }}{{ (c.amount||0).toLocaleString() }}원</td>
-          <td>{{ (c.balance||0).toLocaleString() }}원</td>
-          <td><span class="title-link" @click="handleLoadDetail(c.cacheId)" :style="selectedId===c.cacheId?'color:#e8587a;font-weight:700;':''">{{ c.desc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
+          <td>{{ c.cacheDate }}</td>
+          <td><span class="badge" :class="fnTypeBadge(c.cacheTypeCd)">{{ c.cacheTypeCd }}</span></td>
+          <td :style="(c.cacheAmt||0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600'">{{ (c.cacheAmt||0) > 0 ? '+' : '' }}{{ (c.cacheAmt||0).toLocaleString() }}원</td>
+          <td>{{ (c.balanceAmt||0).toLocaleString() }}원</td>
+          <td><span class="title-link" @click="handleLoadDetail(c.cacheId)" :style="selectedId===c.cacheId?'color:#e8587a;font-weight:700;':''">{{ c.cacheDesc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.cacheId)">수정</button>
@@ -250,14 +250,14 @@ window.PmCacheMng = {
         @click="handleLoadDetail(c.cacheId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">캐시 #{{ c.cacheId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(c.cacheId)" :style="selectedId===c.cacheId?{color:'#e8587a'}:{}">{{ c.desc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(c.cacheId)" :style="selectedId===c.cacheId?{color:'#e8587a'}:{}">{{ c.cacheDesc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="fnTypeBadge(c.type)" style="font-size:11px;">{{ c.type }}</span>
+            <span class="badge" :class="fnTypeBadge(c.cacheTypeCd)" style="font-size:11px;">{{ c.cacheTypeCd }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>💰 {{ (c.amount||0) > 0 ? '+' : '' }}{{ (c.amount||0).toLocaleString() }}원</div>
-            <div>📅 {{ c.date }}</div>
-            <div style="color:#999;margin-top:4px;">잔액 {{ (c.balance||0).toLocaleString() }}원</div>
+            <div>💰 {{ (c.cacheAmt||0) > 0 ? '+' : '' }}{{ (c.cacheAmt||0).toLocaleString() }}원</div>
+            <div>📅 {{ c.cacheDate }}</div>
+            <div style="color:#999;margin-top:4px;">잔액 {{ (c.balanceAmt||0).toLocaleString() }}원</div>
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">

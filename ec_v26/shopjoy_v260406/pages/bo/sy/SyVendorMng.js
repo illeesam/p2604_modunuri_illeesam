@@ -184,7 +184,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     };
 
     /* 업체(판매자) exportExcel */
-    const exportExcel = () => coUtil.exportCsv(vendors, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
+    const exportExcel = () => coUtil.exportCsv(vendors, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceoNm'},{label:'사업자번호',key:'vendorNo'},{label:'전화',key:'vendorPhone'},{label:'상태',key:'vendorStatusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
 
@@ -259,12 +259,12 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <td>{{ v.vendorId }}</td>
           <td><span class="badge" :class="fnTypeBadge(v.vendorType)">{{ v.vendorType }}</span></td>
           <td><span class="title-link" @click="handleLoadDetail(v.vendorId)" :style="selectedId===v.vendorId?'color:#e8587a;font-weight:700;':''">{{ v.vendorNm }}<span v-if="selectedId===v.vendorId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ v.ceo }}</td>
-          <td>{{ v.bizNo }}</td>
-          <td>{{ v.phone }}</td>
-          <td style="font-size:12px;">{{ v.email }}</td>
+          <td>{{ v.ceoNm }}</td>
+          <td>{{ v.vendorNo }}</td>
+          <td>{{ v.vendorPhone }}</td>
+          <td style="font-size:12px;">{{ v.vendorEmail }}</td>
           <td>{{ v.contractDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(v.statusCd)">{{ v.statusCd }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(v.vendorStatusCd)">{{ v.vendorStatusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(v.vendorId)">수정</button>

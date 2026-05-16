@@ -38,14 +38,14 @@ window.SyBatchDtl = {
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
-      batchId: null, batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
+      batchId: null, batchNm: '', batchCode: '', batchDesc: '', cronExpr: '0 0 * * *', batchStatusCd: '활성',
     });
     const errors = reactive({});
 
     const schema = yup.object({
       batchNm: yup.string().required('배치명을 입력해주세요.'),
       batchCode: yup.string().required('배치코드를 입력해주세요.'),
-      cron: yup.string().required('Cron 표현식을 입력해주세요.'),
+      cronExpr: yup.string().required('Cron 표현식을 입력해주세요.'),
     });
 
     /* 배치 상세조회 */
@@ -145,7 +145,7 @@ window.SyBatchDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">설명</label>
-        <input class="form-control" v-model="form.description" placeholder="배치 처리 내용 설명" :readonly="cfDtlMode" />
+        <input class="form-control" v-model="form.batchDesc" placeholder="배치 처리 내용 설명" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-row">
@@ -153,8 +153,8 @@ window.SyBatchDtl = {
         <label class="form-label">Cron 표현식 <span v-if="!cfDtlMode" class="req">*</span>
           <span style="font-size:11px;color:#888;margin-left:8px;">분 시 일 월 요일</span>
         </label>
-        <input class="form-control" v-model="form.cron" placeholder="0 0 * * *" :readonly="cfDtlMode" :class="errors.cron ? 'is-invalid' : ''" />
-        <span v-if="errors.cron" class="field-error">{{ errors.cron }}</span>
+        <input class="form-control" v-model="form.cronExpr" placeholder="0 0 * * *" :readonly="cfDtlMode" :class="errors.cronExpr ? 'is-invalid' : ''" />
+        <span v-if="errors.cronExpr" class="field-error">{{ errors.cronExpr }}</span>
       </div>
     </div>
     <div v-if="!cfDtlMode" style="margin-bottom:16px;padding:10px 12px;background:#f8f9fa;border-radius:6px;">
@@ -163,13 +163,13 @@ window.SyBatchDtl = {
         <button v-for="p in CRON_PRESETS" :key="p.value"
           class="btn btn-secondary btn-sm"
           style="font-size:11px;"
-          @click="form.cron = p.value">{{ p.label }}</button>
+          @click="form.cronExpr = p.value">{{ p.label }}</button>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">활성여부</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.batchStatusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>

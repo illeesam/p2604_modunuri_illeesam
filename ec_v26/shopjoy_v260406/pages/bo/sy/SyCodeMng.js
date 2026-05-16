@@ -50,7 +50,7 @@ window.SyCodeMng = {
     let _tempId    = -1;
     let _grpTempId = -1;
     let _grpLoadSeq = 0;
-    const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'codeOpt1', 'remark', 'parentCodeValue'];
+    const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'codeOpt1', 'codeRemark', 'parentCodeValue'];
     const GRP_FIELDS  = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
 
     /* codeTotal */
@@ -315,7 +315,7 @@ window.SyCodeMng = {
       ...c, _row_status: 'N', _row_check: false,
       codeOpt1: c.codeOpt1 || '',
       _row_org: { codeGrp: c.codeGrp, codeLabel: c.codeLabel, codeValue: c.codeValue,
-               sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, codeOpt1: c.codeOpt1 || '', parentCodeValue: c.parentCodeValue || null },
+               sortOrd: c.sortOrd, useYn: c.useYn, codeRemark: c.codeRemark, codeOpt1: c.codeOpt1 || '', parentCodeValue: c.parentCodeValue || null },
     });
 
     /* setFocused */
@@ -328,9 +328,9 @@ window.SyCodeMng = {
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : uiState.gridRows.length;
       const newRow = {
         codeId: _tempId--, codeGrp: grp, codeLabel: '', codeValue: '',
-        sortOrd: maxSort + 1, useYn: 'Y', codeOpt1: '', remark: '', parentCodeValue: null,
-        _row_status: 'I', _row_check: false,
-        _row_org: { codeGrp: grp, codeLabel: '', codeValue: '', sortOrd: maxSort + 1, useYn: 'Y', codeOpt1: '', remark: '', parentCodeValue: null },
+        sortOrd: maxSort + 1, useYn: 'Y', codeOpt1: '', codeRemark: '', parentCodeValue: null,
+  _row_status: 'I', _row_check: false,
+        _row_org: { codeGrp: grp, codeLabel: '', codeValue: '', sortOrd: maxSort + 1, useYn: 'Y', codeOpt1: '', codeRemark: '', parentCodeValue: null },
       };
       uiState.gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
@@ -520,7 +520,7 @@ window.SyCodeMng = {
     const exportExcel = () => coUtil.exportCsv(
       uiState.gridRows.filter(r => r._row_status !== 'D'),
       [{ label: 'ID', key: 'codeId' }, { label: '코드그룹', key: 'codeGrp' }, { label: '코드라벨', key: 'codeLabel' },
-       { label: '코드값', key: 'codeValue' }, { label: '순서', key: 'sortOrd' }, { label: '사용여부', key: 'useYn' }, { label: '비고', key: 'remark' }],
+       { label: '코드값', key: 'codeValue' }, { label: '순서', key: 'sortOrd' }, { label: '사용여부', key: 'useYn' }, { label: '비고', key: 'codeRemark' }],
       '공통코드목록.csv'
     );
 
@@ -808,7 +808,7 @@ window.SyCodeMng = {
                   :disabled="row._row_status==='D'" @input="onCellChange(row)" />
               </div>
             </td>
-            <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+            <td><input class="grid-input" v-model="row.codeRemark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
             <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
             <td class="col-act-cancel-val">
               <button v-if="['U','I','D'].includes(row._row_status)"
@@ -915,7 +915,7 @@ window.SyCodeMng = {
                   :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" />
               </div>
             </td>
-            <td><input class="grid-input" v-model="row.node.code.remark" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
+            <td><input class="grid-input" v-model="row.node.code.codeRemark" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
             <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
             <td class="col-act-cancel-val">
               <button v-if="['U','I','D'].includes(row.node.code._row_status)"

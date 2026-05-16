@@ -105,14 +105,17 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     /* getMemNm */
     const getMemNm  = id => { const m = (members||[]).find(m => m.memberId === id); return m ? m.memberNm : (id||''); };
 
-    /* fnStatusBadge */
-    const fnStatusBadge = s => ({ WAIT:'badge-orange', ANSWER:'badge-green', CLOSE:'badge-gray' }[s] || 'badge-gray');
+    /* fnStatusBadge — pd_prod_qna 는 별도 상태코드 없이 answ_yn(Y/N) 으로 답변여부 표현 */
+    const fnStatusBadge = answYn => answYn === 'Y' ? 'badge-green' : 'badge-orange';
+
+    /* fnAnswLabel */
+    const fnAnswLabel = answYn => answYn === 'Y' ? '답변완료' : '미답변';
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     // -- return ---------------------------------------------------------------
 
     return { qnas, uiState, codes, pager, searchParam,
-      onSearch, onReset, setPage, onSizeChange, getProdNm, getMemNm, fnStatusBadge, cfSiteNm, onSort, sortIcon };
+      onSearch, onReset, setPage, onSizeChange, getProdNm, getMemNm, fnStatusBadge, fnAnswLabel, cfSiteNm, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -158,7 +161,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
           <td>{{ getProdNm(q.prodId) }}</td>
           <td class="title-link" @click="">{{ q.qnaTitle }}</td>
           <td>{{ getMemNm(q.memberId) }}</td>
-          <td><span :class="['badge',fnStatusBadge(q.qnaStatusCd)]">{{ q.qnaStatusCd }}</span></td>
+          <td><span :class="['badge',fnStatusBadge(q.answYn)]">{{ fnAnswLabel(q.answYn) }}</span></td>
           <td>{{ (q.regDate||'').slice(0,10) }}</td>
         </tr>
       </tbody>

@@ -23,7 +23,7 @@ window.SyCodeDtl = {
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
-      codeId: null, codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
+      codeId: null, codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', codeRemark: '',
     });
     const errors = reactive({});
 
@@ -153,7 +153,7 @@ window.SyCodeDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">비고</label>
-        <input class="form-control" v-model="form.remark" />
+        <input class="form-control" v-model="form.codeRemark" />
       </div>
     </div>
     <div class="form-actions" v-if="!cfDtlMode">
