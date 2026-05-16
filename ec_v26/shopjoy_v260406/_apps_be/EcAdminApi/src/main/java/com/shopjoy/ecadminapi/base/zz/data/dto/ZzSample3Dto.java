@@ -9,11 +9,14 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ZzSample3Dto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
+        private List<String> sample1Ids;                 // PK 다건 IN
+        private List<String> sample2Ids;                 // PK 다건 IN
         @Size(max = 20) private String sample3Id;
         @Size(max = 21) private String sample1Id;   // 상위 FK 필터
         @Size(max = 21) private String sample2Id;   // 상위 FK 필터

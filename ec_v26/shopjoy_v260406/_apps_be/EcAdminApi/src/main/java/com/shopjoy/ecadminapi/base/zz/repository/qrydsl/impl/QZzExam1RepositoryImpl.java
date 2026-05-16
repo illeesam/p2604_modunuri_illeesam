@@ -12,6 +12,7 @@ import com.shopjoy.ecadminapi.base.zz.data.entity.QZzExam1;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExam1;
 import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzExam1Repository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -102,6 +103,8 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         BooleanBuilder w = new BooleanBuilder();
         if (search == null) return w;
 
+        // ── PK : 다건 IN ──
+        if (!CollectionUtils.isEmpty(search.getExam1Ids())) w.and(e.exam1Id.in(search.getExam1Ids()));
         // ── PK : 정확일치 ──
         if (StringUtils.hasText(search.getExam1Id()))     w.and(e.exam1Id.eq(search.getExam1Id()));
         // ── PK : 부분검색 ──

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.zz.service;
 
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample1Dto;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample2Dto;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample3Dto;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample2;
@@ -20,6 +21,9 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +41,7 @@ public class ZzSample2Service {
     public ZzSample2Dto.Item getById(String id) {
         ZzSample2Dto.Item dto = zzSample2Repository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
-        fillRelations(dto);
+        _itemFillRelations(dto);
         return dto;
     }
 
@@ -71,7 +75,7 @@ public class ZzSample2Service {
     /** getList — 조회 (각 항목에 상위 sample1 / 하위 sample3s 포함) */
     public List<ZzSample2Dto.Item> getList(ZzSample2Dto.Request req) {
         List<ZzSample2Dto.Item> list = zzSample2Repository.selectList(req);
-        list.forEach(this::fillRelations);
+        _listFillRelations(list);
         return list;
     }
 
@@ -79,12 +83,60 @@ public class ZzSample2Service {
     public ZzSample2Dto.PageResponse getPageData(ZzSample2Dto.Request req) {
         PageHelper.addPaging(req);
         ZzSample2Dto.PageResponse res = zzSample2Repository.selectPageList(req);
-        if (res.getPageList() != null) res.getPageList().forEach(this::fillRelations);
+        _listFillRelations(res.getPageList());
         return res;
     }
 
+    /**
+     * _listFillRelations — 목록 일괄 연관조회 (상위 sample1 단건 / 하위 sample3s 목록을 각각 한 번의 쿼리로 조회 후 분배)
+     * 행마다 쿼리하는 _itemFillRelations 와 달리, N개 행이라도 sample1 1회 + sample3 1회만 조회한다.
+     */
+    private void _listFillRelations(List<ZzSample2Dto.Item> list) {
+        if (list == null || list.isEmpty()) return;
+
+        // 부모 키 수집 (중복 제거)
+        List<String> sample1Ids = list.stream()
+            .map(ZzSample2Dto.Item::getSample1Id)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+        List<String> sample2Ids = list.stream()
+            .map(ZzSample2Dto.Item::getSample2Id)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+
+        // 상위 sample1 일괄조회 → Map<sample1Id, sample1>
+        Map<String, ZzSample1Dto.Item> sample1Map = sample1Ids.isEmpty() ? Map.of()
+            : zzSample1Repository.selectList(reqSample1(sample1Ids)).stream()
+                .collect(Collectors.toMap(ZzSample1Dto.Item::getSample1Id, x -> x, (a, b) -> a));
+
+        // 하위 sample3 일괄조회 → Map<sample2Id, List<sample3>>
+        Map<String, List<ZzSample3Dto.Item>> sample3Map = sample2Ids.isEmpty() ? Map.of()
+            : zzSample3Repository.selectList(reqSample3(sample2Ids)).stream()
+                .collect(Collectors.groupingBy(ZzSample3Dto.Item::getSample2Id));
+
+        // 각 항목에 분배
+        for (ZzSample2Dto.Item item : list) {
+            item.setSample1(sample1Map.get(item.getSample1Id()));
+            item.setSample3s(sample3Map.getOrDefault(item.getSample2Id(), List.of()));
+        }
+    }
+
+    private ZzSample1Dto.Request reqSample1(List<String> sample1Ids) {
+        ZzSample1Dto.Request req1 = new ZzSample1Dto.Request();
+        req1.setSample1Ids(sample1Ids);
+        return req1;
+    }
+
+    private ZzSample3Dto.Request reqSample3(List<String> sample2Ids) {
+        ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
+        req3.setSample2Ids(sample2Ids);
+        return req3;
+    }
+
     /** 상위 계층(sample1) + 하위 계층(sample3s) 채우기 */
-    private void fillRelations(ZzSample2Dto.Item item) {
+    private void _itemFillRelations(ZzSample2Dto.Item item) {
         // 상위 sample1 단건 (sample1_id FK)
         if (StringUtils.hasText(item.getSample1Id()))
             item.setSample1(zzSample1Repository.selectById(item.getSample1Id()).orElse(null));

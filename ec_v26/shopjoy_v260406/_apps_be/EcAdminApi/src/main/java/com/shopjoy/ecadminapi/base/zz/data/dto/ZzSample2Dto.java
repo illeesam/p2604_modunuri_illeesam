@@ -15,6 +15,8 @@ public class ZzSample2Dto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
+        private List<String> sample1Ids;                 // PK 다건 IN
+        private List<String> sample2Ids;                 // PK 다건 IN
         @Size(max = 21) private String sample2Id;
         @Size(max = 21) private String sample1Id;   // 상위 FK 필터
         @Size(max = 1) private String useYn;

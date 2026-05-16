@@ -8,11 +8,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ZzExmy3Dto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
+        private List<String> exmy1Ids;                 // PK 다건 IN
         @Size(max = 21)  private String exmy1Id;       // PK 정확일치
         @Size(max = 21)  private String exmy2Id;       // PK 정확일치
         @Size(max = 21)  private String exmy3Id;       // PK 정확일치

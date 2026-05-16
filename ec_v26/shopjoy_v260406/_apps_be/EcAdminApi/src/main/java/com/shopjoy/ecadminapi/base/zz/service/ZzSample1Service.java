@@ -20,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +40,7 @@ public class ZzSample1Service {
     public ZzSample1Dto.Item getById(String id) {
         ZzSample1Dto.Item dto = zzSample1Repository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
-        fillRelations(dto);
+        _itemFillRelations(dto);
         return dto;
     }
 
@@ -71,7 +74,7 @@ public class ZzSample1Service {
     /** getList — 조회 (각 항목에 하위 sample2s / sample3s 포함) */
     public List<ZzSample1Dto.Item> getList(ZzSample1Dto.Request req) {
         List<ZzSample1Dto.Item> list = zzSample1Repository.selectList(req);
-        list.forEach(this::fillRelations);
+        _listFillRelations(list);
         return list;
     }
 
@@ -79,12 +82,46 @@ public class ZzSample1Service {
     public ZzSample1Dto.PageResponse getPageData(ZzSample1Dto.Request req) {
         PageHelper.addPaging(req);
         ZzSample1Dto.PageResponse res = zzSample1Repository.selectPageList(req);
-        if (res.getPageList() != null) res.getPageList().forEach(this::fillRelations);
+        _listFillRelations(res.getPageList());
         return res;
     }
 
+    /**
+     * _listFillRelations — 목록 일괄 연관조회 (하위 sample2s / sample3s 를 각각 한 번의 쿼리로 조회 후 분배)
+     * 행마다 쿼리하는 _itemFillRelations 와 달리, N개 행이라도 sample2 1회 + sample3 1회만 조회한다.
+     */
+    private void _listFillRelations(List<ZzSample1Dto.Item> list) {
+        if (list == null || list.isEmpty()) return;
+
+        // 부모 키 수집 (중복 제거)
+        List<String> sample1Ids = list.stream()
+            .map(ZzSample1Dto.Item::getSample1Id)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+        if (sample1Ids.isEmpty()) return;
+
+        // 하위 sample2 일괄조회 → Map<sample1Id, List<sample2>>
+        ZzSample2Dto.Request req2 = new ZzSample2Dto.Request();
+        req2.setSample1Ids(sample1Ids);
+        Map<String, List<ZzSample2Dto.Item>> sample2Map = zzSample2Repository.selectList(req2).stream()
+            .collect(Collectors.groupingBy(ZzSample2Dto.Item::getSample1Id));
+
+        // 하위 sample3 일괄조회 → Map<sample1Id, List<sample3>>
+        ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
+        req3.setSample1Ids(sample1Ids);
+        Map<String, List<ZzSample3Dto.Item>> sample3Map = zzSample3Repository.selectList(req3).stream()
+            .collect(Collectors.groupingBy(ZzSample3Dto.Item::getSample1Id));
+
+        // 각 항목에 분배
+        for (ZzSample1Dto.Item item : list) {
+            item.setSample2s(sample2Map.getOrDefault(item.getSample1Id(), List.of()));
+            item.setSample3s(sample3Map.getOrDefault(item.getSample1Id(), List.of()));
+        }
+    }
+
     /** 하위 계층(sample2s/sample3s) 채우기 */
-    private void fillRelations(ZzSample1Dto.Item item) {
+    private void _itemFillRelations(ZzSample1Dto.Item item) {
         ZzSample2Dto.Request req2 = new ZzSample2Dto.Request();
         req2.setSample1Id(item.getSample1Id());
         item.setSample2s(zzSample2Repository.selectList(req2));

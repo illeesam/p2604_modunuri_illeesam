@@ -14,6 +14,7 @@ public class ZzExam1Dto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
+        private List<String> exam1Ids;                 // PK 다건 IN
         @Size(max = 20)  private String exam1Id;       // PK 정확일치
         @Size(max = 20)  private String exam1IdLike;   // PK 부분검색
         @Size(max = 200) private String col11;

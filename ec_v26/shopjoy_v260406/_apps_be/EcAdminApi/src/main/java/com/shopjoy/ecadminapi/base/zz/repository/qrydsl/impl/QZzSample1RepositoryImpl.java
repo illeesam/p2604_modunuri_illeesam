@@ -12,6 +12,7 @@ import com.shopjoy.ecadminapi.base.zz.data.entity.QZzSample1;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample1;
 import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzSample1Repository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -123,6 +124,7 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         BooleanBuilder w = new BooleanBuilder();
         if (search == null) return w;
 
+        if (!CollectionUtils.isEmpty(search.getSample1Ids())) w.and(s.sample1Id.in(search.getSample1Ids()));
         if (StringUtils.hasText(search.getSample1Id())) w.and(s.sample1Id.eq(search.getSample1Id()));
         if (StringUtils.hasText(search.getUseYn()))     w.and(s.useYn.eq(search.getUseYn()));
         return w;

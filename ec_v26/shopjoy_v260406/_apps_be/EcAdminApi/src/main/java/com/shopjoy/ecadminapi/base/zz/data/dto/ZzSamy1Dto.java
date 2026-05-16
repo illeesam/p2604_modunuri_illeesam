@@ -15,6 +15,7 @@ public class ZzSamy1Dto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
+        private List<String> samy1Ids;                 // PK 다건 IN
         @Size(max = 21) private String samy1Id;
         @Size(max = 1)  private String useYn;
     }

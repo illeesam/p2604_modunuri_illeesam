@@ -15,6 +15,8 @@ public class ZzSamy2Dto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
+        private List<String> samy1Ids;                 // PK 다건 IN
+        private List<String> samy2Ids;                 // PK 다건 IN
         @Size(max = 21) private String samy2Id;
         @Size(max = 21) private String samy1Id;   // 상위 FK 필터
         @Size(max = 1)  private String useYn;

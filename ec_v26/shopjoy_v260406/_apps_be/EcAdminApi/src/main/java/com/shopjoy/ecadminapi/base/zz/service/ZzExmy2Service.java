@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.zz.service;
 
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy1Dto;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy2Dto;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy3Dto;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExmy2;
@@ -17,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,14 +34,14 @@ public class ZzExmy2Service {
     public ZzExmy2Dto.Item getById(String exmy1Id, String exmy2Id) {
         ZzExmy2Dto.Item dto = zzExmy2Mapper.selectById(exmy1Id, exmy2Id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + exmy1Id + "/" + exmy2Id + "::" + CmUtil.svcCallerInfo(this));
-        fillRelations(dto);
+        _itemFillRelations(dto);
         return dto;
     }
 
     /** getList — 조회 (각 항목에 하위 exmy3s 포함) */
     public List<ZzExmy2Dto.Item> getList(ZzExmy2Dto.Request req) {
         List<ZzExmy2Dto.Item> list = zzExmy2Mapper.selectList(req);
-        list.forEach(this::fillRelations);
+        _listFillRelations(list);
         return list;
     }
 
@@ -46,14 +49,49 @@ public class ZzExmy2Service {
     public ZzExmy2Dto.PageResponse getPageData(ZzExmy2Dto.Request req) {
         PageHelper.addPaging(req);
         List<ZzExmy2Dto.Item> list = zzExmy2Mapper.selectPageList(req);
-        list.forEach(this::fillRelations);
+        _listFillRelations(list);
         long total = zzExmy2Mapper.selectPageCount(req);
         ZzExmy2Dto.PageResponse res = new ZzExmy2Dto.PageResponse();
         return res.setPageInfo(list, total, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
+    /**
+     * _listFillRelations — 목록 일괄 연관조회 (exmy1 단건 / exmy3s 목록을 각각 한 번의 쿼리로 조회 후 분배)
+     * 행마다 쿼리하는 _itemFillRelations 와 달리, N개 행이라도 exmy1 1회 + exmy3 1회만 조회한다.
+     */
+    private void _listFillRelations(List<ZzExmy2Dto.Item> list) {
+        if (list == null || list.isEmpty()) return;
+
+        // 부모 키 수집 (중복 제거)
+        List<String> exmy1Ids = list.stream()
+            .map(ZzExmy2Dto.Item::getExmy1Id)
+            .filter(StringUtils::hasText)
+            .distinct()
+            .toList();
+        if (exmy1Ids.isEmpty()) return;
+
+        // 상위 exmy1 일괄조회 → Map<exmy1Id, exmy1>
+        ZzExmy1Dto.Request req1 = new ZzExmy1Dto.Request();
+        req1.setExmy1Ids(exmy1Ids);
+        Map<String, ZzExmy1Dto.Item> exmy1Map = zzExmy1Mapper.selectList(req1).stream()
+            .collect(Collectors.toMap(ZzExmy1Dto.Item::getExmy1Id, x -> x, (a, b) -> a));
+
+        // 하위 exmy3 일괄조회 → Map<exmy1Id|exmy2Id, List<exmy3>>
+        ZzExmy3Dto.Request req3 = new ZzExmy3Dto.Request();
+        req3.setExmy1Ids(exmy1Ids);
+        Map<String, List<ZzExmy3Dto.Item>> exmy3Map = zzExmy3Mapper.selectList(req3).stream()
+            .collect(Collectors.groupingBy(x -> x.getExmy1Id() + "|" + x.getExmy2Id()));
+
+        // 각 항목에 분배
+        for (ZzExmy2Dto.Item item : list) {
+            item.setExmy1(exmy1Map.get(item.getExmy1Id()));
+            item.setExmy3s(exmy3Map.getOrDefault(
+                item.getExmy1Id() + "|" + item.getExmy2Id(), List.of()));
+        }
+    }
+
     /** 상위 계층(exmy1) / 하위 계층(exmy3s) 채우기 */
-    private void fillRelations(ZzExmy2Dto.Item item) {
+    private void _itemFillRelations(ZzExmy2Dto.Item item) {
         if (StringUtils.hasText(item.getExmy1Id()))
             item.setExmy1(zzExmy1Mapper.selectById(item.getExmy1Id()));
         ZzExmy3Dto.Request req3 = new ZzExmy3Dto.Request();

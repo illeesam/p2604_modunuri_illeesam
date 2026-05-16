@@ -1,5 +1,7 @@
 package com.shopjoy.ecadminapi.base.zz.service;
 
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExam1Dto;
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExam2Dto;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExam3Dto;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExam3;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExam3Id;
@@ -19,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +46,7 @@ public class ZzExam3Service {
     public ZzExam3Dto.Item getById(String exam1Id, String exam2Id, String exam3Id) {
         ZzExam3Dto.Item dto = zzExam3Repository.selectById(exam1Id, exam2Id, exam3Id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + exam1Id + "/" + exam2Id + "/" + exam3Id + "::" + CmUtil.svcCallerInfo(this));
-        fillRelations(dto);
+        _itemFillRelations(dto);
         return dto;
     }
 
@@ -64,7 +69,7 @@ public class ZzExam3Service {
     /** getList — 조회 (각 항목에 상위 exam1 / exam2 포함) */
     public List<ZzExam3Dto.Item> getList(ZzExam3Dto.Request req) {
         List<ZzExam3Dto.Item> list = zzExam3Repository.selectList(req);
-        list.forEach(this::fillRelations);
+        _listFillRelations(list);
         return list;
     }
 
@@ -72,12 +77,46 @@ public class ZzExam3Service {
     public ZzExam3Dto.PageResponse getPageData(ZzExam3Dto.Request req) {
         PageHelper.addPaging(req);
         ZzExam3Dto.PageResponse res = zzExam3Repository.selectPageList(req);
-        if (res.getPageList() != null) res.getPageList().forEach(this::fillRelations);
+        _listFillRelations(res.getPageList());
         return res;
     }
 
+    /**
+     * _listFillRelations — 목록 일괄 연관조회 (exam1 단건 / exam2 단건을 각각 한 번의 쿼리로 조회 후 분배)
+     * 행마다 쿼리하는 _itemFillRelations 와 달리, N개 행이라도 exam1 1회 + exam2 1회만 조회한다.
+     */
+    private void _listFillRelations(List<ZzExam3Dto.Item> list) {
+        if (list == null || list.isEmpty()) return;
+
+        // 부모 키 수집 (중복 제거)
+        List<String> exam1Ids = list.stream()
+            .map(ZzExam3Dto.Item::getExam1Id)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+        if (exam1Ids.isEmpty()) return;
+
+        // 상위 exam1 일괄조회 → Map<exam1Id, exam1>
+        ZzExam1Dto.Request req1 = new ZzExam1Dto.Request();
+        req1.setExam1Ids(exam1Ids);
+        Map<String, ZzExam1Dto.Item> exam1Map = zzExam1Repository.selectList(req1).stream()
+            .collect(Collectors.toMap(ZzExam1Dto.Item::getExam1Id, x -> x, (a, b) -> a));
+
+        // 상위 exam2 일괄조회 → Map<exam1Id|exam2Id, exam2>
+        ZzExam2Dto.Request req2 = new ZzExam2Dto.Request();
+        req2.setExam1Ids(exam1Ids);
+        Map<String, ZzExam2Dto.Item> exam2Map = zzExam2Repository.selectList(req2).stream()
+            .collect(Collectors.toMap(x -> x.getExam1Id() + "|" + x.getExam2Id(), x -> x, (a, b) -> a));
+
+        // 각 항목에 분배
+        for (ZzExam3Dto.Item item : list) {
+            item.setExam1(exam1Map.get(item.getExam1Id()));
+            item.setExam2(exam2Map.get(item.getExam1Id() + "|" + item.getExam2Id()));
+        }
+    }
+
     /** 상위 계층(exam1 / exam2) 채우기 */
-    private void fillRelations(ZzExam3Dto.Item item) {
+    private void _itemFillRelations(ZzExam3Dto.Item item) {
         item.setExam1(zzExam1Repository.selectById(item.getExam1Id()).orElse(null));
         item.setExam2(zzExam2Repository.selectById(item.getExam1Id(), item.getExam2Id()).orElse(null));
     }
