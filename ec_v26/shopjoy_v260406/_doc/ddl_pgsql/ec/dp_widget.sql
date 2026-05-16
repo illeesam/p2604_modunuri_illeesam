@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.dp_widget (
     title_show_yn      VARCHAR(1)   DEFAULT 'Y',
     widget_lib_ref_yn  VARCHAR(1)   DEFAULT 'N',
     widget_config_json TEXT        ,
-    preview_img_url    VARCHAR(500),
+    thumbnail_url      VARCHAR(500),
     sort_ord           INTEGER      DEFAULT 0,
     use_yn             VARCHAR(1)   DEFAULT 'Y',
     disp_env           VARCHAR(50)  DEFAULT '^PROD^',
@@ -36,7 +36,7 @@ COMMENT ON COLUMN shopjoy_2604.dp_widget.widget_content IS '위젯내용 (HTML �
 COMMENT ON COLUMN shopjoy_2604.dp_widget.title_show_yn IS '타이틀표시여부 (Y/N)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.widget_lib_ref_yn IS '위젯라이브러리참조여부 (Y/N)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.widget_config_json IS '위젯추가설정 (JSON)';
-COMMENT ON COLUMN shopjoy_2604.dp_widget.preview_img_url IS '미리보기이미지URL';
+COMMENT ON COLUMN shopjoy_2604.dp_widget.thumbnail_url IS '미리보기 썸네일URL';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.sort_ord IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.use_yn IS '사용여부 (Y/N)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.disp_env IS '전시 환경 (^PROD^DEV^TEST^ 형식)';

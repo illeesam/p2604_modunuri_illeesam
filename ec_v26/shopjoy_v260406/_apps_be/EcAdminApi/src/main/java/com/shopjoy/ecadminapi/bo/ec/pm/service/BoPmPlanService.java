@@ -30,8 +30,11 @@ public class BoPmPlanService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public PmPlanDto.Item getById(String id) { return pmPlanService.getById(id); }
+    /* 목록조회 */
     public List<PmPlanDto.Item> getList(PmPlanDto.Request req) { return pmPlanService.getList(req); }
+    /* 페이지조회 */
     public PmPlanDto.PageResponse getPageData(PmPlanDto.Request req) { return pmPlanService.getPageData(req); }
 
     @Transactional public PmPlan create(PmPlan body) { return pmPlanService.create(body); }

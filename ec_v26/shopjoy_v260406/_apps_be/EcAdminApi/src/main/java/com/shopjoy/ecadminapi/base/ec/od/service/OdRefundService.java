@@ -27,6 +27,7 @@ public class OdRefundService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 환불 키조회 */
     public OdRefundDto.Item getById(String id) {
         OdRefundDto.Item dto = odRefundRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdRefundService {
         return odRefundRepository.selectById(id).orElse(null);
     }
 
+    /* 환불 상세조회 */
     public OdRefund findById(String id) {
         return odRefundRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdRefundService {
         return odRefundRepository.findById(id).orElse(null);
     }
 
+    /* 환불 키검증 */
     public boolean existsById(String id) {
         return odRefundRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdRefundService {
         return true;
     }
 
+    /* 환불 목록조회 */
     public List<OdRefundDto.Item> getList(OdRefundDto.Request req) {
         return odRefundRepository.selectList(req);
     }
 
+    /* 환불 페이지조회 */
     public OdRefundDto.PageResponse getPageData(OdRefundDto.Request req) {
         PageHelper.addPaging(req);
         return odRefundRepository.selectPageList(req);
     }
 
+    /* 환불 등록 */
     @Transactional
     public OdRefund create(OdRefund body) {
         body.setRefundId(CmUtil.generateId("od_refund"));
@@ -80,6 +86,7 @@ public class OdRefundService {
         return saved;
     }
 
+    /* 환불 저장 */
     @Transactional
     public OdRefund save(OdRefund entity) {
         if (!existsById(entity.getRefundId()))
@@ -92,6 +99,7 @@ public class OdRefundService {
         return saved;
     }
 
+    /* 환불 수정 */
     @Transactional
     public OdRefund update(String id, OdRefund body) {
         OdRefund entity = findById(id);
@@ -104,6 +112,7 @@ public class OdRefundService {
         return saved;
     }
 
+    /* 환불 수정 */
     @Transactional
     public OdRefund updateSelective(OdRefund entity) {
         if (entity.getRefundId() == null) throw new CmBizException("refundId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdRefundService {
         return entity;
     }
 
+    /* 환불 삭제 */
     @Transactional
     public void delete(String id) {
         OdRefund entity = findById(id);
@@ -125,6 +135,7 @@ public class OdRefundService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 환불 목록저장 */
     @Transactional
     public void saveList(List<OdRefund> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

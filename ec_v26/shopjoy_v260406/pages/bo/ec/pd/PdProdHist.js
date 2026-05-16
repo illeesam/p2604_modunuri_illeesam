@@ -8,10 +8,10 @@ window.PdProdHist = {
   },
   setup(props) {
     const { computed, onMounted, reactive, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({
       loading: false,
       isPageCodeLoad: false,
@@ -30,9 +30,11 @@ window.PdProdHist = {
     watch(() => uiState.tabMode2, v => { window._ecProdHistState.tabMode = v; });
 
 
+    /* 상품 fnLoadCodes */
     const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
+    /* 상품 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     const qnaList       = reactive([]);
@@ -43,9 +45,13 @@ window.PdProdHist = {
     const statusHistory = reactive([]);
     const changeHistory = reactive([]);
 
+    /* 상품 BASE */
     const BASE = (tab) => `/bo/ec/pd/prod/${props.prodId}/hist/${tab}`;
+
+    /* 상품 HDR */
     const HDR  = (cmd) => coUtil.apiHdr('상품관리', cmd);
 
+    /* 상품 fnPickPageList */
     const fnPickPageList = (res) => {
       const d = res?.data?.data;
       return d?.pageList || d?.list || (Array.isArray(d) ? d : []);
@@ -53,6 +59,7 @@ window.PdProdHist = {
 
     const ALL_TABS = ['qna', 'review', 'orders', 'stock', 'price', 'status', 'changes'];
 
+    /* 상품 handleLoadTab */
     const handleLoadTab = async (tab) => {
       if (!props.prodId || uiState.loadedTabs.has(tab)) return;
       uiState.loading = true;
@@ -87,7 +94,10 @@ window.PdProdHist = {
       }
     };
 
+    /* 상품 fnFmtDate */
     const fnFmtDate = (v) => v ? String(v).slice(0, 16).replace('T', ' ') : '-';
+
+    /* 상품 fnStockBadge */
     const fnStockBadge = (cd) => {
       if (!cd) return 'badge-gray';
       const s = String(cd).toUpperCase();

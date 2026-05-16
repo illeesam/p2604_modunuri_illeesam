@@ -34,6 +34,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     private static final QPdProd     prd = QPdProd.pdProd;
     private static final QSySite     ste = QSySite.sySite;
 
+    /* 프로모션 플랜 아이템 baseQuery */
     private JPAQuery<PmPlanItemDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmPlanItemDto.Item.class,
@@ -46,6 +47,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                 .leftJoin(ste).on(ste.siteId.eq(i.siteId));
     }
 
+    /* 프로모션 플랜 아이템 키조회 */
     @Override
     public Optional<PmPlanItemDto.Item> selectById(String planItemId) {
         PmPlanItemDto.Item dto = baseQuery()
@@ -54,6 +56,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 프로모션 플랜 아이템 목록조회 */
     @Override
     public List<PmPlanItemDto.Item> selectList(PmPlanItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -72,6 +75,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         return query.fetch();
     }
 
+    /* 프로모션 플랜 아이템 페이지조회 */
     @Override
     public PmPlanItemDto.PageResponse selectPageList(PmPlanItemDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -97,6 +101,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 프로모션 플랜 아이템 buildCondition */
     private BooleanBuilder buildCondition(PmPlanItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -153,6 +158,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         return orders;
     }
 
+    /* 프로모션 플랜 아이템 수정 */
     @Override
     public int updateSelective(PmPlanItem entity) {
         if (entity.getPlanItemId() == null) return 0;

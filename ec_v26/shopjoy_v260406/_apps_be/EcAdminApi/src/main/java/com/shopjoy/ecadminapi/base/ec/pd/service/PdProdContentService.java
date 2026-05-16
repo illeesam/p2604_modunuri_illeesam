@@ -28,6 +28,7 @@ public class PdProdContentService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 상세 콘텐츠 키조회 */
     public PdProdContentDto.Item getById(String id) {
         PdProdContentDto.Item dto = pdProdContentRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -39,6 +40,7 @@ public class PdProdContentService {
         return pdProdContentRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 상세 콘텐츠 상세조회 */
     public PdProdContent findById(String id) {
         return pdProdContentRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -49,6 +51,7 @@ public class PdProdContentService {
         return pdProdContentRepository.findById(id).orElse(null);
     }
 
+    /* 상품 상세 콘텐츠 키검증 */
     public boolean existsById(String id) {
         return pdProdContentRepository.existsById(id);
     }
@@ -59,16 +62,19 @@ public class PdProdContentService {
         return true;
     }
 
+    /* 상품 상세 콘텐츠 목록조회 */
     public List<PdProdContentDto.Item> getList(PdProdContentDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
         return pdProdContentRepository.selectList(req);
     }
 
+    /* 상품 상세 콘텐츠 페이지조회 */
     public PdProdContentDto.PageResponse getPageData(PdProdContentDto.Request req) {
         PageHelper.addPaging(req);
         return pdProdContentRepository.selectPageList(req);
     }
 
+    /* 상품 상세 콘텐츠 등록 */
     @Transactional
     public PdProdContent create(PdProdContent body) {
         body.setProdContentId(CmUtil.generateId("pd_prod_content"));
@@ -82,6 +88,7 @@ public class PdProdContentService {
         return saved;
     }
 
+    /* 상품 상세 콘텐츠 저장 */
     @Transactional
     public PdProdContent save(PdProdContent entity) {
         if (!existsById(entity.getProdContentId()))
@@ -94,6 +101,7 @@ public class PdProdContentService {
         return saved;
     }
 
+    /* 상품 상세 콘텐츠 수정 */
     @Transactional
     public PdProdContent update(String id, PdProdContent body) {
         PdProdContent entity = findById(id);
@@ -106,6 +114,7 @@ public class PdProdContentService {
         return saved;
     }
 
+    /* 상품 상세 콘텐츠 수정 */
     @Transactional
     public PdProdContent updateSelective(PdProdContent entity) {
         if (entity.getProdContentId() == null) throw new CmBizException("prodContentId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -119,6 +128,7 @@ public class PdProdContentService {
         return entity;
     }
 
+    /* 상품 상세 콘텐츠 삭제 */
     @Transactional
     public void delete(String id) {
         PdProdContent entity = findById(id);
@@ -127,6 +137,7 @@ public class PdProdContentService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 상세 콘텐츠 목록저장 */
     @Transactional
     public void saveList(List<PdProdContent> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

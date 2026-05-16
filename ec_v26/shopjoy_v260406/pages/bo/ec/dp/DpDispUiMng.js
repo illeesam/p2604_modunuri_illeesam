@@ -8,10 +8,10 @@ window.DpDispUiMng = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const displays = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
@@ -20,6 +20,7 @@ window.DpDispUiMng = {
       date_range_opts: [],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_ui_types = codeStore.sgGetGrpCodes('DISP_UI_TYPE');
@@ -31,6 +32,7 @@ window.DpDispUiMng = {
 
     // 코드 주입
 
+    /* _initSearchParam */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { type: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
@@ -38,11 +40,15 @@ window.DpDispUiMng = {
     const searchParam = reactive(_initSearchParam());
 
     const SORT_MAP = { nm: { asc: 'uiNm asc', desc: 'uiNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -51,8 +57,11 @@ window.DpDispUiMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -86,11 +95,13 @@ window.DpDispUiMng = {
       handleSearchList('DEFAULT');
     });
 
+    /* pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* -- 표시경로 트리 -- */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    /* handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -103,10 +114,20 @@ window.DpDispUiMng = {
 
     /* 정책: 행상세/행수정 클릭 시 항상 상세 API 재조회. 같은 id 재클릭이어도 닫지 않고 reloadTrigger 만 ++ */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* loadView */
     const loadView         = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* openNew */
     const openNew     = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispUiMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -114,11 +135,19 @@ window.DpDispUiMng = {
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
 
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* 목록조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+
+    /* onReset */
     const onReset  = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* setPage */
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
     // -- return ---------------------------------------------------------------

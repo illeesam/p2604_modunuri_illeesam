@@ -27,11 +27,13 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
     private final JPAQueryFactory queryFactory;
     private static final QDpAreaPanel p = QDpAreaPanel.dpAreaPanel;
 
+    /* 전시 영역-패널 매핑 키조회 */
     @Override
     public Optional<DpAreaPanelDto.Item> selectById(String areaPanelId) {
         return Optional.ofNullable(baseQuery().where(p.areaPanelId.eq(areaPanelId)).fetchOne());
     }
 
+    /* 전시 영역-패널 매핑 목록조회 */
     @Override
     public List<DpAreaPanelDto.Item> selectList(DpAreaPanelDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -45,6 +47,7 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         return query.fetch();
     }
 
+    /* 전시 영역-패널 매핑 페이지조회 */
     @Override
     public DpAreaPanelDto.PageResponse selectPageList(DpAreaPanelDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
@@ -59,15 +62,17 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 전시 영역-패널 매핑 baseQuery */
     private JPAQuery<DpAreaPanelDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpAreaPanelDto.Item.class,
                 p.areaPanelId, p.areaId, p.panelId, p.panelSortOrd,
-                p.visibilityTargets, p.dispYn, p.dispStartDate, p.dispEndDate,
+                p.visibilityTargets, p.dispYn, p.dispStartDate, p.dispStartTime, p.dispEndDate, p.dispEndTime,
                 p.dispEnv, p.useYn,
                 p.regBy, p.regDate, p.updBy, p.updDate
         )).from(p);
     }
 
+    /* 전시 영역-패널 매핑 buildCondition */
     private BooleanBuilder buildCondition(DpAreaPanelDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -118,6 +123,7 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         return orders;
     }
 
+    /* 전시 영역-패널 매핑 수정 */
     @Override
     public int updateSelective(DpAreaPanel entity) {
         if (entity.getAreaPanelId() == null) return 0;
@@ -129,7 +135,9 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         if (entity.getVisibilityTargets() != null) { update.set(p.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
         if (entity.getDispYn()            != null) { update.set(p.dispYn,            entity.getDispYn());            hasAny = true; }
         if (entity.getDispStartDate()     != null) { update.set(p.dispStartDate,     entity.getDispStartDate());     hasAny = true; }
+        if (entity.getDispStartTime()     != null) { update.set(p.dispStartTime,     entity.getDispStartTime());     hasAny = true; }
         if (entity.getDispEndDate()       != null) { update.set(p.dispEndDate,       entity.getDispEndDate());       hasAny = true; }
+        if (entity.getDispEndTime()       != null) { update.set(p.dispEndTime,       entity.getDispEndTime());       hasAny = true; }
         if (entity.getDispEnv()           != null) { update.set(p.dispEnv,           entity.getDispEnv());           hasAny = true; }
         if (entity.getUseYn()             != null) { update.set(p.useYn,             entity.getUseYn());             hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(p.updBy,             entity.getUpdBy());             hasAny = true; }

@@ -27,6 +27,7 @@ public class StReconService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 정산 대사(Reconciliation) 키조회 */
     public StReconDto.Item getById(String id) {
         StReconDto.Item dto = stReconRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class StReconService {
         return stReconRepository.selectById(id).orElse(null);
     }
 
+    /* 정산 대사(Reconciliation) 상세조회 */
     public StRecon findById(String id) {
         return stReconRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class StReconService {
         return stReconRepository.findById(id).orElse(null);
     }
 
+    /* 정산 대사(Reconciliation) 키검증 */
     public boolean existsById(String id) {
         return stReconRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class StReconService {
         return true;
     }
 
+    /* 정산 대사(Reconciliation) 목록조회 */
     public List<StReconDto.Item> getList(StReconDto.Request req) {
         return stReconRepository.selectList(req);
     }
 
+    /* 정산 대사(Reconciliation) 페이지조회 */
     public StReconDto.PageResponse getPageData(StReconDto.Request req) {
         PageHelper.addPaging(req);
         return stReconRepository.selectPageList(req);
     }
 
+    /* 정산 대사(Reconciliation) 등록 */
     @Transactional
     public StRecon create(StRecon body) {
         body.setReconId(CmUtil.generateId("st_recon"));
@@ -80,6 +86,7 @@ public class StReconService {
         return saved;
     }
 
+    /* 정산 대사(Reconciliation) 저장 */
     @Transactional
     public StRecon save(StRecon entity) {
         if (!existsById(entity.getReconId()))
@@ -92,6 +99,7 @@ public class StReconService {
         return saved;
     }
 
+    /* 정산 대사(Reconciliation) 수정 */
     @Transactional
     public StRecon update(String id, StRecon body) {
         StRecon entity = findById(id);
@@ -104,6 +112,7 @@ public class StReconService {
         return saved;
     }
 
+    /* 정산 대사(Reconciliation) 수정 */
     @Transactional
     public StRecon updateSelective(StRecon entity) {
         if (entity.getReconId() == null) throw new CmBizException("reconId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class StReconService {
         return entity;
     }
 
+    /* 정산 대사(Reconciliation) 삭제 */
     @Transactional
     public void delete(String id) {
         StRecon entity = findById(id);
@@ -125,6 +135,7 @@ public class StReconService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 정산 대사(Reconciliation) 목록저장 */
     @Transactional
     public void saveList(List<StRecon> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

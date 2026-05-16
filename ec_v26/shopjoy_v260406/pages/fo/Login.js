@@ -12,6 +12,7 @@ window.Login = {
     const uiState = reactive({ snsPhoneVerified: false, loading: false, error: null, isPageCodeLoad: false, step: 'login', snsProvider: null, loginErr: '', signupErr: '', _ec: '', _pc: '', snsNickname: '', snsPhoneCode: '', snsPhoneCodeSent: false, _spc: '', snsErr: ''});;
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -30,6 +31,7 @@ window.Login = {
     /* -- 로그인 -- */
     const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
 
+    /* doLogin */
     const doLogin = async () => {
       uiState.loginErr = '';
       if (!form.email || !form.password) { uiState.loginErr = '이메일과 비밀번호를 입력하세요.'; return; }
@@ -53,16 +55,17 @@ window.Login = {
     };
 
     /* -- 회원선택 모달 (개발용) -- */
-    const memberPick = reactive({ show: false, searchTypes: '', searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, totalPage: 1 });
+    const memberPick = reactive({ show: false, searchType: '', searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, totalPage: 1 });
     const PICK_SIZE = 20;
 
+    /* _loadMemberPick */
     const _loadMemberPick = async () => {
       memberPick.loading = true;
       try {
-        const params = { searchValue: memberPick.searchValue, searchTypes: memberPick.searchTypes, pageNo: memberPick.pageNo, pageSize: PICK_SIZE };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_loginId,def_phone';
+        const params = { searchValue: memberPick.searchValue, searchType: memberPick.searchType, pageNo: memberPick.pageNo, pageSize: PICK_SIZE };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_loginId,def_phone';
         }
         const res = await coApiSvc.mbMember.getPage(
           params,
@@ -79,9 +82,16 @@ window.Login = {
       }
     };
 
-    const onOpenMemberPick = () => { memberPick.show = true; memberPick.searchTypes = ''; memberPick.searchValue = ''; memberPick.pageNo = 1; _loadMemberPick(); };
+    /* onOpenMemberPick */
+    const onOpenMemberPick = () => { memberPick.show = true; memberPick.searchType = ''; memberPick.searchValue = ''; memberPick.pageNo = 1; _loadMemberPick(); };
+
+    /* onMemberPickSearch */
     const onMemberPickSearch = () => { memberPick.pageNo = 1; _loadMemberPick(); };
+
+    /* onMemberPickPage */
     const onMemberPickPage = (p) => { memberPick.pageNo = p; _loadMemberPick(); };
+
+    /* onPickMember */
     const onPickMember = async (m) => {
       memberPick.show = false;
       form.email = m.loginId || m.memberEmail || '';
@@ -144,11 +154,15 @@ window.Login = {
 
     /* -- 약관 -- */
     const terms = reactive({ all: false, t1: false, t2: false, t3: false, t4: false });
+
+    /* toggleAll */
     const toggleAll = () => { terms.t1 = terms.t2 = terms.t3 = terms.t4 = terms.all; };
 
     watch(() => [terms.t1, terms.t2, terms.t3, terms.t4], () => {
       terms.all = terms.t1 && terms.t2 && terms.t3 && terms.t4;
     });
+
+    /* goNextFromTerms */
     const goNextFromTerms = () => {
       uiState.step = uiState.snsProvider ? 'sns-signup' : 'signup';
     };
@@ -171,6 +185,8 @@ window.Login = {
       sf.emailSent = true; sf.emailVerified = false; uiState.signupErr = '';
       props.showToast('인증코드: ' + uiState._ec + '  (데모용)', 'info');
     };
+
+    /* verifyEmail */
     const verifyEmail = () => {
       if (sf.emailCode === uiState._ec) { sf.emailVerified = true; uiState.signupErr = ''; props.showToast('이메일 인증 완료!', 'success'); }
       else uiState.signupErr = '인증코드가 올바르지 않습니다.';
@@ -183,6 +199,8 @@ window.Login = {
       sf.phoneSent = true; sf.phoneVerified = false; uiState.signupErr = '';
       props.showToast('인증코드: ' + uiState._pc + '  (데모용)', 'info');
     };
+
+    /* verifyPhone */
     const verifyPhone = () => {
       if (sf.phoneCode === uiState._pc) { sf.phoneVerified = true; uiState.signupErr = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
       else uiState.signupErr = '인증코드가 올바르지 않습니다.';
@@ -221,16 +239,24 @@ window.Login = {
     /* -- SNS 회원가입 제출 -- */
         const snsPhone    = ref('');
              
+    /* providerLabel */
     const providerLabel = p => ({ google: 'Google', kakao: '카카오', naver: '네이버' }[p] || p);
+
+    /* providerColor */
     const providerColor = p => ({ google: '#fff', kakao: '#FEE500', naver: '#03C75A' }[p] || '#fff');
+
+    /* providerTextColor */
     const providerTextColor = p => ({ google: '#333', kakao: '#3C1E1E', naver: '#fff' }[p] || '#333');
 
+    /* sendSnsPhoneCode */
     const sendSnsPhoneCode = () => {
       if (!/^010[-]?\d{4}[-]?\d{4}$/.test(snsPhone.value.replace(/\s/g, ''))) { uiState.snsErr = '올바른 휴대폰 번호를 입력하세요.'; return; }
       uiState._spc = String(Math.floor(100000 + Math.random() * 900000));
       uiState.snsPhoneCodeSent = true; uiState.snsPhoneVerified = false; uiState.snsErr = '';
       props.showToast('인증코드: ' + uiState._spc + '  (데모용)', 'info');
     };
+
+    /* verifySnsPhone */
     const verifySnsPhone = () => {
       if (uiState.snsPhoneCode === uiState._spc) { uiState.snsPhoneVerified = true; uiState.snsErr = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
       else uiState.snsErr = '인증코드가 올바르지 않습니다.';
@@ -238,6 +264,8 @@ window.Login = {
 
     /* SNS 선택 정보 */
     const snsSf = reactive({ postcode: '', address: '', addressDetail: '', birthdate: '', gender: '' });
+
+    /* openKakaoAddrSns */
     const openKakaoAddrSns = () => {
       if (typeof daum === 'undefined' || !daum.Postcode) { props.showToast('주소 검색 서비스를 불러오는 중입니다.', 'info'); return; }
       new daum.Postcode({
@@ -245,6 +273,7 @@ window.Login = {
       }).open();
     };
 
+    /* doSnsSignup */
     const doSnsSignup = async () => {
       uiState.snsErr = '';
       if (!uiState.snsNickname.trim()) { uiState.snsErr = '이름/닉네임을 입력하세요.'; return; }
@@ -371,7 +400,7 @@ window.Login = {
             <div style="position:relative;flex:1;">
               <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
               <multi-check-select
-                v-model="memberPick.searchTypes"
+                v-model="memberPick.searchType"
                 :options="[
                   { value: 'def_nm',      label: '이름' },
                   { value: 'def_loginId', label: '로그인ID' },

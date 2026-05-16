@@ -36,6 +36,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     private static final QSyRole rol = QSyRole.syRole;
     private static final QSyUser gu = QSyUser.syUser;
 
+    /* 업체 사용자 역할 연결 buildBaseQuery */
     private JPAQuery<SyVendorUserRoleDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorUserRoleDto.Item.class,
@@ -55,6 +56,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
                 .leftJoin(gu).on(gu.userId.eq(r.grantUserId));
     }
 
+    /* 업체 사용자 역할 연결 키조회 */
     @Override
     public Optional<SyVendorUserRoleDto.Item> selectById(String vendorUserRoleId) {
         SyVendorUserRoleDto.Item dto = buildBaseQuery()
@@ -63,6 +65,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         return Optional.ofNullable(dto);
     }
 
+    /* 업체 사용자 역할 연결 목록조회 */
     @Override
     public List<SyVendorUserRoleDto.Item> selectList(SyVendorUserRoleDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -80,6 +83,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         return query.fetch();
     }
 
+    /* 업체 사용자 역할 연결 페이지조회 */
     @Override
     public SyVendorUserRoleDto.PageResponse selectPageList(SyVendorUserRoleDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -101,6 +105,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 업체 사용자 역할 연결 buildCondition */
     private BooleanBuilder buildCondition(SyVendorUserRoleDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -159,6 +164,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         return orders;
     }
 
+    /* 업체 사용자 역할 연결 수정 */
     @Override
     public int updateSelective(SyVendorUserRole entity) {
         if (entity.getVendorUserRoleId() == null) return 0;

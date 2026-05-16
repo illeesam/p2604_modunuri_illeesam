@@ -32,6 +32,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     private static final QMbMember    mem = new QMbMember("mem");
     private static final QSyCode      cdPm = new QSyCode("cd_pm");
 
+    /* 결제수단 키조회 */
     @Override
     public Optional<OdPayMethodDto.Item> selectById(String payMethodId) {
         OdPayMethodDto.Item dto = baseListQuery()
@@ -40,6 +41,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 결제수단 목록조회 */
     @Override
     public List<OdPayMethodDto.Item> selectList(OdPayMethodDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -58,6 +60,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         return query.fetch();
     }
 
+    /* 결제수단 페이지조회 */
     @Override
     public OdPayMethodDto.PageResponse selectPageList(OdPayMethodDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -96,25 +99,17 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(m.payMethodTypeCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(OdPayMethodDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
 
         if (StringUtils.hasText(s.getPayMethodId())) w.and(m.payMethodId.eq(s.getPayMethodId()));
 
-        // searchValue + searchTypes
+        // searchValue + searchType
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -171,6 +166,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         return orders;
     }
 
+    /* 결제수단 수정 */
     @Override
     public int updateSelective(OdPayMethod entity) {
         if (entity.getPayMethodId() == null) return 0;

@@ -8,10 +8,10 @@ window.MbMemberHist = {
   },
   setup(props) {
     const { computed, reactive, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, isPageCodeLoad: false, tab: window._ecMemberHistState.tab || 'orders', tabMode2: window._ecMemberHistState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
@@ -22,6 +22,7 @@ window.MbMemberHist = {
 
     watch(() => uiState.tabMode2, v => { window._ecMemberHistState.tabMode = v; });
 
+    /* 회원 fnLoadCodes */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
     };
@@ -34,6 +35,8 @@ window.MbMemberHist = {
 
     // ★ onMounted — 진입 시 코드 로드
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
+    /* 회원 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const cfMemberOrders = computed(() => {

@@ -19,8 +19,11 @@ public class BoDpPanelService {
 
     private final DpPanelService dpPanelService;
 
+    /* 키조회 */
     public DpPanelDto.Item getById(String id) { return dpPanelService.getById(id); }
+    /* 목록조회 */
     public List<DpPanelDto.Item> getList(DpPanelDto.Request req) { return dpPanelService.getList(req); }
+    /* 페이지조회 */
     public DpPanelDto.PageResponse getPageData(DpPanelDto.Request req) { return dpPanelService.getPageData(req); }
 
     @Transactional public DpPanel create(DpPanel body) { return dpPanelService.create(body); }

@@ -30,12 +30,14 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 시스템 속성 키조회 */
     @Override
     public Optional<SyPropDto.Item> selectById(String propId) {
         SyPropDto.Item dto = baseQuery().where(p.propId.eq(propId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
+    /* 시스템 속성 목록조회 */
     @Override
     public List<SyPropDto.Item> selectList(SyPropDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -51,6 +53,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return query.fetch();
     }
 
+    /* 시스템 속성 페이지조회 */
     @Override
     public SyPropDto.PageResponse selectPageList(SyPropDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -70,6 +73,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 시스템 속성 baseQuery */
     private JPAQuery<SyPropDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyPropDto.Item.class,
@@ -82,6 +86,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 .leftJoin(ste).on(ste.siteId.eq(p.siteId));
     }
 
+    /* 시스템 속성 buildCondition */
     private BooleanBuilder buildCondition(SyPropDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -135,6 +140,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return orders;
     }
 
+    /* 시스템 속성 수정 */
     @Override
     public int updateSelective(SyProp entity) {
         if (entity.getPropId() == null) return 0;

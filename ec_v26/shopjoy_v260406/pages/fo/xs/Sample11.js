@@ -12,6 +12,7 @@ window.XsSample11 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -34,6 +35,8 @@ window.XsSample11 = {
       if (selectedCatIds.size === 0) return '카테고리';
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
+
+    /* onCatApply */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
     /* 현재 사용자 인증 상태 */
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
@@ -66,7 +69,11 @@ window.XsSample11 = {
       coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
       cache_banner:'💰', widget_embed:'🧩',
     };
+
+    /* fnWLabel */
     const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
+
+    /* fnWIcon */
     const fnWIcon  = (t) => WIDGET_ICONS[t] || '▪';
     /* 화면영역 코드 목록 */
     const cfAllAreas = computed(() =>
@@ -78,14 +85,24 @@ window.XsSample11 = {
       if (selectedAreas.size === 0) return cfAllAreas.value;
       return cfAllAreas.value.filter(c => selectedAreas.has(c.codeValue));
     });
+
+    /* toggleArea */
     const toggleArea     = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
+
+    /* selectAllAreas */
     const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
+
+    /* clearAllAreas */
     const clearAllAreas  = () => { selectedAreas.clear(); };
     const cfAreaBtnLabel   = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
+
+    /* resetDate */
     const resetDate = () => {
       uiState.previewDate = today;
       uiState.previewTime = new Date().toTimeString().slice(0, 5);
     };
+
+    /* isInRange */
     const isInRange = (panel) => {
       const d = uiState.previewDate;
       if (!d) return true;
@@ -94,6 +111,8 @@ window.XsSample11 = {
       if (panel.dispEndDate   && dt > `${panel.dispEndDate}   ${panel.dispEndTime   || '23:59'}`) return false;
       return true;
     };
+
+    /* panelFilter */
     const panelFilter = (p) => {
       if (searchStatus.value       && p.status !== searchStatus.value) return false;
       if (!isInRange(p)) return false;
@@ -109,6 +128,8 @@ window.XsSample11 = {
       }
       return true;
     };
+
+    /* panelsForArea */
     const panelsForArea = (areaCode) =>
       []
         .filter(p => p.area === areaCode && panelFilter(p))

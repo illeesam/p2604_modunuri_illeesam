@@ -142,6 +142,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
 
     // ── 유틸 ─────────────────────────────────────────────────────────────
 
+    /* attr */
     private static String attr(HttpServletRequest req, String key, String def) {
         Object v = req.getAttribute(key);
         return v instanceof String s ? s : def;

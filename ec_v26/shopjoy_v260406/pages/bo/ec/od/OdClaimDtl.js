@@ -12,10 +12,10 @@ window.OdClaimDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odClaimDtlState.activeTab || 'info', tabMode2: window._odClaimDtlState.tabMode || 'tab'});
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
@@ -23,6 +23,7 @@ window.OdClaimDtl = {
 
     const cfIsNew = computed(() => !props.dtlId);
 
+    /* 클레임(취소/반품/교환) fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
@@ -90,6 +91,7 @@ window.OdClaimDtl = {
       await handleLoadDetail();
     });
 
+    /* 클레임(취소/반품/교환) 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -121,8 +123,12 @@ window.OdClaimDtl = {
         watch(() => uiState.activeTab, v => { window._odClaimDtlState.activeTab = v; });
 
         watch(() => uiState.tabMode2, v => { window._odClaimDtlState.tabMode = v; });
+
+    /* 클레임(취소/반품/교환) showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.activeTab === id;
     const claimItems = reactive([]);
+
+    /* 클레임(취소/반품/교환) sampleClaimItems */
     const sampleClaimItems = () => {
       const base = form.prodNm || '클레임상품';
       const amount = Number(form.refundAmount || 0) || 30000;
@@ -142,20 +148,30 @@ window.OdClaimDtl = {
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       });
     };
+
+    /* 클레임(취소/반품/교환) fmt */
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' };
 
     const expandedItems = reactive(new Set());
+
+    /* 클레임(취소/반품/교환) toggleExpand */
     const toggleExpand = (i) => { if (expandedItems.has(i)) expandedItems.delete(i); else expandedItems.add(i); };
+
+    /* 클레임(취소/반품/교환) isExpanded */
     const isExpanded = (i) => expandedItems.has(i);
     const cfAllExpanded = computed(() => claimItems.length > 0 && window.safeArrayUtils.safeEvery(claimItems, (_,i) => expandedItems.has(i)));
+
+    /* 클레임(취소/반품/교환) toggleExpandAll */
     const toggleExpandAll = () => {
       if (cfAllExpanded.value) expandedItems.clear();
       else { expandedItems.clear(); claimItems.forEach((_,i) => expandedItems.add(i)); }
     };
 
     watch(claimItems, (list) => { expandedItems.clear(); list.forEach((_,i) => expandedItems.add(i)); });
+
+    /* 클레임(취소/반품/교환) getExchangedItem */
     const getExchangedItem = (it) => {
       if (form.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리','차콜':'블랙' };
@@ -171,6 +187,7 @@ window.OdClaimDtl = {
       };
     };
 
+    /* 클레임(취소/반품/교환) trackingUrl */
     const trackingUrl = (courier, no) => {
       if (!no) return '';
       if (courier === 'CJ대한통운') return 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' + no;
@@ -180,6 +197,8 @@ window.OdClaimDtl = {
       if (courier === '로젠택배')   return 'https://www.ilogen.com/web/personal/trace/' + no;
       return '';
     };
+
+    /* 클레임(취소/반품/교환) openTracking */
     const openTracking = (courier, no) => {
       const url = trackingUrl(courier, no);
       if (!url) { showToast && showToast('운송장 정보가 없습니다.', 'error'); return; }

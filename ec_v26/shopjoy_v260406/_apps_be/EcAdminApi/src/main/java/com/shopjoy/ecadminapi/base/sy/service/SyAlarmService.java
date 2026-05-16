@@ -27,6 +27,7 @@ public class SyAlarmService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 알람 키조회 */
     public SyAlarmDto.Item getById(String id) {
         SyAlarmDto.Item dto = syAlarmRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyAlarmService {
         return syAlarmRepository.selectById(id).orElse(null);
     }
 
+    /* 알람 상세조회 */
     public SyAlarm findById(String id) {
         return syAlarmRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyAlarmService {
         return syAlarmRepository.findById(id).orElse(null);
     }
 
+    /* 알람 키검증 */
     public boolean existsById(String id) {
         return syAlarmRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyAlarmService {
         return true;
     }
 
+    /* 알람 목록조회 */
     public List<SyAlarmDto.Item> getList(SyAlarmDto.Request req) {
         return syAlarmRepository.selectList(req);
     }
 
+    /* 알람 페이지조회 */
     public SyAlarmDto.PageResponse getPageData(SyAlarmDto.Request req) {
         PageHelper.addPaging(req);
         return syAlarmRepository.selectPageList(req);
     }
 
+    /* 알람 등록 */
     @Transactional
     public SyAlarm create(SyAlarm body) {
         body.setAlarmId(CmUtil.generateId("sy_alarm"));
@@ -80,6 +86,7 @@ public class SyAlarmService {
         return saved;
     }
 
+    /* 알람 저장 */
     @Transactional
     public SyAlarm save(SyAlarm entity) {
         if (!existsById(entity.getAlarmId()))
@@ -92,6 +99,7 @@ public class SyAlarmService {
         return saved;
     }
 
+    /* 알람 수정 */
     @Transactional
     public SyAlarm update(String id, SyAlarm body) {
         SyAlarm entity = findById(id);
@@ -104,6 +112,7 @@ public class SyAlarmService {
         return saved;
     }
 
+    /* 알람 수정 */
     @Transactional
     public SyAlarm updateSelective(SyAlarm entity) {
         if (entity.getAlarmId() == null) throw new CmBizException("alarmId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyAlarmService {
         return entity;
     }
 
+    /* 알람 삭제 */
     @Transactional
     public void delete(String id) {
         SyAlarm entity = findById(id);
@@ -127,11 +137,13 @@ public class SyAlarmService {
 
     // ── _row_status 기반 저장 (기존 호환) ────────────────────────────
 
+    /* 알람 saveByRowStatus */
     @Transactional
     public SyAlarm saveByRowStatus(SyAlarmReq req) {
         return doSaveByRowStatus(req);
     }
 
+    /* 알람 saveListByRowStatus */
     @Transactional
     public List<SyAlarm> saveListByRowStatus(List<SyAlarmReq> list) {
         List<SyAlarm> result = new java.util.ArrayList<>();
@@ -142,6 +154,7 @@ public class SyAlarmService {
         return result;
     }
 
+    /* 알람 doSaveByRowStatus */
     private SyAlarm doSaveByRowStatus(SyAlarmReq req) {
         return switch (req.getRowStatus()) {
             case "I" -> create(req.toEntity());

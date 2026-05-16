@@ -11,14 +11,15 @@ window.SyBatchDtl = {
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ active_statuses: [] });
 
+    /* 배치 fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -47,6 +48,7 @@ window.SyBatchDtl = {
       cron: yup.string().required('Cron 표현식을 입력해주세요.'),
     });
 
+    /* 배치 상세조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -85,6 +87,7 @@ window.SyBatchDtl = {
       { label: '매월 1일 오전 8시 (0 8 1 * *)', value: '0 8 1 * *' },
     ];
 
+    /* 배치 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {

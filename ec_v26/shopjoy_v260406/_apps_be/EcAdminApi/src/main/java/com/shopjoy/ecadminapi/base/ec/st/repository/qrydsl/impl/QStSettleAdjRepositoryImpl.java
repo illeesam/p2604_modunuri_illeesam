@@ -32,6 +32,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
     private static final QSySite     ste  = QSySite.sySite;
     private static final QSyCode     cdSat = new QSyCode("cd_sat");
 
+    /* 정산 조정 키조회 */
     @Override
     public Optional<StSettleAdjDto.Item> selectById(String id) {
         StSettleAdjDto.Item dto = baseListQuery()
@@ -40,6 +41,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 정산 조정 목록조회 */
     @Override
     public List<StSettleAdjDto.Item> selectList(StSettleAdjDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -58,6 +60,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         return query.fetch();
     }
 
+    /* 정산 조정 페이지조회 */
     @Override
     public StSettleAdjDto.PageResponse selectPageList(StSettleAdjDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -83,6 +86,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 정산 조정 baseListQuery */
     private JPAQuery<StSettleAdjDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleAdjDto.Item.class,
@@ -98,6 +102,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                 .leftJoin(cdSat).on(cdSat.codeGrp.eq("SETTLE_ADJ_TYPE").and(cdSat.codeValue.eq(a.adjTypeCd)));
     }
 
+    /* 정산 조정 buildCondition */
     private BooleanBuilder buildCondition(StSettleAdjDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -151,6 +156,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         return orders;
     }
 
+    /* 정산 조정 수정 */
     @Override
     public int updateSelective(StSettleAdj entity) {
         if (entity.getSettleAdjId() == null) return 0;

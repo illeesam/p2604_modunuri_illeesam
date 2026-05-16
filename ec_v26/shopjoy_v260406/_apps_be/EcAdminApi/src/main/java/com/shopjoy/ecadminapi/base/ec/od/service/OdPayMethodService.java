@@ -27,6 +27,7 @@ public class OdPayMethodService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 결제수단 키조회 */
     public OdPayMethodDto.Item getById(String id) {
         OdPayMethodDto.Item dto = odPayMethodRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdPayMethodService {
         return odPayMethodRepository.selectById(id).orElse(null);
     }
 
+    /* 결제수단 상세조회 */
     public OdPayMethod findById(String id) {
         return odPayMethodRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdPayMethodService {
         return odPayMethodRepository.findById(id).orElse(null);
     }
 
+    /* 결제수단 키검증 */
     public boolean existsById(String id) {
         return odPayMethodRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdPayMethodService {
         return true;
     }
 
+    /* 결제수단 목록조회 */
     public List<OdPayMethodDto.Item> getList(OdPayMethodDto.Request req) {
         return odPayMethodRepository.selectList(req);
     }
 
+    /* 결제수단 페이지조회 */
     public OdPayMethodDto.PageResponse getPageData(OdPayMethodDto.Request req) {
         PageHelper.addPaging(req);
         return odPayMethodRepository.selectPageList(req);
     }
 
+    /* 결제수단 등록 */
     @Transactional
     public OdPayMethod create(OdPayMethod body) {
         body.setPayMethodId(CmUtil.generateId("od_pay_method"));
@@ -80,6 +86,7 @@ public class OdPayMethodService {
         return saved;
     }
 
+    /* 결제수단 저장 */
     @Transactional
     public OdPayMethod save(OdPayMethod entity) {
         if (!existsById(entity.getPayMethodId()))
@@ -92,6 +99,7 @@ public class OdPayMethodService {
         return saved;
     }
 
+    /* 결제수단 수정 */
     @Transactional
     public OdPayMethod update(String id, OdPayMethod body) {
         OdPayMethod entity = findById(id);
@@ -104,6 +112,7 @@ public class OdPayMethodService {
         return saved;
     }
 
+    /* 결제수단 수정 */
     @Transactional
     public OdPayMethod updateSelective(OdPayMethod entity) {
         if (entity.getPayMethodId() == null) throw new CmBizException("payMethodId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdPayMethodService {
         return entity;
     }
 
+    /* 결제수단 삭제 */
     @Transactional
     public void delete(String id) {
         OdPayMethod entity = findById(id);
@@ -125,6 +135,7 @@ public class OdPayMethodService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 결제수단 목록저장 */
     @Transactional
     public void saveList(List<OdPayMethod> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

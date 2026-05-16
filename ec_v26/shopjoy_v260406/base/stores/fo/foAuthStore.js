@@ -14,6 +14,7 @@
     return;
   }
 
+  /* _defaultAuthUser */
   const _defaultAuthUser = () => ({
     authId: '',         // 인증 식별자 (ec_member.member_id)
     authNm: '',         // 인증 사용자명 (ec_member.member_nm)

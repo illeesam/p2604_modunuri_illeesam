@@ -28,6 +28,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     private final JPAQueryFactory queryFactory;
     private static final QOdDlivItem i = QOdDlivItem.odDlivItem;
 
+    /* 배송 아이템 키조회 */
     @Override
     public Optional<OdDlivItemDto.Item> selectById(String dlivItemId) {
         OdDlivItemDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 배송 아이템 목록조회 */
     @Override
     public List<OdDlivItemDto.Item> selectList(OdDlivItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         return query.fetch();
     }
 
+    /* 배송 아이템 페이지조회 */
     @Override
     public OdDlivItemDto.PageResponse selectPageList(OdDlivItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -79,6 +82,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 배송 아이템 baseQuery */
     private JPAQuery<OdDlivItemDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdDlivItemDto.Item.class,
@@ -91,6 +95,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                 .from(i);
     }
 
+    /* 배송 아이템 buildCondition */
     private BooleanBuilder buildCondition(OdDlivItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -145,6 +150,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         return orders;
     }
 
+    /* 배송 아이템 수정 */
     @Override
     public int updateSelective(OdDlivItem entity) {
         if (entity.getDlivItemId() == null) return 0;

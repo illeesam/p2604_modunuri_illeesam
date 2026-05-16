@@ -35,11 +35,13 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     private static final QPdProd   prd  = QPdProd.pdProd;
     private static final QSyCode   cdLt = new QSyCode("cd_ltt");
 
+    /* 좋아요(찜) 키조회 */
     @Override
     public Optional<MbLikeDto.Item> selectById(String likeId) {
         return Optional.ofNullable(baseQuery().where(l.likeId.eq(likeId)).fetchOne());
     }
 
+    /* 좋아요(찜) 목록조회 */
     @Override
     public List<MbLikeDto.Item> selectList(MbLikeDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -52,6 +54,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         return query.fetch();
     }
 
+    /* 좋아요(찜) 페이지조회 */
     @Override
     public MbLikeDto.PageResponse selectPageList(MbLikeDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -70,6 +73,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 좋아요(찜) baseQuery */
     private JPAQuery<MbLikeDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(MbLikeDto.Item.class,
@@ -83,6 +87,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                 .leftJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(l.targetTypeCd)));
     }
 
+    /* 좋아요(찜) buildCondition */
     private BooleanBuilder buildCondition(MbLikeDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -136,6 +141,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         return orders;
     }
 
+    /* 좋아요(찜) 수정 */
     @Override
     public int updateSelective(MbLike entity) {
         if (entity.getLikeId() == null) return 0;

@@ -11,14 +11,15 @@ window.SyVendorDtl = {
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ active_statuses: [], vendor_type_kr: [] });
 
+    /* 업체(판매자) fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -51,6 +52,7 @@ window.SyVendorDtl = {
       bizNo: yup.string().required('사업자등록번호를 입력해주세요.'),
     });
 
+    /* 업체(판매자) 상세조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -81,6 +83,7 @@ window.SyVendorDtl = {
 
     /* ── 카카오 주소 검색 ── */
     const openKakaoPostcode = () => {
+      /* 업체(판매자) run */
       const run = () => {
         new window.daum.Postcode({
           oncomplete(data) {
@@ -97,6 +100,7 @@ window.SyVendorDtl = {
       document.head.appendChild(s);
     };
 
+    /* 업체(판매자) 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {

@@ -29,6 +29,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     private static final QPdCategory p2  = new QPdCategory("p2");
     private static final QSyCode     cdCs = new QSyCode("cd_cs");
 
+    /* 상품 카테고리 키조회 */
     @Override
     public Optional<PdCategoryDto.Item> selectById(String categoryId) {
         PdCategoryDto.Item dto = baseQuery()
@@ -37,6 +38,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 카테고리 목록조회 */
     @Override
     public List<PdCategoryDto.Item> selectList(PdCategoryDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -55,6 +57,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         return query.fetch();
     }
 
+    /* 상품 카테고리 페이지조회 */
     @Override
     public PdCategoryDto.PageResponse selectPageList(PdCategoryDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -94,15 +97,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 .leftJoin(cdCs).on(cdCs.codeGrp.eq("USE_YN").and(cdCs.codeValue.eq(c.categoryStatusCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(PdCategoryDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -114,8 +109,8 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         if (StringUtils.hasText(s.getStatus()))           w.and(c.categoryStatusCd.eq(s.getStatus()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_category_nm,")) or.or(c.categoryNm.likeIgnoreCase(pattern));
@@ -155,6 +150,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         return orders;
     }
 
+    /* 상품 카테고리 수정 */
     @Override
     public int updateSelective(PdCategory entity) {
         if (entity.getCategoryId() == null) return 0;

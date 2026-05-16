@@ -19,9 +19,13 @@ public class BoSyUserRoleService {
 
     private final SyUserRoleService syUserRoleService;
 
+    /* 키조회 */
     public SyUserRoleDto.Item getById(String id) { return syUserRoleService.getById(id); }
+    /* 목록조회 */
     public List<SyUserRoleDto.Item> getList(SyUserRoleDto.Request req) { return syUserRoleService.getList(req); }
+    /* 페이지조회 */
     public SyUserRoleDto.PageResponse getPageData(SyUserRoleDto.Request req) { return syUserRoleService.getPageData(req); }
+    /* getRolesByUserId */
     public List<SyUserRoleDto.Item> getRolesByUserId(String userId) { return syUserRoleService.getRolesByUserId(userId); }
 
     @Transactional public SyUserRole create(SyUserRole body) { return syUserRoleService.create(body); }

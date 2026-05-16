@@ -30,12 +30,14 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 게시판 마스터 키조회 */
     @Override
     public Optional<SyBbmDto.Item> selectById(String bbmId) {
         SyBbmDto.Item dto = baseQuery().where(b.bbmId.eq(bbmId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
+    /* 게시판 마스터 목록조회 */
     @Override
     public List<SyBbmDto.Item> selectList(SyBbmDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -51,6 +53,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         return query.fetch();
     }
 
+    /* 게시판 마스터 페이지조회 */
     @Override
     public SyBbmDto.PageResponse selectPageList(SyBbmDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -70,6 +73,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 게시판 마스터 baseQuery */
     private JPAQuery<SyBbmDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyBbmDto.Item.class,
@@ -83,15 +87,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 .leftJoin(ste).on(ste.siteId.eq(b.siteId));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyBbmDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -102,8 +98,8 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         if (StringUtils.hasText(s.getTypeCd())) w.and(b.bbmTypeCd.eq(s.getTypeCd()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_name,")) or.or(b.bbmNm.likeIgnoreCase(pattern));
@@ -158,6 +154,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         return orders;
     }
 
+    /* 게시판 마스터 수정 */
     @Override
     public int updateSelective(SyBbm entity) {
         if (entity.getBbmId() == null) return 0;

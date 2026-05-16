@@ -28,6 +28,7 @@ public class PdProdSkuService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 SKU 키조회 */
     public PdProdSkuDto.Item getById(String id) {
         PdProdSkuDto.Item dto = pdProdSkuRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -39,6 +40,7 @@ public class PdProdSkuService {
         return pdProdSkuRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 SKU 상세조회 */
     public PdProdSku findById(String id) {
         return pdProdSkuRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -49,6 +51,7 @@ public class PdProdSkuService {
         return pdProdSkuRepository.findById(id).orElse(null);
     }
 
+    /* 상품 SKU 키검증 */
     public boolean existsById(String id) {
         return pdProdSkuRepository.existsById(id);
     }
@@ -59,16 +62,19 @@ public class PdProdSkuService {
         return true;
     }
 
+    /* 상품 SKU 목록조회 */
     public List<PdProdSkuDto.Item> getList(PdProdSkuDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
         return pdProdSkuRepository.selectList(req);
     }
 
+    /* 상품 SKU 페이지조회 */
     public PdProdSkuDto.PageResponse getPageData(PdProdSkuDto.Request req) {
         PageHelper.addPaging(req);
         return pdProdSkuRepository.selectPageList(req);
     }
 
+    /* 상품 SKU 등록 */
     @Transactional
     public PdProdSku create(PdProdSku body) {
         body.setSkuId(CmUtil.generateId("pd_prod_sku"));
@@ -82,6 +88,7 @@ public class PdProdSkuService {
         return saved;
     }
 
+    /* 상품 SKU 저장 */
     @Transactional
     public PdProdSku save(PdProdSku entity) {
         if (!existsById(entity.getSkuId()))
@@ -94,6 +101,7 @@ public class PdProdSkuService {
         return saved;
     }
 
+    /* 상품 SKU 수정 */
     @Transactional
     public PdProdSku update(String id, PdProdSku body) {
         PdProdSku entity = findById(id);
@@ -106,6 +114,7 @@ public class PdProdSkuService {
         return saved;
     }
 
+    /* 상품 SKU 수정 */
     @Transactional
     public PdProdSku updateSelective(PdProdSku entity) {
         if (entity.getSkuId() == null) throw new CmBizException("skuId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -119,6 +128,7 @@ public class PdProdSkuService {
         return entity;
     }
 
+    /* 상품 SKU 삭제 */
     @Transactional
     public void delete(String id) {
         PdProdSku entity = findById(id);
@@ -127,6 +137,7 @@ public class PdProdSkuService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 SKU 목록저장 */
     @Transactional
     public void saveList(List<PdProdSku> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -6,21 +6,25 @@ window.SyUserMng = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const users = reactive([]);
     const depts = reactive([]);
         const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, boUsers: [], selectedDeptId: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ user_status: [], user_roles: [], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'userNm asc', desc: 'userNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 사용자(관리자) getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 사용자(관리자) onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -29,6 +33,8 @@ window.SyUserMng = {
       pager.pageNo = 1;
       handleSearchData('DEFAULT');
     };
+
+    /* 사용자(관리자) sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
@@ -40,9 +46,9 @@ window.SyUserMng = {
           ...getSortParam(),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색 (UI 멀티체크 "전체" = 모든 토큰)
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_id,def_login,def_name,def_email';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색 (UI 멀티체크 "전체" = 모든 토큰)
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_id,def_login,def_name,def_email';
         }
         if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
         const [resUsers] = await Promise.all([
@@ -64,9 +70,14 @@ window.SyUserMng = {
     };
     /* 좌측 부서 트리 */
     const expanded = reactive(new Set([null]));
+
+    /* 사용자(관리자) toggleNode */
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+
+    /* 사용자(관리자) selectNode */
     const selectNode = (id) => { uiState.selectedDeptId = id; handleSearchData(); };
 
+    /* 사용자(관리자) buildTree */
     const buildTree = (items) => {
       const map = {};
       items.forEach(d => { map[d.deptId] = { ...d, children: [] }; });
@@ -75,16 +86,25 @@ window.SyUserMng = {
         if (d.parentDeptId && map[d.parentDeptId]) map[d.parentDeptId].children.push(map[d.deptId]);
         else roots.push(map[d.deptId]);
       });
+
+      /* 사용자(관리자) sort */
       const sort = arr => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+
+      /* 사용자(관리자) sortAll */
       const sortAll = (node) => { sort(node.children); node.children.forEach(sortAll); };
       sort(roots).forEach(sortAll);
       return { deptId: null, deptNm: '전체', children: roots };
     };
 
     const cfTree = computed(() => buildTree(depts));
+
+    /* 사용자(관리자) expandAll */
     const expandAll = () => { const walk = (n) => { expanded.add(n.deptId); n.children.forEach(walk); }; cfTree.value.children.forEach(walk); expanded.add(null); };
+
+    /* 사용자(관리자) collapseAll */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
+    /* 사용자(관리자) handleSearchTree */
     const handleSearchTree = async () => {
       try {
         const res = await boApiSvc.syDept.getTree('사용자관리', '트리조회');
@@ -93,15 +113,17 @@ window.SyUserMng = {
         console.error('[handleSearchTree]', err);
       }
     };
+
     /* 검색 파라미터 */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchTypes: '', searchValue: '', role: '', status: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', role: '', status: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
 
+    /* 사용자(관리자) fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
@@ -127,6 +149,8 @@ window.SyUserMng = {
       if (!desc) return null;
       return new Set((depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
+
+    /* 사용자(관리자) handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -139,10 +163,20 @@ window.SyUserMng = {
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* 사용자(관리자) loadView */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 사용자(관리자) 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 사용자(관리자) openNew */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 사용자(관리자) closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* 사용자(관리자) inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'syUserMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -152,15 +186,28 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
+    /* 사용자(관리자) fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* 사용자(관리자) fnRoleBadge */
     const fnRoleBadge = r => ({ '슈퍼관리자': 'badge-red', '관리자': 'badge-purple', '운영자': 'badge-blue' }[r] || 'badge-gray');
+
+    /* 사용자(관리자) fnStatusBadge */
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+
+    /* 사용자(관리자) 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+
+    /* 사용자(관리자) onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
+
+    /* 사용자(관리자) setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
+
+    /* 사용자(관리자) onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
+    /* 사용자(관리자) 삭제 */
     const handleDelete = async (u) => {
       const ok = await showConfirm('삭제', `[${u.userNm}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -179,6 +226,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       }
     };
 
+    /* 사용자(관리자) exportExcel */
     const exportExcel = () => coUtil.exportCsv(users, [{label:'ID',key:'userId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'userNm'},{label:'이메일',key:'userEmail'},{label:'연락처',key:'userPhone'},{label:'권한',key:'roleNm'},{label:'부서',key:'deptNm'},{label:'상태',key:'userStatusCd'},{label:'최종로그인',key:'lastLoginDate'}], '사용자목록.csv');
 
     // -- return ---------------------------------------------------------------
@@ -192,7 +240,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_id',    label: '사용자ID' },
           { value: 'def_login', label: '로그인ID' },

@@ -7,17 +7,22 @@ window.Prod01View = {
   setup(props) {
 
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
-    const prod              = window.foApp.selectedProd;
-    const addToCart            = window.foApp.addToCart;
-    const showToast            = window.foApp.showToast;
-    const showAlert            = window.foApp.showAlert;
+    const prod              = window.foApp.selectedProd;  // 선택된 상품
+    const addToCart            = window.foApp.addToCart;  // 장바구니 추가
+    const showToast            = window.foApp.showToast;  // 토스트 알림
+    const showAlert            = window.foApp.showAlert;  // 알림 모달
+
+    /* toggleLike */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
+
+    /* isLiked */
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, prodApiLoaded: false });
     const codes = reactive({});
 
     const svProduct = reactive({});
+
     /* 객체 통째 갱신: 기존 키 정리 후 새 객체 키 복사 (정책: reactive 객체 in-place 갱신) */
     const fnApplySvProduct = (newProd) => {
       Object.keys(svProduct).forEach(k => delete svProduct[k]);
@@ -34,6 +39,8 @@ window.Prod01View = {
       const items  = optsObj?.items  || [];
       const lv1    = groups.find(g => Number(g.optLevel||g.level||0) === 1);
       const lv2    = groups.find(g => Number(g.optLevel||g.level||0) === 2);
+
+      /* itemsOf */
       const itemsOf = (g) => g ? items.filter(i => i.optId === g.optId) : [];
 
       const lv1Items = itemsOf(lv1).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
@@ -121,12 +128,15 @@ window.Prod01View = {
 
     /* 응답 페이로드에서 list/object 추출 */
     const fnPickData = (res) => res?.data?.data ?? res?.data ?? null;
+
+    /* fnPickList */
     const fnPickList = (res) => {
       const d = fnPickData(res);
       if (Array.isArray(d)) return d;
       return d?.pageList || d?.list || [];
     };
 
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       const prodId = fnGetProdIdFromHash() || svProduct.prodId;
       if (!prodId) return;
@@ -191,6 +201,7 @@ window.Prod01View = {
       }
     };
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -242,6 +253,8 @@ window.Prod01View = {
 
     /* -- 이미지 목록 (선택 색상별 교체) -- */
     const _IMG = 'assets/cdn/prod/img/shop/product';
+
+    /* _buildColorImages */
     const _buildColorImages = (p, colorIdx) => {
       const id = p.prodId || 1;
       const base = id <= 12 ? 'fashion' : 'prod';
@@ -401,10 +414,13 @@ window.Prod01View = {
 
     /* -- 탭 고정 + 스크롤 -- */
     let scrollEl = null;
+
+    /* getScrollEl */
     const getScrollEl = () => scrollEl || (scrollEl = document.querySelector('.layout-main')) || window;
 
     let tabNaturalScrollTop = 0;
 
+    /* updateTabFixedPos */
     const updateTabFixedPos = () => {
       const main = getScrollEl();
       if (!main.getBoundingClientRect) return;
@@ -414,6 +430,7 @@ window.Prod01View = {
       uiState.tabFixedW    = r.width;
     };
 
+    /* scrollToTab */
     const scrollToTab = (tabId) => {
       const map = { detail: detailSecRef, size: sizeSecRef, review: reviewSecRef, qna: qnaSecRef, style: styleSecRef };
       const el  = map[tabId]?.value;
@@ -429,6 +446,7 @@ window.Prod01View = {
       uiState.activeTab = tabId;
     };
 
+    /* onScroll */
     const onScroll = () => {
       const main = getScrollEl();
       const bar  = tabBarRef.value;
@@ -481,6 +499,8 @@ window.Prod01View = {
     const anyModalOpen = () =>
       uiState.zoomOpen || uiState.photoPopupOpen || !!uiState.selectedReview ||
       uiState.showSizeGuide || uiState.quickBuyOpen;
+
+    /* closeAllModals */
     const closeAllModals = () => {
       uiState.zoomOpen = false;
       uiState.photoPopupOpen = false;
@@ -488,12 +508,16 @@ window.Prod01View = {
       uiState.showSizeGuide = false;
       uiState.quickBuyOpen = false;
     };
+
+    /* onKeydown */
     const onKeydown = (e) => {
       if (e.key === 'Escape' && anyModalOpen()) {
         e.preventDefault();
         closeAllModals();
       }
     };
+
+    /* onPopState */
     const onPopState = () => {
       if (anyModalOpen()) closeAllModals();
     };
@@ -556,6 +580,8 @@ window.Prod01View = {
       });
       return map;
     });
+
+    /* colorStatus */
     const colorStatus = (c) => cfColorStockMap.value[c?.name] || 'ok';
 
     const cfSizeStockMap = computed(() => {
@@ -582,6 +608,7 @@ window.Prod01View = {
       all.forEach(it => { if (it.parentOptItemId === parent && it.name) set.add(it.name); });
       return set;
     });
+
     /* 사이즈 상태 — 1) 색상 종속 트리에 없으면 'stop'(비활성), 2) 그 외에는 목업 재고 시뮬 그대로 */
     const sizeStatus = (s) => {
       const allowed = cfAllowedSizeNms.value;
@@ -678,12 +705,15 @@ window.Prod01View = {
         uiState.selectedSize = null;
       }
     };
+
+    /* selectSize */
     const selectSize  = s => {
       const st = sizeStatus(s);
       if (st === 'stop' || st === 'soldout') return;
       uiState.selectedSize = s; uiState.sizeError = '';
     };
 
+    /* validate */
     const validate = () => {
       let ok = true;
       if (!uiState.selectedColor) { uiState.colorError = '색상을 선택해주세요.'; ok = false; }
@@ -697,6 +727,7 @@ window.Prod01View = {
       return ok;
     };
 
+    /* handleAddToCart */
     const handleAddToCart = () => {
       if (!validate()) return;
       addToCart(svProduct, uiState.selectedColor, uiState.selectedSize, uiState.qty);
@@ -734,11 +765,17 @@ window.Prod01View = {
 
     /* 하단 바 "바로구매" → 드로어 열기 */
     const openQuickBuy  = () => { uiState.drawerMode = 'buy';  uiState.quickBuyOpen = true; };
+
+    /* openCartDrawer */
     const openCartDrawer = () => { uiState.drawerMode = 'cart'; uiState.quickBuyOpen = true; };
 
     /* -- 포토 리뷰 진입 경로 (grid=모아보기에서, list=리뷰목록에서) -- */
         const openPhotoFromGrid = (r) => { uiState.selectedReview = r; uiState.photoFromGrid = true;  uiState.photoPopupOpen = false; };
+
+    /* openPhotoFromList */
     const openPhotoFromList = (r) => { uiState.selectedReview = r; uiState.photoFromGrid = false; };
+
+    /* closePhotoDetail */
     const closePhotoDetail  = () => {
       uiState.selectedReview = null;
       if (uiState.photoFromGrid) uiState.photoPopupOpen = true;
@@ -752,6 +789,8 @@ window.Prod01View = {
       const idx = list.findIndex(r => r.id === uiState.selectedReview?.id);
       uiState.selectedReview = list[(idx - 1 + list.length) % list.length];
     };
+
+    /* photoNavNext */
     const photoNavNext = () => {
       const list = cfReviewsWithPhoto.value;
       if (!list.length) return;
@@ -769,11 +808,15 @@ window.Prod01View = {
       const start = (uiState.photoGridPage - 1) * photoGridPageSize;
       return cfReviewsWithPhoto.value.slice(start, start + photoGridPageSize);
     });
+
+    /* photoGridPrev */
     const photoGridPrev = () => {
       uiState.photoGridPage = uiState.photoGridPage > 1
         ? uiState.photoGridPage - 1
         : cfPhotoGridPageCount.value;
     };
+
+    /* photoGridNext */
     const photoGridNext = () => {
       uiState.photoGridPage = uiState.photoGridPage < cfPhotoGridPageCount.value
         ? uiState.photoGridPage + 1

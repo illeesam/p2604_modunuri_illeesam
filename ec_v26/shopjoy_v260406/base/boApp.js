@@ -196,9 +196,15 @@
   const idx = h.indexOf(': ');
   if (idx > -1) map[h.slice(0, idx).toLowerCase()] = h.slice(idx + 2);
   });
+
+  /* truncate */
   const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
   const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm', 'authorization'];
+
+  /* fmtVal */
   const fmtVal = (k, v) => k === 'x-func-nm' ? v + '()' : NO_TRUNCATE.includes(k) ? v : truncate(v);
+
+  /* row */
   const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${fmtVal(k, map[k])}`).join(' | ');
   const lines = [
   row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
@@ -284,6 +290,8 @@
 
   /* ── 탭 고정 (keep-alive 시뮬레이션) ── */
   const keptTabIds = reactive(new Set());
+
+  /* toggleKeep */
   const toggleKeep = (tabId) => {
   if (keptTabIds.has(tabId)) keptTabIds.delete(tabId);
   else keptTabIds.add(tabId);
@@ -344,12 +352,14 @@
   'zdLocalStorage':'zd-local-storage',
   };
 
+  /* addTab */
   const addTab = (mngId) => {
   if (!openTabs.find(t => t.id === mngId)) {
   openTabs.push({ id: mngId, label: PAGE_LABELS[mngId] || mngId });
   }
   };
 
+  /* closeTab */
   const closeTab = (tabId, evt) => {
   if (evt) evt.stopPropagation();
   const idx = openTabs.findIndex(t => t.id === tabId);
@@ -365,13 +375,20 @@
 
   /* ── 탭 컨텍스트 메뉴 ── */
   const ctxMenu = reactive({ show: false, x: 0, y: 0, tabId: null });
+
+  /* showCtxMenu */
   const showCtxMenu = (evt, tabId) => {
   evt.preventDefault();
   ctxMenu.show = true; ctxMenu.x = evt.clientX; ctxMenu.y = evt.clientY; ctxMenu.tabId = tabId;
   };
+
+  /* closeCtxMenu */
   const closeCtxMenu = () => { ctxMenu.show = false; };
 
+  /* ctxClose */
   const ctxClose = () => { closeTab(ctxMenu.tabId); closeCtxMenu(); };
+
+  /* ctxCloseLeft */
   const ctxCloseLeft = () => {
   const idx = openTabs.findIndex(t => t.id === ctxMenu.tabId);
   if (idx > 0) {
@@ -380,6 +397,8 @@
   }
   closeCtxMenu();
   };
+
+  /* ctxCloseRight */
   const ctxCloseRight = () => {
   const idx = openTabs.findIndex(t => t.id === ctxMenu.tabId);
   if (idx < openTabs.length - 1) {
@@ -388,6 +407,8 @@
   }
   closeCtxMenu();
   };
+
+  /* ctxCloseAll */
   const ctxCloseAll = () => {
   const tab = openTabs.find(t => t.id === ctxMenu.tabId);
   keptTabIds.clear();
@@ -395,6 +416,8 @@
   if (tab) { openTabs.push(tab); navigate(tab.id); }
   closeCtxMenu();
   };
+
+  /* ctxCloseOthers */
   const ctxCloseOthers = () => {
   const tab = openTabs.find(t => t.id === ctxMenu.tabId);
   openTabs.forEach(t => { if (t.id !== ctxMenu.tabId) keptTabIds.delete(t.id); });
@@ -402,10 +425,14 @@
   if (tab) { openTabs.push(tab); navigate(tab.id); }
   closeCtxMenu();
   };
+
+  /* ctxNewWindow */
   const ctxNewWindow = () => {
   window.open(`${location.pathname}${location.search}#page=${ctxMenu.tabId}`, '_blank');
   closeCtxMenu();
   };
+
+  /* ctxRefresh */
   const ctxRefresh = () => {
   const id = ctxMenu.tabId;
   closeCtxMenu();
@@ -436,6 +463,7 @@
   const activeTop  = ref('member');
   const leftMenuOpen = ref(true);
 
+  /* setTopMenu */
   const setTopMenu = (topId) => {
   activeTop.value = topId;
   leftMenuOpen.value = true;
@@ -467,6 +495,7 @@
   };
   readHash(false);
 
+  /* navigate */
   const navigate = (pg, opts = {}) => {
   const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
   if (!isLoggedIn && pg !== 'dashboard') {
@@ -492,6 +521,7 @@
   window.scrollTo(0, 0);
   };
 
+  /* readHashWithNotification */
   const readHashWithNotification = () => readHash(true);
   window.addEventListener('hashchange', readHashWithNotification);
   onBeforeUnmount(() => window.removeEventListener('hashchange', readHashWithNotification));
@@ -537,6 +567,8 @@
   502: '게이트웨이 오류 — 서버가 응답하지 않습니다.',
   503: '서비스 일시 중단 — 잠시 후 다시 시도하세요.',
   };
+
+  /* showToast */
   const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '') => {
   if (type === 'error') duration = 0;
   const id = ++_toastId;
@@ -563,13 +595,19 @@
   };
   /* 전역 노출 (BaseModal 등에서 props 없이 호출) */
   window.boToast = showToast;
+
+  /* closeToast */
   const closeToast = (id) => {
   const idx = toasts.findIndex(t => t.id === id);
   if (idx !== -1) toasts.splice(idx, 1);
   };
+
+  /* closeAllToasts */
   const closeAllToasts = () => { toasts.splice(0, toasts.length); };
   const TOAST_DETAIL_KEY = 'modu-bo-toast-isShowDetail';
   const toastShowDetail = ref(localStorage.getItem(TOAST_DETAIL_KEY) !== 'false');
+
+  /* toggleToastDetail */
   const toggleToastDetail = () => {
   toastShowDetail.value = !toastShowDetail.value;
   localStorage.setItem(TOAST_DETAIL_KEY, toastShowDetail.value);
@@ -578,11 +616,17 @@
 
   /* ── API 응답 패널 ── */
   const apiResPanel = reactive({ show: false, res: null });
+
+  /* setApiRes */
   const setApiRes = (res) => { apiResPanel.res = res; /* apiResPanel.show = true; */ };
+
+  /* closeApiResPanel */
   const closeApiResPanel = () => { apiResPanel.show = false; };
 
   /* ── Confirm ── */
   const confirmState = reactive({ show: false, title: '', msg: '', details: null, btnOk: '확인', btnCancel: '취소', resolve: null });
+
+  /* showConfirm */
   const showConfirm  = (title, msg, opts = {}) =>
   new Promise(r => Object.assign(confirmState, {
   show: true, title, msg,
@@ -594,11 +638,16 @@
   /* 전역 노출 (BaseModal 등에서 props 없이 호출 가능) */
   window.boConfirm = showConfirm;
 
+  /* closeConfirm */
   const closeConfirm = v => { confirmState.show = false; confirmState.resolve?.(v); };
 
   /* ── 참조 모달 ── */
   const refModal = reactive({ show: false, type: '', id: null });
+
+  /* showRefModal */
   const showRefModal = (type, id) => { refModal.type = type; refModal.id = id; refModal.show = true; };
+
+  /* closeRefModal */
   const closeRefModal = () => { refModal.show = false; };
 
   /* ── 전역 노출: 페이지 컴포넌트에서 props 없이 직접 접근 가능 ── */
@@ -612,6 +661,8 @@
 
   /* ── 도움말 모달 ── */
   const helpModal = reactive({ show: false, topic: '' });
+
+  /* showHelp */
   const showHelp = (topic = '') => { helpModal.topic = topic; helpModal.show = true; };
   /* 전역 노출 — 어느 컴포넌트에서든 window.showBoHelp('prodOpt') 호출 가능 */
   window.showBoHelp = showHelp;
@@ -627,8 +678,14 @@
   }
 
   const selectModal  = reactive({ type: '', show: false });
+
+  /* openSelectModal */
   const openSelectModal  = (type) => { selectModal.type = type; selectModal.show = true; };
+
+  /* closeSelectModal */
   const closeSelectModal = () => { selectModal.show = false; selectModal.type = ''; };
+
+  /* onSelectItem */
   const onSelectItem  = (type, item) => {
   if  (type === 'site') {
     commonFilter.siteId  = item?.siteId  ?? null;
@@ -646,6 +703,8 @@
   else if (type === 'order')  commonFilter.orderId  = item?.orderId  ?? null;
   selectModal.show = false;
   };
+
+  /* clearFilter */
   const clearFilter  = (type) => {
   if  (type === 'site')  commonFilter.siteId  = null;   /* 사이트는 필수이지만 사용자가 직접 비우는 경우에만 */
   else if (type === 'vendor')  commonFilter.vendorId = null;
@@ -677,6 +736,7 @@
   const apiLogLockedDetail = ref(null);
   const maxApiLogs = 15;
 
+  /* _loadApiLogsFromStorage */
   const _loadApiLogsFromStorage = () => {
   try {
   const stored = localStorage.getItem('modu-bo-apiLog');
@@ -689,12 +749,14 @@
   } catch (_) {}
   };
 
+  /* _saveApiLogsToStorage */
   const _saveApiLogsToStorage = () => {
   try {
   localStorage.setItem('modu-bo-apiLog', JSON.stringify(apiLogs.slice(0, 10)));
   } catch (_) {}
   };
 
+  /* addApiLog */
   const addApiLog = (method, url, status, duration, hasError = false, reqData = null, resData = null, reqHeaders = null) => {
   const now = new Date();
   const hh = String(now.getHours()).padStart(2, '0');
@@ -706,12 +768,19 @@
   if (reqData) reqStr = JSON.stringify(typeof reqData === 'string' ? JSON.parse(reqData) : reqData, null, 2);
   if (resData) resStr = JSON.stringify(typeof resData === 'string' ? JSON.parse(resData) : resData, null, 2);
   if (reqHeaders) {
+  /* dec */
   const dec = (v) => { try{ return v ? decodeURIComponent(v) : ''; }catch(_){ return v||''; } };
+
+  /* get */
   const get = (h, k) => h[k] || h[k.toLowerCase()] || '';
   const decUiNm  = dec(get(reqHeaders, 'X-UI-Nm'));
   const decCmdNm = dec(get(reqHeaders, 'X-Cmd-Nm'));
   if (decUiNm || decCmdNm) uiLabel = decCmdNm ? (decUiNm + ' > ' + decCmdNm) : decUiNm;
+
+  /* trunc */
   const trunc = (v, n=60) => v && v.length > n ? v.slice(0,8)+'...'+v.slice(-6) : (v||'');
+
+  /* row */
   const row = (...keys) => keys.map(k => { const v = dec(get(reqHeaders,k)); return v ? k.toLowerCase()+': '+v : ''; }).filter(Boolean).join(' | ');
   const lines = [
   row('x-site-type','X-UI-Nm','X-Cmd-Nm'),
@@ -736,12 +805,14 @@
   _saveApiLogsToStorage();
   };
 
+  /* clearApiLogs */
   const clearApiLogs = () => {
   apiLogs.length = 0;
   try { localStorage.removeItem('modu-bo-apiLog'); } catch (_) {}
   showToast('API 로그가 초기화되었습니다.', 'success');
   };
 
+  /* toggleApiLogLock */
   const toggleApiLogLock = (log) => {
   if (apiLogLockedDetail.value === log) {
   apiLogLockedDetail.value = null;
@@ -750,9 +821,13 @@
   }
   };
 
+  /* onApiLogEnter */
   const onApiLogEnter = (log) => { apiLogHoverDetail.value = log; };
+
+  /* onApiLogLeave */
   const onApiLogLeave = (log) => { if (apiLogLockedDetail.value !== log) apiLogHoverDetail.value = null; };
 
+  /* formatJsonData */
   const formatJsonData = (data) => {
   try {
   if (!data) return 'N/A';
@@ -768,6 +843,7 @@
   }
   };
 
+  /* isWithin60Seconds */
   const isWithin60Seconds = (timeStr) => {
   try {
   const [hh, mm, ss] = timeStr.replace('s', '').split(':').map(Number);
@@ -781,6 +857,7 @@
   }
   };
 
+  /* getRelativeTime */
   const getRelativeTime = (timeStr) => {
   try {
   const [hh, mm, ss] = timeStr.replace('s', '').split(':').map(Number);
@@ -806,6 +883,7 @@
   }
   };
 
+  /* getApiStatusColor */
   const getApiStatusColor = (status) => {
   if (status >= 200 && status < 300) return '#10b981';
   if (status >= 300 && status < 400) return '#3b82f6';
@@ -822,12 +900,16 @@
 
   /* ── 탭바 좌우 스크롤 ── */
   const tabBarRef = ref(null);
+
+  /* scrollTabs */
   const scrollTabs = (dir) => {
   if (tabBarRef.value) tabBarRef.value.scrollBy({ left: dir * 180, behavior: 'smooth' });
   };
 
   /* ── 로그인 상태 (localStorage 영속화) ── */
   const _mkBoToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
+
+  /* _restoreBoUser */
   const _restoreBoUser = () => {
   try {
   const tok = localStorage.getItem('modu-bo-accessToken');
@@ -836,11 +918,14 @@
   return authUser || { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
   } catch(_) { return { userId: '', name: '', email: '', role: '', phone: '', dept: '' }; }
   };
+
   /* ── FO의 foAuth.state 패턴과 동일: Vue.reactive state + _sync() ── */
   const _defaultBoAuthUser = () => ({ authId: '', authNm: '', userId: '', name: '', email: '', role: '', phone: '', dept: '', AppTypeCd: '', roleId: '', siteId: '', profileAttachId: null });
   const currentAuthUser = reactive(_defaultBoAuthUser());
   // store 인스턴스를 setup() 안에서 한 번만 가져와서 고정 — Pinia 컨텍스트 보장
   const _boAuthStore = window.useBoAuthStore?.();
+
+  /* _syncCurrentAuthUser */
   const _syncCurrentAuthUser = () => {
   try {
   const u = _boAuthStore?.svAuthUser;
@@ -895,6 +980,8 @@
   for (let i = 0; i < a.length; i++) if (a[i]?.roleId !== b[i]?.roleId) return false;
   return true;
   };
+
+  /* updateCurrentUserRoles */
   const updateCurrentUserRoles = () => {
   try {
   if (!currentAuthUser?.authId) {
@@ -920,6 +1007,8 @@
   watch(() => currentAuthUser?.authId || '', updateCurrentUserRoles);
   // getInitData 비동기 완료 시점에도 재계산 — store 데이터 도착 후 역할 매핑
   watch(boInitReady, (v) => { if (v) updateCurrentUserRoles(); });
+
+  /* rolePath */
   const rolePath = (r, uid) => {
   try {
   if (!r) return '';
@@ -937,7 +1026,11 @@
   return '';
   }
   };
+
+  /* onRoleChange */
   const onRoleChange = () => { location.reload(); };
+
+  /* rolesOfUser */
   const rolesOfUser = (uid) => {
   try {
   const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
@@ -950,6 +1043,8 @@
   return [];
   }
   };
+
+  /* bizInfoOfUser */
   const bizInfoOfUser = () => '';
 
   onMounted(() => {
@@ -1021,6 +1116,8 @@
   { loginId: 'cs_agent1',    loginPwd: 'demo1234', label: 'CS상담원',   userNm: 'CS상담원1', role: 'CS',     icon: '🎧' },
   { loginId: 'vendor1',      loginPwd: 'demo1234', label: '판매업체',    userNm: '판매업체1', role: 'VENDOR', icon: '🏪' },
   ];
+
+  /* quickLogin */
   const quickLogin = (u) => {
   loginForm.loginId = u.loginId;
   loginForm.loginPwd = u.loginPwd;
@@ -1029,6 +1126,8 @@
   /* 사용자 선택 모달 */
   const PAGE_SIZE = 20;
   const userPickModal = reactive({ show: false, searchValue: '', pageNo: 1, loading: false, rows: [], total: 0, totalPage: 1, isApiMode: false });
+
+  /* _loadUserPickPage */
   const _loadUserPickPage = async () => {
   userPickModal.loading = true;
   try {
@@ -1059,20 +1158,28 @@
   const cfPickRows     = Vue.computed(() => userPickModal.isApiMode ? userPickModal.rows     : cfLocalPage.value);
   const cfPickTotal    = Vue.computed(() => userPickModal.isApiMode ? userPickModal.total    : cfLocalFiltered.value.length);
   const cfPickTotalPage= Vue.computed(() => userPickModal.isApiMode ? userPickModal.totalPage: cfLocalTotalPage.value);
+
+  /* openUserPick */
   const openUserPick = () => {
   userPickModal.searchValue = ''; userPickModal.pageNo = 1;
   userPickModal.isApiMode = true; // 항상 API 모드 (로그인 전/후 무관)
   userPickModal.show = true;
   _loadUserPickPage();
   };
+
+  /* onUserPickSearch */
   const onUserPickSearch = () => {
   userPickModal.pageNo = 1;
   _loadUserPickPage();
   };
+
+  /* onUserPickPage */
   const onUserPickPage = (p) => {
   userPickModal.pageNo = p;
   _loadUserPickPage();
   };
+
+  /* onUserPick */
   const onUserPick = (u) => {
   userPickModal.show = false;
   loginForm.loginId  = u.loginId || u.userId || '';
@@ -1088,6 +1195,8 @@
   const profileForm  = reactive({ name: '', phone: '', dept: '', email: '', profileAttachId: null });
   const profileImg   = reactive({ attachId: null, cdnImgUrl: '' }); // 표시용 이미지 상태
   const profileImgUploading = ref(false);
+
+  /* _loadProfileImg */
   const _loadProfileImg = async (grpId) => {
   if (!grpId) { profileImg.attachId = null; profileImg.cdnImgUrl = ''; return; }
   try {
@@ -1097,6 +1206,8 @@
   profileImg.cdnImgUrl = f?.cdnImgUrl || '';
   } catch(e) { profileImg.attachId = null; profileImg.cdnImgUrl = ''; }
   };
+
+  /* openProfile */
   const openProfile  = () => {
   if (!currentAuthUser || !currentAuthUser.userId) return;
   Object.assign(profileForm, {
@@ -1109,6 +1220,8 @@
   _loadProfileImg(profileForm.profileAttachId);
   uiState.profileModalShow = true; uiState.userMenuShow = false;
   };
+
+  /* saveProfile */
   const saveProfile  = () => {
   if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
   if (!currentAuthUser) Object.assign(currentAuthUser, _defaultBoAuthUser());
@@ -1119,6 +1232,8 @@
   uiState.profileModalShow = false;
   showToast('프로필이 저장되었습니다.');
   };
+
+  /* onProfileImgChange */
   const onProfileImgChange = async (e) => {
   const f = e.target.files?.[0]; e.target.value = '';
   if (!f) return;
@@ -1143,6 +1258,8 @@
   showToast(err.response?.data?.message || '업로드 중 오류가 발생했습니다.', 'error');
   } finally { profileImgUploading.value = false; }
   };
+
+  /* onProfileImgRemove */
   const onProfileImgRemove = async () => {
   if (!profileImg.attachId) { profileForm.profileAttachId = null; profileImg.cdnImgUrl = ''; return; }
   try {
@@ -1156,10 +1273,14 @@
   /* 비밀번호 변경 모달 */
   const pwForm  = reactive({ current: '', next: '', confirm: '' });
   const pwError  = ref('');
+
+  /* openPwChange */
   const openPwChange = () => {
   Object.assign(pwForm, { current: '', next: '', confirm: '' });
   pwError.value = ''; uiState.pwModalShow = true; uiState.userMenuShow = false;
   };
+
+  /* savePwChange */
   const savePwChange = async () => {
   pwError.value = '';
   if (!pwForm.current || !pwForm.next || !pwForm.confirm) { pwError.value = '모든 항목을 입력하세요.'; return; }
@@ -1179,11 +1300,15 @@
   }
   };
 
+  /* openLogin */
   const openLogin = (tab = 'login') => {
   loginModal.tab = tab; loginModal.show = true; loginError.value = '';
   };
+
+  /* closeLogin */
   const closeLogin = () => { loginModal.show = false; loginError.value = ''; };
 
+  /* doLogin */
   const doLogin = async () => {
   loginError.value = '';
   if (!loginForm.loginId || !loginForm.loginPwd) { loginError.value = '아이디와 비밀번호를 입력하세요.'; return; }
@@ -1204,6 +1329,7 @@
   }
   };
 
+  /* doLogout */
   const doLogout = async () => {
   try {
   const authStore = window.useBoAuthStore?.();
@@ -1240,6 +1366,7 @@
   }, 3000);
   }
 
+  /* doRegister */
   const doRegister = async () => {
   loginError.value = '';
   if (!regForm.name || !regForm.email || !regForm.password) { loginError.value = '필수 항목을 입력하세요.'; return; }
@@ -1264,15 +1391,21 @@
 
   /* ── 연관사이트 레이어 ── */
   const toggleRelatedSite = () => { uiState.relatedSiteOpen = !uiState.relatedSiteOpen; };
+
+  /* openRelatedLink */
   const openRelatedLink = (url) => {
   window.open(url, '_blank', 'noopener,noreferrer');
   uiState.relatedSiteOpen = false;
   };
+
+  /* goFoSite */
   const goFoSite = (no) => {
   try { localStorage.setItem('modu-fo-siteNo', no); } catch(_){}
   window.open('index.html?SITE_NO=' + no, '_blank');
   uiState.relatedSiteOpen = false;
   };
+
+  /* goBoSite */
   const goBoSite = (no) => {
   try { localStorage.setItem('modu-bo-siteNo', no); } catch(_){}
   window.open('bo.html?SITE_NO=' + no, '_blank');
@@ -1302,12 +1435,18 @@
   const favorites = reactive([]);
   const favKeepSet = reactive(new Set()); // 즐겨찾기별 keep 설정
   const sidebarTab = ref('open');
+
+  /* isFav */
   const isFav = (pgId) => favorites.includes(pgId);
+
+  /* toggleFav */
   const toggleFav = (pgId) => {
   const idx = favorites.indexOf(pgId);
   if (idx === -1) favorites.push(pgId);
   else { favorites.splice(idx, 1); favKeepSet.delete(pgId); }
   };
+
+  /* toggleFavKeep */
   const toggleFavKeep = (pgId) => {
   if (favKeepSet.has(pgId)) favKeepSet.delete(pgId);
   else favKeepSet.add(pgId);
@@ -1831,6 +1970,8 @@
   ▶ {{ (function(d){ try{
   const o=JSON.parse(d);
   const inner = o?.data?.data ?? o?.data ?? o;
+
+  /* totalCnt */
   const totalCnt = (x) => x.pageTotalCount ?? x.totalCount ?? x.total ?? '?';
   if(inner==null) return '';
   if(Array.isArray(inner)) return '[' + inner.length + '건] ' + JSON.stringify(inner[0]||{}).slice(0,100);

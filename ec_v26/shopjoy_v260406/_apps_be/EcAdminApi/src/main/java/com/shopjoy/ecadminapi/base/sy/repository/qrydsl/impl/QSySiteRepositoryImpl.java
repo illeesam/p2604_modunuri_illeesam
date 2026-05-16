@@ -31,6 +31,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private static final QSyCode cdSt = new QSyCode("cd_st");
     private static final QSyCode cdSs = new QSyCode("cd_ss");
 
+    /* 사이트 buildBaseQuery */
     private JPAQuery<SySiteDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SySiteDto.Item.class,
@@ -47,6 +48,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 .leftJoin(cdSs).on(cdSs.codeGrp.eq("SITE_STATUS").and(cdSs.codeValue.eq(s.siteStatusCd)));
     }
 
+    /* 사이트 키조회 */
     @Override
     public Optional<SySiteDto.Item> selectById(String siteId) {
         SySiteDto.Item dto = buildBaseQuery()
@@ -55,6 +57,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 사이트 목록조회 */
     @Override
     public List<SySiteDto.Item> selectList(SySiteDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -72,6 +75,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         return query.fetch();
     }
 
+    /* 사이트 페이지조회 */
     @Override
     public SySiteDto.PageResponse selectPageList(SySiteDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -93,15 +97,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SySiteDto.Request q) {
         BooleanBuilder w = new BooleanBuilder();
         if (q == null) return w;
@@ -112,8 +108,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         if (StringUtils.hasText(q.getTypeCd())) w.and(s.siteTypeCd.eq(q.getTypeCd()));
 
         if (StringUtils.hasText(q.getSearchValue())) {
-            String types = "," + (q.getSearchTypes() == null ? "" : q.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(q.getSearchTypes());
+            String types = "," + (q.getSearchType() == null ? "" : q.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(q.getSearchType());
             String pattern = "%" + q.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_id,"))   or.or(s.siteId.likeIgnoreCase(pattern));
@@ -172,6 +168,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         return orders;
     }
 
+    /* 사이트 수정 */
     @Override
     public int updateSelective(SySite entity) {
         if (entity.getSiteId() == null) return 0;

@@ -11,16 +11,17 @@ window.SyBbmDtl = {
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ bbm_types: [], bbm_comment_types: [], bbm_attach_types: [], bbm_content_types: [], bbm_scope_types: [], use_yn: [],
       allow_yn_opts: [{codeValue:'Y',codeLabel:'허용'},{codeValue:'N',codeLabel:'불가'}],
     });
 
+    /* 게시판 마스터 fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -53,9 +54,17 @@ window.SyBbmDtl = {
 
     /* ── 표시경로 모달 ── */
     const pathPickModal = reactive({ show: false });
+
+    /* 게시판 마스터 openPathPick */
     const openPathPick = () => { pathPickModal.show = true; };
+
+    /* 게시판 마스터 closePathPick */
     const closePathPick = () => { pathPickModal.show = false; };
+
+    /* 게시판 마스터 onPathPicked */
     const onPathPicked = (pathId) => { form.pathId = pathId; pathPickModal.show = false; };
+
+    /* 게시판 마스터 pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const schema = yup.object({
@@ -63,6 +72,7 @@ window.SyBbmDtl = {
       bbmNm: yup.string().required('게시판명을 입력해주세요.'),
     });
 
+    /* 게시판 마스터 상세조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -91,6 +101,7 @@ window.SyBbmDtl = {
       await handleLoadDetail();
     });
 
+    /* 게시판 마스터 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {

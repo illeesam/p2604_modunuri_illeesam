@@ -28,6 +28,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
     private final JPAQueryFactory queryFactory;
     private static final QOdhPayChgHist h = QOdhPayChgHist.odhPayChgHist;
 
+    /* 결제 변경 이력 baseQuery */
     private JPAQuery<OdhPayChgHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhPayChgHistDto.Item.class,
@@ -40,6 +41,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
                 .from(h);
     }
 
+    /* 결제 변경 이력 키조회 */
     @Override
     public Optional<OdhPayChgHistDto.Item> selectById(String id) {
         OdhPayChgHistDto.Item dto = baseQuery()
@@ -48,6 +50,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 결제 변경 이력 목록조회 */
     @Override
     public List<OdhPayChgHistDto.Item> selectList(OdhPayChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -66,6 +69,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         return query.fetch();
     }
 
+    /* 결제 변경 이력 페이지조회 */
     @Override
     public OdhPayChgHistDto.PageResponse selectPageList(OdhPayChgHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -87,6 +91,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 결제 변경 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhPayChgHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -136,6 +141,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         return orders;
     }
 
+    /* 결제 변경 이력 수정 */
     @Override
     public int updateSelective(OdhPayChgHist entity) {
         if (entity.getPayChgHistId() == null) return 0;

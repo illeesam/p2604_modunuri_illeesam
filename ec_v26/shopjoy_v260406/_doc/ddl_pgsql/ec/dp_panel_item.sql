@@ -11,7 +11,7 @@ CREATE TABLE shopjoy_2604.dp_panel_item (
     title_show_yn      VARCHAR(1)   DEFAULT 'Y',
     widget_lib_ref_yn  VARCHAR(1)   DEFAULT 'N',
     content_type_cd    VARCHAR(30) ,
-    item_sort_ord      INTEGER      DEFAULT 0,
+    sort_ord           INTEGER      DEFAULT 0,
     widget_config_json TEXT        ,
     visibility_targets VARCHAR(200),
     disp_yn            VARCHAR(1)   DEFAULT 'Y',
@@ -37,7 +37,7 @@ COMMENT ON COLUMN shopjoy_2604.dp_panel_item.widget_content IS '위젯내용 (HT
 COMMENT ON COLUMN shopjoy_2604.dp_panel_item.title_show_yn IS '타이틀표시여부 (Y/N)';
 COMMENT ON COLUMN shopjoy_2604.dp_panel_item.widget_lib_ref_yn IS '위젯라이브러리참조여부 (Y/N)';
 COMMENT ON COLUMN shopjoy_2604.dp_panel_item.content_type_cd IS '콘텐츠유형 (WIDGET/HTML/TEXT/IMAGE 등)';
-COMMENT ON COLUMN shopjoy_2604.dp_panel_item.item_sort_ord IS '항목정렬순서';
+COMMENT ON COLUMN shopjoy_2604.dp_panel_item.sort_ord IS '항목정렬순서';
 COMMENT ON COLUMN shopjoy_2604.dp_panel_item.widget_config_json IS '위젯설정 (JSON - 위젯별 특정 설정 또는 직접 생성 콘텐츠)';
 COMMENT ON COLUMN shopjoy_2604.dp_panel_item.visibility_targets IS '공개대상 (코드: VISIBILITY_TARGET, ^CODE^CODE^ 형식)';
 COMMENT ON COLUMN shopjoy_2604.dp_panel_item.disp_yn IS '전시여부 (Y/N) - 배치로 자동 관리';

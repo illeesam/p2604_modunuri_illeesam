@@ -32,6 +32,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     private static final QSySite  ste  = QSySite.sySite;
     private static final QSyCode  cdCt = new QSyCode("cd_ct");
 
+    /* 캐시(충전금) 키조회 */
     @Override
     public Optional<PmCacheDto.Item> selectById(String cacheId) {
         PmCacheDto.Item dto = baseQuery()
@@ -40,6 +41,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 캐시(충전금) 목록조회 */
     @Override
     public List<PmCacheDto.Item> selectList(PmCacheDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -58,6 +60,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         return query.fetch();
     }
 
+    /* 캐시(충전금) 페이지조회 */
     @Override
     public PmCacheDto.PageResponse selectPageList(PmCacheDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -83,6 +86,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 캐시(충전금) baseQuery */
     private JPAQuery<PmCacheDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmCacheDto.Item.class,
@@ -97,15 +101,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                 .leftJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE").and(cdCt.codeValue.eq(c.cacheTypeCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(PmCacheDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -114,8 +110,8 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         if (StringUtils.hasText(s.getCacheId()))  w.and(c.cacheId.eq(s.getCacheId()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -171,6 +167,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         return orders;
     }
 
+    /* 캐시(충전금) 수정 */
     @Override
     public int updateSelective(PmCache entity) {
         if (entity.getCacheId() == null) return 0;

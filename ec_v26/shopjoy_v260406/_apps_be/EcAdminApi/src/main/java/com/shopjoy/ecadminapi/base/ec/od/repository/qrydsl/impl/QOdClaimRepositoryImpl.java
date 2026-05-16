@@ -43,6 +43,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private static final QSyCode   cdAp = new QSyCode("cd_ap");
     private static final QSyCode   cdAt = new QSyCode("cd_at");
 
+    /* 클레임(취소/반품/교환) 키조회 */
     @Override
     public Optional<OdClaimDto.Item> selectById(String claimId) {
         OdClaimDto.Item dto = queryFactory
@@ -106,6 +107,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 클레임(취소/반품/교환) 목록조회 */
     @Override
     public List<OdClaimDto.Item> selectList(OdClaimDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -124,6 +126,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         return query.fetch();
     }
 
+    /* 클레임(취소/반품/교환) 페이지조회 */
     @Override
     public OdClaimDto.PageResponse selectPageList(OdClaimDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -193,15 +196,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(c.exchangeCourierCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(OdClaimDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -212,10 +207,10 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         if (StringUtils.hasText(s.getClaimStatusCd())) w.and(c.claimStatusCd.eq(s.getClaimStatusCd()));
         if (StringUtils.hasText(s.getClaimTypeCd()))   w.and(c.claimTypeCd.eq(s.getClaimTypeCd()));
 
-        // searchValue + searchTypes
+        // searchValue + searchType
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -284,6 +279,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         return orders;
     }
 
+    /* 클레임(취소/반품/교환) 수정 */
     @Override
     public int updateSelective(OdClaim entity) {
         if (entity.getClaimId() == null) return 0;

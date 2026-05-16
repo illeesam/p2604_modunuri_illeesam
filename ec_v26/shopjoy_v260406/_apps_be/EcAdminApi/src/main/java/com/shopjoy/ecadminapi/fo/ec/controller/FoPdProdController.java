@@ -48,6 +48,7 @@ public class FoPdProdController {
 
     /* ── 목록 ────────────────────────────────────────────────── */
 
+    /* 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdProdDto.Item>>> list(@Valid @ModelAttribute PdProdDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getList(req)));
@@ -61,6 +62,7 @@ public class FoPdProdController {
 
     /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
 
+    /* getDetail */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDetail(
             @PathVariable("id") String id) {
@@ -69,6 +71,7 @@ public class FoPdProdController {
 
     /* ── Tier 2: lazy load ──────────────────────────────────── */
 
+    /* getContents */
     @GetMapping("/{id}/contents")
     public ResponseEntity<ApiResponse<List<PdProdContentDto.Item>>> getContents(
             @PathVariable("id") String id) {
@@ -107,6 +110,7 @@ public class FoPdProdController {
 
     /* ── Tier 3: 사용자별 프로모션 (통합) ───────────────────── */
 
+    /* getPromotions */
     @GetMapping("/{id}/promotions")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getPromotions(
             @PathVariable("id") String id) {

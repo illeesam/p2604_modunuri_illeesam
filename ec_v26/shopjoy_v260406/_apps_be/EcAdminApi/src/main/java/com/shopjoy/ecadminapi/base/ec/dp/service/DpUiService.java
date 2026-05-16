@@ -27,6 +27,7 @@ public class DpUiService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 전시 UI 키조회 */
     public DpUiDto.Item getById(String id) {
         DpUiDto.Item dto = dpUiRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class DpUiService {
         return dpUiRepository.selectById(id).orElse(null);
     }
 
+    /* 전시 UI 상세조회 */
     public DpUi findById(String id) {
         return dpUiRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class DpUiService {
         return dpUiRepository.findById(id).orElse(null);
     }
 
+    /* 전시 UI 키검증 */
     public boolean existsById(String id) {
         return dpUiRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class DpUiService {
         return true;
     }
 
+    /* 전시 UI 목록조회 */
     public List<DpUiDto.Item> getList(DpUiDto.Request req) {
         return dpUiRepository.selectList(req);
     }
 
+    /* 전시 UI 페이지조회 */
     public DpUiDto.PageResponse getPageData(DpUiDto.Request req) {
         PageHelper.addPaging(req);
         return dpUiRepository.selectPageList(req);
     }
 
+    /* 전시 UI 등록 */
     @Transactional
     public DpUi create(DpUi body) {
         body.setUiId(CmUtil.generateId("dp_ui"));
@@ -80,6 +86,7 @@ public class DpUiService {
         return saved;
     }
 
+    /* 전시 UI 저장 */
     @Transactional
     public DpUi save(DpUi entity) {
         if (!existsById(entity.getUiId()))
@@ -92,6 +99,7 @@ public class DpUiService {
         return saved;
     }
 
+    /* 전시 UI 수정 */
     @Transactional
     public DpUi update(String id, DpUi body) {
         DpUi entity = findById(id);
@@ -104,6 +112,7 @@ public class DpUiService {
         return saved;
     }
 
+    /* 전시 UI 수정 */
     @Transactional
     public DpUi updateSelective(DpUi entity) {
         if (entity.getUiId() == null) throw new CmBizException("uiId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class DpUiService {
         return entity;
     }
 
+    /* 전시 UI 삭제 */
     @Transactional
     public void delete(String id) {
         DpUi entity = findById(id);
@@ -125,6 +135,7 @@ public class DpUiService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 전시 UI 목록저장 */
     @Transactional
     public void saveList(List<DpUi> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

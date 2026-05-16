@@ -28,6 +28,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     private final JPAQueryFactory queryFactory;
     private static final QCmBlogFile f = QCmBlogFile.cmBlogFile;
 
+    /* 게시물 첨부파일 buildBaseQuery */
     private JPAQuery<CmBlogFileDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogFileDto.Item.class,
@@ -38,6 +39,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
                 .from(f);
     }
 
+    /* 게시물 첨부파일 키조회 */
     @Override
     public Optional<CmBlogFileDto.Item> selectById(String blogImgId) {
         CmBlogFileDto.Item dto = buildBaseQuery()
@@ -46,6 +48,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 게시물 첨부파일 목록조회 */
     @Override
     public List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -63,6 +66,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         return query.fetch();
     }
 
+    /* 게시물 첨부파일 페이지조회 */
     @Override
     public CmBlogFileDto.PageResponse selectPageList(CmBlogFileDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
@@ -88,6 +92,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 게시물 첨부파일 buildCondition */
     private BooleanBuilder buildCondition(CmBlogFileDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -143,6 +148,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         return orders;
     }
 
+    /* 게시물 첨부파일 수정 */
     @Override
     public int updateSelective(CmBlogFile entity) {
         if (entity.getBlogImgId() == null) return 0;

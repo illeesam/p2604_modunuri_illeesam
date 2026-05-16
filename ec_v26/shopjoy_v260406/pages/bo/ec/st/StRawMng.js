@@ -6,10 +6,10 @@ window.StRawMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', searchMoreOpen: false, loading: false });
     const codes = reactive({ raw_types: [], raw_collect_statuses: [], raw_vendor_divs: [], pay_methods: [], order_statuses_kr: [],
       confirm_yn_opts: [{ codeValue: 'Y', codeLabel: '확정' }, { codeValue: 'N', codeLabel: '미확정' }],
@@ -19,6 +19,7 @@ window.StRawMng = {
     });
 
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -39,18 +40,21 @@ window.StRawMng = {
     // -- watch ----------------------------------------------------------------
 
             const dateEnd   = ref('');
+
+    /* handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
     (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     // 검색 필드
-  const _initSearchParam = () => ({ searchTypes: '', searchValue: '', type: '', status: '', vendorType: '', payMethod: '', buyConfirm: '', closeYn: '', erpSend: '', period: '', orderStatus: '', amtFrom: '', amtTo: '', moreOpen: '' });
+  const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '', vendorType: '', payMethod: '', buyConfirm: '', closeYn: '', erpSend: '', period: '', orderStatus: '', amtFrom: '', amtTo: '', moreOpen: '' });
   const searchParam = reactive(_initSearchParam());
 
     const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const rawList = reactive([]);
 
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
@@ -58,9 +62,9 @@ const rawList = reactive([]);
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_raw_id,def_src_id,def_vendor_nm,def_prod_nm,def_brand_nm';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_raw_id,def_src_id,def_vendor_nm,def_prod_nm,def_brand_nm';
         }
         const res = await boApiSvc.stSettleRaw.getPage(params, '정산데이터관리', '목록조회');
         const data = res.data?.data;
@@ -86,6 +90,7 @@ const rawList = reactive([]);
     });
 
 
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
@@ -98,22 +103,48 @@ const rawList = reactive([]);
       confirmCnt: rawList.filter(r => r.buyConfirmYn === 'Y').length,
     }));
 
+    /* setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
     const expandedRows = reactive(new Set());
+
+    /* toggleRow */
     const toggleRow = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+
+    /* isExpanded */
     const isExpanded = id => expandedRows.has(id);
 
+    /* fnStatusBadge */
     const fnStatusBadge = s => ({ 'COLLECTED':'badge-green', 'EXCLUDED':'badge-gray', 'SETTLED':'badge-purple', 'PENDING':'badge-blue' }[s] || 'badge-gray');
+
+    /* rawStatusLabel */
     const rawStatusLabel = s => ({ 'COLLECTED':'수집완료', 'EXCLUDED':'제외', 'SETTLED':'정산완료', 'PENDING':'대기' }[s] || s || '-');
+
+    /* fnRawStatusBadge */
     const fnRawStatusBadge = s => fnStatusBadge(s);
+
+    /* vendorTypeLabel */
     const vendorTypeLabel = s => ({ 'SALE':'판매업체', 'DLIV':'배송업체', 'EXTERNAL':'외부업체' }[s] || s || '-');
+
+    /* orderStatusLabel */
     const orderStatusLabel = s => ({ 'ORDERED':'주문완료', 'PAID':'결제완료', 'PREPARING':'준비중', 'SHIPPING':'배송중', 'DELIVERED':'배송완료', 'CONFIRMED':'구매확정', 'CANCELLED':'취소' }[s] || s || '-');
+
+    /* fmtW */
     const fmtW = n => (Number(n || 0) >= 0 ? '' : '-') + Math.abs(Number(n || 0)).toLocaleString() + '원';
+
+    /* fmtPct */
     const fmtPct = n => Number(n || 0).toLocaleString() + '%';
+
+    /* doCollect */
     const doCollect = async () => {
       const ok = await showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
       if (!ok) return;
@@ -170,7 +201,7 @@ const rawList = reactive([]);
         <option v-for="c in codes.raw_collect_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_raw_id',    label: '원장ID' },
           { value: 'def_src_id',    label: '소스ID' },

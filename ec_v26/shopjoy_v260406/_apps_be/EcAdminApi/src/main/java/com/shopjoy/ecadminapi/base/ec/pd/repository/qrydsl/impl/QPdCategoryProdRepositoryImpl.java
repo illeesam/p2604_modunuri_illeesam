@@ -34,6 +34,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     private static final QPdCategory     cat = QPdCategory.pdCategory;
     private static final QPdProd         prd = QPdProd.pdProd;
 
+    /* 카테고리-상품 매핑 키조회 */
     @Override
     public Optional<PdCategoryProdDto.Item> selectById(String categoryProdId) {
         PdCategoryProdDto.Item dto = baseQuery()
@@ -42,6 +43,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         return Optional.ofNullable(dto);
     }
 
+    /* 카테고리-상품 매핑 목록조회 */
     @Override
     public List<PdCategoryProdDto.Item> selectList(PdCategoryProdDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -60,6 +62,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         return query.fetch();
     }
 
+    /* 카테고리-상품 매핑 페이지조회 */
     @Override
     public PdCategoryProdDto.PageResponse selectPageList(PdCategoryProdDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -81,6 +84,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 카테고리-상품 매핑 baseQuery */
     private JPAQuery<PdCategoryProdDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PdCategoryProdDto.Item.class,
@@ -98,6 +102,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                 .leftJoin(prd).on(prd.prodId.eq(p.prodId));
     }
 
+    /* 카테고리-상품 매핑 buildCondition */
     private BooleanBuilder buildCondition(PdCategoryProdDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -157,6 +162,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         return orders;
     }
 
+    /* 카테고리-상품 매핑 수정 */
     @Override
     public int updateSelective(PdCategoryProd entity) {
         if (entity.getCategoryProdId() == null) return 0;

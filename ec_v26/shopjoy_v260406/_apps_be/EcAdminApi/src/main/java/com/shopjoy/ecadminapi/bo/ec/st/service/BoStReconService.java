@@ -19,8 +19,11 @@ public class BoStReconService {
 
     private final StReconService stReconService;
 
+    /* 키조회 */
     public StReconDto.Item getById(String id) { return stReconService.getById(id); }
+    /* 목록조회 */
     public List<StReconDto.Item> getList(StReconDto.Request req) { return stReconService.getList(req); }
+    /* 페이지조회 */
     public StReconDto.PageResponse getPageData(StReconDto.Request req) { return stReconService.getPageData(req); }
 
     @Transactional public StRecon create(StRecon body) { return stReconService.create(body); }

@@ -27,6 +27,7 @@ public class StSettleEtcAdjService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 정산 기타 조정 키조회 */
     public StSettleEtcAdjDto.Item getById(String id) {
         StSettleEtcAdjDto.Item dto = stSettleEtcAdjRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class StSettleEtcAdjService {
         return stSettleEtcAdjRepository.selectById(id).orElse(null);
     }
 
+    /* 정산 기타 조정 상세조회 */
     public StSettleEtcAdj findById(String id) {
         return stSettleEtcAdjRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class StSettleEtcAdjService {
         return stSettleEtcAdjRepository.findById(id).orElse(null);
     }
 
+    /* 정산 기타 조정 키검증 */
     public boolean existsById(String id) {
         return stSettleEtcAdjRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class StSettleEtcAdjService {
         return true;
     }
 
+    /* 정산 기타 조정 목록조회 */
     public List<StSettleEtcAdjDto.Item> getList(StSettleEtcAdjDto.Request req) {
         return stSettleEtcAdjRepository.selectList(req);
     }
 
+    /* 정산 기타 조정 페이지조회 */
     public StSettleEtcAdjDto.PageResponse getPageData(StSettleEtcAdjDto.Request req) {
         PageHelper.addPaging(req);
         return stSettleEtcAdjRepository.selectPageList(req);
     }
 
+    /* 정산 기타 조정 등록 */
     @Transactional
     public StSettleEtcAdj create(StSettleEtcAdj body) {
         body.setSettleEtcAdjId(CmUtil.generateId("st_settle_etc_adj"));
@@ -80,6 +86,7 @@ public class StSettleEtcAdjService {
         return saved;
     }
 
+    /* 정산 기타 조정 저장 */
     @Transactional
     public StSettleEtcAdj save(StSettleEtcAdj entity) {
         if (!existsById(entity.getSettleEtcAdjId()))
@@ -92,6 +99,7 @@ public class StSettleEtcAdjService {
         return saved;
     }
 
+    /* 정산 기타 조정 수정 */
     @Transactional
     public StSettleEtcAdj update(String id, StSettleEtcAdj body) {
         StSettleEtcAdj entity = findById(id);
@@ -104,6 +112,7 @@ public class StSettleEtcAdjService {
         return saved;
     }
 
+    /* 정산 기타 조정 수정 */
     @Transactional
     public StSettleEtcAdj updateSelective(StSettleEtcAdj entity) {
         if (entity.getSettleEtcAdjId() == null) throw new CmBizException("settleEtcAdjId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class StSettleEtcAdjService {
         return entity;
     }
 
+    /* 정산 기타 조정 삭제 */
     @Transactional
     public void delete(String id) {
         StSettleEtcAdj entity = findById(id);
@@ -125,6 +135,7 @@ public class StSettleEtcAdjService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 정산 기타 조정 목록저장 */
     @Transactional
     public void saveList(List<StSettleEtcAdj> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

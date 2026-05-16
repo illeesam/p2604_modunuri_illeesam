@@ -41,6 +41,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
     private static final QSyCode      cdSit = new QSyCode("cd_sit");
     private static final QSyCode      cdSis = new QSyCode("cd_sis");
 
+    /* 적립금 지급 이력 baseQuery */
     private JPAQuery<PmSaveIssueDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmSaveIssueDto.Item.class,
@@ -59,6 +60,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                 .leftJoin(cdSis).on(cdSis.codeGrp.eq("SAVE_ISSUE_STATUS").and(cdSis.codeValue.eq(i.issueStatusCd)));
     }
 
+    /* 적립금 지급 이력 키조회 */
     @Override
     public Optional<PmSaveIssueDto.Item> selectById(String saveIssueId) {
         PmSaveIssueDto.Item dto = baseQuery()
@@ -67,6 +69,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 적립금 지급 이력 목록조회 */
     @Override
     public List<PmSaveIssueDto.Item> selectList(PmSaveIssueDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -85,6 +88,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         return query.fetch();
     }
 
+    /* 적립금 지급 이력 페이지조회 */
     @Override
     public PmSaveIssueDto.PageResponse selectPageList(PmSaveIssueDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -110,6 +114,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 적립금 지급 이력 buildCondition */
     private BooleanBuilder buildCondition(PmSaveIssueDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -166,6 +171,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         return orders;
     }
 
+    /* 적립금 지급 이력 수정 */
     @Override
     public int updateSelective(PmSaveIssue entity) {
         if (entity.getSaveIssueId() == null) return 0;

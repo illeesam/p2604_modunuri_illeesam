@@ -27,6 +27,7 @@ public class DpAreaPanelService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 전시 영역-패널 매핑 키조회 */
     public DpAreaPanelDto.Item getById(String id) {
         DpAreaPanelDto.Item dto = dpAreaPanelRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class DpAreaPanelService {
         return dpAreaPanelRepository.selectById(id).orElse(null);
     }
 
+    /* 전시 영역-패널 매핑 상세조회 */
     public DpAreaPanel findById(String id) {
         return dpAreaPanelRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class DpAreaPanelService {
         return dpAreaPanelRepository.findById(id).orElse(null);
     }
 
+    /* 전시 영역-패널 매핑 키검증 */
     public boolean existsById(String id) {
         return dpAreaPanelRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class DpAreaPanelService {
         return true;
     }
 
+    /* 전시 영역-패널 매핑 목록조회 */
     public List<DpAreaPanelDto.Item> getList(DpAreaPanelDto.Request req) {
         return dpAreaPanelRepository.selectList(req);
     }
 
+    /* 전시 영역-패널 매핑 페이지조회 */
     public DpAreaPanelDto.PageResponse getPageData(DpAreaPanelDto.Request req) {
         PageHelper.addPaging(req);
         return dpAreaPanelRepository.selectPageList(req);
     }
 
+    /* 전시 영역-패널 매핑 등록 */
     @Transactional
     public DpAreaPanel create(DpAreaPanel body) {
         body.setAreaPanelId(CmUtil.generateId("dp_area_panel"));
@@ -80,6 +86,7 @@ public class DpAreaPanelService {
         return saved;
     }
 
+    /* 전시 영역-패널 매핑 저장 */
     @Transactional
     public DpAreaPanel save(DpAreaPanel entity) {
         if (!existsById(entity.getAreaPanelId()))
@@ -92,6 +99,7 @@ public class DpAreaPanelService {
         return saved;
     }
 
+    /* 전시 영역-패널 매핑 수정 */
     @Transactional
     public DpAreaPanel update(String id, DpAreaPanel body) {
         DpAreaPanel entity = findById(id);
@@ -104,6 +112,7 @@ public class DpAreaPanelService {
         return saved;
     }
 
+    /* 전시 영역-패널 매핑 수정 */
     @Transactional
     public DpAreaPanel updateSelective(DpAreaPanel entity) {
         if (entity.getAreaPanelId() == null) throw new CmBizException("areaPanelId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class DpAreaPanelService {
         return entity;
     }
 
+    /* 전시 영역-패널 매핑 삭제 */
     @Transactional
     public void delete(String id) {
         DpAreaPanel entity = findById(id);
@@ -125,6 +135,7 @@ public class DpAreaPanelService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 전시 영역-패널 매핑 목록저장 */
     @Transactional
     public void saveList(List<DpAreaPanel> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

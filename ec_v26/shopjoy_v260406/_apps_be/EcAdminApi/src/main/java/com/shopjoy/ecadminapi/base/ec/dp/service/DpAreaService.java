@@ -28,6 +28,7 @@ public class DpAreaService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 전시 영역 키조회 */
     public DpAreaDto.Item getById(String id) {
         DpAreaDto.Item dto = dpAreaRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -39,6 +40,7 @@ public class DpAreaService {
         return dpAreaRepository.selectById(id).orElse(null);
     }
 
+    /* 전시 영역 상세조회 */
     public DpArea findById(String id) {
         return dpAreaRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -49,6 +51,7 @@ public class DpAreaService {
         return dpAreaRepository.findById(id).orElse(null);
     }
 
+    /* 전시 영역 키검증 */
     public boolean existsById(String id) {
         return dpAreaRepository.existsById(id);
     }
@@ -59,15 +62,18 @@ public class DpAreaService {
         return true;
     }
 
+    /* 전시 영역 목록조회 */
     public List<DpAreaDto.Item> getList(DpAreaDto.Request req) {
         return dpAreaRepository.selectList(req);
     }
 
+    /* 전시 영역 페이지조회 */
     public DpAreaDto.PageResponse getPageData(DpAreaDto.Request req) {
         PageHelper.addPaging(req);
         return dpAreaRepository.selectPageList(req);
     }
 
+    /* 전시 영역 등록 */
     @Transactional
     public DpArea create(DpArea body) {
         body.setAreaId(CmUtil.generateId("dp_area"));
@@ -81,6 +87,7 @@ public class DpAreaService {
         return saved;
     }
 
+    /* 전시 영역 저장 */
     @Transactional
     public DpArea save(DpArea entity) {
         if (!existsById(entity.getAreaId()))
@@ -93,6 +100,7 @@ public class DpAreaService {
         return saved;
     }
 
+    /* 전시 영역 수정 */
     @Transactional
     public DpArea update(String id, DpArea body) {
         DpArea entity = findById(id);
@@ -105,6 +113,7 @@ public class DpAreaService {
         return saved;
     }
 
+    /* 전시 영역 수정 */
     @Transactional
     public DpArea updateSelective(DpArea entity) {
         if (entity.getAreaId() == null) throw new CmBizException("areaId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -118,6 +127,7 @@ public class DpAreaService {
         return entity;
     }
 
+    /* 전시 영역 삭제 */
     @Transactional
     public void delete(String id) {
         DpArea entity = findById(id);
@@ -126,6 +136,7 @@ public class DpAreaService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 전시 영역 목록저장 */
     @Transactional
     public void saveList(List<DpArea> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

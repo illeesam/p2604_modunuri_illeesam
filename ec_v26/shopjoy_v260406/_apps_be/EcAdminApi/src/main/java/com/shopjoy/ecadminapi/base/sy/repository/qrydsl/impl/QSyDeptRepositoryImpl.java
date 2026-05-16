@@ -34,6 +34,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     private static final QSyUser usr = QSyUser.syUser;
     private static final QSyCode cdDt = new QSyCode("cd_dt");
 
+    /* 부서 buildBaseQuery */
     private JPAQuery<SyDeptDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyDeptDto.Item.class,
@@ -48,6 +49,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE").and(cdDt.codeValue.eq(d.deptTypeCd)));
     }
 
+    /* 부서 키조회 */
     @Override
     public Optional<SyDeptDto.Item> selectById(String deptId) {
         SyDeptDto.Item dto = buildBaseQuery()
@@ -56,6 +58,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 부서 목록조회 */
     @Override
     public List<SyDeptDto.Item> selectList(SyDeptDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -73,6 +76,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         return query.fetch();
     }
 
+    /* 부서 페이지조회 */
     @Override
     public SyDeptDto.PageResponse selectPageList(SyDeptDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -94,15 +98,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyDeptDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -113,8 +109,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         if (StringUtils.hasText(s.getUseYn()))        w.and(d.useYn.eq(s.getUseYn()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_name,")) or.or(d.deptNm.likeIgnoreCase(pattern));
@@ -173,6 +169,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         return orders;
     }
 
+    /* 부서 수정 */
     @Override
     public int updateSelective(SyDept entity) {
         if (entity.getDeptId() == null) return 0;

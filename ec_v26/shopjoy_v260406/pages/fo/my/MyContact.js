@@ -6,14 +6,15 @@ window.MyContact = {
   },
   setup(props) {
     const { reactive, computed, onMounted, watch } = Vue;
-    const showToast            = window.foApp.showToast;
-    const showConfirm          = window.foApp.showConfirm;
+    const showToast            = window.foApp.showToast;  // 토스트 알림
+    const showConfirm          = window.foApp.showConfirm;  // 확인 모달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
     const myStore = window.useFoMyStore();
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -33,6 +34,7 @@ window.MyContact = {
     const { inRange, onDateSearch } = window.myDateFilterHelper();
     const cfDateFilteredInquiries = computed(() => inquiries.value.filter(q => inRange(q.date)));
 
+    /* cancelInquiry */
     const cancelInquiry = async id => {
       const ok = await showConfirm('문의 취소', '이 문의를 취소하시겠습니까?', 'warning');
       if (!ok) return;
@@ -41,6 +43,7 @@ window.MyContact = {
       showToast('문의가 취소되었습니다.', 'success');
     };
 
+    /* 목록조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await myStore.loadInquiries();

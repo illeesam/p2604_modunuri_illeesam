@@ -36,6 +36,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     private static final QPmCoupon      cpn = new QPmCoupon("cpn");
     private static final QSyCode        cdOdt = new QSyCode("cd_odt");
 
+    /* 주문 할인 키조회 */
     @Override
     public Optional<OdOrderDiscntDto.Item> selectById(String orderDiscntId) {
         OdOrderDiscntDto.Item dto = baseListQuery()
@@ -44,6 +45,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 주문 할인 목록조회 */
     @Override
     public List<OdOrderDiscntDto.Item> selectList(OdOrderDiscntDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -62,6 +64,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         return query.fetch();
     }
 
+    /* 주문 할인 페이지조회 */
     @Override
     public OdOrderDiscntDto.PageResponse selectPageList(OdOrderDiscntDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -104,6 +107,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                 .leftJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(d.discntTypeCd)));
     }
 
+    /* 주문 할인 buildCondition */
     private BooleanBuilder buildCondition(OdOrderDiscntDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -158,6 +162,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         return orders;
     }
 
+    /* 주문 할인 수정 */
     @Override
     public int updateSelective(OdOrderDiscnt entity) {
         if (entity.getOrderDiscntId() == null) return 0;

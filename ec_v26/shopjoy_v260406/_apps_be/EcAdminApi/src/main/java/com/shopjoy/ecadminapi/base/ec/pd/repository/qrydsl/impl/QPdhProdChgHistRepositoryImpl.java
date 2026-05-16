@@ -49,6 +49,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
                 .leftJoin(ste).on(ste.siteId.eq(h.siteId));
     }
 
+    /* 상품 변경 이력 키조회 */
     @Override
     public Optional<PdhProdChgHistDto.Item> selectById(String id) {
         PdhProdChgHistDto.Item dto = buildBaseQuery()
@@ -57,6 +58,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 변경 이력 목록조회 */
     @Override
     public List<PdhProdChgHistDto.Item> selectList(PdhProdChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -75,6 +77,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         return query.fetch();
     }
 
+    /* 상품 변경 이력 페이지조회 */
     @Override
     public PdhProdChgHistDto.PageResponse selectPageList(PdhProdChgHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;

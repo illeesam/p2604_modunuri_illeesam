@@ -29,6 +29,7 @@ public class BoAuthRedisStore {
 
     // ── 세션 정보 ─────────────────────────────────────────────────
 
+    /* saveSession */
     public void saveSession(String userId, Map<String, Object> sessionInfo) {
         redis.set(CacheKey.BO_AUTH_SESSION + userId, sessionInfo, props.getTtl().getBoAuthSeconds());
         log.info("[Cache][redis] [bo:auth:session][{}] saveSession()", userId);

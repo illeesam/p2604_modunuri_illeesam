@@ -30,6 +30,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     private static final QSyRoleMenu m = QSyRoleMenu.syRoleMenu;
     private static final QSySite ste = QSySite.sySite;
 
+    /* 역할별 메뉴 권한 buildBaseQuery */
     private JPAQuery<SyRoleMenuDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyRoleMenuDto.Item.class,
@@ -40,6 +41,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                 .leftJoin(ste).on(ste.siteId.eq(m.siteId));
     }
 
+    /* 역할별 메뉴 권한 키조회 */
     @Override
     public Optional<SyRoleMenuDto.Item> selectById(String roleMenuId) {
         SyRoleMenuDto.Item dto = buildBaseQuery()
@@ -48,6 +50,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 역할별 메뉴 권한 목록조회 */
     @Override
     public List<SyRoleMenuDto.Item> selectList(SyRoleMenuDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -65,6 +68,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         return query.fetch();
     }
 
+    /* 역할별 메뉴 권한 페이지조회 */
     @Override
     public SyRoleMenuDto.PageResponse selectPageList(SyRoleMenuDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -86,6 +90,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 역할별 메뉴 권한 buildCondition */
     private BooleanBuilder buildCondition(SyRoleMenuDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -142,6 +147,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         return orders;
     }
 
+    /* 역할별 메뉴 권한 수정 */
     @Override
     public int updateSelective(SyRoleMenu entity) {
         if (entity.getRoleMenuId() == null) return 0;

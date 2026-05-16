@@ -27,6 +27,7 @@ public class PmSaveIssueService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 적립금 지급 이력 키조회 */
     public PmSaveIssueDto.Item getById(String id) {
         PmSaveIssueDto.Item dto = pmSaveIssueRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmSaveIssueService {
         return pmSaveIssueRepository.selectById(id).orElse(null);
     }
 
+    /* 적립금 지급 이력 상세조회 */
     public PmSaveIssue findById(String id) {
         return pmSaveIssueRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmSaveIssueService {
         return pmSaveIssueRepository.findById(id).orElse(null);
     }
 
+    /* 적립금 지급 이력 키검증 */
     public boolean existsById(String id) {
         return pmSaveIssueRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmSaveIssueService {
         return true;
     }
 
+    /* 적립금 지급 이력 목록조회 */
     public List<PmSaveIssueDto.Item> getList(PmSaveIssueDto.Request req) {
         return pmSaveIssueRepository.selectList(req);
     }
 
+    /* 적립금 지급 이력 페이지조회 */
     public PmSaveIssueDto.PageResponse getPageData(PmSaveIssueDto.Request req) {
         PageHelper.addPaging(req);
         return pmSaveIssueRepository.selectPageList(req);
     }
 
+    /* 적립금 지급 이력 등록 */
     @Transactional
     public PmSaveIssue create(PmSaveIssue body) {
         body.setSaveIssueId(CmUtil.generateId("pm_save_issue"));
@@ -80,6 +86,7 @@ public class PmSaveIssueService {
         return saved;
     }
 
+    /* 적립금 지급 이력 저장 */
     @Transactional
     public PmSaveIssue save(PmSaveIssue entity) {
         if (!existsById(entity.getSaveIssueId()))
@@ -92,6 +99,7 @@ public class PmSaveIssueService {
         return saved;
     }
 
+    /* 적립금 지급 이력 수정 */
     @Transactional
     public PmSaveIssue update(String id, PmSaveIssue body) {
         PmSaveIssue entity = findById(id);
@@ -104,6 +112,7 @@ public class PmSaveIssueService {
         return saved;
     }
 
+    /* 적립금 지급 이력 수정 */
     @Transactional
     public PmSaveIssue updateSelective(PmSaveIssue entity) {
         if (entity.getSaveIssueId() == null) throw new CmBizException("saveIssueId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmSaveIssueService {
         return entity;
     }
 
+    /* 적립금 지급 이력 삭제 */
     @Transactional
     public void delete(String id) {
         PmSaveIssue entity = findById(id);
@@ -125,6 +135,7 @@ public class PmSaveIssueService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 적립금 지급 이력 목록저장 */
     @Transactional
     public void saveList(List<PmSaveIssue> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

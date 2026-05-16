@@ -13,6 +13,7 @@ window.BlogView = {
 
     const posts = reactive([]);
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await foApiSvc.cmBltn.getById(props.dtlId, '블로그상세', '상세조회');
@@ -23,6 +24,7 @@ window.BlogView = {
       }
     };
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -46,6 +48,8 @@ window.BlogView = {
     const commentText   = ref('');
     const localComments = reactive([]);
     const cfAllComments   = computed(() => [...(cfPost.value.comments || []), ...localComments]);
+
+    /* addComment */
     const addComment    = () => {
       const t = searchParam.commentText.trim();
       if (!t) return;
@@ -71,6 +75,7 @@ window.BlogView = {
     /* 관련 글 */
     const cfRelatedPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
 
+    /* 목록조회 */
     const onSearch = async () => {
       try {
         const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
@@ -78,6 +83,7 @@ window.BlogView = {
       } catch (e) {}
     };
 
+    /* onReset */
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
     };

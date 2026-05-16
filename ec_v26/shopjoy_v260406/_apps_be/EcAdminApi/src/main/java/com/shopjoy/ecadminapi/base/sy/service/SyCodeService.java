@@ -27,6 +27,7 @@ public class SyCodeService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public SyCodeDto.Item getById(String id) {
         SyCodeDto.Item dto = syCodeRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyCodeService {
         return syCodeRepository.selectById(id).orElse(null);
     }
 
+    /* 상세조회 */
     public SyCode findById(String id) {
         return syCodeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyCodeService {
         return syCodeRepository.findById(id).orElse(null);
     }
 
+    /* 키검증 */
     public boolean existsById(String id) {
         return syCodeRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyCodeService {
         return true;
     }
 
+    /* 목록조회 */
     public List<SyCodeDto.Item> getList(SyCodeDto.Request req) {
         return syCodeRepository.selectList(req);
     }
 
+    /* 페이지조회 */
     public SyCodeDto.PageResponse getPageData(SyCodeDto.Request req) {
         PageHelper.addPaging(req);
         return syCodeRepository.selectPageList(req);
     }
 
+    /* 등록 */
     @Transactional
     public SyCode create(SyCode body) {
         body.setCodeId(CmUtil.generateId("sy_code"));
@@ -80,6 +86,7 @@ public class SyCodeService {
         return saved;
     }
 
+    /* 저장 */
     @Transactional
     public SyCode save(SyCode entity) {
         if (!existsById(entity.getCodeId()))
@@ -92,6 +99,7 @@ public class SyCodeService {
         return saved;
     }
 
+    /* 수정 */
     @Transactional
     public SyCode update(String id, SyCode body) {
         SyCode entity = findById(id);
@@ -104,6 +112,7 @@ public class SyCodeService {
         return saved;
     }
 
+    /* 수정 */
     @Transactional
     public SyCode updateSelective(SyCode entity) {
         if (entity.getCodeId() == null) throw new CmBizException("codeId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyCodeService {
         return entity;
     }
 
+    /* 삭제 */
     @Transactional
     public void delete(String id) {
         SyCode entity = findById(id);
@@ -125,6 +135,7 @@ public class SyCodeService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 목록저장 */
     @Transactional
     public void saveList(List<SyCode> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

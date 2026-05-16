@@ -27,6 +27,7 @@ public class CmChattMsgService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 채팅 메시지 키조회 */
     public CmChattMsgDto.Item getById(String id) {
         CmChattMsgDto.Item dto = cmChattMsgRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmChattMsgService {
         return cmChattMsgRepository.selectById(id).orElse(null);
     }
 
+    /* 채팅 메시지 상세조회 */
     public CmChattMsg findById(String id) {
         return cmChattMsgRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmChattMsgService {
         return cmChattMsgRepository.findById(id).orElse(null);
     }
 
+    /* 채팅 메시지 키검증 */
     public boolean existsById(String id) {
         return cmChattMsgRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmChattMsgService {
         return true;
     }
 
+    /* 채팅 메시지 목록조회 */
     public List<CmChattMsgDto.Item> getList(CmChattMsgDto.Request req) {
         return cmChattMsgRepository.selectList(req);
     }
 
+    /* 채팅 메시지 페이지조회 */
     public CmChattMsgDto.PageResponse getPageData(CmChattMsgDto.Request req) {
         PageHelper.addPaging(req);
         return cmChattMsgRepository.selectPageList(req);
     }
 
+    /* 채팅 메시지 등록 */
     @Transactional
     public CmChattMsg create(CmChattMsg body) {
         body.setChattMsgId(CmUtil.generateId("cm_chatt_msg"));
@@ -80,6 +86,7 @@ public class CmChattMsgService {
         return saved;
     }
 
+    /* 채팅 메시지 저장 */
     @Transactional
     public CmChattMsg save(CmChattMsg entity) {
         if (!existsById(entity.getChattMsgId()))
@@ -92,6 +99,7 @@ public class CmChattMsgService {
         return saved;
     }
 
+    /* 채팅 메시지 수정 */
     @Transactional
     public CmChattMsg update(String id, CmChattMsg body) {
         CmChattMsg entity = findById(id);
@@ -104,6 +112,7 @@ public class CmChattMsgService {
         return saved;
     }
 
+    /* 채팅 메시지 수정 */
     @Transactional
     public CmChattMsg updateSelective(CmChattMsg entity) {
         if (entity.getChattMsgId() == null) throw new CmBizException("chattMsgId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmChattMsgService {
         return entity;
     }
 
+    /* 채팅 메시지 삭제 */
     @Transactional
     public void delete(String id) {
         CmChattMsg entity = findById(id);
@@ -125,6 +135,7 @@ public class CmChattMsgService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 채팅 메시지 목록저장 */
     @Transactional
     public void saveList(List<CmChattMsg> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

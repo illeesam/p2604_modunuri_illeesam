@@ -27,6 +27,7 @@ public class MbMemberRoleService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 회원 역할 연결 키조회 */
     public MbMemberRoleDto.Item getById(String id) {
         MbMemberRoleDto.Item dto = mbMemberRoleRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class MbMemberRoleService {
         return mbMemberRoleRepository.selectById(id).orElse(null);
     }
 
+    /* 회원 역할 연결 상세조회 */
     public MbMemberRole findById(String id) {
         return mbMemberRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class MbMemberRoleService {
         return mbMemberRoleRepository.findById(id).orElse(null);
     }
 
+    /* 회원 역할 연결 키검증 */
     public boolean existsById(String id) {
         return mbMemberRoleRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class MbMemberRoleService {
         return true;
     }
 
+    /* 회원 역할 연결 목록조회 */
     public List<MbMemberRoleDto.Item> getList(MbMemberRoleDto.Request req) {
         return mbMemberRoleRepository.selectList(req);
     }
 
+    /* 회원 역할 연결 페이지조회 */
     public MbMemberRoleDto.PageResponse getPageData(MbMemberRoleDto.Request req) {
         PageHelper.addPaging(req);
         return mbMemberRoleRepository.selectPageList(req);
     }
 
+    /* 회원 역할 연결 등록 */
     @Transactional
     public MbMemberRole create(MbMemberRole body) {
         body.setMemberRoleId(CmUtil.generateId("mb_member_role"));
@@ -80,6 +86,7 @@ public class MbMemberRoleService {
         return saved;
     }
 
+    /* 회원 역할 연결 저장 */
     @Transactional
     public MbMemberRole save(MbMemberRole entity) {
         if (!existsById(entity.getMemberRoleId()))
@@ -92,6 +99,7 @@ public class MbMemberRoleService {
         return saved;
     }
 
+    /* 회원 역할 연결 수정 */
     @Transactional
     public MbMemberRole update(String id, MbMemberRole body) {
         MbMemberRole entity = findById(id);
@@ -104,6 +112,7 @@ public class MbMemberRoleService {
         return saved;
     }
 
+    /* 회원 역할 연결 수정 */
     @Transactional
     public MbMemberRole updateSelective(MbMemberRole entity) {
         if (entity.getMemberRoleId() == null) throw new CmBizException("memberRoleId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class MbMemberRoleService {
         return entity;
     }
 
+    /* 회원 역할 연결 삭제 */
     @Transactional
     public void delete(String id) {
         MbMemberRole entity = findById(id);
@@ -125,6 +135,7 @@ public class MbMemberRoleService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 회원 역할 연결 목록저장 */
     @Transactional
     public void saveList(List<MbMemberRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

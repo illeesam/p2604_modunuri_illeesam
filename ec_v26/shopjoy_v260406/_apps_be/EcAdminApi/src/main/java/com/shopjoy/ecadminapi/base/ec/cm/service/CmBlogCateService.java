@@ -27,6 +27,7 @@ public class CmBlogCateService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 게시판 카테고리 키조회 */
     public CmBlogCateDto.Item getById(String id) {
         CmBlogCateDto.Item dto = cmBlogCateRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmBlogCateService {
         return cmBlogCateRepository.selectById(id).orElse(null);
     }
 
+    /* 게시판 카테고리 상세조회 */
     public CmBlogCate findById(String id) {
         return cmBlogCateRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmBlogCateService {
         return cmBlogCateRepository.findById(id).orElse(null);
     }
 
+    /* 게시판 카테고리 키검증 */
     public boolean existsById(String id) {
         return cmBlogCateRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmBlogCateService {
         return true;
     }
 
+    /* 게시판 카테고리 목록조회 */
     public List<CmBlogCateDto.Item> getList(CmBlogCateDto.Request req) {
         return cmBlogCateRepository.selectList(req);
     }
 
+    /* 게시판 카테고리 페이지조회 */
     public CmBlogCateDto.PageResponse getPageData(CmBlogCateDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogCateRepository.selectPageList(req);
     }
 
+    /* 게시판 카테고리 등록 */
     @Transactional
     public CmBlogCate create(CmBlogCate body) {
         body.setBlogCateId(CmUtil.generateId("cm_blog_cate"));
@@ -80,6 +86,7 @@ public class CmBlogCateService {
         return saved;
     }
 
+    /* 게시판 카테고리 저장 */
     @Transactional
     public CmBlogCate save(CmBlogCate entity) {
         if (!existsById(entity.getBlogCateId()))
@@ -92,6 +99,7 @@ public class CmBlogCateService {
         return saved;
     }
 
+    /* 게시판 카테고리 수정 */
     @Transactional
     public CmBlogCate update(String id, CmBlogCate body) {
         CmBlogCate entity = findById(id);
@@ -104,6 +112,7 @@ public class CmBlogCateService {
         return saved;
     }
 
+    /* 게시판 카테고리 수정 */
     @Transactional
     public CmBlogCate updateSelective(CmBlogCate entity) {
         if (entity.getBlogCateId() == null) throw new CmBizException("blogCateId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmBlogCateService {
         return entity;
     }
 
+    /* 게시판 카테고리 삭제 */
     @Transactional
     public void delete(String id) {
         CmBlogCate entity = findById(id);
@@ -125,6 +135,7 @@ public class CmBlogCateService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 게시판 카테고리 목록저장 */
     @Transactional
     public void saveList(List<CmBlogCate> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

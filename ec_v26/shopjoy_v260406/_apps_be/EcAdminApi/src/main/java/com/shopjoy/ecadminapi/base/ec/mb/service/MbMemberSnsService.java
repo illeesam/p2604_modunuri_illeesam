@@ -27,6 +27,7 @@ public class MbMemberSnsService {
     @PersistenceContext
     private EntityManager em;
 
+    /* SNS 연동 회원 키조회 */
     public MbMemberSnsDto.Item getById(String id) {
         MbMemberSnsDto.Item dto = mbMemberSnsRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class MbMemberSnsService {
         return mbMemberSnsRepository.selectById(id).orElse(null);
     }
 
+    /* SNS 연동 회원 상세조회 */
     public MbMemberSns findById(String id) {
         return mbMemberSnsRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class MbMemberSnsService {
         return mbMemberSnsRepository.findById(id).orElse(null);
     }
 
+    /* SNS 연동 회원 키검증 */
     public boolean existsById(String id) {
         return mbMemberSnsRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class MbMemberSnsService {
         return true;
     }
 
+    /* SNS 연동 회원 목록조회 */
     public List<MbMemberSnsDto.Item> getList(MbMemberSnsDto.Request req) {
         return mbMemberSnsRepository.selectList(req);
     }
 
+    /* SNS 연동 회원 페이지조회 */
     public MbMemberSnsDto.PageResponse getPageData(MbMemberSnsDto.Request req) {
         PageHelper.addPaging(req);
         return mbMemberSnsRepository.selectPageList(req);
     }
 
+    /* SNS 연동 회원 등록 */
     @Transactional
     public MbMemberSns create(MbMemberSns body) {
         body.setMemberSnsId(CmUtil.generateId("mb_member_sns"));
@@ -80,6 +86,7 @@ public class MbMemberSnsService {
         return saved;
     }
 
+    /* SNS 연동 회원 저장 */
     @Transactional
     public MbMemberSns save(MbMemberSns entity) {
         if (!existsById(entity.getMemberSnsId()))
@@ -92,6 +99,7 @@ public class MbMemberSnsService {
         return saved;
     }
 
+    /* SNS 연동 회원 수정 */
     @Transactional
     public MbMemberSns update(String id, MbMemberSns body) {
         MbMemberSns entity = findById(id);
@@ -104,6 +112,7 @@ public class MbMemberSnsService {
         return saved;
     }
 
+    /* SNS 연동 회원 수정 */
     @Transactional
     public MbMemberSns updateSelective(MbMemberSns entity) {
         if (entity.getMemberSnsId() == null) throw new CmBizException("memberSnsId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class MbMemberSnsService {
         return entity;
     }
 
+    /* SNS 연동 회원 삭제 */
     @Transactional
     public void delete(String id) {
         MbMemberSns entity = findById(id);
@@ -125,6 +135,7 @@ public class MbMemberSnsService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* SNS 연동 회원 목록저장 */
     @Transactional
     public void saveList(List<MbMemberSns> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

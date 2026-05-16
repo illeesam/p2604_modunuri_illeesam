@@ -6,21 +6,25 @@ window.SyBbsMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const bbss = reactive([]);
     const bbms = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ bbs_status: [], bbs_post_statuses: [], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'authorNm asc', desc: 'authorNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 게시판 게시물 getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 게시판 게시물 onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -29,6 +33,8 @@ window.SyBbsMng = {
       pager.pageNo = 1;
       handleSearchBbs();
     };
+
+    /* 게시판 게시물 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // 게시글 목록 조회
@@ -36,9 +42,9 @@ window.SyBbsMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_title,def_author';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_title,def_author';
         }
         const res = await boApiSvc.syBbs.getPage(params, '게시판관리', '목록조회');
         const data = res.data?.data;
@@ -67,8 +73,14 @@ window.SyBbsMng = {
     };
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
+
+    /* 게시판 게시물 openPathPick */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+
+    /* 게시판 게시물 closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+
+    /* 게시판 게시물 onPathPicked */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -76,19 +88,30 @@ window.SyBbsMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
+
+    /* 게시판 게시물 pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* -- 좌측 표시경로 트리 -- */
         const expanded = reactive(new Set(['']));
+
+    /* 게시판 게시물 toggleNode */
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
+
+    /* 게시판 게시물 selectNode */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchBbs(); };
     const cfTree = computed(() => boUtil.buildPathTree('sy_bbs'));
+
+    /* 게시판 게시물 expandAll */
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
+
+    /* 게시판 게시물 collapseAll */
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
 
 
+    /* 게시판 게시물 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.bbs_status = codeStore.sgGetGrpCodes('BBS_STATUS');
@@ -109,12 +132,16 @@ window.SyBbsMng = {
     });
 
     const cfSiteNm = computed(() => boUtil.getSiteNm());
+
+    /* 게시판 게시물 _initSearchParam */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchTypes: '', searchValue: '', bbmId: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', bbmId: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
+
+    /* 게시판 게시물 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -127,10 +154,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       dtlMode: 'view' // 'view' | 'edit'
     });
 
+    /* 게시판 게시물 loadView */
     const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; };
+
+    /* 게시판 게시물 상세조회 */
     const handleLoadDetail = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+
+    /* 게시판 게시물 openNew */
     const openNew = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+
+    /* 게시판 게시물 closeDetail */
     const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
+
+    /* 게시판 게시물 inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'syBbsMng') { detailModal.show = false; detailModal.dtlId = null; if (opts.reload) handleSearchBbs('RELOAD'); return; }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
@@ -141,13 +177,29 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
     const cfBbmOptions = computed(() => bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
+
+    /* 게시판 게시물 bbmNm */
     const bbmNm = (bbmId) => { const b = bbms.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
+
+    /* 게시판 게시물 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* 게시판 게시물 fnStatusBadge */
     const fnStatusBadge = s => ({ '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' }[s] || 'badge-gray');
+
+    /* 게시판 게시물 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchBbs('DEFAULT'); };
+
+    /* 게시판 게시물 onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
+
+    /* 게시판 게시물 setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchBbs('PAGE_CLICK'); } };
+
+    /* 게시판 게시물 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchBbs('DEFAULT'); };
+
+    /* 게시판 게시물 삭제 */
     const handleDelete = async (b) => {
       const ok = await showConfirm('삭제', `[${b.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -165,6 +217,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* 게시판 게시물 exportExcel */
     const exportExcel = () => coUtil.exportCsv(bbss, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
@@ -180,7 +234,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="page-title">게시글관리</div>  <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_title',  label: '제목' },
           { value: 'def_author', label: '작성자' },

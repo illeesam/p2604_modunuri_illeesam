@@ -7,6 +7,8 @@ window.foAppSidebar = {
     const { ref, reactive, computed, watch } = Vue;
 
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
+
+    /* isMenuActive */
     const isMenuActive = (page, menuId) => {
       if (menuId === 'myOrder') return MY_PAGES.includes(page);
       return page === menuId;
@@ -56,6 +58,7 @@ window.foAppSidebar = {
       { siteNo: '9999', siteNm: 'FO=9999' },
     ];
 
+    /* navToSite */
     const navToSite = (siteNo) => {
       try { localStorage.setItem('modu-fo-siteNo', siteNo); } catch(_){}
       window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FO_SITE_NO=' + siteNo;
@@ -70,6 +73,7 @@ window.foAppSidebar = {
       if (DEV_TOOLS_ITEMS.some(i => i.menuId === p)) uiState.devToolsOpen = true;
     }, { immediate: true });
 
+    /* navTo */
     const navTo = (menuId) => {
       props.navigate(menuId, { replace: true });
       emit('app-close-mobile');

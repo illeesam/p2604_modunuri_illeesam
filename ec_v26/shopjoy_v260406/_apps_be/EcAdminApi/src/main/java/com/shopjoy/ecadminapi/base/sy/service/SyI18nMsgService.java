@@ -27,6 +27,7 @@ public class SyI18nMsgService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 다국어 메시지 키조회 */
     public SyI18nMsgDto.Item getById(String id) {
         SyI18nMsgDto.Item dto = syI18nMsgRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyI18nMsgService {
         return syI18nMsgRepository.selectById(id).orElse(null);
     }
 
+    /* 다국어 메시지 상세조회 */
     public SyI18nMsg findById(String id) {
         return syI18nMsgRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyI18nMsgService {
         return syI18nMsgRepository.findById(id).orElse(null);
     }
 
+    /* 다국어 메시지 키검증 */
     public boolean existsById(String id) {
         return syI18nMsgRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyI18nMsgService {
         return true;
     }
 
+    /* 다국어 메시지 목록조회 */
     public List<SyI18nMsgDto.Item> getList(SyI18nMsgDto.Request req) {
         return syI18nMsgRepository.selectList(req);
     }
 
+    /* 다국어 메시지 페이지조회 */
     public SyI18nMsgDto.PageResponse getPageData(SyI18nMsgDto.Request req) {
         PageHelper.addPaging(req);
         return syI18nMsgRepository.selectPageList(req);
     }
 
+    /* 다국어 메시지 등록 */
     @Transactional
     public SyI18nMsg create(SyI18nMsg body) {
         body.setI18nMsgId(CmUtil.generateId("sy_i18n_msg"));
@@ -80,6 +86,7 @@ public class SyI18nMsgService {
         return saved;
     }
 
+    /* 다국어 메시지 저장 */
     @Transactional
     public SyI18nMsg save(SyI18nMsg entity) {
         if (!existsById(entity.getI18nMsgId()))
@@ -92,6 +99,7 @@ public class SyI18nMsgService {
         return saved;
     }
 
+    /* 다국어 메시지 수정 */
     @Transactional
     public SyI18nMsg update(String id, SyI18nMsg body) {
         SyI18nMsg entity = findById(id);
@@ -104,6 +112,7 @@ public class SyI18nMsgService {
         return saved;
     }
 
+    /* 다국어 메시지 수정 */
     @Transactional
     public SyI18nMsg updateSelective(SyI18nMsg entity) {
         if (entity.getI18nMsgId() == null) throw new CmBizException("i18nMsgId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyI18nMsgService {
         return entity;
     }
 
+    /* 다국어 메시지 삭제 */
     @Transactional
     public void delete(String id) {
         SyI18nMsg entity = findById(id);
@@ -125,6 +135,7 @@ public class SyI18nMsgService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 다국어 메시지 목록저장 */
     @Transactional
     public void saveList(List<SyI18nMsg> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

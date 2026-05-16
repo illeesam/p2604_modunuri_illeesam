@@ -33,6 +33,7 @@ public class ZzExam2Service {
     @PersistenceContext
     private EntityManager em;
 
+    /* zz_exam2 pk */
     private ZzExam2Id pk(String exam1Id, String exam2Id) {
         return new ZzExam2Id(exam1Id, exam2Id);
     }

@@ -67,6 +67,7 @@ window.DispX04Widget = {
       return true;
     });
 
+    /* handleClick */
     const handleClick = () => {
       const w = props.widgetItem;
       if (!w.clickAction || w.clickAction === 'none') return;
@@ -83,6 +84,8 @@ window.DispX04Widget = {
       'linear-gradient(135deg,#5e35b1 0%,#4527a0 100%)',
       'linear-gradient(135deg,#1565c0 0%,#0d47a1 100%)',
     ];
+
+    /* nameGrad */
     const nameGrad = (name) => {
       const h = (name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
       return GRADIENTS[h % GRADIENTS.length];
@@ -99,6 +102,7 @@ window.DispX04Widget = {
       return vals.map((v, i) => ({ value: v, label: labels[i] || '', pct: Math.round((v / max) * 100), color: chartColors[i % chartColors.length] }));
     });
 
+    /* parseMarkdown */
     const parseMarkdown = (md) => (window.marked ? window.marked.parse(md || '') : (md || ''));
 
     /* 동영상 embed URL 생성 */
@@ -140,8 +144,12 @@ window.DispX04Widget = {
      */
     const widget = computed(() => {
       const src = props.widgetItem || {};
+
+      /* tryParse */
       const tryParse = (s) => { try { return JSON.parse(s); } catch (_) { return null; } };
       const cfg = tryParse(src.widgetConfigJson) || tryParse(src.widgetConfigJson) || {};
+
+      /* fromCfg */
       const fromCfg = (k1, k2) => cfg[k1] != null ? cfg[k1] : (k2 != null && cfg[k2] != null ? cfg[k2] : undefined);
 
       return {
@@ -155,7 +163,7 @@ window.DispX04Widget = {
         widgetLibRefYn: src.widgetLibRefYn || 'N',
         useYn:         src.useYn         || 'Y',
         /* 콘텐츠 / 설정값 (JSON 우선, 별칭 fallback) */
-        imageUrl:      src.imageUrl      || fromCfg('img_url', 'imageUrl') || src.previewImgUrl || src.thumbnailUrl || '',
+        imageUrl:      src.imageUrl      || fromCfg('img_url', 'imageUrl') || src.thumbnailUrl || '',
         altText:       src.altText       || fromCfg('alt') || '',
         linkUrl:       src.linkUrl       || fromCfg('link_url', 'linkUrl') || '',
         textContent:   src.textContent   || fromCfg('text') || src.widgetContent || '',

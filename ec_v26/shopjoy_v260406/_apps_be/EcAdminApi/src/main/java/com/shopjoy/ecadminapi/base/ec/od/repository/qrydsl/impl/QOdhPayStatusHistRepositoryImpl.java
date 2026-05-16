@@ -28,6 +28,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
     private final JPAQueryFactory queryFactory;
     private static final QOdhPayStatusHist h = QOdhPayStatusHist.odhPayStatusHist;
 
+    /* 결제 상태 이력 baseQuery */
     private JPAQuery<OdhPayStatusHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhPayStatusHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
                 .from(h);
     }
 
+    /* 결제 상태 이력 키조회 */
     @Override
     public Optional<OdhPayStatusHistDto.Item> selectById(String id) {
         OdhPayStatusHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         return Optional.ofNullable(dto);
     }
 
+    /* 결제 상태 이력 목록조회 */
     @Override
     public List<OdhPayStatusHistDto.Item> selectList(OdhPayStatusHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         return query.fetch();
     }
 
+    /* 결제 상태 이력 페이지조회 */
     @Override
     public OdhPayStatusHistDto.PageResponse selectPageList(OdhPayStatusHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 결제 상태 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhPayStatusHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         return orders;
     }
 
+    /* 결제 상태 이력 수정 */
     @Override
     public int updateSelective(OdhPayStatusHist entity) {
         if (entity.getPayStatusHistId() == null) return 0;

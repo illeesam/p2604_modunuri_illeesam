@@ -27,6 +27,7 @@ public class SyI18nService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 다국어 키조회 */
     public SyI18nDto.Item getById(String id) {
         SyI18nDto.Item dto = syI18nRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyI18nService {
         return syI18nRepository.selectById(id).orElse(null);
     }
 
+    /* 다국어 상세조회 */
     public SyI18n findById(String id) {
         return syI18nRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyI18nService {
         return syI18nRepository.findById(id).orElse(null);
     }
 
+    /* 다국어 키검증 */
     public boolean existsById(String id) {
         return syI18nRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyI18nService {
         return true;
     }
 
+    /* 다국어 목록조회 */
     public List<SyI18nDto.Item> getList(SyI18nDto.Request req) {
         return syI18nRepository.selectList(req);
     }
 
+    /* 다국어 페이지조회 */
     public SyI18nDto.PageResponse getPageData(SyI18nDto.Request req) {
         PageHelper.addPaging(req);
         return syI18nRepository.selectPageList(req);
     }
 
+    /* 다국어 등록 */
     @Transactional
     public SyI18n create(SyI18n body) {
         body.setI18nId(CmUtil.generateId("sy_i18n"));
@@ -80,6 +86,7 @@ public class SyI18nService {
         return saved;
     }
 
+    /* 다국어 저장 */
     @Transactional
     public SyI18n save(SyI18n entity) {
         if (!existsById(entity.getI18nId()))
@@ -92,6 +99,7 @@ public class SyI18nService {
         return saved;
     }
 
+    /* 다국어 수정 */
     @Transactional
     public SyI18n update(String id, SyI18n body) {
         SyI18n entity = findById(id);
@@ -104,6 +112,7 @@ public class SyI18nService {
         return saved;
     }
 
+    /* 다국어 수정 */
     @Transactional
     public SyI18n updateSelective(SyI18n entity) {
         if (entity.getI18nId() == null) throw new CmBizException("i18nId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyI18nService {
         return entity;
     }
 
+    /* 다국어 삭제 */
     @Transactional
     public void delete(String id) {
         SyI18n entity = findById(id);
@@ -125,6 +135,7 @@ public class SyI18nService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 다국어 목록저장 */
     @Transactional
     public void saveList(List<SyI18n> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

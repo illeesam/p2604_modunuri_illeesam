@@ -19,8 +19,11 @@ public class BoDpUiService {
 
     private final DpUiService dpUiService;
 
+    /* 키조회 */
     public DpUiDto.Item getById(String id) { return dpUiService.getById(id); }
+    /* 목록조회 */
     public List<DpUiDto.Item> getList(DpUiDto.Request req) { return dpUiService.getList(req); }
+    /* 페이지조회 */
     public DpUiDto.PageResponse getPageData(DpUiDto.Request req) { return dpUiService.getPageData(req); }
 
     @Transactional public DpUi create(DpUi body) { return dpUiService.create(body); }

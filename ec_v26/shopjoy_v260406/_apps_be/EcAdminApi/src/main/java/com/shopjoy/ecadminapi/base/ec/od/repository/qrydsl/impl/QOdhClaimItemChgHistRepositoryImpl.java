@@ -28,6 +28,7 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
     private final JPAQueryFactory queryFactory;
     private static final QOdhClaimItemChgHist h = QOdhClaimItemChgHist.odhClaimItemChgHist;
 
+    /* 클레임 아이템 변경 이력 baseQuery */
     private JPAQuery<OdhClaimItemChgHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimItemChgHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
                 .from(h);
     }
 
+    /* 클레임 아이템 변경 이력 키조회 */
     @Override
     public Optional<OdhClaimItemChgHistDto.Item> selectById(String id) {
         OdhClaimItemChgHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
         return Optional.ofNullable(dto);
     }
 
+    /* 클레임 아이템 변경 이력 목록조회 */
     @Override
     public List<OdhClaimItemChgHistDto.Item> selectList(OdhClaimItemChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
         return query.fetch();
     }
 
+    /* 클레임 아이템 변경 이력 페이지조회 */
     @Override
     public OdhClaimItemChgHistDto.PageResponse selectPageList(OdhClaimItemChgHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 클레임 아이템 변경 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhClaimItemChgHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
         return orders;
     }
 
+    /* 클레임 아이템 변경 이력 수정 */
     @Override
     public int updateSelective(OdhClaimItemChgHist entity) {
         if (entity.getClaimItemChgHistId() == null) return 0;

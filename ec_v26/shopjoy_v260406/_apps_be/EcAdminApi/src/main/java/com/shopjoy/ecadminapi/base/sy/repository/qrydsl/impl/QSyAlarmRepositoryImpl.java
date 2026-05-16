@@ -35,12 +35,14 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 알람 키조회 */
     @Override
     public Optional<SyAlarmDto.Item> selectById(String alarmId) {
         SyAlarmDto.Item dto = baseQuery().where(a.alarmId.eq(alarmId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
+    /* 알람 목록조회 */
     @Override
     public List<SyAlarmDto.Item> selectList(SyAlarmDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -56,6 +58,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         return query.fetch();
     }
 
+    /* 알람 페이지조회 */
     @Override
     public SyAlarmDto.PageResponse selectPageList(SyAlarmDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -75,6 +78,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 알람 baseQuery */
     private JPAQuery<SyAlarmDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyAlarmDto.Item.class,
@@ -94,15 +98,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(a.targetTypeCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyAlarmDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -114,8 +110,8 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         if (StringUtils.hasText(s.getTypeCd()))   w.and(a.alarmTypeCd.eq(s.getTypeCd()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_title,"))  or.or(a.alarmTitle.likeIgnoreCase(pattern));
@@ -173,6 +169,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         return orders;
     }
 
+    /* 알람 수정 */
     @Override
     public int updateSelective(SyAlarm entity) {
         if (entity.getAlarmId() == null) return 0;

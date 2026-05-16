@@ -13,21 +13,22 @@ window.PdProdDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     // window 접근 불가한 템플릿용 + setup 내부 공용 헬퍼
     const { safeFirst, safeGet, safeFind, safeFilter } = window.safeArrayUtils;
     const products = reactive([]);
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchTypes: '', mdSearch: '', prodPickerSearchTypes: '' });
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '' });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
     const grpCodes = reactive({ product_statuses: [], prod_types: [], prod_plan_statuses: [], opt_stock_statuses: [], stock_filter_opts: [{value:'in',label:'재고있음'},{value:'out',label:'품절(0)'}] });
 
+    /* 상품 fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -66,8 +67,13 @@ window.PdProdDtl = {
       rels:    tabData.rels.slice(  (tabPage.rels.pageNo   -1)*tabPage.rels.pageSize,     tabPage.rels.pageNo    *tabPage.rels.pageSize),
     }));
 
+    /* 상품 onTabPageChange */
     const onTabPageChange = (tabKey, pageNo) => { tabPage[tabKey].pageNo = pageNo; };
+
+    /* 상품 cfTabTotalPages */
     const cfTabTotalPages = (tabKey) => Math.ceil(tabData[tabKey].length / tabPage[tabKey].pageSize) || 1;
+
+    /* 상품 fnTabPageNos */
     const fnTabPageNos = (tabKey) => {
       const total = cfTabTotalPages(tabKey);
       const cur   = tabPage[tabKey].pageNo;
@@ -76,7 +82,10 @@ window.PdProdDtl = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     };
 
+    /* 상품 TAB_BASE */
     const TAB_BASE = () => `/bo/ec/pd/prod/${props.dtlId}`;
+
+    /* 상품 HDR */
     const HDR = (cmd) => coUtil.apiHdr('상품관리', cmd);
 
     // 보조 데이터(사용자/카테고리) + 기본정보 + 탭 전체 동시 조회
@@ -206,6 +215,8 @@ window.PdProdDtl = {
     });
 
     watch(tabMode2, v => { uiState.tabMode2 = v; window._pdProdDtlState.tabMode = v; });
+
+    /* 상품 showTab */
     const showTab = id => tabMode2.value !== 'tab' || topTab.value === id;
 
     // -- form: pd_prod 전체 필드
@@ -262,6 +273,8 @@ window.PdProdDtl = {
       codeOpt1:        c.codeOpt1 ?? '',
       useYn:           c.useYn ?? 'Y',
     });
+
+    /* 상품 fnSortByOrd */
     const fnSortByOrd = (a,b) => (a.sortOrd||0) - (b.sortOrd||0);
 
     // 1레벨 — 옵션 카테고리 선택용
@@ -308,6 +321,7 @@ window.PdProdDtl = {
         .sort(fnSortByOrd)
     );
 
+    /* 상품 clearOpt */
     const clearOpt = () => { optGroups.length = 0; skus.length = 0; uiState.prodOptCategoryTypeCd = ''; };
 
     // 단일 프리셋 → 옵션 행 객체
@@ -357,11 +371,15 @@ window.PdProdDtl = {
     //                  2단 = 1단 N × 2단 M 행 (상위옵션값 자동 매핑)
     //   기존에 옵션 항목/SKU 가 있는 상태에서 카테고리를 바꾸면 모두 초기화되므로 confirm 받음.
     let _prevCategoryCd = uiState.prodOptCategoryTypeCd || '';
+
+    /* 상품 fnLabelOfCategory */
     const fnLabelOfCategory = (cv) => {
       if (!cv) return '(미선택)';
       const found = cfOptTypeLevel1Codes.value.find(c => c.codeValue === cv);
       return found ? `${found.codeLabel} (${cv})` : cv;
     };
+
+    /* 상품 fnApplyCategory */
     const fnApplyCategory = () => {
       const types = getOptTypeCodes(uiState.prodOptCategoryTypeCd);
       const slots = types.slice(0, 2);
@@ -384,6 +402,8 @@ window.PdProdDtl = {
       // SKU 는 자동 생성하지 않음. 사용자가 옵션(가격/재고) 탭에서 [🔄 SKU 재생성] 으로 직접 만들도록 빈 상태 유지.
       _prevCategoryCd = uiState.prodOptCategoryTypeCd;
     };
+
+    /* 상품 onCategoryChange */
     const onCategoryChange = async () => {
       const newCd = uiState.prodOptCategoryTypeCd;
       const oldCd = _prevCategoryCd;
@@ -411,6 +431,7 @@ window.PdProdDtl = {
       fnApplyCategory();
     };
 
+    /* 상품 addOptGroup */
     const addOptGroup = () => {
       if (!uiState.prodOptCategoryTypeCd) { showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
       if (optGroups.length >= 2) { showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
@@ -431,19 +452,29 @@ window.PdProdDtl = {
       });
       generateSkus();
     };
+
+    /* 상품 removeOptGroup */
     const removeOptGroup = (idx) => {
       optGroups.splice(idx, 1);
       window.safeArrayUtils.safeForEach(optGroups, (g, i) => { g.level = i + 1; });
       generateSkus();
     };
+
+    /* 상품 addOptItem */
     const addOptItem = (grp) => {
       grp.items.push({ _id: _itemSeq++, nm: '', val: '', valCodeId: '', optStyle: '', parentOptItemId: '', sortOrd: grp.items.length + 1, useYn: 'Y' });
     };
+
+    /* 상품 removeOptItem */
     const removeOptItem = (grp, idx) => { grp.items.splice(idx, 1); generateSkus(); };
 
     // -- 옵션 아이템 드래그 정렬
     const onOptItemDragStart = (grp, idx) => { uiState.dragOptGrpId = grp._id; uiState.dragOptItemIdx = idx; };
+
+    /* 상품 onOptItemDragOver */
     const onOptItemDragOver  = (grp, idx) => { if (uiState.dragOptGrpId === grp._id) uiState.dragoverOptItemIdx = idx; };
+
+    /* 상품 onOptItemDrop */
     const onOptItemDrop      = (grp) => {
       if (uiState.dragOptItemIdx === null || uiState.dragOptItemIdx === uiState.dragoverOptItemIdx) { uiState.dragOptGrpId = null; uiState.dragOptItemIdx = null; uiState.dragoverOptItemIdx = null; return; }
       const items = [...grp.items];
@@ -454,6 +485,7 @@ window.PdProdDtl = {
       generateSkus();
     };
 
+    /* 상품 generateSkus */
     const generateSkus = () => {
       if (optGroups.length === 0) { skus.length = 0; return; }
       const g1 = safeFirst(optGroups)?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
@@ -508,8 +540,14 @@ window.PdProdDtl = {
     const images = reactive([]);
     let imgIdSeq = 1;
     const fileInputRef = ref(null);
+
+    /* 상품 triggerFileInput */
     const triggerFileInput = () => fileInputRef.value?.click();
+
+    /* 상품 addImageByUrl */
     const addImageByUrl = () => images.push({ id: imgIdSeq++, previewUrl: '', isMain: images.length === 0, optItemId1: '', optItemId2: '' });
+
+    /* 상품 onFileChange */
     const onFileChange = (e) => {
       Array.from(e.target.files).forEach(file => {
         const reader = new FileReader();
@@ -518,7 +556,11 @@ window.PdProdDtl = {
       });
       e.target.value = '';
     };
+
+    /* 상품 setMain */
     const setMain = (id) => window.safeArrayUtils.safeForEach(images, img => { img.isMain = img.id === id; });
+
+    /* 상품 removeImage */
     const removeImage = (id) => {
       const idx = images.findIndex(img => img.id === id);
       if (idx !== -1) { const wasMain = images[idx].isMain; images.splice(idx, 1); if (wasMain && images.length) safeFirst(images).isMain = true; }
@@ -538,7 +580,11 @@ window.PdProdDtl = {
 
     // -- 이미지 드래그 정렬
             const onImgDragStart = (idx) => { uiState.dragImgIdx = idx; };
+
+    /* 상품 onImgDragOver */
     const onImgDragOver  = (idx) => { uiState.dragoverImgIdx = idx; };
+
+    /* 상품 onImgDrop */
     const onImgDrop = () => {
       if (uiState.dragImgIdx === null || uiState.dragImgIdx === uiState.dragoverImgIdx) { uiState.dragImgIdx = null; uiState.dragoverImgIdx = null; return; }
       const items = [...images];
@@ -552,13 +598,18 @@ window.PdProdDtl = {
     // -- 상품설명 블록 (contentBlocks)
     const contentBlocks = reactive([]);
     let _blockSeq = 1;
+
+    /* 상품 addContentBlock */
     const addContentBlock = (type) => {
       contentBlocks.push({ _id: _blockSeq++, type, content: '', fileName: '' });
     };
 
+    /* 상품 removeContentBlock */
     const removeContentBlock = (idx) => {
       contentBlocks.splice(idx, 1);
     };
+
+    /* 상품 onBlockFileChange */
     const onBlockFileChange = (block, e) => {
       const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
@@ -566,7 +617,11 @@ window.PdProdDtl = {
       reader.readAsDataURL(file); e.target.value = '';
     };
             const onBlockDragStart = (idx) => { uiState.dragBlockIdx = idx; };
+
+    /* 상품 onBlockDragOver */
     const onBlockDragOver  = (idx) => { uiState.dragoverBlockIdx = idx; };
+
+    /* 상품 onBlockDrop */
     const onBlockDrop = () => {
       if (uiState.dragBlockIdx === null || uiState.dragBlockIdx === uiState.dragoverBlockIdx) { uiState.dragBlockIdx = null; uiState.dragoverBlockIdx = null; return; }
       const items = [...contentBlocks];
@@ -577,6 +632,8 @@ window.PdProdDtl = {
     };
     // -- 스플릿 패널 + 미리보기
             const contentSplitRef = ref(null);
+
+    /* 상품 onDividerMousedown */
     const onDividerMousedown = (e) => { uiState.isDraggingDivider = true; e.preventDefault(); };
     let _divMoveH = null, _divUpH = null;
 
@@ -628,7 +685,7 @@ window.PdProdDtl = {
       const q    = (uiState.prodPickerSearch || '').trim().toLowerCase();
       const all  = products;
       const used = (uiState.prodPickerOpen === 'rel' ? relProds : codeProds).map(r => r.prodId);
-      const types = uiState.prodPickerSearchTypes || 'def_id,def_nm,def_cat';
+      const types = uiState.prodPickerSearchType || 'def_id,def_nm,def_cat';
       return safeFilter(all, p => {
         if (used.includes(p.prodId)) return false;
         if (!q) return true;
@@ -639,19 +696,31 @@ window.PdProdDtl = {
         return hits.some(Boolean);
       });
     });
-    const openProdPicker = (type) => { uiState.prodPickerSearch = ''; uiState.prodPickerSearchTypes = ''; uiState.prodPickerOpen = type; };
+
+    /* 상품 openProdPicker */
+    const openProdPicker = (type) => { uiState.prodPickerSearch = ''; uiState.prodPickerSearchType = ''; uiState.prodPickerOpen = type; };
+
+    /* 상품 selectProdItem */
     const selectProdItem = (p) => {
       const row = { _id: _relSeq++, prodId: p.prodId, prodNm: p.prodNm, cateNm: p.cateNm||'', listPrice: p.listPrice||0, prodStock: p.prodStock||0, prodStatusCd: p.prodStatusCd||'' };
       if (uiState.prodPickerOpen === 'rel') relProds.push(row);
       else                                codeProds.push(row);
       uiState.prodPickerOpen = '';
     };
+
+    /* 상품 removeRelProd */
     const removeRelProd  = (idx) => relProds.splice(idx, 1);
+
+    /* 상품 removeCodeProd */
     const removeCodeProd = (idx) => codeProds.splice(idx, 1);
 
     // 드래그 정렬 — 연관상품
          const onRelDragStart = (idx) => { uiState.dragRelIdx = idx; };
+
+    /* 상품 onRelDragOver */
     const onRelDragOver  = (idx) => { uiState.dragoverRelIdx = idx; };
+
+    /* 상품 onRelDrop */
     const onRelDrop = () => {
       if (uiState.dragRelIdx === null || uiState.dragRelIdx === uiState.dragoverRelIdx) { uiState.dragRelIdx = null; uiState.dragoverRelIdx = null; return; }
       const items = [...relProds]; const [m] = items.splice(uiState.dragRelIdx, 1); items.splice(uiState.dragoverRelIdx, 0, m);
@@ -659,7 +728,11 @@ window.PdProdDtl = {
     };
     // 드래그 정렬 — 코드상품
          const onCodeDragStart = (idx) => { uiState.dragCodeIdx = idx; };
+
+    /* 상품 onCodeDragOver */
     const onCodeDragOver  = (idx) => { uiState.dragoverCodeIdx = idx; };
+
+    /* 상품 onCodeDrop */
     const onCodeDrop = () => {
       if (uiState.dragCodeIdx === null || uiState.dragCodeIdx === uiState.dragoverCodeIdx) { uiState.dragCodeIdx = null; uiState.dragoverCodeIdx = null; return; }
       const items = [...codeProds]; const [m] = items.splice(uiState.dragCodeIdx, 1); items.splice(uiState.dragoverCodeIdx, 0, m);
@@ -669,23 +742,37 @@ window.PdProdDtl = {
     // -- 카테고리 N개 목록 (pd_category_prod)
     const prodCategories = reactive([]); // [{ categoryId, categoryNm, depth }]
     const cfCatExcludeSet = computed(() => new Set(prodCategories.map(c => String(c.categoryId))));
+
+    /* 상품 getCategoryNm */
     const getCategoryNm = (id) => {
       const c = (categories||[]).find(x => String(x.categoryId||x.id) === String(id));
       return c ? (c.categoryNm||c.nm||String(id)) : String(id);
     };
+
+    /* 상품 getCategoryDepth */
     const getCategoryDepth = (id) => {
       const c = (categories||[]).find(x => String(x.categoryId||x.id) === String(id));
       return c ? (c.depth||c.level||1) : 1;
     };
+
+    /* 상품 addCategory */
     const addCategory = (cat) => {
       const id = cat.categoryId||cat.id;
       if (window.safeArrayUtils.safeSome(prodCategories, c => String(c.categoryId) === String(id))) return;
       prodCategories.push({ categoryId: id, categoryNm: cat.categoryNm||cat.nm||String(id), depth: cat.depth||cat.categoryDepth||cat.level||1 });
       uiState.catPickerOpen = false;
     };
+
+    /* 상품 removeCategory */
     const removeCategory = (idx) => { prodCategories.splice(idx, 1); };
+
+    /* 상품 onCatDragStart */
     const onCatDragStart = (idx) => { uiState.catDragIdx = idx; };
+
+    /* 상품 onCatDragOver */
     const onCatDragOver  = (idx) => { uiState.catDragoverIdx = idx; };
+
+    /* 상품 onCatDrop */
     const onCatDrop = () => {
       if (uiState.catDragIdx === null || uiState.catDragIdx === uiState.catDragoverIdx) { uiState.catDragIdx = null; uiState.catDragoverIdx = null; return; }
       const items = [...prodCategories]; const [m] = items.splice(uiState.catDragIdx, 1); items.splice(uiState.catDragoverIdx, 0, m);
@@ -700,20 +787,28 @@ window.PdProdDtl = {
       get: () => cfPlanVisible.value.length > 0 && window.safeArrayUtils.safeEvery(cfPlanVisible.value, r => r._checked),
       set: v => window.safeArrayUtils.safeForEach(cfPlanVisible.value, r => { r._checked = v; }),
     });
+
+    /* 상품 addPlanRow */
     const addPlanRow = () => salePlans.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', listPrice: form.listPrice || 0, salePrice: form.salePrice || 0, purchasePrice: form.purchasePrice || 0 });
+
+    /* 상품 onPlanChange */
     const onPlanChange = row => { if (row._row_status === 'N') row._row_status = 'U'; };
+
+    /* 상품 deletePlanChecked */
     const deletePlanChecked = () => { for (let i = salePlans.length - 1; i >= 0; i--) { const r = salePlans[i]; if (!r._checked) continue; if (r._row_status === 'I') salePlans.splice(i, 1); else r._row_status = 'D'; } };
+
+    /* 상품 planRowStyle */
     const planRowStyle = s => ({ I: 'background:#f6ffed;', U: 'background:#fffbe6;', D: 'background:#fff1f0;opacity:0.6;' }[s] || '');
 
     // -- mounted
     // -- 담당MD 모달
-    const mdSearchTypes = ref('');
+    const mdSearchType = ref('');
     const mdSearch    = ref('');
     const cfMdUserList  = computed(() => (boUsers||[]).filter(u => u.userStatusCd !== 'SUSPENDED' && u.userStatusCd !== 'DELETED'));
     const cfMdUserListFiltered = computed(() => {
       const q = (uiState.mdSearch || '').trim().toLowerCase();
       if (!q) return cfMdUserList.value;
-      const types = (uiState.mdSearchTypes || mdSearchTypes.value) || 'def_nm,def_dept,def_role';
+      const types = (uiState.mdSearchType || mdSearchType.value) || 'def_nm,def_dept,def_role';
       return cfMdUserList.value.filter(u => {
         const hits = [];
         if (types.includes('def_nm'))   hits.push((u.userNm || '').toLowerCase().includes(q));
@@ -726,9 +821,14 @@ window.PdProdDtl = {
       const u = cfMdUserList.value.find(u => u.userId === form.mdUserId);
       return u ? `${u.userNm} (${u.deptId||''})` : '';
     });
+
+    /* 상품 openMdModal */
     const openMdModal  = () => { uiState.mdSearch = ''; uiState.mdModalOpen = true; };
+
+    /* 상품 selectMdUser */
     const selectMdUser = (u) => { form.mdUserId = u.userId; uiState.mdModalOpen = false; };
 
+    /* 상품 handleInitForm */
     const handleInitForm = async () => {
       if (cfIsNew.value) {
         form.mdUserId = cfMdUserList.value[0]?.userId || '';
@@ -882,6 +982,8 @@ window.PdProdDtl = {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
+
+    /* 상품 _afterApiErr */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -986,10 +1088,12 @@ window.PdProdDtl = {
     const mdModalOpen = Vue.toRef(uiState, 'mdModalOpen');
     const previewDevice = Vue.toRef(uiState, 'previewDevice');
     const prodOptCategoryTypeCd = Vue.toRef(uiState, 'prodOptCategoryTypeCd');
+
+    /* 상품 openHelp */
     const openHelp = (topic) => { if (window.showBoHelp) window.showBoHelp(topic); };
     const prodPickerSearch = Vue.toRef(uiState, 'prodPickerSearch');
-    const prodPickerSearchTypes = Vue.toRef(uiState, 'prodPickerSearchTypes');
-    const mdSearchTypesRef = Vue.toRef(uiState, 'mdSearchTypes');
+    const prodPickerSearchType = Vue.toRef(uiState, 'prodPickerSearchType');
+    const mdSearchTypeRef = Vue.toRef(uiState, 'mdSearchType');
     const skuFilter1 = Vue.toRef(uiState, 'skuFilter1');
     const skuFilter2 = Vue.toRef(uiState, 'skuFilter2');
     const skuFilterStock = Vue.toRef(uiState, 'skuFilterStock');
@@ -1007,6 +1111,8 @@ window.PdProdDtl = {
 
     /* 공통코드 그룹 미리보기 모달 (BoCodeGrpModal) */
     const codeGrpModal = reactive({ show: false, codeGrp: '', title: '' });
+
+    /* 상품 openCodeGrpModal */
     const openCodeGrpModal = (codeGrp, title) => {
       codeGrpModal.codeGrp = codeGrp;
       codeGrpModal.title = title || '';
@@ -1017,7 +1123,7 @@ window.PdProdDtl = {
 
     return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
-      uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser, mdSearchTypesRef, prodPickerSearchTypes,
+      uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser, mdSearchTypeRef, prodPickerSearchType,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus, moveSku,
       cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
       cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
@@ -1179,7 +1285,7 @@ window.PdProdDtl = {
           <!-- -- 검색 ----------------------------------------------------- -->
           <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
             <multi-check-select
-              v-model="uiState.mdSearchTypes"
+              v-model="uiState.mdSearchType"
               :options="[
                 { value: 'def_nm',   label: '이름' },
                 { value: 'def_dept', label: '부서' },
@@ -1910,7 +2016,7 @@ window.PdProdDtl = {
           <!-- -- 검색 ----------------------------------------------------- -->
           <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
             <multi-check-select
-              v-model="uiState.prodPickerSearchTypes"
+              v-model="uiState.prodPickerSearchType"
               :options="[
                 { value: 'def_nm',  label: '상품명' },
                 { value: 'def_id',  label: 'ID' },

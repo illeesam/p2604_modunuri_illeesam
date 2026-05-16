@@ -6,10 +6,10 @@ window.SyPostman = {
   },
   setup() {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const codes = reactive({ http_method_opts: ['GET','POST','PUT','PATCH','DELETE'] });
 
@@ -17,12 +17,13 @@ window.SyPostman = {
     const uiState = reactive({
       treeLoaded: false,
       settingsOpen: false,
-      histResSending: false, treeSearchTypes: '', treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0,
+      histResSending: false, treeSearchType: '', treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0,
     });
 
     /* ===== Tree (JSON 로딩) ===== */
     const treeRoot   = reactive([]);
 
+    /* makeNode */
     const makeNode = n => {
       const node = reactive({
         id: n.id, appId: n.appId || '', label: n.label, type: n.type,
@@ -35,6 +36,7 @@ window.SyPostman = {
       return node;
     };
 
+    /* findParentLabel */
     const findParentLabel = (nodes, targetId) => {
       for (const n of nodes) {
         if (n.children) {
@@ -79,8 +81,12 @@ window.SyPostman = {
       { label:'삭제',       urlFn: t => `${t}/{id}`,    method:'DELETE' },
       { label:'일괄삭제',   urlFn: t => t,              method:'DELETE' },
     ];
+
+    /* toPascal */
     const toPascal = name => name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('');
     let _acSeq = 0;
+
+    /* buildAutoCrudNodes */
     const buildAutoCrudNodes = () => makeNode({
       id: 'ac_root', appId: 'samples', label: 'adminAutoCrud-method', type: 'app', open: false,
       children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
@@ -105,6 +111,8 @@ window.SyPostman = {
       })),
     });
     let _arSeq = 0;
+
+    /* buildAutoCrudRestNodes */
     const buildAutoCrudRestNodes = () => makeNode({
       id: 'ar_root', appId: 'samples', label: 'adminAutoCrud-rest', type: 'app', open: false,
       children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
@@ -134,10 +142,11 @@ window.SyPostman = {
     /* ===== Tree Search & Flatten ===== */
         const toggleNode = node => { if (node.type !== 'req') node.open = !node.open; };
 
+    /* flattenTree */
     const flattenTree = (nodes, depth = 0) => {
       const result = [];
       const searchVal = uiState.treeSearch.toLowerCase();
-      const types = uiState.treeSearchTypes || 'def_nm,def_url';
+      const types = uiState.treeSearchType || 'def_nm,def_url';
       for (const n of nodes) {
         if (n.type === 'app' && !appFilter[n.appId]) continue;
         if (searchVal && n.type === 'req') {
@@ -161,6 +170,7 @@ window.SyPostman = {
     const token        = ref('');
     const defHeaders   = reactive([{ k: 'Content-Type', v: 'application/json' }, { k: '', v: '' }]);
 
+    /* saveSettings */
     const saveSettings = () => {
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify({
@@ -169,6 +179,8 @@ window.SyPostman = {
         }));
       } catch {}
     };
+
+    /* loadSettings */
     const loadSettings = () => {
       try {
         const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
@@ -188,6 +200,8 @@ window.SyPostman = {
 
     /* ===== LocalStorage Viewer ===== */
     const lsItems = reactive([]);
+
+    /* refreshLs */
     const refreshLs = () => {
       lsItems.splice(0);
       for (let i = 0; i < localStorage.length; i++) {
@@ -203,6 +217,7 @@ window.SyPostman = {
 
     const cfActiveTab = computed(() => openTabs.find(t => t.tabId === uiState.activeTabId) || null);
 
+    /* makeTab */
     const makeTab = (node) => {
       const parentLabel = findParentLabel(treeRoot, node.id) || '';
       const tabLabel    = [parentLabel, node.method, node.label].filter(Boolean).join(' · ');
@@ -230,6 +245,7 @@ window.SyPostman = {
       });
     };
 
+    /* selectApiNode */
     const selectApiNode = node => {
       if (node.type !== 'req') return;
       const existing = openTabs.find(t => t.nodeId === node.id);
@@ -250,12 +266,14 @@ window.SyPostman = {
       }
     }, 500);
 
+    /* stopAutoRun */
     const stopAutoRun = (tabId) => {
       if (_timers[tabId]) { clearInterval(_timers[tabId]); delete _timers[tabId]; }
       delete _nextFire[tabId];
       delete countdown[tabId];
     };
 
+    /* startAutoRun */
     const startAutoRun = (tab, ms, label) => {
       stopAutoRun(tab.tabId);
       tab.autoMs    = ms;
@@ -282,6 +300,7 @@ window.SyPostman = {
       h: HOURS[i] != null ? HOURS[i] : null,
     }));
 
+    /* openAutoPopup */
     const openAutoPopup = (tab, evt) => {
       evt.stopPropagation();
       if (tab.autoMs) { startAutoRun(tab, 0, ''); return; }
@@ -291,13 +310,17 @@ window.SyPostman = {
       autoPopupPos.left = rect.right + 6;
       uiState.autoPopupTabId = tab.tabId;
     };
+
+    /* closeAutoPopup */
     const closeAutoPopup = () => { uiState.autoPopupTabId = null; };
 
+    /* selectAuto */
     const selectAuto = (tab, ms, label) => {
       startAutoRun(tab, ms, label);
       uiState.autoPopupTabId = null;
     };
 
+    /* closeTab */
     const closeTab = (tabId, e) => {
       e?.stopPropagation();
       stopAutoRun(tabId);
@@ -311,6 +334,7 @@ window.SyPostman = {
       if (uiState.autoPopupTabId === tabId) uiState.autoPopupTabId = null;
     };
 
+    /* closeAllTabs */
     const closeAllTabs = () => {
       openTabs.forEach(t => stopAutoRun(t.tabId));
       openTabs.splice(0);
@@ -322,8 +346,11 @@ window.SyPostman = {
     const TOAST_MS = 20000;
     const toasts   = reactive([]);
     let _toastSeq  = 0;
+
+    /* safeStr */
     const safeStr  = v => (v != null ? String(v) : '');
 
+    /* pushToast */
     const pushToast = ({ type, tabLabel, method, url, status, resJson }) => {
       const id  = ++_toastSeq;
       const t   = reactive({ id, seq: id, type, tabLabel, method, url, status, resJson, jsonOpen: false, progress: 100 });
@@ -340,6 +367,8 @@ window.SyPostman = {
       }, 200);
       t._tick = tick;
     };
+
+    /* closeToast */
     const closeToast = (id) => {
       const idx = toasts.findIndex(x => x.id === id);
       if (idx !== -1) {
@@ -362,6 +391,7 @@ window.SyPostman = {
       return base;
     };
 
+    /* doSend */
     const doSend = async (targetTab) => {
       const tab = targetTab || cfActiveTab.value;
       if (!tab || !tab.reqUrl?.trim()) return;
@@ -430,6 +460,7 @@ window.SyPostman = {
     
     const editReq = reactive({ method:'', host:'', url:'', token:'', body:'', params:[], headers:[] });
 
+    /* selectHistory */
     const selectHistory = (h, idx) => {
       uiState.histSelIdx   = idx;
       uiState.histModal    = h;
@@ -442,6 +473,8 @@ window.SyPostman = {
       editReq.params  = (h.reqInfo.params  || []).map(p  => ({k:p.k,  v:p.v}));
       editReq.headers = (h.reqInfo.headers || []).map(h2 => ({k:h2.k, v:h2.v}));
     };
+
+    /* closeHistModal */
     const closeHistModal = () => { uiState.histModal = null; };
 
     const histResJson     = ref('');
@@ -449,6 +482,7 @@ window.SyPostman = {
     const histResTime     = ref(null);
     const histResTs       = ref('');
     
+    /* resendHist */
     const resendHist = async () => {
       if (!cfActiveTab.value) return;
       const tab = cfActiveTab.value;
@@ -510,8 +544,11 @@ window.SyPostman = {
 
     /* ===== Helpers ===== */
     const addRow    = arr => arr.push({ k: '', v: '' });
+
+    /* removeRow */
     const removeRow = (arr, i) => { if (arr.length > 1) arr.splice(i, 1); };
 
+    /* methodStyle */
     const methodStyle = m => ({
       GET:    'background:#dcfce7;color:#166534;',
       POST:   'background:#dbeafe;color:#1e40af;',
@@ -520,9 +557,11 @@ window.SyPostman = {
       DELETE: 'background:#fee2e2;color:#991b1b;',
     }[m] || 'background:#f0f0f0;color:#666;');
 
+    /* statusStyle */
     const statusStyle = s => !s ? '' : s < 300 ? 'color:#166534;font-weight:700;'
       : s < 400 ? 'color:#92400e;font-weight:700;' : 'color:#991b1b;font-weight:700;';
 
+    /* methodDot */
     const methodDot = m => ({ GET:'#166534', POST:'#1e40af', PUT:'#92400e', PATCH:'#6b21a8', DELETE:'#991b1b' }[m] || '#888');
 
     /* ===== Mount ===== */
@@ -575,7 +614,7 @@ window.SyPostman = {
         </label>
       </div>
       <multi-check-select
-        v-model="uiState.treeSearchTypes"
+        v-model="uiState.treeSearchType"
         :options="[
           { value: 'def_nm',  label: '이름' },
           { value: 'def_url', label: 'URL' },

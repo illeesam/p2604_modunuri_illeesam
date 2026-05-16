@@ -249,6 +249,7 @@ window.HelpBoModal = {
     watch(() => props.topic, (v) => { if (v) activeTab.value = v; });
     watch(() => props.show,  (v) => { if (v && props.topic) activeTab.value = props.topic; });
 
+    /* close */
     const close = () => emit('close');
 
     return {

@@ -18,6 +18,7 @@
 
   const { defineStore } = Pinia;
 
+  /* _defaultAuthUser */
   const _defaultAuthUser = () => ({
     authId: '',       // 인증 식별자 (sy_user.user_id)
     authNm: '',       // 인증 사용자명 (sy_user.user_nm)

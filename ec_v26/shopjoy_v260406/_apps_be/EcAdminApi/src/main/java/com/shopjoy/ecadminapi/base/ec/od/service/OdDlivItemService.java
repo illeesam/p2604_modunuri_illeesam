@@ -27,6 +27,7 @@ public class OdDlivItemService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 배송 아이템 키조회 */
     public OdDlivItemDto.Item getById(String id) {
         OdDlivItemDto.Item dto = odDlivItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdDlivItemService {
         return odDlivItemRepository.selectById(id).orElse(null);
     }
 
+    /* 배송 아이템 상세조회 */
     public OdDlivItem findById(String id) {
         return odDlivItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdDlivItemService {
         return odDlivItemRepository.findById(id).orElse(null);
     }
 
+    /* 배송 아이템 키검증 */
     public boolean existsById(String id) {
         return odDlivItemRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdDlivItemService {
         return true;
     }
 
+    /* 배송 아이템 목록조회 */
     public List<OdDlivItemDto.Item> getList(OdDlivItemDto.Request req) {
         return odDlivItemRepository.selectList(req);
     }
 
+    /* 배송 아이템 페이지조회 */
     public OdDlivItemDto.PageResponse getPageData(OdDlivItemDto.Request req) {
         PageHelper.addPaging(req);
         return odDlivItemRepository.selectPageList(req);
     }
 
+    /* 배송 아이템 등록 */
     @Transactional
     public OdDlivItem create(OdDlivItem body) {
         body.setDlivItemId(CmUtil.generateId("od_dliv_item"));
@@ -80,6 +86,7 @@ public class OdDlivItemService {
         return saved;
     }
 
+    /* 배송 아이템 저장 */
     @Transactional
     public OdDlivItem save(OdDlivItem entity) {
         if (!existsById(entity.getDlivItemId()))
@@ -92,6 +99,7 @@ public class OdDlivItemService {
         return saved;
     }
 
+    /* 배송 아이템 수정 */
     @Transactional
     public OdDlivItem update(String id, OdDlivItem body) {
         OdDlivItem entity = findById(id);
@@ -104,6 +112,7 @@ public class OdDlivItemService {
         return saved;
     }
 
+    /* 배송 아이템 수정 */
     @Transactional
     public OdDlivItem updateSelective(OdDlivItem entity) {
         if (entity.getDlivItemId() == null) throw new CmBizException("dlivItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdDlivItemService {
         return entity;
     }
 
+    /* 배송 아이템 삭제 */
     @Transactional
     public void delete(String id) {
         OdDlivItem entity = findById(id);
@@ -125,6 +135,7 @@ public class OdDlivItemService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 배송 아이템 목록저장 */
     @Transactional
     public void saveList(List<OdDlivItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

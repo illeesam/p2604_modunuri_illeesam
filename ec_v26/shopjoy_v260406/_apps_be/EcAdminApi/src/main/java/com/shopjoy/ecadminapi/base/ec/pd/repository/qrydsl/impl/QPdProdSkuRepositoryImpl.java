@@ -28,6 +28,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     private final JPAQueryFactory queryFactory;
     private static final QPdProdSku s = QPdProdSku.pdProdSku;
 
+    /* 상품 SKU 키조회 */
     @Override
     public Optional<PdProdSkuDto.Item> selectById(String skuId) {
         PdProdSkuDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 SKU 목록조회 */
     @Override
     public List<PdProdSkuDto.Item> selectList(PdProdSkuDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         return query.fetch();
     }
 
+    /* 상품 SKU 페이지조회 */
     @Override
     public PdProdSkuDto.PageResponse selectPageList(PdProdSkuDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -94,6 +97,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                 .from(s);
     }
 
+    /* 상품 SKU buildCondition */
     private BooleanBuilder buildCondition(PdProdSkuDto.Request req) {
         BooleanBuilder w = new BooleanBuilder();
         if (req == null) return w;
@@ -151,6 +155,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         return orders;
     }
 
+    /* 상품 SKU 수정 */
     @Override
     public int updateSelective(PdProdSku entity) {
         if (entity.getSkuId() == null) return 0;

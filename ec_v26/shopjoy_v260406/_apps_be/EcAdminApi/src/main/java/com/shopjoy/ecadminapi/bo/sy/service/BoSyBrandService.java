@@ -19,8 +19,11 @@ public class BoSyBrandService {
 
     private final SyBrandService syBrandService;
 
+    /* 키조회 */
     public SyBrandDto.Item getById(String id) { return syBrandService.getById(id); }
+    /* 목록조회 */
     public List<SyBrandDto.Item> getList(SyBrandDto.Request req) { return syBrandService.getList(req); }
+    /* 페이지조회 */
     public SyBrandDto.PageResponse getPageData(SyBrandDto.Request req) { return syBrandService.getPageData(req); }
 
     @Transactional public SyBrand create(SyBrand body) { return syBrandService.create(body); }

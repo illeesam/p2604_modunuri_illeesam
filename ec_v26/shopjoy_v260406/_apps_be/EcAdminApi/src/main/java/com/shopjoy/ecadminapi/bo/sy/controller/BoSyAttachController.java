@@ -21,42 +21,50 @@ import java.util.List;
 public class BoSyAttachController {
     private final BoSyAttachService boSyAttachService;
 
+    /* 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAttachDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boSyAttachService.getById(id)));
     }
 
+    /* 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyAttachDto.Item>>> list(@Valid @ModelAttribute SyAttachDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyAttachService.getList(req)));
     }
 
+    /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<SyAttachDto.PageResponse>> page(@Valid @ModelAttribute SyAttachDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyAttachService.getPageData(req)));
     }
 
+    /* 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<SyAttach>> create(@RequestBody SyAttach body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyAttachService.create(body)));
     }
 
+    /* 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAttach>> update(@PathVariable("id") String id, @RequestBody SyAttach body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyAttachService.update(id, body)));
     }
 
+    /* upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAttach>> upsert(@PathVariable("id") String id, @RequestBody SyAttach body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyAttachService.update(id, body)));
     }
 
+    /* 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boSyAttachService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyAttach> rows) {
         boSyAttachService.saveList(rows);

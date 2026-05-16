@@ -28,6 +28,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
     private final JPAQueryFactory queryFactory;
     private static final QPmCouponUsage u = QPmCouponUsage.pmCouponUsage;
 
+    /* 쿠폰 사용 이력 키조회 */
     @Override
     public Optional<PmCouponUsageDto.Item> selectById(String usageId) {
         PmCouponUsageDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 쿠폰 사용 이력 목록조회 */
     @Override
     public List<PmCouponUsageDto.Item> selectList(PmCouponUsageDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         return query.fetch();
     }
 
+    /* 쿠폰 사용 이력 페이지조회 */
     @Override
     public PmCouponUsageDto.PageResponse selectPageList(PmCouponUsageDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -79,6 +82,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 쿠폰 사용 이력 baseQuery */
     private JPAQuery<PmCouponUsageDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmCouponUsageDto.Item.class,
@@ -90,15 +94,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
                 .from(u);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(PmCouponUsageDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -107,8 +103,8 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         if (StringUtils.hasText(s.getUsageId())) w.and(u.usageId.eq(s.getUsageId()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -166,6 +162,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         return orders;
     }
 
+    /* 쿠폰 사용 이력 수정 */
     @Override
     public int updateSelective(PmCouponUsage entity) {
         if (entity.getUsageId() == null) return 0;

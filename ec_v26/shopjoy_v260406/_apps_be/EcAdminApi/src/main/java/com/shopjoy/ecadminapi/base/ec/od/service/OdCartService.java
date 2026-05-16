@@ -27,6 +27,7 @@ public class OdCartService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 장바구니 키조회 */
     public OdCartDto.Item getById(String id) {
         OdCartDto.Item dto = odCartRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdCartService {
         return odCartRepository.selectById(id).orElse(null);
     }
 
+    /* 장바구니 상세조회 */
     public OdCart findById(String id) {
         return odCartRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdCartService {
         return odCartRepository.findById(id).orElse(null);
     }
 
+    /* 장바구니 키검증 */
     public boolean existsById(String id) {
         return odCartRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdCartService {
         return true;
     }
 
+    /* 장바구니 목록조회 */
     public List<OdCartDto.Item> getList(OdCartDto.Request req) {
         return odCartRepository.selectList(req);
     }
 
+    /* 장바구니 페이지조회 */
     public OdCartDto.PageResponse getPageData(OdCartDto.Request req) {
         PageHelper.addPaging(req);
         return odCartRepository.selectPageList(req);
     }
 
+    /* 장바구니 등록 */
     @Transactional
     public OdCart create(OdCart body) {
         body.setCartId(CmUtil.generateId("od_cart"));
@@ -80,6 +86,7 @@ public class OdCartService {
         return saved;
     }
 
+    /* 장바구니 저장 */
     @Transactional
     public OdCart save(OdCart entity) {
         if (!existsById(entity.getCartId()))
@@ -92,6 +99,7 @@ public class OdCartService {
         return saved;
     }
 
+    /* 장바구니 수정 */
     @Transactional
     public OdCart update(String id, OdCart body) {
         OdCart entity = findById(id);
@@ -104,6 +112,7 @@ public class OdCartService {
         return saved;
     }
 
+    /* 장바구니 수정 */
     @Transactional
     public OdCart updateSelective(OdCart entity) {
         if (entity.getCartId() == null) throw new CmBizException("cartId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdCartService {
         return entity;
     }
 
+    /* 장바구니 삭제 */
     @Transactional
     public void delete(String id) {
         OdCart entity = findById(id);
@@ -125,6 +135,7 @@ public class OdCartService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 장바구니 목록저장 */
     @Transactional
     public void saveList(List<OdCart> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

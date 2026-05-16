@@ -13,10 +13,10 @@ window.PmEventDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const products = reactive([]);
     const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecEventDtlState.tab || 'info', tabMode2: window._ecEventDtlState.tabMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const tab = Vue.toRef(uiState, 'tab');
@@ -56,8 +56,11 @@ window.PmEventDtl = {
 watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._ecEventDtlState.tabMode = v; });
+
+    /* 이벤트 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+    /* 이벤트 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.event_statuses = codeStore.sgGetGrpCodes('EVENT_STATUS_KR');
@@ -67,6 +70,8 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
 
     const _today = new Date();
+
+    /* 이벤트 _pad */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+3}-12-31`;
@@ -83,6 +88,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       title: yup.string().required('이벤트 제목을 입력해주세요.'),
     });
 
+    /* 이벤트 onTabChange */
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
     };
@@ -104,15 +110,21 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       const searchVal = prodSearch.value.trim().toLowerCase();
       return !searchVal || p.prodNm.toLowerCase().includes(searchVal);
     }));
+
+    /* 이벤트 toggleProduct */
     const toggleProduct = (pid) => {
       const idx = form.targetProducts.indexOf(pid);
       if (idx === -1) form.targetProducts.push(pid);
       else form.targetProducts.splice(idx, 1);
     };
+
+    /* 이벤트 isSelected */
     const isSelected = (pid) => form.targetProducts.includes(pid);
     const cfSelectedProducts = computed(() =>
       form.targetProducts.map(pid => products.find(p => p.productId === pid || p.prodId === pid)).filter(Boolean)
     );
+
+    /* 이벤트 removeProduct */
     const removeProduct = (pid) => {
       const idx = form.targetProducts.indexOf(pid);
       if (idx !== -1) form.targetProducts.splice(idx, 1);
@@ -128,10 +140,13 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     /* 신규 등록은 info 탭에서만 가능. 그 외 탭(banner/content/products/preview)은 ID 없으면 비활성 */
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
 
+    /* 이벤트 _afterApiOk */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
+
+    /* 이벤트 _afterApiErr */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -188,7 +203,11 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     };
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
+
+    /* 이벤트 hasVisibility */
     const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
+
+    /* 이벤트 toggleVisibility */
     const toggleVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.visibilityTargets);
       const i = list.indexOf(code);
@@ -201,6 +220,8 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
+
+    /* 이벤트 selectVendor */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;

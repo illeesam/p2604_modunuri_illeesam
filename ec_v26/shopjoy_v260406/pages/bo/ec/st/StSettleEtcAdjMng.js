@@ -6,10 +6,10 @@ window.StSettleEtcAdjMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_etc_adj_types: [],
@@ -17,6 +17,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       date_range_opts: [],
     });
 
+    /* 정산 기타 조정 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -32,6 +33,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
 
             const dateEnd   = ref('');
+
+    /* 정산 기타 조정 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
@@ -40,6 +43,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const vendorList = reactive([]);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
+    /* 정산 기타 조정 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resV, resA] = await Promise.all([
@@ -49,9 +53,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
               pageNo: pager.pageNo, pageSize: pager.pageSize,
               ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
             };
-            // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-            if (params.searchValue && !params.searchTypes) {
-              params.searchTypes = 'def_id,def_vendorNm,def_reason';
+            // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+            if (params.searchValue && !params.searchType) {
+              params.searchType = 'def_id,def_vendorNm,def_reason';
             }
             return boApiSvc.stSettleEtcAdj.getPage(params, '정산기타조정', '목록조회');
           })()
@@ -77,22 +81,32 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const etcAdjList = reactive([]);
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 정산 기타 조정 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
         const form = reactive({});
     const errors = reactive({});
     const isNew  = ref(false);
-  const _initSearchParam = () => ({ searchTypes: '', searchValue: '', type: '', status: '' });
+
+  /* 정산 기타 조정 _initSearchParam */
+  const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
   const searchParam = reactive(_initSearchParam());
 
+    /* 정산 기타 조정 openNew */
     const openNew = () => {
       Object.assign(form, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '기타', adjAmt: 0, reason: '', aprvStatusCd: '대기', regUserNm: '관리자' });
       uiState.selectedId = '__new__'; uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
+
+    /* 정산 기타 조정 openEdit */
     const openEdit = (r) => { Object.assign(form, {...r}); uiState.selectedId = r.adjId; uiState.isNew = false; Object.keys(errors).forEach(k => delete errors[k]); };
+
+    /* 정산 기타 조정 closeForm */
     const closeForm = () => { uiState.selectedId = null; };
 
+    /* 정산 기타 조정 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       if (!form.vendorId) { errors.vendorId = '업체를 선택하세요.'; }
@@ -118,6 +132,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
+    /* 정산 기타 조정 삭제 */
     const handleDelete = async (r) => {
       const ok = await showConfirm('삭제', `[${r.adjId}]를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -134,12 +149,25 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
+    /* 정산 기타 조정 fnAprvBadge */
     const fnAprvBadge = s => ({ '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');
+
+    /* 정산 기타 조정 fnTypeBadge */
     const fnTypeBadge = t => ({ '위약금':'badge-red', '인센티브':'badge-green', '세금조정':'badge-orange', '기타':'badge-gray' }[t] || 'badge-gray');
+
+    /* 정산 기타 조정 fmtW */
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
+
+    /* 정산 기타 조정 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+
+    /* 정산 기타 조정 onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    /* 정산 기타 조정 setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
+
+    /* 정산 기타 조정 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
     // -- return ---------------------------------------------------------------
@@ -171,7 +199,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <option value="">상태 전체</option><option v-for="c in codes.settle_adj_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_id',       label: 'ID' },
           { value: 'def_vendorNm', label: '업체명' },

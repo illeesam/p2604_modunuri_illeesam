@@ -25,6 +25,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     private final JPAQueryFactory queryFactory;
     private static final QZzExam1 e = QZzExam1.zzExam1;
 
+    /* zz_exam1 buildBaseQuery */
     private JPAQuery<ZzExam1Dto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(ZzExam1Dto.Item.class,
@@ -42,6 +43,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
                 .from(e);
     }
 
+    /* zz_exam1 키조회 */
     @Override
     public Optional<ZzExam1Dto.Item> selectById(String exam1Id) {
         ZzExam1Dto.Item dto = buildBaseQuery()
@@ -50,6 +52,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         return Optional.ofNullable(dto);
     }
 
+    /* zz_exam1 목록조회 */
     @Override
     public List<ZzExam1Dto.Item> selectList(ZzExam1Dto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -68,6 +71,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         return query.fetch();
     }
 
+    /* zz_exam1 페이지조회 */
     @Override
     public ZzExam1Dto.PageResponse selectPageList(ZzExam1Dto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -93,15 +97,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_col11"
-    //   - 복합 조건  : searchTypes = "def_col11,def_col12"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_col11,def_col12,"
-    //     types.contains(",def_col11,")             // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_col11,def_col12" */
     private BooleanBuilder buildCondition(ZzExam1Dto.Request search) {
         BooleanBuilder w = new BooleanBuilder();
         if (search == null) return w;
@@ -118,10 +114,10 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         if (StringUtils.hasText(search.getCol14())) w.and(e.col14.containsIgnoreCase(search.getCol14()));
         if (StringUtils.hasText(search.getCol15())) w.and(e.col15.containsIgnoreCase(search.getCol15()));
 
-        // ── 통합검색(searchValue + searchTypes) : 지정 컬럼 OR ──
+        // ── 통합검색(searchValue + searchType) : 지정 컬럼 OR ──
         if (StringUtils.hasText(search.getSearchValue())) {
-            String types = "," + (search.getSearchTypes() == null ? "" : search.getSearchTypes().trim()) + ",";
-            boolean all  = !StringUtils.hasText(search.getSearchTypes());
+            String types = "," + (search.getSearchType() == null ? "" : search.getSearchType().trim()) + ",";
+            boolean all  = !StringUtils.hasText(search.getSearchType());
             String v = search.getSearchValue();
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_exam1_id,")) or.or(e.exam1Id.containsIgnoreCase(v));
@@ -135,6 +131,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         return w;
     }
 
+    /* zz_exam1 buildOrder */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(ZzExam1Dto.Request search) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
@@ -158,6 +155,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         return orders;
     }
 
+    /* zz_exam1 수정 */
     @Override
     public int updateSelective(ZzExam1 entity) {
         if (entity.getExam1Id() == null) return 0;

@@ -27,6 +27,7 @@ public class OdClaimItemService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 클레임 아이템 키조회 */
     public OdClaimItemDto.Item getById(String id) {
         OdClaimItemDto.Item dto = odClaimItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdClaimItemService {
         return odClaimItemRepository.selectById(id).orElse(null);
     }
 
+    /* 클레임 아이템 상세조회 */
     public OdClaimItem findById(String id) {
         return odClaimItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdClaimItemService {
         return odClaimItemRepository.findById(id).orElse(null);
     }
 
+    /* 클레임 아이템 키검증 */
     public boolean existsById(String id) {
         return odClaimItemRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdClaimItemService {
         return true;
     }
 
+    /* 클레임 아이템 목록조회 */
     public List<OdClaimItemDto.Item> getList(OdClaimItemDto.Request req) {
         return odClaimItemRepository.selectList(req);
     }
 
+    /* 클레임 아이템 페이지조회 */
     public OdClaimItemDto.PageResponse getPageData(OdClaimItemDto.Request req) {
         PageHelper.addPaging(req);
         return odClaimItemRepository.selectPageList(req);
     }
 
+    /* 클레임 아이템 등록 */
     @Transactional
     public OdClaimItem create(OdClaimItem body) {
         body.setClaimItemId(CmUtil.generateId("od_claim_item"));
@@ -80,6 +86,7 @@ public class OdClaimItemService {
         return saved;
     }
 
+    /* 클레임 아이템 저장 */
     @Transactional
     public OdClaimItem save(OdClaimItem entity) {
         if (!existsById(entity.getClaimItemId()))
@@ -92,6 +99,7 @@ public class OdClaimItemService {
         return saved;
     }
 
+    /* 클레임 아이템 수정 */
     @Transactional
     public OdClaimItem update(String id, OdClaimItem body) {
         OdClaimItem entity = findById(id);
@@ -104,6 +112,7 @@ public class OdClaimItemService {
         return saved;
     }
 
+    /* 클레임 아이템 수정 */
     @Transactional
     public OdClaimItem updateSelective(OdClaimItem entity) {
         if (entity.getClaimItemId() == null) throw new CmBizException("claimItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdClaimItemService {
         return entity;
     }
 
+    /* 클레임 아이템 삭제 */
     @Transactional
     public void delete(String id) {
         OdClaimItem entity = findById(id);
@@ -125,6 +135,7 @@ public class OdClaimItemService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 클레임 아이템 목록저장 */
     @Transactional
     public void saveList(List<OdClaimItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

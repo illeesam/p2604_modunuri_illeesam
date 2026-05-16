@@ -12,10 +12,10 @@ window.SyContactDtl = {
   },
   setup(props) {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', tabMode2: window._syContactDtlState.tabMode || 'tab' });
     const tab = Vue.toRef(uiState, 'tab');
@@ -27,8 +27,11 @@ window.SyContactDtl = {
 watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._syContactDtlState.tabMode = v; });
+
+    /* 문의 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+    /* 문의 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.contact_categories = codeStore.sgGetGrpCodes('CONTACT_CATEGORY_KR');
@@ -49,6 +52,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       content: yup.string().required('문의 내용을 입력해주세요.'),
     });
 
+    /* 문의 상세조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -80,11 +84,13 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       await handleLoadDetail();
     });
 
+    /* 문의 onUserIdChange */
     const onUserIdChange = () => {
       const m = getMember.value(Number(form.userId));
       if (m) form.userNm = m.memberNm;
     };
 
+    /* 문의 fnStatusBadge */
     const fnStatusBadge = s => ({
       '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray'
     }[s] || 'badge-gray');
@@ -94,10 +100,13 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     /* 첫 탭 = content. answer/history 탭은 ID 없으면 비활성. */
     const cfSaveDisabled = computed(() => uiState.tab !== 'content' && !cfHasId.value);
 
+    /* 문의 _afterApiOk */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
+
+    /* 문의 _afterApiErr */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

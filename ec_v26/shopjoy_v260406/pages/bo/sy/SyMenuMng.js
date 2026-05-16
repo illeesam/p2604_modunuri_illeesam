@@ -7,10 +7,10 @@ window.SyMenuMng = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const menus = reactive([]);
     const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
     const codes = reactive({ menu_type: [], menu_status: [], use_yn: [], menu_types: ['페이지','폴더','외부링크','구분선'] });
@@ -32,9 +32,10 @@ window.SyMenuMng = {
         uiState.loading = false;
       }
     };
+
     /* -- 검색 -- */
     const _initSearchParam = () => {
-      return { searchTypes: '', searchValue: '', type: '', useYn: 'Y' };
+      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -42,6 +43,7 @@ window.SyMenuMng = {
     const selectNode = (id) => { uiState.selectedTreeId = id; handleSearchList(); };
 
 
+    /* 메뉴 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.menu_type = codeStore.sgGetGrpCodes('MENU_TYPE');
@@ -83,6 +85,8 @@ window.SyMenuMng = {
         else roots.push(map[m.menuId]);
       });
       const result = [];
+
+      /* 메뉴 traverse */
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
@@ -91,6 +95,7 @@ window.SyMenuMng = {
       return result;
     };
 
+    /* 메뉴 makeRow */
     const makeRow = (m) => ({
       ...m, _depth: m._depth || 0, _row_status: 'N', _row_check: false,
       _row_org: { menuCode: m.menuCode, menuNm: m.menuNm, parentId: m.parentId,
@@ -98,22 +103,28 @@ window.SyMenuMng = {
     });
 
 
+    /* 메뉴 목록조회 */
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
+
+    /* 메뉴 onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       handleSearchList();
     };
 
+    /* 메뉴 setFocused */
     const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
 
+    /* 메뉴 onCellChange */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
+    /* 메뉴 addRow */
     const addRow = () => {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
@@ -128,6 +139,7 @@ window.SyMenuMng = {
       uiState.focusedIdx = insertAt;
     };
 
+    /* 메뉴 deleteRow */
     const deleteRow = (realIdx) => {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
@@ -136,6 +148,7 @@ window.SyMenuMng = {
       } else { row._row_status = 'D'; }
     };
 
+    /* 메뉴 cancelRow */
     const cancelRow = (realIdx) => {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
@@ -147,6 +160,7 @@ window.SyMenuMng = {
       }
     };
 
+    /* 메뉴 cancelChecked */
     const cancelChecked = () => {
       const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.menuId));
       if (!checkedIds.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -161,6 +175,7 @@ window.SyMenuMng = {
       }
     };
 
+    /* 메뉴 deleteRows */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -169,6 +184,7 @@ window.SyMenuMng = {
       }
     };
 
+    /* 메뉴 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
@@ -193,8 +209,10 @@ window.SyMenuMng = {
       }
     };
 
+    /* 메뉴 toggleCheckAll */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
+    /* 메뉴 parentNm */
     const parentNm = (parentId) => {
       if (!parentId) return '';
       const p = menus.find(m => m.menuId === parentId);
@@ -202,7 +220,11 @@ window.SyMenuMng = {
     };
 
     const menuTreeModal = reactive({ show: false, targetRow: null });
+
+    /* 메뉴 openParentModal */
     const openParentModal = async (row) => { menuTreeModal.targetRow = row; await handleSearchList('DEFAULT'); menuTreeModal.show = true; };
+
+    /* 메뉴 onParentSelect */
     const onParentSelect  = (menu) => {
       if (menuTreeModal.targetRow) { menuTreeModal.targetRow.parentId = menu.menuId; menuTreeModal.targetRow._depth = 0; onCellChange(menuTreeModal.targetRow); }
       menuTreeModal.show = false;
@@ -211,11 +233,20 @@ window.SyMenuMng = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
+
+    /* 메뉴 depthBullet */
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
+
+    /* 메뉴 depthColor */
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
+
+    /* 메뉴 fnStatusClass */
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+
+    /* 메뉴 fnTypeClass */
     const fnTypeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
 
+    /* 메뉴 exportExcel */
     const exportExcel = () => coUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
@@ -244,7 +275,7 @@ window.SyMenuMng = {
   <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_code', label: '메뉴코드' },
           { value: 'def_nm',   label: '메뉴명' },

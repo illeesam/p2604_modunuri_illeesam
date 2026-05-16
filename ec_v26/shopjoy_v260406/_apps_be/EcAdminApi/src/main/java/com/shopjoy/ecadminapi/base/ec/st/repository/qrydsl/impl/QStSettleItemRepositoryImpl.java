@@ -36,6 +36,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     private static final QSySite       ste  = QSySite.sySite;
     private static final QSyCode       cdSit = new QSyCode("cd_sit");
 
+    /* 정산 항목 키조회 */
     @Override
     public Optional<StSettleItemDto.Item> selectById(String id) {
         StSettleItemDto.Item dto = baseListQuery()
@@ -44,6 +45,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 정산 항목 목록조회 */
     @Override
     public List<StSettleItemDto.Item> selectList(StSettleItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -62,6 +64,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         return query.fetch();
     }
 
+    /* 정산 항목 페이지조회 */
     @Override
     public StSettleItemDto.PageResponse selectPageList(StSettleItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -87,6 +90,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 정산 항목 baseListQuery */
     private JPAQuery<StSettleItemDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleItemDto.Item.class,
@@ -106,6 +110,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                 .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE").and(cdSit.codeValue.eq(i.settleItemTypeCd)));
     }
 
+    /* 정산 항목 buildCondition */
     private BooleanBuilder buildCondition(StSettleItemDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -161,6 +166,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         return orders;
     }
 
+    /* 정산 항목 수정 */
     @Override
     public int updateSelective(StSettleItem entity) {
         if (entity.getSettleItemId() == null) return 0;

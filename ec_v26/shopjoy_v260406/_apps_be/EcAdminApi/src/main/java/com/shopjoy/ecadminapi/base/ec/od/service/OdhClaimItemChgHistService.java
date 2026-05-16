@@ -27,6 +27,7 @@ public class OdhClaimItemChgHistService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 클레임 아이템 변경 이력 키조회 */
     public OdhClaimItemChgHistDto.Item getById(String id) {
         OdhClaimItemChgHistDto.Item dto = odhClaimItemChgHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdhClaimItemChgHistService {
         return odhClaimItemChgHistRepository.selectById(id).orElse(null);
     }
 
+    /* 클레임 아이템 변경 이력 상세조회 */
     public OdhClaimItemChgHist findById(String id) {
         return odhClaimItemChgHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdhClaimItemChgHistService {
         return odhClaimItemChgHistRepository.findById(id).orElse(null);
     }
 
+    /* 클레임 아이템 변경 이력 키검증 */
     public boolean existsById(String id) {
         return odhClaimItemChgHistRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdhClaimItemChgHistService {
         return true;
     }
 
+    /* 클레임 아이템 변경 이력 목록조회 */
     public List<OdhClaimItemChgHistDto.Item> getList(OdhClaimItemChgHistDto.Request req) {
         return odhClaimItemChgHistRepository.selectList(req);
     }
 
+    /* 클레임 아이템 변경 이력 페이지조회 */
     public OdhClaimItemChgHistDto.PageResponse getPageData(OdhClaimItemChgHistDto.Request req) {
         PageHelper.addPaging(req);
         return odhClaimItemChgHistRepository.selectPageList(req);
     }
 
+    /* 클레임 아이템 변경 이력 등록 */
     @Transactional
     public OdhClaimItemChgHist create(OdhClaimItemChgHist body) {
         body.setClaimItemChgHistId(CmUtil.generateId("odh_claim_item_chg_hist"));
@@ -80,6 +86,7 @@ public class OdhClaimItemChgHistService {
         return saved;
     }
 
+    /* 클레임 아이템 변경 이력 저장 */
     @Transactional
     public OdhClaimItemChgHist save(OdhClaimItemChgHist entity) {
         if (!existsById(entity.getClaimItemChgHistId()))
@@ -92,6 +99,7 @@ public class OdhClaimItemChgHistService {
         return saved;
     }
 
+    /* 클레임 아이템 변경 이력 수정 */
     @Transactional
     public OdhClaimItemChgHist update(String id, OdhClaimItemChgHist body) {
         OdhClaimItemChgHist entity = findById(id);
@@ -104,6 +112,7 @@ public class OdhClaimItemChgHistService {
         return saved;
     }
 
+    /* 클레임 아이템 변경 이력 수정 */
     @Transactional
     public OdhClaimItemChgHist updateSelective(OdhClaimItemChgHist entity) {
         if (entity.getClaimItemChgHistId() == null) throw new CmBizException("claimItemChgHistId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdhClaimItemChgHistService {
         return entity;
     }
 
+    /* 클레임 아이템 변경 이력 삭제 */
     @Transactional
     public void delete(String id) {
         OdhClaimItemChgHist entity = findById(id);
@@ -125,6 +135,7 @@ public class OdhClaimItemChgHistService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 클레임 아이템 변경 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhClaimItemChgHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

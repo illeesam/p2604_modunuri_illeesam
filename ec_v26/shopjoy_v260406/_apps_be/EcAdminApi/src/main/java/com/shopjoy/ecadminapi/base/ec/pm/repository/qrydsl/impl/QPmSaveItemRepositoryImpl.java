@@ -34,6 +34,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
     private static final QSySite     ste  = QSySite.sySite;
     private static final QSyCode     cdSit = new QSyCode("cd_sit");
 
+    /* 적립금 대상 상품 baseQuery */
     private JPAQuery<PmSaveItemDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmSaveItemDto.Item.class,
@@ -48,6 +49,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                 .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ITEM_TARGET").and(cdSit.codeValue.eq(i.targetTypeCd)));
     }
 
+    /* 적립금 대상 상품 키조회 */
     @Override
     public Optional<PmSaveItemDto.Item> selectById(String saveItemId) {
         PmSaveItemDto.Item dto = baseQuery()
@@ -56,6 +58,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 적립금 대상 상품 목록조회 */
     @Override
     public List<PmSaveItemDto.Item> selectList(PmSaveItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -74,6 +77,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         return query.fetch();
     }
 
+    /* 적립금 대상 상품 페이지조회 */
     @Override
     public PmSaveItemDto.PageResponse selectPageList(PmSaveItemDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -99,6 +103,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 적립금 대상 상품 buildCondition */
     private BooleanBuilder buildCondition(PmSaveItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -155,6 +160,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         return orders;
     }
 
+    /* 적립금 대상 상품 수정 */
     @Override
     public int updateSelective(PmSaveItem entity) {
         if (entity.getSaveItemId() == null) return 0;

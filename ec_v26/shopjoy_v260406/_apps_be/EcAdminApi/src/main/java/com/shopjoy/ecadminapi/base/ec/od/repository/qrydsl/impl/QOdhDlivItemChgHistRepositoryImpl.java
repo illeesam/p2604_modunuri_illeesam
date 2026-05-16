@@ -28,6 +28,7 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
     private final JPAQueryFactory queryFactory;
     private static final QOdhDlivItemChgHist h = QOdhDlivItemChgHist.odhDlivItemChgHist;
 
+    /* 배송 아이템 변경 이력 baseQuery */
     private JPAQuery<OdhDlivItemChgHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhDlivItemChgHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
                 .from(h);
     }
 
+    /* 배송 아이템 변경 이력 키조회 */
     @Override
     public Optional<OdhDlivItemChgHistDto.Item> selectById(String id) {
         OdhDlivItemChgHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         return Optional.ofNullable(dto);
     }
 
+    /* 배송 아이템 변경 이력 목록조회 */
     @Override
     public List<OdhDlivItemChgHistDto.Item> selectList(OdhDlivItemChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         return query.fetch();
     }
 
+    /* 배송 아이템 변경 이력 페이지조회 */
     @Override
     public OdhDlivItemChgHistDto.PageResponse selectPageList(OdhDlivItemChgHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 배송 아이템 변경 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhDlivItemChgHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         return orders;
     }
 
+    /* 배송 아이템 변경 이력 수정 */
     @Override
     public int updateSelective(OdhDlivItemChgHist entity) {
         if (entity.getDlivItemChgHistId() == null) return 0;

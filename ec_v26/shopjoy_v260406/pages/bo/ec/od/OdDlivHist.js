@@ -8,10 +8,10 @@ window.OdDlivHist = {
   },
   setup(props) {
     const { ref, computed, reactive, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const deliveries = reactive([]);
     const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecDlivHistState.tab || 'order', tabMode2: 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
@@ -36,6 +36,7 @@ window.OdDlivHist = {
 
         watch(botTab, v => { window._ecDlivHistState.tab = v; });
 
+    /* 배송 fnLoadCodes */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
 };
@@ -45,6 +46,7 @@ window.OdDlivHist = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
+    /* 배송 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
     const cfRelatedOrder  = computed(() => getOrder.value(props.orderId));
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));

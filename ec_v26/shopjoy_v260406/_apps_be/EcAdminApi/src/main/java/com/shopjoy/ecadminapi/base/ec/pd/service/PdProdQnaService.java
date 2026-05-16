@@ -27,6 +27,7 @@ public class PdProdQnaService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 문의 키조회 */
     public PdProdQnaDto.Item getById(String id) {
         PdProdQnaDto.Item dto = pdProdQnaRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdProdQnaService {
         return pdProdQnaRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 문의 상세조회 */
     public PdProdQna findById(String id) {
         return pdProdQnaRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdProdQnaService {
         return pdProdQnaRepository.findById(id).orElse(null);
     }
 
+    /* 상품 문의 키검증 */
     public boolean existsById(String id) {
         return pdProdQnaRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdProdQnaService {
         return true;
     }
 
+    /* 상품 문의 목록조회 */
     public List<PdProdQnaDto.Item> getList(PdProdQnaDto.Request req) {
         return pdProdQnaRepository.selectList(req);
     }
 
+    /* 상품 문의 페이지조회 */
     public PdProdQnaDto.PageResponse getPageData(PdProdQnaDto.Request req) {
         PageHelper.addPaging(req);
         return pdProdQnaRepository.selectPageList(req);
     }
 
+    /* 상품 문의 등록 */
     @Transactional
     public PdProdQna create(PdProdQna body) {
         body.setQnaId(CmUtil.generateId("pd_prod_qna"));
@@ -80,6 +86,7 @@ public class PdProdQnaService {
         return saved;
     }
 
+    /* 상품 문의 저장 */
     @Transactional
     public PdProdQna save(PdProdQna entity) {
         if (!existsById(entity.getQnaId()))
@@ -92,6 +99,7 @@ public class PdProdQnaService {
         return saved;
     }
 
+    /* 상품 문의 수정 */
     @Transactional
     public PdProdQna update(String id, PdProdQna body) {
         PdProdQna entity = findById(id);
@@ -104,6 +112,7 @@ public class PdProdQnaService {
         return saved;
     }
 
+    /* 상품 문의 수정 */
     @Transactional
     public PdProdQna updateSelective(PdProdQna entity) {
         if (entity.getQnaId() == null) throw new CmBizException("qnaId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdProdQnaService {
         return entity;
     }
 
+    /* 상품 문의 삭제 */
     @Transactional
     public void delete(String id) {
         PdProdQna entity = findById(id);
@@ -125,6 +135,7 @@ public class PdProdQnaService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 문의 목록저장 */
     @Transactional
     public void saveList(List<PdProdQna> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

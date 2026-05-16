@@ -28,6 +28,7 @@ public class PdCategoryService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 카테고리 키조회 */
     public PdCategoryDto.Item getById(String id) {
         PdCategoryDto.Item dto = pdCategoryRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -39,6 +40,7 @@ public class PdCategoryService {
         return pdCategoryRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 카테고리 상세조회 */
     public PdCategory findById(String id) {
         return pdCategoryRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -49,6 +51,7 @@ public class PdCategoryService {
         return pdCategoryRepository.findById(id).orElse(null);
     }
 
+    /* 상품 카테고리 키검증 */
     public boolean existsById(String id) {
         return pdCategoryRepository.existsById(id);
     }
@@ -59,15 +62,18 @@ public class PdCategoryService {
         return true;
     }
 
+    /* 상품 카테고리 목록조회 */
     public List<PdCategoryDto.Item> getList(PdCategoryDto.Request req) {
         return pdCategoryRepository.selectList(req);
     }
 
+    /* 상품 카테고리 페이지조회 */
     public PdCategoryDto.PageResponse getPageData(PdCategoryDto.Request req) {
         PageHelper.addPaging(req);
         return pdCategoryRepository.selectPageList(req);
     }
 
+    /* 상품 카테고리 등록 */
     @Transactional
     public PdCategory create(PdCategory body) {
         body.setCategoryId(CmUtil.generateId("pd_category"));
@@ -81,6 +87,7 @@ public class PdCategoryService {
         return saved;
     }
 
+    /* 상품 카테고리 저장 */
     @Transactional
     public PdCategory save(PdCategory entity) {
         if (!existsById(entity.getCategoryId()))
@@ -93,6 +100,7 @@ public class PdCategoryService {
         return saved;
     }
 
+    /* 상품 카테고리 수정 */
     @Transactional
     public PdCategory update(String id, PdCategory body) {
         PdCategory entity = findById(id);
@@ -105,6 +113,7 @@ public class PdCategoryService {
         return saved;
     }
 
+    /* 상품 카테고리 수정 */
     @Transactional
     public PdCategory updateSelective(PdCategory entity) {
         if (entity.getCategoryId() == null) throw new CmBizException("categoryId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -118,6 +127,7 @@ public class PdCategoryService {
         return entity;
     }
 
+    /* 상품 카테고리 삭제 */
     @Transactional
     public void delete(String id) {
         PdCategory entity = findById(id);
@@ -126,6 +136,7 @@ public class PdCategoryService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 카테고리 목록저장 */
     @Transactional
     public void saveList(List<PdCategory> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

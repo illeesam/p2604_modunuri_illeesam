@@ -32,6 +32,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
     private static final QSySite              ste = QSySite.sySite;
     private static final QPdProd              prd = QPdProd.pdProd;
 
+    /* 상품 SKU 가격 이력 buildBaseQuery */
     private JPAQuery<PdhProdSkuPriceHistDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdSkuPriceHistDto.Item.class,
@@ -52,6 +53,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
                 .leftJoin(prd).on(prd.prodId.eq(h.prodId));
     }
 
+    /* 상품 SKU 가격 이력 키조회 */
     @Override
     public Optional<PdhProdSkuPriceHistDto.Item> selectById(String id) {
         PdhProdSkuPriceHistDto.Item dto = buildBaseQuery()
@@ -60,6 +62,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 SKU 가격 이력 목록조회 */
     @Override
     public List<PdhProdSkuPriceHistDto.Item> selectList(PdhProdSkuPriceHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -78,6 +81,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         return query.fetch();
     }
 
+    /* 상품 SKU 가격 이력 페이지조회 */
     @Override
     public PdhProdSkuPriceHistDto.PageResponse selectPageList(PdhProdSkuPriceHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -103,6 +107,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 상품 SKU 가격 이력 buildCondition */
     private BooleanBuilder buildCondition(PdhProdSkuPriceHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -153,6 +158,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         return orders;
     }
 
+    /* 상품 SKU 가격 이력 수정 */
     @Override
     public int updateSelective(PdhProdSkuPriceHist entity) {
         if (entity.getHistId() == null) return 0;

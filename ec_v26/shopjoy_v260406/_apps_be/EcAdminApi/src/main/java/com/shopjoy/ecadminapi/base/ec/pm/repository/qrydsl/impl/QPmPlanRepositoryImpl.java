@@ -33,6 +33,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     private static final QSyCode cdPt = new QSyCode("cd_pt");
     private static final QSyCode cdPs = new QSyCode("cd_ps");
 
+    /* 프로모션 플랜 baseQuery */
     private JPAQuery<PmPlanDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmPlanDto.Item.class,
@@ -47,6 +48,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PLAN_STATUS").and(cdPs.codeValue.eq(p.planStatusCd)));
     }
 
+    /* 프로모션 플랜 키조회 */
     @Override
     public Optional<PmPlanDto.Item> selectById(String planId) {
         PmPlanDto.Item dto = baseQuery()
@@ -55,6 +57,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 프로모션 플랜 목록조회 */
     @Override
     public List<PmPlanDto.Item> selectList(PmPlanDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -73,6 +76,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         return query.fetch();
     }
 
+    /* 프로모션 플랜 페이지조회 */
     @Override
     public PmPlanDto.PageResponse selectPageList(PmPlanDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -98,15 +102,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(PmPlanDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -116,8 +112,8 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         if (StringUtils.hasText(s.getUseYn()))  w.and(p.useYn.eq(s.getUseYn()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -177,6 +173,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         return orders;
     }
 
+    /* 프로모션 플랜 수정 */
     @Override
     public int updateSelective(PmPlan entity) {
         if (entity.getPlanId() == null) return 0;

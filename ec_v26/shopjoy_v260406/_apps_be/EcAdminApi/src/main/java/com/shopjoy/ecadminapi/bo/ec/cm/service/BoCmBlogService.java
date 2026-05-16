@@ -31,8 +31,11 @@ public class BoCmBlogService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public CmBlogDto.Item getById(String id) { return cmBlogService.getById(id); }
+    /* 목록조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) { return cmBlogService.getList(req); }
+    /* 페이지조회 */
     public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) { return cmBlogService.getPageData(req); }
 
     @Transactional public CmBlog create(CmBlog body) {

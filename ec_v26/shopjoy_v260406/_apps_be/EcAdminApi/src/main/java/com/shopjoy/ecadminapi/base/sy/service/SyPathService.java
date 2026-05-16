@@ -27,6 +27,7 @@ public class SyPathService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public SyPathDto.Item getById(String id) {
         SyPathDto.Item dto = syPathRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyPathService {
         return syPathRepository.selectById(id).orElse(null);
     }
 
+    /* 상세조회 */
     public SyPath findById(String id) {
         return syPathRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyPathService {
         return syPathRepository.findById(id).orElse(null);
     }
 
+    /* 키검증 */
     public boolean existsById(String id) {
         return syPathRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyPathService {
         return true;
     }
 
+    /* 목록조회 */
     public List<SyPathDto.Item> getList(SyPathDto.Request req) {
         return syPathRepository.selectList(req);
     }
 
+    /* 페이지조회 */
     public SyPathDto.PageResponse getPageData(SyPathDto.Request req) {
         PageHelper.addPaging(req);
         return syPathRepository.selectPageList(req);
     }
 
+    /* 등록 */
     @Transactional
     public SyPath create(SyPath body) {
         body.setPathId(CmUtil.generateId("sy_path"));
@@ -80,6 +86,7 @@ public class SyPathService {
         return saved;
     }
 
+    /* 저장 */
     @Transactional
     public SyPath save(SyPath entity) {
         if (!existsById(entity.getPathId()))
@@ -92,6 +99,7 @@ public class SyPathService {
         return saved;
     }
 
+    /* 수정 */
     @Transactional
     public SyPath update(String id, SyPath body) {
         SyPath entity = findById(id);
@@ -104,6 +112,7 @@ public class SyPathService {
         return saved;
     }
 
+    /* 수정 */
     @Transactional
     public SyPath updateSelective(SyPath entity) {
         if (entity.getPathId() == null) throw new CmBizException("pathId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyPathService {
         return entity;
     }
 
+    /* 삭제 */
     @Transactional
     public void delete(String id) {
         SyPath entity = findById(id);
@@ -125,6 +135,7 @@ public class SyPathService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 목록저장 */
     @Transactional
     public void saveList(List<SyPath> rows) {
         String authId = CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system");

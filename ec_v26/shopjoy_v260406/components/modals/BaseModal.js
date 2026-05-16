@@ -15,8 +15,14 @@
 
    사용법 (부모):
      const modal = reactive({ show: false, kind: '', reloadTrigger: 0 });
+
+     /* openA */
      const openA = () => { modal.kind = 'a'; modal.reloadTrigger++; modal.show = true; };
+
+     /* openB */
      const openB = () => { modal.kind = 'b'; modal.reloadTrigger++; modal.show = true; };
+
+     /* refresh */
      const refresh = () => { modal.reloadTrigger++; };
 
    템플릿:
@@ -301,10 +307,14 @@ window.ProductModal = {
 
     /* 옵션 필수 검증 */
     const cfNeedsColor = () => props.product?.opt1s?.length > 0;
+
+    /* cfNeedsSize */
     const cfNeedsSize  = () => {
       const s = props.product?.opt2s;
       return s && s.length > 0 && !(s.length === 1 && s[0] === 'FREE');
     };
+
+    /* handleValidate */
     const handleValidate = () => {
       errColor.value = cfNeedsColor() && !selColor.value;
       errSize.value  = cfNeedsSize()  && !selSize.value;
@@ -581,16 +591,18 @@ window.SiteSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 10;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ searchTypes: '', searchValue: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchTypes: searchParam.searchTypes || undefined };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_no,def_code,def_nm,def_domain';
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_no,def_code,def_nm,def_domain';
         }
         const res = await boApiSvc.sySite.getPage(params, '사이트관리', '목록조회');
         const data = res.data?.data;
@@ -599,11 +611,17 @@ window.SiteSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* handleSearchListWrap */
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
     watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
+
+    /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
@@ -615,7 +633,7 @@ window.SiteSelectModal = {
         title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
     </span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <multi-check-select
-      v-model="searchParam.searchTypes"
+      v-model="searchParam.searchType"
       :options="[
         { value: 'def_no',     label: '사이트번호' },
         { value: 'def_code',   label: '사이트코드' },
@@ -659,16 +677,18 @@ window.VendorSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ searchTypes: '', searchValue: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchTypes: searchParam.searchTypes || undefined };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_bizno';
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_bizno';
         }
         const res = await boApiSvc.syVendor.getPage(params, '판매자관리', '목록조회');
         const data = res.data?.data;
@@ -677,11 +697,17 @@ window.VendorSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* handleSearchListWrap */
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
     watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
+
+    /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
@@ -690,7 +716,7 @@ window.VendorSelectModal = {
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <multi-check-select
-      v-model="searchParam.searchTypes"
+      v-model="searchParam.searchType"
       :options="[
         { value: 'def_nm',    label: '업체명' },
         { value: 'def_bizno', label: '사업자번호' },
@@ -741,6 +767,8 @@ window.BoUserSelectModal = {
       items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(d => ({ ...d, _depth: depth, _kids: fnBuildDeptTree(items, d.deptId, depth + 1) }));
+
+    /* fnFlattenDept */
     const fnFlattenDept = (nodes, result = []) => {
       nodes.forEach(n => { result.push(n); fnFlattenDept(n._kids, result); });
       return result;
@@ -758,6 +786,8 @@ window.BoUserSelectModal = {
       const c = pager.page, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
+
+    /* handleSearchUsers */
     const handleSearchUsers = async () => {
       uiState.loading = true;
       pager.pageList = [];
@@ -775,6 +805,8 @@ window.BoUserSelectModal = {
         fnBuildPagerNums();
       } catch (e) { pager.pageList = []; } finally { uiState.loading = false; }
     };
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
@@ -788,6 +820,8 @@ window.BoUserSelectModal = {
 
     /* ── 선택 ── */
     const fnIsChecked = (u) => selectedIds.has(u.userId || u.boUserId);
+
+    /* handleToggleUser */
     const handleToggleUser = (u) => {
       const id = u.userId || u.boUserId;
       if (selectedIds.has(id)) {
@@ -800,6 +834,8 @@ window.BoUserSelectModal = {
       }
     };
     const cfAllChecked = computed(() => pager.pageList.length > 0 && pager.pageList.every(u => selectedIds.has(u.userId || u.boUserId)));
+
+    /* handleToggleAll */
     const handleToggleAll = () => {
       if (cfAllChecked.value) {
         pager.pageList.forEach(u => {
@@ -816,9 +852,14 @@ window.BoUserSelectModal = {
       }
     };
     const cfSelectedCount = computed(() => selectedIds.size);
+
+    /* handleConfirm */
     const handleConfirm = () => { emit('select', [...selectedUsers]); };
 
+    /* 목록조회 */
     const onSearch = () => { pager.page = 1; handleSearchUsers(); };
+
+    /* setPage */
     const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.page = n; handleSearchUsers(); } };
     return { cfSiteNm, depts, uiState, pager, selectedIds, cfFlatDeptTree,
       fnIsChecked, handleToggleUser, cfAllChecked, handleToggleAll, cfSelectedCount, handleConfirm,
@@ -983,16 +1024,18 @@ window.MemberSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ searchTypes: '', searchValue: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchTypes: searchParam.searchTypes || undefined };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_email,def_id';
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_email,def_id';
         }
         const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
@@ -1001,11 +1044,17 @@ window.MemberSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* handleSearchListWrap */
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
     watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
+
+    /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
@@ -1014,7 +1063,7 @@ window.MemberSelectModal = {
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <multi-check-select
-      v-model="searchParam.searchTypes"
+      v-model="searchParam.searchType"
       :options="[
         { value: 'def_nm',    label: '이름' },
         { value: 'def_email', label: '이메일' },
@@ -1056,16 +1105,18 @@ window.OrderSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 8;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ searchTypes: '', searchValue: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchTypes: searchParam.searchTypes || undefined };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_orderId,def_memberNm,def_prodNm';
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_orderId,def_memberNm,def_prodNm';
         }
         const res = await boApiSvc.odOrder.getPage(params, '주문관리', '목록조회');
         const data = res.data?.data;
@@ -1074,11 +1125,17 @@ window.OrderSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* handleSearchListWrap */
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
     watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
+
+    /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
@@ -1087,7 +1144,7 @@ window.OrderSelectModal = {
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <multi-check-select
-      v-model="searchParam.searchTypes"
+      v-model="searchParam.searchType"
       :options="[
         { value: 'def_orderId',  label: '주문ID' },
         { value: 'def_memberNm', label: '회원명' },
@@ -1129,16 +1186,18 @@ window.BbmSelectModal = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 6;
     const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
-    const searchParam = reactive({ searchTypes: '', searchValue: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchTypes: searchParam.searchTypes || undefined };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_code,def_type';
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_code,def_type';
         }
         const res = await boApiSvc.syBbm.getPage(params, '게시판모드관리', '목록조회');
         const data = res.data?.data;
@@ -1147,13 +1206,23 @@ window.BbmSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
     };
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* handleSearchListWrap */
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
     watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
+
+    /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+
+    /* fnTypeBadge */
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
+
+    /* fnScopeBadge */
     const fnScopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
     return { cfSiteNm, searchParam, list, loading, pager, onSetPage, fnTypeBadge, fnScopeBadge };
   },
@@ -1162,7 +1231,7 @@ window.BbmSelectModal = {
   <div class="modal-box" style="max-width:560px;">
     <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <multi-check-select
-      v-model="searchParam.searchTypes"
+      v-model="searchParam.searchType"
       :options="[
         { value: 'def_nm',   label: '게시판명' },
         { value: 'def_code', label: '코드' },
@@ -1313,12 +1382,16 @@ window.TemplateSendModal = {
 
     const searchParam = reactive({ type: 'member', searchValue: '' });
     const selected = reactive([]);
+
+    /* getId */
     const getId = (item) => item.memberId || item.userId || item.boUserId;
 
     /* ── API 데이터 ── */
     const allDepts = reactive([]);
     const allMembers = reactive([]);
     const allBoUsers = reactive([]);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       try {
         const [deptRes, memberRes, userRes] = await Promise.all([
@@ -1338,16 +1411,22 @@ window.TemplateSendModal = {
     const uiState = reactive({ selectedDeptId: null, selectedGrade: null, deptSearchValue: '' });
     const selectedDeptId = computed(() => uiState.selectedDeptId);
     const selectedGrade = computed(() => uiState.selectedGrade);
+
+    /* fnBuildDeptTree */
     const fnBuildDeptTree = (items, parentId, depth) =>
       items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(d => ({ ...d, _depth: depth, _kids: fnBuildDeptTree(items, d.deptId, depth + 1) }));
+
+    /* fnFlattenDept */
     const fnFlattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); fnFlattenDept(n._kids, result); }); return result; };
     const cfFlatDeptTree = computed(() => {
       const k = uiState.deptSearchValue.trim().toLowerCase();
       const base = k ? allDepts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : allDepts;
       return fnFlattenDept(fnBuildDeptTree(base, null, 1));
     });
+
+    /* fnGetDescDeptIds */
     const fnGetDescDeptIds = (deptId) => {
       const ids = new Set();
       const queue = [deptId];
@@ -1382,13 +1461,18 @@ window.TemplateSendModal = {
     });
     const cfList = computed(() => searchParam.type === 'member' ? cfMemberList.value : cfUserList.value);
 
+    /* fnIsSelected */
     const fnIsSelected = (item) => selected.includes(getId(item));
+
+    /* handleToggleSelect */
     const handleToggleSelect = (item) => {
       const id = getId(item);
       const idx = selected.indexOf(id);
       if (idx === -1) selected.push(id); else selected.splice(idx, 1);
     };
     const cfAllChecked = computed(() => cfList.value.length > 0 && cfList.value.every(x => selected.includes(getId(x))));
+
+    /* handleToggleAll */
     const handleToggleAll = () => {
       if (cfAllChecked.value) { selected.splice(0); }
       else { cfList.value.forEach(x => { const id = getId(x); if (!selected.includes(id)) selected.push(id); }); }
@@ -1402,8 +1486,10 @@ window.TemplateSendModal = {
       '시스템알림': 'badge-red', '회원알림': 'badge-teal',
     }[props.tmpl?.templateType] || 'badge-gray'));
 
+    /* fnGradeBadgeColor */
     const fnGradeBadgeColor = g => ({ 'VIP': '#f59e0b', '우수': '#2563eb', '일반': '#6b7280' }[g] || '#6b7280');
 
+    /* handleSend */
     const handleSend = async () => {
       if (!selected.length) { props.showToast('발송할 수신자를 선택하세요.', 'info'); return; }
       const typeLabel = searchParam.type === 'member' ? '회원' : '관리자';
@@ -1612,6 +1698,8 @@ window.RoleTreeModal = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ searchValue: '', hoverId: null });
     const allRoles = reactive([]);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.syRole.getList({ pageSize: 10000 }, '역할관리', '목록조회');
@@ -1621,12 +1709,15 @@ window.RoleTreeModal = {
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
+    /* fnBuildTree */
     const fnBuildTree = (items, parentId, depth) => {
       return items
         .filter(r => (r.parentId || null) === (parentId || null))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(r => ({ ...r, _depth: depth, _kids: fnBuildTree(items, r.roleId, depth + 1) }));
     };
+
+    /* fnFlatten */
     const fnFlatten = (nodes, result = []) => {
       nodes.forEach(n => { result.push(n); fnFlatten(n._kids, result); });
       return result;
@@ -1642,7 +1733,11 @@ window.RoleTreeModal = {
       const list  = kwVal ? base.filter(r => r.roleNm.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
       return fnFlatten(fnBuildTree(list, null, 0));
     });
+
+    /* onSelect */
     const onSelect = (role) => emit('select', { roleId: role.roleId, roleNm: role.roleNm });
+
+    /* onSelectNone */
     const onSelectNone = () => emit('select', { roleId: null, roleNm: '' });
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     return { cfSiteNm, uiState, cfFlatTree, onSelect, onSelectNone };
@@ -1706,6 +1801,8 @@ window.MenuTreeModal = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ searchValue: '', hoverId: null });
     const allMenus = reactive([]);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.syMenu.getList({ pageSize: 10000 }, '메뉴관리', '목록조회');
@@ -1715,6 +1812,7 @@ window.MenuTreeModal = {
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
+    /* fnBuildTree */
     const fnBuildTree = (items, parentId, depth) => {
       return items
         .filter(m => (m.parentId || null) === (parentId || null))
@@ -1722,6 +1820,7 @@ window.MenuTreeModal = {
         .map(m => ({ ...m, _depth: depth, _kids: fnBuildTree(items, m.menuId, depth + 1) }));
     };
 
+    /* fnFlatten */
     const fnFlatten = (nodes, result = []) => {
       nodes.forEach(n => { result.push(n); fnFlatten(n._kids, result); });
       return result;
@@ -1744,7 +1843,10 @@ window.MenuTreeModal = {
       return fnFlatten(fnBuildTree(list, null, 0));
     });
 
+    /* onSelect */
     const onSelect = (menu) => emit('select', { menuId: menu.menuId, menuNm: menu.menuNm });
+
+    /* onSelectNone */
     const onSelectNone = () => emit('select', { menuId: null, menuNm: '' });
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
@@ -1840,6 +1942,8 @@ window.DeptTreeModal = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ searchValue: '', hoverId: null });
     const allDepts = reactive([]);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.syDept.getList({ pageSize: 10000 }, '부서관리', '목록조회');
@@ -1857,6 +1961,7 @@ window.DeptTreeModal = {
         .map(d => ({ ...d, _depth: depth, _kids: buildTree(items, d.deptId, depth + 1) }));
     };
 
+    /* flatten */
     const flatten = (nodes, result = []) => {
       nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
       return result;
@@ -1879,7 +1984,10 @@ window.DeptTreeModal = {
       return flatten(buildTree(list, null, 0));
     });
 
+    /* select */
     const select = (dept) => emit('select', { deptId: dept.deptId, deptNm: dept.deptNm });
+
+    /* selectNone */
     const selectNone = () => emit('select', { deptId: null, deptNm: '' });
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
@@ -1984,6 +2092,8 @@ window.CategoryTreeModal = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ searchValue: '', hoverId: null });
     const allCategories = reactive([]);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.pdCategory.getList({ pageSize: 10000 }, '카테고리관리', '목록조회');
@@ -1993,6 +2103,7 @@ window.CategoryTreeModal = {
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
+    /* buildTree */
     const buildTree = (items, parentId, depth) => {
       return items
         .filter(c => (c.parentId || null) === (parentId || null))
@@ -2000,6 +2111,7 @@ window.CategoryTreeModal = {
         .map(c => ({ ...c, _depth: depth, _kids: buildTree(items, c.categoryId, depth + 1) }));
     };
 
+    /* flatten */
     const flatten = (nodes, result = []) => {
       nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
       return result;
@@ -2017,7 +2129,10 @@ window.CategoryTreeModal = {
       return flatten(buildTree(list, null, 0));
     });
 
+    /* select */
     const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
+
+    /* selectNone */
     const selectNone = () => emit('select', { categoryId: null, categoryNm: '' });
     const cfSiteNm   = computed(() => boUtil.getSiteNm());
     return { cfSiteNm, uiState, cfFlatTree, select, selectNone };
@@ -2300,6 +2415,7 @@ window.CategorySelectModal = {
       return list.filter(c => !c.parentId);
     });
 
+    /* childrenOf */
     const childrenOf = (parentId) => {
       const kwv = searchParam.searchValue.trim().toLowerCase();
       let list = cfAllCats.value.filter(c => c.parentId === parentId);
@@ -2309,6 +2425,8 @@ window.CategorySelectModal = {
 
     /* 펼침 상태 — 루트는 기본 펼침 */
     const expanded = reactive(new Set());
+
+    /* toggleExpand */
     const toggleExpand = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     watchEffect(() => { cfRoots.value.forEach(r => expanded.add(r.categoryId)); });
 
@@ -2326,6 +2444,8 @@ window.CategorySelectModal = {
     });
     const isAllOn  = computed(() => cfAllIds.value.length > 0 && cfAllIds.value.every(id => localSel.has(id)));
     const cfIsSomeOn = computed(() => !isAllOn.value && cfAllIds.value.some(id => localSel.has(id)));
+
+    /* toggleAll */
     const toggleAll = () => { if (isAllOn.value) cfAllIds.value.forEach(id => localSel.delete(id)); else cfAllIds.value.forEach(id => localSel.add(id)); };
 
     /* 루트 선택 (자식 포함) */
@@ -2335,13 +2455,20 @@ window.CategorySelectModal = {
       if (allOn) { localSel.delete(root.categoryId); ch.forEach(c => localSel.delete(c.categoryId)); }
       else       { localSel.add(root.categoryId);    ch.forEach(c => localSel.add(c.categoryId)); }
     };
+
+    /* isRootFull */
     const isRootFull = (root) => localSel.has(root.categoryId) && childrenOf(root.categoryId).every(c => localSel.has(c.categoryId));
+
+    /* isRootPart */
     const isRootPart = (root) => !isRootFull(root) && (localSel.has(root.categoryId) || childrenOf(root.categoryId).some(c => localSel.has(c.categoryId)));
 
     /* 자식 선택 */
     const toggleChild = (id) => { if (localSel.has(id)) localSel.delete(id); else localSel.add(id); };
 
+    /* onReset */
     const onReset = () => localSel.clear();
+
+    /* apply */
     const apply = () => { emit('apply', [...localSel]); emit('close'); };
 
     return { searchParam, cfRoots, childrenOf, expanded, toggleExpand, localSel, toggleChild, toggleRoot, toggleAll, isRootFull, isRootPart, isAllOn, cfIsSomeOn, onReset, apply };
@@ -2457,7 +2584,7 @@ window.RowPickModal = {
   emits: ['close', 'pick-multi'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchTypes = ref('');
+    const searchType = ref('');
     const searchValue = ref('');
     const searchStatus = ref('');
     const activeStatuses = reactive([]);
@@ -2465,9 +2592,17 @@ window.RowPickModal = {
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
     const treeOpen = reactive(new Set(['__root__']));
+
+    /* toggleTree */
     const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+
+    /* isTreeOpen */
     const isTreeOpen = k => treeOpen.has(k);
+
+    /* selectTree */
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
+
+    /* areaNm */
     const areaNm = (code) => {
       const a = props.areas.find(x => x.codeValue === code);
       return a ? a.codeLabel : code;
@@ -2496,7 +2631,7 @@ window.RowPickModal = {
     const cfFiltered = computed(() => cfAllRows.value.filter(o => {
       const searchVal = searchValue.value.trim().toLowerCase();
       if (searchVal) {
-        const types = searchTypes.value || 'def_widgetNm,def_panelNm,def_type';
+        const types = searchType.value || 'def_widgetNm,def_panelNm,def_type';
         const hits = [];
         if (types.includes('def_widgetNm')) hits.push((o.row.widgetNm   || '').toLowerCase().includes(searchVal));
         if (types.includes('def_panelNm'))  hits.push((o.__panelName    || '').toLowerCase().includes(searchVal));
@@ -2510,6 +2645,8 @@ window.RowPickModal = {
       }
       return true;
     }));
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => {
       const total = cfFiltered.value.length;
       pager.pageTotalCount = total;
@@ -2529,26 +2666,38 @@ window.RowPickModal = {
     });
 
     const checked = reactive(new Set());
+
+    /* isChecked */
     const isChecked = (id) => checked.has(id);
+
+    /* toggleCheck */
     const toggleCheck = (id) => {
       const s = new Set(checked);
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
     const cfAllChecked = computed(() => (pager.pageList||[]).length > 0 && (pager.pageList||[]).every(o => checked.has(o.__rowId)));
+
+    /* toggleCheckAll */
     const toggleCheckAll = () => {
       const s = new Set(checked);
       if (cfAllChecked.value) (pager.pageList||[]).forEach(o => s.delete(o.__rowId));
       else (pager.pageList||[]).forEach(o => s.add(o.__rowId));
       checked = s;
     };
+
+    /* pickMulti */
     const pickMulti = () => {
       const picks = cfAllRows.value.filter(o => checked.has(o.__rowId));
       if (!picks.length) return;
       emit('pick-multi', picks.map(o => ({ ...o.row })));
       checked = new Set();
     };
+
+    /* pickOne */
     const pickOne = (o) => emit('pick-multi', [{ ...o.row }]);
+
+    /* statusCls */
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
 
     const WIDGET_LABEL = {
@@ -2557,6 +2706,8 @@ window.RowPickModal = {
       info_card:'정보카드', popup:'팝업', file:'파일', coupon:'쿠폰',
       html_editor:'HTML', event_banner:'이벤트', cache_banner:'캐쉬', widget_embed:'위젯',
     };
+
+    /* wLabel */
     const wLabel = (t) => WIDGET_LABEL[t] || t || '-';
 
     Vue.onMounted(() => {
@@ -2565,7 +2716,7 @@ window.RowPickModal = {
     });
 
     return {
-      searchTypes, searchValue, searchStatus, activeStatuses, pager, PAGE_SIZES,
+      searchType, searchValue, searchStatus, activeStatuses, pager, PAGE_SIZES,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, areaNm, wLabel,
       checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti, pickOne,
@@ -2581,7 +2732,7 @@ window.RowPickModal = {
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <multi-check-select
-        v-model="searchTypes"
+        v-model="searchType"
         :options="[
           { value: 'def_widgetNm', label: '위젯명' },
           { value: 'def_panelNm',  label: '패널명' },
@@ -2696,7 +2847,7 @@ window.AreaPickModal = {
   emits: ['close', 'pick'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const searchParam = reactive({ searchTypes: '', searchValue: '', useYn: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', useYn: '' });
     const pager = reactive({ page: 1, size: 5 });
     const useYnOpts = reactive([]);
     onMounted(() => {
@@ -2708,15 +2859,21 @@ window.AreaPickModal = {
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
     const treeOpen = reactive(new Set(['__root__']));
+
+    /* toggleTree */
     const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+
+    /* isTreeOpen */
     const isTreeOpen = k => treeOpen.has(k);
+
+    /* selectTree */
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
 
     const cfFiltered = computed(() => (props.areas || []).filter(a => {
       if (props.excludeUi && a.uiCode === props.excludeUi) return false;
       const searchVal = searchParam.searchValue.trim().toLowerCase();
       if (searchVal) {
-        const types = searchParam.searchTypes || 'def_areaCd,def_areaNm';
+        const types = searchParam.searchType || 'def_areaCd,def_areaNm';
         const hits = [];
         if (types.includes('def_areaCd')) hits.push((a.codeValue || '').toLowerCase().includes(searchVal));
         if (types.includes('def_areaNm')) hits.push((a.codeLabel || '').toLowerCase().includes(searchVal));
@@ -2729,6 +2886,8 @@ window.AreaPickModal = {
       }
       return true;
     }).sort((a,b) => (a.codeLabel||'').localeCompare(b.codeLabel||'')));
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => {
       const total = cfFiltered.value.length;
       pager.pageTotalCount = total;
@@ -2747,24 +2906,36 @@ window.AreaPickModal = {
       });
       return Object.keys(g).sort().map(top => ({ label: top, count: g[top] }));
     });
+
+    /* statusCls */
     const statusCls = (y) => y === 'Y' ? 'badge-green' : 'badge-gray';
+
+    /* onPick */
     const onPick = (a) => emit('pick', a);
 
     /* 멀티선택 */
     const checked = reactive(new Set());
+
+    /* isChecked */
     const isChecked = (id) => checked.has(id);
+
+    /* toggleCheck */
     const toggleCheck = (id) => {
       const s = new Set(checked);
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
     const cfAllChecked = computed(() => (pager.pageList||[]).length > 0 && (pager.pageList||[]).every(a => checked.has(a.codeId)));
+
+    /* toggleCheckAll */
     const toggleCheckAll = () => {
       const s = new Set(checked);
       if (cfAllChecked.value) (pager.pageList||[]).forEach(a => s.delete(a.codeId));
       else (pager.pageList||[]).forEach(a => s.add(a.codeId));
       checked = s;
     };
+
+    /* pickMulti */
     const pickMulti = () => {
       const ids = Array.from(checked);
       if (!ids.length) return;
@@ -2793,7 +2964,7 @@ window.AreaPickModal = {
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_areaCd', label: '영역코드' },
           { value: 'def_areaNm', label: '영역명' },
@@ -2914,16 +3085,23 @@ window.PanelPickModal = {
   emits: ['close', 'pick'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchParam = reactive({ searchTypes: '', searchValue: '', status: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', status: '' });
     const activeStatuses = reactive([]);
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
     const treeOpen = reactive(new Set(['__root__']));
+
+    /* toggleTree */
     const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+
+    /* isTreeOpen */
     const isTreeOpen = k => treeOpen.has(k);
+
+    /* selectTree */
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
 
+    /* areaNm */
     const areaNm = (code) => {
       const a = props.areas.find(x => x.codeValue === code);
       return a ? a.codeLabel : code;
@@ -2933,7 +3111,7 @@ window.PanelPickModal = {
       if (props.excludeArea && p.area === props.excludeArea) return false;
       const searchVal = searchParam.searchValue.trim().toLowerCase();
       if (searchVal) {
-        const types = searchParam.searchTypes || 'def_panelNm,def_areaCd';
+        const types = searchParam.searchType || 'def_panelNm,def_areaCd';
         const hits = [];
         if (types.includes('def_panelNm')) hits.push((p.name || '').toLowerCase().includes(searchVal));
         if (types.includes('def_areaCd'))  hits.push((p.area || '').toLowerCase().includes(searchVal));
@@ -2946,6 +3124,8 @@ window.PanelPickModal = {
       }
       return true;
     }).sort((a,b) => (a.name||'').localeCompare(b.name||'')));
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => {
       const total = cfFiltered.value.length;
       pager.pageTotalCount = total;
@@ -2964,24 +3144,36 @@ window.PanelPickModal = {
       });
       return Object.keys(g).sort().map(top => ({ label: top, count: g[top] }));
     });
+
+    /* statusCls */
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
+
+    /* onPick */
     const onPick = (p) => emit('pick', p);
 
     /* 멀티선택 */
     const checked = reactive(new Set());
+
+    /* isChecked */
     const isChecked = (id) => checked.has(id);
+
+    /* toggleCheck */
     const toggleCheck = (id) => {
       const s = new Set(checked);
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
     const cfAllChecked = computed(() => (pager.pageList||[]).length > 0 && (pager.pageList||[]).every(p => checked.has(p.dispId)));
+
+    /* toggleCheckAll */
     const toggleCheckAll = () => {
       const s = new Set(checked);
       if (cfAllChecked.value) (pager.pageList||[]).forEach(p => s.delete(p.dispId));
       else (pager.pageList||[]).forEach(p => s.add(p.dispId));
       checked = s;
     };
+
+    /* pickMulti */
     const pickMulti = () => {
       const ids = Array.from(checked);
       if (!ids.length) return;
@@ -3014,7 +3206,7 @@ window.PanelPickModal = {
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_panelNm', label: '패널명' },
           { value: 'def_areaCd',  label: '영역코드' },
@@ -3130,14 +3322,14 @@ window.WidgetLibPickModal = {
   emits: ['close', 'pick'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchParam = reactive({ searchTypes: '', searchValue: '', type: '', status: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', type: '', status: '' });
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
 
     const cfFiltered = computed(() => (props.widgetLibs || []).filter(d => {
       const searchVal = searchParam.searchValue.trim().toLowerCase();
       if (searchVal) {
-        const types = searchParam.searchTypes || 'def_nm,def_desc,def_tag';
+        const types = searchParam.searchType || 'def_nm,def_desc,def_tag';
         const hits = [];
         if (types.includes('def_nm'))   hits.push((d.name || '').toLowerCase().includes(searchVal));
         if (types.includes('def_desc')) hits.push((d.desc || '').toLowerCase().includes(searchVal));
@@ -3148,6 +3340,8 @@ window.WidgetLibPickModal = {
       if (searchParam.status && d.status !== searchParam.status) return false;
       return true;
     }).sort((a,b) => b.libId - a.libId));
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => {
       const total = cfFiltered.value.length;
       pager.pageTotalCount = total;
@@ -3161,11 +3355,19 @@ window.WidgetLibPickModal = {
     /* 사용위치 트리 */
     const selectedTreeKey = ref('');
     const treeOpen = reactive(new Set(['__root__']));
+
+    /* toggleTree */
     const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+
+    /* isTreeOpen */
     const isTreeOpen = k => treeOpen.has(k);
+
+    /* selectTree */
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
     const cfTree = computed(() => {
       const map = {};
+
+      /* add */
       const add = (lib, p) => {
         const parts = p.split('>').map(x => x.trim()).filter(Boolean);
         if (!parts.length) return;
@@ -3193,7 +3395,11 @@ window.WidgetLibPickModal = {
       { value:'file', label:'파일' }, { value:'coupon', label:'쿠폰' },
       { value:'html_editor', label:'HTML 에디터' }, { value:'widget_embed', label:'위젯' },
     ];
+
+    /* statusCls */
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
+
+    /* onPick */
     const onPick = (lib) => emit('pick', lib);
     const activeStatuses = reactive([]);
     Vue.onMounted(() => {
@@ -3223,7 +3429,7 @@ window.WidgetLibPickModal = {
     <!-- 검색 -->
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '이름' },
           { value: 'def_desc', label: '설명' },
@@ -3339,12 +3545,21 @@ window.PathPickModal = {
     const { ref, reactive, computed } = Vue;
     const cfTree = computed(() => boUtil.buildPathTree(props.bizCd));
     const expanded = reactive(new Set([null]));
+
+    /* toggle */
     const toggle = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+
+    /* expandAll */
     const expandAll = () => { expanded.clear(); expanded.add(null); const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(cfTree.value); };
+
+    /* collapseAll */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
+
     /* 3레벨 자동 펼침 (모달 오픈 시) */
     const expandLevels = (maxDepth) => {
       expanded.clear(); expanded.add(null);
+
+      /* walk */
       const walk = (n, d) => {
         if (d >= maxDepth) return;
         (n.children || []).forEach(ch => { expanded.add(ch.pathId); walk(ch, d + 1); });
@@ -3364,11 +3579,19 @@ window.PathPickModal = {
     });
 
     const selectedId = ref(props.value || null);
+
+    /* select */
     const select = (id) => { selectedId.value = id; };
+
+    /* confirm */
     const confirm = () => { emit('select', selectedId.value); emit('close'); };
     const addParent = ref(null);
     const addLabel = ref('');
+
+    /* setAddParent */
     const setAddParent = (id) => { addParent.value = id; };
+
+    /* doAdd */
     const doAdd = () => {
       const txt = addLabel.value.trim();
       if (!txt) {
@@ -3385,6 +3608,8 @@ window.PathPickModal = {
         else alert('이미 존재하는 경로입니다: ' + txt);
         return;
       }
+
+      /* newId */
       const newId = (list.reduce((m,x) => Math.max(m, x.pathId), 0) || 0) + 1;
       list.push({ pathId: newId, bizCd: props.bizCd, parentPathId: addParent.value,
         pathLabel: txt, sortOrd: 99, useYn: 'Y', remark: '', _userAdded: true });
@@ -3397,7 +3622,11 @@ window.PathPickModal = {
     /* 인라인 수정 */
     const editingId = ref(null);
     const editLabel = ref('');
+
+    /* startEdit */
     const startEdit = (node) => { editingId.value = node.pathId; editLabel.value = node.pathLabel; };
+
+    /* saveEdit */
     const saveEdit = () => {
       const id = editingId.value;
       if (id != null && editLabel.value.trim()) {
@@ -3406,6 +3635,8 @@ window.PathPickModal = {
       }
       editingId.value = null;
     };
+
+    /* cancelEdit */
     const cancelEdit = () => { editingId.value = null; };
 
     /* 삭제 (자식 없는 경우만) — boConfirm 디자인 다이얼로그 사용 */
@@ -3425,6 +3656,7 @@ window.PathPickModal = {
       if (addParent.value === node.pathId) addParent.value = null;
     };
 
+    /* labelOf */
     const labelOf = (id) => boUtil.getPathLabel(id);
 
     /* hover 효과 헬퍼 — 인라인 표현식 SyntaxError 회피 */
@@ -3433,22 +3665,32 @@ window.PathPickModal = {
         evt.currentTarget.style.background = '#f9fafb';
       }
     };
+
+    /* onRootLeave */
     const onRootLeave = (evt) => {
       if (selectedId.value !== null && addParent.value !== null && evt && evt.currentTarget) {
         evt.currentTarget.style.background = 'transparent';
       }
     };
+
+    /* onCloseHover */
     const onCloseHover = (evt) => {
       if (!evt || !evt.currentTarget) return;
       evt.currentTarget.style.background = '#f3f4f6';
       evt.currentTarget.style.color = '#374151';
     };
+
+    /* onCloseLeave */
     const onCloseLeave = (evt) => {
       if (!evt || !evt.currentTarget) return;
       evt.currentTarget.style.background = 'transparent';
       evt.currentTarget.style.color = '#9ca3af';
     };
+
+    /* onAddHover */
     const onAddHover = (evt) => { if (evt && evt.currentTarget) evt.currentTarget.style.background = '#059669'; };
+
+    /* onAddLeave */
     const onAddLeave = (evt) => { if (evt && evt.currentTarget) evt.currentTarget.style.background = '#10b981'; };
 
     return { cfTree, expanded, toggle, expandAll, collapseAll, selectedId, select, confirm,
@@ -3643,28 +3885,42 @@ window.BizPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchParam = reactive({ searchTypes: '', searchValue: '', type: '' });
-    const searchParamOrg = reactive({ searchTypes: '', searchValue: '', type: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', type: '' });
+    const searchParamOrg = reactive({ searchType: '', searchValue: '', type: '' });
     const bizs = reactive([]);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '판매자관리', '목록조회');
         bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
+
+    /* 목록조회 */
     const onSearch = () => { handleSearchList(); };
+
+    /* onReset */
     const onReset = () => { Object.assign(searchParam, searchParamOrg); handleSearchList(); };
     Vue.onMounted(() => { handleSearchList(); });
     Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
+
+    /* vtLabel */
     const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
+
+    /* vtBadge */
     const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
 
     /* 좌측 표시경로 트리 (sy_biz) */
     const selectedPathId = ref(null);
     const expanded = reactive(new Set([null]));
     const cfTree = computed(() => boUtil.buildPathTree('sy_biz'));
+
+    /* toggleNode */
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+
+    /* selectNode */
     const selectNode = (id) => { selectedPathId.value = id; };
     Vue.onMounted(() => {
       const initSet = coUtil.collectExpandedToDepth(cfTree.value, 2);
@@ -3675,7 +3931,7 @@ window.BizPickModal = {
     const cfFiltered = computed(() => bizs.filter(b => {
       const k = searchParam.searchValue.trim().toLowerCase();
       if (k) {
-        const types = searchParam.searchTypes || 'def_bizno,def_bizNm,def_ceoNm';
+        const types = searchParam.searchType || 'def_bizno,def_bizNm,def_ceoNm';
         const hits = [];
         if (types.includes('def_bizno')) hits.push((b.bizNo || '').includes(k));
         if (types.includes('def_bizNm')) hits.push((b.bizNm || '').toLowerCase().includes(k));
@@ -3686,6 +3942,8 @@ window.BizPickModal = {
       if (cfAllowedPathIds.value && !cfAllowedPathIds.value.has(b.pathId)) return false;
       return true;
     }));
+
+    /* pickAndClose */
     const pickAndClose = (b) => { emit('select', b); emit('close'); };
     return { searchParam, searchParamOrg, VENDOR_TYPES, vtLabel, vtBadge, cfFiltered, pickAndClose,
              selectedPathId, expanded, cfTree, toggleNode, selectNode, onSearch, onReset };
@@ -3704,7 +3962,7 @@ window.BizPickModal = {
       </div>
       <div style="display:flex;gap:6px;margin-top:12px;">
         <multi-check-select
-          v-model="searchParam.searchTypes"
+          v-model="searchParam.searchType"
           :options="[
             { value: 'def_bizno', label: '사업자번호' },
             { value: 'def_bizNm', label: '상호' },
@@ -3764,16 +4022,22 @@ window.SimpleUserPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchParam = reactive({ searchTypes: '', searchValue: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '' });
     const boUsers = reactive([]);
+
+    /* 목록조회 */
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.syUser.getPage({ pageNo: 1, pageSize: 1000 }, '사용자관리', '목록조회');
         boUsers.splice(0, boUsers.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
+
+    /* 목록조회 */
     const onSearch = () => { handleSearchList(); };
-    const onReset = () => { searchParam.searchTypes = ''; searchParam.searchValue = ''; handleSearchList(); };
+
+    /* onReset */
+    const onReset = () => { searchParam.searchType = ''; searchParam.searchValue = ''; handleSearchList(); };
     Vue.onMounted(() => { handleSearchList(); });
     Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const cfExcl = computed(() => new Set(props.excludeIds || []));
@@ -3781,7 +4045,7 @@ window.SimpleUserPickModal = {
       if (cfExcl.value.has(u.boUserId)) return false;
       const k = searchParam.searchValue.trim().toLowerCase();
       if (k) {
-        const types = searchParam.searchTypes || 'def_nm,def_loginId,def_email';
+        const types = searchParam.searchType || 'def_nm,def_loginId,def_email';
         const hits = [];
         if (types.includes('def_nm'))      hits.push((u.name    || '').toLowerCase().includes(k));
         if (types.includes('def_loginId')) hits.push((u.loginId || '').toLowerCase().includes(k));
@@ -3790,6 +4054,8 @@ window.SimpleUserPickModal = {
       }
       return true;
     }));
+
+    /* pick */
     const pick = (u) => { emit('select', u); emit('close'); };
     return { searchParam, cfFiltered, pick, onSearch, onReset };
   },
@@ -3807,7 +4073,7 @@ window.SimpleUserPickModal = {
       </div>
       <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
         <multi-check-select
-          v-model="searchParam.searchTypes"
+          v-model="searchParam.searchType"
           :options="[
             { value: 'def_nm',      label: '이름' },
             { value: 'def_loginId', label: '로그인ID' },

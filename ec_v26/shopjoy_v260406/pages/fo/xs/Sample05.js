@@ -14,6 +14,7 @@ window.XsSample05 = {
       open_opts:     [{ value: '공개', label: '공개' }, { value: '비공개', label: '비공개' }],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -29,20 +30,36 @@ window.XsSample05 = {
     const CD_GRP = 'S05_BOARD';
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
+
+    /* showToast */
     const showToast = (msg, type = 'success') => { toast.msg = msg; toast.type = type; toast.show = true; clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500); };
-    const searchParam = reactive({ searchTypes: '', searchValue: '', category: '', status: '' });
-    const searchParamOrg = reactive({ searchTypes: '', searchValue: '', category: '', status: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', category: '', status: '' });
+    const searchParamOrg = reactive({ searchType: '', searchValue: '', category: '', status: '' });
     const allData    = reactive([]);
     const gridRows   = reactive([]);
     let   _tempId    = -1;
         const EDIT_FIELDS = ['title', 'author', 'category', 'status'];
+
+    /* toRow */
     const toRow = d => ({ boardId: d.sample1Id, title: d.cdNm || '', author: d.col01 || '', category: d.col02 || '공지', viewCnt: Number(d.col03) || 0, status: d.useYn === 'Y' ? '공개' : '비공개', regDate: d.regDt || '' });
+
+    /* toPayload */
     const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.title, col01: r.author, col02: r.category, col03: String(r.viewCnt || 0), useYn: r.status === '공개' ? 'Y' : 'N' });
+
+    /* makeRow */
     const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _row_org: { title: d.title, author: d.author, category: d.category, status: d.status } });
     const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { pager.pageTotalCount=gridRows.filter(r=>r._row_status!=='D').length; pager.pageTotalPage=Math.max(1,Math.ceil(gridRows.length/pager.pageSize)); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); pager.pageList=gridRows.slice((pager.pageNo-1)*pager.pageSize,pager.pageNo*pager.pageSize); };
+
+    /* setPage */
     const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
+
+    /* getRealIdx */
     const getRealIdx = i => (pager.pageNo - 1) * pager.pageSize + i;
+
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
@@ -53,7 +70,7 @@ window.XsSample05 = {
       allData.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
         if (searchVal) {
-          const types = searchParam.searchTypes || 'def_title,def_author';
+          const types = searchParam.searchType || 'def_title,def_author';
           const hits = [];
           if (types.includes('def_title'))  hits.push(String(d.title  || '').toLowerCase().includes(searchVal));
           if (types.includes('def_author')) hits.push(String(d.author || '').toLowerCase().includes(searchVal));
@@ -71,19 +88,39 @@ window.XsSample05 = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList();
     });
+
+    /* 목록조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+
+    /* onReset */
     const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+
+    /* setFocused */
     const setFocused   = idx => { uiState.focusedIdx = idx; };
+
+    /* onCellChange */
     const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N'; };
+
+    /* addRow */
     const addRow = () => {
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(at, 0, { boardId: _tempId--, title: '', author: '', category: '공지', viewCnt: 0, status: '공개', regDate: '', _row_status: 'I', _row_check: false, _row_org: null });
       uiState.focusedIdx = at; pager.pageNo = Math.ceil((at + 1) / pager.pageSize);
     };
+
+    /* deleteRow */
     const deleteRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else row._row_status = 'D'; };
+
+    /* cancelRow */
     const cancelRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; } };
+
+    /* deleteRows */
     const deleteRows    = () => { for (let i = gridRows.length - 1; i >= 0; i--) { if (!gridRows[i]._row_check) continue; if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1); else gridRows[i]._row_status = 'D'; } };
+
+    /* cancelChecked */
     const cancelChecked = () => { const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.boardId)); if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; } for (let i = gridRows.length - 1; i >= 0; i--) { const row = gridRows[i]; if (!ids.has(row.boardId)) continue; if (row._row_status === 'N') continue; if (row._row_status === 'I') gridRows.splice(i, 1); else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; } } };
+
+    /* 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I'), uRows = gridRows.filter(r => r._row_status === 'U'), dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
@@ -102,7 +139,7 @@ window.XsSample05 = {
         allData.filter(d => {
           const searchVal = searchParam.searchValue.toLowerCase();
           if (searchVal) {
-          const types = searchParam.searchTypes || 'def_title,def_author';
+          const types = searchParam.searchType || 'def_title,def_author';
           const hits = [];
           if (types.includes('def_title'))  hits.push(String(d.title  || '').toLowerCase().includes(searchVal));
           if (types.includes('def_author')) hits.push(String(d.author || '').toLowerCase().includes(searchVal));
@@ -116,11 +153,22 @@ window.XsSample05 = {
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
+    /* onDragStart */
     const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
+
+    /* onDragOver */
     const onDragOver  = (e, idx) => { e.preventDefault(); if (uiState.dragSrc === null || uiState.dragSrc === idx) return; const m = gridRows.splice(uiState.dragSrc, 1)[0]; gridRows.splice(idx, 0, m); uiState.dragSrc = idx; uiState.dragMoved = true; };
+
+    /* onDragEnd */
     const onDragEnd   = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };
+
+    /* toggleCheckAll */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
+
+    /* fnStatusBadge */
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
+
+    /* rowBg */
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
     // -- return ---------------------------------------------------------------
@@ -142,7 +190,7 @@ window.XsSample05 = {
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_title',  label: '제목' },
           { value: 'def_author', label: '작성자' },

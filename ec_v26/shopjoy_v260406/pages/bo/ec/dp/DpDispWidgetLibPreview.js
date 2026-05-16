@@ -6,10 +6,10 @@ const _WidgetPreview = {
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
     const { ref, reactive, computed, watchEffect, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const cfChartBars = computed(() => {
       const w = props.lib;
@@ -164,6 +164,7 @@ window.DpDispWidgetLibPreview = {
     const widgetLibs = reactive([]);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯라이브러리', '조회');
@@ -188,20 +189,25 @@ window.DpDispWidgetLibPreview = {
       'barcode_qrcode':'🔖','video_player':'▶️',   'countdown':'⏱',
       'payment_widget':'💳','approval_widget':'✅', 'map_widget':'🗺',
     };
+
+    /* wIcon */
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
+
+    /* wTypeLabel */
     const wTypeLabel = (v) => cfDispWidgetTypes.value.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* -- 조회 조건 -- */
-    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: '', searchTypes: '', searchValue: ''});
+    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: '', searchType: '', searchValue: ''});
     const searchParam = reactive(_initSearchParam());
 
+    /* onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
     };
 
     const cfFilteredLibs = computed(() => {
       const searchVal = (searchParam.searchValue || '').trim().toLowerCase();
-      const types = searchParam.searchTypes || 'def_nm,def_tag,def_desc';
+      const types = searchParam.searchType || 'def_nm,def_tag,def_desc';
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (searchParam.filterType   && lib.widgetType !== searchParam.filterType) return false;
         if (searchParam.filterStatus && lib.status     !== searchParam.filterStatus) return false;
@@ -222,6 +228,8 @@ window.DpDispWidgetLibPreview = {
     /* -- 트리 상태 -- */
     const cfTree = computed(() => {
       const map = {};
+
+      /* addToPath */
       const addToPath = (lib, pathStr) => {
         const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
         if (!parts.length) return;
@@ -247,13 +255,21 @@ window.DpDispWidgetLibPreview = {
       }));
     });
     const openNodes = reactive(new Set());
+
+    /* toggleNode */
     const toggleNode = (key) => {
       if (openNodes.has(key)) openNodes.delete(key);
       else openNodes.add(key);
     };
+
+    /* isOpen */
     const isOpen = (key) => openNodes.has(key);
+
+    /* allChildrenOpen */
     const allChildrenOpen = (node) =>
       window.safeArrayUtils.safeEvery(node.children, sub => openNodes.has(node.label + '_' + sub.label));
+
+    /* toggleAllChildren */
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
@@ -272,19 +288,31 @@ window.DpDispWidgetLibPreview = {
         if (firstNode && firstNode.label) openNodes.add(firstNode.label);
       }
     });
+
+    /* expandAll */
     const expandAll = () => { window.safeArrayUtils.safeForEach(cfTree.value, n => openNodes.add(n.label)); openNodes.add('__root__'); };
+
+    /* collapseAll */
     const collapseAll = () => { openNodes.clear(); openNodes.add('__root__'); };
+
+    /* onItemDragStart */
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;
       window._dragWidgetLibs = null;
       e.dataTransfer.effectAllowed = 'copy';
       e.dataTransfer.setData('text/plain', lib.libId);
     };
+
+    /* onItemDragEnd */
     const onItemDragEnd = () => { window._dragWidgetLib = null; };
+
+    /* dedupeLibs */
     const dedupeLibs = (arr) => {
       const seen = new Set();
       return window.safeArrayUtils.safeFilter(arr, lib => { if (seen.has(lib.libId)) return false; seen.add(lib.libId); return true; });
     };
+
+    /* onNodeDragStart */
     const onNodeDragStart = (e, allLibs) => {
       const libs = dedupeLibs(allLibs);
       window._dragWidgetLib  = null;
@@ -292,6 +320,8 @@ window.DpDispWidgetLibPreview = {
       e.dataTransfer.effectAllowed = 'copy';
       e.dataTransfer.setData('text/plain', 'node:' + libs.length);
     };
+
+    /* onNodeDragEnd */
     const onNodeDragEnd = () => { window._dragWidgetLibs = null; };
 
     /* -- 그리드 탭 -- */
@@ -349,7 +379,11 @@ window.DpDispWidgetLibPreview = {
 
     /* -- 드래그·드롭 (그리드) -- */
         const onDragOver  = (e, idx) => { e.preventDefault(); uiState.dragOverIdx = idx; };
+
+    /* onDragLeave */
     const onDragLeave = () => { uiState.dragOverIdx = -1; };
+
+    /* onDrop */
     const onDrop = (e, idx) => {
       e.preventDefault(); uiState.dragOverIdx = -1;
 
@@ -383,6 +417,8 @@ window.DpDispWidgetLibPreview = {
       tabSlots[tabId].splice(idx, 1, { ...lib, colSpan: 1, rowSpan: 1 });
       autoExpand(tabId);
     };
+
+    /* removeSlot */
     const removeSlot = (idx) => { tabSlots[uiState.previewGrid].splice(idx, 1, null); };
 
     /* -- colspan / rowspan 조절 -- */
@@ -399,14 +435,21 @@ window.DpDispWidgetLibPreview = {
       e.stopPropagation();
       uiState.spanPopupIdx = uiState.spanPopupIdx === idx ? -1 : idx;
     };
+
+    /* closeSpanPopup */
     const closeSpanPopup = () => { uiState.spanPopupIdx = -1; };
 
     /* -- 대시보드: 자유 배치 + 크기 조절 -- */
     const dashCanvas = ref(null);
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
     
+    /* onDashDragOver */
     const onDashDragOver = (e) => { e.preventDefault(); uiState.dashDragOver = true; };
+
+    /* onDashDragLeave */
     const onDashDragLeave = () => { uiState.dashDragOver = false; };
+
+    /* onDashDrop */
     const onDashDrop = (e) => {
       e.preventDefault(); uiState.dashDragOver = false;
       if (!dashCanvas.value) return;
@@ -438,6 +481,8 @@ window.DpDispWidgetLibPreview = {
       const y = Math.max(0, e.clientY - rect.top  - 20);
       dashItems.push({ id: Date.now(), lib: { ...lib }, x, y, w: 240, h: 180 });
     };
+
+    /* removeDashItem */
     const removeDashItem = (id) => {
       const i = dashItems.findIndex(d => d.id === id);
       if (i >= 0) dashItems.splice(i, 1);
@@ -448,10 +493,14 @@ window.DpDispWidgetLibPreview = {
       e.preventDefault();
       const ox = e.clientX - item.x;
       const oy = e.clientY - item.y;
+
+      /* onMove */
       const onMove = (me) => {
         item.x = Math.max(0, me.clientX - ox);
         item.y = Math.max(0, me.clientY - oy);
       };
+
+      /* onUp */
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
@@ -465,10 +514,14 @@ window.DpDispWidgetLibPreview = {
       e.preventDefault(); e.stopPropagation();
       const sx = e.clientX, sy = e.clientY;
       const sw = item.w,    sh = item.h;
+
+      /* onMove */
       const onMove = (me) => {
         item.w = Math.max(160, sw + (me.clientX - sx));
         item.h = Math.max(120, sh + (me.clientY - sy));
       };
+
+      /* onUp */
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
@@ -483,6 +536,8 @@ window.DpDispWidgetLibPreview = {
         ? dashItems.length
         : (cfCurrentSlots.value || []).filter(Boolean).length
     );
+
+    /* resetCurrent */
     const resetCurrent = () => {
       if (uiState.previewGrid === 'dashboard') {
         dashItems.splice(0);
@@ -574,7 +629,7 @@ window.DpDispWidgetLibPreview = {
         </select>
       </div>
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '이름' },
           { value: 'def_tag',  label: '태그' },

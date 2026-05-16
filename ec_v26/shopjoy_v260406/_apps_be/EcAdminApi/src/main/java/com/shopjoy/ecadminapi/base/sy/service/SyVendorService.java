@@ -27,6 +27,7 @@ public class SyVendorService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 업체(판매자) 키조회 */
     public SyVendorDto.Item getById(String id) {
         SyVendorDto.Item dto = syVendorRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyVendorService {
         return syVendorRepository.selectById(id).orElse(null);
     }
 
+    /* 업체(판매자) 상세조회 */
     public SyVendor findById(String id) {
         return syVendorRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyVendorService {
         return syVendorRepository.findById(id).orElse(null);
     }
 
+    /* 업체(판매자) 키검증 */
     public boolean existsById(String id) {
         return syVendorRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyVendorService {
         return true;
     }
 
+    /* 업체(판매자) 목록조회 */
     public List<SyVendorDto.Item> getList(SyVendorDto.Request req) {
         return syVendorRepository.selectList(req);
     }
 
+    /* 업체(판매자) 페이지조회 */
     public SyVendorDto.PageResponse getPageData(SyVendorDto.Request req) {
         PageHelper.addPaging(req);
         return syVendorRepository.selectPageList(req);
     }
 
+    /* 업체(판매자) 등록 */
     @Transactional
     public SyVendor create(SyVendor body) {
         body.setVendorId(CmUtil.generateId("sy_vendor"));
@@ -80,6 +86,7 @@ public class SyVendorService {
         return saved;
     }
 
+    /* 업체(판매자) 저장 */
     @Transactional
     public SyVendor save(SyVendor entity) {
         if (!existsById(entity.getVendorId()))
@@ -92,6 +99,7 @@ public class SyVendorService {
         return saved;
     }
 
+    /* 업체(판매자) 수정 */
     @Transactional
     public SyVendor update(String id, SyVendor body) {
         SyVendor entity = findById(id);
@@ -104,6 +112,7 @@ public class SyVendorService {
         return saved;
     }
 
+    /* 업체(판매자) 수정 */
     @Transactional
     public SyVendor updateSelective(SyVendor entity) {
         if (entity.getVendorId() == null) throw new CmBizException("vendorId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyVendorService {
         return entity;
     }
 
+    /* 업체(판매자) 삭제 */
     @Transactional
     public void delete(String id) {
         SyVendor entity = findById(id);
@@ -125,6 +135,7 @@ public class SyVendorService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 업체(판매자) 목록저장 */
     @Transactional
     public void saveList(List<SyVendor> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

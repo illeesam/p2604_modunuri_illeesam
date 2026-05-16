@@ -27,6 +27,7 @@ public class DpPanelService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 전시 패널 키조회 */
     public DpPanelDto.Item getById(String id) {
         DpPanelDto.Item dto = dpPanelRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class DpPanelService {
         return dpPanelRepository.selectById(id).orElse(null);
     }
 
+    /* 전시 패널 상세조회 */
     public DpPanel findById(String id) {
         return dpPanelRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class DpPanelService {
         return dpPanelRepository.findById(id).orElse(null);
     }
 
+    /* 전시 패널 키검증 */
     public boolean existsById(String id) {
         return dpPanelRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class DpPanelService {
         return true;
     }
 
+    /* 전시 패널 목록조회 */
     public List<DpPanelDto.Item> getList(DpPanelDto.Request req) {
         return dpPanelRepository.selectList(req);
     }
 
+    /* 전시 패널 페이지조회 */
     public DpPanelDto.PageResponse getPageData(DpPanelDto.Request req) {
         PageHelper.addPaging(req);
         return dpPanelRepository.selectPageList(req);
     }
 
+    /* 전시 패널 등록 */
     @Transactional
     public DpPanel create(DpPanel body) {
         body.setPanelId(CmUtil.generateId("dp_panel"));
@@ -80,6 +86,7 @@ public class DpPanelService {
         return saved;
     }
 
+    /* 전시 패널 저장 */
     @Transactional
     public DpPanel save(DpPanel entity) {
         if (!existsById(entity.getPanelId()))
@@ -92,6 +99,7 @@ public class DpPanelService {
         return saved;
     }
 
+    /* 전시 패널 수정 */
     @Transactional
     public DpPanel update(String id, DpPanel body) {
         DpPanel entity = findById(id);
@@ -104,6 +112,7 @@ public class DpPanelService {
         return saved;
     }
 
+    /* 전시 패널 수정 */
     @Transactional
     public DpPanel updateSelective(DpPanel entity) {
         if (entity.getPanelId() == null) throw new CmBizException("panelId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class DpPanelService {
         return entity;
     }
 
+    /* 전시 패널 삭제 */
     @Transactional
     public void delete(String id) {
         DpPanel entity = findById(id);
@@ -125,6 +135,7 @@ public class DpPanelService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 전시 패널 목록저장 */
     @Transactional
     public void saveList(List<DpPanel> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

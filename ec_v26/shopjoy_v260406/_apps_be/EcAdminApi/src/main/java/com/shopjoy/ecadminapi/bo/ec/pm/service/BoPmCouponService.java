@@ -30,8 +30,11 @@ public class BoPmCouponService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public PmCouponDto.Item getById(String id) { return pmCouponService.getById(id); }
+    /* 목록조회 */
     public List<PmCouponDto.Item> getList(PmCouponDto.Request req) { return pmCouponService.getList(req); }
+    /* 페이지조회 */
     public PmCouponDto.PageResponse getPageData(PmCouponDto.Request req) { return pmCouponService.getPageData(req); }
 
     @Transactional public PmCoupon create(PmCoupon body) { return pmCouponService.create(body); }

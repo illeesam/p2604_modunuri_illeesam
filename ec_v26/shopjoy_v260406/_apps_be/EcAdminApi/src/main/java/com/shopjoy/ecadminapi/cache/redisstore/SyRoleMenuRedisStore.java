@@ -29,6 +29,7 @@ public class SyRoleMenuRedisStore {
 
     // ── 저장 ──────────────────────────────────────────────────────
 
+    /* 저장 */
     public void save(String roleId, List<String> menuIds) {
         redis.set(CacheKey.SY_ROLE_MENU + roleId, menuIds, props.getTtl().getSyRoleMenuSeconds());
         log.info("[Cache][redis] [sy:role:menu][{}] save()— {}건", roleId, menuIds.size());
@@ -36,6 +37,7 @@ public class SyRoleMenuRedisStore {
 
     // ── 조회 ──────────────────────────────────────────────────────
 
+    /* get */
     @SuppressWarnings("unchecked")
     public Optional<List<String>> get(String roleId) {
         return redis.get(CacheKey.SY_ROLE_MENU + roleId, List.class)
@@ -44,6 +46,7 @@ public class SyRoleMenuRedisStore {
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
+    /* evict */
     public void evict(String roleId) {
         redis.delete(CacheKey.SY_ROLE_MENU + roleId);
     }

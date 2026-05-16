@@ -18,44 +18,52 @@ public class PmGiftController {
 
     private final PmGiftService service;
 
+    /* 사은품 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmGiftDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
+    /* 사은품 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmGiftDto.Item>>> list(@Valid @ModelAttribute PmGiftDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
     }
 
+    /* 사은품 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PmGiftDto.PageResponse>> page(@Valid @ModelAttribute PmGiftDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 
+    /* 사은품 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<PmGift>> create(@RequestBody PmGift entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
+    /* 사은품 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmGift>> save(@PathVariable("id") String id, @RequestBody PmGift entity) {
         entity.setGiftId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
+    /* 사은품 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<PmGift>> updateSelective(@PathVariable("id") String id, @RequestBody PmGift entity) {
         entity.setGiftId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
+    /* 사은품 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /* 사은품 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmGift> rows) {
         service.saveList(rows);

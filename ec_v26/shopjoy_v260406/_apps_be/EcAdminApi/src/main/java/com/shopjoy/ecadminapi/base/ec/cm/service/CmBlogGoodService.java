@@ -27,6 +27,7 @@ public class CmBlogGoodService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 게시물 좋아요 키조회 */
     public CmBlogGoodDto.Item getById(String id) {
         CmBlogGoodDto.Item dto = cmBlogGoodRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmBlogGoodService {
         return cmBlogGoodRepository.selectById(id).orElse(null);
     }
 
+    /* 게시물 좋아요 상세조회 */
     public CmBlogGood findById(String id) {
         return cmBlogGoodRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmBlogGoodService {
         return cmBlogGoodRepository.findById(id).orElse(null);
     }
 
+    /* 게시물 좋아요 키검증 */
     public boolean existsById(String id) {
         return cmBlogGoodRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmBlogGoodService {
         return true;
     }
 
+    /* 게시물 좋아요 목록조회 */
     public List<CmBlogGoodDto.Item> getList(CmBlogGoodDto.Request req) {
         return cmBlogGoodRepository.selectList(req);
     }
 
+    /* 게시물 좋아요 페이지조회 */
     public CmBlogGoodDto.PageResponse getPageData(CmBlogGoodDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogGoodRepository.selectPageList(req);
     }
 
+    /* 게시물 좋아요 등록 */
     @Transactional
     public CmBlogGood create(CmBlogGood body) {
         body.setLikeId(CmUtil.generateId("cm_blog_good"));
@@ -80,6 +86,7 @@ public class CmBlogGoodService {
         return saved;
     }
 
+    /* 게시물 좋아요 저장 */
     @Transactional
     public CmBlogGood save(CmBlogGood entity) {
         if (!existsById(entity.getLikeId()))
@@ -92,6 +99,7 @@ public class CmBlogGoodService {
         return saved;
     }
 
+    /* 게시물 좋아요 수정 */
     @Transactional
     public CmBlogGood update(String id, CmBlogGood body) {
         CmBlogGood entity = findById(id);
@@ -104,6 +112,7 @@ public class CmBlogGoodService {
         return saved;
     }
 
+    /* 게시물 좋아요 수정 */
     @Transactional
     public CmBlogGood updateSelective(CmBlogGood entity) {
         if (entity.getLikeId() == null) throw new CmBizException("likeId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmBlogGoodService {
         return entity;
     }
 
+    /* 게시물 좋아요 삭제 */
     @Transactional
     public void delete(String id) {
         CmBlogGood entity = findById(id);
@@ -125,6 +135,7 @@ public class CmBlogGoodService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 게시물 좋아요 목록저장 */
     @Transactional
     public void saveList(List<CmBlogGood> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

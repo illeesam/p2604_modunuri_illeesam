@@ -19,8 +19,11 @@ public class BoMbMemGradeService {
 
     private final MbMemberGradeService mbMemberGradeService;
 
+    /* 키조회 */
     public MbMemberGradeDto.Item getById(String id) { return mbMemberGradeService.getById(id); }
+    /* 목록조회 */
     public List<MbMemberGradeDto.Item> getList(MbMemberGradeDto.Request req) { return mbMemberGradeService.getList(req); }
+    /* 페이지조회 */
     public MbMemberGradeDto.PageResponse getPageData(MbMemberGradeDto.Request req) { return mbMemberGradeService.getPageData(req); }
 
     @Transactional public MbMemberGrade create(MbMemberGrade body) {

@@ -16,17 +16,20 @@ window.SyMemberLoginHist = {
       descOpen: false, isPageCodeLoad: false, srchOpen: false,
       activeTab: 'log',
       dateRange: '1week', dateStart: '', dateEnd: '',
-      searchTypes: '', searchValue: '', searchResultCd: '', searchIp: '',
+      searchType: '', searchValue: '', searchResultCd: '', searchIp: '',
       searchUiNm: '', searchTraceId: '',
     });
 
     (() => { const r = boUtil.getDateRange('1week'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
+    /* onDateRangeChange */
     const onDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
 
     const codes = reactive({ login_results: [], date_range_opts: [] });
+
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
       const cs = window.sfGetBoCodeStore();
@@ -37,6 +40,8 @@ window.SyMemberLoginHist = {
 
     // ── 페이저 ────────────────────────────────────────────────────────────
     const pager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes:[10,20,50,100], pageCond:{} });
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => {
       pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
       const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1,c-2), e = Math.min(l,s+4);
@@ -50,8 +55,14 @@ window.SyMemberLoginHist = {
 
     const expandedRows    = reactive(new Set());
     const allExpanded     = reactive({ value: false });
+
+    /* toggleRow */
     const toggleRow       = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+
+    /* isExpanded */
     const isExpanded      = id => expandedRows.has(id);
+
+    /* toggleExpandAll */
     const toggleExpandAll = () => {
       const list = uiState.activeTab==='log' ? logList : tokenList;
       if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
@@ -68,16 +79,17 @@ window.SyMemberLoginHist = {
         ip:         uiState.searchIp    || undefined,
         uiNm:       uiState.searchUiNm  || undefined,
         traceId:    uiState.searchTraceId || undefined,
-        searchTypes: uiState.searchTypes || undefined,
+        searchType: uiState.searchType || undefined,
         searchValue: uiState.searchValue   || undefined,
       };
-      // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-      if (p.searchValue && !p.searchTypes) {
-        p.searchTypes = 'def_memberId,def_loginId';
+      // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+      if (p.searchValue && !p.searchType) {
+        p.searchType = 'def_memberId,def_loginId';
       }
       return p;
     };
 
+    /* handleSearchLog */
     const handleSearchLog = async () => {
       try {
         const res = await boApiSvc.mbMemberLoginLog.getPage(buildParams(), '회원로그인이력', '로그인로그조회');
@@ -91,6 +103,7 @@ window.SyMemberLoginHist = {
       }
     };
 
+    /* handleSearchToken */
     const handleSearchToken = async () => {
       try {
         const res = await boApiSvc.mbMemberTokenLog.getPage(buildParams(), '회원로그인이력', '토큰이력조회');
@@ -104,6 +117,7 @@ window.SyMemberLoginHist = {
       }
     };
 
+    /* 목록조회 */
     const handleSearchList = async () => {
       if (uiState.activeTab === 'log') await handleSearchLog();
       else                             await handleSearchToken();
@@ -113,14 +127,23 @@ window.SyMemberLoginHist = {
 
     // ── 이벤트 ───────────────────────────────────────────────────────────
     const onTabChange = tab => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
+
+    /* 목록조회 */
     const onSearch    = () => { pager.pageNo = 1; handleSearchList(); };
+
+    /* onReset */
     const onReset     = () => {
-      Object.assign(uiState, { searchTypes:'', searchValue:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
+      Object.assign(uiState, { searchType:'', searchValue:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
       onDateRangeChange(); pager.pageNo = 1; handleSearchList();
     };
+
+    /* setPage */
     const setPage      = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo=n; handleSearchList(); } };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo=1; handleSearchList(); };
 
+    /* handleClearLog */
     const handleClearLog = async () => {
       const tabNm = uiState.activeTab==='log' ? '회원로그인 로그' : '회원토큰 이력';
       const ok = await props.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
@@ -140,11 +163,22 @@ window.SyMemberLoginHist = {
     // ── 표시용 ───────────────────────────────────────────────────────────
     const cfCurrentList = computed(() => uiState.activeTab==='log' ? logList : tokenList);
 
+    /* fnResultBadge */
     const fnResultBadge = cd => ({'SUCCESS':'badge-green','LOGOUT':'badge-blue','FAIL_PW':'badge-red','FAIL_LOCKED':'badge-orange','FAIL_NOT_FOUND':'badge-gray','FAIL_DORMANT':'badge-purple'}[cd]||'badge-gray');
+
+    /* fnResultLabel */
     const fnResultLabel = cd => ({'SUCCESS':'성공','LOGOUT':'로그아웃','FAIL_PW':'비밀번호오류','FAIL_LOCKED':'계정잠금','FAIL_NOT_FOUND':'없는계정','FAIL_DORMANT':'휴면계정'}[cd]||cd||'-');
+
+    /* fnActionBadge */
     const fnActionBadge = cd => ({'ISSUE':'badge-blue','REFRESH':'badge-green','REVOKE':'badge-red','EXPIRE':'badge-orange','LOGOUT':'badge-gray'}[cd]||'badge-gray');
+
+    /* fnActionLabel */
     const fnActionLabel = cd => ({'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료','LOGOUT':'로그아웃'}[cd]||cd||'-');
+
+    /* fnTypeBadge */
     const fnTypeBadge   = cd => ({'ACCESS':'badge-purple','REFRESH':'badge-blue'}[cd]||'badge-gray');
+
+    /* fnDecode */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
     return {
@@ -182,7 +216,7 @@ window.SyMemberLoginHist = {
       </select>
       <input v-model="uiState.searchIp" placeholder="IP 주소" style="width:140px" @keyup.enter="onSearch" />
       <multi-check-select
-        v-model="uiState.searchTypes"
+        v-model="uiState.searchType"
         :options="[
           { value: 'def_memberId', label: '회원ID' },
           { value: 'def_loginId',  label: '로그인ID' },

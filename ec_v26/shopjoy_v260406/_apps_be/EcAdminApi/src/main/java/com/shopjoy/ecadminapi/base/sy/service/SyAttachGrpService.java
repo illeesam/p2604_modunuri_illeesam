@@ -27,6 +27,7 @@ public class SyAttachGrpService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 첨부파일 그룹 키조회 */
     public SyAttachGrpDto.Item getById(String id) {
         SyAttachGrpDto.Item dto = syAttachGrpRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyAttachGrpService {
         return syAttachGrpRepository.selectById(id).orElse(null);
     }
 
+    /* 첨부파일 그룹 상세조회 */
     public SyAttachGrp findById(String id) {
         return syAttachGrpRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyAttachGrpService {
         return syAttachGrpRepository.findById(id).orElse(null);
     }
 
+    /* 첨부파일 그룹 키검증 */
     public boolean existsById(String id) {
         return syAttachGrpRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyAttachGrpService {
         return true;
     }
 
+    /* 첨부파일 그룹 목록조회 */
     public List<SyAttachGrpDto.Item> getList(SyAttachGrpDto.Request req) {
         return syAttachGrpRepository.selectList(req);
     }
 
+    /* 첨부파일 그룹 페이지조회 */
     public SyAttachGrpDto.PageResponse getPageData(SyAttachGrpDto.Request req) {
         PageHelper.addPaging(req);
         return syAttachGrpRepository.selectPageList(req);
     }
 
+    /* 첨부파일 그룹 등록 */
     @Transactional
     public SyAttachGrp create(SyAttachGrp body) {
         body.setAttachGrpId(CmUtil.generateId("sy_attach_grp"));
@@ -80,6 +86,7 @@ public class SyAttachGrpService {
         return saved;
     }
 
+    /* 첨부파일 그룹 저장 */
     @Transactional
     public SyAttachGrp save(SyAttachGrp entity) {
         if (!existsById(entity.getAttachGrpId()))
@@ -92,6 +99,7 @@ public class SyAttachGrpService {
         return saved;
     }
 
+    /* 첨부파일 그룹 수정 */
     @Transactional
     public SyAttachGrp update(String id, SyAttachGrp body) {
         SyAttachGrp entity = findById(id);
@@ -104,6 +112,7 @@ public class SyAttachGrpService {
         return saved;
     }
 
+    /* 첨부파일 그룹 수정 */
     @Transactional
     public SyAttachGrp updateSelective(SyAttachGrp entity) {
         if (entity.getAttachGrpId() == null) throw new CmBizException("attachGrpId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyAttachGrpService {
         return entity;
     }
 
+    /* 첨부파일 그룹 삭제 */
     @Transactional
     public void delete(String id) {
         SyAttachGrp entity = findById(id);
@@ -125,6 +135,7 @@ public class SyAttachGrpService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 첨부파일 그룹 목록저장 */
     @Transactional
     public void saveList(List<SyAttachGrp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

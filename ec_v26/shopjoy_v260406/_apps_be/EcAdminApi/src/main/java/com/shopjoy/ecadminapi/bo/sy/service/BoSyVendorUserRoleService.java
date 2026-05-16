@@ -19,8 +19,11 @@ public class BoSyVendorUserRoleService {
 
     private final SyVendorUserRoleService syVendorUserRoleService;
 
+    /* 키조회 */
     public SyVendorUserRoleDto.Item getById(String id) { return syVendorUserRoleService.getById(id); }
+    /* 목록조회 */
     public List<SyVendorUserRoleDto.Item> getList(SyVendorUserRoleDto.Request req) { return syVendorUserRoleService.getList(req); }
+    /* 페이지조회 */
     public SyVendorUserRoleDto.PageResponse getPageData(SyVendorUserRoleDto.Request req) { return syVendorUserRoleService.getPageData(req); }
 
     @Transactional public SyVendorUserRole create(SyVendorUserRole body) { return syVendorUserRoleService.create(body); }

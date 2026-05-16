@@ -6,18 +6,19 @@ window.MbMemGradeMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkAll: false, focusedIdx: null });
     const codes = reactive({ member_grades: [], use_yn: [] });
-    const searchParam = reactive({ searchTypes: '', searchValue: '', use: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', use: '' });
     const gridRows = reactive([]);
     let _tempId = -1;
 
     const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
@@ -26,6 +27,7 @@ window.MbMemGradeMng = {
     };
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
+    /* makeRow */
     const makeRow = (b) => ({
       ...b,
       _row_status: 'N',
@@ -33,6 +35,7 @@ window.MbMemGradeMng = {
       _row_org: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
     });
 
+    /* 목록조회 */
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
@@ -40,9 +43,9 @@ window.MbMemGradeMng = {
           pageNo: 1, pageSize: 10000,
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_code';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_code';
         }
         const res = await boApiSvc.mbMemGrade.getPage(params, '회원등급관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
@@ -61,17 +64,23 @@ window.MbMemGradeMng = {
       handleSearchList();
     });
 
+    /* 목록조회 */
     const onSearch = async () => { await handleSearchList(); };
-    const onReset = () => { Object.assign(searchParam, { searchTypes: '', searchValue: '', use: '' }); handleSearchList(); };
 
+    /* onReset */
+    const onReset = () => { Object.assign(searchParam, { searchType: '', searchValue: '', use: '' }); handleSearchList(); };
+
+    /* setFocused */
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
+    /* onCellChange */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
+    /* addRow */
     const addRow = () => {
       const newRow = {
         gradeId: _tempId--, gradeCd: '', gradeNm: '', gradeRank: gridRows.length + 1,
@@ -83,6 +92,7 @@ window.MbMemGradeMng = {
       uiState.focusedIdx = insertAt;
     };
 
+    /* deleteRow */
     const deleteRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -93,6 +103,7 @@ window.MbMemGradeMng = {
       }
     };
 
+    /* cancelRow */
     const cancelRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -104,6 +115,7 @@ window.MbMemGradeMng = {
       }
     };
 
+    /* deleteRows */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -112,6 +124,7 @@ window.MbMemGradeMng = {
       }
     };
 
+    /* cancelChecked */
     const cancelChecked = () => {
       const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.gradeId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -124,8 +137,10 @@ window.MbMemGradeMng = {
       }
     };
 
+    /* toggleCheckAll */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
+    /* 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
@@ -154,6 +169,7 @@ window.MbMemGradeMng = {
       }
     };
 
+    /* fnStatusClass */
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
@@ -172,7 +188,7 @@ window.MbMemGradeMng = {
     <div class="search-bar">
       <label class="search-label">등급명/코드</label>
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '등급명' },
           { value: 'def_code', label: '코드' },

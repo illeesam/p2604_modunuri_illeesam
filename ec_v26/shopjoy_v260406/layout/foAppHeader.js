@@ -12,14 +12,24 @@ window.foAppHeader = {
     const uiState = reactive({ userMenuOpen: false, profileOpen: false, pwOpen: false, loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
     const userMenuRoot = ref(null);
+
+    /* toggleUserMenu */
     const toggleUserMenu = () => { uiState.userMenuOpen = !uiState.userMenuOpen; };
+
+    /* closeUserMenu */
     const closeUserMenu  = () => { uiState.userMenuOpen = false; };
+
+    /* goMy */
     const goMy    = () => { closeUserMenu(); props.navigate('myOrder'); };
+
+    /* doLogout */
     const doLogout = () => { closeUserMenu(); props.onAppLogout(); };
 
     /* ── Profile 모달 ── */
     const pf = reactive({ memberNm: '', email: '', phone: '', birthdate: '', gender: '',
                           postcode: '', address: '', addressDetail: '' });
+
+    /* openProfile */
     const openProfile = () => {
       closeUserMenu();
       const u = props.appAuth.user || {};
@@ -29,6 +39,8 @@ window.foAppHeader = {
       pf.addressDetail = u.addressDetail || '';
       uiState.profileOpen = true;
     };
+
+    /* saveProfile */
     const saveProfile = () => {
       if (!pf.memberNm.trim()) return;
       const u = props.appAuth.user;
@@ -46,6 +58,8 @@ window.foAppHeader = {
       }
       uiState.profileOpen = false;
     };
+
+    /* openKakaoAddrProfile */
     const openKakaoAddrProfile = () => {
       if (typeof daum === 'undefined' || !daum.Postcode) return;
       new daum.Postcode({ oncomplete(d) {
@@ -53,11 +67,17 @@ window.foAppHeader = {
         pf.address  = d.roadAddress || d.jibunAddress;
       }}).open();
     };
+
+    /* genderLabel */
     const genderLabel = g => ({ M: '남성', F: '여성', '': '선택안함' }[g] ?? '선택안함');
 
     /* ── 비밀번호 변경 모달 ── */
     const pw = reactive({ current: '', next: '', next2: '', err: '', ok: false });
+
+    /* openPw */
     const openPw = () => { closeUserMenu(); pw.current=''; pw.next=''; pw.next2=''; pw.err=''; pw.ok=false; uiState.pwOpen=true; };
+
+    /* savePw */
     const savePw = async () => {
       pw.err = ''; pw.ok = false;
       if (!pw.current) { pw.err = '현재 비밀번호를 입력하세요.'; return; }
@@ -100,6 +120,8 @@ window.foAppHeader = {
     }
     function bindUserMenuOutside() {
       unbindUserMenuOutside();
+
+      /* onPointerDown */
       const onPointerDown = (e) => {
         if (!uiState.userMenuOpen) return;
         const root = userMenuRoot.value;

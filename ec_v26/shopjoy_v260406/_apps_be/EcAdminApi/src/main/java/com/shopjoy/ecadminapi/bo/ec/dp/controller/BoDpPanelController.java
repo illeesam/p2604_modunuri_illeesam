@@ -22,42 +22,50 @@ public class BoDpPanelController {
 
     private final BoDpPanelService boDpPanelService;
 
+    /* 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DpPanelDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boDpPanelService.getById(id)));
     }
 
+    /* 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<DpPanelDto.Item>>> list(@Valid @ModelAttribute DpPanelDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boDpPanelService.getList(req)));
     }
 
+    /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<DpPanelDto.PageResponse>> page(@Valid @ModelAttribute DpPanelDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boDpPanelService.getPageData(req)));
     }
 
+    /* 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<DpPanel>> create(@RequestBody DpPanel body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boDpPanelService.create(body)));
     }
 
+    /* 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<DpPanel>> update(@PathVariable("id") String id, @RequestBody DpPanel body) {
         return ResponseEntity.ok(ApiResponse.ok(boDpPanelService.update(id, body)));
     }
 
+    /* upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<DpPanel>> upsert(@PathVariable("id") String id, @RequestBody DpPanel body) {
         return ResponseEntity.ok(ApiResponse.ok(boDpPanelService.update(id, body)));
     }
 
+    /* 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boDpPanelService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpPanel> rows) {
         boDpPanelService.saveList(rows);

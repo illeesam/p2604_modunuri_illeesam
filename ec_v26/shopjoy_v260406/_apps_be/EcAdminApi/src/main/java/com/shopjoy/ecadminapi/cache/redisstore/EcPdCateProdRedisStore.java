@@ -31,6 +31,7 @@ public class EcPdCateProdRedisStore {
 
     // ── 저장 ──────────────────────────────────────────────────────
 
+    /* saveDetail */
     public void saveDetail(String prodId, Map<String, Object> detail) {
         redis.set(CacheKey.EC_PD_CATE_PROD_DTL + prodId, detail,
                 props.getTtl().getEcPdCateProdSeconds(), target());
@@ -46,6 +47,7 @@ public class EcPdCateProdRedisStore {
 
     // ── 조회 ──────────────────────────────────────────────────────
 
+    /* getDetail */
     @SuppressWarnings("unchecked")
     public Optional<Map<String, Object>> getDetail(String prodId) {
         return redis.get(CacheKey.EC_PD_CATE_PROD_DTL + prodId, Map.class, target())
@@ -61,6 +63,7 @@ public class EcPdCateProdRedisStore {
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
+    /* evictDetail */
     public void evictDetail(String prodId) {
         redis.delete(CacheKey.EC_PD_CATE_PROD_DTL + prodId, target());
     }

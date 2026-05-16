@@ -66,17 +66,22 @@
     })();
     /* ── Theme ── */
     const theme = ref(localStorage.getItem('modu-fo-theme') || 'light');
+
+    /* applyTheme */
     const applyTheme = t => {
       theme.value = t;
       localStorage.setItem('modu-fo-theme', t);
       document.documentElement.setAttribute('data-theme', t);
     };
     applyTheme(theme.value);
+
+    /* toggleTheme */
     const toggleTheme = () => applyTheme(theme.value === 'light' ? 'dark' : 'light');
 
     /* ── Navigation ── */
     const page = ref('home');
     const errorMessage = ref('');
+
     /* X- 헤더 배열을 압축 포맷으로 변환 */
     const _fmtXHeaders = (headers) => {
       if (!headers || headers.length === 0) return '';
@@ -85,9 +90,15 @@
         const idx = h.indexOf(': ');
         if (idx > -1) map[h.slice(0, idx).toLowerCase()] = h.slice(idx + 2);
       });
+
+      /* truncate */
       const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
       const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm', 'authorization'];
+
+      /* fmtVal */
       const fmtVal = (k, v) => k === 'x-func-nm' ? v + '()' : NO_TRUNCATE.includes(k) ? v : truncate(v);
+
+      /* row */
       const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${fmtVal(k, map[k])}`).join(' | ');
       const lines = [
         row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
@@ -167,9 +178,12 @@
     const uiState = reactive({ mobileOpen: false, showLogin: false });
     let replaceNextHash = false;
 
+    /* closeMobileMenu */
     const closeMobileMenu = () => {
       uiState.mobileOpen = false;
     };
+
+    /* toggleMobileMenu */
     const toggleMobileMenu = () => {
       if (uiState.mobileOpen) {
         uiState.mobileOpen = false;
@@ -210,6 +224,7 @@
       return { prod, color, size, qty };
     };
 
+    /* navigate */
     const navigate = (id, opts = {}) => {
       if (opts && opts.replace) replaceNextHash = true;
       if (opts && opts.instantOrder !== undefined) instantOrder.value = opts.instantOrder;
@@ -239,6 +254,7 @@
     const apiLogHoverDetail  = ref(null);
     let _foApiLogSeq = foApiLogs.length ? Math.max(...foApiLogs.map(l => l._seq || 0)) + 1 : 1;
 
+    /* addFoApiLog */
     const addFoApiLog = (detail) => {
       const now = new Date();
       const ts = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0')
@@ -248,17 +264,23 @@
       if (foApiLogs.length > MAX_FO_API_LOGS) foApiLogs.splice(MAX_FO_API_LOGS);
       try { localStorage.setItem(FO_API_LOG_KEY, JSON.stringify(foApiLogs)); } catch(e) {}
     };
+
+    /* clearFoApiLogs */
     const clearFoApiLogs = () => {
       foApiLogs.splice(0, foApiLogs.length);
       apiLogLockedDetail.value = null;
       try { localStorage.removeItem(FO_API_LOG_KEY); } catch(e) {}
     };
+
+    /* foApiLogStatusClass */
     const foApiLogStatusClass = (status) => {
       if (!status) return 'color:#999;';
       if (status >= 500) return 'color:#e74c3c;font-weight:700;';
       if (status >= 400) return 'color:#e67e22;font-weight:700;';
       return 'color:#27ae60;font-weight:700;';
     };
+
+    /* foApiLogMethodStyle */
     const foApiLogMethodStyle = (method) => {
       const m = (method || '').toUpperCase();
       if (m === 'GET')    return 'background:#e8f5e9;color:#388e3c;';
@@ -283,6 +305,8 @@
     let _toastSeq = 0;
     const FO_TOAST_DETAIL_KEY = 'modu-fo-toast-isShowDetail';
     const toastShowDetail = ref(localStorage.getItem(FO_TOAST_DETAIL_KEY) !== 'false');
+
+    /* showToast */
     const showToast = (msg, type = 'success', duration = 0, detail = '') => {
       let msgTitle = msg;
       let msgDetail = '';
@@ -300,13 +324,21 @@
       toasts.push(t);
       if (autoDismiss > 0) setTimeout(() => removeToast(id), autoDismiss);
     };
+
+    /* removeToast */
     const removeToast     = (id) => { const i = toasts.findIndex(t => t.id === id); if (i !== -1) toasts.splice(i, 1); };
+
+    /* removeAllToasts */
     const removeAllToasts = () => { toasts.splice(0, toasts.length); };
+
+    /* toggleAllToastDetail */
     const toggleAllToastDetail = () => {
       toastShowDetail.value = !toastShowDetail.value;
       localStorage.setItem(FO_TOAST_DETAIL_KEY, toastShowDetail.value);
       toasts.forEach(t => { if (t.detail) t.expanded = toastShowDetail.value; });
     };
+
+    /* toggleToastDetail */
     const toggleToastDetail = (t) => { t.expanded = !t.expanded; };
     /* 하위 호환 */
     const toast = { show: false };
@@ -334,18 +366,28 @@
 
     /* ── Alert Modal ── */
     const alertState = reactive({ show: false, title: '', msg: '', type: 'info', resolve: null });
+
+    /* showAlert */
     const showAlert = (title, msg, type = 'info') =>
       new Promise(r => Object.assign(alertState, { show: true, title, msg, type, resolve: r }));
+
+    /* closeAlert */
     const closeAlert = () => { alertState.show = false; alertState.resolve?.(); };
 
     /* ── Confirm Modal ── */
     const confirmState = reactive({ show: false, title: '', msg: '', type: 'warning', resolve: null });
+
+    /* showConfirm */
     const showConfirm = (title, msg, type = 'warning') =>
       new Promise(r => Object.assign(confirmState, { show: true, title, msg, type, resolve: r }));
+
+    /* closeConfirm */
     const closeConfirm = r => { confirmState.show = false; confirmState.resolve?.(r); };
 
     /* ── Prods (이미지 자동 할당) ── */
     const _IMG = 'assets/cdn/prod/img/shop/product';
+
+    /* _assignImg */
     const _assignImg = (p) => {
       /* colors→opt1s, sizes→opt2s 호환 */
       if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
@@ -373,6 +415,8 @@
     _initFallback.forEach(_assignImg);
     const prods = reactive([..._initFallback]);
     const selectedProd = ref(_initFallback.length > 0 ? _initFallback[0] : null);
+
+    /* selectProd */
     const selectProd = p => {
       selectedProd.value = p;
       navigate('prodView');
@@ -384,13 +428,19 @@
       const savedLikes = localStorage.getItem('shopjoy_likes');
       if (savedLikes) likes = new Set(JSON.parse(savedLikes));
     } catch (e) {}
+
+    /* saveLikes */
     const saveLikes = () => { try { localStorage.setItem('shopjoy_likes', JSON.stringify([...likes])); } catch (e) {} };
+
+    /* toggleLike */
     const toggleLike = (prodId) => {
       const s = new Set(likes);
       if (s.has(prodId)) s.delete(prodId); else s.add(prodId);
       likes = s;
       saveLikes();
     };
+
+    /* isLiked */
     const isLiked = (prodId) => likes.has(prodId);
     const cfLikeCount = computed(() => likes.size);
 
@@ -400,6 +450,8 @@
     /* 임의 ID 생성: yymmddHHMMSS + rand4 */
     const genId = () => {
       const d = new Date();
+
+      /* pad */
       const pad = n => String(n).padStart(2,'0');
       return [d.getFullYear()%100,d.getMonth()+1,d.getDate(),d.getHours(),d.getMinutes(),d.getSeconds()].map(pad).join('')
         + Math.random().toString(36).slice(2,6).toUpperCase();
@@ -449,6 +501,7 @@
     };
     onMounted(() => { handleFetchProds(); });
 
+    /* saveCart */
     const saveCart = () => {
       try {
         localStorage.setItem('shopjoy_cart', JSON.stringify(
@@ -459,6 +512,7 @@
 
     const cfCartCount = computed(() => cart.reduce((s, i) => s + i.qty, 0));
 
+    /* addToCart */
     const addToCart = (prod, color, size, qty = 1) => {
       const existing = cart.find(i =>
         i.prod.prodId === prod.prodId &&
@@ -474,11 +528,13 @@
       showToast(`장바구니에 담았습니다! (${color.name} / ${size})`, 'success');
     };
 
+    /* removeFromCart */
     const removeFromCart = idx => {
       cart.splice(idx, 1);
       saveCart();
     };
 
+    /* updateCartQty */
     const updateCartQty = (idx, delta) => {
       const item = cart[idx];
       if (!item) return;
@@ -491,6 +547,7 @@
       saveCart();
     };
 
+    /* clearCart */
     const clearCart = () => {
       cart.splice(0, cart.length);
       saveCart();
@@ -498,8 +555,12 @@
 
     /* ── Auth ── */
     const auth = window.foAuth.state;
+
+    /* onShowLogin */
     const onShowLogin = () => { uiState.showLogin = true; };
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
+
+    /* onLogout */
     const onLogout = () => {
       window.foAuth.logout();
       showToast('로그아웃되었습니다.', 'info');
@@ -527,6 +588,8 @@
       const rawHash = String(window.location.hash || '').replace(/^#/, '');
       const hasPageParam = rawHash.includes('page=');
       const params = hasPageParam ? new URLSearchParams(rawHash) : null;
+
+      /* isMyPage */
       const isMyPage = p => ['myOrder','myClaim','myCoupon','myCache','myContact','myChatt'].includes(p);
       const isLoggedIn = !!(localStorage.getItem('modu-fo-accessToken'));
       if (hasPageParam) {
@@ -551,6 +614,8 @@
     restoring = false;
 
     let syncingFromHash = false;
+
+    /* onHashChange */
     const onHashChange = () => {
       if (syncingFromHash) return;
       syncingFromHash = true;

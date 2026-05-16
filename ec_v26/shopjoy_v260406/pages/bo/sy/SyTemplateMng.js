@@ -6,20 +6,24 @@ window.SyTemplateMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const templates = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ template_type: [], use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'templateNm asc', desc: 'templateNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 템플릿 getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 템플릿 onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -28,6 +32,8 @@ window.SyTemplateMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* 템플릿 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
@@ -35,9 +41,9 @@ window.SyTemplateMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_subject';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_subject';
         }
         const res = await boApiSvc.syTemplate.getPage(params, '템플릿관리', '목록조회');
         const data = res.data?.data;
@@ -56,8 +62,14 @@ window.SyTemplateMng = {
     };
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
+
+    /* 템플릿 openPathPick */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+
+    /* 템플릿 closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+
+    /* 템플릿 onPathPicked */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -65,6 +77,8 @@ window.SyTemplateMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
+
+    /* 템플릿 pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
@@ -72,6 +86,7 @@ window.SyTemplateMng = {
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
 
+    /* 템플릿 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.template_type = codeStore.sgGetGrpCodes('TEMPLATE_TYPE');
@@ -88,13 +103,15 @@ window.SyTemplateMng = {
       handleSearchList('DEFAULT');
     });
 
+  /* 템플릿 _initSearchParam */
   const _initSearchParam = () => {
     const today = new Date();
     const thisYear = today.getFullYear();
-    return { searchTypes: '', searchValue: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    return { searchType: '', searchValue: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
   };
   const searchParam = reactive(_initSearchParam());
 
+    /* 템플릿 onDateRangeChange */
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -103,10 +120,20 @@ window.SyTemplateMng = {
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* 템플릿 loadView */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 템플릿 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 템플릿 openNew */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 템플릿 closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* 템플릿 inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'syTemplateMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -118,29 +145,49 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* 미리보기 모달 */
     const previewModal = reactive({ show: false, template: null });
+
+    /* 템플릿 showPreview */
     const showPreview = (t) => { previewModal.template = t; previewModal.show = true; };
+
+    /* 템플릿 closePreview */
     const closePreview = () => { previewModal.show = false; };
 
     /* 발송하기 모달 */
     const sendModal = reactive({ show: false, template: null });
+
+    /* 템플릿 openSend */
     const openSend  = (t) => { sendModal.template = t; sendModal.show = true; };
+
+    /* 템플릿 closeSend */
     const closeSend = () => { sendModal.show = false; };
 
 
+    /* 템플릿 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* 템플릿 fnTypeBadge */
     const fnTypeBadge = t => ({
       '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
       'kakao톡템플릿': 'badge-purple', 'kakao알림톡템플릿': 'badge-purple',
       '시스템알림': 'badge-red', '회원알림': 'badge-teal',
     }[t] || 'badge-gray');
+
+    /* 템플릿 fnUseYnBadge */
     const fnUseYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
+    /* 템플릿 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 템플릿 onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
+
+    /* 템플릿 setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* 템플릿 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    /* 템플릿 삭제 */
     const handleDelete = async (t) => {
       const ok = await showConfirm('삭제', `[${t.templateNm}] 템플릿을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -159,6 +206,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       }
     };
 
+    /* 템플릿 exportExcel */
     const exportExcel = () => coUtil.exportCsv(templates, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateNm'},{label:'유형',key:'templateTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
@@ -175,7 +223,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="page-title">템플릿관리</div>  <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',      label: '템플릿명' },
           { value: 'def_subject', label: '제목' },

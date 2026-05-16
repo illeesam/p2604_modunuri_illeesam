@@ -34,6 +34,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     private static final QSyUser          usr = QSyUser.syUser;
     private static final QSyCode          cd_lr = new QSyCode("cd_lr");
 
+    /* 사용자 로그인 로그 buildBaseQuery */
     private JPAQuery<SyhUserLoginLogDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyhUserLoginLogDto.Item.class,
@@ -68,6 +69,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                 .leftJoin(cd_lr).on(cd_lr.codeGrp.eq("LOGIN_RESULT").and(cd_lr.codeValue.eq(l.resultCd)));
     }
 
+    /* 사용자 로그인 로그 키조회 */
     @Override
     public Optional<SyhUserLoginLogDto.Item> selectById(String id) {
         SyhUserLoginLogDto.Item dto = buildBaseQuery()
@@ -76,6 +78,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         return Optional.ofNullable(dto);
     }
 
+    /* 사용자 로그인 로그 목록조회 */
     @Override
     public List<SyhUserLoginLogDto.Item> selectList(SyhUserLoginLogDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -94,6 +97,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         return query.fetch();
     }
 
+    /* 사용자 로그인 로그 페이지조회 */
     @Override
     public SyhUserLoginLogDto.PageResponse selectPageList(SyhUserLoginLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -119,15 +123,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyhUserLoginLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -140,8 +136,8 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         if (StringUtils.hasText(s.getUiNm()))     w.and(l.uiNm.like("%" + s.getUiNm() + "%"));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -196,6 +192,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         return orders;
     }
 
+    /* 사용자 로그인 로그 수정 */
     @Override
     public int updateSelective(SyhUserLoginLog entity) {
         if (entity.getLogId() == null) return 0;

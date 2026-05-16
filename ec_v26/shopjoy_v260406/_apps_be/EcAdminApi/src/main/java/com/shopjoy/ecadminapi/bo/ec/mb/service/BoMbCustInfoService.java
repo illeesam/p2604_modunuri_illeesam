@@ -20,8 +20,11 @@ public class BoMbCustInfoService {
 
     private final MbMemberService mbMemberService;
 
+    /* 키조회 */
     public MbMemberDto.Item getById(String id) { return mbMemberService.getById(id); }
+    /* 목록조회 */
     public List<MbMemberDto.Item> getList(MbMemberDto.Request req) { return mbMemberService.getList(req); }
+    /* 페이지조회 */
     public MbMemberDto.PageResponse getPageData(MbMemberDto.Request req) { return mbMemberService.getPageData(req); }
 
     @Transactional public MbMember create(MbMember body) { return mbMemberService.create(body); }

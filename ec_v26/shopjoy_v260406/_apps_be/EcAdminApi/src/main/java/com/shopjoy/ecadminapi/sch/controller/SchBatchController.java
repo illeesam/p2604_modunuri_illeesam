@@ -53,6 +53,7 @@ public class SchBatchController {
     // 관리자 전용 API (@BoOnly)
     // ════════════════════════════════════════════════════════════════
 
+    /* 목록조회 */
     @GetMapping("/batch")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> list() {
         boolean jenkinsMode = properties.getJenkins().isEnabled();
@@ -167,6 +168,7 @@ public class SchBatchController {
 
     // ────────────────────────────────────────────────────────────────
 
+    /* findBatch */
     private SyBatch findBatch(String batchCode) {
         return batchRepository.findByBatchCode(batchCode)
             .orElseThrow(() -> new CmBizException("배치를 찾을 수 없습니다: " + batchCode));

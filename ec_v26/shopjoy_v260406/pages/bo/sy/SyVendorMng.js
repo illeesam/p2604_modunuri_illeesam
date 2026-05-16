@@ -6,20 +6,24 @@ window.SyVendorMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const vendors = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ vendor_status: [], vendor_type_kr: [], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'vendorNm asc', desc: 'vendorNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 업체(판매자) getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 업체(판매자) onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -28,6 +32,8 @@ window.SyVendorMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* 업체(판매자) sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
@@ -35,9 +41,9 @@ window.SyVendorMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_bizno,def_id';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_bizno,def_id';
         }
         const res = await boApiSvc.syVendor.getPage(params, '판매자관리', '목록조회');
         const data = res.data?.data;
@@ -56,8 +62,14 @@ window.SyVendorMng = {
     };
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
+
+    /* 업체(판매자) openPathPick */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+
+    /* 업체(판매자) closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+
+    /* 업체(판매자) onPathPicked */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -65,6 +77,8 @@ window.SyVendorMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
+
+    /* 업체(판매자) pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
@@ -72,6 +86,7 @@ window.SyVendorMng = {
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
 
+    /* 업체(판매자) fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.vendor_status = codeStore.sgGetGrpCodes('VENDOR_STATUS');
@@ -88,13 +103,15 @@ window.SyVendorMng = {
       handleSearchList('DEFAULT');
     });
 
+  /* 업체(판매자) _initSearchParam */
   const _initSearchParam = () => {
     const today = new Date();
     const thisYear = today.getFullYear();
-    return { searchTypes: '', searchValue: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    return { searchType: '', searchValue: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
   };
   const searchParam = reactive(_initSearchParam());
 
+    /* 업체(판매자) onDateRangeChange */
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -103,10 +120,20 @@ window.SyVendorMng = {
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* 업체(판매자) loadView */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 업체(판매자) 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 업체(판매자) openNew */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 업체(판매자) closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* 업체(판매자) inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'syVendorMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -116,15 +143,28 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
+    /* 업체(판매자) fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* 업체(판매자) fnTypeBadge */
     const fnTypeBadge = t => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' }[t] || 'badge-gray');
+
+    /* 업체(판매자) fnStatusBadge */
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+
+    /* 업체(판매자) 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 업체(판매자) onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
+
+    /* 업체(판매자) setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* 업체(판매자) onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    /* 업체(판매자) 삭제 */
     const handleDelete = async (v) => {
       const ok = await showConfirm('삭제', `[${v.vendorNm}] 업체를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -143,6 +183,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       }
     };
 
+    /* 업체(판매자) exportExcel */
     const exportExcel = () => coUtil.exportCsv(vendors, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
@@ -157,7 +198,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="page-title">업체정보</div>  <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',    label: '업체명' },
           { value: 'def_bizno', label: '사업자번호' },

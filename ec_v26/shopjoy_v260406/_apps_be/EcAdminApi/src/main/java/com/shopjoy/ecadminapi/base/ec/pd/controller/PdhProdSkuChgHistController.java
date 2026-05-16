@@ -21,21 +21,25 @@ public class PdhProdSkuChgHistController {
 
     private final PdhProdSkuChgHistService service;
 
+    /* 상품 SKU 변경 이력 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdhProdSkuChgHistDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
+    /* 상품 SKU 변경 이력 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdhProdSkuChgHistDto.Item>>> list(@Valid @ModelAttribute PdhProdSkuChgHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
     }
 
+    /* 상품 SKU 변경 이력 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PdhProdSkuChgHistDto.PageResponse>> page(@Valid @ModelAttribute PdhProdSkuChgHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 
+    /* 상품 SKU 변경 이력 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<PdhProdSkuChgHist>> create(@RequestBody PdhProdSkuChgHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));

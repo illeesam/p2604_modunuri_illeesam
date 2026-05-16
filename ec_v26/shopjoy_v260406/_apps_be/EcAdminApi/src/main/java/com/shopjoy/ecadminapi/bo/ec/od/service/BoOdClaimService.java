@@ -31,8 +31,11 @@ public class BoOdClaimService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public OdClaimDto.Item getById(String id) { return odClaimService.getById(id); }
+    /* 목록조회 */
     public List<OdClaimDto.Item> getList(OdClaimDto.Request req) { return odClaimService.getList(req); }
+    /* 페이지조회 */
     public OdClaimDto.PageResponse getPageData(OdClaimDto.Request req) { return odClaimService.getPageData(req); }
 
     @Transactional public OdClaim create(OdClaim body) { return odClaimService.create(body); }

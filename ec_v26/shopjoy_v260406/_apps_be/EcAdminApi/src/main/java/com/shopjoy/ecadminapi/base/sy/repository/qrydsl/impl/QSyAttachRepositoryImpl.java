@@ -30,12 +30,14 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 첨부파일 키조회 */
     @Override
     public Optional<SyAttachDto.Item> selectById(String attachId) {
         SyAttachDto.Item dto = baseQuery().where(a.attachId.eq(attachId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
+    /* 첨부파일 목록조회 */
     @Override
     public List<SyAttachDto.Item> selectList(SyAttachDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -51,6 +53,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         return query.fetch();
     }
 
+    /* 첨부파일 페이지조회 */
     @Override
     public SyAttachDto.PageResponse selectPageList(SyAttachDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -70,6 +73,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 첨부파일 baseQuery */
     private JPAQuery<SyAttachDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyAttachDto.Item.class,
@@ -84,15 +88,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 .leftJoin(ste).on(ste.siteId.eq(a.siteId));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyAttachDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -103,8 +99,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         if (StringUtils.hasText(s.getMimeTypeCd()))  w.and(a.mimeTypeCd.eq(s.getMimeTypeCd()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_file_nm,"))   or.or(a.fileNm.likeIgnoreCase(pattern));
@@ -163,6 +159,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         return orders;
     }
 
+    /* 첨부파일 수정 */
     @Override
     public int updateSelective(SyAttach entity) {
         if (entity.getAttachId() == null) return 0;

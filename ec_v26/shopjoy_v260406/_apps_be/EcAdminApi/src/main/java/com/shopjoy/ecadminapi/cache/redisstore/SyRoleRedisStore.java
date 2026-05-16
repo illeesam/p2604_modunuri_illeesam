@@ -31,6 +31,7 @@ public class SyRoleRedisStore {
 
     // ── 저장 ──────────────────────────────────────────────────────
 
+    /* saveAll */
     public void saveAll(List<Map<String, Object>> roles) {
         redis.set(CacheKey.SY_ROLE_ALL, roles, props.getTtl().getSyRoleSeconds());
         log.info("[Cache][redis] [sy:role:all] saveAll()— {}건", roles.size());
@@ -44,6 +45,7 @@ public class SyRoleRedisStore {
 
     // ── 조회 ──────────────────────────────────────────────────────
 
+    /* getAll */
     @SuppressWarnings("unchecked")
     public Optional<List<Map<String, Object>>> getAll() {
         return redis.get(CacheKey.SY_ROLE_ALL, List.class)
@@ -59,6 +61,7 @@ public class SyRoleRedisStore {
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
+    /* evict */
     public void evict(String roleId) {
         redis.delete(CacheKey.SY_ROLE_DTL + roleId);
     }

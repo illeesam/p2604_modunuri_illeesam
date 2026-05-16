@@ -27,6 +27,7 @@ public class PdReviewService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 리뷰 키조회 */
     public PdReviewDto.Item getById(String id) {
         PdReviewDto.Item dto = pdReviewRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdReviewService {
         return pdReviewRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 리뷰 상세조회 */
     public PdReview findById(String id) {
         return pdReviewRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdReviewService {
         return pdReviewRepository.findById(id).orElse(null);
     }
 
+    /* 상품 리뷰 키검증 */
     public boolean existsById(String id) {
         return pdReviewRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdReviewService {
         return true;
     }
 
+    /* 상품 리뷰 목록조회 */
     public List<PdReviewDto.Item> getList(PdReviewDto.Request req) {
         return pdReviewRepository.selectList(req);
     }
 
+    /* 상품 리뷰 페이지조회 */
     public PdReviewDto.PageResponse getPageData(PdReviewDto.Request req) {
         PageHelper.addPaging(req);
         return pdReviewRepository.selectPageList(req);
     }
 
+    /* 상품 리뷰 등록 */
     @Transactional
     public PdReview create(PdReview body) {
         body.setReviewId(CmUtil.generateId("pd_review"));
@@ -80,6 +86,7 @@ public class PdReviewService {
         return saved;
     }
 
+    /* 상품 리뷰 저장 */
     @Transactional
     public PdReview save(PdReview entity) {
         if (!existsById(entity.getReviewId()))
@@ -92,6 +99,7 @@ public class PdReviewService {
         return saved;
     }
 
+    /* 상품 리뷰 수정 */
     @Transactional
     public PdReview update(String id, PdReview body) {
         PdReview entity = findById(id);
@@ -104,6 +112,7 @@ public class PdReviewService {
         return saved;
     }
 
+    /* 상품 리뷰 수정 */
     @Transactional
     public PdReview updateSelective(PdReview entity) {
         if (entity.getReviewId() == null) throw new CmBizException("reviewId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdReviewService {
         return entity;
     }
 
+    /* 상품 리뷰 삭제 */
     @Transactional
     public void delete(String id) {
         PdReview entity = findById(id);
@@ -125,6 +135,7 @@ public class PdReviewService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 리뷰 목록저장 */
     @Transactional
     public void saveList(List<PdReview> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

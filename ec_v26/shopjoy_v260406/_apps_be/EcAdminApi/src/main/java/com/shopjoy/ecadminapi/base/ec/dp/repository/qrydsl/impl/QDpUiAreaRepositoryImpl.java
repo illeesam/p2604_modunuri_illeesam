@@ -28,6 +28,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
     private final JPAQueryFactory queryFactory;
     private static final QDpUiArea a = QDpUiArea.dpUiArea;
 
+    /* 전시 UI-영역 매핑 키조회 */
     @Override
     public Optional<DpUiAreaDto.Item> selectById(String uiAreaId) {
         DpUiAreaDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 전시 UI-영역 매핑 목록조회 */
     @Override
     public List<DpUiAreaDto.Item> selectList(DpUiAreaDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         return query.fetch();
     }
 
+    /* 전시 UI-영역 매핑 페이지조회 */
     @Override
     public DpUiAreaDto.PageResponse selectPageList(DpUiAreaDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -75,17 +78,19 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 전시 UI-영역 매핑 baseQuery */
     private JPAQuery<DpUiAreaDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(DpUiAreaDto.Item.class,
                         a.uiAreaId, a.uiId, a.areaId, a.areaSortOrd,
                         a.visibilityTargets, a.dispEnv, a.dispYn,
-                        a.dispStartDate, a.dispEndDate, a.useYn,
+                        a.dispStartDate, a.dispStartTime, a.dispEndDate, a.dispEndTime, a.useYn,
                         a.regBy, a.regDate, a.updBy, a.updDate
                 ))
                 .from(a);
     }
 
+    /* 전시 UI-영역 매핑 buildCondition */
     private BooleanBuilder buildCondition(DpUiAreaDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -142,6 +147,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         return orders;
     }
 
+    /* 전시 UI-영역 매핑 수정 */
     @Override
     public int updateSelective(DpUiArea entity) {
         if (entity.getUiAreaId() == null) return 0;
@@ -156,7 +162,9 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         if (entity.getDispEnv()           != null) { update.set(a.dispEnv,           entity.getDispEnv());           hasAny = true; }
         if (entity.getDispYn()            != null) { update.set(a.dispYn,            entity.getDispYn());            hasAny = true; }
         if (entity.getDispStartDate()     != null) { update.set(a.dispStartDate,     entity.getDispStartDate());     hasAny = true; }
+        if (entity.getDispStartTime()     != null) { update.set(a.dispStartTime,     entity.getDispStartTime());     hasAny = true; }
         if (entity.getDispEndDate()       != null) { update.set(a.dispEndDate,       entity.getDispEndDate());       hasAny = true; }
+        if (entity.getDispEndTime()       != null) { update.set(a.dispEndTime,       entity.getDispEndTime());       hasAny = true; }
         if (entity.getUseYn()             != null) { update.set(a.useYn,             entity.getUseYn());             hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(a.updBy,             entity.getUpdBy());             hasAny = true; }
         if (entity.getUpdDate()           != null) { update.set(a.updDate,           entity.getUpdDate());           hasAny = true; }

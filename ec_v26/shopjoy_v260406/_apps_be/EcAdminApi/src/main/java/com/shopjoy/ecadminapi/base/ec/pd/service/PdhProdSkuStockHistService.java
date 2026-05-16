@@ -29,6 +29,7 @@ public class PdhProdSkuStockHistService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 SKU 재고 이력 키조회 */
     public PdhProdSkuStockHistDto.Item getById(String id) {
         PdhProdSkuStockHistDto.Item dto = pdhProdSkuStockHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -40,6 +41,7 @@ public class PdhProdSkuStockHistService {
         return pdhProdSkuStockHistRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 SKU 재고 이력 상세조회 */
     public PdhProdSkuStockHist findById(String id) {
         return pdhProdSkuStockHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -50,15 +52,18 @@ public class PdhProdSkuStockHistService {
         return pdhProdSkuStockHistRepository.findById(id).orElse(null);
     }
 
+    /* 상품 SKU 재고 이력 목록조회 */
     public List<PdhProdSkuStockHistDto.Item> getList(PdhProdSkuStockHistDto.Request req) {
         return pdhProdSkuStockHistRepository.selectList(req);
     }
 
+    /* 상품 SKU 재고 이력 페이지조회 */
     public PdhProdSkuStockHistDto.PageResponse getPageData(PdhProdSkuStockHistDto.Request req) {
         PageHelper.addPaging(req);
         return pdhProdSkuStockHistRepository.selectPageList(req);
     }
 
+    /* 상품 SKU 재고 이력 등록 */
     @Transactional
     public PdhProdSkuStockHist create(PdhProdSkuStockHist body) {
         body.setHistId(CmUtil.generateId("pdh_prod_sku_stock_hist"));

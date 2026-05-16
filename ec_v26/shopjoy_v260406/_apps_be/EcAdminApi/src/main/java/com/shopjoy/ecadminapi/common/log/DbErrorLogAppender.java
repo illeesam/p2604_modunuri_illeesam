@@ -96,6 +96,7 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
 
     // ── 유틸 ────────────────────────────────────────────────────────────
 
+    /* generateId */
     private static String generateId() {
         String ts = LocalDateTime.now().format(ID_FMT);
         return "EL" + ts + String.format("%04d", (int) (Math.random() * 10000));

@@ -28,6 +28,7 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
     private final JPAQueryFactory queryFactory;
     private static final QOdhClaimChgHist h = QOdhClaimChgHist.odhClaimChgHist;
 
+    /* 클레임 변경 이력 baseQuery */
     private JPAQuery<OdhClaimChgHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimChgHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
                 .from(h);
     }
 
+    /* 클레임 변경 이력 키조회 */
     @Override
     public Optional<OdhClaimChgHistDto.Item> selectById(String id) {
         OdhClaimChgHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         return Optional.ofNullable(dto);
     }
 
+    /* 클레임 변경 이력 목록조회 */
     @Override
     public List<OdhClaimChgHistDto.Item> selectList(OdhClaimChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         return query.fetch();
     }
 
+    /* 클레임 변경 이력 페이지조회 */
     @Override
     public OdhClaimChgHistDto.PageResponse selectPageList(OdhClaimChgHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 클레임 변경 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhClaimChgHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         return orders;
     }
 
+    /* 클레임 변경 이력 수정 */
     @Override
     public int updateSelective(OdhClaimChgHist entity) {
         if (entity.getClaimChgHistId() == null) return 0;

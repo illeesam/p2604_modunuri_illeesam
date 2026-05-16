@@ -29,11 +29,13 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     private static final QMbDeviceToken t   = QMbDeviceToken.mbDeviceToken;
     private static final QMbMember      mem = QMbMember.mbMember;
 
+    /* 키조회 */
     @Override
     public Optional<MbDeviceTokenDto.Item> selectById(String deviceTokenId) {
         return Optional.ofNullable(baseQuery().where(t.deviceTokenId.eq(deviceTokenId)).fetchOne());
     }
 
+    /* 목록조회 */
     @Override
     public List<MbDeviceTokenDto.Item> selectList(MbDeviceTokenDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -46,6 +48,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         return query.fetch();
     }
 
+    /* 페이지조회 */
     @Override
     public MbDeviceTokenDto.PageResponse selectPageList(MbDeviceTokenDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -64,6 +67,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* baseQuery */
     private JPAQuery<MbDeviceTokenDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(MbDeviceTokenDto.Item.class,
@@ -76,6 +80,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
                 .leftJoin(mem).on(mem.memberId.eq(t.memberId));
     }
 
+    /* buildCondition */
     private BooleanBuilder buildCondition(MbDeviceTokenDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -126,6 +131,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         return orders;
     }
 
+    /* 수정 */
     @Override
     public int updateSelective(MbDeviceToken entity) {
         if (entity.getDeviceTokenId() == null) return 0;

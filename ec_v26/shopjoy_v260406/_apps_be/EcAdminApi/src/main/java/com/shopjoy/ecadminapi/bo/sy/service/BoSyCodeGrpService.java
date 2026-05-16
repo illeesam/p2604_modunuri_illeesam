@@ -19,8 +19,11 @@ public class BoSyCodeGrpService {
 
     private final SyCodeGrpService syCodeGrpService;
 
+    /* 키조회 */
     public SyCodeGrpDto.Item getById(String id) { return syCodeGrpService.getById(id); }
+    /* 목록조회 */
     public List<SyCodeGrpDto.Item> getList(SyCodeGrpDto.Request req) { return syCodeGrpService.getList(req); }
+    /* 페이지조회 */
     public SyCodeGrpDto.PageResponse getPageData(SyCodeGrpDto.Request req) { return syCodeGrpService.getPageData(req); }
 
     @Transactional public SyCodeGrp create(SyCodeGrp body) { return syCodeGrpService.create(body); }

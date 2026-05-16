@@ -9,10 +9,10 @@ window.ZdStore = {
   },
   setup(props) {
     const { ref, computed, reactive, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ storeInfo: '', isPageCodeLoad: false, selectedStore: null, tabMode: 'col5' });
     const tab = Vue.toRef(uiState, 'tab');
 
@@ -41,6 +41,7 @@ window.ZdStore = {
       return stores;
     });
 
+    /* selectStore */
     const selectStore = (storeName) => {
       uiState.selectedStore = storeName;
       if (!openStores.find(s => s === storeName)) {
@@ -49,12 +50,14 @@ window.ZdStore = {
       loadStoreData(storeName);
     };
 
+    /* loadAllStoreData */
     const loadAllStoreData = () => {
       storeList.value.forEach(store => {
         loadStoreData(store.name);
       });
     };
 
+    /* loadStoreData */
     const loadStoreData = (storeName) => {
       try {
         const storeFunc = window[storeName];
@@ -69,6 +72,7 @@ window.ZdStore = {
       }
     };
 
+    /* closeTab */
     const closeTab = (storeName) => {
       const idx = openStores.indexOf(storeName);
       if (idx !== -1) openStores.splice(idx, 1);
@@ -78,6 +82,7 @@ window.ZdStore = {
       }
     };
 
+    /* copyToClipboard */
     const copyToClipboard = () => {
       try {
         navigator.clipboard.writeText(uiState.storeInfo);
@@ -87,6 +92,7 @@ window.ZdStore = {
       }
     };
 
+    /* clearStore */
     const clearStore = () => {
       if (!uiState.selectedStore) return;
       try {
@@ -101,6 +107,7 @@ window.ZdStore = {
       }
     };
 
+    /* saveStore */
     const saveStore = () => {
       if (!uiState.selectedStore) return;
       try {
@@ -118,6 +125,7 @@ window.ZdStore = {
       }
     };
 
+    /* refreshStoreData */
     const refreshStoreData = async (storeName) => {
       if (!storeName) return;
       const store = storeList.value.find(s => s.name === storeName);
@@ -162,6 +170,7 @@ window.ZdStore = {
       }
     };
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
 };

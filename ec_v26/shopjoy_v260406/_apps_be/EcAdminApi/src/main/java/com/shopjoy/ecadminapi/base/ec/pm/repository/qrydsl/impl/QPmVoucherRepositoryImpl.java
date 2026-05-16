@@ -33,6 +33,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
     private static final QSyCode    cdVt = new QSyCode("cd_vt");
     private static final QSyCode    cdVs = new QSyCode("cd_vs");
 
+    /* 바우처(상품권) baseQuery */
     private JPAQuery<PmVoucherDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmVoucherDto.Item.class,
@@ -47,6 +48,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                 .leftJoin(cdVs).on(cdVs.codeGrp.eq("VOUCHER_STATUS").and(cdVs.codeValue.eq(v.voucherStatusCd)));
     }
 
+    /* 바우처(상품권) 키조회 */
     @Override
     public Optional<PmVoucherDto.Item> selectById(String voucherId) {
         PmVoucherDto.Item dto = baseQuery()
@@ -55,6 +57,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 바우처(상품권) 목록조회 */
     @Override
     public List<PmVoucherDto.Item> selectList(PmVoucherDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -73,6 +76,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         return query.fetch();
     }
 
+    /* 바우처(상품권) 페이지조회 */
     @Override
     public PmVoucherDto.PageResponse selectPageList(PmVoucherDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -98,15 +102,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(PmVoucherDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -116,8 +112,8 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         if (StringUtils.hasText(s.getUseYn()))     w.and(v.useYn.eq(s.getUseYn()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -176,6 +172,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         return orders;
     }
 
+    /* 바우처(상품권) 수정 */
     @Override
     public int updateSelective(PmVoucher entity) {
         if (entity.getVoucherId() == null) return 0;

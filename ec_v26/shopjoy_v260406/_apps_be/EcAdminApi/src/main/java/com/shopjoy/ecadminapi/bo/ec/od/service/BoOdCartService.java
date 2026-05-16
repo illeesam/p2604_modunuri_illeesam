@@ -19,8 +19,11 @@ public class BoOdCartService {
 
     private final OdCartService odCartService;
 
+    /* 키조회 */
     public OdCartDto.Item getById(String id) { return odCartService.getById(id); }
+    /* 목록조회 */
     public List<OdCartDto.Item> getList(OdCartDto.Request req) { return odCartService.getList(req); }
+    /* 페이지조회 */
     public OdCartDto.PageResponse getPageData(OdCartDto.Request req) { return odCartService.getPageData(req); }
 
     @Transactional public OdCart create(OdCart body) { return odCartService.create(body); }

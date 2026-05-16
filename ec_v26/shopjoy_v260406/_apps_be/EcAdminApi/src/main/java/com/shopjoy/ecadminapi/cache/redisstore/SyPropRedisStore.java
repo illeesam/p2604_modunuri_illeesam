@@ -30,6 +30,7 @@ public class SyPropRedisStore {
 
     // ── 저장 ──────────────────────────────────────────────────────
 
+    /* saveAll */
     public void saveAll(Map<String, String> propMap) {
         redis.set(CacheKey.SY_PROP_ALL, propMap, props.getTtl().getSyPropSeconds());
         log.info("[Cache][redis] [sy:prop:all] saveAll()— {}건", propMap.size());
@@ -43,6 +44,7 @@ public class SyPropRedisStore {
 
     // ── 조회 ──────────────────────────────────────────────────────
 
+    /* getAll */
     @SuppressWarnings("unchecked")
     public Optional<Map<String, String>> getAll() {
         return redis.get(CacheKey.SY_PROP_ALL, Map.class)
@@ -56,6 +58,7 @@ public class SyPropRedisStore {
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
+    /* evict */
     public void evict(String propKey) {
         redis.delete(CacheKey.SY_PROP_KEY + propKey);
     }

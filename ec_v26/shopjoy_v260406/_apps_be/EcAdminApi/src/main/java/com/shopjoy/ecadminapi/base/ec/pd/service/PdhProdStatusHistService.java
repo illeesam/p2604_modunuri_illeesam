@@ -27,6 +27,7 @@ public class PdhProdStatusHistService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 상태 이력 키조회 */
     public PdhProdStatusHistDto.Item getById(String id) {
         PdhProdStatusHistDto.Item dto = pdhProdStatusHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdhProdStatusHistService {
         return pdhProdStatusHistRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 상태 이력 상세조회 */
     public PdhProdStatusHist findById(String id) {
         return pdhProdStatusHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdhProdStatusHistService {
         return pdhProdStatusHistRepository.findById(id).orElse(null);
     }
 
+    /* 상품 상태 이력 키검증 */
     public boolean existsById(String id) {
         return pdhProdStatusHistRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdhProdStatusHistService {
         return true;
     }
 
+    /* 상품 상태 이력 목록조회 */
     public List<PdhProdStatusHistDto.Item> getList(PdhProdStatusHistDto.Request req) {
         return pdhProdStatusHistRepository.selectList(req);
     }
 
+    /* 상품 상태 이력 페이지조회 */
     public PdhProdStatusHistDto.PageResponse getPageData(PdhProdStatusHistDto.Request req) {
         PageHelper.addPaging(req);
         return pdhProdStatusHistRepository.selectPageList(req);
     }
 
+    /* 상품 상태 이력 등록 */
     @Transactional
     public PdhProdStatusHist create(PdhProdStatusHist body) {
         body.setProdStatusHistId(CmUtil.generateId("pdh_prod_status_hist"));
@@ -80,6 +86,7 @@ public class PdhProdStatusHistService {
         return saved;
     }
 
+    /* 상품 상태 이력 저장 */
     @Transactional
     public PdhProdStatusHist save(PdhProdStatusHist entity) {
         if (!existsById(entity.getProdStatusHistId()))
@@ -92,6 +99,7 @@ public class PdhProdStatusHistService {
         return saved;
     }
 
+    /* 상품 상태 이력 수정 */
     @Transactional
     public PdhProdStatusHist update(String id, PdhProdStatusHist body) {
         PdhProdStatusHist entity = findById(id);
@@ -104,6 +112,7 @@ public class PdhProdStatusHistService {
         return saved;
     }
 
+    /* 상품 상태 이력 수정 */
     @Transactional
     public PdhProdStatusHist updateSelective(PdhProdStatusHist entity) {
         if (entity.getProdStatusHistId() == null) throw new CmBizException("prodStatusHistId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdhProdStatusHistService {
         return entity;
     }
 
+    /* 상품 상태 이력 삭제 */
     @Transactional
     public void delete(String id) {
         PdhProdStatusHist entity = findById(id);
@@ -125,6 +135,7 @@ public class PdhProdStatusHistService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 상태 이력 목록저장 */
     @Transactional
     public void saveList(List<PdhProdStatusHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -27,6 +27,7 @@ public class OdDlivService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 배송 키조회 */
     public OdDlivDto.Item getById(String id) {
         OdDlivDto.Item dto = odDlivRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdDlivService {
         return odDlivRepository.selectById(id).orElse(null);
     }
 
+    /* 배송 상세조회 */
     public OdDliv findById(String id) {
         return odDlivRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdDlivService {
         return odDlivRepository.findById(id).orElse(null);
     }
 
+    /* 배송 키검증 */
     public boolean existsById(String id) {
         return odDlivRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdDlivService {
         return true;
     }
 
+    /* 배송 목록조회 */
     public List<OdDlivDto.Item> getList(OdDlivDto.Request req) {
         return odDlivRepository.selectList(req);
     }
 
+    /* 배송 페이지조회 */
     public OdDlivDto.PageResponse getPageData(OdDlivDto.Request req) {
         PageHelper.addPaging(req);
         return odDlivRepository.selectPageList(req);
     }
 
+    /* 배송 등록 */
     @Transactional
     public OdDliv create(OdDliv body) {
         body.setDlivId(CmUtil.generateId("od_dliv"));
@@ -80,6 +86,7 @@ public class OdDlivService {
         return saved;
     }
 
+    /* 배송 저장 */
     @Transactional
     public OdDliv save(OdDliv entity) {
         if (!existsById(entity.getDlivId()))
@@ -92,6 +99,7 @@ public class OdDlivService {
         return saved;
     }
 
+    /* 배송 수정 */
     @Transactional
     public OdDliv update(String id, OdDliv body) {
         OdDliv entity = findById(id);
@@ -104,6 +112,7 @@ public class OdDlivService {
         return saved;
     }
 
+    /* 배송 수정 */
     @Transactional
     public OdDliv updateSelective(OdDliv entity) {
         if (entity.getDlivId() == null) throw new CmBizException("dlivId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdDlivService {
         return entity;
     }
 
+    /* 배송 삭제 */
     @Transactional
     public void delete(String id) {
         OdDliv entity = findById(id);
@@ -125,6 +135,7 @@ public class OdDlivService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 배송 목록저장 */
     @Transactional
     public void saveList(List<OdDliv> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

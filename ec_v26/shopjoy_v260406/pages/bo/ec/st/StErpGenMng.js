@@ -6,10 +6,10 @@ window.StErpGenMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       erp_statuses: [],
@@ -17,6 +17,7 @@ window.StErpGenMng = {
     });
 
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -38,6 +39,7 @@ window.StErpGenMng = {
     const vendorList = reactive([]);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resV, resH] = await Promise.all([
@@ -70,6 +72,7 @@ window.StErpGenMng = {
 
     const genHistory = reactive([]);
 
+    /* doGenerate */
     const doGenerate = async () => {
       if (!cfPreviewRows.value.length) { showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
       const ok = await showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
@@ -92,9 +95,13 @@ window.StErpGenMng = {
       }
     };
 
+    /* fnStatusBadge */
     const fnStatusBadge = s => ({ '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
+
+    /* fmtW */
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
+    /* 목록조회 */
     const onSearch = async () => { await handleSearchData('DEFAULT'); };
 
     // -- return ---------------------------------------------------------------

@@ -6,13 +6,18 @@ window.Like = {
   },
   setup(props) {
     const { reactive, computed, watch, onMounted } = Vue;
-    const prods             = window.foApp.prods;
+    const prods             = window.foApp.prods;  // 상품 목록
+
+    /* toggleLike */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
+
+    /* selectProd */
     const selectProd        = (p) => window.foApp.selectProd(p);
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;

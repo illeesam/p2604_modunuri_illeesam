@@ -38,6 +38,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QSyCode        cdIs = new QSyCode("cd_is");
     private static final QSyCode        cdDc = new QSyCode("cd_dc");
 
+    /* 주문 아이템(상품) 키조회 */
     @Override
     public Optional<OdOrderItemDto.Item> selectById(String orderItemId) {
         OdOrderItemDto.Item dto = baseQuery()
@@ -46,6 +47,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 주문 아이템(상품) 목록조회 */
     @Override
     public List<OdOrderItemDto.Item> selectList(OdOrderItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +66,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         return query.fetch();
     }
 
+    /* 주문 아이템(상품) 페이지조회 */
     @Override
     public OdOrderItemDto.PageResponse selectPageList(OdOrderItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -89,6 +92,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 주문 아이템(상품) baseQuery */
     private JPAQuery<OdOrderItemDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdOrderItemDto.Item.class,
@@ -123,15 +127,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(oi.dlivCourierCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(OdOrderItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -139,10 +135,10 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         if (StringUtils.hasText(s.getSiteId()))      w.and(oi.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getOrderItemId())) w.and(oi.orderItemId.eq(s.getOrderItemId()));
 
-        // searchValue + searchTypes
+        // searchValue + searchType
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -200,6 +196,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         return orders;
     }
 
+    /* 주문 아이템(상품) 수정 */
     @Override
     public int updateSelective(OdOrderItem entity) {
         if (entity.getOrderItemId() == null) return 0;

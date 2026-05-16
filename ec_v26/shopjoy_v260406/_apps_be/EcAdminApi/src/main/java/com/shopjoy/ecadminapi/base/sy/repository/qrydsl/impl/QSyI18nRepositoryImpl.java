@@ -30,12 +30,14 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 다국어 키조회 */
     @Override
     public Optional<SyI18nDto.Item> selectById(String i18nId) {
         SyI18nDto.Item dto = baseQuery().where(i.i18nId.eq(i18nId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
+    /* 다국어 목록조회 */
     @Override
     public List<SyI18nDto.Item> selectList(SyI18nDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -51,6 +53,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         return query.fetch();
     }
 
+    /* 다국어 페이지조회 */
     @Override
     public SyI18nDto.PageResponse selectPageList(SyI18nDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -70,6 +73,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 다국어 baseQuery */
     private JPAQuery<SyI18nDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyI18nDto.Item.class,
@@ -82,6 +86,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                 .leftJoin(ste).on(ste.siteId.eq(i.siteId));
     }
 
+    /* 다국어 buildCondition */
     private BooleanBuilder buildCondition(SyI18nDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         return orders;
     }
 
+    /* 다국어 수정 */
     @Override
     public int updateSelective(SyI18n entity) {
         if (entity.getI18nId() == null) return 0;

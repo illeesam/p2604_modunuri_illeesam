@@ -27,6 +27,7 @@ public class SyRoleService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 역할(권한) 키조회 */
     public SyRoleDto.Item getById(String id) {
         SyRoleDto.Item dto = syRoleRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyRoleService {
         return syRoleRepository.selectById(id).orElse(null);
     }
 
+    /* 역할(권한) 상세조회 */
     public SyRole findById(String id) {
         return syRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyRoleService {
         return syRoleRepository.findById(id).orElse(null);
     }
 
+    /* 역할(권한) 키검증 */
     public boolean existsById(String id) {
         return syRoleRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyRoleService {
         return true;
     }
 
+    /* 역할(권한) 목록조회 */
     public List<SyRoleDto.Item> getList(SyRoleDto.Request req) {
         return syRoleRepository.selectList(req);
     }
 
+    /* 역할(권한) 페이지조회 */
     public SyRoleDto.PageResponse getPageData(SyRoleDto.Request req) {
         PageHelper.addPaging(req);
         return syRoleRepository.selectPageList(req);
     }
 
+    /* 역할(권한) 등록 */
     @Transactional
     public SyRole create(SyRole body) {
         body.setRoleId(CmUtil.generateId("sy_role"));
@@ -80,6 +86,7 @@ public class SyRoleService {
         return saved;
     }
 
+    /* 역할(권한) 저장 */
     @Transactional
     public SyRole save(SyRole entity) {
         if (!existsById(entity.getRoleId()))
@@ -92,6 +99,7 @@ public class SyRoleService {
         return saved;
     }
 
+    /* 역할(권한) 수정 */
     @Transactional
     public SyRole update(String id, SyRole body) {
         SyRole entity = findById(id);
@@ -104,6 +112,7 @@ public class SyRoleService {
         return saved;
     }
 
+    /* 역할(권한) 수정 */
     @Transactional
     public SyRole updateSelective(SyRole entity) {
         if (entity.getRoleId() == null) throw new CmBizException("roleId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyRoleService {
         return entity;
     }
 
+    /* 역할(권한) 삭제 */
     @Transactional
     public void delete(String id) {
         SyRole entity = findById(id);
@@ -125,6 +135,7 @@ public class SyRoleService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 역할(권한) 목록저장 */
     @Transactional
     public void saveList(List<SyRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

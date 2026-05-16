@@ -19,8 +19,11 @@ public class BoStSettleEtcAdjService {
 
     private final StSettleEtcAdjService stSettleEtcAdjService;
 
+    /* 키조회 */
     public StSettleEtcAdjDto.Item getById(String id) { return stSettleEtcAdjService.getById(id); }
+    /* 목록조회 */
     public List<StSettleEtcAdjDto.Item> getList(StSettleEtcAdjDto.Request req) { return stSettleEtcAdjService.getList(req); }
+    /* 페이지조회 */
     public StSettleEtcAdjDto.PageResponse getPageData(StSettleEtcAdjDto.Request req) { return stSettleEtcAdjService.getPageData(req); }
 
     @Transactional public StSettleEtcAdj create(StSettleEtcAdj body) { return stSettleEtcAdjService.create(body); }

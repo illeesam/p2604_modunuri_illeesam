@@ -6,10 +6,10 @@ window.DpDispPanelMng = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const panels = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: '', selectedPath: null, sortKey: '', sortDir: 'asc' });
     const displays = reactive([]);
@@ -31,6 +31,7 @@ window.DpDispPanelMng = {
       date_range_opts: [],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
@@ -44,11 +45,15 @@ window.DpDispPanelMng = {
     // 코드 주입
 
     const SORT_MAP = { nm: { asc: 'panelNm asc', desc: 'panelNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -57,15 +62,18 @@ window.DpDispPanelMng = {
       pager.pageNo = 1;
       handleSearchData(buildSearchParams?.() || {});
     };
+
+    /* sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
+    /* 목록조회 */
     const handleSearchData = async (uiParams = {}) => {
       uiState.loading = true;
       try {
         const params = { pageNo: 1, pageSize: 10000, ...getSortParam(), ...uiParams };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_panel_nm,def_area_cd';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_panel_nm,def_area_cd';
         }
         const [panelsRes, displaysRes] = await Promise.all([
           boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
@@ -87,8 +95,11 @@ window.DpDispPanelMng = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
     });
+
+    /* fnPathLabel */
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
+    /* handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -99,10 +110,20 @@ window.DpDispPanelMng = {
 /* 하단 상세
  * 정책: 행상세/행수정 클릭 시 항상 상세 API 재조회. 같은 id 재클릭이어도 닫지 않고 reloadTrigger 만 ++ */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* loadView */
     const loadView         = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* openNew */
     const openNew     = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispPanelMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -174,6 +195,8 @@ window.DpDispPanelMng = {
         .filter(c => c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => {
       pager.pageTotalCount = cfFiltered.value.length;
       pager.pageTotalPage  = Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize));
@@ -182,7 +205,11 @@ window.DpDispPanelMng = {
       pager.pageList = cfFiltered.value.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize);
     };
     watch(cfFiltered, () => { fnBuildPagerNums(); });
+
+    /* fnStatusBadge */
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+
+    /* fnTypeBadge */
     const fnTypeBadge = t => ({
       'image_banner':'badge-blue', 'product_slider':'badge-purple', 'product':'badge-purple',
       'chart_bar':'badge-orange', 'chart_line':'badge-orange', 'chart_pie':'badge-orange',
@@ -194,6 +221,8 @@ window.DpDispPanelMng = {
       'approval_widget':'badge-blue', 'map_widget':'badge-blue',
       'event_banner':'badge-blue', 'cache_banner':'badge-green', 'widget_embed':'badge-purple',
     }[t] || 'badge-gray');
+
+    /* fnTypeLabel */
     const fnTypeLabel = t => ({
       'image_banner':'이미지배너', 'product_slider':'상품슬라이더', 'product':'상품',
       'chart_bar':'차트(Bar)', 'chart_line':'차트(Line)', 'chart_pie':'차트(Pie)',
@@ -206,19 +235,23 @@ window.DpDispPanelMng = {
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     }[t] || t);
 
+    /* setDispNow */
     const setDispNow = () => {
       const now = new Date();
       searchParam.dispDate = now.toISOString().slice(0, 10);
       searchParam.dispTime = now.toTimeString().slice(0, 5);
     };
 
+    /* buildSearchParams */
     const buildSearchParams = () => ({
       ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
       ...Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'dateRange' && v !== '' && v !== null && v !== undefined)),
     });
 
+    /* 목록조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(buildSearchParams()); };
 
+    /* onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -226,9 +259,13 @@ window.DpDispPanelMng = {
       handleSearchData({});
     };
   
+    /* setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; fnBuildPagerNums(); };
 
+    /* 삭제 */
     const handleDelete = async (d) => {
       const ok = await showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -247,6 +284,7 @@ window.DpDispPanelMng = {
       }
     };
 
+    /* exportExcel */
     const exportExcel = () => coUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
 
     /* 영역 레이블 조회 */
@@ -257,10 +295,14 @@ window.DpDispPanelMng = {
 
     /* 펼치기/접기 */
     const expandedIds = reactive(new Set());
+
+    /* toggleExpand */
     const toggleExpand = (id) => {
       if (expandedIds.has(id)) expandedIds.delete(id);
       else expandedIds.add(id);
     };
+
+    /* isExpanded */
     const isExpanded = (id) => expandedIds.has(id);
 
     /* 위젯 유형 레이블 (목록용) */
@@ -275,10 +317,14 @@ window.DpDispPanelMng = {
       'approval_widget':'전자결재', 'map_widget':'지도맵',
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     };
+
+    /* fnWLabel */
     const fnWLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
 
     /* 패널미리보기 (카드) */
         const openCardPreview = (d) => { uiState.cardPreviewItem = d; };
+
+    /* closeCardPreview */
     const closeCardPreview = () => { uiState.cardPreviewItem = null; };
 
     /* -- 패널 드래그 정렬 -- */
@@ -286,12 +332,18 @@ window.DpDispPanelMng = {
       uiState.panelDragSrc = pageIdx;
       e.dataTransfer.effectAllowed = 'move';
     };
+
+    /* onPanelDragOver */
     const onPanelDragOver = (e, pageIdx) => {
       e.preventDefault();
       if (uiState.panelDragSrc === null || uiState.panelDragSrc === pageIdx) return;
       uiState.panelDragOverIdx = pageIdx;
     };
+
+    /* onPanelDragLeave */
     const onPanelDragLeave = () => { uiState.panelDragOverIdx = -1; };
+
+    /* onPanelDrop */
     const onPanelDrop = (e, pageIdx) => {
       e.preventDefault(); uiState.panelDragOverIdx = -1;
       const src = uiState.panelDragSrc;
@@ -309,6 +361,8 @@ window.DpDispPanelMng = {
       showToast('패널 순서가 변경되었습니다.', 'info');
       uiState.panelDragSrc = null;
     };
+
+    /* onPanelDragEnd */
     const onPanelDragEnd = () => { uiState.panelDragSrc = null; uiState.panelDragOverIdx = -1; };
 
     /* -- 위젯 드래그 정렬 -- */
@@ -317,12 +371,18 @@ window.DpDispPanelMng = {
       uiState.widgetDragPanel = dispId; uiState.widgetDragSrcWi = wi;
       e.dataTransfer.effectAllowed = 'move';
     };
+
+    /* onWidgetDragOver */
     const onWidgetDragOver = (e, dispId, wi) => {
       e.preventDefault(); e.stopPropagation();
       if (uiState.widgetDragPanel !== dispId) return;
       uiState.widgetDragOverWi = wi;
     };
+
+    /* onWidgetDragLeave */
     const onWidgetDragLeave = (e) => { e.stopPropagation(); uiState.widgetDragOverWi = null; };
+
+    /* onWidgetDrop */
     const onWidgetDrop = (e, dispId, wi) => {
       e.preventDefault(); e.stopPropagation();
       uiState.widgetDragOverWi = null;
@@ -336,6 +396,8 @@ window.DpDispPanelMng = {
       window.safeArrayUtils.safeForEach(panel.rows, (r, i) => { r.sortOrder = i + 1; });
       uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null;
     };
+
+    /* onWidgetDragEnd */
     const onWidgetDragEnd = () => { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; uiState.widgetDragOverWi = null; };
 
     /* -- 표시경로 트리 (sy_path 기반) -- */
@@ -344,14 +406,22 @@ window.DpDispPanelMng = {
     /* -- 표시경로 (영역별 그룹) -- */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchTypes: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, area: '', status: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' };
+      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, area: '', status: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' };
     };
       const searchParam = reactive(_initSearchParam());
   /* '' = 전체, '<areaCode>' = 특정 영역 */
     const treeOpen = reactive(new Set(['__root__']));
+
+    /* toggleTree */
     const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+
+    /* isTreeOpen */
     const isTreeOpen = (k) => treeOpen.has(k);
+
+    /* selectTree */
     const selectTree = (k) => { uiState.selectedTreeKey = uiState.selectedTreeKey === k ? '' : k; pager.pageNo = 1; };
+
+    /* expandAll */
     const expandAll  = () => {
       treeOpen.add('__root__');
       window.safeArrayUtils.safeForEach(cfPanelTree.value, n => {
@@ -359,10 +429,13 @@ window.DpDispPanelMng = {
         window.safeArrayUtils.safeForEach(n.children, c => treeOpen.add(n.label+'_'+c.label));
       });
     };
+
+    /* collapseAll */
     const collapseAll= () => { treeOpen.clear(); treeOpen.add('__root__'); };
 
     /* 패널 목록 (영역별 그룹) */
     const cfPanelTree = computed(() => {
+      /* areaNm */
       const areaNm = (code) => {
         const c = window.safeArrayUtils.safeFind(codes.disp_area, x => x.codeValue === code);
         return c ? c.codeLabel : code;
@@ -404,7 +477,7 @@ window.DpDispPanelMng = {
   <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_panel_nm', label: '패널명' },
           { value: 'def_area_cd',  label: '영역코드' },

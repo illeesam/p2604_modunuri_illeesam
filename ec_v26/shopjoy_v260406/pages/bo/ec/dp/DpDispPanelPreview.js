@@ -6,10 +6,10 @@ const _WP_DispPanelPreview = {
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
     const { ref, reactive, computed, watchEffect, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const codes = Vue.computed(() => window.sfGetBoCodeStore().svCodes);
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const cfChartBars = computed(() => {
@@ -168,6 +168,7 @@ window.DpDispPanelPreview = {
     const tab = Vue.toRef(uiState, 'tab');
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
@@ -179,6 +180,7 @@ window.DpDispPanelPreview = {
 
     // 코드 주입
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [wlRes, dpRes] = await Promise.all([
@@ -210,34 +212,40 @@ window.DpDispPanelPreview = {
       'barcode_qrcode':'🔖','video_player':'▶️',   'countdown':'⏱',
       'payment_widget':'💳','approval_widget':'✅', 'map_widget':'🗺',
     };
+
+    /* wIcon */
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
+
+    /* wTypeLabel */
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* -- 조회 조건 -- */
-    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', searchTypes: '', searchValue: ''});
+    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', searchType: '', searchValue: ''});
     const searchParam = reactive(_initSearchParam());
 
-    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchTypes: '', searchValue: '' });
+    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchType: '', searchValue: '' });
 
+    /* 목록조회 */
     const onSearch = () => {
       Object.assign(applied, {
         type:       searchParam.filterType,
         status:     searchParam.filterStatus,
         dispEnv:    searchParam.filterDispEnv,
-        searchTypes: searchParam.searchTypes,
+        searchType: searchParam.searchType,
         searchValue: (searchParam.searchValue || '').trim().toLowerCase(),
         visibility: searchParam.filterVisibility,
       });
     };
 
+    /* onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
-      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchTypes: '', searchValue: '' });
+      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchType: '', searchValue: '' });
     };
 
     const cfFilteredLibs = computed(() => {
       const searchVal = applied.searchValue;
-      const types = applied.searchTypes || 'def_nm,def_tag,def_desc';
+      const types = applied.searchType || 'def_nm,def_tag,def_desc';
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
@@ -260,6 +268,8 @@ window.DpDispPanelPreview = {
     /* -- 패널 트리: prefix > 영역명 > 패널명 -- */
     const cfTree = computed(() => {
       const codesData = codes || [];
+
+      /* areaNm */
       const areaNm = (code) => {
         const c = window.safeArrayUtils.safeFind(codes, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
         return c ? c.codeLabel : code;
@@ -288,13 +298,21 @@ window.DpDispPanelPreview = {
       }));
     });
     const openNodes = reactive(new Set());
+
+    /* toggleNode */
     const toggleNode = (key) => {
       if (openNodes.has(key)) openNodes.delete(key);
       else openNodes.add(key);
     };
+
+    /* isOpen */
     const isOpen = (key) => openNodes.has(key);
+
+    /* allChildrenOpen */
     const allChildrenOpen = (node) =>
       node.children.every(sub => openNodes.has(node.label + '_' + sub.label));
+
+    /* toggleAllChildren */
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
@@ -313,19 +331,31 @@ window.DpDispPanelPreview = {
         if (firstNode && firstNode.label) openNodes.add(firstNode.label);
       }
     });
+
+    /* expandAll */
     const expandAll = () => { window.safeArrayUtils.safeForEach(cfTree.value, n => openNodes.add(n.label)); openNodes.add('__root__'); };
+
+    /* collapseAll */
     const collapseAll = () => { openNodes.clear(); openNodes.add('__root__'); };
+
+    /* onItemDragStart */
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;
       window._dragWidgetLibs = null;
       e.dataTransfer.effectAllowed = 'copy';
       e.dataTransfer.setData('text/plain', lib.libId);
     };
+
+    /* onItemDragEnd */
     const onItemDragEnd = () => { window._dragWidgetLib = null; };
+
+    /* dedupeLibs */
     const dedupeLibs = (arr) => {
       const seen = new Set();
       return window.safeArrayUtils.safeFilter(arr, lib => { if (seen.has(lib.libId)) return false; seen.add(lib.libId); return true; });
     };
+
+    /* onNodeDragStart */
     const onNodeDragStart = (e, allLibs) => {
       const libs = dedupeLibs(allLibs);
       window._dragWidgetLib  = null;
@@ -333,6 +363,8 @@ window.DpDispPanelPreview = {
       e.dataTransfer.effectAllowed = 'copy';
       e.dataTransfer.setData('text/plain', 'node:' + libs.length);
     };
+
+    /* onNodeDragEnd */
     const onNodeDragEnd = () => { window._dragWidgetLibs = null; };
 
     /* -- UI 상태 -- */
@@ -392,8 +424,14 @@ window.DpDispPanelPreview = {
 
     /* -- 드래그·드롭 (그리드) -- */
     const dragState = reactive({ dragOverIdx: -1 });
+
+    /* onDragOver */
     const onDragOver  = (e, idx) => { e.preventDefault(); dragState.dragOverIdx = idx; };
+
+    /* onDragLeave */
     const onDragLeave = () => { dragState.dragOverIdx = -1; };
+
+    /* onDrop */
     const onDrop = (e, idx) => {
       e.preventDefault(); dragState.dragOverIdx = -1;
 
@@ -427,6 +465,8 @@ window.DpDispPanelPreview = {
       tabSlots[tabId].splice(idx, 1, { ...lib, colSpan: 1, rowSpan: 1 });
       autoExpand(tabId);
     };
+
+    /* removeSlot */
     const removeSlot = (idx) => { tabSlots[gridState.previewGrid].splice(idx, 1, null); };
 
     /* -- colspan / rowspan 조절 -- */
@@ -443,14 +483,21 @@ window.DpDispPanelPreview = {
       e.stopPropagation();
       gridState.spanPopupIdx = gridState.spanPopupIdx === idx ? -1 : idx;
     };
+
+    /* closeSpanPopup */
     const closeSpanPopup = () => { gridState.spanPopupIdx = -1; };
 
     /* -- 대시보드: 자유 배치 + 크기 조절 -- */
     const dashCanvas = ref(null);
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
 
+    /* onDashDragOver */
     const onDashDragOver = (e) => { e.preventDefault(); gridState.dashDragOver = true; };
+
+    /* onDashDragLeave */
     const onDashDragLeave = () => { gridState.dashDragOver = false; };
+
+    /* onDashDrop */
     const onDashDrop = (e) => {
       e.preventDefault(); gridState.dashDragOver = false;
       if (!dashCanvas.value) return;
@@ -482,6 +529,8 @@ window.DpDispPanelPreview = {
       const y = Math.max(0, e.clientY - rect.top  - 20);
       dashItems.push({ id: Date.now(), lib: { ...lib }, x, y, w: 240, h: 180 });
     };
+
+    /* removeDashItem */
     const removeDashItem = (id) => {
       const i = dashItems.findIndex(d => d.id === id);
       if (i >= 0) dashItems.splice(i, 1);
@@ -492,10 +541,14 @@ window.DpDispPanelPreview = {
       e.preventDefault();
       const ox = e.clientX - item.x;
       const oy = e.clientY - item.y;
+
+      /* onMove */
       const onMove = (me) => {
         item.x = Math.max(0, me.clientX - ox);
         item.y = Math.max(0, me.clientY - oy);
       };
+
+      /* onUp */
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
@@ -509,10 +562,14 @@ window.DpDispPanelPreview = {
       e.preventDefault(); e.stopPropagation();
       const sx = e.clientX, sy = e.clientY;
       const sw = item.w,    sh = item.h;
+
+      /* onMove */
       const onMove = (me) => {
         item.w = Math.max(160, sw + (me.clientX - sx));
         item.h = Math.max(120, sh + (me.clientY - sy));
       };
+
+      /* onUp */
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
@@ -527,6 +584,8 @@ window.DpDispPanelPreview = {
         ? dashItems.length
         : (cfCurrentSlots.value || []).filter(Boolean).length
     );
+
+    /* onResetCurrent */
     const onResetCurrent = () => {
       if (gridState.previewGrid === 'dashboard') {
         dashItems.splice(0);
@@ -610,7 +669,7 @@ window.DpDispPanelPreview = {
         </select>
       </div>
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '이름' },
           { value: 'def_tag',  label: '태그' },

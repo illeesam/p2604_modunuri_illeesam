@@ -34,6 +34,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
     private static final QSyUser            usr   = QSyUser.syUser;
     private static final QSyCode            cd_ps = new QSyCode("cd_ps");
 
+    /* 상품 상태 이력 buildBaseQuery */
     private JPAQuery<PdhProdStatusHistDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdStatusHistDto.Item.class,
@@ -53,6 +54,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
                 .leftJoin(cd_ps).on(cd_ps.codeGrp.eq("PRODUCT_STATUS").and(cd_ps.codeValue.eq(h.beforeStatusCd)));
     }
 
+    /* 상품 상태 이력 키조회 */
     @Override
     public Optional<PdhProdStatusHistDto.Item> selectById(String id) {
         PdhProdStatusHistDto.Item dto = buildBaseQuery()
@@ -61,6 +63,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 상태 이력 목록조회 */
     @Override
     public List<PdhProdStatusHistDto.Item> selectList(PdhProdStatusHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -79,6 +82,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         return query.fetch();
     }
 
+    /* 상품 상태 이력 페이지조회 */
     @Override
     public PdhProdStatusHistDto.PageResponse selectPageList(PdhProdStatusHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -104,6 +108,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 상품 상태 이력 buildCondition */
     private BooleanBuilder buildCondition(PdhProdStatusHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -161,6 +166,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         return orders;
     }
 
+    /* 상품 상태 이력 수정 */
     @Override
     public int updateSelective(PdhProdStatusHist entity) {
         if (entity.getProdStatusHistId() == null) return 0;

@@ -27,6 +27,7 @@ public class OdhPayChgHistService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 결제 변경 이력 키조회 */
     public OdhPayChgHistDto.Item getById(String id) {
         OdhPayChgHistDto.Item dto = odhPayChgHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdhPayChgHistService {
         return odhPayChgHistRepository.selectById(id).orElse(null);
     }
 
+    /* 결제 변경 이력 상세조회 */
     public OdhPayChgHist findById(String id) {
         return odhPayChgHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdhPayChgHistService {
         return odhPayChgHistRepository.findById(id).orElse(null);
     }
 
+    /* 결제 변경 이력 키검증 */
     public boolean existsById(String id) {
         return odhPayChgHistRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdhPayChgHistService {
         return true;
     }
 
+    /* 결제 변경 이력 목록조회 */
     public List<OdhPayChgHistDto.Item> getList(OdhPayChgHistDto.Request req) {
         return odhPayChgHistRepository.selectList(req);
     }
 
+    /* 결제 변경 이력 페이지조회 */
     public OdhPayChgHistDto.PageResponse getPageData(OdhPayChgHistDto.Request req) {
         PageHelper.addPaging(req);
         return odhPayChgHistRepository.selectPageList(req);
     }
 
+    /* 결제 변경 이력 등록 */
     @Transactional
     public OdhPayChgHist create(OdhPayChgHist body) {
         body.setPayChgHistId(CmUtil.generateId("odh_pay_chg_hist"));
@@ -80,6 +86,7 @@ public class OdhPayChgHistService {
         return saved;
     }
 
+    /* 결제 변경 이력 저장 */
     @Transactional
     public OdhPayChgHist save(OdhPayChgHist entity) {
         if (!existsById(entity.getPayChgHistId()))
@@ -92,6 +99,7 @@ public class OdhPayChgHistService {
         return saved;
     }
 
+    /* 결제 변경 이력 수정 */
     @Transactional
     public OdhPayChgHist update(String id, OdhPayChgHist body) {
         OdhPayChgHist entity = findById(id);
@@ -104,6 +112,7 @@ public class OdhPayChgHistService {
         return saved;
     }
 
+    /* 결제 변경 이력 수정 */
     @Transactional
     public OdhPayChgHist updateSelective(OdhPayChgHist entity) {
         if (entity.getPayChgHistId() == null) throw new CmBizException("payChgHistId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdhPayChgHistService {
         return entity;
     }
 
+    /* 결제 변경 이력 삭제 */
     @Transactional
     public void delete(String id) {
         OdhPayChgHist entity = findById(id);
@@ -125,6 +135,7 @@ public class OdhPayChgHistService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 결제 변경 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhPayChgHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

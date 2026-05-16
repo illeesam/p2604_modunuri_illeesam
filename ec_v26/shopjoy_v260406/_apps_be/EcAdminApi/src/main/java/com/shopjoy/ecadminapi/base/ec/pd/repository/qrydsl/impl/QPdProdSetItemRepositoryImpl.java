@@ -33,6 +33,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
     private static final QPdProd        prd  = new QPdProd("prd");
     private static final QPdProd        prd2 = new QPdProd("prd2");
 
+    /* 세트상품 구성 키조회 */
     @Override
     public Optional<PdProdSetItemDto.Item> selectById(String setItemId) {
         PdProdSetItemDto.Item dto = baseQuery()
@@ -41,6 +42,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 세트상품 구성 목록조회 */
     @Override
     public List<PdProdSetItemDto.Item> selectList(PdProdSetItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -59,6 +61,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         return query.fetch();
     }
 
+    /* 세트상품 구성 페이지조회 */
     @Override
     public PdProdSetItemDto.PageResponse selectPageList(PdProdSetItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -80,6 +83,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 세트상품 구성 baseQuery */
     private JPAQuery<PdProdSetItemDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdSetItemDto.Item.class,
@@ -93,15 +97,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
                 .leftJoin(prd2).on(prd2.prodId.eq(i.itemProdId));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(PdProdSetItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -110,8 +106,8 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         if (StringUtils.hasText(s.getSetItemId())) w.and(i.setItemId.eq(s.getSetItemId()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_item_nm,")) or.or(i.itemNm.likeIgnoreCase(pattern));
@@ -169,6 +165,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         return orders;
     }
 
+    /* 세트상품 구성 수정 */
     @Override
     public int updateSelective(PdProdSetItem entity) {
         if (entity.getSetItemId() == null) return 0;

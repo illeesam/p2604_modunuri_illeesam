@@ -14,6 +14,7 @@ window.XsSample02 = {
       category_opts: ['상의', '하의', '아우터', '원피스', '신발', '가방'],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -31,6 +32,8 @@ window.XsSample02 = {
     /* -- Toast -- */
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
+
+    /* showToast */
     const showToast = (msg, type = 'success') => {
       toast.msg = msg; toast.type = type; toast.show = true;
       clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500);
@@ -48,6 +51,7 @@ window.XsSample02 = {
     let   _tempId    = -1;
         const EDIT_FIELDS = ['productNm', 'category', 'price', 'stock', 'status'];
 
+    /* toRow */
     const toRow = d => ({
       productId: d.sample1Id,
       productNm: d.cdNm  || '',
@@ -57,8 +61,11 @@ window.XsSample02 = {
       status:    d.useYn === 'Y' ? '판매중' : '판매중지',
       regDate:   d.regDt || '',
     });
+
+    /* toPayload */
     const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.productNm, col01: r.category, col02: String(r.price), col03: String(r.stock), useYn: r.status === '판매중지' ? 'N' : 'Y' });
 
+    /* makeRow */
     const makeRow = d => ({
       ...d,
       _row_status: 'N', _row_check: false,
@@ -70,9 +77,13 @@ window.XsSample02 = {
     const sentinelEl    = ref(null);   // 템플릿 ref: "더 불러오기" 요소
     const cfVisibleRows   = computed(() => gridRows.slice(0, uiState.visibleCount));
     const cfHasMore       = computed(() => uiState.visibleCount < gridRows.length);
+
+    /* handleLoadMore */
     const handleLoadMore      = () => { uiState.visibleCount = Math.min(uiState.visibleCount + 10, gridRows.length); };
 
     let _observer = null;
+
+    /* setupObserver */
     const setupObserver = () => {
       if (_observer) _observer.disconnect();
       _observer = new IntersectionObserver(entries => {
@@ -81,6 +92,7 @@ window.XsSample02 = {
       if (sentinelEl.value) _observer.observe(sentinelEl.value);
     };
 
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
@@ -108,15 +120,22 @@ window.XsSample02 = {
       if (_observer) _observer.disconnect();
     });
 
+    /* 목록조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+
+    /* onReset */
     const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
+    /* setFocused */
     const setFocused   = idx => { uiState.focusedIdx = idx; };
+
+    /* onCellChange */
     const onCellChange = row => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
+    /* addRow */
     const addRow = () => {
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : Math.min(uiState.visibleCount, gridRows.length);
       gridRows.splice(at, 0, { productId: _tempId--, productNm: '', category: '상의', price: 0, stock: 0, status: '판매중', regDate: '', _row_status: 'I', _row_check: false, _row_org: null });
@@ -125,6 +144,7 @@ window.XsSample02 = {
       if (at >= uiState.visibleCount) uiState.visibleCount = at + 1;
     };
 
+    /* deleteRow */
     const deleteRow = idx => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -134,6 +154,7 @@ window.XsSample02 = {
       } else { row._row_status = 'D'; }
     };
 
+    /* cancelRow */
     const cancelRow = idx => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -143,6 +164,7 @@ window.XsSample02 = {
       } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
     };
 
+    /* deleteRows */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -151,6 +173,7 @@ window.XsSample02 = {
       }
     };
 
+    /* cancelChecked */
     const cancelChecked = () => {
       const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.productId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -161,6 +184,7 @@ window.XsSample02 = {
       }
     };
 
+    /* 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I'), uRows = gridRows.filter(r => r._row_status === 'U'), dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
@@ -189,17 +213,25 @@ window.XsSample02 = {
 
     /* -- Drag & UI State -- */
     const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
+
+    /* onDragOver */
     const onDragOver  = (e, idx) => {
       e.preventDefault();
       if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
       const m = gridRows.splice(uiState.dragSrc, 1)[0]; gridRows.splice(idx, 0, m);
       uiState.dragSrc = idx; uiState.dragMoved = true;
     };
+
+    /* onDragEnd */
     const onDragEnd = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };
 
+    /* toggleCheckAll */
     const toggleCheckAll = () => { cfVisibleRows.value.forEach(r => { r._row_check = uiState.checkAll; }); };
 
+    /* fnStatusBadge */
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
+
+    /* rowBg */
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
 

@@ -19,8 +19,11 @@ public class BoSyTemplateService {
 
     private final SyTemplateService syTemplateService;
 
+    /* 키조회 */
     public SyTemplateDto.Item getById(String id) { return syTemplateService.getById(id); }
+    /* 목록조회 */
     public List<SyTemplateDto.Item> getList(SyTemplateDto.Request req) { return syTemplateService.getList(req); }
+    /* 페이지조회 */
     public SyTemplateDto.PageResponse getPageData(SyTemplateDto.Request req) { return syTemplateService.getPageData(req); }
 
     @Transactional public SyTemplate create(SyTemplate body) { return syTemplateService.create(body); }

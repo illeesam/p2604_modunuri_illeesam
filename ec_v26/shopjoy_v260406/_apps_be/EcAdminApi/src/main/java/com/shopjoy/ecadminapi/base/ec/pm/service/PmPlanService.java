@@ -27,6 +27,7 @@ public class PmPlanService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 프로모션 플랜 키조회 */
     public PmPlanDto.Item getById(String id) {
         PmPlanDto.Item dto = pmPlanRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmPlanService {
         return pmPlanRepository.selectById(id).orElse(null);
     }
 
+    /* 프로모션 플랜 상세조회 */
     public PmPlan findById(String id) {
         return pmPlanRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmPlanService {
         return pmPlanRepository.findById(id).orElse(null);
     }
 
+    /* 프로모션 플랜 키검증 */
     public boolean existsById(String id) {
         return pmPlanRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmPlanService {
         return true;
     }
 
+    /* 프로모션 플랜 목록조회 */
     public List<PmPlanDto.Item> getList(PmPlanDto.Request req) {
         return pmPlanRepository.selectList(req);
     }
 
+    /* 프로모션 플랜 페이지조회 */
     public PmPlanDto.PageResponse getPageData(PmPlanDto.Request req) {
         PageHelper.addPaging(req);
         return pmPlanRepository.selectPageList(req);
     }
 
+    /* 프로모션 플랜 등록 */
     @Transactional
     public PmPlan create(PmPlan body) {
         body.setPlanId(CmUtil.generateId("pm_plan"));
@@ -80,6 +86,7 @@ public class PmPlanService {
         return saved;
     }
 
+    /* 프로모션 플랜 저장 */
     @Transactional
     public PmPlan save(PmPlan entity) {
         if (!existsById(entity.getPlanId()))
@@ -92,6 +99,7 @@ public class PmPlanService {
         return saved;
     }
 
+    /* 프로모션 플랜 수정 */
     @Transactional
     public PmPlan update(String id, PmPlan body) {
         PmPlan entity = findById(id);
@@ -104,6 +112,7 @@ public class PmPlanService {
         return saved;
     }
 
+    /* 프로모션 플랜 수정 */
     @Transactional
     public PmPlan updateSelective(PmPlan entity) {
         if (entity.getPlanId() == null) throw new CmBizException("planId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmPlanService {
         return entity;
     }
 
+    /* 프로모션 플랜 삭제 */
     @Transactional
     public void delete(String id) {
         PmPlan entity = findById(id);
@@ -125,6 +135,7 @@ public class PmPlanService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 프로모션 플랜 목록저장 */
     @Transactional
     public void saveList(List<PmPlan> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

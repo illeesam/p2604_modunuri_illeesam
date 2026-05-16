@@ -13,10 +13,10 @@ window.PmCacheDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
@@ -43,8 +43,11 @@ window.PmCacheDtl = {
 watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._pmCacheDtlState.tabMode = v; });
+
+    /* 캐시(충전금) showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+    /* 캐시(충전금) fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.cache_trans_types = codeStore.sgGetGrpCodes('CACHE_TRANS_TYPE');
@@ -81,6 +84,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
     const cfTotalBalance = computed(() => form.balance || 0);
 
+    /* 캐시(충전금) 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -106,6 +110,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       }
     };
 
+    /* 캐시(충전금) onUserIdChange */
     const onUserIdChange = () => {
       const m = getMember.value(Number(form.userId));
       if (m) form.userNm = m.memberNm;
@@ -116,11 +121,14 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
+
+    /* 캐시(충전금) selectVendor */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
     };
 
+    /* 캐시(충전금) fnTypeBadge */
     const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
 
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');

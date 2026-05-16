@@ -28,6 +28,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
     private final JPAQueryFactory queryFactory;
     private static final QOdhClaimStatusHist h = QOdhClaimStatusHist.odhClaimStatusHist;
 
+    /* 클레임 상태 이력 baseQuery */
     private JPAQuery<OdhClaimStatusHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimStatusHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
                 .from(h);
     }
 
+    /* 클레임 상태 이력 키조회 */
     @Override
     public Optional<OdhClaimStatusHistDto.Item> selectById(String id) {
         OdhClaimStatusHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         return Optional.ofNullable(dto);
     }
 
+    /* 클레임 상태 이력 목록조회 */
     @Override
     public List<OdhClaimStatusHistDto.Item> selectList(OdhClaimStatusHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         return query.fetch();
     }
 
+    /* 클레임 상태 이력 페이지조회 */
     @Override
     public OdhClaimStatusHistDto.PageResponse selectPageList(OdhClaimStatusHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 클레임 상태 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhClaimStatusHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         return orders;
     }
 
+    /* 클레임 상태 이력 수정 */
     @Override
     public int updateSelective(OdhClaimStatusHist entity) {
         if (entity.getClaimStatusHistId() == null) return 0;

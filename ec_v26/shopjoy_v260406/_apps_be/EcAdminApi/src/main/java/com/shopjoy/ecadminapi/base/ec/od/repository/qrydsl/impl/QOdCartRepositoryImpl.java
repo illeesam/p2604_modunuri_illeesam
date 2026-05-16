@@ -37,6 +37,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     private static final QPdProdOptItem oi1 = new QPdProdOptItem("oi1");
     private static final QPdProdOptItem oi2 = new QPdProdOptItem("oi2");
 
+    /* 장바구니 키조회 */
     @Override
     public Optional<OdCartDto.Item> selectById(String cartId) {
         OdCartDto.Item dto = baseListQuery()
@@ -45,6 +46,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 장바구니 목록조회 */
     @Override
     public List<OdCartDto.Item> selectList(OdCartDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -63,6 +65,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         return query.fetch();
     }
 
+    /* 장바구니 페이지조회 */
     @Override
     public OdCartDto.PageResponse selectPageList(OdCartDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -90,6 +93,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 장바구니 baseListQuery */
     private JPAQuery<OdCartDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdCartDto.Item.class,
@@ -110,15 +114,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 .leftJoin(oi2).on(oi2.optItemId.eq(c.optItemId2));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(OdCartDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -127,10 +123,10 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         if (StringUtils.hasText(s.getCartId()))   w.and(c.cartId.eq(s.getCartId()));
         if (StringUtils.hasText(s.getMemberId())) w.and(c.memberId.eq(s.getMemberId()));
 
-        // searchValue + searchTypes
+        // searchValue + searchType
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -188,6 +184,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         return orders;
     }
 
+    /* 장바구니 수정 */
     @Override
     public int updateSelective(OdCart entity) {
         if (entity.getCartId() == null) return 0;

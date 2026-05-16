@@ -6,17 +6,19 @@ window.MbMemberMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     // 1️⃣ ref/reactive 선언
     const members = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ member_statuses: [], member_grades: [] });
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const _initSearchParam = () => ({ searchTypes: '', searchValue: '', grade: '', status: '' });
+
+    /* 회원 _initSearchParam */
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', grade: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     const detailModal = reactive({
       show: false,
@@ -28,6 +30,7 @@ window.MbMemberMng = {
     // 2️⃣ computed 선언
     const cfSelectedRow = computed(() => members.find(m => m.memberId === detailModal.dtlId) || null);
 
+    /* 회원 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     // 3️⃣ 함수 정의
@@ -39,11 +42,15 @@ window.MbMemberMng = {
     };
 
     const SORT_MAP = { nm: { asc: 'memberNm asc', desc: 'memberNm desc' }, reg: { asc: 'joinDate asc', desc: 'joinDate desc' } };
+
+    /* 회원 getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 회원 onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -52,8 +59,11 @@ window.MbMemberMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* 회원 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
+    /* 회원 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -62,9 +72,9 @@ window.MbMemberMng = {
           ...getSortParam(),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_email';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_email';
         }
         const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
@@ -82,8 +92,10 @@ window.MbMemberMng = {
       }
     };
 
+    /* 회원 fnFmtDate */
     const fnFmtDate = v => v ? String(v).slice(0, 10) : '';
 
+    /* 회원 fnApplyForm */
     const fnApplyForm = (d) => {
       Object.assign(detailModal.form, {
         memberId: d.memberId, email: d.email || '', memberNm: d.memberNm || '',
@@ -92,6 +104,7 @@ window.MbMemberMng = {
       });
     };
 
+    /* 회원 openDetail */
     const openDetail = async (row) => {
       detailModal.dtlId = row.memberId;
       detailModal.isNew = false;
@@ -106,6 +119,7 @@ window.MbMemberMng = {
       }
     };
 
+    /* 회원 openNew */
     const openNew = () => {
       Object.assign(detailModal.form, { memberId: null, email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memo: '' });
       detailModal.dtlId = '__new__';
@@ -113,11 +127,13 @@ window.MbMemberMng = {
       detailModal.show = true;
     };
 
+    /* 회원 closeDetail */
     const closeDetail = () => {
       detailModal.show = false;
       detailModal.dtlId = null;
     };
 
+    /* 회원 저장 */
     const handleSave = async () => {
       if (!detailModal.form.email) { showToast('이메일은 필수입니다.', 'error'); return; }
       if (!detailModal.form.memberNm) { showToast('이름은 필수입니다.', 'error'); return; }
@@ -164,6 +180,7 @@ window.MbMemberMng = {
       }
     };
 
+    /* 회원 삭제 */
     const handleDelete = async () => {
       if (!cfSelectedRow.value) return;
       const ok = await showConfirm('삭제', `[${cfSelectedRow.value.memberNm}] 회원을 삭제하시겠습니까?`);
@@ -184,11 +201,22 @@ window.MbMemberMng = {
       }
     };
 
+    /* 회원 fnGradeBadge */
     const fnGradeBadge = g => ({ 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' }[g] || 'badge-gray');
+
+    /* 회원 fnStatusBadge */
     const fnStatusBadge = s => ({ '활성': 'badge-green', '정지': 'badge-red' }[s] || 'badge-gray');
+
+    /* 회원 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 회원 onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
+
+    /* 회원 setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* 회원 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     // 4️⃣ watch 선언
@@ -213,7 +241,7 @@ window.MbMemberMng = {
     <div class="search-bar">
       <label class="search-label">이름/이메일/ID</label>
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',    label: '이름' },
           { value: 'def_email', label: '이메일' },

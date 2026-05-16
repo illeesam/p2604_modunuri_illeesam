@@ -36,6 +36,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     private static final QSySite         ste  = QSySite.sySite;
     private static final QSyCode         cdVis = new QSyCode("cd_vis");
 
+    /* 바우처(상품권) 발행 이력 baseQuery */
     private JPAQuery<PmVoucherIssueDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmVoucherIssueDto.Item.class,
@@ -51,6 +52,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                 .leftJoin(cdVis).on(cdVis.codeGrp.eq("VOUCHER_ISSUE_STATUS").and(cdVis.codeValue.eq(i.voucherIssueStatusCd)));
     }
 
+    /* 바우처(상품권) 발행 이력 키조회 */
     @Override
     public Optional<PmVoucherIssueDto.Item> selectById(String voucherIssueId) {
         PmVoucherIssueDto.Item dto = baseQuery()
@@ -59,6 +61,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         return Optional.ofNullable(dto);
     }
 
+    /* 바우처(상품권) 발행 이력 목록조회 */
     @Override
     public List<PmVoucherIssueDto.Item> selectList(PmVoucherIssueDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -77,6 +80,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         return query.fetch();
     }
 
+    /* 바우처(상품권) 발행 이력 페이지조회 */
     @Override
     public PmVoucherIssueDto.PageResponse selectPageList(PmVoucherIssueDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -102,6 +106,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 바우처(상품권) 발행 이력 buildCondition */
     private BooleanBuilder buildCondition(PmVoucherIssueDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -161,6 +166,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         return orders;
     }
 
+    /* 바우처(상품권) 발행 이력 수정 */
     @Override
     public int updateSelective(PmVoucherIssue entity) {
         if (entity.getVoucherIssueId() == null) return 0;

@@ -6,10 +6,10 @@ window.DpDispUiSimul = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const codes = reactive({ active_statuses: [], visibility_opts: [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
@@ -26,6 +26,7 @@ window.DpDispUiSimul = {
     const members = reactive([]);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [dpRes, sitesRes, membersRes] = await Promise.all([
@@ -51,6 +52,7 @@ window.DpDispUiSimul = {
     const tab = Vue.toRef(uiState, 'tab');
 
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
@@ -88,7 +90,11 @@ window.DpDispUiSimul = {
       'coupon':'🎟',       'html_editor':'📄',     'event_banner':'🎉',
       'cache_banner':'💰', 'widget_embed':'🧩',
     };
+
+    /* wLabel */
     const wLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
+
+    /* wIcon */
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
 
     /* ── 화면영역 코드 ── */
@@ -105,7 +111,11 @@ window.DpDispUiSimul = {
 
     /* ── 영역 드롭다운 멀티선택 ── */
     const toggleArea     = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
+
+    /* selectAllAreas */
     const selectAllAreas = () => { window.safeArrayUtils.safeForEach(cfAllAreaListRaw.value, a => selectedAreas.add(a.codeValue)); };
+
+    /* clearAllAreas */
     const clearAllAreas  = () => { selectedAreas.clear(); };
     const cfAreaBtnLabel   = computed(() => {
       const sz = selectedAreas.size;
@@ -146,9 +156,13 @@ window.DpDispUiSimul = {
     const cfTotalPanels = computed(() =>
       (Array.isArray(displays) ? displays : []).filter(p => panelFilter(p)).length
     );
+
+    /* onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
     };
+
+    /* resetDate */
     const resetDate = () => {
       searchParam.previewDate = today;
       searchParam.previewTime = new Date().toTimeString().slice(0, 5);
@@ -184,9 +198,13 @@ window.DpDispUiSimul = {
 
     /* 영역 펼침 상태 */
     const expandedAreas = reactive(new Set());
+
+    /* initExpandedAreas */
     const initExpandedAreas = () => {
       window.safeArrayUtils.safeForEach(cfAllAreaListRaw.value, a => expandedAreas.add(a.codeValue));
     };
+
+    /* toggleAreaExpand */
     const toggleAreaExpand = (code) => {
       if (expandedAreas.has(code)) expandedAreas.delete(code);
       else expandedAreas.add(code);
@@ -206,15 +224,21 @@ window.DpDispUiSimul = {
         window.safeArrayUtils.safeForEach(rows, (_, wi) => checkedWidgetKeys.add(id + '_' + wi));
       }
     };
+
+    /* isPanelAllChecked */
     const isPanelAllChecked = (p) =>
       checkedPanelIds.has(p.dispId) &&
       ((p.rows || []).length === 0 || (p.rows || []).every((_, wi) => checkedWidgetKeys.has(p.dispId + '_' + wi)));
+
+    /* checkAllPanels */
     const checkAllPanels = () => {
       window.safeArrayUtils.safeForEach(cfStructAreaList.value, a => a.panels.forEach(p => {
         checkedPanelIds.add(p.dispId);
         (p.rows || []).forEach((_, wi) => checkedWidgetKeys.add(p.dispId + '_' + wi));
       }));
     };
+
+    /* clearCheckedPanels */
     const clearCheckedPanels = () => { checkedPanelIds.clear(); checkedWidgetKeys.clear(); };
 
     /* 영역 단위 전체체크 — 하위 패널·위젯 포함 cascade */
@@ -235,6 +259,8 @@ window.DpDispUiSimul = {
         });
       }
     };
+
+    /* isAreaAllChecked */
     const isAreaAllChecked = (area) =>
       area.panels.length > 0 &&
       area.panels.every(p => checkedPanelIds.has(p.dispId)) &&
@@ -245,12 +271,15 @@ window.DpDispUiSimul = {
     /* ── 위젯 체크 (키: `${dispId}_${wi}`) ── */
     const checkedWidgetKeys = reactive(new Set());
 
+    /* toggleWidgetCheck */
     const toggleWidgetCheck = (dispId, wi, event) => {
       if (event) event.stopPropagation();
       const key = `${dispId}_${wi}`;
       if (checkedWidgetKeys.has(key)) checkedWidgetKeys.delete(key);
       else checkedWidgetKeys.add(key);
     };
+
+    /* checkAllWidgets */
     const checkAllWidgets = () => {
       window.safeArrayUtils.safeForEach(cfStructAreaList.value, a =>
         a.panels.forEach(p =>
@@ -258,6 +287,8 @@ window.DpDispUiSimul = {
         )
       );
     };
+
+    /* clearCheckedWidgets */
     const clearCheckedWidgets = () => { checkedWidgetKeys.clear(); };
     const cfCheckedWidgetCount = computed(() => checkedWidgetKeys.size);
 
@@ -301,6 +332,8 @@ window.DpDispUiSimul = {
 
     const cfSourceLines = computed(() => {
       const lines = [];
+
+      /* A */
       const A = (key, val, real = false) => ({ key, val: String(val), real });
       const areas = window.safeArrayUtils.safeFilter(cfAllAreaListRaw.value, a =>
         selectedAreas.size === 0 || selectedAreas.has(a.codeValue)
@@ -411,7 +444,10 @@ window.DpDispUiSimul = {
     });
 
     const cfSourceText = computed(() => {
+      /* fa */
       const fa = (attrs) => attrs.map(a => `${a.key}="${a.val}"`).join(' ');
+
+      /* ind */
       const ind = (n) => '  '.repeat(n);
       return cfSourceLines.value.map(l => {
         if (l.type === 'blank')        return '';
@@ -435,6 +471,7 @@ window.DpDispUiSimul = {
       }).join('\n');
     });
 
+    /* copySource */
     const copySource = () => {
       navigator.clipboard?.writeText(cfSourceText.value).then(() => {
         uiState.sourceCopied = true;
@@ -454,8 +491,12 @@ window.DpDispUiSimul = {
     /* ── 캔버스 레이아웃 설정 ── */
        // 'grid' | 'dashboard'
     const structColCount   = ref(1);        // 1 ~ 32
+
+    /* sMakeInit */
     const sMakeInit = (cols) => Array(cols * 2).fill(null);
     const structSlots = reactive([...sMakeInit(1)]);
+
+    /* structAutoExpand */
     const structAutoExpand = () => {
       const cols = uiState.structColCount;
       if (structSlots.slice(structSlots.length - cols).some(Boolean))
@@ -469,6 +510,7 @@ window.DpDispUiSimul = {
       if (n === 4) return 'repeat(auto-fill,minmax(max(calc(25% - 6px),220px),1fr))';
       return `repeat(${n},1fr)`;
     });
+
     /* 영역 설정을 캔버스에 적용 */
     const applyAreaLayout = (area) => {
       const lt = area.layoutType || 'grid';
@@ -490,7 +532,11 @@ window.DpDispUiSimul = {
     /* ── dashboard 자유배치 ── */
     const structDashItems = reactive([]);
         const onStructDashDragOver  = (e) => { e.preventDefault(); uiState.structDashDragOver = true; };
+
+    /* onStructDashDragLeave */
     const onStructDashDragLeave = () => { uiState.structDashDragOver = false; };
+
+    /* onStructDashDrop */
     const onStructDashDrop = (e) => {
       e.preventDefault(); uiState.structDashDragOver = false;
       const widgets = window._dragAreaWidgets;
@@ -511,20 +557,34 @@ window.DpDispUiSimul = {
           x: bx + col*(W+GAP), y: by + row*(H+GAP), w: W, h: H });
       });
     };
+
+    /* startStructDashMove */
     const startStructDashMove = (e, item) => {
       e.preventDefault();
       const ox = e.clientX - item.x, oy = e.clientY - item.y;
+
+      /* mv */
       const mv = (me) => { item.x = Math.max(0, me.clientX - ox); item.y = Math.max(0, me.clientY - oy); };
+
+      /* up */
       const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     };
+
+    /* startStructDashResize */
     const startStructDashResize = (e, item) => {
       e.preventDefault(); e.stopPropagation();
       const sx = e.clientX, sy = e.clientY, sw = item.w, sh = item.h;
+
+      /* mv */
       const mv = (me) => { item.w = Math.max(160, sw + (me.clientX - sx)); item.h = Math.max(100, sh + (me.clientY - sy)); };
+
+      /* up */
       const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     };
+
+    /* removeStructDashItem */
     const removeStructDashItem = (id) => {
       const i = structDashItems.findIndex(d => d.id === id);
       if (i >= 0) structDashItems.splice(i, 1);
@@ -535,10 +595,16 @@ window.DpDispUiSimul = {
       e.stopPropagation();
       uiState.structSpanPopupIdx = uiState.structSpanPopupIdx === idx ? -1 : idx;
     };
+
+    /* closeStructSpanPopup */
     const closeStructSpanPopup = () => { uiState.structSpanPopupIdx = -1; };
 
         const onStructDragOver  = (e, idx) => { e.preventDefault(); uiState.structDragOverIdx = idx; };
+
+    /* onStructDragLeave */
     const onStructDragLeave = () => { uiState.structDragOverIdx = -1; };
+
+    /* onStructDrop */
     const onStructDrop = (e, idx) => {
       e.preventDefault(); uiState.structDragOverIdx = -1;
       const widgets = window._dragAreaWidgets;
@@ -557,7 +623,11 @@ window.DpDispUiSimul = {
       }
       structAutoExpand();
     };
+
+    /* removeStructSlot */
     const removeStructSlot = (idx) => { structSlots.splice(idx, 1, null); };
+
+    /* setStructSpan */
     const setStructSpan = (idx, axis, delta) => {
       const slot = structSlots[idx]; if (!slot) return;
       const maxCol = uiState.structColCount;
@@ -565,6 +635,8 @@ window.DpDispUiSimul = {
       if (axis === 'row') slot.rowSpan = Math.max(1, Math.min(4,      (slot.rowSpan||1) + delta));
     };
     const cfStructPlacedCount = computed(() => window.safeArrayUtils.safeFilter(structSlots, Boolean).length);
+
+    /* resetStructGrid */
     const resetStructGrid = () => {
       structSlots.splice(0, structSlots.length, ...sMakeInit(uiState.structColCount));
     };
@@ -577,12 +649,16 @@ window.DpDispUiSimul = {
       e.dataTransfer.effectAllowed = 'copy';
       e.dataTransfer.setData('text/plain', 'area:' + widgets.length);
     };
+
+    /* onPanelDragStart */
     const onPanelDragStart = (e, p, areaLabel) => {
       const widgets = (p.rows || []).map(w => ({ ...w, _panelNm: p.name, _area: areaLabel }));
       window._dragAreaWidgets = widgets;
       e.dataTransfer.effectAllowed = 'copy';
       e.dataTransfer.setData('text/plain', 'panel:' + widgets.length);
     };
+
+    /* onAreaDragEnd */
     const onAreaDragEnd = () => { window._dragAreaWidgets = null; };
 
     /* ── Ui미리보기 레이어 ── */
@@ -606,6 +682,8 @@ window.DpDispUiSimul = {
         !searchVal || s.siteNm.toLowerCase().includes(searchVal) || (s.domain||'').toLowerCase().includes(searchVal)
       );
     });
+
+    /* selectDispUiSite */
     const selectDispUiSite = (site) => {
       dispUiForm.siteId = String(site.siteId);
       dispUiForm.siteNm = site.siteNm;
@@ -620,6 +698,8 @@ window.DpDispUiSimul = {
         !searchVal || (m.memberNm||'').toLowerCase().includes(searchVal) || (m.email||'').toLowerCase().includes(searchVal)
       ).slice(0, 30);
     });
+
+    /* selectDispUiMember */
     const selectDispUiMember = (m) => {
       dispUiForm.memberId = String(m.userId);
       dispUiForm.memberNm = m.memberNm || m.email;
@@ -647,18 +727,24 @@ window.DpDispUiSimul = {
       const sz = dispUiForm.areas.length;
       return sz === 0 ? '전체 영역' : `${sz}개 영역 선택`;
     });
+
+    /* dispUiToggleArea */
     const dispUiToggleArea = (code) => {
       const i = dispUiForm.areas.indexOf(code);
       if (i !== -1) dispUiForm.areas.splice(i, 1);
       else dispUiForm.areas.push(code);
       uiState.dispUiAreaErr = false;
     };
+
+    /* dispUiSelectAllAreas */
     const dispUiSelectAllAreas = () => {
       window.safeArrayUtils.safeForEach(cfAllAreaListRaw.value, a => {
         if (!dispUiForm.areas.includes(a.codeValue)) dispUiForm.areas.push(a.codeValue);
       });
       uiState.dispUiAreaErr = false;
     };
+
+    /* dispUiClearAllAreas */
     const dispUiClearAllAreas = () => { dispUiForm.areas.splice(0); };
 
     /* 레이어 열기 – 처음 열 때 현재 필터값 복사 */
@@ -705,12 +791,14 @@ window.DpDispUiSimul = {
         .filter(t => dispUiViewOpts[t.key])
     );
 
+    /* _validateDispUi */
     const _validateDispUi = () => {
       if (dispUiForm.areas.length === 0) { uiState.dispUiAreaErr = true; return false; }
       uiState.dispUiAreaErr = false;
       return true;
     };
 
+    /* openDispUiModal */
     const openDispUiModal = () => {
       if (!_validateDispUi()) return;
       uiState.dispUiModalOpen = true;
@@ -729,6 +817,8 @@ window.DpDispUiSimul = {
       userGrade:    '',
     }));
     const cfDispOpt = computed(() => ({ layout: uiState.tabMode, showBadges: true, mode: uiState.tabMode, showDesc: uiState.showDesc }));
+
+    /* areaInfo */
     const areaInfo = (code) =>
       (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
@@ -756,7 +846,11 @@ window.DpDispUiSimul = {
       '/disp-bo-ui.html#page=dispUi06',
     ];
         const openDispUiOther = () => { uiState.otherMenuOpen = !uiState.otherMenuOpen; };
+
+    /* closeOtherMenu */
     const closeOtherMenu = () => { uiState.otherMenuOpen = false; };
+
+    /* pickOtherPage */
     const pickOtherPage = (url) => {
       const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
       window.open(
@@ -766,6 +860,7 @@ window.DpDispUiSimul = {
       uiState.otherMenuOpen = false;
     };
 
+    /* openDispUiPopup */
     const openDispUiPopup = (scope) => {
       if (!_validateDispUi()) return;
       const p = cfDispUiParamObj.value;

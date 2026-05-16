@@ -32,6 +32,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     private static final QSySite        ste = QSySite.sySite;
     private static final QSyCode        cdScs = new QSyCode("cd_scs");
 
+    /* 정산 마감 키조회 */
     @Override
     public Optional<StSettleCloseDto.Item> selectById(String id) {
         StSettleCloseDto.Item dto = baseListQuery()
@@ -40,6 +41,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 정산 마감 목록조회 */
     @Override
     public List<StSettleCloseDto.Item> selectList(StSettleCloseDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -58,6 +60,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         return query.fetch();
     }
 
+    /* 정산 마감 페이지조회 */
     @Override
     public StSettleCloseDto.PageResponse selectPageList(StSettleCloseDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -83,6 +86,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 정산 마감 baseListQuery */
     private JPAQuery<StSettleCloseDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleCloseDto.Item.class,
@@ -97,6 +101,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                 .leftJoin(cdScs).on(cdScs.codeGrp.eq("SETTLE_CLOSE_STATUS").and(cdScs.codeValue.eq(c.closeStatusCd)));
     }
 
+    /* 정산 마감 buildCondition */
     private BooleanBuilder buildCondition(StSettleCloseDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -150,6 +155,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         return orders;
     }
 
+    /* 정산 마감 수정 */
     @Override
     public int updateSelective(StSettleClose entity) {
         if (entity.getSettleCloseId() == null) return 0;

@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class DpPanelItemDto {
 
@@ -32,12 +33,14 @@ public class DpPanelItemDto {
         private String titleShowYn;
         private String widgetLibRefYn;
         private String contentTypeCd;
-        private Integer itemSortOrd;
+        private Integer sortOrd;
         private String widgetConfigJson;
         private String visibilityTargets;
         private String dispYn;
         private LocalDate dispStartDate;
+        private LocalTime dispStartTime;
         private LocalDate dispEndDate;
+        private LocalTime dispEndTime;
         private String dispEnv;
         private String useYn;
         private String regBy;

@@ -28,6 +28,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     private final JPAQueryFactory queryFactory;
     private static final QPdProdImg i = QPdProdImg.pdProdImg;
 
+    /* 상품 이미지 키조회 */
     @Override
     public Optional<PdProdImgDto.Item> selectById(String prodImgId) {
         PdProdImgDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 이미지 목록조회 */
     @Override
     public List<PdProdImgDto.Item> selectList(PdProdImgDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         return query.fetch();
     }
 
+    /* 상품 이미지 페이지조회 */
     @Override
     public PdProdImgDto.PageResponse selectPageList(PdProdImgDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -99,6 +102,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                 .from(i);
     }
 
+    /* 상품 이미지 buildCondition */
     private BooleanBuilder buildCondition(PdProdImgDto.Request req) {
         BooleanBuilder w = new BooleanBuilder();
         if (req == null) return w;
@@ -156,6 +160,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         return orders;
     }
 
+    /* 상품 이미지 수정 */
     @Override
     public int updateSelective(PdProdImg entity) {
         if (entity.getProdImgId() == null) return 0;

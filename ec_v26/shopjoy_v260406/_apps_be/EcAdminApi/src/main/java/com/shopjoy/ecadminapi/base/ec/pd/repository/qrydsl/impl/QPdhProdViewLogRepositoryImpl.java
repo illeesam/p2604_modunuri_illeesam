@@ -30,6 +30,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     private static final QPdhProdViewLog l   = QPdhProdViewLog.pdhProdViewLog;
     private static final QSySite         ste = QSySite.sySite;
 
+    /* 상품 조회 로그 buildBaseQuery */
     private JPAQuery<PdhProdViewLogDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdViewLogDto.Item.class,
@@ -51,6 +52,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
                 .leftJoin(ste).on(ste.siteId.eq(l.siteId));
     }
 
+    /* 상품 조회 로그 키조회 */
     @Override
     public Optional<PdhProdViewLogDto.Item> selectById(String id) {
         PdhProdViewLogDto.Item dto = buildBaseQuery()
@@ -59,6 +61,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 조회 로그 목록조회 */
     @Override
     public List<PdhProdViewLogDto.Item> selectList(PdhProdViewLogDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -77,6 +80,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         return query.fetch();
     }
 
+    /* 상품 조회 로그 페이지조회 */
     @Override
     public PdhProdViewLogDto.PageResponse selectPageList(PdhProdViewLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -102,15 +106,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(PdhProdViewLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -118,10 +114,10 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         if (StringUtils.hasText(s.getSiteId())) w.and(l.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getLogId()))  w.and(l.logId.eq(s.getLogId()));
 
-        // searchValue + searchTypes (def_ref_nm)
+        // searchValue + searchType (def_ref_nm)
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -180,6 +176,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         return orders;
     }
 
+    /* 상품 조회 로그 수정 */
     @Override
     public int updateSelective(PdhProdViewLog entity) {
         if (entity.getLogId() == null) return 0;

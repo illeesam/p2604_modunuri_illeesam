@@ -30,8 +30,11 @@ public class BoStSettleService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public StSettleDto.Item getById(String id) { return stSettleService.getById(id); }
+    /* 목록조회 */
     public List<StSettleDto.Item> getList(StSettleDto.Request req) { return stSettleService.getList(req); }
+    /* 페이지조회 */
     public StSettleDto.PageResponse getPageData(StSettleDto.Request req) { return stSettleService.getPageData(req); }
 
     @Transactional public StSettle create(StSettle body) { return stSettleService.create(body); }

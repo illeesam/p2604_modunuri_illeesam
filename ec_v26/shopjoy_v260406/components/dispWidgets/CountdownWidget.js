@@ -10,8 +10,10 @@ window.CountdownWidget = {
     const remaining = reactive({ d: 0, h: 0, m: 0, s: 0, expired: false, invalid: false });
     let timer = null;
 
+    /* pad */
     const pad = (n) => String(n).padStart(2, '0');
 
+    /* calc */
     const calc = () => {
       const raw = (props.widget.countdownTarget || '').trim();
       if (!raw) { Object.assign(remaining, { d: 0, h: 0, m: 0, s: 0, expired: false, invalid: true }); return; }
@@ -30,6 +32,7 @@ window.CountdownWidget = {
       });
     };
 
+    /* start */
     const start = () => {
       if (timer) clearInterval(timer);
       calc();

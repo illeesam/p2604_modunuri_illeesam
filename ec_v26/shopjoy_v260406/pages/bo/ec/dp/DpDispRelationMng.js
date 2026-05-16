@@ -6,16 +6,17 @@ window.DpDispRelationMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       disp_relation_types: [],
       date_range_opts: [],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -31,6 +32,7 @@ window.DpDispRelationMng = {
 
     const displays = reactive([]);
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시연관관리', '조회');
@@ -50,6 +52,8 @@ window.DpDispRelationMng = {
 
     /* 검색 */
   const searchParam = reactive(_initSearchParam());
+
+    /* 목록조회 */
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
@@ -62,6 +66,7 @@ window.DpDispRelationMng = {
     }
   };
   
+    /* onReset */
     const onReset = () => {
     Object.assign(searchParam, _initSearchParam());
     onSearch();
@@ -107,7 +112,11 @@ window.DpDispRelationMng = {
     });
 
     const expandedNodes = reactive(new Set());
+
+    /* toggleNode */
     const toggleNode = (key) => { if (expandedNodes.has(key)) expandedNodes.delete(key); else expandedNodes.add(key); };
+
+    /* isNodeExpanded */
     const isNodeExpanded = (key) => expandedNodes.has(key);
 
     /* 공개범위 표시 */

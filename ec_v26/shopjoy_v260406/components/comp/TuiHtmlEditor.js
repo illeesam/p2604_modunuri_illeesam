@@ -26,10 +26,12 @@ window.TuiHtmlEditor = {
     let inst = null;
     let syncing = false;
 
+    /* _dispose */
     const _dispose = () => {
       if (inst) { try { inst.destroy(); } catch (_) {} inst = null; }
     };
 
+    /* _init */
     const _init = () => {
       if (inst) return;
       const el = editorEl.value;
@@ -67,8 +69,11 @@ window.TuiHtmlEditor = {
       });
     };
 
+    /* _syncFromProp */
     const _syncFromProp = () => {
       if (!inst) return;
+
+      /* cur */
       const cur = (() => { try { return inst.getHTML(); } catch (_) { return ''; } })();
       const next = props.modelValue || '';
       if (cur === next) return;
@@ -98,6 +103,7 @@ window.TuiHtmlEditor = {
       }
     });
 
+    /* onSourceInput */
     const onSourceInput = (e) => {
       emit('update:modelValue', e.target.value);
     };

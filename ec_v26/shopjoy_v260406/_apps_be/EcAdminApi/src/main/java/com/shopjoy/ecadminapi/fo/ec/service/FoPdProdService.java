@@ -58,6 +58,7 @@ public class FoPdProdService {
 
     /* ── 목록 ────────────────────────────────────────────────── */
 
+    /* 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
         return pdProdRepository.selectList(req);
     }
@@ -69,6 +70,7 @@ public class FoPdProdService {
 
     /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
 
+    /* getDetail */
     public Map<String, Object> getDetail(String prodId) {
         PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
         if (prod == null) throw new CmBizException("존재하지 않는 상품입니다: " + prodId + "::" + CmUtil.svcCallerInfo(this));
@@ -101,6 +103,7 @@ public class FoPdProdService {
 
     /* ── Tier 2: lazy load ──────────────────────────────────── */
 
+    /* getContents */
     public List<PdProdContentDto.Item> getContents(String prodId) {
         PdProdContentDto.Request req = new PdProdContentDto.Request();
         req.setProdId(prodId);

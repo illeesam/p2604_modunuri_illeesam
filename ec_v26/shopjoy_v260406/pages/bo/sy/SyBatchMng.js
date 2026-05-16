@@ -7,10 +7,10 @@ window.SyBatchMng = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const batches = reactive([]);
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null});
     const codes = reactive({ batch_status: [], active_statuses: [], batch_run_statuses: [], date_range_opts: [] });
@@ -34,8 +34,14 @@ window.SyBatchMng = {
     };
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
+
+    /* 배치 openPathPick */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+
+    /* 배치 closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+
+    /* 배치 onPathPicked */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -43,6 +49,8 @@ window.SyBatchMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
+
+    /* 배치 pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
@@ -50,6 +58,7 @@ window.SyBatchMng = {
     const selectNode = (path) => { uiState.selectedPath = path; handleSearchList(); };
 
 
+    /* 배치 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.batch_status = codeStore.sgGetGrpCodes('BATCH_STATUS');
@@ -71,9 +80,11 @@ window.SyBatchMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchTypes: '', searchValue: '', status: '', runStatus: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', status: '', runStatus: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
+
+    /* 배치 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -87,6 +98,7 @@ window.SyBatchMng = {
 
     const EDIT_FIELDS = ['batchNm', 'batchCode', 'cron', 'statusCd', 'description'];
 
+    /* 배치 makeRow */
     const makeRow = (b) => ({
       ...b,
       _row_status: 'N', _row_check: false,
@@ -94,21 +106,27 @@ window.SyBatchMng = {
     });
 
 
+    /* 배치 목록조회 */
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
+
+    /* 배치 onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       onSearch();
     };
 
+    /* 배치 setFocused */
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
+    /* 배치 onCellChange */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
+    /* 배치 addRow */
     const addRow = () => {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
@@ -123,6 +141,7 @@ window.SyBatchMng = {
       uiState.focusedIdx = insertAt;
     };
 
+    /* 배치 deleteRow */
     const deleteRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -131,6 +150,7 @@ window.SyBatchMng = {
       } else { row._row_status = 'D'; }
     };
 
+    /* 배치 cancelRow */
     const cancelRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -142,6 +162,7 @@ window.SyBatchMng = {
       }
     };
 
+    /* 배치 cancelChecked */
     const cancelChecked = () => {
       const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.batchId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -153,6 +174,7 @@ window.SyBatchMng = {
       }
     };
 
+    /* 배치 deleteRows */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -161,6 +183,7 @@ window.SyBatchMng = {
       }
     };
 
+    /* 배치 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
@@ -224,6 +247,7 @@ window.SyBatchMng = {
       preview: '0 0 * * *',
     });
 
+    /* 배치 updateCronPreview */
     const updateCronPreview = () => {
       cronPicker.preview = `${cronPicker.minute} ${cronPicker.hour} ${cronPicker.day} ${cronPicker.month} ${cronPicker.weekday}`;
     };
@@ -240,6 +264,8 @@ window.SyBatchMng = {
       if (pts.length !== 5) return '';
       const [min, hour, day, month, weekday] = pts;
       const WD = ['일', '월', '화', '수', '목', '금', '토'];
+
+      /* 배치 t */
       const t = (h, m) => {
         if (h === '*') return '';
         const hh = String(h).padStart(2, '0');
@@ -287,6 +313,7 @@ window.SyBatchMng = {
 
     const cfCronDesc = computed(() => cronToKorean(cronPicker.preview));
 
+    /* 배치 openCronPicker */
     const openCronPicker = (realIdx) => {
       const row = gridRows[realIdx];
       if (!row || row._row_status === 'D') return;
@@ -301,6 +328,7 @@ window.SyBatchMng = {
       cronPicker.show = true;
     };
 
+    /* 배치 applyCronPreset */
     const applyCronPreset = (value) => {
       const pts = value.split(' ');
       cronPicker.minute = pts[0]; cronPicker.hour = pts[1];
@@ -308,6 +336,7 @@ window.SyBatchMng = {
       cronPicker.preview = value;
     };
 
+    /* 배치 applyCron */
     const applyCron = () => {
       if (cronPicker.rowIdx !== null) {
         const row = gridRows[cronPicker.rowIdx];
@@ -318,6 +347,8 @@ window.SyBatchMng = {
 
     /* -- 드래그 -- */
     const onDragStart = (idx) => { dragSrc.value = idx; uiState.dragMoved = false; };
+
+    /* 배치 onDragOver */
     const onDragOver = (e, idx) => {
       e.preventDefault();
       if (dragSrc.value === null || dragSrc.value === idx) return;
@@ -325,17 +356,25 @@ window.SyBatchMng = {
       gridRows.splice(idx, 0, moved);
       dragSrc.value = idx; uiState.dragMoved = true;
     };
+
+    /* 배치 onDragEnd */
     const onDragEnd = () => { if (uiState.dragMoved) showToast('정렬정보가 저장되었습니다.'); dragSrc.value = null; uiState.dragMoved = false; };
 
     /* -- 체크 -- */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
+    /* 배치 fnStatusBadge */
     const fnStatusBadge  = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+
+    /* 배치 fnRunBadge */
     const fnRunBadge     = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
+
+    /* 배치 fnStatusClass */
     const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfSiteNm     = computed(() => boUtil.getSiteNm());
 
 
+    /* 배치 exportExcel */
     const exportExcel = () => coUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'batchId'},{label:'배치명',key:'batchNm'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'statusCd'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
@@ -365,7 +404,7 @@ window.SyBatchMng = {
   <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '배치명' },
           { value: 'def_code', label: '배치코드' },

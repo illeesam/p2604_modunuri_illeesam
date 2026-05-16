@@ -34,6 +34,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
     private static final QDpUi u = QDpUi.dpUi;
 
+    /* 전시 UI 키조회 */
     @Override
     public Optional<DpUiDto.Item> selectById(String uiId) {
         DpUiDto.Item dto = baseQuery()
@@ -42,6 +43,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 전시 UI 목록조회 */
     @Override
     public List<DpUiDto.Item> selectList(DpUiDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -60,6 +62,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         return query.fetch();
     }
 
+    /* 전시 UI 페이지조회 */
     @Override
     public DpUiDto.PageResponse selectPageList(DpUiDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -81,6 +84,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 전시 UI baseQuery */
     private JPAQuery<DpUiDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(DpUiDto.Item.class,
@@ -92,15 +96,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                 .from(u);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(DpUiDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -128,8 +124,8 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         }
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_ui_nm,")) or.or(u.uiNm.likeIgnoreCase(pattern));
@@ -188,6 +184,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         return orders;
     }
 
+    /* 전시 UI 수정 */
     @Override
     public int updateSelective(DpUi entity) {
         if (entity.getUiId() == null) return 0;

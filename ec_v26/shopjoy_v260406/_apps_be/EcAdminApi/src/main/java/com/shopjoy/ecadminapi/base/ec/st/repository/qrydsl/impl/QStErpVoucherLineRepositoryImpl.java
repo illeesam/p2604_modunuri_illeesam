@@ -28,6 +28,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     private final JPAQueryFactory queryFactory;
     private static final QStErpVoucherLine l = QStErpVoucherLine.stErpVoucherLine;
 
+    /* ERP 전표 상세 키조회 */
     @Override
     public Optional<StErpVoucherLineDto.Item> selectById(String id) {
         StErpVoucherLineDto.Item dto = baseListQuery()
@@ -36,6 +37,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         return Optional.ofNullable(dto);
     }
 
+    /* ERP 전표 상세 목록조회 */
     @Override
     public List<StErpVoucherLineDto.Item> selectList(StErpVoucherLineDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         return query.fetch();
     }
 
+    /* ERP 전표 상세 페이지조회 */
     @Override
     public StErpVoucherLineDto.PageResponse selectPageList(StErpVoucherLineDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -79,6 +82,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* ERP 전표 상세 baseListQuery */
     private JPAQuery<StErpVoucherLineDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StErpVoucherLineDto.Item.class,
@@ -91,24 +95,16 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
                 .from(l);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(StErpVoucherLineDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
 
         if (StringUtils.hasText(c.getErpVoucherLineId())) w.and(l.erpVoucherLineId.eq(c.getErpVoucherLineId()));
 
-        // searchValue / searchTypes — def_account_nm
+        // searchValue / searchType — def_account_nm
         if (StringUtils.hasText(c.getSearchValue())) {
-            String types = "," + (c.getSearchTypes() == null ? "" : c.getSearchTypes().trim()) + ",";
+            String types = "," + (c.getSearchType() == null ? "" : c.getSearchType().trim()) + ",";
             BooleanBuilder or = new BooleanBuilder();
             if (!StringUtils.hasText(types) || types.contains(",def_account_nm,")) {
                 or.or(l.accountNm.containsIgnoreCase(c.getSearchValue()));
@@ -164,6 +160,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         return orders;
     }
 
+    /* ERP 전표 상세 수정 */
     @Override
     public int updateSelective(StErpVoucherLine entity) {
         if (entity.getErpVoucherLineId() == null) return 0;

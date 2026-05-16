@@ -27,6 +27,7 @@ public class PmEventBenefitService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 이벤트 혜택 키조회 */
     public PmEventBenefitDto.Item getById(String id) {
         PmEventBenefitDto.Item dto = pmEventBenefitRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmEventBenefitService {
         return pmEventBenefitRepository.selectById(id).orElse(null);
     }
 
+    /* 이벤트 혜택 상세조회 */
     public PmEventBenefit findById(String id) {
         return pmEventBenefitRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmEventBenefitService {
         return pmEventBenefitRepository.findById(id).orElse(null);
     }
 
+    /* 이벤트 혜택 키검증 */
     public boolean existsById(String id) {
         return pmEventBenefitRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmEventBenefitService {
         return true;
     }
 
+    /* 이벤트 혜택 목록조회 */
     public List<PmEventBenefitDto.Item> getList(PmEventBenefitDto.Request req) {
         return pmEventBenefitRepository.selectList(req);
     }
 
+    /* 이벤트 혜택 페이지조회 */
     public PmEventBenefitDto.PageResponse getPageData(PmEventBenefitDto.Request req) {
         PageHelper.addPaging(req);
         return pmEventBenefitRepository.selectPageList(req);
     }
 
+    /* 이벤트 혜택 등록 */
     @Transactional
     public PmEventBenefit create(PmEventBenefit body) {
         body.setBenefitId(CmUtil.generateId("pm_event_benefit"));
@@ -80,6 +86,7 @@ public class PmEventBenefitService {
         return saved;
     }
 
+    /* 이벤트 혜택 저장 */
     @Transactional
     public PmEventBenefit save(PmEventBenefit entity) {
         if (!existsById(entity.getBenefitId()))
@@ -92,6 +99,7 @@ public class PmEventBenefitService {
         return saved;
     }
 
+    /* 이벤트 혜택 수정 */
     @Transactional
     public PmEventBenefit update(String id, PmEventBenefit body) {
         PmEventBenefit entity = findById(id);
@@ -104,6 +112,7 @@ public class PmEventBenefitService {
         return saved;
     }
 
+    /* 이벤트 혜택 수정 */
     @Transactional
     public PmEventBenefit updateSelective(PmEventBenefit entity) {
         if (entity.getBenefitId() == null) throw new CmBizException("benefitId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmEventBenefitService {
         return entity;
     }
 
+    /* 이벤트 혜택 삭제 */
     @Transactional
     public void delete(String id) {
         PmEventBenefit entity = findById(id);
@@ -125,6 +135,7 @@ public class PmEventBenefitService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 이벤트 혜택 목록저장 */
     @Transactional
     public void saveList(List<PmEventBenefit> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

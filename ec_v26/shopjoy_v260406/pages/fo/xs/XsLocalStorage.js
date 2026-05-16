@@ -12,6 +12,7 @@ window.XsLocalStorage = {
     const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiStateGlobal.isPageCodeLoad = true;
@@ -25,6 +26,7 @@ window.XsLocalStorage = {
     const storageData = reactive([]);
                     const uiState = reactive({ isResizing: false });
         
+    /* loadStorageData */
     const loadStorageData = () => {
       const data = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -42,6 +44,7 @@ window.XsLocalStorage = {
       return data.filter(item => item.key.toLowerCase().includes(uiStateGlobal.filterKey.toLowerCase()));
     });
 
+    /* copyValue */
     const copyValue = (value) => {
       try {
         navigator.clipboard.writeText(value);
@@ -51,11 +54,13 @@ window.XsLocalStorage = {
       }
     };
 
+    /* startEdit */
     const startEdit = (key, value) => {
       uiStateGlobal.editingKey = key;
       uiStateGlobal.editingValue = value;
     };
 
+    /* saveEdit */
     const saveEdit = (key) => {
       if (!key) return;
       try {
@@ -69,11 +74,13 @@ window.XsLocalStorage = {
       }
     };
 
+    /* cancelEdit */
     const cancelEdit = () => {
       uiStateGlobal.editingKey = null;
       uiStateGlobal.editingValue = '';
     };
 
+    /* 삭제 */
     const handleDelete = (key) => {
       if (!confirm(`'${key}'를 삭제하시겠습니까?`)) return;
       try {
@@ -85,6 +92,7 @@ window.XsLocalStorage = {
       }
     };
 
+    /* clearAllStorage */
     const clearAllStorage = () => {
       if (!confirm('localStorage의 모든 데이터를 삭제하시겠습니까?')) return;
       try {
@@ -96,6 +104,7 @@ window.XsLocalStorage = {
       }
     };
 
+    /* parseValue */
     const parseValue = (value) => {
       try {
         return JSON.stringify(JSON.parse(value), null, 2);
@@ -104,12 +113,14 @@ window.XsLocalStorage = {
       }
     };
 
+    /* startResize */
     const startResize = (e) => {
       uiState.isResizing = true;
       uiStateGlobal.startX = e.clientX;
       uiStateGlobal.startWidth = uiStateGlobal.valueColWidth;
     };
 
+    /* handleMouseMove */
     const handleMouseMove = (e) => {
       if (!uiState.isResizing) return;
       const delta = e.clientX - uiStateGlobal.startX;
@@ -120,6 +131,7 @@ window.XsLocalStorage = {
       uiStateGlobal.valueColWidth = Math.min(maxValue, newWidth);
     };
 
+    /* stopResize */
     const stopResize = () => {
       uiState.isResizing = false;
     };

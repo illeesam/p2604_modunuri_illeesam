@@ -6,35 +6,39 @@ window.SyI18nMng = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const i18nKeys = reactive([]);
     const i18nMsgs = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedId: null});
     const codes = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
+    /* 다국어 _initSearchParam */
     const _initSearchParam = () => {
-      return { searchTypes: '', searchValue: '', scope: '', use: '' };
+      return { searchType: '', searchValue: '', scope: '', use: '' };
     };
     const searchParam = reactive(_initSearchParam());
     const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 다국어 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    /* 다국어 목록조회 */
+    const handleSearchData = async () => {
       try {
-        const { searchTypes, searchValue, scope, use } = searchParam;
+        const { searchType, searchValue, scope, use } = searchParam;
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
-          ...(searchTypes ? { searchTypes }      : {}),
+          ...(searchType ? { searchType }      : {}),
           ...(scope ? { i18nScopeCd: scope }     : {}),
           ...(use   ? { useYn: use }             : {}),
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_key,def_desc';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_key,def_desc';
         }
         const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
         const d = res.data?.data;
@@ -48,6 +52,7 @@ window.SyI18nMng = {
       }
     };
 
+    /* 다국어 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.lang_code = codeStore.sgGetGrpCodes('LANG_CODE');
@@ -61,6 +66,8 @@ window.SyI18nMng = {
 
     const LANGS       = ['ko','en','ja','in'];
     const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
+
+    /* 다국어 fnScopeBadge */
     const fnScopeBadge  = s => ({ COMMON:'badge-blue', FO:'badge-green', BO:'badge-orange' }[s] || 'badge-gray');
 
     const cfSelectedKey = computed(() => (i18nKeys||[]).find(k => k.i18nId === uiState.selectedId) || null);
@@ -73,6 +80,7 @@ window.SyI18nMng = {
     });
     const msgForm = reactive({});
 
+    /* 다국어 openDetail */
     const openDetail = (key) => {
       if (uiState.selectedId === key.i18nId) { uiState.selectedId = null; return; }
       uiState.selectedId = key.i18nId;
@@ -81,6 +89,8 @@ window.SyI18nMng = {
       (i18nMsgs||[]).filter(m => m.i18nId === key.i18nId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
       Object.assign(msgForm, msgs);
     };
+
+    /* 다국어 saveMsgs */
     const saveMsgs = async () => {
       if (!cfSelectedKey.value) return;
       const ok = await showConfirm('저장', '번역 메시지를 저장하시겠습니까?');
@@ -102,14 +112,26 @@ window.SyI18nMng = {
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* 다국어 getLangMsg */
     const getLangMsg = (i18nId, lang) => {
       const m = (i18nMsgs||[]).find(m => m.i18nId === i18nId && m.langCd === lang);
       return m ? m.i18nMsg : '';
     };
+
+    /* 다국어 목록조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
+
+    /* 다국어 onReset */
     const onReset  = () => { Object.assign(searchParam, _initSearchParam()); pager.pageNo = 1; handleSearchData('DEFAULT'); };
+
+    /* 다국어 setPage */
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+
+    /* 다국어 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
+
+    /* 다국어 fnYnBadge */
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     // ★ onMounted
@@ -131,7 +153,7 @@ window.SyI18nMng = {
       <div class="search-bar">
         <label class="search-label">키/설명</label>
         <multi-check-select
-          v-model="searchParam.searchTypes"
+          v-model="searchParam.searchType"
           :options="[
             { value: 'def_key',  label: '키' },
             { value: 'def_desc', label: '설명' },

@@ -6,10 +6,10 @@ window.PdRestockNotiMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const products = reactive([]);
     const members = reactive([]);
     const restockNotis = reactive([]);
@@ -19,6 +19,7 @@ window.PdRestockNotiMng = {
       send_yn_opts: [{codeValue:'Y',codeLabel:'발송완료'},{codeValue:'N',codeLabel:'미발송'}],
     });
 
+    /* 재입고 알림 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -51,6 +52,7 @@ window.PdRestockNotiMng = {
       }
     };
 
+    /* 재입고 알림 _initSearchParam */
     const _initSearchParam = () => ({ prod: '', noti: '' });
     const searchParam = reactive(_initSearchParam());
 
@@ -61,16 +63,25 @@ window.PdRestockNotiMng = {
     const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const checkedIds = reactive(new Set());
 
+    /* 재입고 알림 getProdNm */
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
+
+    /* 재입고 알림 getMemNm */
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
 
+    /* 재입고 알림 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const allChecked    = computed(() => restockNotis.length > 0 && restockNotis.every(r => checkedIds.has(r.restockNotiId)));
+
+    /* 재입고 알림 toggleAll */
     const toggleAll     = () => { if (allChecked.value) restockNotis.forEach(r => checkedIds.delete(r.restockNotiId)); else restockNotis.forEach(r => checkedIds.add(r.restockNotiId)); };
+
+    /* 재입고 알림 toggleOne */
     const toggleOne     = id => { if (checkedIds.has(id)) checkedIds.delete(id); else checkedIds.add(id); };
     const checkedCount  = computed(() => checkedIds.size);
 
+    /* 재입고 알림 handleSend */
     const handleSend = async () => {
       const targets = (restockNotis||[]).filter(r => checkedIds.has(r.restockNotiId) && r.notiYn === 'N');
       if (!targets.length) { showToast('발송할 미발송 항목을 선택하세요.', 'info'); return; }
@@ -88,19 +99,27 @@ window.PdRestockNotiMng = {
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* 재입고 알림 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
+    /* 재입고 알림 onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchList();
     };
 
+    /* 재입고 알림 setPage */
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+
+    /* 재입고 알림 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 재입고 알림 fnYnBadge */
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     // -- return ---------------------------------------------------------------

@@ -7,13 +7,20 @@ window.Home01 = {
   emits: [],
   setup(props) {
     const { computed, ref, onMounted, onBeforeUnmount, reactive, watch } = Vue;
-    const prods             = window.foApp.prods;
+    const prods             = window.foApp.prods;  // 상품 목록
+
+    /* selectProd */
     const selectProd        = (p) => window.foApp.selectProd(p);
+
+    /* toggleLike */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
+
+    /* isLiked */
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cartModalMode: false, quickViewProduct: null, bannerIdx: 0});
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -70,7 +77,11 @@ window.Home01 = {
       { img: 'assets/cdn/prod/img/slider/slider-3.jpg', title: '특별한 혜택', sub: '시즌 세일 진행중', desc: '인기 상품 최대 50% 할인! 한정 수량으로 준비된 특별 혜택을 놓치지 마세요.' },
     ];
     let bannerTimer = null;
+
+    /* startBannerTimer */
     const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
+
+    /* setBanner */
     const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
 
     // ★ onMounted

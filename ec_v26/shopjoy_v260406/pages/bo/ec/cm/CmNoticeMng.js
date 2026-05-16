@@ -6,10 +6,10 @@ window.CmNoticeMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     // -- 선언부 ----------------------------------------------------------------
 
@@ -22,6 +22,8 @@ window.CmNoticeMng = {
       pageTotalCount: 0, pageTotalPage: 1,
       pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {}
     });                                                                              // 페이징 상태
+
+    /* _initSearchParam */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -37,6 +39,8 @@ window.CmNoticeMng = {
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId); // 신규 시 null, 수정 시 ID
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__'); // 조회 모드 여부
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`); // 상세 컴포넌트 강제 재마운트 키
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     // -- watch -----------------------------------------------------------------
@@ -98,11 +102,15 @@ window.CmNoticeMng = {
     // -- 일반 함수 모음 --------------------------------------------------------
 
     const SORT_MAP = { nm: { asc: 'noticeTitle asc', desc: 'noticeTitle desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -111,6 +119,8 @@ window.CmNoticeMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // 공지사항 목록 페이징 조회

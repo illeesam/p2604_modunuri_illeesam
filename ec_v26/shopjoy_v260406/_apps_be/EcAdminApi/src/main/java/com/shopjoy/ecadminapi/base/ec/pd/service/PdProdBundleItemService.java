@@ -27,6 +27,7 @@ public class PdProdBundleItemService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 묶음상품 구성 키조회 */
     public PdProdBundleItemDto.Item getById(String id) {
         PdProdBundleItemDto.Item dto = pdProdBundleItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdProdBundleItemService {
         return pdProdBundleItemRepository.selectById(id).orElse(null);
     }
 
+    /* 묶음상품 구성 상세조회 */
     public PdProdBundleItem findById(String id) {
         return pdProdBundleItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdProdBundleItemService {
         return pdProdBundleItemRepository.findById(id).orElse(null);
     }
 
+    /* 묶음상품 구성 키검증 */
     public boolean existsById(String id) {
         return pdProdBundleItemRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdProdBundleItemService {
         return true;
     }
 
+    /* 묶음상품 구성 목록조회 */
     public List<PdProdBundleItemDto.Item> getList(PdProdBundleItemDto.Request req) {
         return pdProdBundleItemRepository.selectList(req);
     }
 
+    /* 묶음상품 구성 페이지조회 */
     public PdProdBundleItemDto.PageResponse getPageData(PdProdBundleItemDto.Request req) {
         PageHelper.addPaging(req);
         return pdProdBundleItemRepository.selectPageList(req);
     }
 
+    /* 묶음상품 구성 등록 */
     @Transactional
     public PdProdBundleItem create(PdProdBundleItem body) {
         body.setBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
@@ -80,6 +86,7 @@ public class PdProdBundleItemService {
         return saved;
     }
 
+    /* 묶음상품 구성 저장 */
     @Transactional
     public PdProdBundleItem save(PdProdBundleItem entity) {
         if (!existsById(entity.getBundleItemId()))
@@ -92,6 +99,7 @@ public class PdProdBundleItemService {
         return saved;
     }
 
+    /* 묶음상품 구성 수정 */
     @Transactional
     public PdProdBundleItem update(String id, PdProdBundleItem body) {
         PdProdBundleItem entity = findById(id);
@@ -104,6 +112,7 @@ public class PdProdBundleItemService {
         return saved;
     }
 
+    /* 묶음상품 구성 수정 */
     @Transactional
     public PdProdBundleItem updateSelective(PdProdBundleItem entity) {
         if (entity.getBundleItemId() == null) throw new CmBizException("bundleItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdProdBundleItemService {
         return entity;
     }
 
+    /* 묶음상품 구성 삭제 */
     @Transactional
     public void delete(String id) {
         PdProdBundleItem entity = findById(id);
@@ -125,6 +135,7 @@ public class PdProdBundleItemService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 묶음상품 구성 목록저장 */
     @Transactional
     public void saveList(List<PdProdBundleItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class DpAreaPanelDto {
 
@@ -27,7 +28,9 @@ public class DpAreaPanelDto {
         private String visibilityTargets;
         private String dispYn;
         private LocalDate dispStartDate;
+        private LocalTime dispStartTime;
         private LocalDate dispEndDate;
+        private LocalTime dispEndTime;
         private String dispEnv;
         private String useYn;
         private String regBy;

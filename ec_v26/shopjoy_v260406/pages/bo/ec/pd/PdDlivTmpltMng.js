@@ -6,10 +6,10 @@ window.PdDlivTmpltMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const dlivTmplts = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, descOpen: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
@@ -20,6 +20,7 @@ window.PdDlivTmpltMng = {
       couriers: [{value:'CJ',label:'CJ'},{value:'LOGEN',label:'LOGEN'},{value:'LOTTE',label:'LOTTE'},{value:'HANJIN',label:'HANJIN'},{value:'POST',label:'POST'},{value:'EPOST',label:'EPOST'},{value:'KGB',label:'KGB'}],
     });
 
+    /* 배송 템플릿 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -33,15 +34,20 @@ window.PdDlivTmpltMng = {
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
+    /* 배송 템플릿 _initSearchParam */
     const _initSearchParam = () => ({ method: '', use: '' });
     const searchParam = reactive(_initSearchParam());
 
     const SORT_MAP = { nm: { asc: 'dlivTmpltNm asc', desc: 'dlivTmpltNm desc' } };
+
+    /* 배송 템플릿 getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 배송 템플릿 onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -50,7 +56,11 @@ window.PdDlivTmpltMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* 배송 템플릿 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
+    /* 배송 템플릿 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await boApiSvc.pdDlivTmplt.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '배송템플릿관리', '목록조회');
@@ -74,23 +84,31 @@ window.PdDlivTmpltMng = {
     const METHOD_LABELS  = { COURIER:'택배', DIRECT:'직접배송', PICKUP:'방문수령' };
     const PAY_LABELS     = { PREPAY:'선결제', COD:'착불' };
 
+    /* 배송 템플릿 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSelectedRow = computed(() => dlivTmplts.find(t => t.dlivTmpltId === uiState.selectedId) || null);
     const form = reactive({});
 
+    /* 배송 템플릿 openDetail */
     const openDetail = (row) => {
       if (uiState.selectedId === row.dlivTmpltId) { uiState.selectedId = null; return; }
       Object.assign(form, { ...row });
       uiState.selectedId = row.dlivTmpltId;
       uiState.isNew = false;
     };
+
+    /* 배송 템플릿 openNew */
     const openNew = () => {
       Object.assign(form, { dlivTmpltId: null, siteId: 1, vendorId: null, dlivTmpltNm: '', dlivMethodCd: 'COURIER', dlivPayTypeCd: 'PREPAY', dlivCourierCd: 'CJ', dlivCost: 3000, freeDlivMinAmt: 50000, islandExtraCost: 5000, returnCost: 3000, exchangeCost: 6000, returnCourierCd: 'CJ', returnAddrZip: '', returnAddr: '', returnAddrDetail: '', returnTelNo: '', baseDlivYn: 'N', useYn: 'Y' });
       uiState.selectedId = '__new__';
       uiState.isNew = true;
     };
+
+    /* 배송 템플릿 closeDetail */
     const closeDetail = () => { uiState.selectedId = null; };
+
+    /* 배송 템플릿 저장 */
     const handleSave = async () => {
       if (!form.dlivTmpltNm) { showToast('템플릿명은 필수입니다.', 'error'); return; }
       const ok = await showConfirm('저장', '저장하시겠습니까?');
@@ -109,6 +127,8 @@ window.PdDlivTmpltMng = {
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* 배송 템플릿 삭제 */
     const handleDelete = async () => {
       if (!cfSelectedRow.value) return;
       const ok = await showConfirm('삭제', `[${cfSelectedRow.value.dlivTmpltNm}]을 삭제하시겠습니까?`);
@@ -124,11 +144,14 @@ window.PdDlivTmpltMng = {
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* 배송 템플릿 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
+    /* 배송 템플릿 onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -136,9 +159,16 @@ window.PdDlivTmpltMng = {
       await handleSearchList();
     };
 
+    /* 배송 템플릿 setPage */
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+
+    /* 배송 템플릿 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 배송 템플릿 fnYnBadge */
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+
+    /* 배송 템플릿 fnMethodBadge */
     const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
     // -- return ---------------------------------------------------------------

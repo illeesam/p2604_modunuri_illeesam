@@ -46,6 +46,7 @@ public class PageHelper {
         PAGE_CONTEXT.set(new int[]{pageNo, pageSize});
     }
 
+    /* invokeGetter */
     private static Object invokeGetter(Object target, String name) {
         try {
             Method m = target.getClass().getMethod(name);
@@ -55,6 +56,7 @@ public class PageHelper {
         }
     }
 
+    /* invokeSetter */
     private static void invokeSetter(Object target, String name, Class<?> argType, Object value) {
         try {
             Method m = target.getClass().getMethod(name, argType);

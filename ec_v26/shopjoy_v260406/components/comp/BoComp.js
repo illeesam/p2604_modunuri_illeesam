@@ -14,7 +14,7 @@
  * MultiCheckSelect   — 다중 선택 드롭다운 (체크박스 + ',' 구분 String v-model)
  *                      v-model 은 토큰 콤마결합 문자열 (예: "def_id,def_name")
  *                      options: [{value, label}, ...] 또는 [{codeValue, codeLabel}, ...]
- *                      사용: <multi-check-select v-model="searchTypes" :options="opts" placeholder="전체" />
+ *                      사용: <multi-check-select v-model="searchType" :options="opts" placeholder="전체" />
  */
 
 /* ── PathTree 컨테이너 ────────────────────────────────────────────────────
@@ -44,6 +44,7 @@ window.PathTree = {
     const expanded = reactive(new Set([null]));
     const loading  = ref(false);
 
+    /* buildTree */
     const buildTree = (list, rootBizCd) => {
       const filtered = list.filter(p => p.useYn !== 'N');
       const byParent = {};
@@ -51,6 +52,8 @@ window.PathTree = {
         const k = p.parentPathId == null ? '__root__' : p.parentPathId;
         (byParent[k] = byParent[k] || []).push(p);
       });
+
+      /* build */
       const build = (pk, inheritBizCd) => (byParent[pk] || [])
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(p => {
@@ -59,11 +62,14 @@ window.PathTree = {
             children: build(p.pathId, bizCd), count: 0 };
         });
       const root = { pathId: null, pathLabel: '전체', children: build('__root__', rootBizCd || ''), count: 0 };
+
+      /* recur */
       const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
       recur(root);
       return root;
     };
 
+    /* initExpanded */
     const initExpanded = (node, depth, maxDepth) => {
       if (depth > maxDepth) return;
       expanded.add(node.pathId);
@@ -78,6 +84,7 @@ window.PathTree = {
       tree.count     = newTree.count;
     };
 
+    /* load */
     const load = async () => {
       if (_cache[props.bizCd]) {
         fnApplyTree(buildTree(_cache[props.bizCd], props.bizCd));
@@ -103,9 +110,16 @@ window.PathTree = {
       }
     };
 
+    /* toggleNode */
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+
+    /* selectNode */
     const selectNode = (id) => { emit('select', id); };
+
+    /* expandAll */
     const expandAll  = () => { const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(tree); };
+
+    /* collapseAll */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
     watch(() => props.bizCd, () => { delete _cache[props.bizCd]; load(); });
@@ -214,9 +228,13 @@ window.CategoryTree = {
     const loading = ref(false);
     const pickerSearch = ref('');
 
+    /* DEPTH_COLOR */
     const DEPTH_COLOR  = d => ({0:'#e8587a', 1:'#1677ff', 2:'#3ba87a'}[d] || '#999');
+
+    /* DEPTH_BULLET */
     const DEPTH_BULLET = d => ['●','○','▪'][d] || '·';
 
+    /* load */
     const load = async () => {
       const key = cfSiteId.value || '__all__';
       const cached = _cacheStore.bySite[key];
@@ -245,6 +263,7 @@ window.CategoryTree = {
     // siteId 변경 시 재로드
     watch(cfSiteId, () => { load(); });
 
+    /* _initExpanded */
     const _initExpanded = () => {
       expandedSet.clear();
       categories.filter(c => c.categoryDepth === 1).forEach(c => expandedSet.add(c.categoryId));
@@ -257,6 +276,8 @@ window.CategoryTree = {
       categories.forEach(c => { if (c.parentCategoryId && map[c.parentCategoryId]) map[c.parentCategoryId]._children.push(map[c.categoryId]); });
       const roots = categories.filter(c => !c.parentCategoryId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd||0)-(b.sortOrd||0));
       const result = [];
+
+      /* traverse */
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth, _hasChildren: node._children.length > 0 });
         if (expandedSet.has(node.categoryId))
@@ -275,11 +296,22 @@ window.CategoryTree = {
       }).sort((a,b) => (a.categoryDepth||1)-(b.categoryDepth||1));
     });
 
+    /* toggleNode */
     const toggleNode  = id => { if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id); };
+
+    /* expandAll */
     const expandAll   = () => { expandedSet.clear(); categories.forEach(c => expandedSet.add(c.categoryId)); };
+
+    /* collapseAll */
     const collapseAll = () => { expandedSet.clear(); };
+
+    /* onSelect */
     const onSelect    = id => emit('select', id);
+
+    /* onClose */
     const onClose     = ()  => { pickerSearch.value = ''; emit('close'); };
+
+    /* onPickerSelect */
     const onPickerSelect = cat => { pickerSearch.value = ''; emit('select', cat); };
 
     // picker: show 될 때마다 검색어 초기화
@@ -514,22 +546,29 @@ window.MultiCheckSelect = {
       return labels[0] + ' 외 ' + (labels.length - 1) + '개';
     });
 
+    /* emitFromSet */
     const emitFromSet = (set) => {
       if (cfNorm.value.every(o => set.has(o.value))) emit('update:modelValue', '');
       else emit('update:modelValue', cfNorm.value.filter(o => set.has(o.value)).map(o => o.value).join(','));
     };
 
+    /* onToggle */
     const onToggle = () => { if (!props.disabled) open.value = !open.value; };
+
+    /* onClickOption */
     const onClickOption = (val) => {
       const set = new Set(cfSelected.value);
       if (set.has(val)) set.delete(val); else set.add(val);
       emitFromSet(set);
     };
+
+    /* onClickAll */
     const onClickAll = () => {
       if (cfIsAll.value) emit('update:modelValue', cfNorm.value[0]?.value || '');
       else emit('update:modelValue', '');
     };
 
+    /* onDocClick */
     const onDocClick = (e) => {
       if (!rootRef.value) return;
       if (!rootRef.value.contains(e.target)) open.value = false;

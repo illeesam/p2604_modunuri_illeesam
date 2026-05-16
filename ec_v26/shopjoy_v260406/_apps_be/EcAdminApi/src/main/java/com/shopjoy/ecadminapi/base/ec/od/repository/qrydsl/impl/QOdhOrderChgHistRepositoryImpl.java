@@ -28,6 +28,7 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
     private final JPAQueryFactory queryFactory;
     private static final QOdhOrderChgHist h = QOdhOrderChgHist.odhOrderChgHist;
 
+    /* 주문 변경 이력 baseQuery */
     private JPAQuery<OdhOrderChgHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderChgHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
                 .from(h);
     }
 
+    /* 주문 변경 이력 키조회 */
     @Override
     public Optional<OdhOrderChgHistDto.Item> selectById(String id) {
         OdhOrderChgHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         return Optional.ofNullable(dto);
     }
 
+    /* 주문 변경 이력 목록조회 */
     @Override
     public List<OdhOrderChgHistDto.Item> selectList(OdhOrderChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         return query.fetch();
     }
 
+    /* 주문 변경 이력 페이지조회 */
     @Override
     public OdhOrderChgHistDto.PageResponse selectPageList(OdhOrderChgHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 주문 변경 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhOrderChgHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         return orders;
     }
 
+    /* 주문 변경 이력 수정 */
     @Override
     public int updateSelective(OdhOrderChgHist entity) {
         if (entity.getOrderChgHistId() == null) return 0;

@@ -34,6 +34,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
     private static final QPdProd            prd    = QPdProd.pdProd;
     private static final QSyCode            cd_sct = new QSyCode("cd_sct");
 
+    /* 상품 SKU 변경 이력 buildBaseQuery */
     private JPAQuery<PdhProdSkuChgHistDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdSkuChgHistDto.Item.class,
@@ -56,6 +57,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
                 .leftJoin(cd_sct).on(cd_sct.codeGrp.eq("SKU_CHG_TYPE").and(cd_sct.codeValue.eq(h.chgTypeCd)));
     }
 
+    /* 상품 SKU 변경 이력 키조회 */
     @Override
     public Optional<PdhProdSkuChgHistDto.Item> selectById(String id) {
         PdhProdSkuChgHistDto.Item dto = buildBaseQuery()
@@ -64,6 +66,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 SKU 변경 이력 목록조회 */
     @Override
     public List<PdhProdSkuChgHistDto.Item> selectList(PdhProdSkuChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -82,6 +85,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         return query.fetch();
     }
 
+    /* 상품 SKU 변경 이력 페이지조회 */
     @Override
     public PdhProdSkuChgHistDto.PageResponse selectPageList(PdhProdSkuChgHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -107,6 +111,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 상품 SKU 변경 이력 buildCondition */
     private BooleanBuilder buildCondition(PdhProdSkuChgHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -158,6 +163,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         return orders;
     }
 
+    /* 상품 SKU 변경 이력 수정 */
     @Override
     public int updateSelective(PdhProdSkuChgHist entity) {
         if (entity.getHistId() == null) return 0;

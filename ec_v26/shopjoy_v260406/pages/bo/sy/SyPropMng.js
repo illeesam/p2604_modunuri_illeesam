@@ -6,13 +6,14 @@ window.SyPropMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ isPageCodeLoad: false, _newId: -1, selectedPath: ''});
     const codes = reactive({ use_yn: [], prop_types: ['STRING','NUMBER','BOOLEAN','JSON'] });
 
+    /* 시스템 속성 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
@@ -25,8 +26,14 @@ window.SyPropMng = {
 
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
+
+    /* 시스템 속성 openPathPick */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+
+    /* 시스템 속성 closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+
+    /* 시스템 속성 onPathPicked */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -34,34 +41,38 @@ window.SyPropMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
+
+    /* 시스템 속성 pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* -- 검색 -- */
-    const searchParam = reactive({ searchTypes: '', searchValue: '', useFlt: '', typeFlt: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', useFlt: '', typeFlt: '' });
 
     /* -- 데이터 (작업 상태 포함) -- */
     const rows = reactive([]);
     const _rawProps = reactive([]); // 원본 데이터 (cancelRow 복원용)
+
+    /* 시스템 속성 reload */
     const reload = () => {
       rows.splice(0, rows.length, ..._rawProps.map(p => ({ ...p, _status: '' })));
     };
 
     // 검색/조회 함수
-    const fetchData = async (searchType = 'DEFAULT') => {
+    const fetchData = async () => {
       try {
-        const { searchTypes, searchValue, useFlt, typeFlt } = searchParam;
+        const { searchType, searchValue, useFlt, typeFlt } = searchParam;
         const params = {
           pageNo: 1, pageSize: 10000,
           ...(cfSiteId.value          ? { siteId: cfSiteId.value }       : {}),
           ...(uiState.selectedPath    ? { pathId: uiState.selectedPath } : {}),
           ...(searchValue ? { searchValue }        : {}),
-          ...(searchTypes ? { searchTypes }        : {}),
+          ...(searchType ? { searchType }        : {}),
           ...(useFlt  ? { useYn: useFlt }         : {}),
           ...(typeFlt ? { propType: typeFlt }      : {}),
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_pathId,def_key,def_value,def_label';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_pathId,def_key,def_value,def_label';
         }
         const res = await boApiSvc.syProp.getPage(params, '속성관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
@@ -90,6 +101,8 @@ window.SyPropMng = {
       row[field] = val;
       if (row._status === '') row._status = 'U';
     };
+
+    /* 시스템 속성 addRow */
     const addRow = () => {
       const newRow = reactive({
         propId: uiState._newId--,
@@ -106,6 +119,8 @@ window.SyPropMng = {
       });
       rows.push(newRow);
     };
+
+    /* 시스템 속성 delRow */
     const delRow = (row) => {
       if (row._status === 'I') {
         const idx = rows.findIndex(r => r.propId === row.propId); if (idx !== -1) rows.splice(idx, 1);
@@ -113,6 +128,8 @@ window.SyPropMng = {
         row._status = row._status === 'D' ? '' : 'D';
       }
     };
+
+    /* 시스템 속성 cancelRow */
     const cancelRow = (row) => {
       if (row._status === 'I') {
         const idx = rows.findIndex(r => r.propId === row.propId); if (idx !== -1) rows.splice(idx, 1);
@@ -126,6 +143,7 @@ window.SyPropMng = {
       rows.filter(r => r._status === 'I' || r._status === 'U' || r._status === 'D')
     );
 
+    /* 시스템 속성 저장 */
     const handleSave = async () => {
       if (cfDirtyRows.value.length === 0) {
         showToast('변경된 행이 없습니다.', 'warning');
@@ -143,12 +161,14 @@ window.SyPropMng = {
       }
     };
 
+    /* 시스템 속성 onReset */
     const onReset = () => {
       searchParam.searchValue = ''; searchParam.useFlt = ''; searchParam.typeFlt = '';
       uiState.selectedPath = '';
       reload();
     };
 
+    /* 시스템 속성 exportCsv */
     const exportCsv = () => {
       const header = ['ID','표시경로','키','값','라벨','타입','정렬','사용','비고'];
       const lines = [header.join(',')];
@@ -183,7 +203,7 @@ window.SyPropMng = {
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_pathId', label: '표시경로' },
           { value: 'def_key',    label: '키' },

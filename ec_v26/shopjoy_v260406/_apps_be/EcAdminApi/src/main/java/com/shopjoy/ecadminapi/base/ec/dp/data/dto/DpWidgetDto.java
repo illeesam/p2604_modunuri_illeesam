@@ -33,7 +33,7 @@ public class DpWidgetDto {
         private String titleShowYn;
         private String widgetLibRefYn;
         private String widgetConfigJson;
-        private String previewImgUrl;
+        private String thumbnailUrl;
         private Integer sortOrd;
         private String useYn;
         private String dispEnv;

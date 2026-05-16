@@ -37,6 +37,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     private static final QSyCode cdVct = new QSyCode("cd_vct");
     private static final QSyCode cdVcs = new QSyCode("cd_vcs");
 
+    /* 업체 콘텐츠 buildBaseQuery */
     private JPAQuery<SyVendorContentDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorContentDto.Item.class,
@@ -56,6 +57,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                 .leftJoin(cdVcs).on(cdVcs.codeGrp.eq("VENDOR_CONTENT_STATUS").and(cdVcs.codeValue.eq(c.vendorContentStatusCd)));
     }
 
+    /* 업체 콘텐츠 키조회 */
     @Override
     public Optional<SyVendorContentDto.Item> selectById(String vendorContentId) {
         SyVendorContentDto.Item dto = buildBaseQuery()
@@ -64,6 +66,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         return Optional.ofNullable(dto);
     }
 
+    /* 업체 콘텐츠 목록조회 */
     @Override
     public List<SyVendorContentDto.Item> selectList(SyVendorContentDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -81,6 +84,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         return query.fetch();
     }
 
+    /* 업체 콘텐츠 페이지조회 */
     @Override
     public SyVendorContentDto.PageResponse selectPageList(SyVendorContentDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -102,15 +106,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyVendorContentDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -122,8 +118,8 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         if (StringUtils.hasText(s.getContentTypeCd()))   w.and(c.contentTypeCd.eq(s.getContentTypeCd()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_vendor_content_title,")) or.or(c.vendorContentTitle.likeIgnoreCase(pattern));
@@ -181,6 +177,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         return orders;
     }
 
+    /* 업체 콘텐츠 수정 */
     @Override
     public int updateSelective(SyVendorContent entity) {
         if (entity.getVendorContentId() == null) return 0;

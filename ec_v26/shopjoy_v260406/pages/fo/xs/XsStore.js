@@ -12,6 +12,7 @@ window.XsStore = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, storeInfo: '', selectedStore: null, tabMode: 'col5'});
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -40,6 +41,7 @@ window.XsStore = {
       return stores;
     });
 
+    /* selectStore */
     const selectStore = (storeName) => {
       uiState.selectedStore = storeName;
       if (!openStores.find(s => s === storeName)) {
@@ -48,12 +50,14 @@ window.XsStore = {
       loadStoreData(storeName);
     };
 
+    /* loadAllStoreData */
     const loadAllStoreData = () => {
       cfStoreList.value.forEach(store => {
         loadStoreData(store.name);
       });
     };
 
+    /* loadStoreData */
     const loadStoreData = (storeName) => {
       try {
         const storeFunc = window[storeName];
@@ -68,6 +72,7 @@ window.XsStore = {
       }
     };
 
+    /* closeTab */
     const closeTab = (storeName) => {
       const idx = openStores.indexOf(storeName);
       if (idx !== -1) openStores.splice(idx, 1);
@@ -77,6 +82,7 @@ window.XsStore = {
       }
     };
 
+    /* copyToClipboard */
     const copyToClipboard = () => {
       try {
         navigator.clipboard.writeText(uiState.storeInfo);
@@ -86,6 +92,7 @@ window.XsStore = {
       }
     };
 
+    /* clearStore */
     const clearStore = () => {
       if (!uiState.selectedStore) return;
       try {
@@ -100,6 +107,7 @@ window.XsStore = {
       }
     };
 
+    /* saveStore */
     const saveStore = () => {
       if (!uiState.selectedStore) return;
       try {
@@ -117,6 +125,7 @@ window.XsStore = {
       }
     };
 
+    /* refreshStoreData */
     const refreshStoreData = async (storeName) => {
       if (!storeName) return;
       const store = cfStoreList.value.find(s => s.name === storeName);

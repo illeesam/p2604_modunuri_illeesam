@@ -19,8 +19,11 @@ public class BoStSettleRawService {
 
     private final StSettleRawService stSettleRawService;
 
+    /* 키조회 */
     public StSettleRawDto.Item getById(String id) { return stSettleRawService.getById(id); }
+    /* 목록조회 */
     public List<StSettleRawDto.Item> getList(StSettleRawDto.Request req) { return stSettleRawService.getList(req); }
+    /* 페이지조회 */
     public StSettleRawDto.PageResponse getPageData(StSettleRawDto.Request req) { return stSettleRawService.getPageData(req); }
 
     @Transactional public StSettleRaw create(StSettleRaw body) { return stSettleRawService.create(body); }

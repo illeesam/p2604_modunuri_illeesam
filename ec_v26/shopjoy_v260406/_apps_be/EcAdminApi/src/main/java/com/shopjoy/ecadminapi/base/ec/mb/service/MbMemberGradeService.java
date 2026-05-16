@@ -27,6 +27,7 @@ public class MbMemberGradeService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 회원 등급 키조회 */
     public MbMemberGradeDto.Item getById(String id) {
         MbMemberGradeDto.Item dto = mbMemberGradeRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class MbMemberGradeService {
         return mbMemberGradeRepository.selectById(id).orElse(null);
     }
 
+    /* 회원 등급 상세조회 */
     public MbMemberGrade findById(String id) {
         return mbMemberGradeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class MbMemberGradeService {
         return mbMemberGradeRepository.findById(id).orElse(null);
     }
 
+    /* 회원 등급 키검증 */
     public boolean existsById(String id) {
         return mbMemberGradeRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class MbMemberGradeService {
         return true;
     }
 
+    /* 회원 등급 목록조회 */
     public List<MbMemberGradeDto.Item> getList(MbMemberGradeDto.Request req) {
         return mbMemberGradeRepository.selectList(req);
     }
 
+    /* 회원 등급 페이지조회 */
     public MbMemberGradeDto.PageResponse getPageData(MbMemberGradeDto.Request req) {
         PageHelper.addPaging(req);
         return mbMemberGradeRepository.selectPageList(req);
     }
 
+    /* 회원 등급 등록 */
     @Transactional
     public MbMemberGrade create(MbMemberGrade body) {
         body.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
@@ -80,6 +86,7 @@ public class MbMemberGradeService {
         return saved;
     }
 
+    /* 회원 등급 저장 */
     @Transactional
     public MbMemberGrade save(MbMemberGrade entity) {
         if (!existsById(entity.getMemberGradeId()))
@@ -92,6 +99,7 @@ public class MbMemberGradeService {
         return saved;
     }
 
+    /* 회원 등급 수정 */
     @Transactional
     public MbMemberGrade update(String id, MbMemberGrade body) {
         MbMemberGrade entity = findById(id);
@@ -104,6 +112,7 @@ public class MbMemberGradeService {
         return saved;
     }
 
+    /* 회원 등급 수정 */
     @Transactional
     public MbMemberGrade updateSelective(MbMemberGrade entity) {
         if (entity.getMemberGradeId() == null) throw new CmBizException("memberGradeId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class MbMemberGradeService {
         return entity;
     }
 
+    /* 회원 등급 삭제 */
     @Transactional
     public void delete(String id) {
         MbMemberGrade entity = findById(id);
@@ -125,6 +135,7 @@ public class MbMemberGradeService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 회원 등급 목록저장 */
     @Transactional
     public void saveList(List<MbMemberGrade> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

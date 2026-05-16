@@ -7,7 +7,7 @@ window.BlogEdit = {
   },
   setup(props) {
     const { ref, computed, reactive, onMounted, watch } = Vue;
-    const showToast            = window.foApp.showToast;
+    const showToast            = window.foApp.showToast;  // 토스트 알림
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -45,6 +45,7 @@ window.BlogEdit = {
       }
     };
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -58,6 +59,7 @@ window.BlogEdit = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
+    /* 저장 */
     const handleSave = () => {
       if (!form.title.trim()) { showToast?.('제목을 입력해주세요.', 'error'); return; }
       if (!form.body.trim()) { showToast?.('본문을 입력해주세요.', 'error'); return; }
@@ -65,13 +67,18 @@ window.BlogEdit = {
       props.navigate('blog');
     };
 
+    /* cancel */
     const cancel = () => props.navigate('blog');
 
     /* 이미지 첨부 (목업) */
     const images = reactive([]);
+
+    /* addImage */
     const addImage = () => {
       images.push({ id: Date.now(), name: 'image_' + (images.length + 1) + '.jpg', size: '1.2 MB' });
     };
+
+    /* removeImage */
     const removeImage = (id) => { const idx = images.findIndex(img => img.id === id); if (idx !== -1) images.splice(idx, 1); };
 
     onMounted(() => {

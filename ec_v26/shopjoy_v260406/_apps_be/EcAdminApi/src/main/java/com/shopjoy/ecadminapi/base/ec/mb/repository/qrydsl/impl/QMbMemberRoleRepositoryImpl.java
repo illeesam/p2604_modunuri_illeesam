@@ -33,11 +33,13 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     private static final QSyRole       rol = QSyRole.syRole;
     private static final QSyUser       gu  = new QSyUser("gu");
 
+    /* 회원 역할 연결 키조회 */
     @Override
     public Optional<MbMemberRoleDto.Item> selectById(String memberRoleId) {
         return Optional.ofNullable(baseQuery().where(r.memberRoleId.eq(memberRoleId)).fetchOne());
     }
 
+    /* 회원 역할 연결 목록조회 */
     @Override
     public List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -50,6 +52,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         return query.fetch();
     }
 
+    /* 회원 역할 연결 페이지조회 */
     @Override
     public MbMemberRoleDto.PageResponse selectPageList(MbMemberRoleDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -68,6 +71,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 회원 역할 연결 baseQuery */
     private JPAQuery<MbMemberRoleDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberRoleDto.Item.class,
@@ -84,6 +88,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
                 .leftJoin(gu).on(gu.userId.eq(r.grantUserId));
     }
 
+    /* 회원 역할 연결 buildCondition */
     private BooleanBuilder buildCondition(MbMemberRoleDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -133,6 +138,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         return orders;
     }
 
+    /* 회원 역할 연결 수정 */
     @Override
     public int updateSelective(MbMemberRole entity) {
         if (entity.getMemberRoleId() == null) return 0;

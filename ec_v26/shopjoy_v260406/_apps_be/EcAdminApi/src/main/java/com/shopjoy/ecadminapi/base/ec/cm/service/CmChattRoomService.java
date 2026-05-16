@@ -27,6 +27,7 @@ public class CmChattRoomService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 채팅방 키조회 */
     public CmChattRoomDto.Item getById(String id) {
         CmChattRoomDto.Item dto = cmChattRoomRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmChattRoomService {
         return cmChattRoomRepository.selectById(id).orElse(null);
     }
 
+    /* 채팅방 상세조회 */
     public CmChattRoom findById(String id) {
         return cmChattRoomRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmChattRoomService {
         return cmChattRoomRepository.findById(id).orElse(null);
     }
 
+    /* 채팅방 키검증 */
     public boolean existsById(String id) {
         return cmChattRoomRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmChattRoomService {
         return true;
     }
 
+    /* 채팅방 목록조회 */
     public List<CmChattRoomDto.Item> getList(CmChattRoomDto.Request req) {
         return cmChattRoomRepository.selectList(req);
     }
 
+    /* 채팅방 페이지조회 */
     public CmChattRoomDto.PageResponse getPageData(CmChattRoomDto.Request req) {
         PageHelper.addPaging(req);
         return cmChattRoomRepository.selectPageList(req);
     }
 
+    /* 채팅방 등록 */
     @Transactional
     public CmChattRoom create(CmChattRoom body) {
         body.setChattRoomId(CmUtil.generateId("cm_chatt_room"));
@@ -80,6 +86,7 @@ public class CmChattRoomService {
         return saved;
     }
 
+    /* 채팅방 저장 */
     @Transactional
     public CmChattRoom save(CmChattRoom entity) {
         if (!existsById(entity.getChattRoomId()))
@@ -92,6 +99,7 @@ public class CmChattRoomService {
         return saved;
     }
 
+    /* 채팅방 수정 */
     @Transactional
     public CmChattRoom update(String id, CmChattRoom body) {
         CmChattRoom entity = findById(id);
@@ -104,6 +112,7 @@ public class CmChattRoomService {
         return saved;
     }
 
+    /* 채팅방 수정 */
     @Transactional
     public CmChattRoom updateSelective(CmChattRoom entity) {
         if (entity.getChattRoomId() == null) throw new CmBizException("chattRoomId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmChattRoomService {
         return entity;
     }
 
+    /* 채팅방 삭제 */
     @Transactional
     public void delete(String id) {
         CmChattRoom entity = findById(id);
@@ -125,6 +135,7 @@ public class CmChattRoomService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 채팅방 목록저장 */
     @Transactional
     public void saveList(List<CmChattRoom> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -6,10 +6,10 @@ window.StSettleCloseMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       settle_statuses: [],
@@ -17,6 +17,7 @@ window.StSettleCloseMng = {
     });
 
 
+    /* 정산 마감 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -35,7 +36,8 @@ window.StSettleCloseMng = {
     const claims  = reactive([]);
     const vendorList = reactive([]);
 
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    /* 정산 마감 목록조회 */
+    const handleSearchData = async () => {
       try {
         const [resO, resC, resV, resCL] = await Promise.all([
           boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
@@ -57,15 +59,18 @@ window.StSettleCloseMng = {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    const searchTypes = ref('');
+    const searchType = ref('');
     const searchValue = ref('');
     const searchStatus = ref('');
 
+    /* 정산 마감 목록조회 */
     const onSearch = async () => {
       await handleSearchData('DEFAULT');
     };
+
+    /* 정산 마감 onReset */
     const onReset = () => {
-      searchTypes.value = '';
+      searchType.value = '';
       searchValue.value = '';
       searchStatus.value = '';
       onSearch();
@@ -85,6 +90,7 @@ window.StSettleCloseMng = {
 
     const cfAlreadyClosed = computed(() => window.safeArrayUtils.safeSome(closeList, c => c.closeMon === thisMonth));
 
+    /* 정산 마감 doClose */
     const doClose = async () => {
       if (cfAlreadyClosed.value) { showToast('이미 마감된 월입니다.', 'error'); return; }
       const ok = await showConfirm('정산마감', `${thisMonth} 정산을 마감하시겠습니까?\n마감 후에는 수정이 제한됩니다.`);
@@ -107,6 +113,7 @@ window.StSettleCloseMng = {
       }
     };
 
+    /* 정산 마감 doReopen */
     const doReopen = async (r) => {
       const ok = await showConfirm('마감취소', `${r.closeMon} 정산마감을 취소하시겠습니까?`);
       if (!ok) return;
@@ -123,12 +130,15 @@ window.StSettleCloseMng = {
       }
     };
 
+    /* 정산 마감 fnStatusBadge */
     const fnStatusBadge = s => ({ '마감완료':'badge-green', '마감예정':'badge-blue', '마감취소':'badge-red' }[s] || 'badge-gray');
+
+    /* 정산 마감 fmtW */
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
     const cfFilteredClose = computed(() => closeList.filter(r => {
       if (searchValue.value) {
-        const types = searchTypes.value || 'def_closeMon,def_regUserNm';
+        const types = searchType.value || 'def_closeMon,def_regUserNm';
         const hits = [];
         if (types.includes('def_closeMon')) hits.push(r.closeMon && r.closeMon.includes(searchValue.value));
         if (types.includes('def_regUserNm')) hits.push(r.regUserNm && r.regUserNm.includes(searchValue.value));
@@ -140,7 +150,7 @@ window.StSettleCloseMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, closeList, cfFilteredClose, searchTypes, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
+    return { uiState, closeList, cfFilteredClose, searchType, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
   },
   template: /* html */`
 <div>
@@ -193,7 +203,7 @@ window.StSettleCloseMng = {
   <div class="card" style="margin-top:12px">
     <div class="search-bar" style="margin-bottom:12px">
       <multi-check-select
-        v-model="searchTypes"
+        v-model="searchType"
         :options="[
           { value: 'def_closeMon',  label: '정산월' },
           { value: 'def_regUserNm', label: '담당자' },

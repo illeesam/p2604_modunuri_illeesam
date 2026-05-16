@@ -11,13 +11,14 @@ window.DpDispWidgetDtl = {
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount, watch, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
     const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', libPickOpen: false, showComponentTooltip: false, jsonCopied: false });
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
@@ -30,9 +31,17 @@ window.DpDispWidgetDtl = {
 
     /* -- 표시경로 선택 모달 (sy_path, 다중) -- */
     const pathPickModal = reactive({ show: false });
+
+    /* openPathPick */
     const openPathPick = () => { pathPickModal.show = true; };
+
+    /* closePathPick */
     const closePathPick = () => { pathPickModal.show = false; };
+
+    /* onPathPicked */
     const onPathPicked = (pathId) => { form.pathId = pathId; };
+
+    /* pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const cfIsNew = computed(() => !props.dtlId);
 
@@ -40,7 +49,7 @@ window.DpDispWidgetDtl = {
     const makeForm = () => ({
       widgetLibId: null, /* 백엔드 DTO 필드 (PK) */
       widgetCode: '', widgetNm: '', widgetTypeCd: 'image_banner', widgetLibDesc: '',
-      siteId: null, useYn: 'Y', sortOrd: 0, previewImgUrl: '', widgetConfigJson: '',
+      siteId: null, useYn: 'Y', sortOrd: 0, thumbnailUrl: '', widgetConfigJson: '',
       /* ── UI 호환용 별칭 (기존 화면 코드 호환) ── */
       libId: null, libCode: '', name: '', widgetType: 'image_banner', desc: '', tags: '', status: '활성',
       dispEnv: '^DEV^',
@@ -174,9 +183,13 @@ window.DpDispWidgetDtl = {
     /* 위젯코드 자동 생성: DW_YYMMDD_HHMMSS */
     const fnGenWidgetCode = () => {
       const t = new Date();
+
+      /* p */
       const p = n => String(n).padStart(2, '0');
       return `DW_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
     };
+
+    /* handleInitNewForm */
     const handleInitNewForm = () => {
       if (!cfIsNew.value) return;
       form.libCode = fnGenWidgetCode();
@@ -233,9 +246,17 @@ window.DpDispWidgetDtl = {
     const cfFileListItems = computed(() => {
       try { return JSON.parse(form.fileListJson || '[]'); } catch { return []; }
     });
+
+    /* saveFileList */
     const saveFileList   = (items) => { form.fileListJson = JSON.stringify(items); };
+
+    /* addFileItem */
     const addFileItem    = () => saveFileList([...cfFileListItems.value, { name: '', url: '' }]);
+
+    /* removeFileItem */
     const removeFileItem = (idx) => saveFileList(window.safeArrayUtils.safeFilter(cfFileListItems, (_, i) => i !== idx));
+
+    /* updateFileItem */
     const updateFileItem = (idx, field, val) =>
       saveFileList(cfFileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
@@ -364,6 +385,8 @@ window.DpDispWidgetDtl = {
       });
       return JSON.stringify(obj, null, 2);
     });
+
+    /* copyJson */
     const copyJson = () => {
       navigator.clipboard?.writeText(cfSampleJson.value).then(() => {
         uiState.jsonCopied = true;
@@ -387,13 +410,19 @@ window.DpDispWidgetDtl = {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       uiState.previewPaneWidth = (info?.width || 420) + 40;
     });
+
+    /* onSplitDrag */
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
       const startW = uiState.previewPaneWidth;
+
+      /* onMove */
       const onMove = (ev) => {
         uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
+
+      /* onUp */
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
@@ -422,9 +451,12 @@ window.DpDispWidgetDtl = {
     let tuiInst = null;
     let tuiSyncing = false;
 
+    /* _disposeTui */
     const _disposeTui = () => {
       if (tuiInst) { try { tuiInst.destroy(); } catch (_) {} tuiInst = null; }
     };
+
+    /* _initTui */
     const _initTui = () => {
       if (tuiInst) return;
       const el = tuiEditorEl.value;
@@ -456,8 +488,12 @@ window.DpDispWidgetDtl = {
         try { form.htmlContent = tuiInst.getHTML(); } catch (_) {}
       });
     };
+
+    /* _syncTuiFromForm */
     const _syncTuiFromForm = () => {
       if (!tuiInst) return;
+
+      /* cur */
       const cur = (() => { try { return tuiInst.getHTML(); } catch (_) { return ''; } })();
       const next = form.htmlContent || '';
       if (cur === next) return;
@@ -501,6 +537,7 @@ window.DpDispWidgetDtl = {
     });
 
     /* form (UI 별칭 포함) → 백엔드 DTO 필드 매핑 */
+
     /* form (UI 별칭 포함) → 백엔드 DTO 필드 매핑 (dp_widget 기준) */
     const _toApiBody = () => {
       const body = { ...form };
@@ -568,8 +605,11 @@ window.DpDispWidgetDtl = {
     };
 
     /* -- 위젯Lib 선택 팝업 -- */
+
      /* 'copy' | 'ref' */
     const openLibPick = (mode) => { uiState.libPickMode = mode; uiState.libPickOpen = true; };
+
+    /* onLibPicked */
     const onLibPicked = (lib) => {
       uiState.libPickOpen = false;
       if (uiState.libPickMode === 'copy') {
@@ -591,9 +631,13 @@ window.DpDispWidgetDtl = {
       { code: 'TEST', label: 'TEST' },
       { code: 'PROD', label: 'PROD' },
     ];
+
+    /* hasDispEnv */
     const hasDispEnv = (code) => {
       return form.dispEnv.includes('^' + code + '^');
     };
+
+    /* toggleDispEnv */
     const toggleDispEnv = (code) => {
       const envList = form.dispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);

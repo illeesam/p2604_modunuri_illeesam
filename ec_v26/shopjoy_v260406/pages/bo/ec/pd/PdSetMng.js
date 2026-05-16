@@ -6,22 +6,23 @@ window.PdSetMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const products = reactive([]);
     const brands = reactive([]);
     const sets = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearchTypes: '', pickerSearch: '' });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearchType: '', pickerSearch: '' });
     const codes = reactive({
       product_statuses: [],
       bundle_statuses: [],
       use_yn: [],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -57,6 +58,7 @@ window.PdSetMng = {
         uiState.loading = false;
       }
     };
+
     /* -- 검색 파라미터 -- */
     const _initSearchParam = () => ({ nm: '' });
     const searchParam = reactive(_initSearchParam());
@@ -82,8 +84,13 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const dtlCategories   = reactive([]);
     const cfCatExcludeSet = computed(() => new Set(dtlCategories.map(c => String(c.categoryId))));
 
+    /* onCatDragStart */
     const onCatDragStart = idx => { uiState.catDragIdx = idx; };
+
+    /* onCatDragOver */
     const onCatDragOver  = idx => { uiState.catDragoverIdx = idx; };
+
+    /* onCatDrop */
     const onCatDrop = () => {
       if (uiState.catDragIdx === null || uiState.catDragIdx === uiState.catDragoverIdx) {
         uiState.catDragIdx = uiState.catDragoverIdx = null; return;
@@ -94,13 +101,21 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       dtlCategories.splice(0, dtlCategories.length, ...arr);
       uiState.catDragIdx = uiState.catDragoverIdx = null;
     };
+
+    /* addCategory */
     const addCategory    = cat => {
       if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(cat.categoryId))) return;
       dtlCategories.push({ categoryId: cat.categoryId, categoryNm: cat.categoryNm, depth: cat.depth || cat.categoryDepth || 1 });
       uiState.catPickerOpen = false;
     };
+
+    /* removeCategory */
     const removeCategory = idx => dtlCategories.splice(idx, 1);
+
+    /* getCategoryNm */
     const getCategoryNm  = id => { const c = (categories||[]).find(c=>c.categoryId==id); return c ? c.categoryNm : String(id); };
+
+    /* getCategoryDepth */
     const getCategoryDepth = id => { const c = (categories||[]).find(c=>c.categoryId==id); return c ? (c.depth||1) : 1; };
 
     /* -- 구성품 목록 -- */
@@ -109,7 +124,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* -- 드래그 -- */
     const onDragStart = idx => { uiState.dragIdx = idx; };
+
+    /* onDragOver */
     const onDragOver  = idx => { uiState.dragoverIdx = idx; };
+
+    /* onDrop */
     const onDrop = () => {
       if (uiState.dragIdx === null || uiState.dragIdx === uiState.dragoverIdx) {
         uiState.dragIdx = uiState.dragoverIdx = null; return;
@@ -126,7 +145,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const cfPickerList   = computed(() => {
       const q    = (uiState.pickerSearch || '').trim().toLowerCase();
       const used = new Set(dtlItems.map(d => d.itemProdId).filter(Boolean));
-      const types = uiState.pickerSearchTypes || 'def_id,def_nm';
+      const types = uiState.pickerSearchType || 'def_id,def_nm';
       return (products || []).filter(p => {
         if (p.productId === uiState.editSetId) return false;
         if (used.has(p.productId)) return false;
@@ -140,12 +159,17 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* -- helpers -- */
     const getProd   = id => id ? (products || []).find(p => p.productId === id) : null;
+
+    /* getProdNm */
     const getProdNm = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '상품#' + id) : id ? '상품#' + id : ''; };
+
+    /* getBrandNm */
     const getBrandNm = id => { const b = (brands||[]).find(b=>b.brandId==id); return b ? (b.brandNm||id) : id; };
 
     /* -- 세트상품 목록 -- */
     const setList = reactive([]);
 
+    /* fnBuildSetList */
     const fnBuildSetList = () => {
       const searchVal = searchParam.nm.toLowerCase();
       const ids = [...new Set((sets || []).map(s => s.setProdId))];
@@ -163,20 +187,26 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       fnBuildPagerNums();
     };
 
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchData('DEFAULT');
     };
 
+    /* onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchData();
     };
 
+    /* setPage */
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; };
 
     /* -- 신규 열기 -- */
@@ -216,6 +246,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       dtlCategories.splice(0, dtlCategories.length, ..._catArr);
     };
 
+    /* closeDtl */
     const closeDtl = () => { uiState.dtlMode = null; uiState.editSetId = null; dtlItems.length = 0; };
 
     const cfDtlProdNm = computed(() => uiState.dtlMode === 'new' ? (newForm.prodNm || '(신규 세트상품)') : getProdNm(uiState.editSetId));
@@ -234,7 +265,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         sortOrd:    maxSort + 1,
         useYn:      'Y',
       });
-      uiState.pickerOpen = false; uiState.pickerSearchTypes = ''; uiState.pickerSearch = '';
+      uiState.pickerOpen = false; uiState.pickerSearchType = ''; uiState.pickerSearch = '';
     };
 
     /* -- 구성품 추가 (비상품 — 직접입력) -- */
@@ -253,6 +284,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       });
     };
 
+    /* removeItem */
     const removeItem = idx => dtlItems.splice(idx, 1);
 
     /* -- 저장 -- */
@@ -620,7 +652,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     <!-- -- 구성품 추가 버튼 ---------------------------------------------------- -->
     <div style="margin-top:12px;display:flex;gap:8px">
-      <button class="btn btn-secondary btn-sm" @click="uiState.pickerOpen=true;uiState.pickerSearchTypes='';uiState.pickerSearch=''">
+      <button class="btn btn-secondary btn-sm" @click="uiState.pickerOpen=true;uiState.pickerSearchType='';uiState.pickerSearch=''">
         + 상품 구성품 추가
       </button>
       <button class="btn btn-secondary btn-sm" @click="addItemBlank">
@@ -639,7 +671,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <button class="btn btn-secondary btn-xs" @click="uiState.pickerOpen=false">닫기</button>
         </div>
         <multi-check-select
-          v-model="uiState.pickerSearchTypes"
+          v-model="uiState.pickerSearchType"
           :options="[
             { value: 'def_nm', label: '상품명' },
             { value: 'def_id', label: 'ID' },

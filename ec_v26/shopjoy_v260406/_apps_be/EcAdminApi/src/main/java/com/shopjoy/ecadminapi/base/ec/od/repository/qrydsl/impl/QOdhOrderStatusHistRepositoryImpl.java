@@ -28,6 +28,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
     private final JPAQueryFactory queryFactory;
     private static final QOdhOrderStatusHist h = QOdhOrderStatusHist.odhOrderStatusHist;
 
+    /* 주문 상태 이력 baseQuery */
     private JPAQuery<OdhOrderStatusHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderStatusHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
                 .from(h);
     }
 
+    /* 주문 상태 이력 키조회 */
     @Override
     public Optional<OdhOrderStatusHistDto.Item> selectById(String id) {
         OdhOrderStatusHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         return Optional.ofNullable(dto);
     }
 
+    /* 주문 상태 이력 목록조회 */
     @Override
     public List<OdhOrderStatusHistDto.Item> selectList(OdhOrderStatusHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         return query.fetch();
     }
 
+    /* 주문 상태 이력 페이지조회 */
     @Override
     public OdhOrderStatusHistDto.PageResponse selectPageList(OdhOrderStatusHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 주문 상태 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhOrderStatusHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         return orders;
     }
 
+    /* 주문 상태 이력 수정 */
     @Override
     public int updateSelective(OdhOrderStatusHist entity) {
         if (entity.getOrderStatusHistId() == null) return 0;

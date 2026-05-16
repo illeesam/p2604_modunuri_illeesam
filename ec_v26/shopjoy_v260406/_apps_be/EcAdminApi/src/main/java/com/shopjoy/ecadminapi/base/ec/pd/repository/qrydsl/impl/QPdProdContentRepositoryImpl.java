@@ -28,6 +28,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
     private final JPAQueryFactory queryFactory;
     private static final QPdProdContent c = QPdProdContent.pdProdContent;
 
+    /* 상품 상세 콘텐츠 키조회 */
     @Override
     public Optional<PdProdContentDto.Item> selectById(String prodContentId) {
         PdProdContentDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 상세 콘텐츠 목록조회 */
     @Override
     public List<PdProdContentDto.Item> selectList(PdProdContentDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         return query.fetch();
     }
 
+    /* 상품 상세 콘텐츠 페이지조회 */
     @Override
     public PdProdContentDto.PageResponse selectPageList(PdProdContentDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -94,6 +97,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
                 .from(c);
     }
 
+    /* 상품 상세 콘텐츠 buildCondition */
     private BooleanBuilder buildCondition(PdProdContentDto.Request req) {
         BooleanBuilder w = new BooleanBuilder();
         if (req == null) return w;
@@ -151,6 +155,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         return orders;
     }
 
+    /* 상품 상세 콘텐츠 수정 */
     @Override
     public int updateSelective(PdProdContent entity) {
         if (entity.getProdContentId() == null) return 0;

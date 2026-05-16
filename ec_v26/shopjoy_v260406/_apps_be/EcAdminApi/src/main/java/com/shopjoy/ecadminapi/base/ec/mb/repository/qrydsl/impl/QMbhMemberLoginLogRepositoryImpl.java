@@ -33,11 +33,13 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     private static final QMbMember          mem  = QMbMember.mbMember;
     private static final QSyCode            cdLr = new QSyCode("cd_lr");
 
+    /* 회원 로그인 로그 키조회 */
     @Override
     public Optional<MbhMemberLoginLogDto.Item> selectById(String logId) {
         return Optional.ofNullable(baseQuery().where(l.logId.eq(logId)).fetchOne());
     }
 
+    /* 회원 로그인 로그 목록조회 */
     @Override
     public List<MbhMemberLoginLogDto.Item> selectList(MbhMemberLoginLogDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -50,6 +52,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         return query.fetch();
     }
 
+    /* 회원 로그인 로그 페이지조회 */
     @Override
     public MbhMemberLoginLogDto.PageResponse selectPageList(MbhMemberLoginLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -68,6 +71,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 회원 로그인 로그 baseQuery */
     private JPAQuery<MbhMemberLoginLogDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(MbhMemberLoginLogDto.Item.class,
@@ -85,15 +89,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                 .leftJoin(cdLr).on(cdLr.codeGrp.eq("LOGIN_RESULT").and(cdLr.codeValue.eq(l.resultCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(MbhMemberLoginLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -101,8 +97,8 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         if (StringUtils.hasText(s.getLogId()))  w.and(l.logId.eq(s.getLogId()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_member_id,")) or.or(l.memberId.likeIgnoreCase(pattern));
@@ -153,6 +149,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         return orders;
     }
 
+    /* 회원 로그인 로그 수정 */
     @Override
     public int updateSelective(MbhMemberLoginLog entity) {
         if (entity.getLogId() == null) return 0;

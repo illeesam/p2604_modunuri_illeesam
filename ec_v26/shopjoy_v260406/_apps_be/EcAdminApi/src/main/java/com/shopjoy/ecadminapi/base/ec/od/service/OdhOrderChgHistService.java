@@ -27,6 +27,7 @@ public class OdhOrderChgHistService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 주문 변경 이력 키조회 */
     public OdhOrderChgHistDto.Item getById(String id) {
         OdhOrderChgHistDto.Item dto = odhOrderChgHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdhOrderChgHistService {
         return odhOrderChgHistRepository.selectById(id).orElse(null);
     }
 
+    /* 주문 변경 이력 상세조회 */
     public OdhOrderChgHist findById(String id) {
         return odhOrderChgHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdhOrderChgHistService {
         return odhOrderChgHistRepository.findById(id).orElse(null);
     }
 
+    /* 주문 변경 이력 키검증 */
     public boolean existsById(String id) {
         return odhOrderChgHistRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdhOrderChgHistService {
         return true;
     }
 
+    /* 주문 변경 이력 목록조회 */
     public List<OdhOrderChgHistDto.Item> getList(OdhOrderChgHistDto.Request req) {
         return odhOrderChgHistRepository.selectList(req);
     }
 
+    /* 주문 변경 이력 페이지조회 */
     public OdhOrderChgHistDto.PageResponse getPageData(OdhOrderChgHistDto.Request req) {
         PageHelper.addPaging(req);
         return odhOrderChgHistRepository.selectPageList(req);
     }
 
+    /* 주문 변경 이력 등록 */
     @Transactional
     public OdhOrderChgHist create(OdhOrderChgHist body) {
         body.setOrderChgHistId(CmUtil.generateId("odh_order_chg_hist"));
@@ -80,6 +86,7 @@ public class OdhOrderChgHistService {
         return saved;
     }
 
+    /* 주문 변경 이력 저장 */
     @Transactional
     public OdhOrderChgHist save(OdhOrderChgHist entity) {
         if (!existsById(entity.getOrderChgHistId()))
@@ -92,6 +99,7 @@ public class OdhOrderChgHistService {
         return saved;
     }
 
+    /* 주문 변경 이력 수정 */
     @Transactional
     public OdhOrderChgHist update(String id, OdhOrderChgHist body) {
         OdhOrderChgHist entity = findById(id);
@@ -104,6 +112,7 @@ public class OdhOrderChgHistService {
         return saved;
     }
 
+    /* 주문 변경 이력 수정 */
     @Transactional
     public OdhOrderChgHist updateSelective(OdhOrderChgHist entity) {
         if (entity.getOrderChgHistId() == null) throw new CmBizException("orderChgHistId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdhOrderChgHistService {
         return entity;
     }
 
+    /* 주문 변경 이력 삭제 */
     @Transactional
     public void delete(String id) {
         OdhOrderChgHist entity = findById(id);
@@ -125,6 +135,7 @@ public class OdhOrderChgHistService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 주문 변경 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhOrderChgHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

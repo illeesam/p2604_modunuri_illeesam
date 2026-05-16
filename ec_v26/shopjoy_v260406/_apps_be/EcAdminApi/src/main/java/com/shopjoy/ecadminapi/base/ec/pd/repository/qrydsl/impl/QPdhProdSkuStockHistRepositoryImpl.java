@@ -34,6 +34,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
     private static final QPdProd              prd    = QPdProd.pdProd;
     private static final QSyCode              cd_ssc = new QSyCode("cd_ssc");
 
+    /* 상품 SKU 재고 이력 buildBaseQuery */
     private JPAQuery<PdhProdSkuStockHistDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdSkuStockHistDto.Item.class,
@@ -58,6 +59,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
                 .leftJoin(cd_ssc).on(cd_ssc.codeGrp.eq("SKU_STOCK_CHG").and(cd_ssc.codeValue.eq(h.chgReasonCd)));
     }
 
+    /* 상품 SKU 재고 이력 키조회 */
     @Override
     public Optional<PdhProdSkuStockHistDto.Item> selectById(String id) {
         PdhProdSkuStockHistDto.Item dto = buildBaseQuery()
@@ -66,6 +68,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 SKU 재고 이력 목록조회 */
     @Override
     public List<PdhProdSkuStockHistDto.Item> selectList(PdhProdSkuStockHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -84,6 +87,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         return query.fetch();
     }
 
+    /* 상품 SKU 재고 이력 페이지조회 */
     @Override
     public PdhProdSkuStockHistDto.PageResponse selectPageList(PdhProdSkuStockHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -109,6 +113,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 상품 SKU 재고 이력 buildCondition */
     private BooleanBuilder buildCondition(PdhProdSkuStockHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -159,6 +164,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         return orders;
     }
 
+    /* 상품 SKU 재고 이력 수정 */
     @Override
     public int updateSelective(PdhProdSkuStockHist entity) {
         if (entity.getHistId() == null) return 0;

@@ -28,6 +28,7 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
     private final JPAQueryFactory queryFactory;
     private static final QOdhDlivChgHist h = QOdhDlivChgHist.odhDlivChgHist;
 
+    /* 배송 변경 이력 baseQuery */
     private JPAQuery<OdhDlivChgHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhDlivChgHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
                 .from(h);
     }
 
+    /* 배송 변경 이력 키조회 */
     @Override
     public Optional<OdhDlivChgHistDto.Item> selectById(String id) {
         OdhDlivChgHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         return Optional.ofNullable(dto);
     }
 
+    /* 배송 변경 이력 목록조회 */
     @Override
     public List<OdhDlivChgHistDto.Item> selectList(OdhDlivChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         return query.fetch();
     }
 
+    /* 배송 변경 이력 페이지조회 */
     @Override
     public OdhDlivChgHistDto.PageResponse selectPageList(OdhDlivChgHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 배송 변경 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhDlivChgHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         return orders;
     }
 
+    /* 배송 변경 이력 수정 */
     @Override
     public int updateSelective(OdhDlivChgHist entity) {
         if (entity.getDlivChgHistId() == null) return 0;

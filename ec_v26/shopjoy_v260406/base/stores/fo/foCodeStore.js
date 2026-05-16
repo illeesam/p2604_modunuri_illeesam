@@ -48,12 +48,26 @@ window.useFoCodeStore = Pinia.defineStore('foCode', {
     // BO 와 달리 FO 는 응답 키가 snake_case 일 수 있어 양쪽을 모두 허용
     sgGetGrpCodesByLevel: (s) => (grpVal, level, parentCodeValue) => {
       if (!Array.isArray(s.svCodes)) return [];
+
+      /* lv */
       const lv = (c) => Number(c.codeLevel ?? c.code_level ?? 1);
+
+      /* pv */
       const pv = (c) => c.parentCodeValue ?? c.parent_code_value ?? null;
+
+      /* cv */
       const cv = (c) => c.codeVal ?? c.code_value;
+
+      /* cl */
       const cl = (c) => c.codeNm ?? c.code_label;
+
+      /* cs */
       const cs = (c) => Number(c.codeSortOrd ?? c.sort_ord ?? 0);
+
+      /* cu */
       const cu = (c) => c.useYn ?? c.use_yn;
+
+      /* cr */
       const cr = (c) => c.codeRemark ?? c.code_remark ?? '';
       return s.svCodes
         .filter(c => c.codeGrp === grpVal && cu(c) !== 'N')

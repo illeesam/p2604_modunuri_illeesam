@@ -27,6 +27,7 @@ public class PdDlivTmpltService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 배송 템플릿 키조회 */
     public PdDlivTmpltDto.Item getById(String id) {
         PdDlivTmpltDto.Item dto = pdDlivTmpltRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdDlivTmpltService {
         return pdDlivTmpltRepository.selectById(id).orElse(null);
     }
 
+    /* 배송 템플릿 상세조회 */
     public PdDlivTmplt findById(String id) {
         return pdDlivTmpltRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdDlivTmpltService {
         return pdDlivTmpltRepository.findById(id).orElse(null);
     }
 
+    /* 배송 템플릿 키검증 */
     public boolean existsById(String id) {
         return pdDlivTmpltRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdDlivTmpltService {
         return true;
     }
 
+    /* 배송 템플릿 목록조회 */
     public List<PdDlivTmpltDto.Item> getList(PdDlivTmpltDto.Request req) {
         return pdDlivTmpltRepository.selectList(req);
     }
 
+    /* 배송 템플릿 페이지조회 */
     public PdDlivTmpltDto.PageResponse getPageData(PdDlivTmpltDto.Request req) {
         PageHelper.addPaging(req);
         return pdDlivTmpltRepository.selectPageList(req);
     }
 
+    /* 배송 템플릿 등록 */
     @Transactional
     public PdDlivTmplt create(PdDlivTmplt body) {
         body.setDlivTmpltId(CmUtil.generateId("pd_dliv_tmplt"));
@@ -80,6 +86,7 @@ public class PdDlivTmpltService {
         return saved;
     }
 
+    /* 배송 템플릿 저장 */
     @Transactional
     public PdDlivTmplt save(PdDlivTmplt entity) {
         if (!existsById(entity.getDlivTmpltId()))
@@ -92,6 +99,7 @@ public class PdDlivTmpltService {
         return saved;
     }
 
+    /* 배송 템플릿 수정 */
     @Transactional
     public PdDlivTmplt update(String id, PdDlivTmplt body) {
         PdDlivTmplt entity = findById(id);
@@ -104,6 +112,7 @@ public class PdDlivTmpltService {
         return saved;
     }
 
+    /* 배송 템플릿 수정 */
     @Transactional
     public PdDlivTmplt updateSelective(PdDlivTmplt entity) {
         if (entity.getDlivTmpltId() == null) throw new CmBizException("dlivTmpltId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdDlivTmpltService {
         return entity;
     }
 
+    /* 배송 템플릿 삭제 */
     @Transactional
     public void delete(String id) {
         PdDlivTmplt entity = findById(id);
@@ -125,6 +135,7 @@ public class PdDlivTmpltService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 배송 템플릿 목록저장 */
     @Transactional
     public void saveList(List<PdDlivTmplt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

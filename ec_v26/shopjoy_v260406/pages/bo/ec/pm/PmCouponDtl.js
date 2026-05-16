@@ -12,10 +12,10 @@ window.PmCouponDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
@@ -53,8 +53,11 @@ window.PmCouponDtl = {
 watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._pmCouponDtlState.tabMode = v; });
+
+    /* 쿠폰 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+    /* 쿠폰 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.coupon_statuses_dtl = codeStore.sgGetGrpCodes('COUPON_STATUS_DTL');
@@ -76,6 +79,8 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     const errors = reactive({});
 
     const _today = new Date();
+
+    /* 쿠폰 _pad */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
@@ -87,6 +92,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       endDate: yup.string().required('만료일을 입력해주세요.'),
     });
 
+    /* 쿠폰 handleInitForm */
     const handleInitForm = () => {
       if (cfIsNew.value) {
         if (!form.startDate) form.startDate = DEFAULT_START;
@@ -113,6 +119,8 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
+
+    /* 쿠폰 selectVendor */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -154,6 +162,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       });
     };
 
+    /* 쿠폰 renderBarcode */
     const renderBarcode = () => {
       if (uiState.barcodeContainer && typeof JsBarcode !== 'undefined') {
         try {
@@ -167,6 +176,8 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         } catch(e) {}
       }
     };
+
+    /* 쿠폰 renderQRCode */
     const renderQRCode = () => {
       if (uiState.qrcodeContainer && typeof QRCode !== 'undefined') {
         try {
@@ -181,6 +192,8 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         } catch(e) {}
       }
     };
+
+    /* 쿠폰 onTabChange */
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
       if (newTab === 'preview') {
@@ -202,10 +215,13 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       return true;                                          // issued / used / preview 는 비활성
     });
 
+    /* 쿠폰 _afterApiOk */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
+
+    /* 쿠폰 _afterApiErr */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

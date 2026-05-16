@@ -11,10 +11,10 @@ window.DpDispPanelDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const panels = reactive([]);
     const uiState = reactive({ libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy' });
     const tab = Vue.toRef(uiState, 'tab');
@@ -22,6 +22,7 @@ window.DpDispPanelDtl = {
     const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], disp_areas: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
     const events = reactive([]);
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
@@ -51,6 +52,7 @@ window.DpDispPanelDtl = {
       }
     };
 
+    /* handleLoadData */
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
@@ -68,9 +70,17 @@ window.DpDispPanelDtl = {
     };
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, target: null });
+
+    /* openPathPick */
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
+
+    /* closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
+
+    /* onPathPicked */
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
+
+    /* fnPathLabel */
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.dtlId);
@@ -90,14 +100,19 @@ window.DpDispPanelDtl = {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       uiState.previewPaneWidth = (info?.width || 480) + 40;
     });
+
     /* 스플리터 드래그 */
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
       const startW = uiState.previewPaneWidth;
+
+      /* onMove */
       const onMove = (ev) => {
         uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
+
+      /* onUp */
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
@@ -108,6 +123,8 @@ window.DpDispPanelDtl = {
 
     /* -- 기본 기간: 오늘 ~ +10년 -- */
     const _today = new Date();
+
+    /* _pad */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
@@ -242,11 +259,19 @@ window.DpDispPanelDtl = {
       try { return JSON.parse(cfActiveRow.value?.fileListJson || '[]'); }
       catch { return []; }
     });
+
+    /* _saveFileList */
     const _saveFileList = (items) => {
       if (cfActiveRow.value) cfActiveRow.value.fileListJson = JSON.stringify(items);
     };
+
+    /* addFileItem */
     const addFileItem    = () => _saveFileList([...cfFileListItems.value, { name: '', url: '' }]);
+
+    /* removeFileItem */
     const removeFileItem = (idx) => _saveFileList(window.safeArrayUtils.safeFilter(cfFileListItems, (_, i) => i !== idx));
+
+    /* updateFileItem */
     const updateFileItem = (idx, field, val) =>
       _saveFileList(cfFileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
@@ -380,6 +405,7 @@ window.DpDispPanelDtl = {
       return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null;
     });
 
+    /* handleInitForm */
     const handleInitForm = async () => {
       await nextTick();
       if (cfIsNew.value) {
@@ -405,6 +431,7 @@ window.DpDispPanelDtl = {
       handleInitForm();
     });
 
+    /* 저장 */
     const handleSave = async () => {
       if (!form.name || !form.area || !form.dispCode) { showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
       const isNewPanel = cfIsNew.value;
@@ -425,7 +452,11 @@ window.DpDispPanelDtl = {
 
     /* -- 위젯미리보기 모달 -- */
     const preview = reactive({ show: false, tabLabel: '' });
+
+    /* openPreview */
     const openPreview = (tabKey, tabLabel) => { preview.tabLabel = tabLabel; preview.show = true; };
+
+    /* closePreview */
     const closePreview = () => { preview.show = false; };
     const cfPreviewWidget = computed(() => ({
       ...form, ...(cfActiveRow.value ? { ...cfActiveRow.value } : {}), status: '활성',
@@ -433,27 +464,47 @@ window.DpDispPanelDtl = {
 
     /* -- 패널미리보기 (카드) -- */
     const cardPreview = reactive({ show: false });
+
+    /* openCardPreview */
     const openCardPreview = () => { cardPreview.show = true; };
+
+    /* closeCardPreview */
     const closeCardPreview = () => { cardPreview.show = false; };
     const cfCurrentAreaLabel = computed(() => {
       const found = (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
       return found ? found.codeLabel : form.area;
     });
+
+    /* fnWLabel */
     const fnWLabel = (t) => codes.disp_widget_types.find(w => w.codeValue === t)?.codeLabel || t || '-';
 
     /* -- 펼치기 / 탭 모드 토글 -- */
 
     /* 아코디언 다중 펼치기 */
     const expandedSections = reactive(new Set(['info', 'tab1']));
+
+    /* toggleSection */
     const toggleSection = (key) => { if (expandedSections.has(key)) expandedSections.delete(key); else expandedSections.add(key); };
+
+    /* isSectionExpanded */
     const isSectionExpanded = (key) => expandedSections.has(key);
 
     /* row 파라미터 기반 유형 체크 (아코디언 다중 펼치기용) */
     const fnRowIsHtmlEditor  = (r) => r?.widgetType === 'html_editor';
+
+    /* fnRowIsFileList */
     const fnRowIsFileList    = (r) => r?.widgetType === 'file_list';
+
+    /* fnRowIsImage */
     const fnRowIsImage       = (r) => r?.widgetType === 'image_banner';
+
+    /* fnRowIsText */
     const fnRowIsText        = (r) => r?.widgetType === 'text_banner';
+
+    /* fnRowIsProduct */
     const fnRowIsProduct     = (r) => ['product_slider','product'].includes(r?.widgetType);
+
+    /* fnGetDisplayRows */
     const fnGetDisplayRows = (r) => {
       if (!r) return [];
       const wt = r.widgetType;
@@ -472,11 +523,22 @@ window.DpDispPanelDtl = {
       if (wt === 'widget_embed')   return [{ key:'embedCode', label:'임베드 코드', type:'code', ph:'<iframe ...></iframe>' }];
       return [];
     };
+
+    /* fnGetRelatedEvent */
     const fnGetRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null; };
+
+    /* fnGetFileListItems */
     const fnGetFileListItems = (r) => { try { return JSON.parse(r?.fileListJson || '[]'); } catch { return []; } };
+
+    /* fnAddFileItemAt */
     const fnAddFileItemAt    = (r) => { r.fileListJson = JSON.stringify([...fnGetFileListItems(r), { name: '', url: '' }]); };
+
+    /* fnRemoveFileItemAt */
     const fnRemoveFileItemAt = (r, idx) => { r.fileListJson = JSON.stringify(fnGetFileListItems(r).filter((_, i) => i !== idx)); };
+
+    /* fnSetFileItem */
     const fnSetFileItem      = (r, idx, field, val) => { const items = fnGetFileListItems(r); items[idx] = { ...items[idx], [field]: val }; r.fileListJson = JSON.stringify(items); };
+
     /* 위젯 이동 (아코디언 모드 — tab 변경 없이) */
     const moveRowAt = (rowIdx, dir) => {
       const target = rowIdx + dir;
@@ -496,6 +558,8 @@ window.DpDispPanelDtl = {
       uiState.tab = newKey;
       expandedSections.add(newKey);
     };
+
+    /* removeWidget */
     const removeWidget = (idx) => {
       if (idx === 0 || rows.length <= 1) return;
       const currentIdx = cfActiveRowIdx.value;
@@ -509,10 +573,14 @@ window.DpDispPanelDtl = {
 
     /* -- 공개 대상 멀티체크 토글 (전시항목별) -- */
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
+
+    /* hasVisibility */
     const hasVisibility = (code) => {
       if (!cfActiveRow.value) return false;
       return window.visibilityUtil.has(cfActiveRow.value.visibilityTargets, code);
     };
+
+    /* toggleVisibility */
     const toggleVisibility = (code) => {
       if (!cfActiveRow.value) return;
       const list = window.visibilityUtil.parse(cfActiveRow.value.visibilityTargets);
@@ -533,10 +601,14 @@ window.DpDispPanelDtl = {
       { code: 'TEST', label: 'TEST' },
       { code: 'PROD', label: 'PROD' },
     ];
+
+    /* hasDispEnv */
     const hasDispEnv = (code) => {
       if (!cfActiveRow.value) return false;
       return cfActiveRow.value.dispEnv.includes('^' + code + '^');
     };
+
+    /* toggleDispEnv */
     const toggleDispEnv = (code) => {
       if (!cfActiveRow.value) return;
       const envList = cfActiveRow.value.dispEnv.split('^').filter(e => e && e !== 'NONE');
@@ -547,13 +619,19 @@ window.DpDispPanelDtl = {
 
     /* -- 패널 레벨 전시환경/공개대상 토글 -- */
     const hasPanelDispEnv = (code) => form.panelDispEnv.includes('^' + code + '^');
+
+    /* togglePanelDispEnv */
     const togglePanelDispEnv = (code) => {
       const envList = form.panelDispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
       if (i >= 0) envList.splice(i, 1); else envList.push(code);
       form.panelDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
+
+    /* hasPanelVisibility */
     const hasPanelVisibility = (code) => window.visibilityUtil.has(form.panelVisibilityTargets, code);
+
+    /* togglePanelVisibility */
     const togglePanelVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.panelVisibilityTargets);
       const i = list.indexOf(code);
@@ -579,6 +657,8 @@ window.DpDispPanelDtl = {
       if (!cfActiveRow.value) return;
       uiState.libPickMode = mode; uiState.libPickOpen = true;
     };
+
+    /* onLibPicked */
     const onLibPicked = (lib) => {
       uiState.libPickOpen = false;
       if (!cfActiveRow.value) return;

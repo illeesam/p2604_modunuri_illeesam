@@ -34,6 +34,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     private static final QPdProd        prd = QPdProd.pdProd;
     private static final QMbMember      mem = QMbMember.mbMember;
 
+    /* 재입고 알림 키조회 */
     @Override
     public Optional<PdRestockNotiDto.Item> selectById(String restockNotiId) {
         PdRestockNotiDto.Item dto = baseQuery()
@@ -42,6 +43,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 재입고 알림 목록조회 */
     @Override
     public List<PdRestockNotiDto.Item> selectList(PdRestockNotiDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -60,6 +62,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         return query.fetch();
     }
 
+    /* 재입고 알림 페이지조회 */
     @Override
     public PdRestockNotiDto.PageResponse selectPageList(PdRestockNotiDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -81,6 +84,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 재입고 알림 baseQuery */
     private JPAQuery<PdRestockNotiDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PdRestockNotiDto.Item.class,
@@ -94,6 +98,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                 .leftJoin(mem).on(mem.memberId.eq(n.memberId));
     }
 
+    /* 재입고 알림 buildCondition */
     private BooleanBuilder buildCondition(PdRestockNotiDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -150,6 +155,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         return orders;
     }
 
+    /* 재입고 알림 수정 */
     @Override
     public int updateSelective(PdRestockNoti entity) {
         if (entity.getRestockNotiId() == null) return 0;

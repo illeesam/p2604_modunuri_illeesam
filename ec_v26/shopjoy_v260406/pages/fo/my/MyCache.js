@@ -6,11 +6,12 @@ window.MyCache = {
   },
   setup(props) {
     const { reactive, computed, onMounted, watch } = Vue;
-    const showToast            = window.foApp.showToast;
+    const showToast            = window.foApp.showToast;  // 토스트 알림
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -30,6 +31,7 @@ window.MyCache = {
     const { inRange, onDateSearch } = window.myDateFilterHelper();
     const cfDateFilteredHistory = computed(() => cashHistory.value.filter(h => inRange(h.date)));
 
+    /* addCash */
     const addCash = () => {
       const amount = parseInt(String(chargeAmount.value).replace(/,/g, ''), 10);
       if (!amount || amount < 1000) { showToast('최소 1,000원 이상 충전 가능합니다.', 'error'); return; }
@@ -42,16 +44,20 @@ window.MyCache = {
       showToast(amount.toLocaleString() + '원이 충전되었습니다!', 'success');
     };
 
+    /* openOrderModal */
     const openOrderModal = async orderId => {
       await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
       if (!ok) showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadCash();
       myStore.handleLoadOrders();
     };
+
+    /* 목록조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await handleSearchData('DEFAULT');

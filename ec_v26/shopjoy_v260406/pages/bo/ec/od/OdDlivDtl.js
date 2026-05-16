@@ -12,16 +12,17 @@ window.OdDlivDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', tabMode2: window._odDlivDtlState.tabMode || 'tab' });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ dliv_statuses: [] });
     const relatedClaims = reactive([]);
 
+    /* 배송 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
@@ -35,6 +36,8 @@ window.OdDlivDtl = {
         watch(() => uiState.tab, v => { window._odDlivDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._odDlivDtlState.tabMode = v; });
+
+    /* 배송 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const form = reactive({
@@ -78,6 +81,7 @@ window.OdDlivDtl = {
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
     const cfFirstClaim = computed(() => relatedClaims[0] || null);
 
+    /* 배송 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -107,6 +111,8 @@ window.OdDlivDtl = {
     };
 
     const dlivItems = reactive([]);
+
+    /* 배송 sampleDlivItems */
     const sampleDlivItems = () => {
       const base = form.prodNm || form.receiver || '배송상품';
       const total = 30000;
@@ -128,6 +134,8 @@ window.OdDlivDtl = {
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       }).filter(Boolean);
     };
+
+    /* 배송 initItems */
     const initItems = async () => {
       dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
     };
@@ -144,8 +152,11 @@ window.OdDlivDtl = {
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
+
+    /* 배송 fmt */
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
+    /* 배송 trackingUrl */
     const trackingUrl = (courier, no) => {
       if (!no) return '';
       if (courier === 'CJ대한통운') return 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' + no;
@@ -155,6 +166,8 @@ window.OdDlivDtl = {
       if (courier === '로젠택배')   return 'https://www.ilogen.com/web/personal/trace/' + no;
       return '';
     };
+
+    /* 배송 openTracking */
     const openTracking = (courier, no) => {
       const url = trackingUrl(courier, no);
       if (!url) { showToast && showToast('운송장 정보가 없습니다.', 'error'); return; }

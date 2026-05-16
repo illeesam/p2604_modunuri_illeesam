@@ -27,6 +27,7 @@ public class SyBatchService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 배치 키조회 */
     public SyBatchDto.Item getById(String id) {
         SyBatchDto.Item dto = syBatchRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyBatchService {
         return syBatchRepository.selectById(id).orElse(null);
     }
 
+    /* 배치 상세조회 */
     public SyBatch findById(String id) {
         return syBatchRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyBatchService {
         return syBatchRepository.findById(id).orElse(null);
     }
 
+    /* 배치 키검증 */
     public boolean existsById(String id) {
         return syBatchRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyBatchService {
         return true;
     }
 
+    /* 배치 목록조회 */
     public List<SyBatchDto.Item> getList(SyBatchDto.Request req) {
         return syBatchRepository.selectList(req);
     }
 
+    /* 배치 페이지조회 */
     public SyBatchDto.PageResponse getPageData(SyBatchDto.Request req) {
         PageHelper.addPaging(req);
         return syBatchRepository.selectPageList(req);
     }
 
+    /* 배치 등록 */
     @Transactional
     public SyBatch create(SyBatch body) {
         body.setBatchId(CmUtil.generateId("sy_batch"));
@@ -80,6 +86,7 @@ public class SyBatchService {
         return saved;
     }
 
+    /* 배치 저장 */
     @Transactional
     public SyBatch save(SyBatch entity) {
         if (!existsById(entity.getBatchId()))
@@ -92,6 +99,7 @@ public class SyBatchService {
         return saved;
     }
 
+    /* 배치 수정 */
     @Transactional
     public SyBatch update(String id, SyBatch body) {
         SyBatch entity = findById(id);
@@ -104,6 +112,7 @@ public class SyBatchService {
         return saved;
     }
 
+    /* 배치 수정 */
     @Transactional
     public SyBatch updateSelective(SyBatch entity) {
         if (entity.getBatchId() == null) throw new CmBizException("batchId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyBatchService {
         return entity;
     }
 
+    /* 배치 삭제 */
     @Transactional
     public void delete(String id) {
         SyBatch entity = findById(id);
@@ -125,6 +135,7 @@ public class SyBatchService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 배치 목록저장 */
     @Transactional
     public void saveList(List<SyBatch> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -30,8 +30,11 @@ public class BoPmDiscntService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public PmDiscntDto.Item getById(String id) { return pmDiscntService.getById(id); }
+    /* 목록조회 */
     public List<PmDiscntDto.Item> getList(PmDiscntDto.Request req) { return pmDiscntService.getList(req); }
+    /* 페이지조회 */
     public PmDiscntDto.PageResponse getPageData(PmDiscntDto.Request req) { return pmDiscntService.getPageData(req); }
 
     @Transactional public PmDiscnt create(PmDiscnt body) { return pmDiscntService.create(body); }

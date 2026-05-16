@@ -29,6 +29,7 @@ public class ExtAuthRedisStore {
 
     // ── 세션 정보 ─────────────────────────────────────────────────
 
+    /* saveSession */
     public void saveSession(String userId, Map<String, Object> sessionInfo) {
         redis.set(CacheKey.EXT_AUTH_SESSION + userId, sessionInfo, props.getTtl().getExtAuthSeconds());
         log.info("[Cache][redis] [ext:auth:session][{}] saveSession()", userId);
@@ -48,6 +49,7 @@ public class ExtAuthRedisStore {
 
     // ── 토큰 블랙리스트 ───────────────────────────────────────────
 
+    /* blacklistToken */
     public void blacklistToken(String token, long remainingTtlSeconds) {
         if (remainingTtlSeconds <= 0) return;
         redis.set(CacheKey.EXT_AUTH_BLACKLIST + token, "1", remainingTtlSeconds);

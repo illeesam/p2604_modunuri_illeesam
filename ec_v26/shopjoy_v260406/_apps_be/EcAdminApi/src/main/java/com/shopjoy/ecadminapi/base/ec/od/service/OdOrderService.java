@@ -28,6 +28,7 @@ public class OdOrderService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 주문 키조회 */
     public OdOrderDto.Item getById(String id) {
         OdOrderDto.Item dto = odOrderRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -39,6 +40,7 @@ public class OdOrderService {
         return odOrderRepository.selectById(id).orElse(null);
     }
 
+    /* 주문 상세조회 */
     public OdOrder findById(String id) {
         return odOrderRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -49,6 +51,7 @@ public class OdOrderService {
         return odOrderRepository.findById(id).orElse(null);
     }
 
+    /* 주문 키검증 */
     public boolean existsById(String id) {
         return odOrderRepository.existsById(id);
     }
@@ -59,15 +62,18 @@ public class OdOrderService {
         return true;
     }
 
+    /* 주문 목록조회 */
     public List<OdOrderDto.Item> getList(OdOrderDto.Request req) {
         return odOrderRepository.selectList(req);
     }
 
+    /* 주문 페이지조회 */
     public OdOrderDto.PageResponse getPageData(OdOrderDto.Request req) {
         PageHelper.addPaging(req);
         return odOrderRepository.selectPageList(req);
     }
 
+    /* 주문 등록 */
     @Transactional
     public OdOrder create(OdOrder body) {
         body.setOrderId(CmUtil.generateId("od_order"));
@@ -81,6 +87,7 @@ public class OdOrderService {
         return saved;
     }
 
+    /* 주문 저장 */
     @Transactional
     public OdOrder save(OdOrder entity) {
         if (!existsById(entity.getOrderId()))
@@ -93,6 +100,7 @@ public class OdOrderService {
         return saved;
     }
 
+    /* 주문 수정 */
     @Transactional
     public OdOrder update(String id, OdOrder body) {
         OdOrder entity = findById(id);
@@ -105,6 +113,7 @@ public class OdOrderService {
         return saved;
     }
 
+    /* 주문 수정 */
     @Transactional
     public OdOrder updateSelective(OdOrder entity) {
         if (entity.getOrderId() == null) throw new CmBizException("orderId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -118,6 +127,7 @@ public class OdOrderService {
         return entity;
     }
 
+    /* 주문 삭제 */
     @Transactional
     public void delete(String id) {
         OdOrder entity = findById(id);
@@ -126,6 +136,7 @@ public class OdOrderService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 주문 목록저장 */
     @Transactional
     public void saveList(List<OdOrder> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

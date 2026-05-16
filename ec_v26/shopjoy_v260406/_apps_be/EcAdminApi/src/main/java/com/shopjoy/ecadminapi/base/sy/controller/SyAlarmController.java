@@ -31,49 +31,58 @@ public class SyAlarmController {
 
     private final SyAlarmService service;
 
+    /* 알람 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarmDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
+    /* 알람 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyAlarmDto.Item>>> list(@Valid @ModelAttribute SyAlarmDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
     }
 
+    /* 알람 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<SyAlarmDto.PageResponse>> page(@Valid @ModelAttribute SyAlarmDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 
+    /* 알람 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<SyAlarm>> create(@RequestBody SyAlarm entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
+    /* 알람 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarm>> save(@PathVariable("id") String id, @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
+    /* 알람 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarm>> updateSelective(@PathVariable("id") String id, @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
+    /* 알람 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /* 알람 saveByRowStatus */
     @PostMapping("/save")
     public ResponseEntity<ApiResponse<SyAlarm>> saveByRowStatus(@RequestBody @Valid SyAlarmReq req) {
         return ResponseEntity.ok(ApiResponse.ok(service.saveByRowStatus(req)));
     }
 
+    /* 알람 saveListByRowStatus */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<List<SyAlarm>>> saveListByRowStatus(@RequestBody @Valid List<SyAlarmReq> list) {
         return ResponseEntity.ok(ApiResponse.ok(service.saveListByRowStatus(list)));

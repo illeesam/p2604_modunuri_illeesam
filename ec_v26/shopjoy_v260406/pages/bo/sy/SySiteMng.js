@@ -6,20 +6,24 @@ window.SySiteMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const sites = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ site_oper_statuses: [], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'siteNm asc', desc: 'siteNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 사이트 getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 사이트 onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -28,6 +32,8 @@ window.SySiteMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* 사이트 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
@@ -35,9 +41,9 @@ window.SySiteMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_code,def_nm,def_domain';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_code,def_nm,def_domain';
         }
         const res = await boApiSvc.sySite.getPage(params, '사이트관리', '목록조회');
         const data = res.data?.data;
@@ -56,8 +62,14 @@ window.SySiteMng = {
     };
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
+
+    /* 사이트 openPathPick */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+
+    /* 사이트 closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+
+    /* 사이트 onPathPicked */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -65,12 +77,15 @@ window.SySiteMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
+
+    /* 사이트 pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* -- 좌측 표시경로 트리 -- */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
+    /* 사이트 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.site_oper_statuses = codeStore.sgGetGrpCodes('SITE_OPER_STATUS');
@@ -80,13 +95,15 @@ window.SySiteMng = {
 
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
+  /* 사이트 _initSearchParam */
   const _initSearchParam = () => {
     const today = new Date();
     const thisYear = today.getFullYear();
-    return { searchTypes: '', searchValue: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    return { searchType: '', searchValue: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
   };
   const searchParam = reactive(_initSearchParam());
 
+    /* 사이트 onDateRangeChange */
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -98,10 +115,19 @@ const detailModal = reactive({
       dtlMode: 'view' // 'view' | 'edit'
     });
 
+    /* 사이트 loadView */
     const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; };
+
+    /* 사이트 상세조회 */
     const handleLoadDetail = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+
+    /* 사이트 openNew */
     const openNew    = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+
+    /* 사이트 closeDetail */
     const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
+
+    /* 사이트 inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'sySiteMng') {
         detailModal.show = false;
@@ -117,9 +143,14 @@ const detailModal = reactive({
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
     const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteTypeCd))].sort());
+
+    /* 사이트 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* 사이트 fnStatusBadge */
     const fnStatusBadge = s => ({ '운영중': 'badge-green', '점검중': 'badge-orange', '비활성': 'badge-gray' }[s] || 'badge-gray');
+
+    /* 사이트 fnTypeBadge */
     const fnTypeBadge   = t => ({
       '이커머스': 'badge-red', '숙박공유': 'badge-blue', '전문가연결': 'badge-purple',
       'IT매칭': 'badge-blue', '부동산': 'badge-orange', '교육': 'badge-green',
@@ -127,11 +158,19 @@ const detailModal = reactive({
       '가격비교': 'badge-blue', '시각화': 'badge-purple', '홈페이지': 'badge-gray',
     }[t] || 'badge-gray');
 
+    /* 사이트 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('SEARCH'); };
+
+    /* 사이트 onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
+
+    /* 사이트 setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* 사이트 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    /* 사이트 삭제 */
     const handleDelete = async (s) => {
       const ok = await showConfirm('삭제', `[${s.siteCode}] ${s.siteNm} 사이트를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -150,6 +189,7 @@ const detailModal = reactive({
       }
     };
 
+    /* 사이트 exportExcel */
     const exportExcel = () => coUtil.exportCsv(sites, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
@@ -179,7 +219,7 @@ const detailModal = reactive({
   <div class="page-title">사이트관리</div>  <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_code',   label: '사이트코드' },
           { value: 'def_nm',     label: '사이트명' },

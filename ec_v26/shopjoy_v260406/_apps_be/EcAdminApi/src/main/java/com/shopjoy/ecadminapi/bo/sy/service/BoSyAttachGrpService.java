@@ -19,8 +19,11 @@ public class BoSyAttachGrpService {
 
     private final SyAttachGrpService syAttachGrpService;
 
+    /* 키조회 */
     public SyAttachGrpDto.Item getById(String id) { return syAttachGrpService.getById(id); }
+    /* 목록조회 */
     public List<SyAttachGrpDto.Item> getList(SyAttachGrpDto.Request req) { return syAttachGrpService.getList(req); }
+    /* 페이지조회 */
     public SyAttachGrpDto.PageResponse getPageData(SyAttachGrpDto.Request req) { return syAttachGrpService.getPageData(req); }
 
     @Transactional public SyAttachGrp create(SyAttachGrp body) { return syAttachGrpService.create(body); }

@@ -33,6 +33,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     private static final QPdProd           prd  = new QPdProd("prd");
     private static final QPdProd           prd2 = new QPdProd("prd2");
 
+    /* 묶음상품 구성 키조회 */
     @Override
     public Optional<PdProdBundleItemDto.Item> selectById(String bundleItemId) {
         PdProdBundleItemDto.Item dto = baseQuery()
@@ -41,6 +42,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         return Optional.ofNullable(dto);
     }
 
+    /* 묶음상품 구성 목록조회 */
     @Override
     public List<PdProdBundleItemDto.Item> selectList(PdProdBundleItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -59,6 +61,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         return query.fetch();
     }
 
+    /* 묶음상품 구성 페이지조회 */
     @Override
     public PdProdBundleItemDto.PageResponse selectPageList(PdProdBundleItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -80,6 +83,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 묶음상품 구성 baseQuery */
     private JPAQuery<PdProdBundleItemDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdBundleItemDto.Item.class,
@@ -93,6 +97,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
                 .leftJoin(prd2).on(prd2.prodId.eq(i.itemProdId));
     }
 
+    /* 묶음상품 구성 buildCondition */
     private BooleanBuilder buildCondition(PdProdBundleItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -149,6 +154,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         return orders;
     }
 
+    /* 묶음상품 구성 수정 */
     @Override
     public int updateSelective(PdProdBundleItem entity) {
         if (entity.getBundleItemId() == null) return 0;

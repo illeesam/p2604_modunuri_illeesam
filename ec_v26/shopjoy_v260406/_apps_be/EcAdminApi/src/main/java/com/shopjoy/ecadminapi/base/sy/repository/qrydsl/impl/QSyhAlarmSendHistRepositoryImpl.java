@@ -30,6 +30,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     private static final QSyhAlarmSendHist h   = QSyhAlarmSendHist.syhAlarmSendHist;
     private static final QSySite           ste = QSySite.sySite;
 
+    /* 알람 발송 이력 buildBaseQuery */
     private JPAQuery<SyhAlarmSendHistDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAlarmSendHistDto.Item.class,
@@ -52,6 +53,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                 .leftJoin(ste).on(ste.siteId.eq(h.siteId));
     }
 
+    /* 알람 발송 이력 키조회 */
     @Override
     public Optional<SyhAlarmSendHistDto.Item> selectById(String id) {
         SyhAlarmSendHistDto.Item dto = buildBaseQuery()
@@ -60,6 +62,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         return Optional.ofNullable(dto);
     }
 
+    /* 알람 발송 이력 목록조회 */
     @Override
     public List<SyhAlarmSendHistDto.Item> selectList(SyhAlarmSendHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -78,6 +81,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         return query.fetch();
     }
 
+    /* 알람 발송 이력 페이지조회 */
     @Override
     public SyhAlarmSendHistDto.PageResponse selectPageList(SyhAlarmSendHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -103,6 +107,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 알람 발송 이력 buildCondition */
     private BooleanBuilder buildCondition(SyhAlarmSendHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -163,6 +168,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         return orders;
     }
 
+    /* 알람 발송 이력 수정 */
     @Override
     public int updateSelective(SyhAlarmSendHist entity) {
         if (entity.getSendHistId() == null) return 0;

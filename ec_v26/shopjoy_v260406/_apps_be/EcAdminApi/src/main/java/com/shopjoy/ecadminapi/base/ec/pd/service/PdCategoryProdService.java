@@ -27,6 +27,7 @@ public class PdCategoryProdService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 카테고리-상품 매핑 키조회 */
     public PdCategoryProdDto.Item getById(String id) {
         PdCategoryProdDto.Item dto = pdCategoryProdRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdCategoryProdService {
         return pdCategoryProdRepository.selectById(id).orElse(null);
     }
 
+    /* 카테고리-상품 매핑 상세조회 */
     public PdCategoryProd findById(String id) {
         return pdCategoryProdRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdCategoryProdService {
         return pdCategoryProdRepository.findById(id).orElse(null);
     }
 
+    /* 카테고리-상품 매핑 키검증 */
     public boolean existsById(String id) {
         return pdCategoryProdRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdCategoryProdService {
         return true;
     }
 
+    /* 카테고리-상품 매핑 목록조회 */
     public List<PdCategoryProdDto.Item> getList(PdCategoryProdDto.Request req) {
         return pdCategoryProdRepository.selectList(req);
     }
 
+    /* 카테고리-상품 매핑 페이지조회 */
     public PdCategoryProdDto.PageResponse getPageData(PdCategoryProdDto.Request req) {
         PageHelper.addPaging(req);
         return pdCategoryProdRepository.selectPageList(req);
     }
 
+    /* 카테고리-상품 매핑 등록 */
     @Transactional
     public PdCategoryProd create(PdCategoryProd body) {
         body.setCategoryProdId(CmUtil.generateId("pd_category_prod"));
@@ -80,6 +86,7 @@ public class PdCategoryProdService {
         return saved;
     }
 
+    /* 카테고리-상품 매핑 저장 */
     @Transactional
     public PdCategoryProd save(PdCategoryProd entity) {
         if (!existsById(entity.getCategoryProdId()))
@@ -92,6 +99,7 @@ public class PdCategoryProdService {
         return saved;
     }
 
+    /* 카테고리-상품 매핑 수정 */
     @Transactional
     public PdCategoryProd update(String id, PdCategoryProd body) {
         PdCategoryProd entity = findById(id);
@@ -104,6 +112,7 @@ public class PdCategoryProdService {
         return saved;
     }
 
+    /* 카테고리-상품 매핑 수정 */
     @Transactional
     public PdCategoryProd updateSelective(PdCategoryProd entity) {
         if (entity.getCategoryProdId() == null) throw new CmBizException("categoryProdId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdCategoryProdService {
         return entity;
     }
 
+    /* 카테고리-상품 매핑 삭제 */
     @Transactional
     public void delete(String id) {
         PdCategoryProd entity = findById(id);
@@ -125,6 +135,7 @@ public class PdCategoryProdService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 카테고리-상품 매핑 목록저장 */
     @Transactional
     public void saveList(List<PdCategoryProd> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

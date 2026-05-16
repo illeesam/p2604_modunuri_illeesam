@@ -27,6 +27,7 @@ public class PmEventItemService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 이벤트 대상 상품 키조회 */
     public PmEventItemDto.Item getById(String id) {
         PmEventItemDto.Item dto = pmEventItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmEventItemService {
         return pmEventItemRepository.selectById(id).orElse(null);
     }
 
+    /* 이벤트 대상 상품 상세조회 */
     public PmEventItem findById(String id) {
         return pmEventItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmEventItemService {
         return pmEventItemRepository.findById(id).orElse(null);
     }
 
+    /* 이벤트 대상 상품 키검증 */
     public boolean existsById(String id) {
         return pmEventItemRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmEventItemService {
         return true;
     }
 
+    /* 이벤트 대상 상품 목록조회 */
     public List<PmEventItemDto.Item> getList(PmEventItemDto.Request req) {
         return pmEventItemRepository.selectList(req);
     }
 
+    /* 이벤트 대상 상품 페이지조회 */
     public PmEventItemDto.PageResponse getPageData(PmEventItemDto.Request req) {
         PageHelper.addPaging(req);
         return pmEventItemRepository.selectPageList(req);
     }
 
+    /* 이벤트 대상 상품 등록 */
     @Transactional
     public PmEventItem create(PmEventItem body) {
         body.setEventItemId(CmUtil.generateId("pm_event_item"));
@@ -80,6 +86,7 @@ public class PmEventItemService {
         return saved;
     }
 
+    /* 이벤트 대상 상품 저장 */
     @Transactional
     public PmEventItem save(PmEventItem entity) {
         if (!existsById(entity.getEventItemId()))
@@ -92,6 +99,7 @@ public class PmEventItemService {
         return saved;
     }
 
+    /* 이벤트 대상 상품 수정 */
     @Transactional
     public PmEventItem update(String id, PmEventItem body) {
         PmEventItem entity = findById(id);
@@ -104,6 +112,7 @@ public class PmEventItemService {
         return saved;
     }
 
+    /* 이벤트 대상 상품 수정 */
     @Transactional
     public PmEventItem updateSelective(PmEventItem entity) {
         if (entity.getEventItemId() == null) throw new CmBizException("eventItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmEventItemService {
         return entity;
     }
 
+    /* 이벤트 대상 상품 삭제 */
     @Transactional
     public void delete(String id) {
         PmEventItem entity = findById(id);
@@ -125,6 +135,7 @@ public class PmEventItemService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 이벤트 대상 상품 목록저장 */
     @Transactional
     public void saveList(List<PmEventItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

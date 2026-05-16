@@ -27,6 +27,7 @@ public class MbhMemberLoginLogService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 회원 로그인 로그 키조회 */
     public MbhMemberLoginLogDto.Item getById(String id) {
         MbhMemberLoginLogDto.Item dto = mbhMemberLoginLogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class MbhMemberLoginLogService {
         return mbhMemberLoginLogRepository.selectById(id).orElse(null);
     }
 
+    /* 회원 로그인 로그 상세조회 */
     public MbhMemberLoginLog findById(String id) {
         return mbhMemberLoginLogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class MbhMemberLoginLogService {
         return mbhMemberLoginLogRepository.findById(id).orElse(null);
     }
 
+    /* 회원 로그인 로그 키검증 */
     public boolean existsById(String id) {
         return mbhMemberLoginLogRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class MbhMemberLoginLogService {
         return true;
     }
 
+    /* 회원 로그인 로그 목록조회 */
     public List<MbhMemberLoginLogDto.Item> getList(MbhMemberLoginLogDto.Request req) {
         return mbhMemberLoginLogRepository.selectList(req);
     }
 
+    /* 회원 로그인 로그 페이지조회 */
     public MbhMemberLoginLogDto.PageResponse getPageData(MbhMemberLoginLogDto.Request req) {
         PageHelper.addPaging(req);
         return mbhMemberLoginLogRepository.selectPageList(req);
     }
 
+    /* 회원 로그인 로그 등록 */
     @Transactional
     public MbhMemberLoginLog create(MbhMemberLoginLog body) {
         body.setLogId(CmUtil.generateId("mbh_member_login_log"));
@@ -80,6 +86,7 @@ public class MbhMemberLoginLogService {
         return saved;
     }
 
+    /* 회원 로그인 로그 저장 */
     @Transactional
     public MbhMemberLoginLog save(MbhMemberLoginLog entity) {
         if (!existsById(entity.getLogId()))
@@ -92,6 +99,7 @@ public class MbhMemberLoginLogService {
         return saved;
     }
 
+    /* 회원 로그인 로그 수정 */
     @Transactional
     public MbhMemberLoginLog update(String id, MbhMemberLoginLog body) {
         MbhMemberLoginLog entity = findById(id);
@@ -104,6 +112,7 @@ public class MbhMemberLoginLogService {
         return saved;
     }
 
+    /* 회원 로그인 로그 수정 */
     @Transactional
     public MbhMemberLoginLog updateSelective(MbhMemberLoginLog entity) {
         if (entity.getLogId() == null) throw new CmBizException("logId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class MbhMemberLoginLogService {
         return entity;
     }
 
+    /* 회원 로그인 로그 삭제 */
     @Transactional
     public void delete(String id) {
         MbhMemberLoginLog entity = findById(id);
@@ -125,6 +135,7 @@ public class MbhMemberLoginLogService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 회원 로그인 로그 목록저장 */
     @Transactional
     public void saveList(List<MbhMemberLoginLog> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

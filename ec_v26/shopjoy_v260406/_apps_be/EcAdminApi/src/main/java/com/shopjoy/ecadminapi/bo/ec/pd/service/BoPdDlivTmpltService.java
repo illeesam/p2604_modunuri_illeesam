@@ -19,8 +19,11 @@ public class BoPdDlivTmpltService {
 
     private final PdDlivTmpltService pdDlivTmpltService;
 
+    /* 키조회 */
     public PdDlivTmpltDto.Item getById(String id) { return pdDlivTmpltService.getById(id); }
+    /* 목록조회 */
     public List<PdDlivTmpltDto.Item> getList(PdDlivTmpltDto.Request req) { return pdDlivTmpltService.getList(req); }
+    /* 페이지조회 */
     public PdDlivTmpltDto.PageResponse getPageData(PdDlivTmpltDto.Request req) { return pdDlivTmpltService.getPageData(req); }
 
     @Transactional public PdDlivTmplt create(PdDlivTmplt body) { return pdDlivTmpltService.create(body); }

@@ -6,10 +6,10 @@ window.PmEventMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const events = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
@@ -17,6 +17,7 @@ window.PmEventMng = {
       date_range_opts: [],
     });
 
+    /* 이벤트 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -32,11 +33,15 @@ window.PmEventMng = {
 
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'eventNm asc', desc: 'eventNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 이벤트 getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 이벤트 onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -45,7 +50,11 @@ window.PmEventMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* 이벤트 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
+    /* 이벤트 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -74,6 +83,8 @@ window.PmEventMng = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
     });
+
+    /* 이벤트 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -84,10 +95,20 @@ window.PmEventMng = {
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
   const searchParam = reactive(_initSearchParam());
+
+    /* 이벤트 loadView */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 이벤트 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 이벤트 openNew */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 이벤트 closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* 이벤트 inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'pmEventMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -97,13 +118,19 @@ window.PmEventMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
+    /* 이벤트 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* 이벤트 fnStatusBadge */
     const fnStatusBadge = s => ({ '진행중': 'badge-green', '예정': 'badge-blue', '종료': 'badge-gray' }[s] || 'badge-gray');
+
+    /* 이벤트 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
+    /* 이벤트 onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -111,9 +138,13 @@ window.PmEventMng = {
       await handleSearchList();
     };
 
+    /* 이벤트 setPage */
     const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+
+    /* 이벤트 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    /* 이벤트 삭제 */
     const handleDelete = async (e) => {
       const ok = await showConfirm('삭제', `[${e.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -133,6 +164,7 @@ window.PmEventMng = {
       }
     };
 
+    /* 이벤트 exportExcel */
     const exportExcel = () => coUtil.exportCsv(events, [{label:'ID',key:'eventId'},{label:'이벤트명',key:'eventNm'},{label:'유형',key:'eventType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '이벤트목록.csv');
 
     const tabMode = ref('list');

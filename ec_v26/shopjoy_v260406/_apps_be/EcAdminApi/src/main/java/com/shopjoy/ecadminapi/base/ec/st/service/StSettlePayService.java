@@ -27,6 +27,7 @@ public class StSettlePayService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 정산 지급 키조회 */
     public StSettlePayDto.Item getById(String id) {
         StSettlePayDto.Item dto = stSettlePayRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class StSettlePayService {
         return stSettlePayRepository.selectById(id).orElse(null);
     }
 
+    /* 정산 지급 상세조회 */
     public StSettlePay findById(String id) {
         return stSettlePayRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class StSettlePayService {
         return stSettlePayRepository.findById(id).orElse(null);
     }
 
+    /* 정산 지급 키검증 */
     public boolean existsById(String id) {
         return stSettlePayRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class StSettlePayService {
         return true;
     }
 
+    /* 정산 지급 목록조회 */
     public List<StSettlePayDto.Item> getList(StSettlePayDto.Request req) {
         return stSettlePayRepository.selectList(req);
     }
 
+    /* 정산 지급 페이지조회 */
     public StSettlePayDto.PageResponse getPageData(StSettlePayDto.Request req) {
         PageHelper.addPaging(req);
         return stSettlePayRepository.selectPageList(req);
     }
 
+    /* 정산 지급 등록 */
     @Transactional
     public StSettlePay create(StSettlePay body) {
         body.setSettlePayId(CmUtil.generateId("st_settle_pay"));
@@ -80,6 +86,7 @@ public class StSettlePayService {
         return saved;
     }
 
+    /* 정산 지급 저장 */
     @Transactional
     public StSettlePay save(StSettlePay entity) {
         if (!existsById(entity.getSettlePayId()))
@@ -92,6 +99,7 @@ public class StSettlePayService {
         return saved;
     }
 
+    /* 정산 지급 수정 */
     @Transactional
     public StSettlePay update(String id, StSettlePay body) {
         StSettlePay entity = findById(id);
@@ -104,6 +112,7 @@ public class StSettlePayService {
         return saved;
     }
 
+    /* 정산 지급 수정 */
     @Transactional
     public StSettlePay updateSelective(StSettlePay entity) {
         if (entity.getSettlePayId() == null) throw new CmBizException("settlePayId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class StSettlePayService {
         return entity;
     }
 
+    /* 정산 지급 삭제 */
     @Transactional
     public void delete(String id) {
         StSettlePay entity = findById(id);
@@ -125,6 +135,7 @@ public class StSettlePayService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 정산 지급 목록저장 */
     @Transactional
     public void saveList(List<StSettlePay> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

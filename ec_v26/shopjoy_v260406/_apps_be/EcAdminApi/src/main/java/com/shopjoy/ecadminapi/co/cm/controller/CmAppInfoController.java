@@ -125,6 +125,7 @@ public class CmAppInfoController {
     //  단일 엔드포인트
     // ════════════════════════════════════════════════════════════════
 
+    /* info */
     @GetMapping("/info")
     public ResponseEntity<ApiResponse<Map<String, Object>>> info() {
         Map<String, Object> result = new LinkedHashMap<>();
@@ -150,6 +151,7 @@ public class CmAppInfoController {
     //  섹션별 구성 메서드
     // ════════════════════════════════════════════════════════════════
 
+    /* buildApp */
     private Map<String, Object> buildApp() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("name",           env.getProperty("spring.application.name", "EcAdminApi"));
@@ -409,6 +411,7 @@ public class CmAppInfoController {
     //  내부 유틸
     // ════════════════════════════════════════════════════════════════
 
+    /* mask */
     private String mask(String value) {
         return (value != null && !value.isBlank()) ? "****" : "";
     }

@@ -33,8 +33,11 @@ public class BoPmVoucherService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public PmVoucherDto.Item getById(String id) { return pmVoucherService.getById(id); }
+    /* 목록조회 */
     public List<PmVoucherDto.Item> getList(PmVoucherDto.Request req) { return pmVoucherService.getList(req); }
+    /* 페이지조회 */
     public PmVoucherDto.PageResponse getPageData(PmVoucherDto.Request req) { return pmVoucherService.getPageData(req); }
 
     @Transactional public PmVoucher create(PmVoucher body) { return pmVoucherService.create(body); }

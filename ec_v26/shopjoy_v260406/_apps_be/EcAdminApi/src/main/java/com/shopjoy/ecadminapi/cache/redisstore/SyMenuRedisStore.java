@@ -31,6 +31,7 @@ public class SyMenuRedisStore {
 
     // ── 저장 ──────────────────────────────────────────────────────
 
+    /* saveAll */
     public void saveAll(List<Map<String, Object>> menuList) {
         redis.set(CacheKey.SY_MENU_ALL, menuList, props.getTtl().getSyMenuSeconds());
         log.info("[Cache][redis] [sy:menu:all] saveAll()— {}건", menuList.size());
@@ -44,6 +45,7 @@ public class SyMenuRedisStore {
 
     // ── 조회 ──────────────────────────────────────────────────────
 
+    /* getAll */
     @SuppressWarnings("unchecked")
     public Optional<List<Map<String, Object>>> getAll() {
         return redis.get(CacheKey.SY_MENU_ALL, List.class)
@@ -59,6 +61,7 @@ public class SyMenuRedisStore {
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
+    /* evictByRole */
     public void evictByRole(String roleId) {
         redis.delete(CacheKey.SY_MENU_ROLE + roleId);
     }

@@ -87,6 +87,7 @@ public class CacheRedisReloadService {
     //  활성 여부
     // ════════════════════════════════════════════════════════════
 
+    /* isEnabled */
     public boolean isEnabled() {
         return redis.isEnabled();
     }
@@ -95,6 +96,7 @@ public class CacheRedisReloadService {
     //  전체 재조회
     // ════════════════════════════════════════════════════════════
 
+    /* reloadAll */
     public Map<String, Integer> reloadAll() {
         Map<String, Integer> result = new LinkedHashMap<>();
         // SY: 건수 소 → DB 즉시 재적재
@@ -225,6 +227,7 @@ public class CacheRedisReloadService {
     //  도메인별 evict only
     // ════════════════════════════════════════════════════════════
 
+    /* evict */
     public void evict(String domain) {
         if (!redis.isEnabled()) return;
         switch (domain) {
@@ -290,6 +293,7 @@ public class CacheRedisReloadService {
     //  내부 유틸
     // ════════════════════════════════════════════════════════════
 
+    /* toMap */
     @SuppressWarnings("unchecked")
     private Map<String, Object> toMap(Object dto) {
         return objectMapper.convertValue(dto, Map.class);

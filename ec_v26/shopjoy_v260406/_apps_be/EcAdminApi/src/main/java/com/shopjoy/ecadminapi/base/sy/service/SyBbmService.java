@@ -27,6 +27,7 @@ public class SyBbmService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 게시판 마스터 키조회 */
     public SyBbmDto.Item getById(String id) {
         SyBbmDto.Item dto = syBbmRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyBbmService {
         return syBbmRepository.selectById(id).orElse(null);
     }
 
+    /* 게시판 마스터 상세조회 */
     public SyBbm findById(String id) {
         return syBbmRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyBbmService {
         return syBbmRepository.findById(id).orElse(null);
     }
 
+    /* 게시판 마스터 키검증 */
     public boolean existsById(String id) {
         return syBbmRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyBbmService {
         return true;
     }
 
+    /* 게시판 마스터 목록조회 */
     public List<SyBbmDto.Item> getList(SyBbmDto.Request req) {
         return syBbmRepository.selectList(req);
     }
 
+    /* 게시판 마스터 페이지조회 */
     public SyBbmDto.PageResponse getPageData(SyBbmDto.Request req) {
         PageHelper.addPaging(req);
         return syBbmRepository.selectPageList(req);
     }
 
+    /* 게시판 마스터 등록 */
     @Transactional
     public SyBbm create(SyBbm body) {
         body.setBbmId(CmUtil.generateId("sy_bbm"));
@@ -80,6 +86,7 @@ public class SyBbmService {
         return saved;
     }
 
+    /* 게시판 마스터 저장 */
     @Transactional
     public SyBbm save(SyBbm entity) {
         if (!existsById(entity.getBbmId()))
@@ -92,6 +99,7 @@ public class SyBbmService {
         return saved;
     }
 
+    /* 게시판 마스터 수정 */
     @Transactional
     public SyBbm update(String id, SyBbm body) {
         SyBbm entity = findById(id);
@@ -104,6 +112,7 @@ public class SyBbmService {
         return saved;
     }
 
+    /* 게시판 마스터 수정 */
     @Transactional
     public SyBbm updateSelective(SyBbm entity) {
         if (entity.getBbmId() == null) throw new CmBizException("bbmId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyBbmService {
         return entity;
     }
 
+    /* 게시판 마스터 삭제 */
     @Transactional
     public void delete(String id) {
         SyBbm entity = findById(id);
@@ -125,6 +135,7 @@ public class SyBbmService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 게시판 마스터 목록저장 */
     @Transactional
     public void saveList(List<SyBbm> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

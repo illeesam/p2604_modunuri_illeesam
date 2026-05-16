@@ -28,6 +28,7 @@ public class DpUiAreaService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 전시 UI-영역 매핑 키조회 */
     public DpUiAreaDto.Item getById(String id) {
         DpUiAreaDto.Item dto = dpUiAreaRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -39,6 +40,7 @@ public class DpUiAreaService {
         return dpUiAreaRepository.selectById(id).orElse(null);
     }
 
+    /* 전시 UI-영역 매핑 상세조회 */
     public DpUiArea findById(String id) {
         return dpUiAreaRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -49,6 +51,7 @@ public class DpUiAreaService {
         return dpUiAreaRepository.findById(id).orElse(null);
     }
 
+    /* 전시 UI-영역 매핑 키검증 */
     public boolean existsById(String id) {
         return dpUiAreaRepository.existsById(id);
     }
@@ -59,15 +62,18 @@ public class DpUiAreaService {
         return true;
     }
 
+    /* 전시 UI-영역 매핑 목록조회 */
     public List<DpUiAreaDto.Item> getList(DpUiAreaDto.Request req) {
         return dpUiAreaRepository.selectList(req);
     }
 
+    /* 전시 UI-영역 매핑 페이지조회 */
     public DpUiAreaDto.PageResponse getPageData(DpUiAreaDto.Request req) {
         PageHelper.addPaging(req);
         return dpUiAreaRepository.selectPageList(req);
     }
 
+    /* 전시 UI-영역 매핑 등록 */
     @Transactional
     public DpUiArea create(DpUiArea body) {
         body.setUiAreaId(CmUtil.generateId("dp_ui_area"));
@@ -81,6 +87,7 @@ public class DpUiAreaService {
         return saved;
     }
 
+    /* 전시 UI-영역 매핑 저장 */
     @Transactional
     public DpUiArea save(DpUiArea entity) {
         if (!existsById(entity.getUiAreaId()))
@@ -93,6 +100,7 @@ public class DpUiAreaService {
         return saved;
     }
 
+    /* 전시 UI-영역 매핑 수정 */
     @Transactional
     public DpUiArea update(String id, DpUiArea body) {
         DpUiArea entity = findById(id);
@@ -105,6 +113,7 @@ public class DpUiAreaService {
         return saved;
     }
 
+    /* 전시 UI-영역 매핑 수정 */
     @Transactional
     public DpUiArea updateSelective(DpUiArea entity) {
         if (entity.getUiAreaId() == null) throw new CmBizException("uiAreaId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -118,6 +127,7 @@ public class DpUiAreaService {
         return entity;
     }
 
+    /* 전시 UI-영역 매핑 삭제 */
     @Transactional
     public void delete(String id) {
         DpUiArea entity = findById(id);
@@ -126,6 +136,7 @@ public class DpUiAreaService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 전시 UI-영역 매핑 목록저장 */
     @Transactional
     public void saveList(List<DpUiArea> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

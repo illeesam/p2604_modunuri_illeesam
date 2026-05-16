@@ -13,15 +13,16 @@ window.CmChattDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._cmChattDtlState.tab || 'chat', tabMode2: window._cmChattDtlState.tabMode || 'tab', replyText: '', searchUserId: '', chat: null });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ chatt_statuses: [] });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.chatt_statuses = codeStore.sgGetGrpCodes('CHATT_STATUS');
@@ -30,6 +31,7 @@ window.CmChattDtl = {
 
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleSearchDetail */
     const handleSearchDetail = async () => {
       if (!props.dtlId) return;
       uiState.loading = true;
@@ -51,6 +53,8 @@ window.CmChattDtl = {
     watch(() => uiState.tab, v => { window._cmChattDtlState.tab = v; });
 
     watch(() => uiState.tabMode2, v => { window._cmChattDtlState.tabMode = v; });
+
+    /* showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const msgBoxRef = ref(null);
@@ -58,6 +62,7 @@ window.CmChattDtl = {
     /* 채팅 내 참조 모달 (상품/주문/클레임) */
     const refModal = reactive({ show: false, type: '', id: null, data: null });
 
+    /* openMsgRef */
     const openMsgRef = (msg) => {
       if (msg.productId) {
         refModal.type = 'product'; refModal.id = msg.productId; refModal.show = true;
@@ -67,9 +72,14 @@ window.CmChattDtl = {
         refModal.type = 'claim'; refModal.id = msg.claimId; refModal.show = true;
       }
     };
+
+    /* closeRefModal */
     const closeRefModal = () => { refModal.show = false; };
 
+    /* hasRef */
     const hasRef = (msg) => !!(msg.productId || msg.orderId || msg.claimId);
+
+    /* refLabel */
     const refLabel = (msg) => {
       if (msg.productId) return '[상품#' + msg.productId + ' 보기]';
       if (msg.orderId) return '[' + msg.orderId + ' 보기]';
@@ -77,6 +87,7 @@ window.CmChattDtl = {
       return '';
     };
 
+    /* scrollToBottom */
     const scrollToBottom = () => {
       nextTick(() => { const el = msgBoxRef.value; if (el) el.scrollTop = el.scrollHeight; });
     };
@@ -114,6 +125,7 @@ window.CmChattDtl = {
       subject: yup.string().required('제목을 입력해주세요.'),
     });
 
+    /* sendReply */
     const sendReply = () => {
       if (!uiState.replyText.trim()) return;
       if (!uiState.chat) return;
@@ -125,12 +137,14 @@ window.CmChattDtl = {
       showToast('답변을 전송했습니다.');
     };
 
+    /* closeChat */
     const closeChat = () => {
       if (!uiState.chat) return;
       uiState.chat.status = '종료';
       showToast('채팅이 종료되었습니다.');
     };
 
+    /* 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -158,6 +172,7 @@ window.CmChattDtl = {
       }
     };
 
+    /* onUserChange */
     const onUserChange = () => {};
 
     const cfUserChats = reactive([]);

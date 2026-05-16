@@ -7,9 +7,15 @@ window.Prod02List = {
   setup(props) {
 
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
-    const prods             = window.foApp.prods;
+    const prods             = window.foApp.prods;  // 상품 목록
+
+    /* selectProd */
     const selectProd        = (p) => window.foApp.selectProd(p);
+
+    /* toggleLike */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
+
+    /* isLiked */
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
     const pager = reactive({ pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageType: 'INFINITE_SCROLL', pageSizes: [12, 24, 48], pageCond: {} });
@@ -17,6 +23,7 @@ window.Prod02List = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768 });
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -29,6 +36,8 @@ window.Prod02List = {
 
     /* -- 상품 이미지 자동 할당 -- */
     const IMG_BASE = 'assets/cdn/prod/img/shop/product';
+
+    /* assignImage */
     const assignImage = (p) => {
       /* colors→opt1s, sizes→opt2s 호환 */
       if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
@@ -53,6 +62,7 @@ window.Prod02List = {
     /* -- 상품 데이터 -- */
     const allProds = reactive([]);
 
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => {
       const t = Math.max(1, Math.ceil(allProds.length / pager.pageSize));
       pager.pageTotalPage = t;
@@ -72,6 +82,7 @@ window.Prod02List = {
       pager.pageNums = result;
     };
 
+    /* handleLoadProds */
     const handleLoadProds = async () => {
       uiState.loading = true;
       try {
@@ -134,7 +145,11 @@ window.Prod02List = {
     /* -- 할인율 / 포맷 -- */
     const fnDiscountRate = p => p.originalPrice
       ? Math.round((1 - p.priceNum / p.originalPrice) * 100) : 0;
+
+    /* fnFmtPrice */
     const fnFmtPrice = n => n ? n.toLocaleString() + '원' : '';
+
+    /* fnCategoryLabel */
     const fnCategoryLabel = p => {
       if (!p) return '';
       const row = cfAllCats.value.find(c => c.categoryId === p.categoryId);
@@ -143,17 +158,24 @@ window.Prod02List = {
 
     /* -- 토글 함수 -- */
     const toggleColor = name => { if (selColors.has(name)) selColors.delete(name); else selColors.add(name); };
+
+    /* toggleSize */
     const toggleSize  = sz   => { if (selSizes.has(sz)) selSizes.delete(sz); else selSizes.add(sz); };
+
+    /* toggleCat */
     const toggleCat   = id   => { if (selCats.has(id)) selCats.delete(id); else selCats.add(id); };
 
     const cfHasFilter = computed(() =>
       uiState.searchText || uiState.priceMin || uiState.priceMax ||
       selColors.size > 0 || selSizes.size > 0 || selCats.size > 0
     );
+
+    /* clearFilters */
     const clearFilters = () => {
       uiState.searchText = ''; uiState.priceMin = ''; uiState.priceMax = '';
       selColors.clear(); selSizes.clear(); selCats.clear();
     };
+
     /* -- 모바일 판별 -- */
     const onResize = () => { uiState.isMobile = window.innerWidth < 768; fnBuildPagerNums(); };
     window.addEventListener('resize', onResize);
@@ -173,6 +195,8 @@ window.Prod02List = {
 
     /* -- IntersectionObserver (모바일 무한스크롤) -- */
     let observer = null;
+
+    /* setupObserver */
     const setupObserver = () => {
       if (observer) observer.disconnect();
       const el = document.getElementById('sj-sentinel');
@@ -186,12 +210,14 @@ window.Prod02List = {
       observer.observe(el);
     };
 
+    /* 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleLoadProds();
       setupObserver();
     };
 
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       await handleLoadProds();
       setupObserver();

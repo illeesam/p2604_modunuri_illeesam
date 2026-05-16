@@ -6,14 +6,15 @@ window.MyOrder = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast            = window.foApp.showToast;
-    const showConfirm          = window.foApp.showConfirm;
-    const cart                 = window.foApp.cart;
-    const removeFromCart       = window.foApp.removeFromCart;
-    const updateCartQty        = window.foApp.updateCartQty;
+    const showToast            = window.foApp.showToast;  // 토스트 알림
+    const showConfirm          = window.foApp.showConfirm;  // 확인 모달
+    const cart                 = window.foApp.cart;  // 장바구니 목록
+    const removeFromCart       = window.foApp.removeFromCart;  // 장바구니 삭제
+    const updateCartQty        = window.foApp.updateCartQty;  // 장바구니 수량변경
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -38,16 +39,21 @@ window.MyOrder = {
       '롯데택배':   no => `https://www.lotteglogis.com/open/tracking?invno=${no}`,
       '한진택배':   no => `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=${no}`,
     };
+
+    /* openTracking */
     const openTracking = (courier, trackingNo) => {
       const fn = COURIER_URLS[courier];
       if (!fn) { showToast('택배사 정보를 찾을 수 없습니다.', 'error'); return; }
       window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes,resizable=yes');
     };
+
+    /* openTracking2 */
     const openTracking2 = (courier, trackingNo) => {
       const fn = COURIER_URLS[courier];
       if (fn) window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes');
     };
 
+    /* showOrderPayBreakdown */
     const showOrderPayBreakdown = o =>
       (o.shippingFee != null && o.shippingFee > 0) ||
       (o.shippingCoupon && Number(o.shippingCoupon.discount) > 0) ||
@@ -61,6 +67,8 @@ window.MyOrder = {
       myStore.setOrderStatus(orderId, '취소됨');
       showToast('주문이 취소되었습니다.', 'success');
     };
+
+    /* confirmPurchase */
     const confirmPurchase = async orderId => {
       const ok = await showConfirm('구매확정', '구매를 확정하시겠습니까?\n확정 후에는 교환/반품 신청이 어렵습니다.', 'warning');
       if (!ok) return;
@@ -103,6 +111,8 @@ window.MyOrder = {
       const name = claimModal.order.items[claimModal.exchangeItemIdx]?.prodNm;
       return window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
     });
+
+    /* openClaimModal */
     const openClaimModal = (orderId, type) => {
       claimModal.show = true; claimModal.type = type; claimModal.orderId = orderId;
       claimModal.order = orders.value.find(x => x.orderId === orderId) || null;
@@ -111,6 +121,8 @@ window.MyOrder = {
       claimModal.selectedCouponId = null; claimModal.exchangeItemIdx = 0;
       if (!coupons.value.length) myStore.handleLoadCoupons();
     };
+
+    /* submitClaimModal */
     const submitClaimModal = () => {
       if (!claimModal.reason) { showToast('신청 사유를 선택해주세요.', 'error'); return; }
       if (claimModal.type === 'exchange') {
@@ -127,11 +139,17 @@ window.MyOrder = {
 
     /* -- 공유 모달 -- */
     const cfAuthUser = computed(() => window.foAuth.state.user);
+
+    /* findProd */
     const findProd = name => window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
+
+    /* openProdModal */
     const openProdModal = name => {
       const p = findProd(name);
       if (p) { myStore.productModal.prod = p; myStore.productModal.show = true; }
     };
+
+    /* openCustomerModal */
     const openCustomerModal = order => {
       myStore.customerModal.user = cfAuthUser.value;
       myStore.customerModal.order = order || null;
@@ -141,12 +159,18 @@ window.MyOrder = {
     /* -- 리뷰 -- */
     const reviews = reactive({});
     const reviewModal = reactive({ show: false, orderId: '', itemIdx: 0, item: null, rating: 5, text: '', isEdit: false, files: [] });
+
+    /* onReviewFileChange */
     const onReviewFileChange = (e) => {
       const selected = Array.from(e.target.files || []);
       reviewModal.files = [...reviewModal.files, ...selected].slice(0, 5);
       e.target.value = '';
     };
+
+    /* removeReviewFile */
     const removeReviewFile = (idx) => { reviewModal.files.splice(idx, 1); };
+
+    /* openReviewModal */
     const openReviewModal = (orderId, itemIdx, item) => {
       const key = `${orderId}_${itemIdx}`;
       const existing = reviews[key];
@@ -155,6 +179,8 @@ window.MyOrder = {
       reviewModal.text = existing ? existing.text : ''; reviewModal.isEdit = !!existing;
       reviewModal.files = existing ? (existing.files || []) : [];
     };
+
+    /* submitReview */
     const submitReview = () => {
       if (!reviewModal.text.trim()) { showToast('리뷰 내용을 입력해주세요.', 'error'); return; }
       const key = `${reviewModal.orderId}_${reviewModal.itemIdx}`;
@@ -167,10 +193,14 @@ window.MyOrder = {
       reviewModal.show = false;
       showToast(reviewModal.isEdit ? '리뷰가 수정되었습니다.' : '리뷰가 등록되었습니다! 감사합니다 😊', 'success');
     };
+
+    /* getReview */
     const getReview = (orderId, itemIdx) => reviews[`${orderId}_${itemIdx}`] || null;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
     const flowStatusFilter = reactive([]);
+
+    /* toggleFlowStatus */
     const toggleFlowStatus = (status) => {
       const idx = flowStatusFilter.indexOf(status);
       if (idx === -1) flowStatusFilter.push(status);
@@ -181,11 +211,14 @@ window.MyOrder = {
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadOrders();
       myStore.handleLoadClaims();
       myStore.handleLoadCoupons();
     };
+
+    /* 목록조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await handleSearchData('DEFAULT');

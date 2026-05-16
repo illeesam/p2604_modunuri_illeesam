@@ -7,10 +7,10 @@ window.SyBrandMng = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const brands = reactive([]);
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null, dragSrc: null});
     const codes = reactive({ brand_status: [], use_yn: [], date_range_opts: [] });
@@ -34,9 +34,9 @@ window.SyBrandMng = {
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_code,def_nm,def_en_nm';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_code,def_nm,def_en_nm';
         }
         const res = await boApiSvc.syBrand.getPage(params, '브랜드관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
@@ -54,8 +54,14 @@ window.SyBrandMng = {
 
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
+
+    /* 브랜드 openPathPick */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+
+    /* 브랜드 closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+
+    /* 브랜드 onPathPicked */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -63,6 +69,8 @@ window.SyBrandMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
+
+    /* 브랜드 pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
@@ -72,9 +80,11 @@ window.SyBrandMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchTypes: '', searchValue: '', bizCd: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', bizCd: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
+
+    /* 브랜드 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -90,6 +100,7 @@ window.SyBrandMng = {
 
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'pathId', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
 
+    /* 브랜드 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.brand_status = codeStore.sgGetGrpCodes('BRAND_STATUS');
@@ -100,6 +111,7 @@ window.SyBrandMng = {
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
+    /* 브랜드 makeRow */
     const makeRow = (b) => ({
       ...b,
       _row_status: 'N',
@@ -108,22 +120,28 @@ window.SyBrandMng = {
     });
 
 
+    /* 브랜드 목록조회 */
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
+
+    /* 브랜드 onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       handleSearchList();
     };
 
+    /* 브랜드 setFocused */
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
+    /* 브랜드 onCellChange */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
+    /* 브랜드 addRow */
     const addRow = () => {
       const newRow = {
         brandId: _tempId--, brandCode: '', brandNm: '', brandEnNm: '',
@@ -136,6 +154,7 @@ window.SyBrandMng = {
       uiState.focusedIdx = insertAt;
     };
 
+    /* 브랜드 deleteRow */
     const deleteRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -146,6 +165,7 @@ window.SyBrandMng = {
       }
     };
 
+    /* 브랜드 cancelRow */
     const cancelRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -157,6 +177,7 @@ window.SyBrandMng = {
       }
     };
 
+    /* 브랜드 cancelChecked */
     const cancelChecked = () => {
       const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.brandId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -169,6 +190,7 @@ window.SyBrandMng = {
       }
     };
 
+    /* 브랜드 deleteRows */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -177,6 +199,7 @@ window.SyBrandMng = {
       }
     };
 
+    /* 브랜드 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
@@ -208,7 +231,11 @@ window.SyBrandMng = {
 
     /* -- 드래그 -- */
     const dragSrc   = ref(null);
+
+    /* 브랜드 onDragStart */
     const onDragStart = (idx) => { uiState.dragSrc = idx; uiState.dragMoved = false; };
+
+    /* 브랜드 onDragOver */
     const onDragOver  = (e, idx) => {
       e.preventDefault();
       if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
@@ -217,6 +244,8 @@ window.SyBrandMng = {
       uiState.dragSrc = idx;
       uiState.dragMoved = true;
     };
+
+    /* 브랜드 onDragEnd */
     const onDragEnd = () => {
       if (uiState.dragMoved) showToast('정렬정보가 저장되었습니다.');
       uiState.dragSrc = null; uiState.dragMoved = false;
@@ -225,9 +254,11 @@ window.SyBrandMng = {
     /* -- 전체 체크 -- */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
+    /* 브랜드 fnStatusClass */
     const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 ;
 
+    /* 브랜드 exportExcel */
     const exportExcel = () => coUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [
@@ -244,6 +275,7 @@ window.SyBrandMng = {
       '브랜드목록.csv'
     );
 
+    /* 브랜드 onPathSelect */
     const onPathSelect = (pathId) => { uiState.selectedPath = pathId; handleSearchList(); };
 
     // ★ onMounted
@@ -274,7 +306,7 @@ window.SyBrandMng = {
       <label class="search-label">업무코드</label>
       <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:160px" @keyup.enter="onSearch">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_code',  label: '브랜드코드' },
           { value: 'def_nm',    label: '브랜드명' },

@@ -28,6 +28,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     private final JPAQueryFactory queryFactory;
     private static final QPmEventItem i = QPmEventItem.pmEventItem;
 
+    /* 이벤트 대상 상품 키조회 */
     @Override
     public Optional<PmEventItemDto.Item> selectById(String eventItemId) {
         PmEventItemDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 이벤트 대상 상품 목록조회 */
     @Override
     public List<PmEventItemDto.Item> selectList(PmEventItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         return query.fetch();
     }
 
+    /* 이벤트 대상 상품 페이지조회 */
     @Override
     public PmEventItemDto.PageResponse selectPageList(PmEventItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -79,6 +82,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 이벤트 대상 상품 baseQuery */
     private JPAQuery<PmEventItemDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmEventItemDto.Item.class,
@@ -89,6 +93,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
                 .from(i);
     }
 
+    /* 이벤트 대상 상품 buildCondition */
     private BooleanBuilder buildCondition(PmEventItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -144,6 +149,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         return orders;
     }
 
+    /* 이벤트 대상 상품 수정 */
     @Override
     public int updateSelective(PmEventItem entity) {
         if (entity.getEventItemId() == null) return 0;

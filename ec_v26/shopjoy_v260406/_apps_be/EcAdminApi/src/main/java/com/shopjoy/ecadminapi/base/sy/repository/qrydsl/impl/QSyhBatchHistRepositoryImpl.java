@@ -30,6 +30,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     private static final QSyhBatchHist h   = QSyhBatchHist.syhBatchHist;
     private static final QSySite       ste = QSySite.sySite;
 
+    /* 배치 실행 이력 buildBaseQuery */
     private JPAQuery<SyhBatchHistDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyhBatchHistDto.Item.class,
@@ -56,6 +57,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
                 .leftJoin(ste).on(ste.siteId.eq(h.siteId));
     }
 
+    /* 배치 실행 이력 키조회 */
     @Override
     public Optional<SyhBatchHistDto.Item> selectById(String id) {
         SyhBatchHistDto.Item dto = buildBaseQuery()
@@ -64,6 +66,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 배치 실행 이력 목록조회 */
     @Override
     public List<SyhBatchHistDto.Item> selectList(SyhBatchHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -82,6 +85,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         return query.fetch();
     }
 
+    /* 배치 실행 이력 페이지조회 */
     @Override
     public SyhBatchHistDto.PageResponse selectPageList(SyhBatchHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -107,15 +111,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyhBatchHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -124,8 +120,8 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         if (StringUtils.hasText(s.getBatchHistId())) w.and(h.batchHistId.eq(s.getBatchHistId()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -184,6 +180,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         return orders;
     }
 
+    /* 배치 실행 이력 수정 */
     @Override
     public int updateSelective(SyhBatchHist entity) {
         if (entity.getBatchHistId() == null) return 0;

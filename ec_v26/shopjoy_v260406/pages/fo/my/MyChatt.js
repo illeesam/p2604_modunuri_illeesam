@@ -6,13 +6,14 @@ window.MyChatt = {
   },
   setup(props) {
     const { reactive, computed, onMounted, watch } = Vue;
-    const showToast            = window.foApp.showToast;
+    const showToast            = window.foApp.showToast;  // 토스트 알림
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
     const myStore = window.useFoMyStore();
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -32,6 +33,7 @@ window.MyChatt = {
     const { inRange, onDateSearch } = window.myDateFilterHelper();
     const cfDateFilteredChats = computed(() => chats.value.filter(c => inRange(c.date)));
 
+    /* 목록조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await myStore.loadChats();

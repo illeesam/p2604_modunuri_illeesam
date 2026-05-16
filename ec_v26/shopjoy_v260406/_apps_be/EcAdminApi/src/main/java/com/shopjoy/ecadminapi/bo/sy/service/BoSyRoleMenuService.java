@@ -20,8 +20,11 @@ public class BoSyRoleMenuService {
 
     private final SyRoleMenuService syRoleMenuService;
 
+    /* 키조회 */
     public SyRoleMenuDto.Item getById(String id) { return syRoleMenuService.getById(id); }
+    /* 목록조회 */
     public List<SyRoleMenuDto.Item> getList(SyRoleMenuDto.Request req) { return syRoleMenuService.getList(req); }
+    /* 페이지조회 */
     public SyRoleMenuDto.PageResponse getPageData(SyRoleMenuDto.Request req) { return syRoleMenuService.getPageData(req); }
 
     @Transactional public SyRoleMenu create(SyRoleMenu body) { return syRoleMenuService.create(body); }

@@ -8,10 +8,10 @@ window.OdClaimHist = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({isPageCodeLoad: false, botTab: window._odClaimHistState.tab || 'items', tabMode2: 'tab', claimType: '취소', claimStatus: '', relatedOrder: null, relatedDliv: null});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
@@ -19,6 +19,7 @@ window.OdClaimHist = {
 
     const codes = reactive({ refund_methods: [] });
 
+    /* 클레임(취소/반품/교환) fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -37,6 +38,7 @@ window.OdClaimHist = {
         watch(botTab, v => { window._odClaimHistState.tab = v; });
         const cfCodes = Vue.computed(() => window.sfGetBoCodeStore()?.svCodes || []);
 
+    /* 클레임(취소/반품/교환) showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     /* 클레임 항목 */
@@ -82,6 +84,7 @@ window.OdClaimHist = {
       }
     });
 
+    /* 클레임(취소/반품/교환) addClaimItem */
     const addClaimItem = () => {
       claimItems.push({
         _id: itemIdSeq++,
@@ -90,11 +93,14 @@ window.OdClaimHist = {
         afStatus: uiState.claimStatus, afMemo: '', afAdmin: '', afDate: '',
       });
     };
+
+    /* 클레임(취소/반품/교환) removeClaimItem */
     const removeClaimItem = (id) => {
       const idx = claimItems.findIndex(r => r._id === id);
       if (idx !== -1) claimItems.splice(idx, 1);
     };
 
+    /* 클레임(취소/반품/교환) handleSaveProcess */
     const handleSaveProcess = () => {
       const idx = claims.value.findIndex(c => c.claimId === props.claimId);
       if (idx !== -1) Object.assign(claims.value[idx], {

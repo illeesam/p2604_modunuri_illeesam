@@ -29,6 +29,7 @@ public class SyUserRoleService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 사용자별 역할 키조회 */
     public SyUserRoleDto.Item getById(String id) {
         SyUserRoleDto.Item dto = syUserRoleRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -40,6 +41,7 @@ public class SyUserRoleService {
         return syUserRoleRepository.selectById(id).orElse(null);
     }
 
+    /* 사용자별 역할 상세조회 */
     public SyUserRole findById(String id) {
         return syUserRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -50,6 +52,7 @@ public class SyUserRoleService {
         return syUserRoleRepository.findById(id).orElse(null);
     }
 
+    /* 사용자별 역할 키검증 */
     public boolean existsById(String id) {
         return syUserRoleRepository.existsById(id);
     }
@@ -65,15 +68,18 @@ public class SyUserRoleService {
         return syUserRoleMapper.selectByUserId(userId);
     }
 
+    /* 사용자별 역할 목록조회 */
     public List<SyUserRoleDto.Item> getList(SyUserRoleDto.Request req) {
         return syUserRoleRepository.selectList(req);
     }
 
+    /* 사용자별 역할 페이지조회 */
     public SyUserRoleDto.PageResponse getPageData(SyUserRoleDto.Request req) {
         PageHelper.addPaging(req);
         return syUserRoleRepository.selectPageList(req);
     }
 
+    /* 사용자별 역할 등록 */
     @Transactional
     public SyUserRole create(SyUserRole body) {
         body.setUserRoleId(CmUtil.generateId("sy_user_role"));
@@ -87,6 +93,7 @@ public class SyUserRoleService {
         return saved;
     }
 
+    /* 사용자별 역할 저장 */
     @Transactional
     public SyUserRole save(SyUserRole entity) {
         if (!existsById(entity.getUserRoleId()))
@@ -99,6 +106,7 @@ public class SyUserRoleService {
         return saved;
     }
 
+    /* 사용자별 역할 수정 */
     @Transactional
     public SyUserRole update(String id, SyUserRole body) {
         SyUserRole entity = findById(id);
@@ -111,6 +119,7 @@ public class SyUserRoleService {
         return saved;
     }
 
+    /* 사용자별 역할 수정 */
     @Transactional
     public SyUserRole updateSelective(SyUserRole entity) {
         if (entity.getUserRoleId() == null) throw new CmBizException("userRoleId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -124,6 +133,7 @@ public class SyUserRoleService {
         return entity;
     }
 
+    /* 사용자별 역할 삭제 */
     @Transactional
     public void delete(String id) {
         SyUserRole entity = findById(id);
@@ -132,6 +142,7 @@ public class SyUserRoleService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 사용자별 역할 목록저장 */
     @Transactional
     public void saveList(List<SyUserRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

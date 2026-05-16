@@ -34,6 +34,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
     private static final QPdProd                prd = QPdProd.pdProd;
     private static final QSyUser                usr = QSyUser.syUser;
 
+    /* 상품 콘텐츠 변경 이력 buildBaseQuery */
     private JPAQuery<PdhProdContentChgHistDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdContentChgHistDto.Item.class,
@@ -55,6 +56,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
                 .leftJoin(usr).on(usr.userId.eq(h.chgUserId));
     }
 
+    /* 상품 콘텐츠 변경 이력 키조회 */
     @Override
     public Optional<PdhProdContentChgHistDto.Item> selectById(String id) {
         PdhProdContentChgHistDto.Item dto = buildBaseQuery()
@@ -63,6 +65,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 콘텐츠 변경 이력 목록조회 */
     @Override
     public List<PdhProdContentChgHistDto.Item> selectList(PdhProdContentChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -81,6 +84,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         return query.fetch();
     }
 
+    /* 상품 콘텐츠 변경 이력 페이지조회 */
     @Override
     public PdhProdContentChgHistDto.PageResponse selectPageList(PdhProdContentChgHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -106,6 +110,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 상품 콘텐츠 변경 이력 buildCondition */
     private BooleanBuilder buildCondition(PdhProdContentChgHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -163,6 +168,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         return orders;
     }
 
+    /* 상품 콘텐츠 변경 이력 수정 */
     @Override
     public int updateSelective(PdhProdContentChgHist entity) {
         if (entity.getHistId() == null) return 0;

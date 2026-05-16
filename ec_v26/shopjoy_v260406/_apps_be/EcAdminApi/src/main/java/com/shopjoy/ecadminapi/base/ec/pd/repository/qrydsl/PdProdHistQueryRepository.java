@@ -176,6 +176,7 @@ public class PdProdHistQueryRepository {
         return new BooleanBuilder().and(path.goe(start)).and(path.lt(endExcl));
     }
 
+    /* applyLimit */
     private void applyLimit(JPAQuery<?> query, PdProdHistDto.Request req) {
         if (req != null && req.getLimit() != null && req.getLimit() > 0) {
             query.limit(req.getLimit());

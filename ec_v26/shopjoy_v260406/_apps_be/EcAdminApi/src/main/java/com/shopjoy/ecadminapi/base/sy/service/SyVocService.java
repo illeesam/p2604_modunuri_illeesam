@@ -27,6 +27,7 @@ public class SyVocService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 고객의 소리(VOC) 키조회 */
     public SyVocDto.Item getById(String id) {
         SyVocDto.Item dto = syVocRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyVocService {
         return syVocRepository.selectById(id).orElse(null);
     }
 
+    /* 고객의 소리(VOC) 상세조회 */
     public SyVoc findById(String id) {
         return syVocRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyVocService {
         return syVocRepository.findById(id).orElse(null);
     }
 
+    /* 고객의 소리(VOC) 키검증 */
     public boolean existsById(String id) {
         return syVocRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyVocService {
         return true;
     }
 
+    /* 고객의 소리(VOC) 목록조회 */
     public List<SyVocDto.Item> getList(SyVocDto.Request req) {
         return syVocRepository.selectList(req);
     }
 
+    /* 고객의 소리(VOC) 페이지조회 */
     public SyVocDto.PageResponse getPageData(SyVocDto.Request req) {
         PageHelper.addPaging(req);
         return syVocRepository.selectPageList(req);
     }
 
+    /* 고객의 소리(VOC) 등록 */
     @Transactional
     public SyVoc create(SyVoc body) {
         body.setVocId(CmUtil.generateId("sy_voc"));
@@ -80,6 +86,7 @@ public class SyVocService {
         return saved;
     }
 
+    /* 고객의 소리(VOC) 저장 */
     @Transactional
     public SyVoc save(SyVoc entity) {
         if (!existsById(entity.getVocId()))
@@ -92,6 +99,7 @@ public class SyVocService {
         return saved;
     }
 
+    /* 고객의 소리(VOC) 수정 */
     @Transactional
     public SyVoc update(String id, SyVoc body) {
         SyVoc entity = findById(id);
@@ -104,6 +112,7 @@ public class SyVocService {
         return saved;
     }
 
+    /* 고객의 소리(VOC) 수정 */
     @Transactional
     public SyVoc updateSelective(SyVoc entity) {
         if (entity.getVocId() == null) throw new CmBizException("vocId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyVocService {
         return entity;
     }
 
+    /* 고객의 소리(VOC) 삭제 */
     @Transactional
     public void delete(String id) {
         SyVoc entity = findById(id);
@@ -125,6 +135,7 @@ public class SyVocService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 고객의 소리(VOC) 목록저장 */
     @Transactional
     public void saveList(List<SyVoc> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

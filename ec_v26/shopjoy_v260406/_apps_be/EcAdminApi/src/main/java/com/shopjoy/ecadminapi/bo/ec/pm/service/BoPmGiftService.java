@@ -30,8 +30,11 @@ public class BoPmGiftService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public PmGiftDto.Item getById(String id) { return pmGiftService.getById(id); }
+    /* 목록조회 */
     public List<PmGiftDto.Item> getList(PmGiftDto.Request req) { return pmGiftService.getList(req); }
+    /* 페이지조회 */
     public PmGiftDto.PageResponse getPageData(PmGiftDto.Request req) { return pmGiftService.getPageData(req); }
 
     @Transactional public PmGift create(PmGift body) { return pmGiftService.create(body); }

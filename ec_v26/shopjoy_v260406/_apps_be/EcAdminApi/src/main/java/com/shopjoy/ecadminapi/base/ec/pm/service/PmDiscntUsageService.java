@@ -27,6 +27,7 @@ public class PmDiscntUsageService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 할인 사용 이력 키조회 */
     public PmDiscntUsageDto.Item getById(String id) {
         PmDiscntUsageDto.Item dto = pmDiscntUsageRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmDiscntUsageService {
         return pmDiscntUsageRepository.selectById(id).orElse(null);
     }
 
+    /* 할인 사용 이력 상세조회 */
     public PmDiscntUsage findById(String id) {
         return pmDiscntUsageRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmDiscntUsageService {
         return pmDiscntUsageRepository.findById(id).orElse(null);
     }
 
+    /* 할인 사용 이력 키검증 */
     public boolean existsById(String id) {
         return pmDiscntUsageRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmDiscntUsageService {
         return true;
     }
 
+    /* 할인 사용 이력 목록조회 */
     public List<PmDiscntUsageDto.Item> getList(PmDiscntUsageDto.Request req) {
         return pmDiscntUsageRepository.selectList(req);
     }
 
+    /* 할인 사용 이력 페이지조회 */
     public PmDiscntUsageDto.PageResponse getPageData(PmDiscntUsageDto.Request req) {
         PageHelper.addPaging(req);
         return pmDiscntUsageRepository.selectPageList(req);
     }
 
+    /* 할인 사용 이력 등록 */
     @Transactional
     public PmDiscntUsage create(PmDiscntUsage body) {
         body.setDiscntUsageId(CmUtil.generateId("pm_discnt_usage"));
@@ -80,6 +86,7 @@ public class PmDiscntUsageService {
         return saved;
     }
 
+    /* 할인 사용 이력 저장 */
     @Transactional
     public PmDiscntUsage save(PmDiscntUsage entity) {
         if (!existsById(entity.getDiscntUsageId()))
@@ -92,6 +99,7 @@ public class PmDiscntUsageService {
         return saved;
     }
 
+    /* 할인 사용 이력 수정 */
     @Transactional
     public PmDiscntUsage update(String id, PmDiscntUsage body) {
         PmDiscntUsage entity = findById(id);
@@ -104,6 +112,7 @@ public class PmDiscntUsageService {
         return saved;
     }
 
+    /* 할인 사용 이력 수정 */
     @Transactional
     public PmDiscntUsage updateSelective(PmDiscntUsage entity) {
         if (entity.getDiscntUsageId() == null) throw new CmBizException("discntUsageId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmDiscntUsageService {
         return entity;
     }
 
+    /* 할인 사용 이력 삭제 */
     @Transactional
     public void delete(String id) {
         PmDiscntUsage entity = findById(id);
@@ -125,6 +135,7 @@ public class PmDiscntUsageService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 할인 사용 이력 목록저장 */
     @Transactional
     public void saveList(List<PmDiscntUsage> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

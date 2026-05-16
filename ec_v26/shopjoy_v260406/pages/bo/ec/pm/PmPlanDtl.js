@@ -12,10 +12,10 @@ window.PmPlanDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const products = reactive([]);
     const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecPlanDtlState.tab || 'info', tabMode2: window._ecPlanDtlState.tabMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const tab = Vue.toRef(uiState, 'tab');
@@ -55,8 +55,11 @@ window.PmPlanDtl = {
 watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._ecPlanDtlState.tabMode = v; });
+
+    /* 프로모션 플랜 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+    /* 프로모션 플랜 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       
@@ -66,6 +69,8 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
 
 
     const _today = new Date();
+
+    /* 프로모션 플랜 _pad */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END = `${_today.getFullYear()+1}-12-31`;
@@ -96,6 +101,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       category: yup.string().required('카테고리를 선택해주세요.'),
     });
 
+    /* 프로모션 플랜 onTabChange */
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
     };
@@ -117,23 +123,32 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       const searchVal = prodSearch.value.trim().toLowerCase();
       return !searchVal || p.prodNm.toLowerCase().includes(searchVal);
     }));
+
+    /* 프로모션 플랜 toggleProduct */
     const toggleProduct = (pid) => {
       const idx = form.productIds.indexOf(pid);
       if (idx === -1) form.productIds.push(pid);
       else form.productIds.splice(idx, 1);
     };
+
+    /* 프로모션 플랜 isSelected */
     const isSelected = (pid) => form.productIds.includes(pid);
     const cfSelectedProducts = computed(() =>
       form.productIds.map(pid => products.find(p => p.productId === pid)).filter(Boolean)
     );
+
+    /* 프로모션 플랜 removeProduct */
     const removeProduct = (pid) => {
       const idx = form.productIds.indexOf(pid);
       if (idx !== -1) form.productIds.splice(idx, 1);
     };
 
+    /* 프로모션 플랜 hasVisibility */
     const hasVisibility = (code) => {
       return (form.visibilityTargets || '').includes('^' + code + '^');
     };
+
+    /* 프로모션 플랜 toggleVisibility */
     const toggleVisibility = (code) => {
       const targets = (form.visibilityTargets || '').split('^').filter(Boolean);
       const idx = targets.indexOf(code);
@@ -147,6 +162,8 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
+
+    /* 프로모션 플랜 selectVendor */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -157,10 +174,13 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     /* 신규 등록은 info 탭에서만 가능. 그 외 탭(banner/content/products/preview)은 ID 없으면 비활성 */
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
 
+    /* 프로모션 플랜 _afterApiOk */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
+
+    /* 프로모션 플랜 _afterApiErr */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

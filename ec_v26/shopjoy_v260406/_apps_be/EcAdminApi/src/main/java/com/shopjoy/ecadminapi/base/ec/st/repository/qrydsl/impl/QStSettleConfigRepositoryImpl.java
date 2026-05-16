@@ -36,6 +36,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     private static final QPdCategory    cat  = QPdCategory.pdCategory;
     private static final QSyCode        cdSc = new QSyCode("cd_sc");
 
+    /* 정산 설정 키조회 */
     @Override
     public Optional<StSettleConfigDto.Item> selectById(String id) {
         StSettleConfigDto.Item dto = baseListQuery()
@@ -44,6 +45,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         return Optional.ofNullable(dto);
     }
 
+    /* 정산 설정 목록조회 */
     @Override
     public List<StSettleConfigDto.Item> selectList(StSettleConfigDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -62,6 +64,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         return query.fetch();
     }
 
+    /* 정산 설정 페이지조회 */
     @Override
     public StSettleConfigDto.PageResponse selectPageList(StSettleConfigDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -87,6 +90,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 정산 설정 baseListQuery */
     private JPAQuery<StSettleConfigDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleConfigDto.Item.class,
@@ -106,6 +110,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                 .leftJoin(cdSc).on(cdSc.codeGrp.eq("SETTLE_CYCLE").and(cdSc.codeValue.eq(c.settleCycleCd)));
     }
 
+    /* 정산 설정 buildCondition */
     private BooleanBuilder buildCondition(StSettleConfigDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -159,6 +164,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         return orders;
     }
 
+    /* 정산 설정 수정 */
     @Override
     public int updateSelective(StSettleConfig entity) {
         if (entity.getSettleConfigId() == null) return 0;

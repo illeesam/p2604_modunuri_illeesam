@@ -149,6 +149,8 @@
       const k = p.parentPathId == null ? '__root__' : p.parentPathId;
       (byParent[k] = byParent[k] || []).push(p);
     });
+
+    /* build */
     const build = (parentKey) => (byParent[parentKey] || [])
       .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
       .map(p => ({
@@ -162,6 +164,8 @@
       pathId: null, path: null, name: '전체', pathLabel: '전체',
       children: build('__root__'), count: list.length,
     };
+
+    /* recur */
     const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
     recur(root);
     return root;

@@ -28,11 +28,14 @@
     try { if (typeof window.useBoAppStore === 'function') return window.useBoAppStore(); } catch (_) {}
     return null;
   };
+
+  /* _key */
   const _key = (name) => {
     const s = _getAppStore();
     return s ? (s[name] || '') : '';
   };
 
+  /* _loadScript */
   const _loadScript = (src) => new Promise((resolve, reject) => {
     const existing = Array.from(document.querySelectorAll('script')).find((s) => s.src === src);
     if (existing) {
@@ -54,6 +57,8 @@
 
   /* ── Google: GIS OAuth2 access-token popup ── */
   let _googleClient = null;
+
+  /* _initGoogle */
   const _initGoogle = () => {
     if (_googleClient) return _googleClient;
     if (!window.google || !google.accounts || !google.accounts.oauth2) {
@@ -70,6 +75,7 @@
     return _googleClient;
   };
 
+  /* loginGoogle */
   const loginGoogle = () => new Promise((resolve, reject) => {
     try {
       const client = _initGoogle();
@@ -98,6 +104,7 @@
     if (!Kakao.isInitialized()) Kakao.init(jsKey);
   };
 
+  /* loginKakao */
   const loginKakao = () => new Promise((resolve, reject) => {
     try {
       _initKakao();
@@ -117,6 +124,8 @@
 
   /* ── Naver: naveridlogin SDK (popup 모드) ── */
   let _naverInstance = null;
+
+  /* _initNaver */
   const _initNaver = () => {
     if (_naverInstance) return _naverInstance;
     if (!window.naver || !naver.LoginWithNaverId) {
@@ -137,6 +146,7 @@
     return _naverInstance;
   };
 
+  /* loginNaver */
   const loginNaver = () => new Promise((resolve, reject) => {
     try {
       const inst = _initNaver();
@@ -182,6 +192,8 @@
    * 2) 결제 - Toss Payments
    * ════════════════════════════════════════════════════════════ */
   let _tossInstance = null;
+
+  /* getTossPayments */
   const getTossPayments = async () => {
     if (_tossInstance) return _tossInstance;
     if (!window.TossPayments) throw new Error('Toss Payments SDK 가 로드되지 않았습니다.');
@@ -195,6 +207,8 @@
    * 3) 지도 - Kakao Map / Naver Map (동적 로드)
    * ════════════════════════════════════════════════════════════ */
   let _kakaoMapPromise = null;
+
+  /* loadKakaoMap */
   const loadKakaoMap = () => {
     if (_kakaoMapPromise) return _kakaoMapPromise;
     const appKey = _key('svKakaoMapJsKey');
@@ -207,6 +221,8 @@
   };
 
   let _naverMapPromise = null;
+
+  /* loadNaverMap */
   const loadNaverMap = () => {
     if (_naverMapPromise) return _naverMapPromise;
     const clientId = _key('svNaverMapClientId');

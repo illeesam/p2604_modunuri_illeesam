@@ -6,10 +6,10 @@ window.Order = {
   },
   setup(props) {
     const { reactive, computed, ref, onMounted, watch } = Vue;
-    const showToast            = window.foApp.showToast;
-    const showAlert            = window.foApp.showAlert;
-    const clearCart            = window.foApp.clearCart;
-    const cart                 = window.foApp.cart;
+    const showToast            = window.foApp.showToast;  // 토스트 알림
+    const showAlert            = window.foApp.showAlert;  // 알림 모달
+    const clearCart            = window.foApp.clearCart;  // 장바구니 비우기
+    const cart                 = window.foApp.cart;  // 장바구니 목록
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0 });
     const codes = reactive({
       dliv_req_opts: [
@@ -20,6 +20,7 @@ window.Order = {
       ],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -32,10 +33,14 @@ window.Order = {
 
     /* -- 유틸 -- */
     const parsePrice = s => parseInt(String(s || '').replace(/[^0-9]/g, ''), 10) || 0;
+
+    /* fmt */
     const fmt        = n => Number(n).toLocaleString('ko-KR') + '원';
 
     /* -- 쿠폰 로드 -- */
     const allCoupons  = reactive([]);
+
+    /* handleLoadCoupons */
     const handleLoadCoupons = async () => {
       try {
         const res = await foApiSvc.myCoupon.getList({}, '주문', '쿠폰조회');
@@ -56,12 +61,15 @@ window.Order = {
       allCoupons.filter(c => c.discountType === 'shipping')
     );
 
+    /* discountLabel */
     const discountLabel = c => {
       if (!c) return '';
       if (c.discountType === 'rate')     return c.discountValue + '% 할인';
       if (c.discountType === 'shipping') return '무료배송';
       return fmt(c.discountValue) + ' 할인';
     };
+
+    /* calcCouponDiscount */
     const calcCouponDiscount = (c, item) => {
       if (!c) return 0;
       const base = parsePrice(item.prod.price) * item.qty;
@@ -74,18 +82,27 @@ window.Order = {
     const couponPopup     = reactive({ show: false, targetIdx: null });
     const selectedCoupons = reactive({});
 
+    /* openCouponPopup */
     const openCouponPopup  = idx => { couponPopup.targetIdx = idx; couponPopup.show = true; };
+
+    /* closeCouponPopup */
     const closeCouponPopup = () => { couponPopup.show = false; };
+
+    /* applyCoupon */
     const applyCoupon      = c => {
       selectedCoupons[couponPopup.targetIdx] = c;
       couponPopup.show = false;
     };
+
+    /* removeCoupon */
     const removeCoupon     = idx => {
       delete selectedCoupons[idx];
     };
 
     /* -- 배송비 쿠폰 팝업 -- */
         const applyShipCoupon = c => { uiState.selectedShipCoupon = c; uiState.shipCouponPopup = false; };
+
+    /* removeShipCoupon */
     const removeShipCoupon = () => { uiState.selectedShipCoupon = null; };
 
     /* -- 캐쉬 -- */
@@ -124,6 +141,8 @@ window.Order = {
       name: '', tel: '', email: '',
       postcode: '', address: '', addressDetail: '', deliveryReq: ''
     });
+
+    /* openKakaoAddr */
     const openKakaoAddr = () => {
       if (typeof daum === 'undefined' || !daum.Postcode) {
         showToast('주소 검색 서비스를 불러오는 중입니다.', 'info'); return;
@@ -136,6 +155,7 @@ window.Order = {
       }).open();
     };
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       const u = window.foAuth?.state?.user;
       if (u) {
@@ -148,7 +168,11 @@ window.Order = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const errors   = reactive({});
+
+    /* clearErr */
     const clearErr = k => { delete errors[k]; };
+
+    /* validate */
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       let ok = true;

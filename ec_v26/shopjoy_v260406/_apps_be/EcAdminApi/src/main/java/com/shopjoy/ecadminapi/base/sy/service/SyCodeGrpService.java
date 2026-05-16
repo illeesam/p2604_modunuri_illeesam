@@ -27,6 +27,7 @@ public class SyCodeGrpService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 공통 코드 그룹 키조회 */
     public SyCodeGrpDto.Item getById(String id) {
         SyCodeGrpDto.Item dto = syCodeGrpRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyCodeGrpService {
         return syCodeGrpRepository.selectById(id).orElse(null);
     }
 
+    /* 공통 코드 그룹 상세조회 */
     public SyCodeGrp findById(String id) {
         return syCodeGrpRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyCodeGrpService {
         return syCodeGrpRepository.findById(id).orElse(null);
     }
 
+    /* 공통 코드 그룹 키검증 */
     public boolean existsById(String id) {
         return syCodeGrpRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyCodeGrpService {
         return true;
     }
 
+    /* 공통 코드 그룹 목록조회 */
     public List<SyCodeGrpDto.Item> getList(SyCodeGrpDto.Request req) {
         return syCodeGrpRepository.selectList(req);
     }
 
+    /* 공통 코드 그룹 페이지조회 */
     public SyCodeGrpDto.PageResponse getPageData(SyCodeGrpDto.Request req) {
         PageHelper.addPaging(req);
         return syCodeGrpRepository.selectPageList(req);
     }
 
+    /* 공통 코드 그룹 등록 */
     @Transactional
     public SyCodeGrp create(SyCodeGrp body) {
         body.setCodeGrpId(CmUtil.generateId("sy_code_grp"));
@@ -80,6 +86,7 @@ public class SyCodeGrpService {
         return saved;
     }
 
+    /* 공통 코드 그룹 저장 */
     @Transactional
     public SyCodeGrp save(SyCodeGrp entity) {
         if (!existsById(entity.getCodeGrpId()))
@@ -92,6 +99,7 @@ public class SyCodeGrpService {
         return saved;
     }
 
+    /* 공통 코드 그룹 수정 */
     @Transactional
     public SyCodeGrp update(String id, SyCodeGrp body) {
         SyCodeGrp entity = findById(id);
@@ -104,6 +112,7 @@ public class SyCodeGrpService {
         return saved;
     }
 
+    /* 공통 코드 그룹 수정 */
     @Transactional
     public SyCodeGrp updateSelective(SyCodeGrp entity) {
         if (entity.getCodeGrpId() == null) throw new CmBizException("codeGrpId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyCodeGrpService {
         return entity;
     }
 
+    /* 공통 코드 그룹 삭제 */
     @Transactional
     public void delete(String id) {
         SyCodeGrp entity = findById(id);
@@ -125,6 +135,7 @@ public class SyCodeGrpService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 공통 코드 그룹 목록저장 */
     @Transactional
     public void saveList(List<SyCodeGrp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

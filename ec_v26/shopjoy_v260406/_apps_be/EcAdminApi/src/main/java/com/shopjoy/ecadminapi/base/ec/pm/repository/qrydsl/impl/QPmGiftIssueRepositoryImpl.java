@@ -38,6 +38,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
     private static final QSySite      ste  = QSySite.sySite;
     private static final QSyCode      cdGis = new QSyCode("cd_gis");
 
+    /* 사은품 발행 이력 baseQuery */
     private JPAQuery<PmGiftIssueDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmGiftIssueDto.Item.class,
@@ -53,6 +54,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                 .leftJoin(cdGis).on(cdGis.codeGrp.eq("GIFT_ISSUE_STATUS").and(cdGis.codeValue.eq(i.giftIssueStatusCd)));
     }
 
+    /* 사은품 발행 이력 키조회 */
     @Override
     public Optional<PmGiftIssueDto.Item> selectById(String giftIssueId) {
         PmGiftIssueDto.Item dto = baseQuery()
@@ -61,6 +63,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 사은품 발행 이력 목록조회 */
     @Override
     public List<PmGiftIssueDto.Item> selectList(PmGiftIssueDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -79,6 +82,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         return query.fetch();
     }
 
+    /* 사은품 발행 이력 페이지조회 */
     @Override
     public PmGiftIssueDto.PageResponse selectPageList(PmGiftIssueDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -104,6 +108,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 사은품 발행 이력 buildCondition */
     private BooleanBuilder buildCondition(PmGiftIssueDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -163,6 +168,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         return orders;
     }
 
+    /* 사은품 발행 이력 수정 */
     @Override
     public int updateSelective(PmGiftIssue entity) {
         if (entity.getGiftIssueId() == null) return 0;

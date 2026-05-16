@@ -27,6 +27,7 @@ public class SyMenuService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 메뉴 키조회 */
     public SyMenuDto.Item getById(String id) {
         SyMenuDto.Item dto = syMenuRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyMenuService {
         return syMenuRepository.selectById(id).orElse(null);
     }
 
+    /* 메뉴 상세조회 */
     public SyMenu findById(String id) {
         return syMenuRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyMenuService {
         return syMenuRepository.findById(id).orElse(null);
     }
 
+    /* 메뉴 키검증 */
     public boolean existsById(String id) {
         return syMenuRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyMenuService {
         return true;
     }
 
+    /* 메뉴 목록조회 */
     public List<SyMenuDto.Item> getList(SyMenuDto.Request req) {
         return syMenuRepository.selectList(req);
     }
 
+    /* 메뉴 페이지조회 */
     public SyMenuDto.PageResponse getPageData(SyMenuDto.Request req) {
         PageHelper.addPaging(req);
         return syMenuRepository.selectPageList(req);
     }
 
+    /* 메뉴 등록 */
     @Transactional
     public SyMenu create(SyMenu body) {
         body.setMenuId(CmUtil.generateId("sy_menu"));
@@ -80,6 +86,7 @@ public class SyMenuService {
         return saved;
     }
 
+    /* 메뉴 저장 */
     @Transactional
     public SyMenu save(SyMenu entity) {
         if (!existsById(entity.getMenuId()))
@@ -92,6 +99,7 @@ public class SyMenuService {
         return saved;
     }
 
+    /* 메뉴 수정 */
     @Transactional
     public SyMenu update(String id, SyMenu body) {
         SyMenu entity = findById(id);
@@ -104,6 +112,7 @@ public class SyMenuService {
         return saved;
     }
 
+    /* 메뉴 수정 */
     @Transactional
     public SyMenu updateSelective(SyMenu entity) {
         if (entity.getMenuId() == null) throw new CmBizException("menuId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyMenuService {
         return entity;
     }
 
+    /* 메뉴 삭제 */
     @Transactional
     public void delete(String id) {
         SyMenu entity = findById(id);
@@ -125,6 +135,7 @@ public class SyMenuService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 메뉴 목록저장 */
     @Transactional
     public void saveList(List<SyMenu> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

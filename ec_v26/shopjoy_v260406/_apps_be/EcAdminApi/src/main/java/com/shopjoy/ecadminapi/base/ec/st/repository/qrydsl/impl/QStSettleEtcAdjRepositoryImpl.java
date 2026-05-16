@@ -33,6 +33,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     private static final QSyCode         cdSeat = new QSyCode("cd_seat");
     private static final QSyCode         cdAd   = new QSyCode("cd_ad");
 
+    /* 정산 기타 조정 키조회 */
     @Override
     public Optional<StSettleEtcAdjDto.Item> selectById(String id) {
         StSettleEtcAdjDto.Item dto = baseListQuery()
@@ -41,6 +42,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         return Optional.ofNullable(dto);
     }
 
+    /* 정산 기타 조정 목록조회 */
     @Override
     public List<StSettleEtcAdjDto.Item> selectList(StSettleEtcAdjDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -59,6 +61,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         return query.fetch();
     }
 
+    /* 정산 기타 조정 페이지조회 */
     @Override
     public StSettleEtcAdjDto.PageResponse selectPageList(StSettleEtcAdjDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -84,6 +87,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 정산 기타 조정 baseListQuery */
     private JPAQuery<StSettleEtcAdjDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleEtcAdjDto.Item.class,
@@ -101,6 +105,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                 .leftJoin(cdAd).on(cdAd.codeGrp.eq("ADJ_DIR").and(cdAd.codeValue.eq(a.etcAdjDirCd)));
     }
 
+    /* 정산 기타 조정 buildCondition */
     private BooleanBuilder buildCondition(StSettleEtcAdjDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -154,6 +159,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         return orders;
     }
 
+    /* 정산 기타 조정 수정 */
     @Override
     public int updateSelective(StSettleEtcAdj entity) {
         if (entity.getSettleEtcAdjId() == null) return 0;

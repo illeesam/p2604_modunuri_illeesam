@@ -635,7 +635,7 @@ public class CmAppStoreDataService {
                                                             .widgetNm(CmUtil.nvl(item.getWidgetTitle()))
                                                             .widgetTypeCd(CmUtil.nvl(item.getWidgetTypeCd()))
                                                             .widgetStatusCd("ACTIVE")
-                                                            .widgetSortOrd(String.valueOf(item.getItemSortOrd() != null ? item.getItemSortOrd() : 0))
+                                                            .widgetSortOrd(String.valueOf(item.getSortOrd() != null ? item.getSortOrd() : 0))
                                                             .build())
                                                     .toList();
 

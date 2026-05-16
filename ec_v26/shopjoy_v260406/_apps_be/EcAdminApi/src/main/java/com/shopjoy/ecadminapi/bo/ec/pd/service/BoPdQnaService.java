@@ -31,8 +31,11 @@ public class BoPdQnaService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public PdProdQnaDto.Item getById(String id) { return pdProdQnaService.getById(id); }
+    /* 목록조회 */
     public List<PdProdQnaDto.Item> getList(PdProdQnaDto.Request req) { return pdProdQnaService.getList(req); }
+    /* 페이지조회 */
     public PdProdQnaDto.PageResponse getPageData(PdProdQnaDto.Request req) { return pdProdQnaService.getPageData(req); }
 
     @Transactional public PdProdQna create(PdProdQna body) { return pdProdQnaService.create(body); }

@@ -22,16 +22,19 @@ public class CoSyPathController {
 
     private final SyPathService syPathService;
 
+    /* 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyPathDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(syPathService.getById(id)));
     }
 
+    /* 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyPathDto.Item>>> list(@Valid @ModelAttribute SyPathDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(syPathService.getList(req)));
     }
 
+    /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<SyPathDto.PageResponse>> page(@Valid @ModelAttribute SyPathDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(syPathService.getPageData(req)));

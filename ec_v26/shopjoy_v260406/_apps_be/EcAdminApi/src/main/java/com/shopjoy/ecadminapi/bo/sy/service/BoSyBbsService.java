@@ -19,8 +19,11 @@ public class BoSyBbsService {
 
     private final SyBbsService syBbsService;
 
+    /* 키조회 */
     public SyBbsDto.Item getById(String id) { return syBbsService.getById(id); }
+    /* 목록조회 */
     public List<SyBbsDto.Item> getList(SyBbsDto.Request req) { return syBbsService.getList(req); }
+    /* 페이지조회 */
     public SyBbsDto.PageResponse getPageData(SyBbsDto.Request req) { return syBbsService.getPageData(req); }
 
     @Transactional public SyBbs create(SyBbs body) { return syBbsService.create(body); }

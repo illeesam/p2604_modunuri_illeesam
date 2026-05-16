@@ -28,6 +28,7 @@ public class PdProdService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 키조회 */
     public PdProdDto.Item getById(String id) {
         PdProdDto.Item dto = pdProdRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -39,6 +40,7 @@ public class PdProdService {
         return pdProdRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 상세조회 */
     public PdProd findById(String id) {
         return pdProdRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -49,6 +51,7 @@ public class PdProdService {
         return pdProdRepository.findById(id).orElse(null);
     }
 
+    /* 상품 키검증 */
     public boolean existsById(String id) {
         return pdProdRepository.existsById(id);
     }
@@ -59,15 +62,18 @@ public class PdProdService {
         return true;
     }
 
+    /* 상품 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
         return pdProdRepository.selectList(req);
     }
 
+    /* 상품 페이지조회 */
     public PdProdDto.PageResponse getPageData(PdProdDto.Request req) {
         PageHelper.addPaging(req);
         return pdProdRepository.selectPageList(req);
     }
 
+    /* 상품 등록 */
     @Transactional
     public PdProd create(PdProd body) {
         body.setProdId(CmUtil.generateId("pd_prod"));
@@ -81,6 +87,7 @@ public class PdProdService {
         return saved;
     }
 
+    /* 상품 저장 */
     @Transactional
     public PdProd save(PdProd entity) {
         if (!existsById(entity.getProdId()))
@@ -93,6 +100,7 @@ public class PdProdService {
         return saved;
     }
 
+    /* 상품 수정 */
     @Transactional
     public PdProd update(String id, PdProd body) {
         PdProd entity = findById(id);
@@ -105,6 +113,7 @@ public class PdProdService {
         return saved;
     }
 
+    /* 상품 수정 */
     @Transactional
     public PdProd updateSelective(PdProd entity) {
         if (entity.getProdId() == null) throw new CmBizException("prodId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -118,6 +127,7 @@ public class PdProdService {
         return entity;
     }
 
+    /* 상품 삭제 */
     @Transactional
     public void delete(String id) {
         PdProd entity = findById(id);
@@ -126,6 +136,7 @@ public class PdProdService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 목록저장 */
     @Transactional
     public void saveList(List<PdProd> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

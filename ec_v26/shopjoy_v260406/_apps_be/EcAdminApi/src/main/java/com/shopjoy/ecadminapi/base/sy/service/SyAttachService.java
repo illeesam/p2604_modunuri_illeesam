@@ -27,6 +27,7 @@ public class SyAttachService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 첨부파일 키조회 */
     public SyAttachDto.Item getById(String id) {
         SyAttachDto.Item dto = syAttachRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyAttachService {
         return syAttachRepository.selectById(id).orElse(null);
     }
 
+    /* 첨부파일 상세조회 */
     public SyAttach findById(String id) {
         return syAttachRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyAttachService {
         return syAttachRepository.findById(id).orElse(null);
     }
 
+    /* 첨부파일 키검증 */
     public boolean existsById(String id) {
         return syAttachRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyAttachService {
         return true;
     }
 
+    /* 첨부파일 목록조회 */
     public List<SyAttachDto.Item> getList(SyAttachDto.Request req) {
         return syAttachRepository.selectList(req);
     }
 
+    /* 첨부파일 페이지조회 */
     public SyAttachDto.PageResponse getPageData(SyAttachDto.Request req) {
         PageHelper.addPaging(req);
         return syAttachRepository.selectPageList(req);
     }
 
+    /* 첨부파일 등록 */
     @Transactional
     public SyAttach create(SyAttach body) {
         body.setAttachId(CmUtil.generateId("sy_attach"));
@@ -80,6 +86,7 @@ public class SyAttachService {
         return saved;
     }
 
+    /* 첨부파일 저장 */
     @Transactional
     public SyAttach save(SyAttach entity) {
         if (!existsById(entity.getAttachId()))
@@ -92,6 +99,7 @@ public class SyAttachService {
         return saved;
     }
 
+    /* 첨부파일 수정 */
     @Transactional
     public SyAttach update(String id, SyAttach body) {
         SyAttach entity = findById(id);
@@ -104,6 +112,7 @@ public class SyAttachService {
         return saved;
     }
 
+    /* 첨부파일 수정 */
     @Transactional
     public SyAttach updateSelective(SyAttach entity) {
         if (entity.getAttachId() == null) throw new CmBizException("attachId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyAttachService {
         return entity;
     }
 
+    /* 첨부파일 삭제 */
     @Transactional
     public void delete(String id) {
         SyAttach entity = findById(id);
@@ -125,6 +135,7 @@ public class SyAttachService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 첨부파일 목록저장 */
     @Transactional
     public void saveList(List<SyAttach> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

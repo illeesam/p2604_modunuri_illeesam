@@ -78,6 +78,7 @@ public class CmFoAppStoreDataController {
 //        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.MB_MEMBER)));
 //    }
 
+    /* getRoles */
     @GetMapping("/getRoles")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_ROLES, CmStoreConst.FO)));

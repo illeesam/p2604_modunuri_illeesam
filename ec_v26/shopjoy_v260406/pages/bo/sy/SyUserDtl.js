@@ -11,14 +11,15 @@ window.SyUserDtl = {
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ active_statuses: [], user_roles: [] });
 
+    /* 사용자(관리자) fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -54,6 +55,7 @@ window.SyUserDtl = {
       userEmail: yup.string().required('이메일을 입력해주세요.'),
     });
 
+    /* 사용자(관리자) 상세조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -84,6 +86,7 @@ window.SyUserDtl = {
 
     /* ── 카카오 주소 검색 ── */
     const openKakaoPostcode = () => {
+      /* 사용자(관리자) run */
       const run = () => {
         new window.daum.Postcode({
           oncomplete(data) {
@@ -102,21 +105,29 @@ window.SyUserDtl = {
 
     /* ── 부서 선택 팝업 ── */
     const deptModal = reactive({ show: false });
+
+    /* 사용자(관리자) openDeptModal */
     const openDeptModal = () => { deptModal.show = true; };
+
+    /* 사용자(관리자) onDeptSelect */
     const onDeptSelect = (dept) => {
       form.deptId  = dept.deptId;
       form.deptNm  = dept.deptNm;
       deptModal.show = false;
     };
+
+    /* 사용자(관리자) clearDept */
     const clearDept = () => { form.deptId = null; form.deptNm = ''; };
 
     /* ── 현재 적용 역할 목록 (빈 배열 정적 — computed 불필요) ── */
     const cfUserRoles = [];
 
+    /* 사용자(관리자) fnRoleTypeBadge */
     const fnRoleTypeBadge = (t) => ({
       '시스템': 'badge-purple', '업무': 'badge-blue', '기타': 'badge-gray',
     }[t] || 'badge-gray');
 
+    /* 사용자(관리자) 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {

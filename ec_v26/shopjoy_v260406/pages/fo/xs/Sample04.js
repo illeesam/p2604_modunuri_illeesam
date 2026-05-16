@@ -12,6 +12,7 @@ window.XsSample04 = {
       ],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -32,6 +33,7 @@ window.XsSample04 = {
     /* -- Confirm 콜백 저장 -- */
     let _confirmCb = null;
 
+    /* openModal */
     const openModal = (type, opts = {}) => {
       uiState.modalType     = type;
       uiState.modalVariant  = opts.variant || 'info';
@@ -39,20 +41,25 @@ window.XsSample04 = {
       uiState.nested2  = false;
       _confirmCb     = opts.onConfirm || null;
     };
+
+    /* closeModal */
     const closeModal = () => { uiState.modalType = null; uiState.nested2 = false; _confirmCb = null; };
 
+    /* doConfirm */
     const doConfirm = () => {
       const cb = _confirmCb;
       closeModal();
       if (cb) setTimeout(cb, 80);
     };
 
+    /* loadingDemo */
     const loadingDemo = async () => {
       openModal('loading');
       await new Promise(r => setTimeout(r, 2500));
       if (uiState.modalType === 'loading') closeModal();
     };
 
+    /* submitForm */
     const submitForm = () => {
       Object.keys(formErrors).forEach(k => delete formErrors[k]);
       if (!form.name.trim()) formErrors.name = '이름을 입력해주세요.';
@@ -87,6 +94,7 @@ window.XsSample04 = {
       { id: 'loading',    icon: '⏳', name: '로딩 모달',            desc: '2.5초 후 자동으로 닫힘',               color: '#374151' },
     ];
 
+    /* fnGradeBadge */
     const fnGradeBadge = g => ({
       'VVIP': 'background:#fce7f3;color:#9d174d;border:1px solid #fbcfe8;',
       'VIP':  'background:#fef9c3;color:#854d0e;border:1px solid #fde68a;',
@@ -94,12 +102,14 @@ window.XsSample04 = {
       '일반': 'background:#f0f0f0;color:#666;border:1px solid #e0e0e0;',
     }[g] || 'background:#f0f0f0;color:#666;');
 
+    /* fnStatusBadge */
     const fnStatusBadge = s => ({
       '활성': 'background:#d1fae5;color:#065f46;',
       '휴면': 'background:#fef3c7;color:#92400e;',
       '탈퇴': 'background:#fee2e2;color:#991b1b;',
     }[s] || '');
 
+    /* fnAlertMeta */
     const fnAlertMeta = v => ({
       info:    { icon: 'ℹ️',  label: '안내',  bg: '#3b82f6', bar: '#3b82f6' },
       success: { icon: '✅', label: '성공',  bg: '#22c55e', bar: '#22c55e' },
@@ -122,10 +132,17 @@ window.XsSample04 = {
     /* -- BaseModal 데모 상태 -- */
     const boData = { sites: [], vendors: [], members: [], orders: [], bbms: [], boUsers: [], depts: [], roles: [], menus: [], categories: [] };
     const bModal      = reactive({ type: null });
+
+    /* openBModal */
     const openBModal  = (type) => { bModal.type = type; };
+
+    /* closeBModal */
     const closeBModal = () => { bModal.type = null; };
 
+    /* bShowToast */
     const bShowToast    = (msg, variant = 'info') => openModal('alert', { variant, data: { msg } });
+
+    /* bShowConfirm */
     const bShowConfirm  = (title, msg) => Promise.resolve(window.confirm(`${title}\n\n${msg}`));
 
     /* -- 데모 데이터 -- */

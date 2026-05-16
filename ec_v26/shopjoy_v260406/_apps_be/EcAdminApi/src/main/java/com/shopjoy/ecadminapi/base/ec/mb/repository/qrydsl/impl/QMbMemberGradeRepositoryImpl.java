@@ -31,11 +31,13 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     private static final QSySite        ste  = QSySite.sySite;
     private static final QSyCode        cdMg = new QSyCode("cd_mg");
 
+    /* 회원 등급 키조회 */
     @Override
     public Optional<MbMemberGradeDto.Item> selectById(String memberGradeId) {
         return Optional.ofNullable(baseQuery().where(g.memberGradeId.eq(memberGradeId)).fetchOne());
     }
 
+    /* 회원 등급 목록조회 */
     @Override
     public List<MbMemberGradeDto.Item> selectList(MbMemberGradeDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -48,6 +50,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         return query.fetch();
     }
 
+    /* 회원 등급 페이지조회 */
     @Override
     public MbMemberGradeDto.PageResponse selectPageList(MbMemberGradeDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -66,6 +69,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 회원 등급 baseQuery */
     private JPAQuery<MbMemberGradeDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberGradeDto.Item.class,
@@ -78,15 +82,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(g.gradeCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(MbMemberGradeDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -94,8 +90,8 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         if (StringUtils.hasText(s.getMemberGradeId())) w.and(g.memberGradeId.eq(s.getMemberGradeId()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_grade_nm,")) or.or(g.gradeNm.likeIgnoreCase(pattern));
@@ -149,6 +145,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         return orders;
     }
 
+    /* 회원 등급 수정 */
     @Override
     public int updateSelective(MbMemberGrade entity) {
         if (entity.getMemberGradeId() == null) return 0;

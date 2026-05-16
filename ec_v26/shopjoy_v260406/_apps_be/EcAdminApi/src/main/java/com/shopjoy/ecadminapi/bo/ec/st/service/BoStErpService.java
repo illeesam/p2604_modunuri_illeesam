@@ -30,8 +30,11 @@ public class BoStErpService {
     private final StErpVoucherRepository stErpVoucherRepository;
     private final StReconService stReconService;
 
+    /* 목록조회 */
     public List<StErpVoucherDto.Item> getList(StErpVoucherDto.Request req) { return stErpVoucherService.getList(req); }
+    /* 페이지조회 */
     public StErpVoucherDto.PageResponse getPageData(StErpVoucherDto.Request req) { return stErpVoucherService.getPageData(req); }
+    /* getReconPageData */
     public StReconDto.PageResponse getReconPageData(StReconDto.Request req) { return stReconService.getPageData(req); }
 
     /** ERP 전표 생성 — PENDING 상태로 신규 발행 */

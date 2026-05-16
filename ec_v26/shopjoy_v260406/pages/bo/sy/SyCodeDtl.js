@@ -11,10 +11,10 @@ window.SyCodeDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, watch, onMounted, ref } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const pageCodes = reactive({ use_yn: [] });
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
@@ -33,6 +33,7 @@ window.SyCodeDtl = {
       codeValue: yup.string().required('코드값을 입력해주세요.'),
     });
 
+    /* 상세조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -49,6 +50,7 @@ window.SyCodeDtl = {
       }
     };
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -76,6 +78,7 @@ window.SyCodeDtl = {
       await handleLoadDetail();
     });
 
+    /* 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {

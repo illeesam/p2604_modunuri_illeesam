@@ -28,6 +28,8 @@ window.BoRefModal = {
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, watch } = Vue;
+
+    /* close */
     const close = () => emit('close');
     const s = props.state;
 
@@ -56,6 +58,7 @@ window.BoRefModal = {
       } catch (_) {}
     }, { immediate: true });
 
+    /* badgeCls */
     const badgeCls = (status) => {
       const map = {
         '활성': 'badge-green', '판매중': 'badge-green', '진행중': 'badge-blue',
@@ -208,6 +211,7 @@ window.BoCodeGrpModal = {
       codeRemark:      c.codeRemark ?? '',
     });
 
+    /* fnLoad */
     const fnLoad = async () => {
       if (!props.codeGrp) { codes.value = []; return; }
       loading.value = true;
@@ -248,6 +252,8 @@ window.BoCodeGrpModal = {
         byParent.get(p).push(c);
       });
       const known = new Set(all.map(c => c.codeValue));
+
+      /* buildChildren */
       const buildChildren = (parentVal) => {
         const list = byParent.get(parentVal) || [];
         return list
@@ -265,7 +271,10 @@ window.BoCodeGrpModal = {
 
     const cfHasTree = computed(() => codes.value.some(c => Number(c.codeLevel || 1) > 1 || c.parentCodeValue));
 
+    /* onClose */
     const onClose  = () => emit('close');
+
+    /* onSelect */
     const onSelect = (row) => emit('select', row);
 
     return { codes, loading, error, tab, cfTree, cfHasTree, onClose, onSelect };
@@ -373,7 +382,11 @@ window.BoCodeGrpTreeNode = {
   setup(props, { emit }) {
     const { ref } = Vue;
     const open = ref(true);
+
+    /* onSelect */
     const onSelect = (n) => emit('select', n);
+
+    /* toggle */
     const toggle = () => { open.value = !open.value; };
     return { open, toggle, onSelect };
   },

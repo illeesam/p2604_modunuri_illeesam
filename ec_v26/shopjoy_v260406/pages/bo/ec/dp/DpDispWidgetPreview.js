@@ -15,6 +15,7 @@ const _WP_DispWidgetPreview = {
     const uiState = reactive({ isPageCodeLoad: false });
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore?.();
       if (codeStore) {
@@ -48,6 +49,8 @@ const _WP_DispWidgetPreview = {
     /* -- config: widgetConfigJson 단일 컬럼으로 통일됨 (3개 테이블 모두) -- */
     const cfConfig = computed(() => {
       const w = props.lib || {};
+
+      /* tryParse */
       const tryParse = (s) => { try { return JSON.parse(s); } catch (_) { return null; } };
       const cfgJson  = tryParse(w.widgetConfigJson);
       if (!cfgJson) return {};
@@ -68,7 +71,7 @@ const _WP_DispWidgetPreview = {
     const cfImg = computed(() => {
       const w = props.lib || {};
       return cfConfig.value.img_url || cfConfig.value.imageUrl
-          || w.previewImgUrl || w.thumbnailUrl || w.imageUrl || '';
+          || w.thumbnailUrl || w.imageUrl || '';
     });
 
     /* 차트 막대 데이터 */
@@ -394,6 +397,7 @@ window.DpDispWidgetPreview = {
       uiState.isPageCodeLoad = true;
     };
 
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '조회');
@@ -424,42 +428,58 @@ window.DpDispWidgetPreview = {
       'barcode_qrcode':'🔖','video_player':'▶️',   'countdown':'⏱',
       'payment_widget':'💳','approval_widget':'✅', 'map_widget':'🗺',
     };
+
+    /* wIcon */
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
+
+    /* wTypeLabel */
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* -- 조회 조건 -- */
-    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', dashCanvas: null, searchTypes: '', searchValue: '' });
+    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', dashCanvas: null, searchType: '', searchValue: '' });
     const searchParam = reactive(_initSearchParam());
 
-    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchTypes: '', searchValue: '' });
+    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchType: '', searchValue: '' });
 
+    /* 목록조회 */
     const onSearch = () => {
       Object.assign(applied, {
         type:       searchParam.filterType,
         status:     searchParam.filterStatus,
         dispEnv:    searchParam.filterDispEnv,
-        searchTypes: searchParam.searchTypes,
+        searchType: searchParam.searchType,
         searchValue: (searchParam.searchValue || '').trim().toLowerCase(),
         visibility: searchParam.filterVisibility,
       });
     };
 
+    /* onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
-      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchTypes: '', searchValue: '' });
+      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchType: '', searchValue: '' });
     };
 
     /* DTO / UI 호환 필드 헬퍼 */
     const _getType = (lib) => lib.widgetTypeCd || lib.widgetType || '';
+
+    /* _getName */
     const _getName = (lib) => lib.widgetNm || lib.name || '';
+
+    /* _getDesc */
     const _getDesc = (lib) => lib.widgetLibDesc || lib.desc || '';
+
+    /* _getStatus */
     const _getStatus = (lib) => lib.useYn === 'Y' ? '활성' : (lib.useYn === 'N' ? '비활성' : (lib.status || '활성'));
+
+    /* _getPath */
     const _getPath = (lib) => lib.pathId || (Array.isArray(lib.usedPaths) && lib.usedPaths[0]) || '';
+
+    /* _getId */
     const _getId   = (lib) => lib.widgetLibId || lib.libId || '';
 
     const cfFilteredLibs = computed(() => {
       const searchVal = (applied.searchValue || '').toLowerCase();
-      const types = applied.searchTypes || 'def_nm,def_tag,def_desc';
+      const types = applied.searchType || 'def_nm,def_tag,def_desc';
       return (widgetLibs || []).filter(lib => {
         if (applied.type   && _getType(lib)   !== applied.type) return false;
         if (applied.status && _getStatus(lib) !== applied.status) return false;
@@ -485,6 +505,8 @@ window.DpDispWidgetPreview = {
     };
     const cfTree = computed(() => {
       const map = {};
+
+      /* addToPath */
       const addToPath = (lib, pathStr) => {
         const parts = _splitPath(pathStr);
         if (!parts.length) {
@@ -515,13 +537,21 @@ window.DpDispWidgetPreview = {
       }));
     });
     const openNodes = reactive(new Set());
+
+    /* toggleNode */
     const toggleNode = (key) => {
       if (openNodes.has(key)) openNodes.delete(key);
       else openNodes.add(key);
     };
+
+    /* isOpen */
     const isOpen = (key) => openNodes.has(key);
+
+    /* allChildrenOpen */
     const allChildrenOpen = (node) =>
       node.children.every(sub => openNodes.has(node.label + '_' + sub.label));
+
+    /* toggleAllChildren */
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
@@ -538,19 +568,31 @@ window.DpDispWidgetPreview = {
         openNodes.add(cfTree.value[0].label);
       }
     });
+
+    /* expandAll */
     const expandAll = () => { cfTree.value.forEach(n => openNodes.add(n.label)); openNodes.add('__root__'); };
+
+    /* collapseAll */
     const collapseAll = () => { openNodes.clear(); openNodes.add('__root__'); };
+
+    /* onItemDragStart */
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;
       window._dragWidgetLibs = null;
       e.dataTransfer.effectAllowed = 'copy';
       e.dataTransfer.setData('text/plain', _getId(lib));
     };
+
+    /* onItemDragEnd */
     const onItemDragEnd = () => { window._dragWidgetLib = null; };
+
+    /* dedupeLibs */
     const dedupeLibs = (arr) => {
       const seen = new Set();
       return (arr || []).filter(lib => { const id = _getId(lib); if (seen.has(id)) return false; seen.add(id); return true; });
     };
+
+    /* onNodeDragStart */
     const onNodeDragStart = (e, allLibs) => {
       const libs = dedupeLibs(allLibs);
       window._dragWidgetLib  = null;
@@ -558,6 +600,8 @@ window.DpDispWidgetPreview = {
       e.dataTransfer.effectAllowed = 'copy';
       e.dataTransfer.setData('text/plain', 'node:' + libs.length);
     };
+
+    /* onNodeDragEnd */
     const onNodeDragEnd = () => { window._dragWidgetLibs = null; };
 
     /* -- UI 상태 -- */
@@ -617,8 +661,14 @@ window.DpDispWidgetPreview = {
 
     /* -- 드래그·드롭 (그리드) -- */
     const dragState = reactive({ dragOverIdx: -1 });
+
+    /* onDragOver */
     const onDragOver  = (e, idx) => { e.preventDefault(); dragState.dragOverIdx = idx; };
+
+    /* onDragLeave */
     const onDragLeave = () => { dragState.dragOverIdx = -1; };
+
+    /* onDrop */
     const onDrop = (e, idx) => {
       e.preventDefault(); dragState.dragOverIdx = -1;
 
@@ -652,6 +702,8 @@ window.DpDispWidgetPreview = {
       tabSlots[tabId].splice(idx, 1, { ...lib, colSpan: 1, rowSpan: 1 });
       autoExpand(tabId);
     };
+
+    /* removeSlot */
     const removeSlot = (idx) => { tabSlots[gridState.previewGrid].splice(idx, 1, null); };
 
     /* -- colspan / rowspan 조절 -- */
@@ -668,13 +720,20 @@ window.DpDispWidgetPreview = {
       e.stopPropagation();
       gridState.spanPopupIdx = gridState.spanPopupIdx === idx ? -1 : idx;
     };
+
+    /* closeSpanPopup */
     const closeSpanPopup = () => { gridState.spanPopupIdx = -1; };
 
     /* -- 대시보드: 자유 배치 + 크기 조절 -- */
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
     
+    /* onDashDragOver */
     const onDashDragOver = (e) => { e.preventDefault(); gridState.dashDragOver = true; };
+
+    /* onDashDragLeave */
     const onDashDragLeave = () => { gridState.dashDragOver = false; };
+
+    /* onDashDrop */
     const onDashDrop = (e) => {
       e.preventDefault(); gridState.dashDragOver = false;
       if (!searchParam.dashCanvas) return;
@@ -706,6 +765,8 @@ window.DpDispWidgetPreview = {
       const y = Math.max(0, e.clientY - rect.top  - 20);
       dashItems.push({ id: Date.now(), lib: { ...lib }, x, y, w: 240, h: 180 });
     };
+
+    /* removeDashItem */
     const removeDashItem = (id) => {
       const i = dashItems.findIndex(d => d.id === id);
       if (i >= 0) dashItems.splice(i, 1);
@@ -716,10 +777,14 @@ window.DpDispWidgetPreview = {
       e.preventDefault();
       const ox = e.clientX - item.x;
       const oy = e.clientY - item.y;
+
+      /* onMove */
       const onMove = (me) => {
         item.x = Math.max(0, me.clientX - ox);
         item.y = Math.max(0, me.clientY - oy);
       };
+
+      /* onUp */
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
@@ -733,10 +798,14 @@ window.DpDispWidgetPreview = {
       e.preventDefault(); e.stopPropagation();
       const sx = e.clientX, sy = e.clientY;
       const sw = item.w,    sh = item.h;
+
+      /* onMove */
       const onMove = (me) => {
         item.w = Math.max(160, sw + (me.clientX - sx));
         item.h = Math.max(120, sh + (me.clientY - sy));
       };
+
+      /* onUp */
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
@@ -751,6 +820,8 @@ window.DpDispWidgetPreview = {
         ? dashItems.length
         : (cfCurrentSlots.value || []).filter(Boolean).length
     );
+
+    /* resetCurrent */
     const resetCurrent = () => {
       if (gridState.previewGrid === 'dashboard') {
         dashItems.splice(0);
@@ -834,7 +905,7 @@ window.DpDispWidgetPreview = {
         </select>
       </div>
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '이름' },
           { value: 'def_tag',  label: '태그' },

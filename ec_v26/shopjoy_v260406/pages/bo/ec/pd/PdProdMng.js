@@ -6,21 +6,25 @@ window.PdProdMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const products = reactive([]);
     const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], date_range_opts: [] });
 
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'prodNm asc', desc: 'prodNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 상품 getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 상품 onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -29,14 +33,18 @@ window.PdProdMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* 상품 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
+    /* 상품 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_prod_id,def_prod_nm,def_prod_code';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_prod_id,def_prod_nm,def_prod_code';
         }
         const res = await boApiSvc.pdProd.getPage(params, '상품관리', '목록조회');
         const data = res.data?.data;
@@ -59,10 +67,11 @@ window.PdProdMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchTypes: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, cate: '', status: '' };
+      return { searchType: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, cate: '', status: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
+    /* 상품 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -73,6 +82,8 @@ window.PdProdMng = {
     };
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 상품 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
@@ -92,10 +103,20 @@ window.PdProdMng = {
 
     /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* 상품 loadView */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 상품 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 상품 openNew */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 상품 closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* 상품 inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'pdProdMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -105,18 +126,28 @@ window.PdProdMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
+    /* 상품 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* -- 카테고리 선택 모달 -- */
     const catModal = reactive({ show: false });
+
+    /* 상품 openCatModal */
     const openCatModal = async () => { await handleSearchList('DEFAULT'); catModal.show = true; };
+
+    /* 상품 onCatSelect */
     const onCatSelect = (cat) => {
       searchParam.cate = cat.categoryNm || '';
       catModal.show = false;
     };
+
+    /* 상품 clearCate */
     const clearCate = () => { searchParam.cate = ''; };
 
+    /* 상품 fnStatusBadge */
     const fnStatusBadge = s => ({ 'ON_SALE': 'badge-green', 'SOLD_OUT': 'badge-red', 'SUSPENDED': 'badge-gray', 'DRAFT': 'badge-blue', 'REVIEW': 'badge-orange', '판매중': 'badge-green', '품절': 'badge-red', '판매중지': 'badge-gray' }[s] || 'badge-gray');
+
+    /* 상품 목록조회 */
     const onSearch = async () => {
       if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
         props.showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
@@ -125,6 +156,8 @@ window.PdProdMng = {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
+
+    /* 상품 onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -132,9 +165,13 @@ window.PdProdMng = {
       await handleSearchList();
     };
 
+    /* 상품 setPage */
     const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+
+    /* 상품 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    /* 상품 삭제 */
     const handleDelete = async (p) => {
       const ok = await showConfirm('삭제', `[${p.prodNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -153,10 +190,12 @@ window.PdProdMng = {
       }
     };
 
+    /* 상품 previewProduct */
     const previewProduct = (prodId) => {
       window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
+    /* 상품 exportExcel */
     const exportExcel = () => coUtil.exportCsv(products, [{label:'ID',key:'prodId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'cateNm'},{label:'가격',key:'listPrice'},{label:'재고',key:'prodStock'},{label:'브랜드',key:'brandNm'},{label:'상태',key:'prodStatusCdNm'},{label:'등록일',key:'regDate'}], '상품목록.csv');
 
 
@@ -181,7 +220,7 @@ window.PdProdMng = {
   </div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select v-model="searchParam.searchTypes" :options="[
+      <multi-check-select v-model="searchParam.searchType" :options="[
           { value: 'def_prod_id',   label: '상품ID' },
           { value: 'def_prod_nm',   label: '상품명' },
           { value: 'def_prod_code', label: '상품코드' },

@@ -6,13 +6,13 @@ window.SyAttachMng = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const attaches = reactive([]);
     const attachGrps = reactive([]);
     const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null });
     const codes = reactive({ attach_type: [], active_statuses: [], date_range_opts: [] });
-    const grpSearchTypes = ref('');
+    const grpSearchType = ref('');
     const grpSearchValue = ref('');
     const pager = reactive({
       pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
@@ -22,7 +22,7 @@ window.SyAttachMng = {
     const cfFilteredGrps = computed(() => {
       const searchVal = grpSearchValue.value.trim().toLowerCase();
       if (!searchVal) return attachGrps;
-      const types = grpSearchTypes.value || 'def_grpNm,def_grpCode';
+      const types = grpSearchType.value || 'def_grpNm,def_grpCode';
       return attachGrps.filter(g => {
         const hits = [];
         if (types.includes('def_grpNm'))   hits.push((g.grpNm   || '').toLowerCase().includes(searchVal));
@@ -31,14 +31,16 @@ window.SyAttachMng = {
       });
     });
 
+    /* 첨부파일 fnBuildPageNums */
     const fnBuildPageNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
-    const searchParam = reactive({ searchTypes: '', searchValue: '', attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
 
+    /* 첨부파일 onDateRangeChange */
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
     };
@@ -64,9 +66,9 @@ window.SyAttachMng = {
         };
         // 좌측 그룹 클릭 선택이 우선, 없으면 검색 조건 attachGrpId 사용
         if (uiState.selectedGrpId) p.attachGrpId = uiState.selectedGrpId;
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (p.searchValue && !p.searchTypes) {
-          p.searchTypes = 'def_fileNm,def_refId';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (p.searchValue && !p.searchType) {
+          p.searchType = 'def_fileNm,def_refId';
         }
         const attachRes = await boApiSvc.syAttach.getPage(p, '첨부파일관리', '조회');
         const data = attachRes.data?.data;
@@ -84,6 +86,7 @@ window.SyAttachMng = {
       }
     };
 
+    /* 첨부파일 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
@@ -104,18 +107,25 @@ window.SyAttachMng = {
 
     /* -- 검색 / 페이징 -- */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
+
+    /* 첨부파일 onReset */
     const onReset = () => {
       Object.assign(searchParam, { attachGrpId: '', dateStart: '', dateEnd: '', dateRange: '' });
       uiState.selectedGrpId = null;
       pager.pageNo = 1;
       handleSearchData();
     };
+
+    /* 첨부파일 setPage */
     const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+
+    /* 첨부파일 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* -- 첨부그룹 -- */
     const grpForm = reactive({ grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
 
+    /* 첨부파일 selectGrp */
     const selectGrp = (id) => {
       uiState.selectedGrpId = uiState.selectedGrpId === id ? null : id;
       searchParam.attachGrpId = '';
@@ -124,14 +134,20 @@ window.SyAttachMng = {
       pager.pageTotalCount = 0; pager.pageTotalPage = 1;
       handleSearchData();
     };
+
+    /* 첨부파일 openGrpNew */
     const openGrpNew = () => {
       uiState.grpEditId = null; uiState.grpEditMode = true;
       Object.assign(grpForm, { grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
     };
+
+    /* 첨부파일 openGrpEdit */
     const openGrpEdit = (g) => {
       uiState.grpEditId = g.attachGrpId; uiState.grpEditMode = true;
       Object.assign(grpForm, { ...g });
     };
+
+    /* 첨부파일 handleSaveGrp */
     const handleSaveGrp = async () => {
       if (!grpForm.grpNm || !grpForm.grpCode) { showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       try {
@@ -148,6 +164,8 @@ window.SyAttachMng = {
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
+
+    /* 첨부파일 handleDeleteGrp */
     const handleDeleteGrp = async (g) => {
       const ok = await showConfirm('그룹 삭제', `[${g.grpNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -169,6 +187,7 @@ window.SyAttachMng = {
       sortOrd: 0, attachMemo: '', refId: '',
     });
 
+    /* 첨부파일 openFileNew */
     const openFileNew = () => {
       uiState.fileEditId = null; uiState.fileEditMode = true;
       Object.assign(fileForm, {
@@ -178,10 +197,14 @@ window.SyAttachMng = {
         sortOrd: 0, attachMemo: '', refId: '',
       });
     };
+
+    /* 첨부파일 openFileEdit */
     const openFileEdit = (a) => {
       uiState.fileEditId = a.attachId; uiState.fileEditMode = true;
       Object.assign(fileForm, { ...a });
     };
+
+    /* 첨부파일 handleSaveFile */
     const handleSaveFile = async () => {
       if (!fileForm.fileNm || !fileForm.attachGrpId) { showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
       try {
@@ -199,6 +222,8 @@ window.SyAttachMng = {
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
+
+    /* 첨부파일 handleDeleteFile */
     const handleDeleteFile = async (a) => {
       const ok = await showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -211,18 +236,21 @@ window.SyAttachMng = {
       }
     };
 
+    /* 첨부파일 fnFmtSize */
     const fnFmtSize = bytes => {
       if (!bytes) return '0 B';
       if (bytes < 1024) return bytes + ' B';
       if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
+
+    /* 첨부파일 fnStatusBadge */
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray', 'ACTIVE': 'badge-green', 'INACTIVE': 'badge-gray' }[s] || 'badge-gray');
 
     // -- return ---------------------------------------------------------------
     return {
       attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
-      attachGrps, cfFilteredGrps, grpSearchTypes, grpSearchValue, grpForm, pager,
+      attachGrps, cfFilteredGrps, grpSearchType, grpSearchValue, grpForm, pager,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
@@ -242,7 +270,7 @@ window.SyAttachMng = {
         </div>
         <div style="padding:0 0 10px 0;">
           <multi-check-select
-            v-model="grpSearchTypes"
+            v-model="grpSearchType"
             :options="[
               { value: 'def_grpNm',   label: '그룹명' },
               { value: 'def_grpCode', label: '코드' },
@@ -330,7 +358,7 @@ window.SyAttachMng = {
           </b>
           <input v-model="searchParam.attachGrpId" placeholder="첨부그룹ID" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:130px;" @keyup.enter="onSearch" />
           <multi-check-select
-            v-model="searchParam.searchTypes"
+            v-model="searchParam.searchType"
             :options="[
               { value: 'def_fileNm', label: '파일명' },
               { value: 'def_refId',  label: 'RefID' },

@@ -28,6 +28,7 @@ public class PdProdImgService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 이미지 키조회 */
     public PdProdImgDto.Item getById(String id) {
         PdProdImgDto.Item dto = pdProdImgRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -39,6 +40,7 @@ public class PdProdImgService {
         return pdProdImgRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 이미지 상세조회 */
     public PdProdImg findById(String id) {
         return pdProdImgRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -49,6 +51,7 @@ public class PdProdImgService {
         return pdProdImgRepository.findById(id).orElse(null);
     }
 
+    /* 상품 이미지 키검증 */
     public boolean existsById(String id) {
         return pdProdImgRepository.existsById(id);
     }
@@ -59,16 +62,19 @@ public class PdProdImgService {
         return true;
     }
 
+    /* 상품 이미지 목록조회 */
     public List<PdProdImgDto.Item> getList(PdProdImgDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
         return pdProdImgRepository.selectList(req);
     }
 
+    /* 상품 이미지 페이지조회 */
     public PdProdImgDto.PageResponse getPageData(PdProdImgDto.Request req) {
         PageHelper.addPaging(req);
         return pdProdImgRepository.selectPageList(req);
     }
 
+    /* 상품 이미지 등록 */
     @Transactional
     public PdProdImg create(PdProdImg body) {
         body.setProdImgId(CmUtil.generateId("pd_prod_img"));
@@ -82,6 +88,7 @@ public class PdProdImgService {
         return saved;
     }
 
+    /* 상품 이미지 저장 */
     @Transactional
     public PdProdImg save(PdProdImg entity) {
         if (!existsById(entity.getProdImgId()))
@@ -94,6 +101,7 @@ public class PdProdImgService {
         return saved;
     }
 
+    /* 상품 이미지 수정 */
     @Transactional
     public PdProdImg update(String id, PdProdImg body) {
         PdProdImg entity = findById(id);
@@ -106,6 +114,7 @@ public class PdProdImgService {
         return saved;
     }
 
+    /* 상품 이미지 수정 */
     @Transactional
     public PdProdImg updateSelective(PdProdImg entity) {
         if (entity.getProdImgId() == null) throw new CmBizException("prodImgId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -119,6 +128,7 @@ public class PdProdImgService {
         return entity;
     }
 
+    /* 상품 이미지 삭제 */
     @Transactional
     public void delete(String id) {
         PdProdImg entity = findById(id);
@@ -127,6 +137,7 @@ public class PdProdImgService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 이미지 목록저장 */
     @Transactional
     public void saveList(List<PdProdImg> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

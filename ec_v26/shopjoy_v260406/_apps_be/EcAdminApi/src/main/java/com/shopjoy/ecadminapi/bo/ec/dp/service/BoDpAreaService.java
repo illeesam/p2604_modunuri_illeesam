@@ -19,8 +19,11 @@ public class BoDpAreaService {
 
     private final DpAreaService dpAreaService;
 
+    /* 키조회 */
     public DpAreaDto.Item getById(String id) { return dpAreaService.getById(id); }
+    /* 목록조회 */
     public List<DpAreaDto.Item> getList(DpAreaDto.Request req) { return dpAreaService.getList(req); }
+    /* 페이지조회 */
     public DpAreaDto.PageResponse getPageData(DpAreaDto.Request req) { return dpAreaService.getPageData(req); }
 
     @Transactional public DpArea create(DpArea body) { return dpAreaService.create(body); }

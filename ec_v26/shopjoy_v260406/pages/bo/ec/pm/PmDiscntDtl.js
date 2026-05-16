@@ -12,10 +12,10 @@ window.PmDiscntDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmDiscntDtlState.tab || 'info', tabMode2: window._pmDiscntDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
@@ -42,8 +42,11 @@ window.PmDiscntDtl = {
 watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._pmDiscntDtlState.tabMode = v; });
+
+    /* 할인 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+    /* 할인 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE_KR');
@@ -55,6 +58,8 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
 
     const _today = new Date();
+
+    /* 할인 _pad */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
@@ -86,7 +91,11 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
     });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
+
+    /* 할인 hasVisibility */
     const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
+
+    /* 할인 toggleVisibility */
     const toggleVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.visibilityTargets);
       const i = list.indexOf(code);
@@ -98,10 +107,13 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
     const cfHasId       = computed(() => !!cfCurId.value);
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
 
+    /* 할인 _afterApiOk */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
+
+    /* 할인 _afterApiErr */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -158,6 +170,8 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
       const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
+
+    /* 할인 selectVendor */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;

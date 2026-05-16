@@ -28,6 +28,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     private final JPAQueryFactory queryFactory;
     private static final QPmCouponItem i = QPmCouponItem.pmCouponItem;
 
+    /* 쿠폰 대상 상품 키조회 */
     @Override
     public Optional<PmCouponItemDto.Item> selectById(String couponItemId) {
         PmCouponItemDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 쿠폰 대상 상품 목록조회 */
     @Override
     public List<PmCouponItemDto.Item> selectList(PmCouponItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         return query.fetch();
     }
 
+    /* 쿠폰 대상 상품 페이지조회 */
     @Override
     public PmCouponItemDto.PageResponse selectPageList(PmCouponItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -79,6 +82,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 쿠폰 대상 상품 baseQuery */
     private JPAQuery<PmCouponItemDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmCouponItemDto.Item.class,
@@ -89,6 +93,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
                 .from(i);
     }
 
+    /* 쿠폰 대상 상품 buildCondition */
     private BooleanBuilder buildCondition(PmCouponItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -144,6 +149,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         return orders;
     }
 
+    /* 쿠폰 대상 상품 수정 */
     @Override
     public int updateSelective(PmCouponItem entity) {
         if (entity.getCouponItemId() == null) return 0;

@@ -51,6 +51,7 @@ public class BoAuthService {
 
     // ── join ──────────────────────────────────────────────────────────────
 
+    /* join */
     @Transactional
     public BoJoinRes join(SyUser body, String appTypeCd) {
         boolean exists = em.createQuery(
@@ -73,6 +74,7 @@ public class BoAuthService {
 
     // ── login ─────────────────────────────────────────────────────────────
 
+    /* login */
     @Transactional
     public LoginRes login(LoginReq request, String appTypeCd) {
         SyUser user;
@@ -150,6 +152,7 @@ public class BoAuthService {
 
     // ── refresh ───────────────────────────────────────────────────────────
 
+    /* refresh */
     @Transactional
     public TokenPair refresh(String expiredAccessToken, String appTypeCd) {
         if (expiredAccessToken == null || expiredAccessToken.isBlank()) {
@@ -210,6 +213,7 @@ public class BoAuthService {
 
     // ── changePassword ────────────────────────────────────────────────────
 
+    /* changePassword */
     @Transactional
     public void changePassword(ChangePasswordReq request, String appTypeCd) {
         String userId = SecurityUtil.getAuthUser().authId();
@@ -225,6 +229,7 @@ public class BoAuthService {
 
     // ── logout ────────────────────────────────────────────────────────────
 
+    /* logout */
     @Transactional
     public void logout(String accessToken, String appTypeCd, HttpServletRequest request) {
         if (accessToken == null || accessToken.isBlank()) return;
@@ -253,6 +258,7 @@ public class BoAuthService {
 
     // ── private ───────────────────────────────────────────────────────────
 
+    /* buildAccessToken */
     private String buildAccessToken(SyUser user, String appTypeCd) {
         return jwtProvider.createAccessToken(
             AccessTokenClaims.builder()

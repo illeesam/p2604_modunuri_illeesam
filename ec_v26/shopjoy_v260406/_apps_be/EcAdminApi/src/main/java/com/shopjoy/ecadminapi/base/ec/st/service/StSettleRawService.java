@@ -27,6 +27,7 @@ public class StSettleRawService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 정산 원천 데이터 키조회 */
     public StSettleRawDto.Item getById(String id) {
         StSettleRawDto.Item dto = stSettleRawRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class StSettleRawService {
         return stSettleRawRepository.selectById(id).orElse(null);
     }
 
+    /* 정산 원천 데이터 상세조회 */
     public StSettleRaw findById(String id) {
         return stSettleRawRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class StSettleRawService {
         return stSettleRawRepository.findById(id).orElse(null);
     }
 
+    /* 정산 원천 데이터 키검증 */
     public boolean existsById(String id) {
         return stSettleRawRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class StSettleRawService {
         return true;
     }
 
+    /* 정산 원천 데이터 목록조회 */
     public List<StSettleRawDto.Item> getList(StSettleRawDto.Request req) {
         return stSettleRawRepository.selectList(req);
     }
 
+    /* 정산 원천 데이터 페이지조회 */
     public StSettleRawDto.PageResponse getPageData(StSettleRawDto.Request req) {
         PageHelper.addPaging(req);
         return stSettleRawRepository.selectPageList(req);
     }
 
+    /* 정산 원천 데이터 등록 */
     @Transactional
     public StSettleRaw create(StSettleRaw body) {
         body.setSettleRawId(CmUtil.generateId("st_settle_raw"));
@@ -80,6 +86,7 @@ public class StSettleRawService {
         return saved;
     }
 
+    /* 정산 원천 데이터 저장 */
     @Transactional
     public StSettleRaw save(StSettleRaw entity) {
         if (!existsById(entity.getSettleRawId()))
@@ -92,6 +99,7 @@ public class StSettleRawService {
         return saved;
     }
 
+    /* 정산 원천 데이터 수정 */
     @Transactional
     public StSettleRaw update(String id, StSettleRaw body) {
         StSettleRaw entity = findById(id);
@@ -104,6 +112,7 @@ public class StSettleRawService {
         return saved;
     }
 
+    /* 정산 원천 데이터 수정 */
     @Transactional
     public StSettleRaw updateSelective(StSettleRaw entity) {
         if (entity.getSettleRawId() == null) throw new CmBizException("settleRawId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class StSettleRawService {
         return entity;
     }
 
+    /* 정산 원천 데이터 삭제 */
     @Transactional
     public void delete(String id) {
         StSettleRaw entity = findById(id);
@@ -125,6 +135,7 @@ public class StSettleRawService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 정산 원천 데이터 목록저장 */
     @Transactional
     public void saveList(List<StSettleRaw> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

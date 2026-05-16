@@ -6,10 +6,10 @@ window.SyBbmMng = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const bbms = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
     const codes = reactive({ bbm_type: [], bbm_status: [], use_yn: [] });
@@ -19,9 +19,9 @@ window.SyBbmMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_code';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_code';
         }
         const res = await boApiSvc.syBbm.getPage(params, '게시판모드관리', '목록조회');
         const data = res.data?.data;
@@ -38,10 +38,12 @@ window.SyBbmMng = {
         uiState.loading = false;
       }
     };
+
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList(); };
 
 
+    /* 게시판 마스터 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.bbm_type = codeStore.sgGetGrpCodes('BBM_TYPE');
@@ -59,13 +61,23 @@ window.SyBbmMng = {
     });
 
     const pathPickModal = reactive({ show: false, row: null });
+
+    /* 게시판 마스터 openPathPick */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+
+    /* 게시판 마스터 closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+
+    /* 게시판 마스터 onPathPicked */
     const onPathPicked = (pathId) => { if (pathPickModal.row) pathPickModal.row.pathId = pathId; };
+
+    /* 게시판 마스터 pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const cfSiteNm = computed(() => boUtil.getSiteNm());
+
+    /* 게시판 마스터 _initSearchParam */
     const _initSearchParam = () => {
-      return { searchTypes: '', searchValue: '', type: '', useYn: 'Y' };
+      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -76,10 +88,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       dtlMode: 'view' // 'view' | 'edit'
     });
 
+    /* 게시판 마스터 loadView */
     const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; };
+
+    /* 게시판 마스터 상세조회 */
     const handleLoadDetail = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+
+    /* 게시판 마스터 openNew */
     const openNew = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+
+    /* 게시판 마스터 closeDetail */
     const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
+
+    /* 게시판 마스터 inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'syBbmMng') { detailModal.show = false; detailModal.dtlId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
@@ -89,17 +110,40 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
+    /* 게시판 마스터 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* 게시판 마스터 fnTypeBadge */
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
+
+    /* 게시판 마스터 fnYnBadge */
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+
+    /* 게시판 마스터 fnCommentBadge */
     const fnCommentBadge = v => ({ '불가': 'badge-gray', '댓글허용': 'badge-blue', '대댓글허용': 'badge-green' }[v] || 'badge-gray');
+
+    /* 게시판 마스터 fnAttachBadge */
     const fnAttachBadge  = v => ({ '불가': 'badge-gray', '1개': 'badge-orange', '2개': 'badge-orange', '3개': 'badge-orange', '목록': 'badge-blue' }[v] || 'badge-gray');
+
+    /* 게시판 마스터 fnContentBadge */
     const fnContentBadge = v => ({ '불가': 'badge-gray', 'textarea': 'badge-blue', 'htmleditor': 'badge-green' }[v] || 'badge-gray');
+
+    /* 게시판 마스터 fnScopeBadge */
     const fnScopeBadge   = v => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[v] || 'badge-gray');
+
+    /* 게시판 마스터 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 게시판 마스터 onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    /* 게시판 마스터 setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* 게시판 마스터 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 게시판 마스터 삭제 */
     const handleDelete = async (b) => {
       const ok = await showConfirm('삭제', `[${b.bbmNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -117,6 +161,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* 게시판 마스터 exportExcel */
     const exportExcel = () => coUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
     // -- return ---------------------------------------------------------------
@@ -131,7 +177,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '게시판명' },
           { value: 'def_code', label: '코드' },

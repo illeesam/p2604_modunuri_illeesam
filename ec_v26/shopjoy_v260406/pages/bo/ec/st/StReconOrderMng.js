@@ -6,10 +6,10 @@ window.StReconOrderMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       order_statuses: [],
@@ -17,6 +17,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       date_range_opts: [],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -32,6 +33,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
 
             const dateEnd   = ref('');
+
+    /* handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
@@ -39,9 +42,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const rows = reactive([]);
 
-    const _initSearchParam = () => ({ searchTypes: '', searchValue: '', diff: '' });
+    /* _initSearchParam */
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', diff: '' });
     const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
@@ -51,15 +57,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       diffAmt: rows.reduce((s, r) => s + Math.abs(r.diff||0), 0),
     }));
 
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize, typeCd: 'ORDER',
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_orderId,def_custNm';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_orderId,def_custNm';
         }
         const res = await boApiSvc.stRecon.getPage(params, '주문-정산 대사', '목록조회');
         const data = res.data?.data;
@@ -79,11 +86,22 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       handleSearchList('DEFAULT');
     });
 
+    /* fnDiffBadge */
     const fnDiffBadge = s => ({ '일치':'badge-green', '정산과다':'badge-red', '정산부족':'badge-orange' }[s] || 'badge-gray');
+
+    /* fmtW */
     const fmtW = n => Number(n||0).toLocaleString() + '원';
+
+    /* 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    /* setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     // -- return ---------------------------------------------------------------
@@ -111,7 +129,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <option value="">대사결과 전체</option><option v-for="c in codes.recon_results" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_orderId', label: '주문ID' },
           { value: 'def_custNm',  label: '고객명' },

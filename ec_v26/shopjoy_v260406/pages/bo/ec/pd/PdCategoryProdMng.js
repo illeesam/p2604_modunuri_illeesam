@@ -6,10 +6,10 @@ window.PdCategoryProdMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const products = reactive([]);
     const categoryProds = reactive([]);
@@ -21,6 +21,7 @@ window.PdCategoryProdMng = {
     });
 
 
+    /* 카테고리-상품 매핑 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -74,8 +75,14 @@ window.PdCategoryProdMng = {
       { cd: 'EMOTICON',   nm: '이모티콘',  icon: '😊' },
       { cd: 'MARQUEE',    nm: '흐르는글자', icon: '〜' },
     ];
+
+    /* 카테고리-상품 매핑 parseEmphasis */
     const parseEmphasis  = str => str ? str.split('^').filter(Boolean) : [];
+
+    /* 카테고리-상품 매핑 hasEmphasis */
     const hasEmphasis    = (str, cd) => parseEmphasis(str).includes(cd);
+
+    /* 카테고리-상품 매핑 toggleEmphasis */
     const toggleEmphasis = (row, cd) => {
       const s = new Set(parseEmphasis(row.emphasisCd));
       if (s.has(cd)) s.delete(cd); else s.add(cd);
@@ -84,13 +91,18 @@ window.PdCategoryProdMng = {
 
     /* -- 날짜 기본값 -- */
     const defaultDispEndDate   = () => { const y = new Date().getFullYear() + 3; return `${y}-12-31`; };
+
+    /* 카테고리-상품 매핑 defaultDispStartDate */
     const defaultDispStartDate = () => new Date().toISOString().slice(0, 10);
 
     /* -- 검색 -- */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 카테고리-상품 매핑 _initSearchParam */
     const _initSearchParam = () => ({ prodNm: '', categoryId: '' });
     const searchParam = reactive(_initSearchParam());
 
+    /* 카테고리-상품 매핑 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const { prodNm, ...restParam } = searchParam;
@@ -110,12 +122,14 @@ window.PdCategoryProdMng = {
       }
     };
 
+    /* 카테고리-상품 매핑 목록조회 */
     const onSearch = () => {
       pager.pageNo = 1;
       Object.assign(pager.pageCond, searchParam);
       handleSearchList('DEFAULT');
     };
   
+    /* 카테고리-상품 매핑 onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       onSearch();
@@ -164,7 +178,11 @@ window.PdCategoryProdMng = {
 
     /* 좌측 트리 빌드 (expanded 반영) */
     const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
+
+    /* 카테고리-상품 매핑 fnDepthBullet */
     const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
+
+    /* 카테고리-상품 매핑 totalProdCount */
     const totalProdCount = (catId) => categoryProds.filter(cp => cp.categoryId === catId).length;
     const cfTypeCountMap = computed(() => {
       const map = {};
@@ -184,8 +202,14 @@ window.PdCategoryProdMng = {
     /* -- 드래그 상태 -- */
     const dragoverIdx = ref(null);
     let dragStartIdx = null;
+
+    /* 카테고리-상품 매핑 onDragStart */
     const onDragStart = (idx) => { dragStartIdx = idx; };
+
+    /* 카테고리-상품 매핑 onDragOver */
     const onDragOver = (idx) => { dragoverIdx.value = idx; };
+
+    /* 카테고리-상품 매핑 onDrop */
     const onDrop = () => {
       if (dragStartIdx !== null && dragoverIdx.value !== null && dragStartIdx !== dragoverIdx.value) {
         const temp = categoryProds[dragStartIdx];
@@ -201,7 +225,11 @@ window.PdCategoryProdMng = {
       const prod = products.find(p => p.prodId === prodId || p.productId === prodId);
       return prod?.prodNm || prod?.productName || `[${prodId}]`;
     };
+
+    /* 카테고리-상품 매핑 getProd */
     const getProd = (prodId) => products.find(p => p.prodId === prodId || p.productId === prodId);
+
+    /* 카테고리-상품 매핑 getCatPath */
     const getCatPath = (catId) => {
       const cat = categories.find(c => c.categoryId === catId);
       if (!cat) return '-';
@@ -248,7 +276,7 @@ window.PdCategoryProdMng = {
     const cfPickerList = computed(() => {
       const q = pickerSearch.value.toLowerCase();
       if (!q) return products.slice(0, 50);
-      const types = pickerSearchTypes.value || 'def_nm,def_id,def_cat';
+      const types = pickerSearchType.value || 'def_nm,def_id,def_cat';
       return products.filter(p => {
         const hits = [];
         if (types.includes('def_nm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
@@ -259,8 +287,10 @@ window.PdCategoryProdMng = {
     });
 
     const pickerOpen = ref(false);
-    const pickerSearchTypes = ref('');
+    const pickerSearchType = ref('');
     const pickerSearch = ref('');
+
+    /* 카테고리-상품 매핑 저장 */
     const onSave = async () => {
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
@@ -289,7 +319,7 @@ window.PdCategoryProdMng = {
       fnDepthColor, fnDepthBullet, totalProdCount, cfTypeCountMap,
       dragoverIdx, onDragStart, onDragOver, onDrop,
       getProdNm, getProd, getCatPath, removeRow, addProd,
-      pickerOpen, pickerSearchTypes, pickerSearch, onSave,
+      pickerOpen, pickerSearchType, pickerSearch, onSave,
       showRefModal: showRefModal, showToast: showToast, showConfirm: showConfirm, setApiRes: setApiRes, navigate: props.navigate,
     };
   },
@@ -343,7 +373,7 @@ window.PdCategoryProdMng = {
             <span v-if="!cfIsLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">(하위 포함)</span>
           </span>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-secondary btn-sm" @click="pickerOpen=true;pickerSearchTypes='';pickerSearch=''">+ 상품추가</button>
+            <button class="btn btn-secondary btn-sm" @click="pickerOpen=true;pickerSearchType='';pickerSearch=''">+ 상품추가</button>
             <button class="btn btn-primary btn-sm" @click="onSave">저장</button>
           </div>
         </div>
@@ -555,7 +585,7 @@ window.PdCategoryProdMng = {
           <button class="btn btn-secondary btn-xs" @click="pickerOpen=false">닫기</button>
         </div>
         <multi-check-select
-          v-model="pickerSearchTypes"
+          v-model="pickerSearchType"
           :options="[
             { value: 'def_nm',  label: '상품명' },
             { value: 'def_id',  label: 'ID' },

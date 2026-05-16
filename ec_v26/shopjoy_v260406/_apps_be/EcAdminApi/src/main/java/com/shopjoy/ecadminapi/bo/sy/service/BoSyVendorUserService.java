@@ -19,8 +19,11 @@ public class BoSyVendorUserService {
 
     private final SyVendorUserService syVendorUserService;
 
+    /* 키조회 */
     public SyVendorUserDto.Item getById(String id) { return syVendorUserService.getById(id); }
+    /* 목록조회 */
     public List<SyVendorUserDto.Item> getList(SyVendorUserDto.Request req) { return syVendorUserService.getList(req); }
+    /* 페이지조회 */
     public SyVendorUserDto.PageResponse getPageData(SyVendorUserDto.Request req) { return syVendorUserService.getPageData(req); }
 
     @Transactional public SyVendorUser create(SyVendorUser body) { return syVendorUserService.create(body); }

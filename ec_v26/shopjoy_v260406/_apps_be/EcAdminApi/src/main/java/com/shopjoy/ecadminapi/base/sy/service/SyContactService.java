@@ -27,6 +27,7 @@ public class SyContactService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 문의 키조회 */
     public SyContactDto.Item getById(String id) {
         SyContactDto.Item dto = syContactRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyContactService {
         return syContactRepository.selectById(id).orElse(null);
     }
 
+    /* 문의 상세조회 */
     public SyContact findById(String id) {
         return syContactRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyContactService {
         return syContactRepository.findById(id).orElse(null);
     }
 
+    /* 문의 키검증 */
     public boolean existsById(String id) {
         return syContactRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyContactService {
         return true;
     }
 
+    /* 문의 목록조회 */
     public List<SyContactDto.Item> getList(SyContactDto.Request req) {
         return syContactRepository.selectList(req);
     }
 
+    /* 문의 페이지조회 */
     public SyContactDto.PageResponse getPageData(SyContactDto.Request req) {
         PageHelper.addPaging(req);
         return syContactRepository.selectPageList(req);
     }
 
+    /* 문의 등록 */
     @Transactional
     public SyContact create(SyContact body) {
         body.setContactId(CmUtil.generateId("sy_contact"));
@@ -80,6 +86,7 @@ public class SyContactService {
         return saved;
     }
 
+    /* 문의 저장 */
     @Transactional
     public SyContact save(SyContact entity) {
         if (!existsById(entity.getContactId()))
@@ -92,6 +99,7 @@ public class SyContactService {
         return saved;
     }
 
+    /* 문의 수정 */
     @Transactional
     public SyContact update(String id, SyContact body) {
         SyContact entity = findById(id);
@@ -104,6 +112,7 @@ public class SyContactService {
         return saved;
     }
 
+    /* 문의 수정 */
     @Transactional
     public SyContact updateSelective(SyContact entity) {
         if (entity.getContactId() == null) throw new CmBizException("contactId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyContactService {
         return entity;
     }
 
+    /* 문의 삭제 */
     @Transactional
     public void delete(String id) {
         SyContact entity = findById(id);
@@ -125,6 +135,7 @@ public class SyContactService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 문의 목록저장 */
     @Transactional
     public void saveList(List<SyContact> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

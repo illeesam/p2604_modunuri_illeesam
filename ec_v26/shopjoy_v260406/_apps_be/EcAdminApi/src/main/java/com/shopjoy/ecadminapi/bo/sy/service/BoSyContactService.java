@@ -19,8 +19,11 @@ public class BoSyContactService {
 
     private final SyContactService syContactService;
 
+    /* 키조회 */
     public SyContactDto.Item getById(String id) { return syContactService.getById(id); }
+    /* 목록조회 */
     public List<SyContactDto.Item> getList(SyContactDto.Request req) { return syContactService.getList(req); }
+    /* 페이지조회 */
     public SyContactDto.PageResponse getPageData(SyContactDto.Request req) { return syContactService.getPageData(req); }
 
     @Transactional public SyContact create(SyContact body) { return syContactService.create(body); }

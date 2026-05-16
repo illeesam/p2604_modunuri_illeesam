@@ -40,6 +40,7 @@ public class CacheRedisInfoService {
     //  활성 여부
     // ════════════════════════════════════════════════════════════
 
+    /* isEnabled */
     public boolean isEnabled() {
         return redis.isEnabled();
     }
@@ -48,6 +49,7 @@ public class CacheRedisInfoService {
     //  상태 조회
     // ════════════════════════════════════════════════════════════
 
+    /* getStatus */
     public Map<String, Object> getStatus() {
         Map<String, Object> status = new LinkedHashMap<>();
         status.put("enabled", redis.isEnabled());

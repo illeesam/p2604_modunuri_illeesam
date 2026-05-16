@@ -64,6 +64,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private static final QSyCode      cdVt  = new QSyCode("cd_vt");
     private static final QSyCode      cdPmc = new QSyCode("cd_pmc");
 
+    /* 정산 원천 데이터 키조회 */
     @Override
     public Optional<StSettleRawDto.Item> selectById(String id) {
         StSettleRawDto.Item dto = baseListQuery()
@@ -72,6 +73,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 정산 원천 데이터 목록조회 */
     @Override
     public List<StSettleRawDto.Item> selectList(StSettleRawDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -90,6 +92,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         return query.fetch();
     }
 
+    /* 정산 원천 데이터 페이지조회 */
     @Override
     public StSettleRawDto.PageResponse selectPageList(StSettleRawDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -115,6 +118,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 정산 원천 데이터 baseListQuery */
     private JPAQuery<StSettleRawDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleRawDto.Item.class,
@@ -177,15 +181,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(r.payMethodCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(StSettleRawDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -193,9 +189,9 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         if (StringUtils.hasText(c.getSiteId()))      w.and(r.siteId.eq(c.getSiteId()));
         if (StringUtils.hasText(c.getSettleRawId())) w.and(r.settleRawId.eq(c.getSettleRawId()));
 
-        // searchValue / searchTypes — def_prod_nm, def_brand_nm
+        // searchValue / searchType — def_prod_nm, def_brand_nm
         if (StringUtils.hasText(c.getSearchValue())) {
-            String types = "," + (c.getSearchTypes() == null ? "" : c.getSearchTypes().trim()) + ",";
+            String types = "," + (c.getSearchType() == null ? "" : c.getSearchType().trim()) + ",";
             BooleanBuilder or = new BooleanBuilder();
             if (!StringUtils.hasText(types) || types.contains(",def_prod_nm,")) {
                 or.or(r.prodNm.containsIgnoreCase(c.getSearchValue()));
@@ -256,6 +252,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         return orders;
     }
 
+    /* 정산 원천 데이터 수정 */
     @Override
     public int updateSelective(StSettleRaw entity) {
         if (entity.getSettleRawId() == null) return 0;

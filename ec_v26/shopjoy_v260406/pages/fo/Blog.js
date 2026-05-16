@@ -24,9 +24,17 @@ window.Blog = {
 
     
     const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* setPage */
     const setPage = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)), pageNo: pager.pageNo, pageSize: pager.pageSize };
@@ -41,6 +49,7 @@ window.Blog = {
       }
     };
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -51,8 +60,10 @@ window.Blog = {
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
+    /* 목록조회 */
     const onSearch = async () => { await Object.assign(pager.pageCond, searchParam); handleSearchList('DEFAULT'); };
 
+    /* onReset */
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
       onSearch();
@@ -67,6 +78,8 @@ window.Blog = {
       'linear-gradient(135deg, #f5e8ea 0%, #e0c2c7 100%)',
       'linear-gradient(135deg, #f5f2e8 0%, #e0d5b7 100%)',
     ];
+
+    /* postBg */
     const postBg = (id) => thumbBgs[(id - 1) % thumbBgs.length];
 
     const cfLatestPosts = computed(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4));

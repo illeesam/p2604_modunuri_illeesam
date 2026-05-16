@@ -12,6 +12,7 @@ window.XsSample12 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -37,6 +38,8 @@ window.XsSample12 = {
       if (selectedCatIds.size === 0) return '카테고리';
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
+
+    /* onCatApply */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
     /* 현재 사용자 인증 상태 */
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
@@ -68,13 +71,19 @@ window.XsSample12 = {
       coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
       cache_banner:'💰', widget_embed:'🧩',
     };
+
+    /* fnWLabel */
     const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
+
+    /* fnWIcon */
     const fnWIcon  = (t) => WIDGET_ICONS[t] || '▪';
     const cfAllAreas = computed(() =>
       window.sfGetBoCodeStore()?.codes||[]
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
+
+    /* isInRange */
     const isInRange = (panel) => {
       const d = uiState.previewDate;
       if (!d) return true;
@@ -83,6 +92,8 @@ window.XsSample12 = {
       if (panel.dispEndDate   && dt > `${panel.dispEndDate}   ${panel.dispEndTime   || '23:59'}`) return false;
       return true;
     };
+
+    /* panelFilter */
     const panelFilter = (p) => {
       if (searchStatus.value       && p.status !== searchStatus.value) return false;
       if (!isInRange(p)) return false;
@@ -112,13 +123,16 @@ window.XsSample12 = {
           return { ...area, panels , uiState, codes };
         });
     });
+
     /* 초기 펼침 */
     const initExpand = () => cfAllAreas.value.forEach(a => expandedAreas.add(a.codeValue));
+
     /* 영역 토글 */
     const toggleAreaExpand = (code) => {
       if (expandedAreas.has(code)) expandedAreas.delete(code);
       else expandedAreas.add(code);
     };
+
     /* 패널 체크 */
     const togglePanel = (p) => {
       const id = p.dispId;
@@ -131,6 +145,7 @@ window.XsSample12 = {
         rows.forEach((_, wi) => checkedWidgets.add(`${id}_${wi}`));
       }
     };
+
     /* 위젯 체크 */
     const toggleWidget = (dispId, wi, e) => {
       if (e) e.stopPropagation();
@@ -138,14 +153,20 @@ window.XsSample12 = {
       if (checkedWidgets.has(key)) checkedWidgets.delete(key);
       else checkedWidgets.add(key);
     };
+
     /* 전체 선택/해제 */
     const checkAll  = () => { cfStructAreaList.value.forEach(a => a.panels.forEach(p => { checkedPanels.add(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.add(`${p.dispId}_${wi}`)); })); };
+
+    /* clearAll */
     const clearAll  = () => { checkedPanels.clear(); checkedWidgets.clear(); };
+
     /* 영역 전체 체크 */
     const isAreaAllChecked = (area) =>
       area.panels.length > 0 &&
       area.panels.every(p => checkedPanels.has(p.dispId)) &&
       area.panels.every(p => (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
+
+    /* checkAreaAll */
     const checkAreaAll = (area) => {
       if (isAreaAllChecked(area)) {
         area.panels.forEach(p => { checkedPanels.delete(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.delete(`${p.dispId}_${wi}`)); });
@@ -153,6 +174,8 @@ window.XsSample12 = {
         area.panels.forEach(p => { checkedPanels.add(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.add(`${p.dispId}_${wi}`)); });
       }
     };
+
+    /* isPanelAllChecked */
     const isPanelAllChecked = (p) =>
       checkedPanels.has(p.dispId) &&
       ((p.rows||[]).length === 0 || (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
@@ -171,9 +194,17 @@ window.XsSample12 = {
     });
     /* 화면영역 드롭다운 */
     const cfAreaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
+
+    /* toggleArea */
     const toggleArea = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
+
+    /* selectAllAreas */
     const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
+
+    /* clearAllAreas */
     const clearAllAreas  = () => { selectedAreas.clear(); };
+
+    /* resetDate */
     const resetDate = () => {
       uiState.previewDate = today;
       uiState.previewTime = new Date().toTimeString().slice(0, 5);

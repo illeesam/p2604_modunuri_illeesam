@@ -28,6 +28,7 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
     private final JPAQueryFactory queryFactory;
     private static final QOdhOrderItemChgHist h = QOdhOrderItemChgHist.odhOrderItemChgHist;
 
+    /* 주문 아이템 변경 이력 baseQuery */
     private JPAQuery<OdhOrderItemChgHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderItemChgHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
                 .from(h);
     }
 
+    /* 주문 아이템 변경 이력 키조회 */
     @Override
     public Optional<OdhOrderItemChgHistDto.Item> selectById(String id) {
         OdhOrderItemChgHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         return Optional.ofNullable(dto);
     }
 
+    /* 주문 아이템 변경 이력 목록조회 */
     @Override
     public List<OdhOrderItemChgHistDto.Item> selectList(OdhOrderItemChgHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         return query.fetch();
     }
 
+    /* 주문 아이템 변경 이력 페이지조회 */
     @Override
     public OdhOrderItemChgHistDto.PageResponse selectPageList(OdhOrderItemChgHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 주문 아이템 변경 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhOrderItemChgHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         return orders;
     }
 
+    /* 주문 아이템 변경 이력 수정 */
     @Override
     public int updateSelective(OdhOrderItemChgHist entity) {
         if (entity.getOrderItemChgHistId() == null) return 0;

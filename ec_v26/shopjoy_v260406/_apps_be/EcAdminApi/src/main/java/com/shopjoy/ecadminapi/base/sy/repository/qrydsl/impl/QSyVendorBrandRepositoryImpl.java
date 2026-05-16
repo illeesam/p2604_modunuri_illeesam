@@ -36,6 +36,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     private static final QSyBrand brd = QSyBrand.syBrand;
     private static final QSyCode cdVbc = new QSyCode("cd_vbc");
 
+    /* 업체별 브랜드 buildBaseQuery */
     private JPAQuery<SyVendorBrandDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorBrandDto.Item.class,
@@ -53,6 +54,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                 .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("VENDOR_BRAND_CONTRACT").and(cdVbc.codeValue.eq(b.contractCd)));
     }
 
+    /* 업체별 브랜드 키조회 */
     @Override
     public Optional<SyVendorBrandDto.Item> selectById(String vendorBrandId) {
         SyVendorBrandDto.Item dto = buildBaseQuery()
@@ -61,6 +63,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 업체별 브랜드 목록조회 */
     @Override
     public List<SyVendorBrandDto.Item> selectList(SyVendorBrandDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -78,6 +81,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         return query.fetch();
     }
 
+    /* 업체별 브랜드 페이지조회 */
     @Override
     public SyVendorBrandDto.PageResponse selectPageList(SyVendorBrandDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -99,6 +103,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 업체별 브랜드 buildCondition */
     private BooleanBuilder buildCondition(SyVendorBrandDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -157,6 +162,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         return orders;
     }
 
+    /* 업체별 브랜드 수정 */
     @Override
     public int updateSelective(SyVendorBrand entity) {
         if (entity.getVendorBrandId() == null) return 0;

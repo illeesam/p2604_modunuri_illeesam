@@ -36,6 +36,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     private static final QSyCode      cdPmc = new QSyCode("cd_pmc");
     private static final QSyCode      cdSps = new QSyCode("cd_sps");
 
+    /* 정산 지급 키조회 */
     @Override
     public Optional<StSettlePayDto.Item> selectById(String id) {
         StSettlePayDto.Item dto = baseListQuery()
@@ -44,6 +45,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 정산 지급 목록조회 */
     @Override
     public List<StSettlePayDto.Item> selectList(StSettlePayDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -62,6 +64,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         return query.fetch();
     }
 
+    /* 정산 지급 페이지조회 */
     @Override
     public StSettlePayDto.PageResponse selectPageList(StSettlePayDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -87,6 +90,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 정산 지급 baseListQuery */
     private JPAQuery<StSettlePayDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettlePayDto.Item.class,
@@ -106,15 +110,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(p.payStatusCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(StSettlePayDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -122,9 +118,9 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         if (StringUtils.hasText(c.getSiteId()))      w.and(p.siteId.eq(c.getSiteId()));
         if (StringUtils.hasText(c.getSettlePayId())) w.and(p.settlePayId.eq(c.getSettlePayId()));
 
-        // searchValue / searchTypes — def_bank_nm
+        // searchValue / searchType — def_bank_nm
         if (StringUtils.hasText(c.getSearchValue())) {
-            String types = "," + (c.getSearchTypes() == null ? "" : c.getSearchTypes().trim()) + ",";
+            String types = "," + (c.getSearchType() == null ? "" : c.getSearchType().trim()) + ",";
             BooleanBuilder or = new BooleanBuilder();
             if (!StringUtils.hasText(types) || types.contains(",def_bank_nm,")) {
                 or.or(p.bankNm.containsIgnoreCase(c.getSearchValue()));
@@ -180,6 +176,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         return orders;
     }
 
+    /* 정산 지급 수정 */
     @Override
     public int updateSelective(StSettlePay entity) {
         if (entity.getSettlePayId() == null) return 0;

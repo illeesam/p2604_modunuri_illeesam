@@ -7,10 +7,10 @@ window.SyDeptMng = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const depts = reactive([]);
     const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
     const codes = reactive({ dept_status: [], use_yn: [], dept_types: ['경영','운영','기술','마케팅','CS','물류','재무','인사','법무','기타'] });
@@ -50,21 +50,28 @@ window.SyDeptMng = {
       }
     };
 
+    /* 부서 목록조회 */
     const handleSearchList = async () => {
       await handleSearchTree();
       await handleGridSearch();
     };
+
     /* -- 검색 -- */
     const _initSearchParam = () => {
-      return { searchTypes: '', searchValue: '', type: '', useYn: 'Y' };
+      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 
     /* 좌측 부서 트리 */
     const expanded = reactive(new Set([null]));
+
+    /* 부서 toggleNode */
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+
+    /* 부서 selectNode */
     const selectNode = (id) => { uiState.selectedTreeId = id; handleGridSearch(); };
 
+    /* 부서 buildTree */
     const buildTree = (items) => {
       const map = {};
       items.forEach(d => { map[d.deptId] = { ...d, children: [] }; });
@@ -73,18 +80,27 @@ window.SyDeptMng = {
         if (d.parentDeptId && map[d.parentDeptId]) map[d.parentDeptId].children.push(map[d.deptId]);
         else roots.push(map[d.deptId]);
       });
+
+      /* 부서 sort */
       const sort = arr => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+
+      /* 부서 sortAll */
       const sortAll = (node) => { sort(node.children); node.children.forEach(sortAll); };
       sort(roots).forEach(sortAll);
       return { deptId: null, deptNm: '전체', children: roots };
     };
 
     const cfTree = computed(() => buildTree(depts));
+
+    /* 부서 expandAll */
     const expandAll = () => {
+      /* 부서 walk */
       const walk = (n) => { expanded.add(n.deptId); n.children.forEach(walk); };
       cfTree.value.children.forEach(walk);
       expanded.add(null);
     };
+
+    /* 부서 collapseAll */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -94,6 +110,7 @@ window.SyDeptMng = {
       await handleGridSearch();
     });
 
+    /* 부서 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.dept_status = codeStore.sgGetGrpCodes('DEPT_STATUS');
@@ -120,6 +137,8 @@ window.SyDeptMng = {
         else roots.push(map[d.deptId]);
       });
       const result = [];
+
+      /* 부서 traverse */
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
@@ -128,6 +147,7 @@ window.SyDeptMng = {
       return result;
     };
 
+    /* 부서 makeRow */
     const makeRow = (d) => ({
       ...d, _depth: d._depth || 0, _row_status: null, _row_check: false,
       _row_org: { deptCode: d.deptCode, deptNm: d.deptNm, parentDeptId: d.parentDeptId,
@@ -135,22 +155,28 @@ window.SyDeptMng = {
     });
 
 
+    /* 부서 목록조회 */
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
+
+    /* 부서 onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       handleSearchList();
     };
 
+    /* 부서 setFocused */
     const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
 
+    /* 부서 onCellChange */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
+    /* 부서 addRow */
     const addRow = () => {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
@@ -165,6 +191,7 @@ window.SyDeptMng = {
       uiState.focusedIdx = insertAt;
     };
 
+    /* 부서 deleteRow */
     const deleteRow = (realIdx) => {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
@@ -173,6 +200,7 @@ window.SyDeptMng = {
       } else { row._row_status = 'D'; }
     };
 
+    /* 부서 cancelRow */
     const cancelRow = (realIdx) => {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
@@ -184,6 +212,7 @@ window.SyDeptMng = {
       }
     };
 
+    /* 부서 cancelChecked */
     const cancelChecked = () => {
       const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.deptId));
       if (!checkedIds.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -198,6 +227,7 @@ window.SyDeptMng = {
       }
     };
 
+    /* 부서 deleteRows */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -206,6 +236,7 @@ window.SyDeptMng = {
       }
     };
 
+    /* 부서 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
@@ -230,8 +261,10 @@ window.SyDeptMng = {
       }
     };
 
+    /* 부서 toggleCheckAll */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
+    /* 부서 parentNm */
     const parentNm = (parentDeptId) => {
       if (!parentDeptId) return '';
       const p = depts.find(d => d.deptId === parentDeptId);
@@ -239,7 +272,11 @@ window.SyDeptMng = {
     };
 
     const deptTreeModal = reactive({ show: false, targetRow: null });
+
+    /* 부서 openParentModal */
     const openParentModal = async (row) => { deptTreeModal.targetRow = row; await handleSearchList(); deptTreeModal.show = true; };
+
+    /* 부서 onParentSelect */
     const onParentSelect  = (dept) => {
       if (deptTreeModal.targetRow) { deptTreeModal.targetRow.parentDeptId = dept.deptId; deptTreeModal.targetRow._depth = 0; onCellChange(deptTreeModal.targetRow); }
       deptTreeModal.show = false;
@@ -248,10 +285,17 @@ window.SyDeptMng = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
+
+    /* 부서 depthBullet */
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
+
+    /* 부서 depthColor */
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
+
+    /* 부서 fnStatusClass */
     const fnStatusClass = s => ({ null: 'badge-gray', N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
+    /* 부서 exportExcel */
     const exportExcel = () => coUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptNm'},{label:'상위ID',key:'parentDeptId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'deptRemark'}],
@@ -279,7 +323,7 @@ window.SyDeptMng = {
   <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_code', label: '부서코드' },
           { value: 'def_nm',   label: '부서명' },

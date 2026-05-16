@@ -27,6 +27,7 @@ public class PdProdSetItemService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 세트상품 구성 키조회 */
     public PdProdSetItemDto.Item getById(String id) {
         PdProdSetItemDto.Item dto = pdProdSetItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdProdSetItemService {
         return pdProdSetItemRepository.selectById(id).orElse(null);
     }
 
+    /* 세트상품 구성 상세조회 */
     public PdProdSetItem findById(String id) {
         return pdProdSetItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdProdSetItemService {
         return pdProdSetItemRepository.findById(id).orElse(null);
     }
 
+    /* 세트상품 구성 키검증 */
     public boolean existsById(String id) {
         return pdProdSetItemRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdProdSetItemService {
         return true;
     }
 
+    /* 세트상품 구성 목록조회 */
     public List<PdProdSetItemDto.Item> getList(PdProdSetItemDto.Request req) {
         return pdProdSetItemRepository.selectList(req);
     }
 
+    /* 세트상품 구성 페이지조회 */
     public PdProdSetItemDto.PageResponse getPageData(PdProdSetItemDto.Request req) {
         PageHelper.addPaging(req);
         return pdProdSetItemRepository.selectPageList(req);
     }
 
+    /* 세트상품 구성 등록 */
     @Transactional
     public PdProdSetItem create(PdProdSetItem body) {
         body.setSetItemId(CmUtil.generateId("pd_prod_set_item"));
@@ -80,6 +86,7 @@ public class PdProdSetItemService {
         return saved;
     }
 
+    /* 세트상품 구성 저장 */
     @Transactional
     public PdProdSetItem save(PdProdSetItem entity) {
         if (!existsById(entity.getSetItemId()))
@@ -92,6 +99,7 @@ public class PdProdSetItemService {
         return saved;
     }
 
+    /* 세트상품 구성 수정 */
     @Transactional
     public PdProdSetItem update(String id, PdProdSetItem body) {
         PdProdSetItem entity = findById(id);
@@ -104,6 +112,7 @@ public class PdProdSetItemService {
         return saved;
     }
 
+    /* 세트상품 구성 수정 */
     @Transactional
     public PdProdSetItem updateSelective(PdProdSetItem entity) {
         if (entity.getSetItemId() == null) throw new CmBizException("setItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdProdSetItemService {
         return entity;
     }
 
+    /* 세트상품 구성 삭제 */
     @Transactional
     public void delete(String id) {
         PdProdSetItem entity = findById(id);
@@ -125,6 +135,7 @@ public class PdProdSetItemService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 세트상품 구성 목록저장 */
     @Transactional
     public void saveList(List<PdProdSetItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -7,15 +7,16 @@ window.Cart = {
   emits: [],
   setup(props) {
     const { computed, ref, reactive, watch, onMounted } = Vue;
-    const showConfirm          = window.foApp.showConfirm;
-    const clearCart            = window.foApp.clearCart;
-    const removeFromCart       = window.foApp.removeFromCart;
-    const updateCartQty        = window.foApp.updateCartQty;
-    const cart                 = window.foApp.cart;
+    const showConfirm          = window.foApp.showConfirm;  // 확인 모달
+    const clearCart            = window.foApp.clearCart;  // 장바구니 비우기
+    const removeFromCart       = window.foApp.removeFromCart;  // 장바구니 삭제
+    const updateCartQty        = window.foApp.updateCartQty;  // 장바구니 수량변경
+    const cart                 = window.foApp.cart;  // 장바구니 목록
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkedIdxs: new Set(), sortKey: '', sortDir: 'asc' });
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -28,6 +29,7 @@ window.Cart = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
     /* -- 정렬 -- */
     const onCartSort = (key) => {
       if (uiState.sortKey === key) {
@@ -35,6 +37,8 @@ window.Cart = {
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
     };
+
+    /* cartSortIcon */
     const cartSortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     const cfSortedCart = computed(() => {
@@ -51,6 +55,7 @@ window.Cart = {
     /* -- 체크박스 -- */
     const isChecked = (idx) => uiState.checkedIdxs.has(idx);
 
+    /* toggleCheck */
     const toggleCheck = (idx) => {
       if (uiState.checkedIdxs.has(idx)) uiState.checkedIdxs.delete(idx);
       else uiState.checkedIdxs.add(idx);
@@ -63,6 +68,7 @@ window.Cart = {
       uiState.checkedIdxs.size > 0 && uiState.checkedIdxs.size < cart.length
     );
 
+    /* toggleAll */
     const toggleAll = () => {
       if (cfAllChecked.value) {
         uiState.checkedIdxs.clear();
@@ -123,6 +129,7 @@ window.Cart = {
       uiState.checkedIdxs.size > 0 ? uiState.checkedIdxs.size : cart.length
     );
 
+    /* handleClearAll */
     const handleClearAll = async () => {
       const ok = await showConfirm('장바구니 비우기', '장바구니의 모든 상품을 삭제하시겠습니까?', 'warning');
       if (ok) { clearCart(); uiState.checkedIdxs.clear(); }

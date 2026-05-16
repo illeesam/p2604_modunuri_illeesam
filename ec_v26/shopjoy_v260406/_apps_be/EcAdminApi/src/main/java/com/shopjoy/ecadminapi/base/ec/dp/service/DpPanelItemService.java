@@ -27,6 +27,7 @@ public class DpPanelItemService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 전시 패널 아이템 키조회 */
     public DpPanelItemDto.Item getById(String id) {
         DpPanelItemDto.Item dto = dpPanelItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class DpPanelItemService {
         return dpPanelItemRepository.selectById(id).orElse(null);
     }
 
+    /* 전시 패널 아이템 상세조회 */
     public DpPanelItem findById(String id) {
         return dpPanelItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class DpPanelItemService {
         return dpPanelItemRepository.findById(id).orElse(null);
     }
 
+    /* 전시 패널 아이템 키검증 */
     public boolean existsById(String id) {
         return dpPanelItemRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class DpPanelItemService {
         return true;
     }
 
+    /* 전시 패널 아이템 목록조회 */
     public List<DpPanelItemDto.Item> getList(DpPanelItemDto.Request req) {
         return dpPanelItemRepository.selectList(req);
     }
 
+    /* 전시 패널 아이템 페이지조회 */
     public DpPanelItemDto.PageResponse getPageData(DpPanelItemDto.Request req) {
         PageHelper.addPaging(req);
         return dpPanelItemRepository.selectPageList(req);
     }
 
+    /* 전시 패널 아이템 등록 */
     @Transactional
     public DpPanelItem create(DpPanelItem body) {
         body.setPanelItemId(CmUtil.generateId("dp_panel_item"));
@@ -80,6 +86,7 @@ public class DpPanelItemService {
         return saved;
     }
 
+    /* 전시 패널 아이템 저장 */
     @Transactional
     public DpPanelItem save(DpPanelItem entity) {
         if (!existsById(entity.getPanelItemId()))
@@ -92,6 +99,7 @@ public class DpPanelItemService {
         return saved;
     }
 
+    /* 전시 패널 아이템 수정 */
     @Transactional
     public DpPanelItem update(String id, DpPanelItem body) {
         DpPanelItem entity = findById(id);
@@ -104,6 +112,7 @@ public class DpPanelItemService {
         return saved;
     }
 
+    /* 전시 패널 아이템 수정 */
     @Transactional
     public DpPanelItem updateSelective(DpPanelItem entity) {
         if (entity.getPanelItemId() == null) throw new CmBizException("panelItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class DpPanelItemService {
         return entity;
     }
 
+    /* 전시 패널 아이템 삭제 */
     @Transactional
     public void delete(String id) {
         DpPanelItem entity = findById(id);
@@ -125,6 +135,7 @@ public class DpPanelItemService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 전시 패널 아이템 목록저장 */
     @Transactional
     public void saveList(List<DpPanelItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

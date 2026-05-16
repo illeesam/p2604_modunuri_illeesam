@@ -37,6 +37,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     private static final QSyCode        cd_mc = new QSyCode("cd_mc");
     private static final QSyCode        cd_sr = new QSyCode("cd_sr");
 
+    /* 메시지 발송 로그 buildBaseQuery */
     private JPAQuery<SyhSendMsgLogDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyhSendMsgLogDto.Item.class,
@@ -78,6 +79,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                 .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(l.resultCd)));
     }
 
+    /* 메시지 발송 로그 키조회 */
     @Override
     public Optional<SyhSendMsgLogDto.Item> selectById(String id) {
         SyhSendMsgLogDto.Item dto = buildBaseQuery()
@@ -86,6 +88,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 메시지 발송 로그 목록조회 */
     @Override
     public List<SyhSendMsgLogDto.Item> selectList(SyhSendMsgLogDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -104,6 +107,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         return query.fetch();
     }
 
+    /* 메시지 발송 로그 페이지조회 */
     @Override
     public SyhSendMsgLogDto.PageResponse selectPageList(SyhSendMsgLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -129,6 +133,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 메시지 발송 로그 buildCondition */
     private BooleanBuilder buildCondition(SyhSendMsgLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -191,6 +196,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         return orders;
     }
 
+    /* 메시지 발송 로그 수정 */
     @Override
     public int updateSelective(SyhSendMsgLog entity) {
         if (entity.getLogId() == null) return 0;

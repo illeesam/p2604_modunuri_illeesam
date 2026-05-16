@@ -27,6 +27,7 @@ public class SyVendorUserRoleService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 업체 사용자 역할 연결 키조회 */
     public SyVendorUserRoleDto.Item getById(String id) {
         SyVendorUserRoleDto.Item dto = syVendorUserRoleRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyVendorUserRoleService {
         return syVendorUserRoleRepository.selectById(id).orElse(null);
     }
 
+    /* 업체 사용자 역할 연결 상세조회 */
     public SyVendorUserRole findById(String id) {
         return syVendorUserRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyVendorUserRoleService {
         return syVendorUserRoleRepository.findById(id).orElse(null);
     }
 
+    /* 업체 사용자 역할 연결 키검증 */
     public boolean existsById(String id) {
         return syVendorUserRoleRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyVendorUserRoleService {
         return true;
     }
 
+    /* 업체 사용자 역할 연결 목록조회 */
     public List<SyVendorUserRoleDto.Item> getList(SyVendorUserRoleDto.Request req) {
         return syVendorUserRoleRepository.selectList(req);
     }
 
+    /* 업체 사용자 역할 연결 페이지조회 */
     public SyVendorUserRoleDto.PageResponse getPageData(SyVendorUserRoleDto.Request req) {
         PageHelper.addPaging(req);
         return syVendorUserRoleRepository.selectPageList(req);
     }
 
+    /* 업체 사용자 역할 연결 등록 */
     @Transactional
     public SyVendorUserRole create(SyVendorUserRole body) {
         String authId = SecurityUtil.getAuthUser().authId();
@@ -82,6 +88,7 @@ public class SyVendorUserRoleService {
         return saved;
     }
 
+    /* 업체 사용자 역할 연결 저장 */
     @Transactional
     public SyVendorUserRole save(SyVendorUserRole entity) {
         if (!existsById(entity.getVendorUserRoleId()))
@@ -94,6 +101,7 @@ public class SyVendorUserRoleService {
         return saved;
     }
 
+    /* 업체 사용자 역할 연결 수정 */
     @Transactional
     public SyVendorUserRole update(String id, SyVendorUserRole body) {
         SyVendorUserRole entity = findById(id);
@@ -106,6 +114,7 @@ public class SyVendorUserRoleService {
         return saved;
     }
 
+    /* 업체 사용자 역할 연결 수정 */
     @Transactional
     public SyVendorUserRole updateSelective(SyVendorUserRole entity) {
         if (entity.getVendorUserRoleId() == null) throw new CmBizException("vendorUserRoleId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -119,6 +128,7 @@ public class SyVendorUserRoleService {
         return entity;
     }
 
+    /* 업체 사용자 역할 연결 삭제 */
     @Transactional
     public void delete(String id) {
         SyVendorUserRole entity = findById(id);
@@ -127,6 +137,7 @@ public class SyVendorUserRoleService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 업체 사용자 역할 연결 목록저장 */
     @Transactional
     public void saveList(List<SyVendorUserRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

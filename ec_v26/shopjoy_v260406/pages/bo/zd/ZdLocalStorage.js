@@ -9,14 +9,15 @@ window.ZdLocalStorage = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const storageData = reactive([]);
                     const uiState = reactive({ isResizing: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
         
+    /* loadStorageData */
     const loadStorageData = () => {
       const data = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -32,6 +33,7 @@ window.ZdLocalStorage = {
       return storageData.filter(item => item.key.toLowerCase().includes(uiState.filterKey.toLowerCase()));
     });
 
+    /* copyValue */
     const copyValue = (value) => {
       try {
         navigator.clipboard.writeText(value);
@@ -41,11 +43,13 @@ window.ZdLocalStorage = {
       }
     };
 
+    /* startEdit */
     const startEdit = (key, value) => {
       uiState.editingKey = key;
       uiState.editingValue = value;
     };
 
+    /* saveEdit */
     const saveEdit = (key) => {
       if (!key) return;
       try {
@@ -59,11 +63,13 @@ window.ZdLocalStorage = {
       }
     };
 
+    /* cancelEdit */
     const cancelEdit = () => {
       uiState.editingKey = null;
       uiState.editingValue = '';
     };
 
+    /* deleteItem */
     const deleteItem = (key) => {
       if (!confirm(`'${key}'를 삭제하시겠습니까?`)) return;
       try {
@@ -75,6 +81,7 @@ window.ZdLocalStorage = {
       }
     };
 
+    /* clearAllStorage */
     const clearAllStorage = () => {
       if (!confirm('localStorage의 모든 데이터를 삭제하시겠습니까?')) return;
       try {
@@ -86,6 +93,7 @@ window.ZdLocalStorage = {
       }
     };
 
+    /* parseValue */
     const parseValue = (value) => {
       try {
         return JSON.stringify(JSON.parse(value), null, 2);
@@ -94,12 +102,14 @@ window.ZdLocalStorage = {
       }
     };
 
+    /* startResize */
     const startResize = (e) => {
       uiState.isResizing = true;
       uiState.startX = e.clientX;
       uiState.startWidth = uiState.valueColWidth;
     };
 
+    /* handleMouseMove */
     const handleMouseMove = (e) => {
       if (!uiState.isResizing) return;
       const delta = e.clientX - uiState.startX;
@@ -110,6 +120,7 @@ window.ZdLocalStorage = {
       uiState.valueColWidth = Math.min(maxValue, newWidth);
     };
 
+    /* stopResize */
     const stopResize = () => {
       uiState.isResizing = false;
     };

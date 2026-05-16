@@ -27,6 +27,7 @@ public class PmDiscntService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 할인 키조회 */
     public PmDiscntDto.Item getById(String id) {
         PmDiscntDto.Item dto = pmDiscntRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmDiscntService {
         return pmDiscntRepository.selectById(id).orElse(null);
     }
 
+    /* 할인 상세조회 */
     public PmDiscnt findById(String id) {
         return pmDiscntRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmDiscntService {
         return pmDiscntRepository.findById(id).orElse(null);
     }
 
+    /* 할인 키검증 */
     public boolean existsById(String id) {
         return pmDiscntRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmDiscntService {
         return true;
     }
 
+    /* 할인 목록조회 */
     public List<PmDiscntDto.Item> getList(PmDiscntDto.Request req) {
         return pmDiscntRepository.selectList(req);
     }
 
+    /* 할인 페이지조회 */
     public PmDiscntDto.PageResponse getPageData(PmDiscntDto.Request req) {
         PageHelper.addPaging(req);
         return pmDiscntRepository.selectPageList(req);
     }
 
+    /* 할인 등록 */
     @Transactional
     public PmDiscnt create(PmDiscnt body) {
         body.setDiscntId(CmUtil.generateId("pm_discnt"));
@@ -80,6 +86,7 @@ public class PmDiscntService {
         return saved;
     }
 
+    /* 할인 저장 */
     @Transactional
     public PmDiscnt save(PmDiscnt entity) {
         if (!existsById(entity.getDiscntId()))
@@ -92,6 +99,7 @@ public class PmDiscntService {
         return saved;
     }
 
+    /* 할인 수정 */
     @Transactional
     public PmDiscnt update(String id, PmDiscnt body) {
         PmDiscnt entity = findById(id);
@@ -104,6 +112,7 @@ public class PmDiscntService {
         return saved;
     }
 
+    /* 할인 수정 */
     @Transactional
     public PmDiscnt updateSelective(PmDiscnt entity) {
         if (entity.getDiscntId() == null) throw new CmBizException("discntId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmDiscntService {
         return entity;
     }
 
+    /* 할인 삭제 */
     @Transactional
     public void delete(String id) {
         PmDiscnt entity = findById(id);
@@ -125,6 +135,7 @@ public class PmDiscntService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 할인 목록저장 */
     @Transactional
     public void saveList(List<PmDiscnt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

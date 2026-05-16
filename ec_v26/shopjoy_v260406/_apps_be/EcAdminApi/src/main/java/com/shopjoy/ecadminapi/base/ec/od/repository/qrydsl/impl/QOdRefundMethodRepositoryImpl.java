@@ -37,6 +37,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     private static final QSyCode         cdPm = new QSyCode("cd_pm");
     private static final QSyCode         cdRs = new QSyCode("cd_rs");
 
+    /* 환불수단 키조회 */
     @Override
     public Optional<OdRefundMethodDto.Item> selectById(String refundMethodId) {
         OdRefundMethodDto.Item dto = baseListQuery()
@@ -45,6 +46,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         return Optional.ofNullable(dto);
     }
 
+    /* 환불수단 목록조회 */
     @Override
     public List<OdRefundMethodDto.Item> selectList(OdRefundMethodDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -63,6 +65,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         return query.fetch();
     }
 
+    /* 환불수단 페이지조회 */
     @Override
     public OdRefundMethodDto.PageResponse selectPageList(OdRefundMethodDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -106,6 +109,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(m.refundStatusCd)));
     }
 
+    /* 환불수단 buildCondition */
     private BooleanBuilder buildCondition(OdRefundMethodDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -160,6 +164,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         return orders;
     }
 
+    /* 환불수단 수정 */
     @Override
     public int updateSelective(OdRefundMethod entity) {
         if (entity.getRefundMethodId() == null) return 0;

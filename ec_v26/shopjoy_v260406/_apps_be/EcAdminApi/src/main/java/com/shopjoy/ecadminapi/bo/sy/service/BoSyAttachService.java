@@ -19,8 +19,11 @@ public class BoSyAttachService {
 
     private final SyAttachService syAttachService;
 
+    /* 키조회 */
     public SyAttachDto.Item getById(String id) { return syAttachService.getById(id); }
+    /* 목록조회 */
     public List<SyAttachDto.Item> getList(SyAttachDto.Request req) { return syAttachService.getList(req); }
+    /* 페이지조회 */
     public SyAttachDto.PageResponse getPageData(SyAttachDto.Request req) { return syAttachService.getPageData(req); }
 
     @Transactional public SyAttach create(SyAttach body) { return syAttachService.create(body); }

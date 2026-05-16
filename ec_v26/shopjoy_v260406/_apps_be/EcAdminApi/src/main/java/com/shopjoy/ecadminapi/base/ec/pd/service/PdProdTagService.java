@@ -27,6 +27,7 @@ public class PdProdTagService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 태그 키조회 */
     public PdProdTagDto.Item getById(String id) {
         PdProdTagDto.Item dto = pdProdTagRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdProdTagService {
         return pdProdTagRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 태그 상세조회 */
     public PdProdTag findById(String id) {
         return pdProdTagRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdProdTagService {
         return pdProdTagRepository.findById(id).orElse(null);
     }
 
+    /* 상품 태그 키검증 */
     public boolean existsById(String id) {
         return pdProdTagRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdProdTagService {
         return true;
     }
 
+    /* 상품 태그 목록조회 */
     public List<PdProdTagDto.Item> getList(PdProdTagDto.Request req) {
         return pdProdTagRepository.selectList(req);
     }
 
+    /* 상품 태그 페이지조회 */
     public PdProdTagDto.PageResponse getPageData(PdProdTagDto.Request req) {
         PageHelper.addPaging(req);
         return pdProdTagRepository.selectPageList(req);
     }
 
+    /* 상품 태그 등록 */
     @Transactional
     public PdProdTag create(PdProdTag body) {
         body.setProdTagId(CmUtil.generateId("pd_prod_tag"));
@@ -80,6 +86,7 @@ public class PdProdTagService {
         return saved;
     }
 
+    /* 상품 태그 저장 */
     @Transactional
     public PdProdTag save(PdProdTag entity) {
         if (!existsById(entity.getProdTagId()))
@@ -92,6 +99,7 @@ public class PdProdTagService {
         return saved;
     }
 
+    /* 상품 태그 수정 */
     @Transactional
     public PdProdTag update(String id, PdProdTag body) {
         PdProdTag entity = findById(id);
@@ -104,6 +112,7 @@ public class PdProdTagService {
         return saved;
     }
 
+    /* 상품 태그 수정 */
     @Transactional
     public PdProdTag updateSelective(PdProdTag entity) {
         if (entity.getProdTagId() == null) throw new CmBizException("prodTagId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdProdTagService {
         return entity;
     }
 
+    /* 상품 태그 삭제 */
     @Transactional
     public void delete(String id) {
         PdProdTag entity = findById(id);
@@ -125,6 +135,7 @@ public class PdProdTagService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 태그 목록저장 */
     @Transactional
     public void saveList(List<PdProdTag> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -27,6 +27,7 @@ public class PmGiftCondService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 사은품 지급 조건 키조회 */
     public PmGiftCondDto.Item getById(String id) {
         PmGiftCondDto.Item dto = pmGiftCondRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmGiftCondService {
         return pmGiftCondRepository.selectById(id).orElse(null);
     }
 
+    /* 사은품 지급 조건 상세조회 */
     public PmGiftCond findById(String id) {
         return pmGiftCondRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmGiftCondService {
         return pmGiftCondRepository.findById(id).orElse(null);
     }
 
+    /* 사은품 지급 조건 키검증 */
     public boolean existsById(String id) {
         return pmGiftCondRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmGiftCondService {
         return true;
     }
 
+    /* 사은품 지급 조건 목록조회 */
     public List<PmGiftCondDto.Item> getList(PmGiftCondDto.Request req) {
         return pmGiftCondRepository.selectList(req);
     }
 
+    /* 사은품 지급 조건 페이지조회 */
     public PmGiftCondDto.PageResponse getPageData(PmGiftCondDto.Request req) {
         PageHelper.addPaging(req);
         return pmGiftCondRepository.selectPageList(req);
     }
 
+    /* 사은품 지급 조건 등록 */
     @Transactional
     public PmGiftCond create(PmGiftCond body) {
         body.setGiftCondId(CmUtil.generateId("pm_gift_cond"));
@@ -80,6 +86,7 @@ public class PmGiftCondService {
         return saved;
     }
 
+    /* 사은품 지급 조건 저장 */
     @Transactional
     public PmGiftCond save(PmGiftCond entity) {
         if (!existsById(entity.getGiftCondId()))
@@ -92,6 +99,7 @@ public class PmGiftCondService {
         return saved;
     }
 
+    /* 사은품 지급 조건 수정 */
     @Transactional
     public PmGiftCond update(String id, PmGiftCond body) {
         PmGiftCond entity = findById(id);
@@ -104,6 +112,7 @@ public class PmGiftCondService {
         return saved;
     }
 
+    /* 사은품 지급 조건 수정 */
     @Transactional
     public PmGiftCond updateSelective(PmGiftCond entity) {
         if (entity.getGiftCondId() == null) throw new CmBizException("giftCondId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmGiftCondService {
         return entity;
     }
 
+    /* 사은품 지급 조건 삭제 */
     @Transactional
     public void delete(String id) {
         PmGiftCond entity = findById(id);
@@ -125,6 +135,7 @@ public class PmGiftCondService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 사은품 지급 조건 목록저장 */
     @Transactional
     public void saveList(List<PmGiftCond> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

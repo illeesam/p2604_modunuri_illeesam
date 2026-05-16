@@ -27,6 +27,7 @@ public class SyBrandService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 브랜드 키조회 */
     public SyBrandDto.Item getById(String id) {
         SyBrandDto.Item dto = syBrandRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyBrandService {
         return syBrandRepository.selectById(id).orElse(null);
     }
 
+    /* 브랜드 상세조회 */
     public SyBrand findById(String id) {
         return syBrandRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyBrandService {
         return syBrandRepository.findById(id).orElse(null);
     }
 
+    /* 브랜드 키검증 */
     public boolean existsById(String id) {
         return syBrandRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyBrandService {
         return true;
     }
 
+    /* 브랜드 목록조회 */
     public List<SyBrandDto.Item> getList(SyBrandDto.Request req) {
         return syBrandRepository.selectList(req);
     }
 
+    /* 브랜드 페이지조회 */
     public SyBrandDto.PageResponse getPageData(SyBrandDto.Request req) {
         PageHelper.addPaging(req);
         return syBrandRepository.selectPageList(req);
     }
 
+    /* 브랜드 등록 */
     @Transactional
     public SyBrand create(SyBrand body) {
         body.setBrandId(CmUtil.generateId("sy_brand"));
@@ -80,6 +86,7 @@ public class SyBrandService {
         return saved;
     }
 
+    /* 브랜드 저장 */
     @Transactional
     public SyBrand save(SyBrand entity) {
         if (!existsById(entity.getBrandId()))
@@ -92,6 +99,7 @@ public class SyBrandService {
         return saved;
     }
 
+    /* 브랜드 수정 */
     @Transactional
     public SyBrand update(String id, SyBrand body) {
         SyBrand entity = findById(id);
@@ -104,6 +112,7 @@ public class SyBrandService {
         return saved;
     }
 
+    /* 브랜드 수정 */
     @Transactional
     public SyBrand updateSelective(SyBrand entity) {
         if (entity.getBrandId() == null) throw new CmBizException("brandId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyBrandService {
         return entity;
     }
 
+    /* 브랜드 삭제 */
     @Transactional
     public void delete(String id) {
         SyBrand entity = findById(id);
@@ -125,6 +135,7 @@ public class SyBrandService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 브랜드 목록저장 */
     @Transactional
     public void saveList(List<SyBrand> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -27,6 +27,7 @@ public class OdOrderItemDiscntService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 주문 아이템 할인 키조회 */
     public OdOrderItemDiscntDto.Item getById(String id) {
         OdOrderItemDiscntDto.Item dto = odOrderItemDiscntRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdOrderItemDiscntService {
         return odOrderItemDiscntRepository.selectById(id).orElse(null);
     }
 
+    /* 주문 아이템 할인 상세조회 */
     public OdOrderItemDiscnt findById(String id) {
         return odOrderItemDiscntRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdOrderItemDiscntService {
         return odOrderItemDiscntRepository.findById(id).orElse(null);
     }
 
+    /* 주문 아이템 할인 키검증 */
     public boolean existsById(String id) {
         return odOrderItemDiscntRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdOrderItemDiscntService {
         return true;
     }
 
+    /* 주문 아이템 할인 목록조회 */
     public List<OdOrderItemDiscntDto.Item> getList(OdOrderItemDiscntDto.Request req) {
         return odOrderItemDiscntRepository.selectList(req);
     }
 
+    /* 주문 아이템 할인 페이지조회 */
     public OdOrderItemDiscntDto.PageResponse getPageData(OdOrderItemDiscntDto.Request req) {
         PageHelper.addPaging(req);
         return odOrderItemDiscntRepository.selectPageList(req);
     }
 
+    /* 주문 아이템 할인 등록 */
     @Transactional
     public OdOrderItemDiscnt create(OdOrderItemDiscnt body) {
         body.setItemDiscntId(CmUtil.generateId("od_order_item_discnt"));
@@ -80,6 +86,7 @@ public class OdOrderItemDiscntService {
         return saved;
     }
 
+    /* 주문 아이템 할인 저장 */
     @Transactional
     public OdOrderItemDiscnt save(OdOrderItemDiscnt entity) {
         if (!existsById(entity.getItemDiscntId()))
@@ -92,6 +99,7 @@ public class OdOrderItemDiscntService {
         return saved;
     }
 
+    /* 주문 아이템 할인 수정 */
     @Transactional
     public OdOrderItemDiscnt update(String id, OdOrderItemDiscnt body) {
         OdOrderItemDiscnt entity = findById(id);
@@ -104,6 +112,7 @@ public class OdOrderItemDiscntService {
         return saved;
     }
 
+    /* 주문 아이템 할인 수정 */
     @Transactional
     public OdOrderItemDiscnt updateSelective(OdOrderItemDiscnt entity) {
         if (entity.getItemDiscntId() == null) throw new CmBizException("itemDiscntId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdOrderItemDiscntService {
         return entity;
     }
 
+    /* 주문 아이템 할인 삭제 */
     @Transactional
     public void delete(String id) {
         OdOrderItemDiscnt entity = findById(id);
@@ -125,6 +135,7 @@ public class OdOrderItemDiscntService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 주문 아이템 할인 목록저장 */
     @Transactional
     public void saveList(List<OdOrderItemDiscnt> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -6,8 +6,8 @@ window.SyApiLogMng = {
   },
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showRefModal = window.boApp.showRefModal;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
 
     const uiState = reactive({
       activeTab: 'access',
@@ -16,7 +16,7 @@ window.SyApiLogMng = {
       dateRange: '1week',
       dateStart: '',
       dateEnd: '',
-      searchTypes: '',
+      searchType: '',
       searchValue: '',
       searchMethod: '',
       searchStatus: '',
@@ -28,6 +28,7 @@ window.SyApiLogMng = {
 
     const codes = reactive({ date_range_opts: [], http_methods: [], app_types: [] });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.date_range_opts = codeStore?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
@@ -44,6 +45,7 @@ window.SyApiLogMng = {
       uiState.dateEnd   = r.to;
     })();
 
+    /* onDateRangeChange */
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
         const r = boUtil.getDateRange(uiState.dateRange);
@@ -65,27 +67,35 @@ window.SyApiLogMng = {
     // 펼쳐진 행 ID 집합
     const expandedRows  = reactive(new Set());
     const allExpanded   = reactive({ value: false });
+
+    /* toggleRow */
     const toggleRow     = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+
+    /* isExpanded */
     const isExpanded    = id => expandedRows.has(id);
+
+    /* toggleExpandAll */
     const toggleExpandAll = () => {
       const list = uiState.activeTab === 'access' ? accessLogs : errorLogs;
       if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
       else { list.forEach((r, i) => expandedRows.add(r.logId || i)); allExpanded.value = true; }
     };
 
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
+    /* buildSearchParams */
     const buildSearchParams = () => {
       const p = {
         pageNo:      pager.pageNo,
         pageSize:    pager.pageSize,
         dateStart:   uiState.dateStart       || undefined,
         dateEnd:     uiState.dateEnd         || undefined,
-        searchTypes: uiState.searchTypes      || undefined,
+        searchType: uiState.searchType      || undefined,
         searchValue: uiState.searchValue        || undefined,
         method:      uiState.searchMethod    || undefined,
         status:      uiState.searchStatus    || undefined,
@@ -94,13 +104,14 @@ window.SyApiLogMng = {
         uiNm:        uiState.searchUiNm      || undefined,
         traceId:     uiState.searchTraceId   || undefined,
       };
-      // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-      if (p.searchValue && !p.searchTypes) {
-        p.searchTypes = 'def_ip,def_userId';
+      // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+      if (p.searchValue && !p.searchType) {
+        p.searchType = 'def_ip,def_userId';
       }
       return p;
     };
 
+    /* handleSearchAccessLog */
     const handleSearchAccessLog = async () => {
       try {
         const res = await boApiSvc.syAccessLog.getPage(buildSearchParams(), 'API로그조회', '요청로그조회');
@@ -117,6 +128,7 @@ window.SyApiLogMng = {
       }
     };
 
+    /* handleSearchErrorLog */
     const handleSearchErrorLog = async () => {
       try {
         const res = await boApiSvc.syAccessErrorLog.getPage(buildSearchParams(), 'API로그조회', '오류로그조회');
@@ -133,6 +145,7 @@ window.SyApiLogMng = {
       }
     };
 
+    /* 목록조회 */
     const handleSearchList = async () => {
       if (uiState.activeTab === 'access') await handleSearchAccessLog();
       else                                await handleSearchErrorLog();
@@ -143,7 +156,10 @@ window.SyApiLogMng = {
       handleSearchList();
     });
 
+    /* onTabChange */
     const onTabChange   = (tab) => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
+
+    /* handleClearLog */
     const handleClearLog = async () => {
       const tabNm = uiState.activeTab === 'access' ? 'API요청로그' : 'API오류로그';
       const ok = await window.boApp.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
@@ -160,10 +176,14 @@ window.SyApiLogMng = {
         if (showToast) showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
       }
     };
+
+    /* 목록조회 */
     const onSearch     = () => { pager.pageNo = 1; handleSearchList(); };
+
+    /* onReset */
     const onReset      = () => {
       Object.assign(uiState, {
-        searchTypes:'', searchValue:'', searchMethod:'', searchStatus:'', searchPath:'',
+        searchType:'', searchValue:'', searchMethod:'', searchStatus:'', searchPath:'',
         searchAppTypeCd:'', searchUiNm:'', searchTraceId:'',
         dateRange:'1week', srchOpen:false,
       });
@@ -172,10 +192,17 @@ window.SyApiLogMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* setPage */
     const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
+    /* fnMethodBadge */
     const fnMethodBadge = m => ({ GET: 'badge-blue', POST: 'badge-green', PUT: 'badge-orange', PATCH: 'badge-purple', DELETE: 'badge-red' }[m] || 'badge-gray');
+
+    /* fnStatusBadge */
     const fnStatusBadge = s => {
       if (!s) return 'badge-gray';
       const n = Number(s);
@@ -188,6 +215,7 @@ window.SyApiLogMng = {
 
     const cfCurrentList = computed(() => uiState.activeTab === 'access' ? accessLogs : errorLogs);
 
+    /* fnDecode */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
     // -- return ---------------------------------------------------------------
@@ -234,7 +262,7 @@ window.SyApiLogMng = {
       </select>
       <input v-model="uiState.searchPath" placeholder="API 경로 (예: /bo/sy/)" style="width:190px" @keyup.enter="onSearch" />
       <multi-check-select
-        v-model="uiState.searchTypes"
+        v-model="uiState.searchType"
         :options="[
           { value: 'def_ip',     label: 'IP' },
           { value: 'def_userId', label: '사용자ID' },

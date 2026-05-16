@@ -32,6 +32,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
     private static final QPdProd    prd = QPdProd.pdProd;
     private static final QSySite    ste = QSySite.sySite;
 
+    /* 상품 태그 키조회 */
     @Override
     public Optional<PdProdTagDto.Item> selectById(String prodTagId) {
         PdProdTagDto.Item dto = baseQuery()
@@ -40,6 +41,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 태그 목록조회 */
     @Override
     public List<PdProdTagDto.Item> selectList(PdProdTagDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -58,6 +60,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         return query.fetch();
     }
 
+    /* 상품 태그 페이지조회 */
     @Override
     public PdProdTagDto.PageResponse selectPageList(PdProdTagDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -79,6 +82,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 상품 태그 baseQuery */
     private JPAQuery<PdProdTagDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdTagDto.Item.class,
@@ -90,6 +94,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
                 .leftJoin(ste).on(ste.siteId.eq(t.siteId));
     }
 
+    /* 상품 태그 buildCondition */
     private BooleanBuilder buildCondition(PdProdTagDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -146,6 +151,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         return orders;
     }
 
+    /* 상품 태그 수정 */
     @Override
     public int updateSelective(PdProdTag entity) {
         if (entity.getProdTagId() == null) return 0;

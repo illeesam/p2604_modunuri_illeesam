@@ -28,6 +28,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
     private final JPAQueryFactory queryFactory;
     private static final QPmDiscntItem i = QPmDiscntItem.pmDiscntItem;
 
+    /* 할인 대상 상품 키조회 */
     @Override
     public Optional<PmDiscntItemDto.Item> selectById(String discntItemId) {
         PmDiscntItemDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 할인 대상 상품 목록조회 */
     @Override
     public List<PmDiscntItemDto.Item> selectList(PmDiscntItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         return query.fetch();
     }
 
+    /* 할인 대상 상품 페이지조회 */
     @Override
     public PmDiscntItemDto.PageResponse selectPageList(PmDiscntItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -79,6 +82,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 할인 대상 상품 baseQuery */
     private JPAQuery<PmDiscntItemDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmDiscntItemDto.Item.class,
@@ -89,6 +93,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
                 .from(i);
     }
 
+    /* 할인 대상 상품 buildCondition */
     private BooleanBuilder buildCondition(PmDiscntItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -144,6 +149,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         return orders;
     }
 
+    /* 할인 대상 상품 수정 */
     @Override
     public int updateSelective(PmDiscntItem entity) {
         if (entity.getDiscntItemId() == null) return 0;

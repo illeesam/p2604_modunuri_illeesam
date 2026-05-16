@@ -11,14 +11,15 @@ window.PdCategoryDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ category_statuses: [] });
 
+    /* 상품 카테고리 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS');
@@ -51,6 +52,7 @@ window.PdCategoryDtl = {
       categoryNm: yup.string().required('카테고리명을 입력해주세요.'),
     });
 
+    /* 상품 카테고리 handleSearchDetail */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
@@ -81,6 +83,7 @@ window.PdCategoryDtl = {
       return true;
     }));
 
+    /* 상품 카테고리 onParentChange */
     const onParentChange = () => {
       if (form.parentId === null || form.parentId === '') {
         form.depth = 1;
@@ -90,6 +93,7 @@ window.PdCategoryDtl = {
       }
     };
 
+    /* 상품 카테고리 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {

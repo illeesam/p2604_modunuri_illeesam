@@ -20,6 +20,7 @@ public class CoEcMbMemberController {
 
     private final BoMbMemberService boMbMemberService;
 
+    /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<MbMemberDto.PageResponse>> page(@Valid @ModelAttribute MbMemberDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.getPageData(req)));

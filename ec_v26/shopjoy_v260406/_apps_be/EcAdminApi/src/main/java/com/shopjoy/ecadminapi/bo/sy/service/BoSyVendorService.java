@@ -19,8 +19,11 @@ public class BoSyVendorService {
 
     private final SyVendorService syVendorService;
 
+    /* 키조회 */
     public SyVendorDto.Item getById(String id) { return syVendorService.getById(id); }
+    /* 목록조회 */
     public List<SyVendorDto.Item> getList(SyVendorDto.Request req) { return syVendorService.getList(req); }
+    /* 페이지조회 */
     public SyVendorDto.PageResponse getPageData(SyVendorDto.Request req) { return syVendorService.getPageData(req); }
 
     @Transactional public SyVendor create(SyVendor body) { return syVendorService.create(body); }

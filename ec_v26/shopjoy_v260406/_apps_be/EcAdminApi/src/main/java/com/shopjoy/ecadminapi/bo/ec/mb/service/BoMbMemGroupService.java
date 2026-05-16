@@ -19,8 +19,11 @@ public class BoMbMemGroupService {
 
     private final MbMemberGroupService mbMemberGroupService;
 
+    /* 키조회 */
     public MbMemberGroupDto.Item getById(String id) { return mbMemberGroupService.getById(id); }
+    /* 목록조회 */
     public List<MbMemberGroupDto.Item> getList(MbMemberGroupDto.Request req) { return mbMemberGroupService.getList(req); }
+    /* 페이지조회 */
     public MbMemberGroupDto.PageResponse getPageData(MbMemberGroupDto.Request req) { return mbMemberGroupService.getPageData(req); }
 
     @Transactional public MbMemberGroup create(MbMemberGroup body) {

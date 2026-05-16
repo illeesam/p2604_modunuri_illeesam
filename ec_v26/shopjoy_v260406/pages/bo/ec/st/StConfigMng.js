@@ -6,13 +6,14 @@ window.StConfigMng = {
   },
   setup(props) {
     const { ref, reactive, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ descOpen: false, isNew: false, error: null, loading: false, selectedId: null });
     const configs = reactive([]);
 
+    /* handleLoadList */
     const handleLoadList = async () => {
       uiState.loading = true;
       try {
@@ -37,6 +38,7 @@ window.StConfigMng = {
         const form = reactive({});
     const errors = reactive({});
 
+    /* fnMapUiToApi */
     const fnMapUiToApi = (uiForm) => ({
       settleConfigId: uiForm.settleConfigId,
       siteId: uiForm.siteId,
@@ -50,6 +52,7 @@ window.StConfigMng = {
       useYn: uiForm.useYn
     });
 
+    /* fnMapApiToUi */
     const fnMapApiToUi = (apiData) => ({
       settleConfigId: apiData.settleConfigId,
       siteId: apiData.siteId,
@@ -67,20 +70,26 @@ window.StConfigMng = {
       useYn: apiData.useYn
     });
 
+    /* openEdit */
     const openEdit = (c) => {
       Object.assign(form, fnMapApiToUi(c));
       uiState.selectedId = c.settleConfigId;
       uiState.isNew = false;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
+
+    /* openNew */
     const openNew = () => {
       Object.assign(form, { settleConfigId: null, siteId: '01', siteNm: 'ShopJoy 01', settleCycleCd: 'MONTHLY', settleDay: 10, commissionRate: 10, minSettleAmt: 10000, useYn: 'Y', settleConfigRemark: '' });
       uiState.selectedId = '__new__';
       uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
+
+    /* closeForm */
     const closeForm = () => { uiState.selectedId = null; };
 
+    /* validate */
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       if (!form.settleCycleCd) errors.settleCycleCd = '정산주기를 선택하세요.';
@@ -89,6 +98,7 @@ window.StConfigMng = {
       return Object.keys(errors).length === 0;
     };
 
+    /* 저장 */
     const handleSave = async () => {
       if (!validate()) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await showConfirm('저장', '정산기준을 저장하시겠습니까?');
@@ -108,6 +118,7 @@ window.StConfigMng = {
       }
     };
 
+    /* 삭제 */
     const handleDelete = async (c) => {
       const cycleName = c.settleCycleNm || c.settleCycleCd;
       const ok = await showConfirm('삭제', `[${cycleName}] 정산기준을 삭제하시겠습니까?`);
@@ -126,12 +137,16 @@ window.StConfigMng = {
       }
     };
 
+    /* fnCycleCdToLabel */
     const fnCycleCdToLabel = (cd) => ({ 'DAILY': '일정산', 'WEEKLY': '주정산', 'MONTHLY': '월정산' }[cd] || cd);
+
+    /* fnCycleBadge */
     const fnCycleBadge = (cd) => ({ 'DAILY': 'badge-orange', 'WEEKLY': 'badge-green', 'MONTHLY': 'badge-blue' }[cd] || 'badge-gray');
 
     // -- 공통코드 -------------------------------------------------------------
     const codes = reactive({ settle_cycles: [], use_yn: [] });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();

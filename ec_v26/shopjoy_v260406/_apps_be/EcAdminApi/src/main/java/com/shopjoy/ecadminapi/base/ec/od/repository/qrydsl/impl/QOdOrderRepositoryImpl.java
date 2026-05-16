@@ -42,6 +42,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     private static final QSyCode   cdAt = new QSyCode("cd_at");
     private static final QSyCode   cdAc = new QSyCode("cd_ac");
 
+    /* 주문 키조회 */
     @Override
     public Optional<OdOrderDto.Item> selectById(String orderId) {
         OdOrderDto.Item dto = queryFactory
@@ -89,6 +90,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 주문 목록조회 */
     @Override
     public List<OdOrderDto.Item> selectList(OdOrderDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -107,6 +109,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         return query.fetch();
     }
 
+    /* 주문 페이지조회 */
     @Override
     public OdOrderDto.PageResponse selectPageList(OdOrderDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -169,15 +172,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(o.apprStatusCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(OdOrderDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -187,10 +182,10 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         if (StringUtils.hasText(s.getMemberId()))       w.and(o.memberId.eq(s.getMemberId()));
         if (StringUtils.hasText(s.getOrderStatusCd())) w.and(o.orderStatusCd.eq(s.getOrderStatusCd()));
 
-        // searchValue + searchTypes
+        // searchValue + searchType
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -257,6 +252,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         return orders;
     }
 
+    /* 주문 수정 */
     @Override
     public int updateSelective(OdOrder entity) {
         if (entity.getOrderId() == null) return 0;

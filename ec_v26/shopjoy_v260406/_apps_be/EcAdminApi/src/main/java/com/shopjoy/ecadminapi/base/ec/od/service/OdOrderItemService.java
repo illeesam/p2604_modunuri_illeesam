@@ -27,6 +27,7 @@ public class OdOrderItemService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 주문 아이템(상품) 키조회 */
     public OdOrderItemDto.Item getById(String id) {
         OdOrderItemDto.Item dto = odOrderItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdOrderItemService {
         return odOrderItemRepository.selectById(id).orElse(null);
     }
 
+    /* 주문 아이템(상품) 상세조회 */
     public OdOrderItem findById(String id) {
         return odOrderItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdOrderItemService {
         return odOrderItemRepository.findById(id).orElse(null);
     }
 
+    /* 주문 아이템(상품) 키검증 */
     public boolean existsById(String id) {
         return odOrderItemRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdOrderItemService {
         return true;
     }
 
+    /* 주문 아이템(상품) 목록조회 */
     public List<OdOrderItemDto.Item> getList(OdOrderItemDto.Request req) {
         return odOrderItemRepository.selectList(req);
     }
 
+    /* 주문 아이템(상품) 페이지조회 */
     public OdOrderItemDto.PageResponse getPageData(OdOrderItemDto.Request req) {
         PageHelper.addPaging(req);
         return odOrderItemRepository.selectPageList(req);
     }
 
+    /* 주문 아이템(상품) 등록 */
     @Transactional
     public OdOrderItem create(OdOrderItem body) {
         body.setOrderItemId(CmUtil.generateId("od_order_item"));
@@ -80,6 +86,7 @@ public class OdOrderItemService {
         return saved;
     }
 
+    /* 주문 아이템(상품) 저장 */
     @Transactional
     public OdOrderItem save(OdOrderItem entity) {
         if (!existsById(entity.getOrderItemId()))
@@ -92,6 +99,7 @@ public class OdOrderItemService {
         return saved;
     }
 
+    /* 주문 아이템(상품) 수정 */
     @Transactional
     public OdOrderItem update(String id, OdOrderItem body) {
         OdOrderItem entity = findById(id);
@@ -104,6 +112,7 @@ public class OdOrderItemService {
         return saved;
     }
 
+    /* 주문 아이템(상품) 수정 */
     @Transactional
     public OdOrderItem updateSelective(OdOrderItem entity) {
         if (entity.getOrderItemId() == null) throw new CmBizException("orderItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdOrderItemService {
         return entity;
     }
 
+    /* 주문 아이템(상품) 삭제 */
     @Transactional
     public void delete(String id) {
         OdOrderItem entity = findById(id);
@@ -125,6 +135,7 @@ public class OdOrderItemService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 주문 아이템(상품) 목록저장 */
     @Transactional
     public void saveList(List<OdOrderItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

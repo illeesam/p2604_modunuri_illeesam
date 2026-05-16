@@ -7,11 +7,12 @@ window.Contact = {
   emits: [],
   setup(props) {
     const { reactive, ref, computed, watch, onMounted } = Vue;
-    const showToast            = window.foApp.showToast;
-    const showAlert            = window.foApp.showAlert;
+    const showToast            = window.foApp.showToast;  // 토스트 알림
+    const showAlert            = window.foApp.showAlert;  // 알림 모달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -31,8 +32,10 @@ window.Contact = {
     const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     const errors = reactive({});
     
+    /* clearErr */
     const clearErr = k => { if (errors[k] !== undefined) delete errors[k]; };
 
+    /* validate */
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       let ok = true;
@@ -42,6 +45,7 @@ window.Contact = {
       return ok;
     };
 
+    /* handleSubmit */
     const handleSubmit = async () => {
       if (!validate()) return;
       if (typeof foApi !== 'undefined') {

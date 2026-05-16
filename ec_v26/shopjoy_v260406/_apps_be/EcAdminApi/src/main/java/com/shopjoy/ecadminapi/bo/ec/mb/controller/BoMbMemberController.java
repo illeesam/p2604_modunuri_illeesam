@@ -22,42 +22,50 @@ public class BoMbMemberController {
 
     private final BoMbMemberService boMbMemberService;
 
+    /* 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.getById(id)));
     }
 
+    /* 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbMemberDto.Item>>> list(@Valid @ModelAttribute MbMemberDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.getList(req)));
     }
 
+    /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<MbMemberDto.PageResponse>> page(@Valid @ModelAttribute MbMemberDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.getPageData(req)));
     }
 
+    /* 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<MbMember>> create(@RequestBody MbMember body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boMbMemberService.create(body)));
     }
 
+    /* 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMember>> update(@PathVariable("id") String id, @RequestBody MbMember body) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.update(id, body)));
     }
 
+    /* upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMember>> upsert(@PathVariable("id") String id, @RequestBody MbMember body) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.update(id, body)));
     }
 
+    /* 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boMbMemberService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<MbMember> rows) {
         boMbMemberService.saveList(rows);

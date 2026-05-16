@@ -31,6 +31,7 @@ public class SyCodeRedisStore {
 
     // ── 저장 ──────────────────────────────────────────────────────
 
+    /* saveGroup */
     public void saveGroup(String groupCode, List<Map<String, Object>> codes) {
         redis.set(CacheKey.SY_CODE_GRP + groupCode, codes, props.getTtl().getSyCodeSeconds());
         log.info("[Cache][redis] [sy:code:grp][{}] saveGroup()— {}건", groupCode, codes.size());
@@ -44,6 +45,7 @@ public class SyCodeRedisStore {
 
     // ── 조회 ──────────────────────────────────────────────────────
 
+    /* getGroup */
     @SuppressWarnings("unchecked")
     public Optional<List<Map<String, Object>>> getGroup(String groupCode) {
         return redis.get(CacheKey.SY_CODE_GRP + groupCode, List.class)
@@ -59,6 +61,7 @@ public class SyCodeRedisStore {
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
+    /* evictGroup */
     public void evictGroup(String groupCode) {
         redis.delete(CacheKey.SY_CODE_GRP + groupCode);
     }

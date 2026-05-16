@@ -28,6 +28,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     private final JPAQueryFactory queryFactory;
     private static final QPmDiscntUsage u = QPmDiscntUsage.pmDiscntUsage;
 
+    /* 할인 사용 이력 키조회 */
     @Override
     public Optional<PmDiscntUsageDto.Item> selectById(String discntUsageId) {
         PmDiscntUsageDto.Item dto = baseQuery()
@@ -36,6 +37,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 할인 사용 이력 목록조회 */
     @Override
     public List<PmDiscntUsageDto.Item> selectList(PmDiscntUsageDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -54,6 +56,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         return query.fetch();
     }
 
+    /* 할인 사용 이력 페이지조회 */
     @Override
     public PmDiscntUsageDto.PageResponse selectPageList(PmDiscntUsageDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -79,6 +82,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 할인 사용 이력 baseQuery */
     private JPAQuery<PmDiscntUsageDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmDiscntUsageDto.Item.class,
@@ -90,15 +94,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                 .from(u);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(PmDiscntUsageDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -107,8 +103,8 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         if (StringUtils.hasText(s.getDiscntUsageId())) w.and(u.discntUsageId.eq(s.getDiscntUsageId()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -166,6 +162,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         return orders;
     }
 
+    /* 할인 사용 이력 수정 */
     @Override
     public int updateSelective(PmDiscntUsage entity) {
         if (entity.getDiscntUsageId() == null) return 0;

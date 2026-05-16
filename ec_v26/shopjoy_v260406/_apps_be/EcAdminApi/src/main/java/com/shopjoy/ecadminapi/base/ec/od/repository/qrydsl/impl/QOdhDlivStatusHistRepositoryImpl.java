@@ -28,6 +28,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
     private final JPAQueryFactory queryFactory;
     private static final QOdhDlivStatusHist h = QOdhDlivStatusHist.odhDlivStatusHist;
 
+    /* 배송 상태 이력 baseQuery */
     private JPAQuery<OdhDlivStatusHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhDlivStatusHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
                 .from(h);
     }
 
+    /* 배송 상태 이력 키조회 */
     @Override
     public Optional<OdhDlivStatusHistDto.Item> selectById(String id) {
         OdhDlivStatusHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         return Optional.ofNullable(dto);
     }
 
+    /* 배송 상태 이력 목록조회 */
     @Override
     public List<OdhDlivStatusHistDto.Item> selectList(OdhDlivStatusHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         return query.fetch();
     }
 
+    /* 배송 상태 이력 페이지조회 */
     @Override
     public OdhDlivStatusHistDto.PageResponse selectPageList(OdhDlivStatusHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 배송 상태 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhDlivStatusHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         return orders;
     }
 
+    /* 배송 상태 이력 수정 */
     @Override
     public int updateSelective(OdhDlivStatusHist entity) {
         if (entity.getDlivStatusHistId() == null) return 0;

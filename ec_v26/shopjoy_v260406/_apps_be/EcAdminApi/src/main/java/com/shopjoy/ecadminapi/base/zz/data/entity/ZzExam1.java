@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "zz_exam1", schema = "shopjoy_2604")

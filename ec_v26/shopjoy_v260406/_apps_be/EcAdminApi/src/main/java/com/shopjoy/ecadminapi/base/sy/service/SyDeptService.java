@@ -79,6 +79,7 @@ public class SyDeptService {
         return syDeptRepository.selectPageList(req);
     }
 
+    /* 부서 등록 */
     @Transactional
     public SyDept create(SyDept body) {
         body.setDeptId(CmUtil.generateId("sy_dept"));
@@ -92,6 +93,7 @@ public class SyDeptService {
         return saved;
     }
 
+    /* 부서 저장 */
     @Transactional
     public SyDept save(SyDept entity) {
         if (!existsById(entity.getDeptId()))
@@ -104,6 +106,7 @@ public class SyDeptService {
         return saved;
     }
 
+    /* 부서 수정 */
     @Transactional
     public SyDept update(String id, SyDept body) {
         SyDept entity = findById(id);
@@ -116,6 +119,7 @@ public class SyDeptService {
         return saved;
     }
 
+    /* 부서 수정 */
     @Transactional
     public SyDept updateSelective(SyDept entity) {
         if (entity.getDeptId() == null) throw new CmBizException("deptId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -129,6 +133,7 @@ public class SyDeptService {
         return entity;
     }
 
+    /* 부서 삭제 */
     @Transactional
     public void delete(String id) {
         SyDept entity = findById(id);
@@ -137,6 +142,7 @@ public class SyDeptService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 부서 목록저장 */
     @Transactional
     public void saveList(List<SyDept> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

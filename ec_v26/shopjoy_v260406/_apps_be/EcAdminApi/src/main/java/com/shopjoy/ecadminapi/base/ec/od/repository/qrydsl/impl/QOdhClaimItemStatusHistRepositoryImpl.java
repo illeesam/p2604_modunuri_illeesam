@@ -28,6 +28,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
     private final JPAQueryFactory queryFactory;
     private static final QOdhClaimItemStatusHist h = QOdhClaimItemStatusHist.odhClaimItemStatusHist;
 
+    /* 클레임 아이템 상태 이력 baseQuery */
     private JPAQuery<OdhClaimItemStatusHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimItemStatusHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
                 .from(h);
     }
 
+    /* 클레임 아이템 상태 이력 키조회 */
     @Override
     public Optional<OdhClaimItemStatusHistDto.Item> selectById(String id) {
         OdhClaimItemStatusHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         return Optional.ofNullable(dto);
     }
 
+    /* 클레임 아이템 상태 이력 목록조회 */
     @Override
     public List<OdhClaimItemStatusHistDto.Item> selectList(OdhClaimItemStatusHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         return query.fetch();
     }
 
+    /* 클레임 아이템 상태 이력 페이지조회 */
     @Override
     public OdhClaimItemStatusHistDto.PageResponse selectPageList(OdhClaimItemStatusHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 클레임 아이템 상태 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhClaimItemStatusHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         return orders;
     }
 
+    /* 클레임 아이템 상태 이력 수정 */
     @Override
     public int updateSelective(OdhClaimItemStatusHist entity) {
         if (entity.getClaimItemStatusHistId() == null) return 0;

@@ -30,8 +30,11 @@ public class BoStSettleCloseService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public StSettleCloseDto.Item getById(String id) { return stSettleCloseService.getById(id); }
+    /* 목록조회 */
     public List<StSettleCloseDto.Item> getList(StSettleCloseDto.Request req) { return stSettleCloseService.getList(req); }
+    /* 페이지조회 */
     public StSettleCloseDto.PageResponse getPageData(StSettleCloseDto.Request req) { return stSettleCloseService.getPageData(req); }
 
     @Transactional public StSettleClose create(StSettleClose body) { return stSettleCloseService.create(body); }

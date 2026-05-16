@@ -17,6 +17,7 @@
     { id: 'custom', label: '직접입력' },
   ];
 
+  /* fnBadgeCls */
   const fnBadgeCls = (status) => {
     const map = {
       '활성': 'badge-green', '판매중': 'badge-green', '진행중': 'badge-blue', '처리중': 'badge-blue',
@@ -29,8 +30,10 @@
     return map[status] || 'badge-gray';
   };
 
+  /* fnChannelCls */
   const fnChannelCls = ch => ({ 'SMS': 'badge-orange', '이메일': 'badge-blue', '카카오': 'badge-purple' }[ch] || 'badge-gray');
 
+  /* fnFmtPrice */
   const fnFmtPrice = v => v != null ? Number(v).toLocaleString() + '원' : '-';
 
   /* 날짜 문자열(YYYY-MM-DD...) → 날짜만 YYYY-MM-DD 추출 */
@@ -68,10 +71,10 @@
     },
     setup(props) {
     const { reactive, ref, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const custInfos = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, customer: null, searchMode: 'member', searchInput: '' });
@@ -92,6 +95,7 @@
     const couponUsage = reactive([]);
     const sendHistory = reactive([]);
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -149,7 +153,7 @@
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     });
       /* -- 검색 상태 -- */
-      const memberModal  = reactive({ show: false, searchTypes: '', keyword: '', list: [] });
+      const memberModal  = reactive({ show: false, searchType: '', keyword: '', list: [] });
 
       /* -- 기간 필터 (searchParam 통합) -- */
       const searchParam = reactive({ period: '1y', customFrom: '', customTo: today() });
@@ -165,6 +169,8 @@
       watch(histTab,   v => { window._mbCustInfoState.tab      = v; });
 
       watch(() => uiState.tabMode2, v => { window._mbCustInfoState.tabMode = v; });
+
+      /* showTab */
       const showTab = (id) => tabMode2.value !== 'tab' || histTab.value === id;
 
       /* -- 고객 초기화 -- */
@@ -239,9 +245,11 @@
         memberModal.list = [...members];
         memberModal.show = true;
       };
+
+      /* searchMemberModal */
       const searchMemberModal = () => {
         const searchVal = memberModal.keyword.trim().toLowerCase();
-        const types = memberModal.searchTypes || 'def_nm,def_email,def_phone';
+        const types = memberModal.searchType || 'def_nm,def_email,def_phone';
         memberModal.list = searchVal
           ? members.filter(m => {
               const hits = [];
@@ -252,6 +260,8 @@
             })
           : [...members];
       };
+
+      /* selectMember */
       const selectMember = (m) => {
         uiState.customer = m;
         memberModal.show = false;
@@ -690,7 +700,7 @@
       <div style="flex:1;overflow:auto;padding:0 4px;">
         <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <multi-check-select
-            v-model="memberModal.searchTypes"
+            v-model="memberModal.searchType"
             :options="[
               { value: 'def_nm',    label: '이름' },
               { value: 'def_email', label: '이메일' },

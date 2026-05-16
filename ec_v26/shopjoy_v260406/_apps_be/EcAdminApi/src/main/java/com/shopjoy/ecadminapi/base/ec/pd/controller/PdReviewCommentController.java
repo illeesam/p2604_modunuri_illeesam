@@ -18,44 +18,52 @@ public class PdReviewCommentController {
 
     private final PdReviewCommentService service;
 
+    /* 리뷰 댓글 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdReviewCommentDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
+    /* 리뷰 댓글 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdReviewCommentDto.Item>>> list(@Valid @ModelAttribute PdReviewCommentDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
     }
 
+    /* 리뷰 댓글 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PdReviewCommentDto.PageResponse>> page(@Valid @ModelAttribute PdReviewCommentDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 
+    /* 리뷰 댓글 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<PdReviewComment>> create(@RequestBody PdReviewComment entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
+    /* 리뷰 댓글 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdReviewComment>> save(@PathVariable("id") String id, @RequestBody PdReviewComment entity) {
         entity.setReviewCommentId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
+    /* 리뷰 댓글 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<PdReviewComment>> updateSelective(@PathVariable("id") String id, @RequestBody PdReviewComment entity) {
         entity.setReviewCommentId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
+    /* 리뷰 댓글 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /* 리뷰 댓글 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdReviewComment> rows) {
         service.saveList(rows);

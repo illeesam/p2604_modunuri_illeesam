@@ -27,6 +27,7 @@ public class DpWidgetService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 전시 위젯 키조회 */
     public DpWidgetDto.Item getById(String id) {
         DpWidgetDto.Item dto = dpWidgetRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class DpWidgetService {
         return dpWidgetRepository.selectById(id).orElse(null);
     }
 
+    /* 전시 위젯 상세조회 */
     public DpWidget findById(String id) {
         return dpWidgetRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class DpWidgetService {
         return dpWidgetRepository.findById(id).orElse(null);
     }
 
+    /* 전시 위젯 키검증 */
     public boolean existsById(String id) {
         return dpWidgetRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class DpWidgetService {
         return true;
     }
 
+    /* 전시 위젯 목록조회 */
     public List<DpWidgetDto.Item> getList(DpWidgetDto.Request req) {
         return dpWidgetRepository.selectList(req);
     }
 
+    /* 전시 위젯 페이지조회 */
     public DpWidgetDto.PageResponse getPageData(DpWidgetDto.Request req) {
         PageHelper.addPaging(req);
         return dpWidgetRepository.selectPageList(req);
     }
 
+    /* 전시 위젯 등록 */
     @Transactional
     public DpWidget create(DpWidget body) {
         body.setWidgetId(CmUtil.generateId("dp_widget"));
@@ -80,6 +86,7 @@ public class DpWidgetService {
         return saved;
     }
 
+    /* 전시 위젯 저장 */
     @Transactional
     public DpWidget save(DpWidget entity) {
         if (!existsById(entity.getWidgetId()))
@@ -92,6 +99,7 @@ public class DpWidgetService {
         return saved;
     }
 
+    /* 전시 위젯 수정 */
     @Transactional
     public DpWidget update(String id, DpWidget body) {
         DpWidget entity = findById(id);
@@ -104,6 +112,7 @@ public class DpWidgetService {
         return saved;
     }
 
+    /* 전시 위젯 수정 */
     @Transactional
     public DpWidget updateSelective(DpWidget entity) {
         if (entity.getWidgetId() == null) throw new CmBizException("widgetId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class DpWidgetService {
         return entity;
     }
 
+    /* 전시 위젯 삭제 */
     @Transactional
     public void delete(String id) {
         DpWidget entity = findById(id);
@@ -125,6 +135,7 @@ public class DpWidgetService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 전시 위젯 목록저장 */
     @Transactional
     public void saveList(List<DpWidget> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

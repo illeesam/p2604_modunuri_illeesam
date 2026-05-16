@@ -29,6 +29,7 @@ public class SyRoleMenuService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 역할별 메뉴 권한 키조회 */
     public SyRoleMenuDto.Item getById(String id) {
         SyRoleMenuDto.Item dto = syRoleMenuRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -40,6 +41,7 @@ public class SyRoleMenuService {
         return syRoleMenuRepository.selectById(id).orElse(null);
     }
 
+    /* 역할별 메뉴 권한 상세조회 */
     public SyRoleMenu findById(String id) {
         return syRoleMenuRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -50,6 +52,7 @@ public class SyRoleMenuService {
         return syRoleMenuRepository.findById(id).orElse(null);
     }
 
+    /* 역할별 메뉴 권한 키검증 */
     public boolean existsById(String id) {
         return syRoleMenuRepository.existsById(id);
     }
@@ -60,15 +63,18 @@ public class SyRoleMenuService {
         return true;
     }
 
+    /* 역할별 메뉴 권한 목록조회 */
     public List<SyRoleMenuDto.Item> getList(SyRoleMenuDto.Request req) {
         return syRoleMenuRepository.selectList(req);
     }
 
+    /* 역할별 메뉴 권한 페이지조회 */
     public SyRoleMenuDto.PageResponse getPageData(SyRoleMenuDto.Request req) {
         PageHelper.addPaging(req);
         return syRoleMenuRepository.selectPageList(req);
     }
 
+    /* 역할별 메뉴 권한 등록 */
     @Transactional
     public SyRoleMenu create(SyRoleMenu body) {
         body.setRoleMenuId(CmUtil.generateId("sy_role_menu"));
@@ -83,6 +89,7 @@ public class SyRoleMenuService {
         return saved;
     }
 
+    /* 역할별 메뉴 권한 저장 */
     @Transactional
     public SyRoleMenu save(SyRoleMenu entity) {
         if (!existsById(entity.getRoleMenuId()))
@@ -96,6 +103,7 @@ public class SyRoleMenuService {
         return saved;
     }
 
+    /* 역할별 메뉴 권한 수정 */
     @Transactional
     public SyRoleMenu update(String id, SyRoleMenu body) {
         SyRoleMenu entity = findById(id);
@@ -109,6 +117,7 @@ public class SyRoleMenuService {
         return saved;
     }
 
+    /* 역할별 메뉴 권한 수정 */
     @Transactional
     public SyRoleMenu updateSelective(SyRoleMenu entity) {
         if (entity.getRoleMenuId() == null) throw new CmBizException("roleMenuId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -123,6 +132,7 @@ public class SyRoleMenuService {
         return entity;
     }
 
+    /* 역할별 메뉴 권한 삭제 */
     @Transactional
     public void delete(String id) {
         SyRoleMenu entity = findById(id);
@@ -133,6 +143,7 @@ public class SyRoleMenuService {
         if (roleId != null) roleMenuCache.evict(roleId);
     }
 
+    /* 역할별 메뉴 권한 목록저장 */
     @Transactional
     public void saveList(List<SyRoleMenu> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

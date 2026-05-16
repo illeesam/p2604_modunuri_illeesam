@@ -36,6 +36,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     private static final QSyUser          usr = QSyUser.syUser;
     private static final QSyCode          cd_sr = new QSyCode("cd_sr");
 
+    /* 이메일 발송 로그 buildBaseQuery */
     private JPAQuery<SyhSendEmailLogDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyhSendEmailLogDto.Item.class,
@@ -73,6 +74,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                 .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(l.resultCd)));
     }
 
+    /* 이메일 발송 로그 키조회 */
     @Override
     public Optional<SyhSendEmailLogDto.Item> selectById(String id) {
         SyhSendEmailLogDto.Item dto = buildBaseQuery()
@@ -81,6 +83,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         return Optional.ofNullable(dto);
     }
 
+    /* 이메일 발송 로그 목록조회 */
     @Override
     public List<SyhSendEmailLogDto.Item> selectList(SyhSendEmailLogDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -99,6 +102,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         return query.fetch();
     }
 
+    /* 이메일 발송 로그 페이지조회 */
     @Override
     public SyhSendEmailLogDto.PageResponse selectPageList(SyhSendEmailLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -124,6 +128,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 이메일 발송 로그 buildCondition */
     private BooleanBuilder buildCondition(SyhSendEmailLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -186,6 +191,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         return orders;
     }
 
+    /* 이메일 발송 로그 수정 */
     @Override
     public int updateSelective(SyhSendEmailLog entity) {
         if (entity.getLogId() == null) return 0;

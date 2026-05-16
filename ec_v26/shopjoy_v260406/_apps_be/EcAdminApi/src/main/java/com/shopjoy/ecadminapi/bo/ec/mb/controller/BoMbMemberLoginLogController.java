@@ -20,21 +20,25 @@ public class BoMbMemberLoginLogController {
 
     private final BoMbMemberLoginLogService boMbMemberLoginLogService;
 
+    /* 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MbhMemberLoginLogDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberLoginLogService.getById(id)));
     }
 
+    /* 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbhMemberLoginLogDto.Item>>> list(@Valid @ModelAttribute MbhMemberLoginLogDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberLoginLogService.getList(req)));
     }
 
+    /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<MbhMemberLoginLogDto.PageResponse>> page(@Valid @ModelAttribute MbhMemberLoginLogDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberLoginLogService.getPageData(req)));
     }
 
+    /* deleteAll */
     @DeleteMapping("/all")
     public ResponseEntity<ApiResponse<Void>> deleteAll() {
         boMbMemberLoginLogService.deleteAll();

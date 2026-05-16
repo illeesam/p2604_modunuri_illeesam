@@ -31,11 +31,13 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     private static final QMbMember    mem  = QMbMember.mbMember;
     private static final QSyCode      cdSc = new QSyCode("cd_sc");
 
+    /* SNS 연동 회원 키조회 */
     @Override
     public Optional<MbMemberSnsDto.Item> selectById(String memberSnsId) {
         return Optional.ofNullable(baseQuery().where(m.memberSnsId.eq(memberSnsId)).fetchOne());
     }
 
+    /* SNS 연동 회원 목록조회 */
     @Override
     public List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -48,6 +50,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         return query.fetch();
     }
 
+    /* SNS 연동 회원 페이지조회 */
     @Override
     public MbMemberSnsDto.PageResponse selectPageList(MbMemberSnsDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -66,6 +69,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* SNS 연동 회원 baseQuery */
     private JPAQuery<MbMemberSnsDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberSnsDto.Item.class,
@@ -77,6 +81,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                 .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL").and(cdSc.codeValue.eq(m.snsChannelCd)));
     }
 
+    /* SNS 연동 회원 buildCondition */
     private BooleanBuilder buildCondition(MbMemberSnsDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -126,6 +131,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         return orders;
     }
 
+    /* SNS 연동 회원 수정 */
     @Override
     public int updateSelective(MbMemberSns entity) {
         if (entity.getMemberSnsId() == null) return 0;

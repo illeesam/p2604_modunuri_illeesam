@@ -31,8 +31,11 @@ public class BoOdDlivService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public OdDlivDto.Item getById(String id) { return odDlivService.getById(id); }
+    /* 목록조회 */
     public List<OdDlivDto.Item> getList(OdDlivDto.Request req) { return odDlivService.getList(req); }
+    /* 페이지조회 */
     public OdDlivDto.PageResponse getPageData(OdDlivDto.Request req) { return odDlivService.getPageData(req); }
 
     @Transactional public OdDliv create(OdDliv body) {

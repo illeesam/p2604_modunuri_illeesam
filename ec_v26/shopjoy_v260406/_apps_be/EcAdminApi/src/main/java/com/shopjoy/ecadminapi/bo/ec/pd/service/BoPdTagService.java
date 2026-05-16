@@ -19,8 +19,11 @@ public class BoPdTagService {
 
     private final PdTagService pdTagService;
 
+    /* 키조회 */
     public PdTagDto.Item getById(String id) { return pdTagService.getById(id); }
+    /* 목록조회 */
     public List<PdTagDto.Item> getList(PdTagDto.Request req) { return pdTagService.getList(req); }
+    /* 페이지조회 */
     public PdTagDto.PageResponse getPageData(PdTagDto.Request req) { return pdTagService.getPageData(req); }
 
     @Transactional public PdTag create(PdTag body) { return pdTagService.create(body); }

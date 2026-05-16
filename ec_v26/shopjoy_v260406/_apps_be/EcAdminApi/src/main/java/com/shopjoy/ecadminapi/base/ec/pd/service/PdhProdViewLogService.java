@@ -27,6 +27,7 @@ public class PdhProdViewLogService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 조회 로그 키조회 */
     public PdhProdViewLogDto.Item getById(String id) {
         PdhProdViewLogDto.Item dto = pdhProdViewLogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdhProdViewLogService {
         return pdhProdViewLogRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 조회 로그 상세조회 */
     public PdhProdViewLog findById(String id) {
         return pdhProdViewLogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdhProdViewLogService {
         return pdhProdViewLogRepository.findById(id).orElse(null);
     }
 
+    /* 상품 조회 로그 키검증 */
     public boolean existsById(String id) {
         return pdhProdViewLogRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdhProdViewLogService {
         return true;
     }
 
+    /* 상품 조회 로그 목록조회 */
     public List<PdhProdViewLogDto.Item> getList(PdhProdViewLogDto.Request req) {
         return pdhProdViewLogRepository.selectList(req);
     }
 
+    /* 상품 조회 로그 페이지조회 */
     public PdhProdViewLogDto.PageResponse getPageData(PdhProdViewLogDto.Request req) {
         PageHelper.addPaging(req);
         return pdhProdViewLogRepository.selectPageList(req);
     }
 
+    /* 상품 조회 로그 등록 */
     @Transactional
     public PdhProdViewLog create(PdhProdViewLog body) {
         body.setLogId(CmUtil.generateId("pdh_prod_view_log"));
@@ -80,6 +86,7 @@ public class PdhProdViewLogService {
         return saved;
     }
 
+    /* 상품 조회 로그 저장 */
     @Transactional
     public PdhProdViewLog save(PdhProdViewLog entity) {
         if (!existsById(entity.getLogId()))
@@ -92,6 +99,7 @@ public class PdhProdViewLogService {
         return saved;
     }
 
+    /* 상품 조회 로그 수정 */
     @Transactional
     public PdhProdViewLog update(String id, PdhProdViewLog body) {
         PdhProdViewLog entity = findById(id);
@@ -104,6 +112,7 @@ public class PdhProdViewLogService {
         return saved;
     }
 
+    /* 상품 조회 로그 수정 */
     @Transactional
     public PdhProdViewLog updateSelective(PdhProdViewLog entity) {
         if (entity.getLogId() == null) throw new CmBizException("logId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdhProdViewLogService {
         return entity;
     }
 
+    /* 상품 조회 로그 삭제 */
     @Transactional
     public void delete(String id) {
         PdhProdViewLog entity = findById(id);
@@ -125,6 +135,7 @@ public class PdhProdViewLogService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 조회 로그 목록저장 */
     @Transactional
     public void saveList(List<PdhProdViewLog> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

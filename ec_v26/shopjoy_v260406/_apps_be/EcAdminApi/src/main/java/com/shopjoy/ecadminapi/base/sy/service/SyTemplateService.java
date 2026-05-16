@@ -27,6 +27,7 @@ public class SyTemplateService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 템플릿 키조회 */
     public SyTemplateDto.Item getById(String id) {
         SyTemplateDto.Item dto = syTemplateRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyTemplateService {
         return syTemplateRepository.selectById(id).orElse(null);
     }
 
+    /* 템플릿 상세조회 */
     public SyTemplate findById(String id) {
         return syTemplateRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyTemplateService {
         return syTemplateRepository.findById(id).orElse(null);
     }
 
+    /* 템플릿 키검증 */
     public boolean existsById(String id) {
         return syTemplateRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyTemplateService {
         return true;
     }
 
+    /* 템플릿 목록조회 */
     public List<SyTemplateDto.Item> getList(SyTemplateDto.Request req) {
         return syTemplateRepository.selectList(req);
     }
 
+    /* 템플릿 페이지조회 */
     public SyTemplateDto.PageResponse getPageData(SyTemplateDto.Request req) {
         PageHelper.addPaging(req);
         return syTemplateRepository.selectPageList(req);
     }
 
+    /* 템플릿 등록 */
     @Transactional
     public SyTemplate create(SyTemplate body) {
         body.setTemplateId(CmUtil.generateId("sy_template"));
@@ -80,6 +86,7 @@ public class SyTemplateService {
         return saved;
     }
 
+    /* 템플릿 저장 */
     @Transactional
     public SyTemplate save(SyTemplate entity) {
         if (!existsById(entity.getTemplateId()))
@@ -92,6 +99,7 @@ public class SyTemplateService {
         return saved;
     }
 
+    /* 템플릿 수정 */
     @Transactional
     public SyTemplate update(String id, SyTemplate body) {
         SyTemplate entity = findById(id);
@@ -104,6 +112,7 @@ public class SyTemplateService {
         return saved;
     }
 
+    /* 템플릿 수정 */
     @Transactional
     public SyTemplate updateSelective(SyTemplate entity) {
         if (entity.getTemplateId() == null) throw new CmBizException("templateId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyTemplateService {
         return entity;
     }
 
+    /* 템플릿 삭제 */
     @Transactional
     public void delete(String id) {
         SyTemplate entity = findById(id);
@@ -125,6 +135,7 @@ public class SyTemplateService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 템플릿 목록저장 */
     @Transactional
     public void saveList(List<SyTemplate> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

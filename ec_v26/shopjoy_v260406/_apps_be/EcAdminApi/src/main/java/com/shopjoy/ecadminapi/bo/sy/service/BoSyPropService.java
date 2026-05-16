@@ -21,10 +21,14 @@ public class BoSyPropService {
     private final SyPropService syPropService;
     private final SyPropRedisStore propCache;
 
+    /* 키조회 */
     public SyPropDto.Item getById(String id) { return syPropService.getById(id); }
+    /* 목록조회 */
     public List<SyPropDto.Item> getList(SyPropDto.Request req) { return syPropService.getList(req); }
+    /* 페이지조회 */
     public SyPropDto.PageResponse getPageData(SyPropDto.Request req) { return syPropService.getPageData(req); }
 
+    /* 등록 */
     @Transactional
     public SyProp create(SyProp body) {
         SyProp saved = syPropService.create(body);
@@ -32,6 +36,7 @@ public class BoSyPropService {
         return saved;
     }
 
+    /* 수정 */
     @Transactional
     public SyProp update(String id, SyProp body) {
         SyProp saved = syPropService.update(id, body);
@@ -39,12 +44,14 @@ public class BoSyPropService {
         return saved;
     }
 
+    /* 삭제 */
     @Transactional
     public void delete(String id) {
         syPropService.delete(id);
         propCache.evictAll();
     }
 
+    /* 목록저장 */
     @Transactional
     public void saveList(List<SyProp> rows) {
         syPropService.saveList(rows);

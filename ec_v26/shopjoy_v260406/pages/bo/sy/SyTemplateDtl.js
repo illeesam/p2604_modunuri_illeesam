@@ -11,10 +11,10 @@ window.SyTemplateDtl = {
   },
   setup(props) {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, watch, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     /* 미리보기 / 발송 모달 */
     const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false });
@@ -28,6 +28,7 @@ window.SyTemplateDtl = {
     /* -- HTML 에디터 사용 여부 (메일, 시스템알림) -- */
     const cfUseHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateTypeCd));
 
+    /* 템플릿 상세조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -61,6 +62,7 @@ window.SyTemplateDtl = {
       content: yup.string().required('내용을 입력해주세요.'),
     });
 
+    /* 템플릿 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -95,6 +97,7 @@ window.SyTemplateDtl = {
 
     const codes = reactive({ use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'] });
 
+    /* 템플릿 fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();

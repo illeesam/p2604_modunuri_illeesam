@@ -27,6 +27,7 @@ public class PdReviewCommentService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 리뷰 댓글 키조회 */
     public PdReviewCommentDto.Item getById(String id) {
         PdReviewCommentDto.Item dto = pdReviewCommentRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdReviewCommentService {
         return pdReviewCommentRepository.selectById(id).orElse(null);
     }
 
+    /* 리뷰 댓글 상세조회 */
     public PdReviewComment findById(String id) {
         return pdReviewCommentRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdReviewCommentService {
         return pdReviewCommentRepository.findById(id).orElse(null);
     }
 
+    /* 리뷰 댓글 키검증 */
     public boolean existsById(String id) {
         return pdReviewCommentRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdReviewCommentService {
         return true;
     }
 
+    /* 리뷰 댓글 목록조회 */
     public List<PdReviewCommentDto.Item> getList(PdReviewCommentDto.Request req) {
         return pdReviewCommentRepository.selectList(req);
     }
 
+    /* 리뷰 댓글 페이지조회 */
     public PdReviewCommentDto.PageResponse getPageData(PdReviewCommentDto.Request req) {
         PageHelper.addPaging(req);
         return pdReviewCommentRepository.selectPageList(req);
     }
 
+    /* 리뷰 댓글 등록 */
     @Transactional
     public PdReviewComment create(PdReviewComment body) {
         body.setReviewCommentId(CmUtil.generateId("pd_review_comment"));
@@ -80,6 +86,7 @@ public class PdReviewCommentService {
         return saved;
     }
 
+    /* 리뷰 댓글 저장 */
     @Transactional
     public PdReviewComment save(PdReviewComment entity) {
         if (!existsById(entity.getReviewCommentId()))
@@ -92,6 +99,7 @@ public class PdReviewCommentService {
         return saved;
     }
 
+    /* 리뷰 댓글 수정 */
     @Transactional
     public PdReviewComment update(String id, PdReviewComment body) {
         PdReviewComment entity = findById(id);
@@ -104,6 +112,7 @@ public class PdReviewCommentService {
         return saved;
     }
 
+    /* 리뷰 댓글 수정 */
     @Transactional
     public PdReviewComment updateSelective(PdReviewComment entity) {
         if (entity.getReviewCommentId() == null) throw new CmBizException("reviewCommentId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdReviewCommentService {
         return entity;
     }
 
+    /* 리뷰 댓글 삭제 */
     @Transactional
     public void delete(String id) {
         PdReviewComment entity = findById(id);
@@ -125,6 +135,7 @@ public class PdReviewCommentService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 리뷰 댓글 목록저장 */
     @Transactional
     public void saveList(List<PdReviewComment> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

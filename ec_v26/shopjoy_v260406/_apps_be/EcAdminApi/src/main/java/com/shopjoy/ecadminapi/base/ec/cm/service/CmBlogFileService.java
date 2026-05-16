@@ -27,6 +27,7 @@ public class CmBlogFileService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 게시물 첨부파일 키조회 */
     public CmBlogFileDto.Item getById(String id) {
         CmBlogFileDto.Item dto = cmBlogFileRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmBlogFileService {
         return cmBlogFileRepository.selectById(id).orElse(null);
     }
 
+    /* 게시물 첨부파일 상세조회 */
     public CmBlogFile findById(String id) {
         return cmBlogFileRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmBlogFileService {
         return cmBlogFileRepository.findById(id).orElse(null);
     }
 
+    /* 게시물 첨부파일 키검증 */
     public boolean existsById(String id) {
         return cmBlogFileRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmBlogFileService {
         return true;
     }
 
+    /* 게시물 첨부파일 목록조회 */
     public List<CmBlogFileDto.Item> getList(CmBlogFileDto.Request req) {
         return cmBlogFileRepository.selectList(req);
     }
 
+    /* 게시물 첨부파일 페이지조회 */
     public CmBlogFileDto.PageResponse getPageData(CmBlogFileDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogFileRepository.selectPageList(req);
     }
 
+    /* 게시물 첨부파일 등록 */
     @Transactional
     public CmBlogFile create(CmBlogFile body) {
         body.setBlogImgId(CmUtil.generateId("cm_blog_file"));
@@ -80,6 +86,7 @@ public class CmBlogFileService {
         return saved;
     }
 
+    /* 게시물 첨부파일 저장 */
     @Transactional
     public CmBlogFile save(CmBlogFile entity) {
         if (!existsById(entity.getBlogImgId()))
@@ -92,6 +99,7 @@ public class CmBlogFileService {
         return saved;
     }
 
+    /* 게시물 첨부파일 수정 */
     @Transactional
     public CmBlogFile update(String id, CmBlogFile body) {
         CmBlogFile entity = findById(id);
@@ -104,6 +112,7 @@ public class CmBlogFileService {
         return saved;
     }
 
+    /* 게시물 첨부파일 수정 */
     @Transactional
     public CmBlogFile updateSelective(CmBlogFile entity) {
         if (entity.getBlogImgId() == null) throw new CmBizException("blogImgId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmBlogFileService {
         return entity;
     }
 
+    /* 게시물 첨부파일 삭제 */
     @Transactional
     public void delete(String id) {
         CmBlogFile entity = findById(id);
@@ -125,6 +135,7 @@ public class CmBlogFileService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 게시물 첨부파일 목록저장 */
     @Transactional
     public void saveList(List<CmBlogFile> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

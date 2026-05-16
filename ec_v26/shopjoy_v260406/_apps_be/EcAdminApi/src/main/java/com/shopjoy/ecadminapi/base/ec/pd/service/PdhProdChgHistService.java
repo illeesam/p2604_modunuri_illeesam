@@ -27,6 +27,7 @@ public class PdhProdChgHistService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 상품 변경 이력 키조회 */
     public PdhProdChgHistDto.Item getById(String id) {
         PdhProdChgHistDto.Item dto = pdhProdChgHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdhProdChgHistService {
         return pdhProdChgHistRepository.selectById(id).orElse(null);
     }
 
+    /* 상품 변경 이력 상세조회 */
     public PdhProdChgHist findById(String id) {
         return pdhProdChgHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdhProdChgHistService {
         return pdhProdChgHistRepository.findById(id).orElse(null);
     }
 
+    /* 상품 변경 이력 키검증 */
     public boolean existsById(String id) {
         return pdhProdChgHistRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdhProdChgHistService {
         return true;
     }
 
+    /* 상품 변경 이력 목록조회 */
     public List<PdhProdChgHistDto.Item> getList(PdhProdChgHistDto.Request req) {
         return pdhProdChgHistRepository.selectList(req);
     }
 
+    /* 상품 변경 이력 페이지조회 */
     public PdhProdChgHistDto.PageResponse getPageData(PdhProdChgHistDto.Request req) {
         PageHelper.addPaging(req);
         return pdhProdChgHistRepository.selectPageList(req);
     }
 
+    /* 상품 변경 이력 등록 */
     @Transactional
     public PdhProdChgHist create(PdhProdChgHist body) {
         body.setProdChgHistId(CmUtil.generateId("pdh_prod_chg_hist"));
@@ -80,6 +86,7 @@ public class PdhProdChgHistService {
         return saved;
     }
 
+    /* 상품 변경 이력 저장 */
     @Transactional
     public PdhProdChgHist save(PdhProdChgHist entity) {
         if (!existsById(entity.getProdChgHistId()))
@@ -92,6 +99,7 @@ public class PdhProdChgHistService {
         return saved;
     }
 
+    /* 상품 변경 이력 수정 */
     @Transactional
     public PdhProdChgHist update(String id, PdhProdChgHist body) {
         PdhProdChgHist entity = findById(id);
@@ -104,6 +112,7 @@ public class PdhProdChgHistService {
         return saved;
     }
 
+    /* 상품 변경 이력 수정 */
     @Transactional
     public PdhProdChgHist updateSelective(PdhProdChgHist entity) {
         if (entity.getProdChgHistId() == null) throw new CmBizException("prodChgHistId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdhProdChgHistService {
         return entity;
     }
 
+    /* 상품 변경 이력 삭제 */
     @Transactional
     public void delete(String id) {
         PdhProdChgHist entity = findById(id);
@@ -125,6 +135,7 @@ public class PdhProdChgHistService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 상품 변경 이력 목록저장 */
     @Transactional
     public void saveList(List<PdhProdChgHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

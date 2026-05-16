@@ -29,6 +29,7 @@ public class FoAuthRedisStore {
 
     // ── 세션 정보 ─────────────────────────────────────────────────
 
+    /* saveSession */
     public void saveSession(String userId, Map<String, Object> sessionInfo) {
         redis.set(CacheKey.FO_AUTH_SESSION + userId, sessionInfo, props.getTtl().getFoAuthSeconds());
         log.info("[Cache][redis] [fo:auth:session][{}] saveSession()", userId);
@@ -48,6 +49,7 @@ public class FoAuthRedisStore {
 
     // ── 토큰 블랙리스트 ───────────────────────────────────────────
 
+    /* blacklistToken */
     public void blacklistToken(String token, long remainingTtlSeconds) {
         if (remainingTtlSeconds <= 0) return;
         redis.set(CacheKey.FO_AUTH_BLACKLIST + token, "1", remainingTtlSeconds);

@@ -38,6 +38,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     private static final QSyCode   cdRs = new QSyCode("cd_rs");
     private static final QSyCode   cdCf = new QSyCode("cd_cf");
 
+    /* 환불 키조회 */
     @Override
     public Optional<OdRefundDto.Item> selectById(String refundId) {
         OdRefundDto.Item dto = baseListQuery()
@@ -46,6 +47,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 환불 목록조회 */
     @Override
     public List<OdRefundDto.Item> selectList(OdRefundDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +66,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         return query.fetch();
     }
 
+    /* 환불 페이지조회 */
     @Override
     public OdRefundDto.PageResponse selectPageList(OdRefundDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -111,6 +114,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                 .leftJoin(cdCf).on(cdCf.codeGrp.eq("CLAIM_FAULT").and(cdCf.codeValue.eq(r.faultTypeCd)));
     }
 
+    /* 환불 buildCondition */
     private BooleanBuilder buildCondition(OdRefundDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -165,6 +169,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         return orders;
     }
 
+    /* 환불 수정 */
     @Override
     public int updateSelective(OdRefund entity) {
         if (entity.getRefundId() == null) return 0;

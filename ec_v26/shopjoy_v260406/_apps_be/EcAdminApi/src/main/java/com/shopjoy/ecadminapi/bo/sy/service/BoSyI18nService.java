@@ -27,10 +27,14 @@ public class BoSyI18nService {
     private final SyI18nMsgRepository syI18nMsgRepository;
     private final SyI18nRedisStore i18nCache;
 
+    /* 키조회 */
     public SyI18nDto.Item getById(String id) { return syI18nService.getById(id); }
+    /* 목록조회 */
     public List<SyI18nDto.Item> getList(SyI18nDto.Request req) { return syI18nService.getList(req); }
+    /* 페이지조회 */
     public SyI18nDto.PageResponse getPageData(SyI18nDto.Request req) { return syI18nService.getPageData(req); }
 
+    /* 등록 */
     @Transactional
     public SyI18n create(SyI18n body) {
         SyI18n saved = syI18nService.create(body);
@@ -38,6 +42,7 @@ public class BoSyI18nService {
         return saved;
     }
 
+    /* 수정 */
     @Transactional
     public SyI18n update(String id, SyI18n body) {
         SyI18n saved = syI18nService.update(id, body);
@@ -45,6 +50,7 @@ public class BoSyI18nService {
         return saved;
     }
 
+    /* 삭제 */
     @Transactional
     public void delete(String id) {
         syI18nService.delete(id);

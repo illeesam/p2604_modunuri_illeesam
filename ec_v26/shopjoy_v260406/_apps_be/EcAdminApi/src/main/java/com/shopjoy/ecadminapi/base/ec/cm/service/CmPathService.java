@@ -27,6 +27,7 @@ public class CmPathService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 경로(메뉴/URL) 키조회 */
     public CmPathDto.Item getById(String id) {
         CmPathDto.Item dto = cmPathRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmPathService {
         return cmPathRepository.selectById(id).orElse(null);
     }
 
+    /* 경로(메뉴/URL) 상세조회 */
     public CmPath findById(String id) {
         return cmPathRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmPathService {
         return cmPathRepository.findById(id).orElse(null);
     }
 
+    /* 경로(메뉴/URL) 키검증 */
     public boolean existsById(String id) {
         return cmPathRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmPathService {
         return true;
     }
 
+    /* 경로(메뉴/URL) 목록조회 */
     public List<CmPathDto.Item> getList(CmPathDto.Request req) {
         return cmPathRepository.selectList(req);
     }
 
+    /* 경로(메뉴/URL) 페이지조회 */
     public CmPathDto.PageResponse getPageData(CmPathDto.Request req) {
         PageHelper.addPaging(req);
         return cmPathRepository.selectPageList(req);
     }
 
+    /* 경로(메뉴/URL) 등록 */
     @Transactional
     public CmPath create(CmPath body) {
         if (body.getBizCd() == null) throw new CmBizException("bizCd 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -80,6 +86,7 @@ public class CmPathService {
         return saved;
     }
 
+    /* 경로(메뉴/URL) 저장 */
     @Transactional
     public CmPath save(CmPath entity) {
         if (!existsById(entity.getBizCd()))
@@ -92,6 +99,7 @@ public class CmPathService {
         return saved;
     }
 
+    /* 경로(메뉴/URL) 수정 */
     @Transactional
     public CmPath update(String id, CmPath body) {
         CmPath entity = findById(id);
@@ -104,6 +112,7 @@ public class CmPathService {
         return saved;
     }
 
+    /* 경로(메뉴/URL) 수정 */
     @Transactional
     public CmPath updateSelective(CmPath entity) {
         if (entity.getBizCd() == null) throw new CmBizException("bizCd 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmPathService {
         return entity;
     }
 
+    /* 경로(메뉴/URL) 삭제 */
     @Transactional
     public void delete(String id) {
         CmPath entity = findById(id);
@@ -125,6 +135,7 @@ public class CmPathService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 경로(메뉴/URL) 목록저장 */
     @Transactional
     public void saveList(List<CmPath> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

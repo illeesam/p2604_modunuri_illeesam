@@ -12,10 +12,10 @@ window.OdOrderDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const vendors = reactive([]);
     const deliveries = reactive([]);
     const claims = reactive([]);
@@ -62,6 +62,7 @@ window.OdOrderDtl = {
       }
     };
 
+    /* 주문 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
@@ -82,6 +83,8 @@ window.OdOrderDtl = {
       memo: '',
     });
     const PAY_STATUS_FALLBACK = ['미결제','부분결제','결제완료','결제실패','환불중','부분환불','환불완료'];
+
+    /* 주문 fnPayStatusBadge */
     const fnPayStatusBadge = (s) => ({
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
@@ -100,6 +103,7 @@ window.OdOrderDtl = {
 
     const cfIsCanceled = computed(() => form.statusCd === '취소됨');
 
+    /* 주문 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -131,6 +135,8 @@ window.OdOrderDtl = {
         watch(() => uiState.activeTab, (newVal) => { window._odOrderDtlState.activeTab = newVal; });
     /* 주문 항목 (샘플 데이터) */
     const orderItems = reactive([]);
+
+    /* 주문 sampleOrderItems */
     const sampleOrderItems = () => {
       const base = form.prodNm || '주문상품';
       const total = Number(form.totalPrice || 0);
@@ -153,6 +159,8 @@ window.OdOrderDtl = {
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
       }).filter(Boolean);
     };
+
+    /* 주문 initItems */
     const initItems = async () => {
       orderItems.splice(0, orderItems.length, ...sampleOrderItems());
     };
@@ -169,6 +177,8 @@ window.OdOrderDtl = {
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
+
+    /* 주문 fmt */
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     /* 판매업체 */
@@ -191,6 +201,8 @@ window.OdOrderDtl = {
         .filter(c => c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
+
+    /* 주문 _claimFlow */
     const _claimFlow = type => cfClaimStatusCodes.value
       .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (_TYPE_CD[type] || type) + '^'))
       .map(c => c.codeLabel)
@@ -198,6 +210,7 @@ window.OdOrderDtl = {
     const CLAIM_FLOWS = { '취소': _claimFlow('취소'), '반품': _claimFlow('반품'), '교환': _claimFlow('교환') };
     const CLAIM_TYPE_COLOR = { '취소': '#ef4444', '반품': '#FFBB00', '교환': '#3b82f6' };
 
+    /* 주문 trackingUrl */
     const trackingUrl = (courier, no) => {
       if (!no) return '';
       if (courier === 'CJ대한통운') return 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' + no;
@@ -207,6 +220,8 @@ window.OdOrderDtl = {
       if (courier === '로젠택배')   return 'https://www.ilogen.com/web/personal/trace/' + no;
       return '';
     };
+
+    /* 주문 openTracking */
     const openTracking = (courier, no) => {
       const url = trackingUrl(courier, no);
       if (!url) { showToast && showToast('운송장 정보가 없습니다.', 'error'); return; }
@@ -234,17 +249,27 @@ window.OdOrderDtl = {
      // 'tab' | '2col' | '1col'
 
     watch(() => uiState.tabMode2, v => { window._odOrderDtlState.tabMode = v; });
+
+    /* 주문 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.activeTab === id;
     const expandedItems = reactive(new Set());
+
+    /* 주문 toggleExpand */
     const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };
+
+    /* 주문 isExpanded */
     const isExpanded = (i) => expandedItems.has(i);
     const cfAllExpanded = computed(() => orderItems.length > 0 && window.safeArrayUtils.safeEvery(orderItems, (_,i) => expandedItems.has(i)));
+
+    /* 주문 toggleExpandAll */
     const toggleExpandAll = () => {
       if (cfAllExpanded.value) expandedItems = new Set();
       else expandedItems = new Set(orderItems.map((_,i) => i));
     };
 
     watch(orderItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
+
+    /* 주문 getExchangedItem */
     const getExchangedItem = (it) => {
       if (!cfRelatedClaim.value || cfRelatedClaim.value.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리' };

@@ -27,6 +27,7 @@ public class CmBlogReplyService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 게시물 댓글 키조회 */
     public CmBlogReplyDto.Item getById(String id) {
         CmBlogReplyDto.Item dto = cmBlogReplyRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmBlogReplyService {
         return cmBlogReplyRepository.selectById(id).orElse(null);
     }
 
+    /* 게시물 댓글 상세조회 */
     public CmBlogReply findById(String id) {
         return cmBlogReplyRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmBlogReplyService {
         return cmBlogReplyRepository.findById(id).orElse(null);
     }
 
+    /* 게시물 댓글 키검증 */
     public boolean existsById(String id) {
         return cmBlogReplyRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmBlogReplyService {
         return true;
     }
 
+    /* 게시물 댓글 목록조회 */
     public List<CmBlogReplyDto.Item> getList(CmBlogReplyDto.Request req) {
         return cmBlogReplyRepository.selectList(req);
     }
 
+    /* 게시물 댓글 페이지조회 */
     public CmBlogReplyDto.PageResponse getPageData(CmBlogReplyDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogReplyRepository.selectPageList(req);
     }
 
+    /* 게시물 댓글 등록 */
     @Transactional
     public CmBlogReply create(CmBlogReply body) {
         body.setCommentId(CmUtil.generateId("cm_blog_reply"));
@@ -80,6 +86,7 @@ public class CmBlogReplyService {
         return saved;
     }
 
+    /* 게시물 댓글 저장 */
     @Transactional
     public CmBlogReply save(CmBlogReply entity) {
         if (!existsById(entity.getCommentId()))
@@ -92,6 +99,7 @@ public class CmBlogReplyService {
         return saved;
     }
 
+    /* 게시물 댓글 수정 */
     @Transactional
     public CmBlogReply update(String id, CmBlogReply body) {
         CmBlogReply entity = findById(id);
@@ -104,6 +112,7 @@ public class CmBlogReplyService {
         return saved;
     }
 
+    /* 게시물 댓글 수정 */
     @Transactional
     public CmBlogReply updateSelective(CmBlogReply entity) {
         if (entity.getCommentId() == null) throw new CmBizException("commentId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmBlogReplyService {
         return entity;
     }
 
+    /* 게시물 댓글 삭제 */
     @Transactional
     public void delete(String id) {
         CmBlogReply entity = findById(id);
@@ -125,6 +135,7 @@ public class CmBlogReplyService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 게시물 댓글 목록저장 */
     @Transactional
     public void saveList(List<CmBlogReply> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

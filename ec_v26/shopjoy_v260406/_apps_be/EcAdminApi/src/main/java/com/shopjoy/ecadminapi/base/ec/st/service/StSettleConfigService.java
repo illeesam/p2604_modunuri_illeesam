@@ -27,6 +27,7 @@ public class StSettleConfigService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 정산 설정 키조회 */
     public StSettleConfigDto.Item getById(String id) {
         StSettleConfigDto.Item dto = stSettleConfigRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class StSettleConfigService {
         return stSettleConfigRepository.selectById(id).orElse(null);
     }
 
+    /* 정산 설정 상세조회 */
     public StSettleConfig findById(String id) {
         return stSettleConfigRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class StSettleConfigService {
         return stSettleConfigRepository.findById(id).orElse(null);
     }
 
+    /* 정산 설정 키검증 */
     public boolean existsById(String id) {
         return stSettleConfigRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class StSettleConfigService {
         return true;
     }
 
+    /* 정산 설정 목록조회 */
     public List<StSettleConfigDto.Item> getList(StSettleConfigDto.Request req) {
         return stSettleConfigRepository.selectList(req);
     }
 
+    /* 정산 설정 페이지조회 */
     public StSettleConfigDto.PageResponse getPageData(StSettleConfigDto.Request req) {
         PageHelper.addPaging(req);
         return stSettleConfigRepository.selectPageList(req);
     }
 
+    /* 정산 설정 등록 */
     @Transactional
     public StSettleConfig create(StSettleConfig body) {
         body.setSettleConfigId(CmUtil.generateId("st_settle_config"));
@@ -80,6 +86,7 @@ public class StSettleConfigService {
         return saved;
     }
 
+    /* 정산 설정 저장 */
     @Transactional
     public StSettleConfig save(StSettleConfig entity) {
         if (!existsById(entity.getSettleConfigId()))
@@ -92,6 +99,7 @@ public class StSettleConfigService {
         return saved;
     }
 
+    /* 정산 설정 수정 */
     @Transactional
     public StSettleConfig update(String id, StSettleConfig body) {
         StSettleConfig entity = findById(id);
@@ -104,6 +112,7 @@ public class StSettleConfigService {
         return saved;
     }
 
+    /* 정산 설정 수정 */
     @Transactional
     public StSettleConfig updateSelective(StSettleConfig entity) {
         if (entity.getSettleConfigId() == null) throw new CmBizException("settleConfigId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class StSettleConfigService {
         return entity;
     }
 
+    /* 정산 설정 삭제 */
     @Transactional
     public void delete(String id) {
         StSettleConfig entity = findById(id);
@@ -125,6 +135,7 @@ public class StSettleConfigService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 정산 설정 목록저장 */
     @Transactional
     public void saveList(List<StSettleConfig> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

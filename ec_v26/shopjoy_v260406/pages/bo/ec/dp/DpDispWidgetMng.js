@@ -6,15 +6,16 @@ window.DpDispWidgetMng = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
     const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const widgetLibs = reactive([]);
     const widgets = reactive([]);
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
@@ -25,7 +26,8 @@ window.DpDispWidgetMng = {
 
     // 코드 주입
 
-    const _initSearchParam = () => ({ searchTypes: '', searchValue: '', type: '', status: '' });
+    /* _initSearchParam */
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     /* applied: 결과에 실제 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
     const applied = reactive({ type: '', status: '' });
@@ -36,11 +38,15 @@ window.DpDispWidgetMng = {
     );
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -49,25 +55,27 @@ window.DpDispWidgetMng = {
       pager.pageNo = 1;
       handleSearchData('DEFAULT');
     };
+
+    /* sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    const handleSearchData = async () => {
       uiState.loading = true;
       try {
-        const { type, status, searchTypes, searchValue } = searchParam;
+        const { type, status, searchType, searchValue } = searchParam;
         /* dp_widget (실제 배치된 위젯 인스턴스) — 메인 데이터 */
         const widgetParams = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
-          ...(searchTypes ? { searchTypes }                     : {}),
+          ...(searchType ? { searchType }                     : {}),
           ...(type   ? { typeCd: type }  : {}),
           ...(status ? { useYn: status } : {}),
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (widgetParams.searchValue && !widgetParams.searchTypes) {
-          widgetParams.searchTypes = 'def_nm,def_desc,def_tag';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (widgetParams.searchValue && !widgetParams.searchType) {
+          widgetParams.searchType = 'def_nm,def_desc,def_tag';
         }
         const [res, resLibs] = await Promise.all([
           boApiSvc.dpWidget.getPage(widgetParams, '전시위젯관리', '조회'),
@@ -98,6 +106,8 @@ window.DpDispWidgetMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');    });
+
+    /* pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfSiteNm = computed(() => boUtil.getSiteNm());
@@ -113,13 +123,20 @@ window.DpDispWidgetMng = {
       'barcode_qrcode':'🔖', 'video_player':'▶️',      'countdown':'⏱',
       'payment_widget':'💳', 'approval_widget':'✅',   'map_widget':'🗺',
     };
+
+    /* wTypeLabel */
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
+
+    /* wIcon */
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
     /* -- 검색 -- */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 목록조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
 
+    /* onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -129,14 +146,21 @@ window.DpDispWidgetMng = {
   
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
     /* 정책: 수정 클릭 시 항상 상세 API 호출. 같은 id 재클릭이어도 닫지 않고 reload 만 트리거 */
     const handleLoadDetail = (id) => {
       uiStateDetail.selectedId = id;
       uiStateDetail.openMode = 'edit';
       uiStateDetail.reloadTrigger++;
     };
+
+    /* openNew */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispWidgetMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -146,16 +170,28 @@ window.DpDispWidgetMng = {
     /* key 는 'open' / 'closed' 두 값만 사용 — id 가 바뀌어도 컴포넌트 remount 하지 않고 props.dtlId / reloadTrigger watch 로 내용만 교체 */
     const cfDetailKey = computed(() => uiStateDetail.selectedId === null ? 'closed' : 'open');
 
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* fnStatusCls */
     const fnStatusCls = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
+
+    /* fnStatusLabel */
     const fnStatusLabel = (v) => v === 'Y' ? '활성' : '비활성';
+
+    /* contentSummary */
     const contentSummary = (d) => d?.widgetLibDesc || d?.contents || d?.desc || '';
 
+    /* setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* -- 표시경로 트리 -- */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(); };
+
+    /* 삭제 */
     const handleDelete = async (d) => {
       const ok = await showConfirm('삭제', `[${d.widgetNm || d.widgetId}] 위젯을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -198,7 +234,7 @@ window.DpDispWidgetMng = {
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
         <label class="form-label">검색어</label>
         <multi-check-select
-          v-model="searchParam.searchTypes"
+          v-model="searchParam.searchType"
           :options="[
             { value: 'def_nm',   label: '이름' },
             { value: 'def_desc', label: '설명' },

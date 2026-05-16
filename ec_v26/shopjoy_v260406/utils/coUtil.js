@@ -383,6 +383,8 @@
       const k = x[parentKey] == null ? '__root__' : x[parentKey];
       (byParent[k] = byParent[k] || []).push(x);
     });
+
+    /* build */
     const build = (pk) => (byParent[pk] || [])
       .sort((a, b) => (a[sortKey] || 0) - (b[sortKey] || 0))
       .map(x => ({
@@ -393,6 +395,8 @@
       }));
     const root = { pathId: null, path: null, name: '전체', pathLabel: '전체',
                    children: build('__root__'), count: list.length };
+
+    /* recur */
     const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
     recur(root);
     return root;
@@ -415,6 +419,8 @@
   /* 트리에서 N레벨까지 펼친 pathId Set 반환 (root=null 포함) */
   function collectExpandedToDepth(tree, maxDepth) {
     const set = new Set([null]);
+
+    /* walk */
     const walk = (n, d) => {
       if (d >= maxDepth) return;
       (n.children || []).forEach(ch => { set.add(ch.pathId); walk(ch, d + 1); });

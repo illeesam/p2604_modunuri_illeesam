@@ -27,6 +27,7 @@ public class SyVendorUserService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 업체 사용자 키조회 */
     public SyVendorUserDto.Item getById(String id) {
         SyVendorUserDto.Item dto = syVendorUserRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyVendorUserService {
         return syVendorUserRepository.selectById(id).orElse(null);
     }
 
+    /* 업체 사용자 상세조회 */
     public SyVendorUser findById(String id) {
         return syVendorUserRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyVendorUserService {
         return syVendorUserRepository.findById(id).orElse(null);
     }
 
+    /* 업체 사용자 키검증 */
     public boolean existsById(String id) {
         return syVendorUserRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyVendorUserService {
         return true;
     }
 
+    /* 업체 사용자 목록조회 */
     public List<SyVendorUserDto.Item> getList(SyVendorUserDto.Request req) {
         return syVendorUserRepository.selectList(req);
     }
 
+    /* 업체 사용자 페이지조회 */
     public SyVendorUserDto.PageResponse getPageData(SyVendorUserDto.Request req) {
         PageHelper.addPaging(req);
         return syVendorUserRepository.selectPageList(req);
     }
 
+    /* 업체 사용자 등록 */
     @Transactional
     public SyVendorUser create(SyVendorUser body) {
         body.setVendorUserId(CmUtil.generateId("sy_vendor_user"));
@@ -80,6 +86,7 @@ public class SyVendorUserService {
         return saved;
     }
 
+    /* 업체 사용자 저장 */
     @Transactional
     public SyVendorUser save(SyVendorUser entity) {
         if (!existsById(entity.getVendorUserId()))
@@ -92,6 +99,7 @@ public class SyVendorUserService {
         return saved;
     }
 
+    /* 업체 사용자 수정 */
     @Transactional
     public SyVendorUser update(String id, SyVendorUser body) {
         SyVendorUser entity = findById(id);
@@ -104,6 +112,7 @@ public class SyVendorUserService {
         return saved;
     }
 
+    /* 업체 사용자 수정 */
     @Transactional
     public SyVendorUser updateSelective(SyVendorUser entity) {
         if (entity.getVendorUserId() == null) throw new CmBizException("vendorUserId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyVendorUserService {
         return entity;
     }
 
+    /* 업체 사용자 삭제 */
     @Transactional
     public void delete(String id) {
         SyVendorUser entity = findById(id);
@@ -125,6 +135,7 @@ public class SyVendorUserService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 업체 사용자 목록저장 */
     @Transactional
     public void saveList(List<SyVendorUser> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

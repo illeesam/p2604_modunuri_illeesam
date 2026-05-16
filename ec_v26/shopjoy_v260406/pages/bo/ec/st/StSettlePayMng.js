@@ -6,16 +6,17 @@ window.StSettlePayMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       settle_pay_statuses: [],
       date_range_opts: [],
     });
 
+    /* 정산 지급 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -29,15 +30,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
+    /* 정산 지급 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_payId,def_vendorNm';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_payId,def_vendorNm';
         }
         const res = await boApiSvc.stSettlePay.getPage(params, '정산지급관리', '목록조회');
         const data = res.data?.data;
@@ -58,6 +60,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     });
 
             const dateEnd   = ref('');
+
+    /* 정산 지급 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
@@ -65,9 +69,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const payList = reactive([]);
 
-  const _initSearchParam = () => ({ searchTypes: '', searchValue: '', status: '' });
+  /* 정산 지급 _initSearchParam */
+  const _initSearchParam = () => ({ searchType: '', searchValue: '', status: '' });
   const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 정산 지급 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
@@ -76,6 +83,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       pending: payList.filter(r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
     }));
 
+    /* 정산 지급 doPay */
     const doPay = async (r) => {
       const ok = await showConfirm('지급처리', `[${r.vendorNm}]에게 ${Number(r.settleAmt).toLocaleString()}원을 지급하시겠습니까?`);
       if (!ok) return;
@@ -92,11 +100,22 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
+    /* 정산 지급 fnStatusBadge */
     const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
+
+    /* 정산 지급 fmtW */
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
+
+    /* 정산 지급 목록조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 정산 지급 onReset */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    /* 정산 지급 setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* 정산 지급 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     // -- return ---------------------------------------------------------------
@@ -125,7 +144,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <option value="">상태 전체</option><option v-for="c in codes.settle_pay_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_payId',    label: '지급ID' },
           { value: 'def_vendorNm', label: '업체명' },

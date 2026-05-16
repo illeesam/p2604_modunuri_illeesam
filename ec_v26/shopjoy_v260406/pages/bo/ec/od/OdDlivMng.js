@@ -6,21 +6,25 @@ window.OdDlivMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const deliveries = reactive([]);
     const members = reactive([]);
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [], courier_codes: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 배송 getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 배송 onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -29,6 +33,8 @@ window.OdDlivMng = {
       pager.pageNo = 1;
       handleSearchData();
     };
+
+    /* 배송 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
@@ -36,9 +42,9 @@ window.OdDlivMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_dliv_id,def_order_id,def_member_nm,def_recv_nm,def_invoice_no';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_dliv_id,def_order_id,def_member_nm,def_recv_nm,def_invoice_no';
         }
         const [delivRes, membersRes] = await Promise.all([
           boApiSvc.odDliv.getPage(params, '배송관리', '목록조회'),
@@ -63,11 +69,12 @@ window.OdDlivMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchTypes: '', searchValue: '', memberId: '', memberNm: '', status: '', dateType: 'dliv_ship_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', memberId: '', memberNm: '', status: '', dateType: 'dliv_ship_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
 
+    /* 배송 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -78,6 +85,8 @@ window.OdDlivMng = {
     };
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 배송 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
@@ -99,9 +108,17 @@ window.OdDlivMng = {
 
     /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* 배송 loadView */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 배송 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 배송 openNew */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 배송 closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
 
     /* DlivDtl 에 넘길 navigate: 'odDlivMng' 이동 요청 → 패널 닫기로 인터셉트 */
@@ -118,11 +135,13 @@ window.OdDlivMng = {
     /* 목록 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* 배송 fnStatusBadge */
     const fnStatusBadge = s => ({
       '준비중': 'badge-orange', '출고완료': 'badge-blue', '배송중': 'badge-blue',
       '배송완료': 'badge-green', '배송실패': 'badge-red',
     }[s] || 'badge-gray');
 
+    /* 배송 목록조회 */
     const onSearch = async () => {
       if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
         props.showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
@@ -131,6 +150,8 @@ window.OdDlivMng = {
       pager.pageNo = 1;
       await handleSearchData('DEFAULT');
     };
+
+    /* 배송 onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -138,9 +159,13 @@ window.OdDlivMng = {
       await handleSearchData();
     };
 
+    /* 배송 setPage */
     const setPage  = n  => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
+
+    /* 배송 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
+    /* 배송 삭제 */
     const handleDelete = async (d) => {
       const ok = await showConfirm('삭제', `[${d.dlivId}]를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -160,13 +185,20 @@ window.OdDlivMng = {
       }
     };
 
+    /* 배송 exportExcel */
     const exportExcel = () => coUtil.exportCsv(deliveries, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
+
+    /* 배송 toggleCheck */
     const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
+
+    /* 배송 isChecked */
     const isChecked = (id) => checked.has(id);
     const cfAllChecked = computed(() => deliveries.length > 0 && deliveries.every(d => checked.has(d.dlivId)));
+
+    /* 배송 toggleCheckAll */
     const toggleCheckAll = () => {
       const s = new Set(checked);
       if (cfAllChecked.value) deliveries.forEach(d => s.delete(d.dlivId));
@@ -180,11 +212,15 @@ window.OdDlivMng = {
       apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
       reqTarget:'배송', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
     });
+
+    /* 배송 onApprToChange */
     const onApprToChange = () => {
       const m = (members).find(x => String(x.userId) === String(bulkForm.apprToUserId));
       if (m) { bulkForm.apprToNm = m.userNm || ''; bulkForm.apprToPhone = m.phone || ''; bulkForm.apprToEmail = m.email || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
+
+    /* 배송 onReqTargetChange */
     const onReqTargetChange = () => {
       const ids = Array.from(checked);
       const first = window.safeArrayUtils.safeFind(Array.isArray(deliveries) ? deliveries : [], d => ids.includes(d.dlivId));
@@ -201,6 +237,8 @@ window.OdDlivMng = {
       .replace('{targetNm}', bulkForm.reqTargetNm || '-')
       .replace('{amount}', Number(bulkForm.reqAmount||0).toLocaleString())
       .replace('{reason}', bulkForm.reqReason || '-'));
+
+    /* 배송 openBulk */
     const openBulk = () => {
       if (!checked.size) { showToast('항목을 선택하세요.', 'error'); return; }
       uiState.bulkTab = 'status';
@@ -238,6 +276,8 @@ window.OdDlivMng = {
       if (!rows.length) return '';
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
+
+    /* 배송 saveBulk */
     const saveBulk = async () => {
       const ids = Array.from(checked);
       if (!ids.length) { showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
@@ -320,16 +360,22 @@ window.OdDlivMng = {
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
 
     /* ── 회원 선택 팝업 ── */
-    const memberPick = reactive({ open: false, searchTypes: '', searchValue: '', rows: [], pageNo: 1, total: 0, totalPage: 1, loading: false });
-    const openMemberPick = () => { memberPick.open = true; memberPick.searchTypes = ''; memberPick.searchValue = ''; memberPick.pageNo = 1; handlePickSearch(); };
+    const memberPick = reactive({ open: false, searchType: '', searchValue: '', rows: [], pageNo: 1, total: 0, totalPage: 1, loading: false });
+
+    /* 배송 openMemberPick */
+    const openMemberPick = () => { memberPick.open = true; memberPick.searchType = ''; memberPick.searchValue = ''; memberPick.pageNo = 1; handlePickSearch(); };
+
+    /* 배송 closeMemberPick */
     const closeMemberPick = () => { memberPick.open = false; };
+
+    /* 배송 handlePickSearch */
     const handlePickSearch = async () => {
       memberPick.loading = true;
       try {
-        const params = { pageNo: memberPick.pageNo, pageSize: 20, searchValue: memberPick.searchValue || undefined, searchTypes: memberPick.searchTypes || undefined };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_loginId';
+        const params = { pageNo: memberPick.pageNo, pageSize: 20, searchValue: memberPick.searchValue || undefined, searchType: memberPick.searchType || undefined };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_loginId';
         }
         const res = await boApiSvc.mbMember.getPage(params, '배송관리', '회원검색');
         const d = res.data?.data || {};
@@ -339,9 +385,17 @@ window.OdDlivMng = {
       } catch (_) { showToast('회원 조회 오류', 'error'); }
       finally { memberPick.loading = false; }
     };
+
+    /* 배송 onPickSearch */
     const onPickSearch = () => { memberPick.pageNo = 1; handlePickSearch(); };
+
+    /* 배송 onPickPage */
     const onPickPage = n => { memberPick.pageNo = n; handlePickSearch(); };
+
+    /* 배송 onSelectMember */
     const onSelectMember = m => { searchParam.memberId = m.memberId; searchParam.memberNm = m.memberNm || m.loginId || m.memberId; closeMemberPick(); };
+
+    /* 배송 onClearMember */
     const onClearMember = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
 
     // -- return ---------------------------------------------------------------
@@ -353,7 +407,7 @@ window.OdDlivMng = {
   <div class="page-title">배송관리</div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select v-model="searchParam.searchTypes" :options="[
+      <multi-check-select v-model="searchParam.searchType" :options="[
           { value: 'def_dliv_id',     label: '배송ID' },
           { value: 'def_order_id',    label: '주문ID' },
           { value: 'def_tracking',    label: '운송장번호' },
@@ -568,7 +622,7 @@ window.OdDlivMng = {
           <div style="position:relative;flex:1;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;">🔍</span>
             <multi-check-select
-              v-model="memberPick.searchTypes"
+              v-model="memberPick.searchType"
               :options="[
                 { value: 'def_nm',      label: '이름' },
                 { value: 'def_loginId', label: '아이디' },

@@ -6,10 +6,10 @@ window.SyCodeMng = {
   },
   setup(props) {
     const { reactive, watch, onMounted, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     // -- 선언부 ----------------------------------------------------------------
 
@@ -25,12 +25,13 @@ window.SyCodeMng = {
       gridRows: [],
     });
 
+    /* _initSearchParam */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
       const threeYearsAgo = thisYear - 3;
       return {
-        searchTypes: '', searchValue: '',
+        searchType: '', searchValue: '',
         grp: '', useYn: 'Y', dateRange: '',
         dateStart: `${threeYearsAgo}-01-01`,
         dateEnd:   `${thisYear}-12-31`,
@@ -52,7 +53,10 @@ window.SyCodeMng = {
     const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'codeOpt1', 'remark', 'parentCodeValue'];
     const GRP_FIELDS  = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
 
+    /* codeTotal */
     const codeTotal = () => uiState.gridRows.filter(r => r._row_status !== 'D').length;
+
+    /* grpCount */
     const grpCount  = () => uiState.grpRows.filter(r => r._row_status !== 'D').length;
 
     // grpDirtyCount: uiState.grpRows 변경 시 갱신
@@ -60,6 +64,7 @@ window.SyCodeMng = {
 
     // -- 트리 갱신 -------------------------------------------------------------
 
+    /* rebuildTree */
     const rebuildTree = () => {
       parentOpts.splice(0);
       if (uiState.isTreeType) {
@@ -87,7 +92,11 @@ window.SyCodeMng = {
         childMap.get(pv).push(c);
       });
       const roots = visible.filter(c => !c.parentCodeValue || !byValue.has(c.parentCodeValue));
+
+      /* build */
       const build = (c) => ({ value: c.codeValue, label: c.codeLabel, code: c, children: (childMap.get(c.codeValue) || []).map(build) });
+
+      /* walk */
       const walk = (node, depth) => {
         flatTree.push({ node, depth, isExpanded: treeExpanded.has(node.value) });
         if (treeExpanded.has(node.value)) node.children.forEach(child => walk(child, depth + 1));
@@ -108,6 +117,7 @@ window.SyCodeMng = {
 
     // -- 초기화 ----------------------------------------------------------------
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       pageCodes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
@@ -125,7 +135,10 @@ window.SyCodeMng = {
 
     // -- 이벤트 함수 ----------------------------------------------------------
 
+    /* 목록조회 */
     const onSearch = () => handleLoadAllGroups();
+
+    /* onReset */
     const onReset  = () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.grpSortKey = '';
@@ -138,6 +151,7 @@ window.SyCodeMng = {
       handleLoadAllGroups();
     };
 
+    /* handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -145,25 +159,32 @@ window.SyCodeMng = {
       }
     };
 
+    /* onCellChange */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
+    /* onGrpChange */
     const onGrpChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       row._row_status = GRP_FIELDS.some(f => String(row[f] || '') !== String(row._row_org[f] || '')) ? 'U' : 'N';
       syncGrpDirty();
     };
 
+    /* onGrpRowClick */
     const onGrpRowClick = () => {};
 
+    /* onPathPicked */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) { row.pathId = pathId; if (row._row_status === 'N') { row._row_status = 'U'; syncGrpDirty(); } }
     };
 
+    /* onDragStart */
     const onDragStart = (idx) => { uiState.dragSrc = idx; uiState.dragMoved = false; };
+
+    /* onDragOver */
     const onDragOver  = (e, idx) => {
       e.preventDefault();
       if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
@@ -171,6 +192,8 @@ window.SyCodeMng = {
       uiState.gridRows.splice(idx, 0, moved);
       uiState.dragSrc = idx; uiState.dragMoved = true;
     };
+
+    /* onDragEnd */
     const onDragEnd = () => {
       if (uiState.dragMoved) {
         // 드래그 후 sortOrd 재부여 + 변경된 행 U 마킹 (즉시 저장 아님)
@@ -185,6 +208,7 @@ window.SyCodeMng = {
       uiState.dragSrc = null; uiState.dragMoved = false;
     };
 
+    /* toggleCheckAll */
     const toggleCheckAll = () => { uiState.gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     // -- 일반 함수 -------------------------------------------------------------
@@ -195,12 +219,14 @@ window.SyCodeMng = {
       grpNm:   { asc: 'grpNm asc',   desc: 'grpNm desc'   },
     };
 
+    /* cfGrpSortParam */
     const cfGrpSortParam = () => {
       const { grpSortKey, grpSortDir } = uiState;
       if (!grpSortKey || !GRP_SORT_MAP[grpSortKey]) return {};
       return { sort: GRP_SORT_MAP[grpSortKey][grpSortDir] };
     };
 
+    /* onGrpSort */
     const onGrpSort = (key) => {
       if (uiState.grpSortKey === key) {
         if (uiState.grpSortDir === 'asc') {
@@ -216,11 +242,13 @@ window.SyCodeMng = {
       handleLoadAllGroups();
     };
 
+    /* grpSortIcon */
     const grpSortIcon = (key) => {
       if (uiState.grpSortKey !== key) return '⇅';
       return uiState.grpSortDir === 'asc' ? '↑' : '↓';
     };
 
+    /* handleLoadAllGroups */
     const handleLoadAllGroups = async () => {
       const seq = ++_grpLoadSeq;
       try {
@@ -229,9 +257,9 @@ window.SyCodeMng = {
           ...(uiState.grpSelectedPath ? { pathId: uiState.grpSelectedPath } : {}),
           ...cfGrpSortParam(),
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (grpParams.searchValue && !grpParams.searchTypes) {
-          grpParams.searchTypes = 'def_grp,def_label,def_value';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (grpParams.searchValue && !grpParams.searchType) {
+          grpParams.searchType = 'def_grp,def_label,def_value';
         }
 
         const [grpRes, codeRes] = await Promise.all([
@@ -267,6 +295,7 @@ window.SyCodeMng = {
       } catch (_) {}
     };
 
+    /* 목록조회 */
     const handleSearchList = async () => {
       if (!uiState.selectedGrp) { uiState.gridRows = []; uiState.isTreeType = false; rebuildTree(); return; }
       try {
@@ -281,6 +310,7 @@ window.SyCodeMng = {
       } catch (_) {} finally { uiState.loading = false; }
     };
 
+    /* makeRow */
     const makeRow = (c) => ({
       ...c, _row_status: 'N', _row_check: false,
       codeOpt1: c.codeOpt1 || '',
@@ -288,8 +318,10 @@ window.SyCodeMng = {
                sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, codeOpt1: c.codeOpt1 || '', parentCodeValue: c.parentCodeValue || null },
     });
 
+    /* setFocused */
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
+    /* addRow */
     const addRow = () => {
       const grp = uiState.selectedGrp;
       const maxSort = uiState.gridRows.reduce((m, r) => r._row_status !== 'D' ? Math.max(m, r.sortOrd || 0) : m, 0);
@@ -304,6 +336,7 @@ window.SyCodeMng = {
       uiState.focusedIdx = insertAt;
     };
 
+    /* deleteRow */
     const deleteRow = (idx) => {
       const row = uiState.gridRows[idx];
       if (row._row_status === 'I') {
@@ -312,6 +345,7 @@ window.SyCodeMng = {
       } else { row._row_status = 'D'; }
     };
 
+    /* cancelRow */
     const cancelRow = (idx) => {
       const row = uiState.gridRows[idx];
       if (row._row_status === 'I') {
@@ -320,6 +354,7 @@ window.SyCodeMng = {
       } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
     };
 
+    /* cancelChecked */
     const cancelChecked = () => {
       const ids = new Set(uiState.gridRows.filter(r => r._row_check).map(r => r.codeId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -331,6 +366,7 @@ window.SyCodeMng = {
       }
     };
 
+    /* deleteRows */
     const deleteRows = () => {
       for (let i = uiState.gridRows.length - 1; i >= 0; i--) {
         if (!uiState.gridRows[i]._row_check) continue;
@@ -339,6 +375,7 @@ window.SyCodeMng = {
       }
     };
 
+    /* 저장 */
     const handleSave = async () => {
       const iRows = uiState.gridRows.filter(r => r._row_status === 'I');
       const uRows = uiState.gridRows.filter(r => r._row_status === 'U');
@@ -370,6 +407,7 @@ window.SyCodeMng = {
       } finally { uiState.loading = false; }
     };
 
+    /* addGrp */
     const addGrp = () => {
       uiState.grpRows = [...uiState.grpRows, {
         codeGrp: 'NEW_GRP', grpNm: '신규 그룹', pathId: 'new.path', description: '', type: '일반', useYn: 'Y',
@@ -378,6 +416,7 @@ window.SyCodeMng = {
       syncGrpDirty();
     };
 
+    /* handleDeleteGrp */
     const handleDeleteGrp = (idx) => {
       const rows = uiState.grpRows;
       const r = rows[idx];
@@ -386,6 +425,7 @@ window.SyCodeMng = {
       syncGrpDirty();
     };
 
+    /* cancelGrp */
     const cancelGrp = (idx) => {
       const rows = uiState.grpRows;
       const r = rows[idx];
@@ -394,6 +434,7 @@ window.SyCodeMng = {
       syncGrpDirty();
     };
 
+    /* handleSaveGrp */
     const handleSaveGrp = async () => {
       if (!uiState.grpDirtyCount) { showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await showConfirm('저장', `${uiState.grpDirtyCount}건 저장하시겠습니까?`);
@@ -419,15 +460,20 @@ window.SyCodeMng = {
       }
     };
 
+    /* openPathPick */
     const openPathPick  = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+
+    /* closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
+    /* openGrpSetting */
     const openGrpSetting = (g, e) => {
       e.stopPropagation();
       uiState.selectedGrp = g.codeGrp;
       handleSearchList();
     };
 
+    /* grpSelectNode */
     const grpSelectNode = (path) => {
       uiState.grpSelectedPath = path;
       uiState.selectedGrp = '';
@@ -447,21 +493,30 @@ window.SyCodeMng = {
       parentVals.forEach(v => treeExpanded.add(v));
       rebuildTree();
     };
+
+    /* codeCollapseAll */
     const codeCollapseAll = () => {
       treeExpanded.clear();
       rebuildTree();
     };
+
+    /* codeToggleNode */
     const codeToggleNode = (codeValue) => {
       if (treeExpanded.has(codeValue)) treeExpanded.delete(codeValue);
       else treeExpanded.add(codeValue);
       rebuildTree();
     };
 
+    /* 상세조회 */
     const handleLoadDetail = (codeId) => { uiState.selectedCodeId = codeId; };
+
+    /* closeDetail */
     const closeDetail       = () => { uiState.selectedCodeId = null; };
 
+    /* statusBadgeCls */
     const statusBadgeCls = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
+    /* exportExcel */
     const exportExcel = () => coUtil.exportCsv(
       uiState.gridRows.filter(r => r._row_status !== 'D'),
       [{ label: 'ID', key: 'codeId' }, { label: '코드그룹', key: 'codeGrp' }, { label: '코드라벨', key: 'codeLabel' },
@@ -469,6 +524,7 @@ window.SyCodeMng = {
       '공통코드목록.csv'
     );
 
+    /* pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* PathPick 버튼 hover 효과 — 인라인 할당식 회피 */
@@ -476,6 +532,8 @@ window.SyCodeMng = {
       if (g._row_status === 'D' || !evt || !evt.currentTarget) return;
       evt.currentTarget.style.background = '#eef2ff';
     };
+
+    /* onPathBtnLeave */
     const onPathBtnLeave = (evt) => {
       if (evt && evt.currentTarget) evt.currentTarget.style.background = '#fff';
     };
@@ -506,7 +564,7 @@ window.SyCodeMng = {
   <div class="card">
     <div class="search-bar">
       <multi-check-select
-        v-model="searchParam.searchTypes"
+        v-model="searchParam.searchType"
         :options="[
           { value: 'def_grp',   label: '코드그룹' },
           { value: 'def_label', label: '라벨' },

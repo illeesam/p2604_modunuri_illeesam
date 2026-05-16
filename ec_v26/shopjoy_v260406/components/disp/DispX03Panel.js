@@ -42,6 +42,7 @@ window.DispX03Panel = {
       return 'display:flex;flex-direction:column;gap:12px;';
     });
 
+    /* onWidgetAction */
     const onWidgetAction = (payload) => emit('widget-action', payload);
 
     return { uiState, codes, mergedWidget, cfLayoutStyle, onWidgetAction };

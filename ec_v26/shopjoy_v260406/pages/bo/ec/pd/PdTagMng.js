@@ -6,14 +6,15 @@ window.PdTagMng = {
   },
   setup(props) {
     const { ref, reactive, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const tags = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ use_yn: [] });
 
+    /* 태그 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -45,6 +46,7 @@ window.PdTagMng = {
         uiState.loading = false;
       }
     };
+
     /* -- 검색 파라미터 -- */
     const _initSearchParam = () => ({ use: '' });
     const searchParam = reactive(_initSearchParam());
@@ -57,6 +59,7 @@ window.PdTagMng = {
 
 const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
+    /* 태그 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const gridRows   = reactive([]);
@@ -64,8 +67,13 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
 
     watch(tags, (list) => { gridRows.splice(0, gridRows.length, ...list.map(t => ({ ...t, _row_status: null }))); }, { immediate: true });
 
+    /* 태그 addRow */
     const addRow       = () => { gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: 1, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' }); };
+
+    /* 태그 onCellChange */
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };
+
+    /* 태그 deleteRow */
     const deleteRow    = async (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
@@ -82,6 +90,8 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* 태그 saveAll */
     const saveAll = async () => {
       const changed = window.safeArrayUtils.safeFilter(gridRows, r => ['N','I','U','D'].includes(r._row_status));
       if (!changed.length) { showToast('변경된 내용이 없습니다.', 'info'); return; }
@@ -100,18 +110,27 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* 태그 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
+
+    /* 태그 onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchList();
     };
 
+    /* 태그 setPage */
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+
+    /* 태그 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* 태그 fnYnBadge */
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     // -- return ---------------------------------------------------------------

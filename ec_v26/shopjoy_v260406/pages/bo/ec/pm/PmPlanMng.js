@@ -6,10 +6,10 @@ window.PmPlanMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const plans = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
@@ -18,6 +18,7 @@ window.PmPlanMng = {
       date_range_opts: [],
     });
 
+    /* 프로모션 플랜 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -34,11 +35,15 @@ window.PmPlanMng = {
 
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'planNm asc', desc: 'planNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 프로모션 플랜 getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 프로모션 플랜 onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -47,7 +52,11 @@ window.PmPlanMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+
+    /* 프로모션 플랜 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
+    /* 프로모션 플랜 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -75,6 +84,8 @@ window.PmPlanMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');    });
+
+    /* 프로모션 플랜 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -94,10 +105,20 @@ const CATEGORIES = [
     /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
   const searchParam = reactive(_initSearchParam());
+
+    /* 프로모션 플랜 loadView */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 프로모션 플랜 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 프로모션 플랜 openNew */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 프로모션 플랜 closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* 프로모션 플랜 inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'pmPlanMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -107,23 +128,33 @@ const CATEGORIES = [
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
+    /* 프로모션 플랜 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* 프로모션 플랜 fnStatusBadge */
     const fnStatusBadge = s => ({ '활성': 'badge-green', '예정': 'badge-blue', '비활성': 'badge-gray', '종료': 'badge-gray' }[s] || 'badge-gray');
+
+    /* 프로모션 플랜 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       Object.assign(pager.pageCond, searchParam);
       await handleSearchList('DEFAULT');
     };
 
+    /* 프로모션 플랜 onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
       onSearch();
     };
 
+    /* 프로모션 플랜 setPage */
     const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+
+    /* 프로모션 플랜 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    /* 프로모션 플랜 삭제 */
     const handleDelete = async (p) => {
       const ok = await showConfirm('삭제', `[${p.planNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -142,6 +173,7 @@ const CATEGORIES = [
       }
     };
 
+    /* 프로모션 플랜 exportExcel */
     const exportExcel = () => coUtil.exportCsv(plans, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'카테고리',key:'category'},{label:'테마',key:'theme'},{label:'상품수',key:'productCount'},{label:'상태',key:'status'},{label:'조회수',key:'viewCount'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
 
     const tabMode = Vue.toRef(uiState, 'tabMode');

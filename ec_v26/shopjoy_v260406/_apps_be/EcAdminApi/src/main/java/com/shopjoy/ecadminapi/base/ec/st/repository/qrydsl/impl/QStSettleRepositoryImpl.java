@@ -34,6 +34,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
     private static final QSySite    ste = QSySite.sySite;
     private static final QSyCode    cdSs = new QSyCode("cd_ss");
 
+    /* 정산 키조회 */
     @Override
     public Optional<StSettleDto.Item> selectById(String id) {
         StSettleDto.Item dto = baseListQuery()
@@ -42,6 +43,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 정산 목록조회 */
     @Override
     public List<StSettleDto.Item> selectList(StSettleDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -60,6 +62,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         return query.fetch();
     }
 
+    /* 정산 페이지조회 */
     @Override
     public StSettleDto.PageResponse selectPageList(StSettleDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +88,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 정산 baseListQuery */
     private JPAQuery<StSettleDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleDto.Item.class,
@@ -105,6 +109,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
                 .leftJoin(cdSs).on(cdSs.codeGrp.eq("SETTLE_STATUS").and(cdSs.codeValue.eq(s.settleStatusCd)));
     }
 
+    /* 정산 buildCondition */
     private BooleanBuilder buildCondition(StSettleDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -159,6 +164,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         return orders;
     }
 
+    /* 정산 수정 */
     @Override
     public int updateSelective(StSettle entity) {
         if (entity.getSettleId() == null) return 0;

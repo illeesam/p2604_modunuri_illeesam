@@ -27,6 +27,7 @@ public class CmBlogTagService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 게시물 태그 키조회 */
     public CmBlogTagDto.Item getById(String id) {
         CmBlogTagDto.Item dto = cmBlogTagRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmBlogTagService {
         return cmBlogTagRepository.selectById(id).orElse(null);
     }
 
+    /* 게시물 태그 상세조회 */
     public CmBlogTag findById(String id) {
         return cmBlogTagRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmBlogTagService {
         return cmBlogTagRepository.findById(id).orElse(null);
     }
 
+    /* 게시물 태그 키검증 */
     public boolean existsById(String id) {
         return cmBlogTagRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmBlogTagService {
         return true;
     }
 
+    /* 게시물 태그 목록조회 */
     public List<CmBlogTagDto.Item> getList(CmBlogTagDto.Request req) {
         return cmBlogTagRepository.selectList(req);
     }
 
+    /* 게시물 태그 페이지조회 */
     public CmBlogTagDto.PageResponse getPageData(CmBlogTagDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogTagRepository.selectPageList(req);
     }
 
+    /* 게시물 태그 등록 */
     @Transactional
     public CmBlogTag create(CmBlogTag body) {
         body.setBlogTagId(CmUtil.generateId("cm_blog_tag"));
@@ -80,6 +86,7 @@ public class CmBlogTagService {
         return saved;
     }
 
+    /* 게시물 태그 저장 */
     @Transactional
     public CmBlogTag save(CmBlogTag entity) {
         if (!existsById(entity.getBlogTagId()))
@@ -92,6 +99,7 @@ public class CmBlogTagService {
         return saved;
     }
 
+    /* 게시물 태그 수정 */
     @Transactional
     public CmBlogTag update(String id, CmBlogTag body) {
         CmBlogTag entity = findById(id);
@@ -104,6 +112,7 @@ public class CmBlogTagService {
         return saved;
     }
 
+    /* 게시물 태그 수정 */
     @Transactional
     public CmBlogTag updateSelective(CmBlogTag entity) {
         if (entity.getBlogTagId() == null) throw new CmBizException("blogTagId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmBlogTagService {
         return entity;
     }
 
+    /* 게시물 태그 삭제 */
     @Transactional
     public void delete(String id) {
         CmBlogTag entity = findById(id);
@@ -125,6 +135,7 @@ public class CmBlogTagService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 게시물 태그 목록저장 */
     @Transactional
     public void saveList(List<CmBlogTag> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

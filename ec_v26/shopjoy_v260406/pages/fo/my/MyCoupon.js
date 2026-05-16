@@ -6,11 +6,12 @@ window.MyCoupon = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast            = window.foApp.showToast;
+    const showToast            = window.foApp.showToast;  // 토스트 알림
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'unused'});
     const codes = reactive({});
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -43,6 +44,7 @@ window.MyCoupon = {
     const cfUnusedCount = computed(() => coupons.value.filter(c => !c.used).length);
     const cfUsedCount   = computed(() => coupons.value.filter(c => c.used).length);
 
+    /* addCoupon */
     const addCoupon = () => {
       const code = couponCode.value.trim().toUpperCase();
       if (!code) { showToast('쿠폰 코드를 입력하세요.', 'error'); return; }
@@ -57,12 +59,16 @@ window.MyCoupon = {
       showToast('쿠폰이 등록되었습니다!', 'success');
     };
 
+    /* onTabChange */
     const onTabChange = tab => { uiState.activeTab = tab; pager.page = 1; };
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadCoupons();
       myStore.handleLoadOrders();
     };
+
+    /* 목록조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await handleSearchData('DEFAULT');

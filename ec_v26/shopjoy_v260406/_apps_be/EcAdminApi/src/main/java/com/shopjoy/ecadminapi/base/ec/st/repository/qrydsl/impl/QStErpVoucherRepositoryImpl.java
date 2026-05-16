@@ -35,6 +35,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     private static final QSyCode       cdEvt = new QSyCode("cd_evt");
     private static final QSyCode       cdEvs = new QSyCode("cd_evs");
 
+    /* ERP 전표 키조회 */
     @Override
     public Optional<StErpVoucherDto.Item> selectById(String id) {
         StErpVoucherDto.Item dto = baseListQuery()
@@ -43,6 +44,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* ERP 전표 목록조회 */
     @Override
     public List<StErpVoucherDto.Item> selectList(StErpVoucherDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -61,6 +63,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         return query.fetch();
     }
 
+    /* ERP 전표 페이지조회 */
     @Override
     public StErpVoucherDto.PageResponse selectPageList(StErpVoucherDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -86,6 +89,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* ERP 전표 baseListQuery */
     private JPAQuery<StErpVoucherDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StErpVoucherDto.Item.class,
@@ -107,6 +111,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                 .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS").and(cdEvs.codeValue.eq(v.erpVoucherStatusCd)));
     }
 
+    /* ERP 전표 buildCondition */
     private BooleanBuilder buildCondition(StErpVoucherDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -160,6 +165,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         return orders;
     }
 
+    /* ERP 전표 수정 */
     @Override
     public int updateSelective(StErpVoucher entity) {
         if (entity.getErpVoucherId() == null) return 0;

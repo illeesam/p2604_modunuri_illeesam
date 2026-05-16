@@ -6,16 +6,16 @@ window.PdBundleMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const products = reactive([]);
     const brands = reactive([]);
     const bundles = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearchTypes: '', pickerSearch: '', dragIdx: null, dragoverIdx: null });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearchType: '', pickerSearch: '', dragIdx: null, dragoverIdx: null });
     const codes = reactive({
       product_statuses: [],
       bundle_types: [],
@@ -23,6 +23,7 @@ window.PdBundleMng = {
       use_yn: [],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -66,6 +67,7 @@ window.PdBundleMng = {
         uiState.loading = false;
       }
     };
+
     /* -- 검색 파라미터 -- */
     const _initSearchParam = () => ({ nm: '' });
     const searchParam = reactive(_initSearchParam());
@@ -94,7 +96,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* 카테고리 드래그 */
     const onCatDragStart = idx => { uiState.catDragIdx = idx; };
+
+    /* onCatDragOver */
     const onCatDragOver  = idx => { uiState.catDragoverIdx = idx; };
+
+    /* onCatDrop */
     const onCatDrop = () => {
       if (uiState.catDragIdx === null || uiState.catDragIdx === uiState.catDragoverIdx) {
         uiState.catDragIdx = uiState.catDragoverIdx = null; return;
@@ -106,18 +112,24 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       uiState.catDragIdx = uiState.catDragoverIdx = null;
     };
 
+    /* addCategory */
     const addCategory = cat => {
       const id = cat.categoryId;
       if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(id))) return;
       dtlCategories.push({ categoryId: id, categoryNm: cat.categoryNm || String(id), depth: cat.depth || cat.categoryDepth || 1 });
       uiState.catPickerOpen = false;
     };
+
+    /* removeCategory */
     const removeCategory = idx => dtlCategories.splice(idx, 1);
 
+    /* getCategoryNm */
     const getCategoryNm = id => {
       const c = (categories || []).find(c => c.categoryId == id);
       return c ? (c.categoryNm || c.cateNm || id) : String(id);
     };
+
+    /* getCategoryDepth */
     const getCategoryDepth = id => {
       const c = (categories || []).find(c => c.categoryId == id);
       return c ? (c.depth || 1) : 1;
@@ -131,9 +143,14 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     
     /* -- helpers -- */
     const getProd     = id => (products || []).find(p => p.productId === id);
+
+    /* getProdNm */
     const getProdNm   = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '상품#' + id) : '상품#' + id; };
+
+    /* getProdPrice */
     const getProdPrice = id => { const p = getProd(id); return p ? (p.salePrice || p.price || 0) : 0; };
 
+    /* getBrandNm */
     const getBrandNm = id => {
       const b = (brands || []).find(b => b.brandId == id);
       return b ? (b.brandNm || b.brandName || id) : id;
@@ -144,10 +161,14 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       (bundles)
         .filter(b => b.bundleProdId === bundleProdId)
         .reduce((s, b) => s + (b.priceRate || 0), 0);
+
+    /* fnRateSumBadge */
     const fnRateSumBadge = id => Math.abs(rateSum(id) - 100) < 0.01 ? 'badge-green' : 'badge-red';
 
     /* -- 묶음상품 목록 -- */
     const bundleList = reactive([]);
+
+    /* updateBundleList */
     const updateBundleList = () => {
       try {
         const bundleArray = bundles;
@@ -178,20 +199,26 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     watch(bundles, updateBundleList);
 
+    /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchData('DEFAULT');
     };
 
+    /* onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchData();
     };
 
+    /* setPage */
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchData(); } };
+
+    /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* -- 신규등록 열기 -- */
@@ -226,6 +253,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       dtlCategories.splice(0, dtlCategories.length, ..._cats);
     };
 
+    /* closeDtl */
     const closeDtl = () => { uiState.dtlMode = null; uiState.editBundleId = null; dtlItems.length = 0; };
 
     /* -- 편집 모드에서 표시할 묶음상품명 -- */
@@ -242,7 +270,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const cfPickerList = computed(() => {
       const q    = (uiState.pickerSearch || '').trim().toLowerCase();
       const used = dtlItems.map(d => d.itemProdId);
-      const types = uiState.pickerSearchTypes || 'def_id,def_nm';
+      const types = uiState.pickerSearchType || 'def_id,def_nm';
       return (products || []).filter(p => {
         if (p.productId === cfCurrentBundleId.value) return false;
         if (used.includes(p.productId)) return false;
@@ -254,6 +282,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       });
     });
 
+    /* addItem */
     const addItem = prod => {
       const maxSort = dtlItems.length ? Math.max(...dtlItems.map(d => d.sortOrd)) : 0;
       dtlItems.push({
@@ -262,13 +291,19 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         itemProdId: prod.productId, itemSkuId: null,
         itemQty: 1, priceRate: 0, sortOrd: maxSort + 1, useYn: 'Y',
       });
-      uiState.pickerOpen = false; uiState.pickerSearchTypes = ''; uiState.pickerSearch = '';
+      uiState.pickerOpen = false; uiState.pickerSearchType = ''; uiState.pickerSearch = '';
     };
+
+    /* removeItem */
     const removeItem = idx => dtlItems.splice(idx, 1);
 
     /* -- 드래그 -- */
     const onDragStart = idx => { uiState.dragIdx = idx; };
+
+    /* onDragOver */
     const onDragOver  = idx => { uiState.dragoverIdx = idx; };
+
+    /* onDrop */
     const onDrop = () => {
       if (uiState.dragIdx === null || uiState.dragIdx === uiState.dragoverIdx) {
         uiState.dragIdx = uiState.dragoverIdx = null; return;
@@ -661,7 +696,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     <!-- -- 구성품 추가 / 안분율 안내 ---------------------------------------------- -->
     <div style="margin-top:12px;display:flex;align-items:flex-start;gap:12px">
-      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="uiState.pickerOpen=true;uiState.pickerSearchTypes='';uiState.pickerSearch=''">
+      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="uiState.pickerOpen=true;uiState.pickerSearchType='';uiState.pickerSearch=''">
         + 구성품 추가
       </button>
       <div v-if="dtlItems.length" style="flex:1;padding:7px 14px;border-radius:6px;font-size:12px"
@@ -686,7 +721,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <button class="btn btn-secondary btn-xs" @click="uiState.pickerOpen=false">닫기</button>
         </div>
         <multi-check-select
-          v-model="uiState.pickerSearchTypes"
+          v-model="uiState.pickerSearchType"
           :options="[
             { value: 'def_nm', label: '상품명' },
             { value: 'def_id', label: 'ID' },

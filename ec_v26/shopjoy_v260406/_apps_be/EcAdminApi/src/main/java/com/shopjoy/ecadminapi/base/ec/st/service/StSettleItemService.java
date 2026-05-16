@@ -27,6 +27,7 @@ public class StSettleItemService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 정산 항목 키조회 */
     public StSettleItemDto.Item getById(String id) {
         StSettleItemDto.Item dto = stSettleItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class StSettleItemService {
         return stSettleItemRepository.selectById(id).orElse(null);
     }
 
+    /* 정산 항목 상세조회 */
     public StSettleItem findById(String id) {
         return stSettleItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class StSettleItemService {
         return stSettleItemRepository.findById(id).orElse(null);
     }
 
+    /* 정산 항목 키검증 */
     public boolean existsById(String id) {
         return stSettleItemRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class StSettleItemService {
         return true;
     }
 
+    /* 정산 항목 목록조회 */
     public List<StSettleItemDto.Item> getList(StSettleItemDto.Request req) {
         return stSettleItemRepository.selectList(req);
     }
 
+    /* 정산 항목 페이지조회 */
     public StSettleItemDto.PageResponse getPageData(StSettleItemDto.Request req) {
         PageHelper.addPaging(req);
         return stSettleItemRepository.selectPageList(req);
     }
 
+    /* 정산 항목 등록 */
     @Transactional
     public StSettleItem create(StSettleItem body) {
         body.setSettleItemId(CmUtil.generateId("st_settle_item"));
@@ -80,6 +86,7 @@ public class StSettleItemService {
         return saved;
     }
 
+    /* 정산 항목 저장 */
     @Transactional
     public StSettleItem save(StSettleItem entity) {
         if (!existsById(entity.getSettleItemId()))
@@ -92,6 +99,7 @@ public class StSettleItemService {
         return saved;
     }
 
+    /* 정산 항목 수정 */
     @Transactional
     public StSettleItem update(String id, StSettleItem body) {
         StSettleItem entity = findById(id);
@@ -104,6 +112,7 @@ public class StSettleItemService {
         return saved;
     }
 
+    /* 정산 항목 수정 */
     @Transactional
     public StSettleItem updateSelective(StSettleItem entity) {
         if (entity.getSettleItemId() == null) throw new CmBizException("settleItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class StSettleItemService {
         return entity;
     }
 
+    /* 정산 항목 삭제 */
     @Transactional
     public void delete(String id) {
         StSettleItem entity = findById(id);
@@ -125,6 +135,7 @@ public class StSettleItemService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 정산 항목 목록저장 */
     @Transactional
     public void saveList(List<StSettleItem> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

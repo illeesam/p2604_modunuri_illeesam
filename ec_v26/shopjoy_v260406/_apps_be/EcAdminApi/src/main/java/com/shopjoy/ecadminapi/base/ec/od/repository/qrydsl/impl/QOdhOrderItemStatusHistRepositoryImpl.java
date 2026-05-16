@@ -28,6 +28,7 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
     private final JPAQueryFactory queryFactory;
     private static final QOdhOrderItemStatusHist h = QOdhOrderItemStatusHist.odhOrderItemStatusHist;
 
+    /* 주문 아이템 상태 이력 baseQuery */
     private JPAQuery<OdhOrderItemStatusHistDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderItemStatusHistDto.Item.class,
@@ -38,6 +39,7 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
                 .from(h);
     }
 
+    /* 주문 아이템 상태 이력 키조회 */
     @Override
     public Optional<OdhOrderItemStatusHistDto.Item> selectById(String id) {
         OdhOrderItemStatusHistDto.Item dto = baseQuery()
@@ -46,6 +48,7 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         return Optional.ofNullable(dto);
     }
 
+    /* 주문 아이템 상태 이력 목록조회 */
     @Override
     public List<OdhOrderItemStatusHistDto.Item> selectList(OdhOrderItemStatusHistDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +67,7 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         return query.fetch();
     }
 
+    /* 주문 아이템 상태 이력 페이지조회 */
     @Override
     public OdhOrderItemStatusHistDto.PageResponse selectPageList(OdhOrderItemStatusHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -85,6 +89,7 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 주문 아이템 상태 이력 buildCondition */
     private BooleanBuilder buildCondition(OdhOrderItemStatusHistDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -134,6 +139,7 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         return orders;
     }
 
+    /* 주문 아이템 상태 이력 수정 */
     @Override
     public int updateSelective(OdhOrderItemStatusHist entity) {
         if (entity.getOrderItemStatusHistId() == null) return 0;

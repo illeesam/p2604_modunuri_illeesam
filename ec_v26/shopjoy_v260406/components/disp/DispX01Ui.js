@@ -47,6 +47,8 @@ window.DispX01Ui = {
       'coupon':'쿠폰',             'html_editor':'HTML 에디터',      'event_banner':'이벤트',
       'cache_banner':'캐시',       'widget_embed':'위젯',
     };
+
+    /* wLabel */
     const wLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
 
     /* ── 패널 필터 ── */
@@ -80,14 +82,17 @@ window.DispX01Ui = {
       return true;
     };
 
+    /* panelsForArea */
     const panelsForArea = (areaCode) =>
       (props.dispDataset.displays || [])
         .filter(p => p.area === areaCode && panelFilter(p))
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
+    /* areaInfo */
     const areaInfo = (code) =>
       (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
+    /* areaLabel */
     const areaLabel = (code) => areaInfo(code)?.codeLabel || code;
 
     const cfTotalPanels = computed(() =>
@@ -118,23 +123,34 @@ window.DispX01Ui = {
       )
     );
 
+    /* expandAll */
     const expandAll   = () => {
       (props.params.areas || []).forEach(c => structAreaOpen.add(c));
       (props.params.areas || []).forEach(c => panelsForArea(c).forEach(p => structPanelOpen.add(p.dispId)));
     };
+
+    /* collapseAll */
     const collapseAll = () => { structAreaOpen.clear(); structPanelOpen.clear(); };
+
+    /* toggleAll1 */
     const toggleAll1  = () => {
       if (allAreas1Open.value) { structAreaOpen.clear(); structPanelOpen.clear(); }
       else (props.params.areas || []).forEach(c => structAreaOpen.add(c));
     };
+
+    /* toggleAll2 */
     const toggleAll2  = () => {
       if (allPanels2Open.value) structPanelOpen.clear();
       else (props.params.areas || []).forEach(c => panelsForArea(c).forEach(p => structPanelOpen.add(p.dispId)));
     };
+
+    /* toggleArea */
     const toggleArea  = (code) => {
       if (structAreaOpen.has(code)) structAreaOpen.delete(code);
       else structAreaOpen.add(code);
     };
+
+    /* togglePanel */
     const togglePanel = (id) => {
       if (structPanelOpen.has(id)) structPanelOpen.delete(id);
       else structPanelOpen.add(id);

@@ -27,6 +27,7 @@ public class SyNoticeService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 공지사항 키조회 */
     public SyNoticeDto.Item getById(String id) {
         SyNoticeDto.Item dto = syNoticeRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyNoticeService {
         return syNoticeRepository.selectById(id).orElse(null);
     }
 
+    /* 공지사항 상세조회 */
     public SyNotice findById(String id) {
         return syNoticeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyNoticeService {
         return syNoticeRepository.findById(id).orElse(null);
     }
 
+    /* 공지사항 키검증 */
     public boolean existsById(String id) {
         return syNoticeRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyNoticeService {
         return true;
     }
 
+    /* 공지사항 목록조회 */
     public List<SyNoticeDto.Item> getList(SyNoticeDto.Request req) {
         return syNoticeRepository.selectList(req);
     }
 
+    /* 공지사항 페이지조회 */
     public SyNoticeDto.PageResponse getPageData(SyNoticeDto.Request req) {
         PageHelper.addPaging(req);
         return syNoticeRepository.selectPageList(req);
     }
 
+    /* 공지사항 등록 */
     @Transactional
     public SyNotice create(SyNotice body) {
         body.setNoticeId(CmUtil.generateId("sy_notice"));
@@ -80,6 +86,7 @@ public class SyNoticeService {
         return saved;
     }
 
+    /* 공지사항 저장 */
     @Transactional
     public SyNotice save(SyNotice entity) {
         if (!existsById(entity.getNoticeId()))
@@ -92,6 +99,7 @@ public class SyNoticeService {
         return saved;
     }
 
+    /* 공지사항 수정 */
     @Transactional
     public SyNotice update(String id, SyNotice body) {
         SyNotice entity = findById(id);
@@ -104,6 +112,7 @@ public class SyNoticeService {
         return saved;
     }
 
+    /* 공지사항 수정 */
     @Transactional
     public SyNotice updateSelective(SyNotice entity) {
         if (entity.getNoticeId() == null) throw new CmBizException("noticeId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyNoticeService {
         return entity;
     }
 
+    /* 공지사항 삭제 */
     @Transactional
     public void delete(String id) {
         SyNotice entity = findById(id);
@@ -125,6 +135,7 @@ public class SyNoticeService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 공지사항 목록저장 */
     @Transactional
     public void saveList(List<SyNotice> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

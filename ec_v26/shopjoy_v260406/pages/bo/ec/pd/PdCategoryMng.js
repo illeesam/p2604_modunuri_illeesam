@@ -6,10 +6,10 @@ window.PdCategoryMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const sites = computed(() => window._boCmSites || []);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null, descOpen: false});
@@ -19,6 +19,7 @@ window.PdCategoryMng = {
       category_statuses: [],
     });
 
+    /* 상품 카테고리 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -120,6 +121,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         else roots.push(map[c.categoryId]);
       });
       const result = [];
+
+      /* 상품 카테고리 traverse */
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
@@ -128,22 +131,32 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       return result;
     };
 
+    /* 상품 카테고리 makeRow */
     const makeRow = c => ({
       ...c, _depth: c._depth || 0, _row_status: null, _row_check: false,
       _row_org: { categoryNm: c.categoryNm, parentCategoryId: c.parentCategoryId, sortOrd: c.sortOrd, categoryDesc: c.categoryDesc, categoryStatusCd: c.categoryStatusCd },
     });
 
 
+    /* 상품 카테고리 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); pager.pageList=gridRows.slice((c-1)*pager.pageSize,c*pager.pageSize); };
+
+    /* 상품 카테고리 setPage */
     const setPage       = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
+
+    /* 상품 카테고리 onSizeChange */
     const onSizeChange  = () => { pager.pageNo = 1; pager.pageTotalCount = gridRows.length; pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / pager.pageSize)); fnBuildPagerNums(); };
+
+    /* 상품 카테고리 getRealIdx */
     const getRealIdx    = localIdx => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
+    /* 상품 카테고리 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleGridSearch();
     };
 
+    /* 상품 카테고리 onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.selectedCatId = null;
@@ -155,6 +168,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       const searchVal = (catPickerModal.search || '').toLowerCase();
       return (categories || []).filter(c => !searchVal || (c.categoryNm || '').toLowerCase().includes(searchVal));
     });
+
+    /* 상품 카테고리 onParentSelect */
     const onParentSelect = (c) => {
       const idx = catPickerModal.forRowIdx;
       if (idx != null && gridRows[idx]) {
@@ -163,26 +178,45 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       }
       catPickerModal.show = false;
     };
+
+    /* 상품 카테고리 openParentModal */
     const openParentModal = async (row) => {
       catPickerModal.forRowIdx = gridRows.indexOf(row);
       catPickerModal.search = '';
       catPickerModal.show = true;
       await handleSearchList(); // 팝업 오픈 시 최신 카테고리 목록 재조회
     };
+
+    /* 상품 카테고리 fnDepthColor */
     const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
+
+    /* 상품 카테고리 fnDepthBullet */
     const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
+
+    /* 상품 카테고리 fnStatusClass */
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+
+    /* 상품 카테고리 parentNm */
     const parentNm = (id) => (categories || []).find(c => c.categoryId === id)?.categoryNm || id;
 
+    /* 상품 카테고리 onCellChange */
     const onCellChange = (row) => { if (row._row_status !== 'N') row._row_status = 'U'; };
 
     const checkAll = ref(false);
+
+    /* 상품 카테고리 toggleCheckAll */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
 
     const dragRowIdx = ref(null);
     const dragoverRowIdx = ref(null);
+
+    /* 상품 카테고리 onRowDragStart */
     const onRowDragStart = (idx) => { dragRowIdx.value = idx; };
+
+    /* 상품 카테고리 onRowDragOver */
     const onRowDragOver = (idx) => { dragoverRowIdx.value = idx; };
+
+    /* 상품 카테고리 onRowDrop */
     const onRowDrop = () => {
       const from = dragRowIdx.value, to = dragoverRowIdx.value;
       dragRowIdx.value = null; dragoverRowIdx.value = null;
@@ -202,7 +236,11 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
     /* -- 행 편집 -- */
     const focusedIdx = ref(-1);
+
+    /* 상품 카테고리 setFocused */
     const setFocused = (idx) => { focusedIdx.value = idx; };
+
+    /* 상품 카테고리 addRow */
     const addRow = () => {
       const parentCategoryId = uiState.selectedCatId || null;
       const parent = parentCategoryId ? (categories || []).find(c => c.categoryId === parentCategoryId) : null;
@@ -222,6 +260,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       });
       pager.pageNo = 1;
     };
+
+    /* 상품 카테고리 addChildRow */
     const addChildRow = (row, idx) => {
       const categoryDepth = (row.categoryDepth || 1) + 1;
       gridRows.splice(idx + 1, 0, {
@@ -238,6 +278,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         _row_check: false,
       });
     };
+
+    /* 상품 카테고리 cancelRow */
     const cancelRow = (idx) => {
       const row = gridRows[idx];
       if (!row) return;
@@ -248,11 +290,15 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         row._row_status = null;
       }
     };
+
+    /* 상품 카테고리 cancelChecked */
     const cancelChecked = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (gridRows[i]._row_check) cancelRow(i);
       }
     };
+
+    /* 상품 카테고리 deleteRow */
     const deleteRow = async (idx) => {
       const row = gridRows[idx];
       if (!row) return;
@@ -272,6 +318,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* 상품 카테고리 deleteRows */
     const deleteRows = async () => {
       const idxs = [];
       gridRows.forEach((r, i) => { if (r._row_check) idxs.push(i); });
@@ -289,6 +337,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       }
       showToast?.('삭제되었습니다.', 'success');
     };
+
+    /* 상품 카테고리 저장 */
     const handleSave = async () => {
       const changed = gridRows.filter(r => r._row_status === 'N' || r._row_status === 'U');
       if (!changed.length) { showToast?.('변경된 내용이 없습니다.', 'info'); return; }

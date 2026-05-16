@@ -14,6 +14,7 @@ window.BarcodeWidget = {
     const cfShowBarcode = computed(() => ['barcode', 'barcode_qrcode'].includes(props.widget.widgetType));
     const showQr      = computed(() => ['qrcode',  'barcode_qrcode'].includes(props.widget.widgetType));
 
+    /* renderBarcode */
     const renderBarcode = () => {
       if (!barcodeEl.value || !window.JsBarcode) return;
       const w = props.widget;
@@ -41,6 +42,7 @@ window.BarcodeWidget = {
       }
     };
 
+    /* renderQrcode */
     const renderQrcode = () => {
       if (!qrcodeEl.value || !window.QRCode) return;
       const w = props.widget;
@@ -65,6 +67,7 @@ window.BarcodeWidget = {
       }
     };
 
+    /* render */
     const render = async () => {
       await nextTick();
       if (cfShowBarcode.value) renderBarcode();

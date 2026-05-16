@@ -14,7 +14,7 @@ window.OdCartMng = {
     /* ── 목록 상태 ── */
     const rows   = reactive([]);
     const pager  = reactive({ pageNo: 1, pageSize: 20, totalCount: 0, totalPage: 1 });
-    const search = reactive({ siteId: '', memberId: '', memberNm: '', searchTypes: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
+    const search = reactive({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
     const uiState = reactive({ loading: false, selectedIds: [] });
     const codes = reactive({ sites: [] });
 
@@ -22,7 +22,7 @@ window.OdCartMng = {
     const PICK_SIZE = 20;
     const memberPick = reactive({
       open: false,
-      searchTypes: '',
+      searchType: '',
       searchValue: '',
       rows: [],
       pageNo: 1,
@@ -31,9 +31,10 @@ window.OdCartMng = {
       loading: false,
     });
 
+    /* 장바구니 openMemberPick */
     const openMemberPick = () => {
       memberPick.open = true;
-      memberPick.searchTypes = '';
+      memberPick.searchType = '';
       memberPick.searchValue = '';
       memberPick.rows = [];
       memberPick.pageNo = 1;
@@ -41,15 +42,18 @@ window.OdCartMng = {
       memberPick.totalPage = 1;
       handlePickSearch();
     };
+
+    /* 장바구니 closeMemberPick */
     const closeMemberPick = () => { memberPick.open = false; };
 
+    /* 장바구니 handlePickSearch */
     const handlePickSearch = async () => {
       memberPick.loading = true;
       try {
-        const params = { pageNo: memberPick.pageNo, pageSize: PICK_SIZE, searchValue: memberPick.searchValue || undefined, searchTypes: memberPick.searchTypes || undefined };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_loginId,def_email';
+        const params = { pageNo: memberPick.pageNo, pageSize: PICK_SIZE, searchValue: memberPick.searchValue || undefined, searchType: memberPick.searchType || undefined };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_loginId,def_email';
         }
         const res = await boApiSvc.mbMember.getPage(
           params,
@@ -66,22 +70,35 @@ window.OdCartMng = {
       }
     };
 
+    /* 장바구니 onPickSearch */
     const onPickSearch = () => { memberPick.pageNo = 1; handlePickSearch(); };
+
+    /* 장바구니 onPickPage */
     const onPickPage   = (n) => { memberPick.pageNo = n; handlePickSearch(); };
 
+    /* 장바구니 onSelectMember */
     const onSelectMember = (m) => {
       search.memberId = m.memberId;
       search.memberNm = m.memberNm || m.loginId || m.memberId;
       closeMemberPick();
     };
 
+    /* 장바구니 onClearMember */
     const onClearMember = () => { search.memberId = ''; search.memberNm = ''; };
 
     /* ── 표시 함수 ── */
     const fnCheckedBadge = (v) => v === 'Y' ? 'badge badge-green' : 'badge badge-gray';
+
+    /* 장바구니 fnCheckedNm */
     const fnCheckedNm    = (v) => v === 'Y' ? '선택' : '미선택';
+
+    /* 장바구니 fnPrice */
     const fnPrice        = (v) => v != null ? Number(v).toLocaleString() + '원' : '-';
+
+    /* 장바구니 fnDate */
     const fnDate         = (v) => v ? String(v).substring(0, 16).replace('T', ' ') : '-';
+
+    /* 장바구니 fnAvatar */
     const fnAvatar       = (nm) => nm ? nm.charAt(0) : '?';
 
     /* ── 목록 조회 ── */
@@ -92,15 +109,15 @@ window.OdCartMng = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...(search.siteId    && { siteId:    search.siteId }),
           ...(search.memberId  && { memberId:  search.memberId }),
-          ...(search.searchTypes && { searchTypes: search.searchTypes }),
+          ...(search.searchType && { searchType: search.searchType }),
           ...(search.searchValue && { searchValue: search.searchValue }),
           ...(search.dateType    && { dateType:    search.dateType }),
           ...(search.dateStart   && { dateStart:   search.dateStart }),
           ...(search.dateEnd     && { dateEnd:     search.dateEnd }),
         };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_member_nm,def_member_id,def_login_id,def_prod_nm';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_member_nm,def_member_id,def_login_id,def_prod_nm';
         }
         const res = await boApiSvc.odCart.getPage(params, '장바구니관리', '조회');
         const d = res.data?.data || {};
@@ -114,6 +131,7 @@ window.OdCartMng = {
       }
     };
 
+    /* 장바구니 목록조회 */
     const onSearch    = () => {
       if ((search.dateStart || search.dateEnd) && !search.dateType) {
         showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
@@ -121,18 +139,24 @@ window.OdCartMng = {
       }
       pager.pageNo = 1; handleSearchList();
     };
+
+    /* 장바구니 onReset */
     const onReset     = () => {
       search.siteId = ''; search.memberId = ''; search.memberNm = '';
-      search.searchTypes = ''; search.searchValue = '';
+      search.searchType = ''; search.searchValue = '';
       search.dateType = 'reg_date'; search.dateStart = ''; search.dateEnd = '';
       onSearch();
     };
+
+    /* 장바구니 onPageChange */
     const onPageChange = (no) => { pager.pageNo = no; handleSearchList(); };
 
     /* ── 체크박스 ── */
     const onToggleAll = (e) => {
       uiState.selectedIds = e.target.checked ? rows.map(r => r.cartId) : [];
     };
+
+    /* 장바구니 onToggleRow */
     const onToggleRow = (id) => {
       const idx = uiState.selectedIds.indexOf(id);
       if (idx >= 0) uiState.selectedIds.splice(idx, 1);
@@ -152,6 +176,7 @@ window.OdCartMng = {
       }
     };
 
+    /* 장바구니 handleBulkDelete */
     const handleBulkDelete = async () => {
       if (!uiState.selectedIds.length) { showToast('삭제할 항목을 선택해주세요.', 'error'); return; }
       const ok = await showConfirm('일괄삭제', `선택한 ${uiState.selectedIds.length}건을 삭제하시겠습니까?`);
@@ -212,7 +237,7 @@ window.OdCartMng = {
       </div>
 
       <label class="search-label">검색</label>
-      <multi-check-select v-model="search.searchTypes" :options="[
+      <multi-check-select v-model="search.searchType" :options="[
           { value: 'def_member_nm', label: '회원명' },
           { value: 'def_member_id', label: '회원ID' },
           { value: 'def_prod_id',   label: '상품ID' },
@@ -360,7 +385,7 @@ window.OdCartMng = {
         <div style="display:flex;gap:8px;margin-top:12px;">
           <div style="position:relative;flex:1;">
             <multi-check-select
-              v-model="memberPick.searchTypes"
+              v-model="memberPick.searchType"
               :options="[
                 { value: 'def_nm',      label: '이름' },
                 { value: 'def_loginId', label: '아이디' },

@@ -21,21 +21,25 @@ public class PdhProdSkuStockHistController {
 
     private final PdhProdSkuStockHistService service;
 
+    /* 상품 SKU 재고 이력 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdhProdSkuStockHistDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
+    /* 상품 SKU 재고 이력 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdhProdSkuStockHistDto.Item>>> list(@Valid @ModelAttribute PdhProdSkuStockHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
     }
 
+    /* 상품 SKU 재고 이력 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PdhProdSkuStockHistDto.PageResponse>> page(@Valid @ModelAttribute PdhProdSkuStockHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 
+    /* 상품 SKU 재고 이력 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<PdhProdSkuStockHist>> create(@RequestBody PdhProdSkuStockHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));

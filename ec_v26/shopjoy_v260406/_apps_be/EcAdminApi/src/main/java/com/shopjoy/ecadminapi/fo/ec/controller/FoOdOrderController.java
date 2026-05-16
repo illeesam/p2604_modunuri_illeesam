@@ -21,21 +21,25 @@ public class FoOdOrderController {
 
     private final FoOdOrderService foOdOrderService;
 
+    /* myOrders */
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdOrderDto.Item>>> myOrders(@Valid @ModelAttribute OdOrderDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foOdOrderService.getMyOrders(req)));
     }
 
+    /* myOrderPage */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<OdOrderDto.PageResponse>> myOrderPage(@Valid @ModelAttribute OdOrderDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foOdOrderService.getMyOrderPage(req)));
     }
 
+    /* 키조회 */
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OdOrderDto.Item>> getById(@PathVariable("orderId") String orderId) {
         return ResponseEntity.ok(ApiResponse.ok(foOdOrderService.getById(orderId)));
     }
 
+    /* placeOrder */
     @PostMapping
     public ResponseEntity<ApiResponse<OdOrder>> placeOrder(@RequestBody OdOrder entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(foOdOrderService.placeOrder(entity)));

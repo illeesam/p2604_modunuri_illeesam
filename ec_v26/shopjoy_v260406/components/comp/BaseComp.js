@@ -36,6 +36,7 @@ window.BaseAttachGrp = {
     /* 업로드된 파일 목록 (로컬 상태) */
     const files = reactive([]);
 
+    /* loadFiles */
     const loadFiles = async (attachGrpId) => {
       if (!attachGrpId) return;
       uiState.loading = true;
@@ -71,6 +72,7 @@ window.BaseAttachGrp = {
 
     const fileInputRef = ref(null);
 
+    /* openPicker */
     const openPicker = () => {
       if (files.length >= props.maxCount) {
         props.showToast(`최대 ${props.maxCount}개까지 첨부 가능합니다.`, 'warning');
@@ -79,6 +81,7 @@ window.BaseAttachGrp = {
       fileInputRef.value && fileInputRef.value.click();
     };
 
+    /* onFileChange */
     const onFileChange = async (e) => {
       const selectedFiles = Array.from(e.target.files || []);
       e.target.value = '';
@@ -161,6 +164,7 @@ window.BaseAttachGrp = {
       }
     };
 
+    /* removeFile */
     const removeFile = async (attachId) => {
       try {
         await window.coApiSvc.cmAttach.deleteFile(attachId);
@@ -174,6 +178,7 @@ window.BaseAttachGrp = {
       if (files.length === 0) emit('update:modelValue', null);
     };
 
+    /* fnFmtSize */
     const fnFmtSize = (bytes) => {
       if (!bytes) return '0 B';
       if (bytes < 1024) return bytes + ' B';
@@ -181,21 +186,30 @@ window.BaseAttachGrp = {
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
 
+    /* fnExtIcon */
     const fnExtIcon = (ext) => {
       const map = { pdf: '📄', xlsx: '📊', xls: '📊', docx: '📝', doc: '📝', pptx: '📑', ppt: '📑', zip: '🗜️', jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', webp: '🖼️', svg: '🖼️', mp4: '🎬', mov: '🎬', mp3: '🎵' };
       return map[ext?.toLowerCase()] || '📎';
     };
 
     const IMAGE_EXTS = new Set(['jpg','jpeg','png','gif','webp','bmp','svg']);
+
+    /* fnIsImage */
     const fnIsImage = (ext) => IMAGE_EXTS.has(ext?.toLowerCase());
 
     /* ── 팝업 모달 ── */
     const thumbState = reactive({ show: false, url: '', nm: '' });
+
+    /* fnOpenThumb */
     const fnOpenThumb = (f) => { thumbState.url = f.cdnImgUrl || f.attachUrl; thumbState.nm = f.fileNm; thumbState.show = true; };
+
+    /* fnCloseThumb */
     const fnCloseThumb = () => { thumbState.show = false; };
 
     /* ── hover 미리보기 레이어 ── */
     const hoverState = reactive({ show: false, url: '', x: 0, y: 0 });
+
+    /* fnShowHover */
     const fnShowHover = (e, url) => {
       if (!url) return;
       const r = e.currentTarget.getBoundingClientRect();
@@ -204,12 +218,20 @@ window.BaseAttachGrp = {
       hoverState.url = url;
       hoverState.show = true;
     };
+
+    /* fnHideHover */
     const fnHideHover = () => { hoverState.show = false; };
 
     /* ── drag & drop 정렬 ── */
     const dragState = reactive({ fromIdx: null });
+
+    /* onDragStart */
     const onDragStart = (idx) => { dragState.fromIdx = idx; };
+
+    /* onDragOver */
     const onDragOver  = (e) => { e.preventDefault(); };
+
+    /* onDrop */
     const onDrop = async (toIdx) => {
       const from = dragState.fromIdx;
       dragState.fromIdx = null;
@@ -355,6 +377,7 @@ window.BaseAttachOne = {
     const file     = reactive({ attachId: null, cdnImgUrl: '', thumbCdnUrl: '', fileNm: '' });
     const inputRef = ref(null);
 
+    /* loadFile */
     const loadFile = async (grpId) => {
       if (!grpId) return;
       uiState.loading = true;
@@ -371,8 +394,10 @@ window.BaseAttachOne = {
     onMounted(() => { if (props.modelValue) loadFile(props.modelValue); });
     watch(() => props.modelValue, v => { if (v) loadFile(v); });
 
+    /* openPicker */
     const openPicker = () => { if (!uiState.uploading) inputRef.value?.click(); };
 
+    /* onFileChange */
     const onFileChange = async (e) => {
       const f = e.target.files?.[0]; e.target.value = '';
       if (!f) return;
@@ -411,6 +436,7 @@ window.BaseAttachOne = {
       } finally { uiState.uploading = false; }
     };
 
+    /* removeFile */
     const removeFile = async () => {
       if (!file.attachId) return;
       try {

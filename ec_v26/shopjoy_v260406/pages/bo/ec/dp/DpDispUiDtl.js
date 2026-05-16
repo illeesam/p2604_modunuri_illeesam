@@ -10,15 +10,16 @@ window.DpDispUiDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const codes = reactive({ disp_ui_types: [], use_yn: [] });
     const displays = reactive([]);
     const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickSearchValue: '' });
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_ui_types = codeStore.sgGetGrpCodes('DISP_UI_TYPE');
@@ -49,15 +50,25 @@ window.DpDispUiDtl = {
     };
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, target: null });
+
+    /* openPathPick */
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
+
+    /* closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
+
+    /* onPathPicked */
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
+
+    /* pathLabel */
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.dtlId);
 
     /* -- 기본 기간: 오늘 ~ +10년 -- */
     const _today = new Date();
+
+    /* _pad */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
@@ -76,6 +87,7 @@ window.DpDispUiDtl = {
       codeLabel: yup.string().required('UI명을 입력해주세요.'),
     });
 
+    /* handleInitForm */
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
         /* displays가 아직 비어 있을 수 있으므로 handleLoadData 완료 후 재시도 */
@@ -143,13 +155,19 @@ window.DpDispUiDtl = {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       uiState.previewPaneWidth = (info?.width || 480) + 40;
     });
+
+    /* onSplitDrag */
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
       const startW = uiState.previewPaneWidth;
+
+      /* onMove */
       const onMove = (ev) => {
         uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
+
+      /* onUp */
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
@@ -168,14 +186,22 @@ window.DpDispUiDtl = {
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
+
+    /* openPick */
     const openPick  = () => { uiState.pickOpen = true; uiState.pickSearchValue = ''; };
+
+    /* onAreaPicked */
     const onAreaPicked = (a) => {
       if (!form.codeValue) { showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       a.uiCode = form.codeValue;
       showToast && showToast(`[${a.codeLabel}] 영역을 추가했습니다.`, 'info');
       uiState.pickOpen = false;
     };
+
+    /* closePick */
     const closePick = () => { uiState.pickOpen = false; };
+
+    /* moveArea */
     const moveArea = (idx, dir) => {
       const arr = cfRelatedAreas.value;
       const target = idx + dir;
@@ -185,6 +211,8 @@ window.DpDispUiDtl = {
       const tmp = a.sortOrd; a.sortOrd = b.sortOrd; b.sortOrd = tmp;
       showToast && showToast(`[${a.codeLabel}] 순서가 ${dir < 0 ? '위로' : '아래로'} 이동되었습니다.`, 'info');
     };
+
+    /* removeArea */
     const removeArea = (a) => {
       showConfirm && showConfirm({
         title: 'UI에서 제거',
@@ -198,11 +226,15 @@ window.DpDispUiDtl = {
 
     /* -- 공개 대상 (UI-Area 매핑) -- */
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
+
+    /* hasAreaVisibility */
     const hasAreaVisibility = (code) => {
       if (!cfActiveArea.value) return false;
       if (!cfActiveArea.value.visibilityTargets) cfActiveArea.value.visibilityTargets = '^PUBLIC^';
       return window.visibilityUtil.has(cfActiveArea.value.visibilityTargets, code);
     };
+
+    /* toggleAreaVisibility */
     const toggleAreaVisibility = (code) => {
       if (!cfActiveArea.value) return;
       if (!cfActiveArea.value.visibilityTargets) cfActiveArea.value.visibilityTargets = '^PUBLIC^';
@@ -223,11 +255,15 @@ window.DpDispUiDtl = {
       { code: 'DEV', label: 'DEV' },
       { code: 'TEST', label: 'TEST' },
     ];
+
+    /* hasUiDispEnv */
     const hasUiDispEnv = (code) => {
       if (!cfActiveArea.value) return false;
       if (!cfActiveArea.value.uiDispEnv) cfActiveArea.value.uiDispEnv = '^PROD^';
       return cfActiveArea.value.uiDispEnv.includes('^' + code + '^');
     };
+
+    /* toggleUiDispEnv */
     const toggleUiDispEnv = (code) => {
       if (!cfActiveArea.value) return;
       if (!cfActiveArea.value.uiDispEnv) cfActiveArea.value.uiDispEnv = '^PROD^';
@@ -242,6 +278,8 @@ window.DpDispUiDtl = {
       if (!form.codeValue) return showToast && showToast('UI코드를 먼저 입력하세요.', 'error');
       window.open(`${window.pageUrl('index.html')}`, '_blank', 'width=1280,height=900');
     };
+
+    /* openAreaPreview */
     const openAreaPreview = (scope) => {
       if (!cfActiveArea.value) return showToast && showToast('미리볼 영역을 선택하세요.', 'error');
       const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
@@ -249,6 +287,7 @@ window.DpDispUiDtl = {
         '_blank', 'width=1280,height=900');
     };
 
+    /* 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       form.codeValue = (form.codeValue || '').toUpperCase();
@@ -280,6 +319,8 @@ window.DpDispUiDtl = {
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
+
+    /* doCancel */
     const doCancel = () => { props.navigate('dpDispUiMng'); };
 
     const expanded = Vue.toRef(uiState, 'expanded');

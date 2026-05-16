@@ -12,10 +12,10 @@ window.PmVoucherDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmVoucherDtlState.tab || 'info', tabMode2: window._pmVoucherDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, snsMsg: ''});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
@@ -44,8 +44,11 @@ window.PmVoucherDtl = {
 watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._pmVoucherDtlState.tabMode = v; });
+
+    /* 바우처(상품권) showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+    /* 바우처(상품권) fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
@@ -63,6 +66,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     const errors = reactive({});
 
     const _today = new Date();
+
+    /* 바우처(상품권) _pad */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END = `${_today.getFullYear()+1}-12-31`;
@@ -110,6 +115,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
         } catch(e) {}
       }
     };
+
+    /* 바우처(상품권) renderQRCode */
     const renderQRCode = () => {
       if (uiState.qrcodeContainer && typeof QRCode !== 'undefined') {
         try {
@@ -124,6 +131,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
         } catch(e) {}
       }
     };
+
+    /* 바우처(상품권) onTabChange */
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
       if (newTab === 'preview') {
@@ -133,6 +142,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
         });
       }
     };
+
+    /* 바우처(상품권) onPreviewTabChange */
     const onPreviewTabChange = (pt) => {
       uiState.previewTab = pt;
     };
@@ -142,6 +153,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
+
+    /* 바우처(상품권) selectVendor */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -154,6 +167,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       snsModal.show = true;
       snsModal.channel = ch;
     };
+
+    /* 바우처(상품권) sendSns */
     const sendSns = async () => {
       const ok = await showConfirm('SNS전송', `${form.voucherNm}을 ${snsModal.channel}로 전송하시겠습니까?`);
       if (!ok) return;
@@ -181,10 +196,13 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       return true;
     });
 
+    /* 바우처(상품권) _afterApiOk */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
+
+    /* 바우처(상품권) _afterApiErr */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

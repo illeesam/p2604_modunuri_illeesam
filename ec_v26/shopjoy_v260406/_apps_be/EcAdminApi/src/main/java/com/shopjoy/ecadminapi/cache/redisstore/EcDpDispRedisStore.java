@@ -32,6 +32,7 @@ public class EcDpDispRedisStore {
 
     // ── 저장 ──────────────────────────────────────────────────────
 
+    /* saveDetail */
     public void saveDetail(String dispId, Map<String, Object> dispDetail) {
         redis.set(CacheKey.EC_DP_DISP_DTL + dispId, dispDetail,
                 props.getTtl().getEcDpDispSeconds(), target());
@@ -47,6 +48,7 @@ public class EcDpDispRedisStore {
 
     // ── 조회 ──────────────────────────────────────────────────────
 
+    /* getDetail */
     @SuppressWarnings("unchecked")
     public Optional<Map<String, Object>> getDetail(String dispId) {
         return redis.get(CacheKey.EC_DP_DISP_DTL + dispId, Map.class, target())
@@ -62,6 +64,7 @@ public class EcDpDispRedisStore {
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
+    /* evictDetail */
     public void evictDetail(String dispId) {
         redis.delete(CacheKey.EC_DP_DISP_DTL + dispId, target());
     }

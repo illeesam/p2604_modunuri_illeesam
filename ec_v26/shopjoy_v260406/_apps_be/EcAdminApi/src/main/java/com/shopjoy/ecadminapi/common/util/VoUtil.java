@@ -425,7 +425,7 @@ public class VoUtil {
      *       조건이 DTO 에 정의되지 않은 필드를 참조해도 OGNL 이 missing key 를 null 로 안전 처리한다.
      *
      * 특징:
-     * - source 의 부모 클래스 필드도 모두 포함 (BaseRequest 의 searchTypes/searchValue 등)
+     * - source 의 부모 클래스 필드도 모두 포함 (BaseRequest 의 searchType/searchValue 등)
      * - null 값도 그대로 Map 에 포함 (MyBatis <if> 평가에 필요)
      * - 타입 정보 보존 (Integer 는 Integer, String 은 String) — JDBC 타입 추론 유지
      *

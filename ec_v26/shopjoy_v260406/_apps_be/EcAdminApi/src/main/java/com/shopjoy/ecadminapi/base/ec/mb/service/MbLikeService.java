@@ -27,6 +27,7 @@ public class MbLikeService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 좋아요(찜) 키조회 */
     public MbLikeDto.Item getById(String id) {
         MbLikeDto.Item dto = mbLikeRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class MbLikeService {
         return mbLikeRepository.selectById(id).orElse(null);
     }
 
+    /* 좋아요(찜) 상세조회 */
     public MbLike findById(String id) {
         return mbLikeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class MbLikeService {
         return mbLikeRepository.findById(id).orElse(null);
     }
 
+    /* 좋아요(찜) 키검증 */
     public boolean existsById(String id) {
         return mbLikeRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class MbLikeService {
         return true;
     }
 
+    /* 좋아요(찜) 목록조회 */
     public List<MbLikeDto.Item> getList(MbLikeDto.Request req) {
         return mbLikeRepository.selectList(req);
     }
 
+    /* 좋아요(찜) 페이지조회 */
     public MbLikeDto.PageResponse getPageData(MbLikeDto.Request req) {
         PageHelper.addPaging(req);
         return mbLikeRepository.selectPageList(req);
     }
 
+    /* 좋아요(찜) 등록 */
     @Transactional
     public MbLike create(MbLike body) {
         body.setLikeId(CmUtil.generateId("mb_like"));
@@ -80,6 +86,7 @@ public class MbLikeService {
         return saved;
     }
 
+    /* 좋아요(찜) 저장 */
     @Transactional
     public MbLike save(MbLike entity) {
         if (!existsById(entity.getLikeId()))
@@ -92,6 +99,7 @@ public class MbLikeService {
         return saved;
     }
 
+    /* 좋아요(찜) 수정 */
     @Transactional
     public MbLike update(String id, MbLike body) {
         MbLike entity = findById(id);
@@ -104,6 +112,7 @@ public class MbLikeService {
         return saved;
     }
 
+    /* 좋아요(찜) 수정 */
     @Transactional
     public MbLike updateSelective(MbLike entity) {
         if (entity.getLikeId() == null) throw new CmBizException("likeId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class MbLikeService {
         return entity;
     }
 
+    /* 좋아요(찜) 삭제 */
     @Transactional
     public void delete(String id) {
         MbLike entity = findById(id);
@@ -125,6 +135,7 @@ public class MbLikeService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 좋아요(찜) 목록저장 */
     @Transactional
     public void saveList(List<MbLike> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -19,8 +19,11 @@ public class BoPdProdService {
 
     private final PdProdService pdProdService;
 
+    /* 키조회 */
     public PdProdDto.Item getById(String id) { return pdProdService.getById(id); }
+    /* 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) { return pdProdService.getList(req); }
+    /* 페이지조회 */
     public PdProdDto.PageResponse getPageData(PdProdDto.Request req) { return pdProdService.getPageData(req); }
 
     @Transactional public PdProd create(PdProd body) { return pdProdService.create(body); }

@@ -19,8 +19,11 @@ public class BoPmSaveService {
 
     private final PmSaveService pmSaveService;
 
+    /* 키조회 */
     public PmSaveDto.Item getById(String id) { return pmSaveService.getById(id); }
+    /* 목록조회 */
     public List<PmSaveDto.Item> getList(PmSaveDto.Request req) { return pmSaveService.getList(req); }
+    /* 페이지조회 */
     public PmSaveDto.PageResponse getPageData(PmSaveDto.Request req) { return pmSaveService.getPageData(req); }
 
     @Transactional public PmSave create(PmSave body) { return pmSaveService.create(body); }

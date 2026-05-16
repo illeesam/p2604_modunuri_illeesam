@@ -28,8 +28,11 @@ public class BoSyAlarmService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public SyAlarmDto.Item getById(String id) { return syAlarmService.getById(id); }
+    /* 목록조회 */
     public List<SyAlarmDto.Item> getList(SyAlarmDto.Request req) { return syAlarmService.getList(req); }
+    /* 페이지조회 */
     public SyAlarmDto.PageResponse getPageData(SyAlarmDto.Request req) { return syAlarmService.getPageData(req); }
 
     @Transactional public SyAlarm create(SyAlarm body) { return syAlarmService.create(body); }

@@ -22,42 +22,50 @@ public class BoSyVendorUserRoleController {
 
     private final BoSyVendorUserRoleService boSyVendorUserRoleService;
 
+    /* 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendorUserRoleDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserRoleService.getById(id)));
     }
 
+    /* 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyVendorUserRoleDto.Item>>> list(@Valid @ModelAttribute SyVendorUserRoleDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserRoleService.getList(req)));
     }
 
+    /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<SyVendorUserRoleDto.PageResponse>> page(@Valid @ModelAttribute SyVendorUserRoleDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserRoleService.getPageData(req)));
     }
 
+    /* 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<SyVendorUserRole>> create(@RequestBody SyVendorUserRole body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyVendorUserRoleService.create(body)));
     }
 
+    /* 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendorUserRole>> update(@PathVariable("id") String id, @RequestBody SyVendorUserRole body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserRoleService.update(id, body)));
     }
 
+    /* upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendorUserRole>> upsert(@PathVariable("id") String id, @RequestBody SyVendorUserRole body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserRoleService.update(id, body)));
     }
 
+    /* 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boSyVendorUserRoleService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyVendorUserRole> rows) {
         boSyVendorUserRoleService.saveList(rows);

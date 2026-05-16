@@ -27,6 +27,7 @@ public class CmBlogService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 게시물 키조회 */
     public CmBlogDto.Item getById(String id) {
         CmBlogDto.Item dto = cmBlogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmBlogService {
         return cmBlogRepository.selectById(id).orElse(null);
     }
 
+    /* 게시물 상세조회 */
     public CmBlog findById(String id) {
         return cmBlogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmBlogService {
         return cmBlogRepository.findById(id).orElse(null);
     }
 
+    /* 게시물 키검증 */
     public boolean existsById(String id) {
         return cmBlogRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmBlogService {
         return true;
     }
 
+    /* 게시물 목록조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {
         return cmBlogRepository.selectList(req);
     }
 
+    /* 게시물 페이지조회 */
     public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogRepository.selectPageList(req);
     }
 
+    /* 게시물 등록 */
     @Transactional
     public CmBlog create(CmBlog body) {
         body.setBlogId(CmUtil.generateId("cm_blog"));
@@ -80,6 +86,7 @@ public class CmBlogService {
         return saved;
     }
 
+    /* 게시물 저장 */
     @Transactional
     public CmBlog save(CmBlog entity) {
         if (!existsById(entity.getBlogId()))
@@ -92,6 +99,7 @@ public class CmBlogService {
         return saved;
     }
 
+    /* 게시물 수정 */
     @Transactional
     public CmBlog update(String id, CmBlog body) {
         CmBlog entity = findById(id);
@@ -104,6 +112,7 @@ public class CmBlogService {
         return saved;
     }
 
+    /* 게시물 수정 */
     @Transactional
     public CmBlog updateSelective(CmBlog entity) {
         if (entity.getBlogId() == null) throw new CmBizException("blogId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmBlogService {
         return entity;
     }
 
+    /* 게시물 삭제 */
     @Transactional
     public void delete(String id) {
         CmBlog entity = findById(id);
@@ -125,6 +135,7 @@ public class CmBlogService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 게시물 목록저장 */
     @Transactional
     public void saveList(List<CmBlog> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

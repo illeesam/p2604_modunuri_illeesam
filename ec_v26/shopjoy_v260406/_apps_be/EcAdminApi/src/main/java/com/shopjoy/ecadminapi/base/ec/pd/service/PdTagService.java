@@ -27,6 +27,7 @@ public class PdTagService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 태그 키조회 */
     public PdTagDto.Item getById(String id) {
         PdTagDto.Item dto = pdTagRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdTagService {
         return pdTagRepository.selectById(id).orElse(null);
     }
 
+    /* 태그 상세조회 */
     public PdTag findById(String id) {
         return pdTagRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdTagService {
         return pdTagRepository.findById(id).orElse(null);
     }
 
+    /* 태그 키검증 */
     public boolean existsById(String id) {
         return pdTagRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdTagService {
         return true;
     }
 
+    /* 태그 목록조회 */
     public List<PdTagDto.Item> getList(PdTagDto.Request req) {
         return pdTagRepository.selectList(req);
     }
 
+    /* 태그 페이지조회 */
     public PdTagDto.PageResponse getPageData(PdTagDto.Request req) {
         PageHelper.addPaging(req);
         return pdTagRepository.selectPageList(req);
     }
 
+    /* 태그 등록 */
     @Transactional
     public PdTag create(PdTag body) {
         body.setTagId(CmUtil.generateId("pd_tag"));
@@ -80,6 +86,7 @@ public class PdTagService {
         return saved;
     }
 
+    /* 태그 저장 */
     @Transactional
     public PdTag save(PdTag entity) {
         if (!existsById(entity.getTagId()))
@@ -92,6 +99,7 @@ public class PdTagService {
         return saved;
     }
 
+    /* 태그 수정 */
     @Transactional
     public PdTag update(String id, PdTag body) {
         PdTag entity = findById(id);
@@ -104,6 +112,7 @@ public class PdTagService {
         return saved;
     }
 
+    /* 태그 수정 */
     @Transactional
     public PdTag updateSelective(PdTag entity) {
         if (entity.getTagId() == null) throw new CmBizException("tagId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdTagService {
         return entity;
     }
 
+    /* 태그 삭제 */
     @Transactional
     public void delete(String id) {
         PdTag entity = findById(id);
@@ -125,6 +135,7 @@ public class PdTagService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 태그 목록저장 */
     @Transactional
     public void saveList(List<PdTag> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

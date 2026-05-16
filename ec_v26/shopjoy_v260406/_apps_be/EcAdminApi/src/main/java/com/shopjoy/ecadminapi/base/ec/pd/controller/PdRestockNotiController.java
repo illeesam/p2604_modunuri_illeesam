@@ -18,44 +18,52 @@ public class PdRestockNotiController {
 
     private final PdRestockNotiService service;
 
+    /* 재입고 알림 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdRestockNotiDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
+    /* 재입고 알림 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdRestockNotiDto.Item>>> list(@Valid @ModelAttribute PdRestockNotiDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getList(req)));
     }
 
+    /* 재입고 알림 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PdRestockNotiDto.PageResponse>> page(@Valid @ModelAttribute PdRestockNotiDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 
+    /* 재입고 알림 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<PdRestockNoti>> create(@RequestBody PdRestockNoti entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
+    /* 재입고 알림 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdRestockNoti>> save(@PathVariable("id") String id, @RequestBody PdRestockNoti entity) {
         entity.setRestockNotiId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
+    /* 재입고 알림 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<PdRestockNoti>> updateSelective(@PathVariable("id") String id, @RequestBody PdRestockNoti entity) {
         entity.setRestockNotiId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 
+    /* 재입고 알림 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /* 재입고 알림 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdRestockNoti> rows) {
         service.saveList(rows);

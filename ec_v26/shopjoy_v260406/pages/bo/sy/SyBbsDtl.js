@@ -11,14 +11,15 @@ window.SyBbsDtl = {
   },
   setup(props) {
     const { reactive, computed, onMounted, ref, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const uiState = reactive({ loading: false, showBbmDetail: false, error: null, isPageCodeLoad: false, selectedBbm: null, showBbmModal: false });
     const codes = reactive({ bbs_post_statuses: [] });
 
+    /* 게시판 게시물 fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -54,6 +55,7 @@ window.SyBbsDtl = {
     /* ── 게시판 선택 팝업 ── */
     const showBbmModal  = ref(false);
 
+    /* 게시판 게시물 onBbmSelect */
     const onBbmSelect = (b) => {
       uiState.showBbmModal = false;
       if (uiState.selectedBbm && uiState.selectedBbm.bbmId === b.bbmId) return;
@@ -73,6 +75,7 @@ window.SyBbsDtl = {
 
     /* ── 초기화 ── */
 
+    /* 게시판 게시물 상세조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;

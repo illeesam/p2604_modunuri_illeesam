@@ -6,21 +6,25 @@ window.OdClaimMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const claims = reactive([]);
     const members = reactive([]);
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    /* 클레임(취소/반품/교환) getSortParam */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
+
+    /* 클레임(취소/반품/교환) onSort */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -29,6 +33,8 @@ window.OdClaimMng = {
       pager.pageNo = 1;
       handleSearchData();
     };
+
+    /* 클레임(취소/반품/교환) sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
@@ -36,9 +42,9 @@ window.OdClaimMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_claim_id,def_order_id,def_member_nm,def_prod_nm';
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_claim_id,def_order_id,def_member_nm,def_prod_nm';
         }
         const [claimsRes, membersRes] = await Promise.all([
           boApiSvc.odClaim.getPage(params, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
@@ -65,11 +71,12 @@ window.OdClaimMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchTypes: '', searchValue: '', memberId: '', memberNm: '', type: '', status: '', dateType: 'request_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', memberId: '', memberNm: '', type: '', status: '', dateType: 'request_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
 
+    /* 클레임(취소/반품/교환) handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -80,6 +87,8 @@ window.OdClaimMng = {
     };
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 클레임(취소/반품/교환) fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
@@ -101,10 +110,20 @@ window.OdClaimMng = {
 
     /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* 클레임(취소/반품/교환) loadView */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+
+    /* 클레임(취소/반품/교환) 상세조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 클레임(취소/반품/교환) openNew */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+
+    /* 클레임(취소/반품/교환) closeDetail */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
+
+    /* 클레임(취소/반품/교환) inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'odClaimMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -114,14 +133,20 @@ window.OdClaimMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
+    /* 클레임(취소/반품/교환) fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* 클레임(취소/반품/교환) fnTypeBadge */
     const fnTypeBadge = t => ({ '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' }[t] || 'badge-gray');
+
+    /* 클레임(취소/반품/교환) fnStatusBadge */
     const fnStatusBadge = s => ({
       '신청': 'badge-orange', '승인': 'badge-blue', '수거중': 'badge-blue',
       '처리중': 'badge-purple', '환불대기': 'badge-orange',
       '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
     }[s] || 'badge-gray');
+
+    /* 클레임(취소/반품/교환) 목록조회 */
     const onSearch = async () => {
       if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
         props.showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
@@ -130,6 +155,8 @@ window.OdClaimMng = {
       pager.pageNo = 1;
       await handleSearchData('DEFAULT');
     };
+
+    /* 클레임(취소/반품/교환) onReset */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -137,9 +164,13 @@ window.OdClaimMng = {
       await handleSearchData();
     };
 
+    /* 클레임(취소/반품/교환) setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
+
+    /* 클레임(취소/반품/교환) onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
+    /* 클레임(취소/반품/교환) 삭제 */
     const handleDelete = async (c) => {
       const ok = await showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -159,13 +190,20 @@ window.OdClaimMng = {
       }
     };
 
+    /* 클레임(취소/반품/교환) exportExcel */
     const exportExcel = () => coUtil.exportCsv(claims, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
+
+    /* 클레임(취소/반품/교환) toggleCheck */
     const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
+
+    /* 클레임(취소/반품/교환) isChecked */
     const isChecked = (id) => checked.has(id);
     const cfAllChecked = computed(() => claims.length > 0 && claims.every(c => checked.has(c.claimId)));
+
+    /* 클레임(취소/반품/교환) toggleCheckAll */
     const toggleCheckAll = () => {
       const s = new Set(checked);
       if (cfAllChecked.value) claims.forEach(c => s.delete(c.claimId));
@@ -175,6 +213,8 @@ window.OdClaimMng = {
     const claimStatusCodes = (codes.claim_statuses || [])
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
+
+    /* 클레임(취소/반품/교환) claimStatusForType */
     const claimStatusForType = type => claimStatusCodes
       .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + type + '^'))
       .map(c => c.codeLabel);
@@ -187,11 +227,15 @@ window.OdClaimMng = {
       apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
       reqTarget:'추가결재', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
     });
+
+    /* 클레임(취소/반품/교환) onApprToChange */
     const onApprToChange = () => {
       const m = (members).find(x => String(x.userId) === String(bulkForm.apprToUserId));
       if (m) { bulkForm.apprToNm = m.userNm || ''; bulkForm.apprToPhone = m.phone || ''; bulkForm.apprToEmail = m.email || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
+
+    /* 클레임(취소/반품/교환) onReqTargetChange */
     const onReqTargetChange = () => {
       const ids = Array.from(checked);
       const first = window.safeArrayUtils.safeFind(Array.isArray(claims) ? claims : [], c => ids.includes(c.claimId));
@@ -213,6 +257,8 @@ window.OdClaimMng = {
       window.safeArrayUtils.safeForEach(claims, c => { if (checked.has(c.claimId) && r[c.type]) r[c.type].push(c.claimId); });
       return r;
     });
+
+    /* 클레임(취소/반품/교환) openBulk */
     const openBulk = () => {
       if (!checked.size) { showToast('항목을 선택하세요.', 'error'); return; }
       uiState.bulkTab = 'status';
@@ -246,6 +292,8 @@ window.OdClaimMng = {
       if (!rows.length) return '';
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
+
+    /* 클레임(취소/반품/교환) saveBulk */
     const saveBulk = async () => {
       if (!checked.size) { showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
       if (uiState.bulkTab === 'status') {
@@ -335,16 +383,22 @@ window.OdClaimMng = {
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
 
     /* ── 회원 선택 팝업 ── */
-    const memberPick = reactive({ open: false, searchTypes: '', searchValue: '', rows: [], pageNo: 1, total: 0, totalPage: 1, loading: false });
-    const openMemberPick = () => { memberPick.open = true; memberPick.searchTypes = ''; memberPick.searchValue = ''; memberPick.pageNo = 1; handlePickSearch(); };
+    const memberPick = reactive({ open: false, searchType: '', searchValue: '', rows: [], pageNo: 1, total: 0, totalPage: 1, loading: false });
+
+    /* 클레임(취소/반품/교환) openMemberPick */
+    const openMemberPick = () => { memberPick.open = true; memberPick.searchType = ''; memberPick.searchValue = ''; memberPick.pageNo = 1; handlePickSearch(); };
+
+    /* 클레임(취소/반품/교환) closeMemberPick */
     const closeMemberPick = () => { memberPick.open = false; };
+
+    /* 클레임(취소/반품/교환) handlePickSearch */
     const handlePickSearch = async () => {
       memberPick.loading = true;
       try {
-        const params = { pageNo: memberPick.pageNo, pageSize: 20, searchValue: memberPick.searchValue || undefined, searchTypes: memberPick.searchTypes || undefined };
-        // searchValue 가 있는데 searchTypes 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchTypes) {
-          params.searchTypes = 'def_nm,def_loginId';
+        const params = { pageNo: memberPick.pageNo, pageSize: 20, searchValue: memberPick.searchValue || undefined, searchType: memberPick.searchType || undefined };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'def_nm,def_loginId';
         }
         const res = await boApiSvc.mbMember.getPage(params, '클레임관리', '회원검색');
         const d = res.data?.data || {};
@@ -354,9 +408,17 @@ window.OdClaimMng = {
       } catch (_) { showToast('회원 조회 오류', 'error'); }
       finally { memberPick.loading = false; }
     };
+
+    /* 클레임(취소/반품/교환) onPickSearch */
     const onPickSearch = () => { memberPick.pageNo = 1; handlePickSearch(); };
+
+    /* 클레임(취소/반품/교환) onPickPage */
     const onPickPage = n => { memberPick.pageNo = n; handlePickSearch(); };
+
+    /* 클레임(취소/반품/교환) onSelectMember */
     const onSelectMember = m => { searchParam.memberId = m.memberId; searchParam.memberNm = m.memberNm || m.loginId || m.memberId; closeMemberPick(); };
+
+    /* 클레임(취소/반품/교환) onClearMember */
     const onClearMember = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
 
     // -- return ---------------------------------------------------------------
@@ -368,7 +430,7 @@ window.OdClaimMng = {
   <div class="page-title">클레임관리</div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select v-model="searchParam.searchTypes" :options="[
+      <multi-check-select v-model="searchParam.searchType" :options="[
           { value: 'def_claim_id',    label: '클레임ID' },
           { value: 'def_order_id',    label: '주문ID' },
           { value: 'def_member_nm',   label: '회원명' },
@@ -589,7 +651,7 @@ window.OdClaimMng = {
           <div style="position:relative;flex:1;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;">🔍</span>
             <multi-check-select
-              v-model="memberPick.searchTypes"
+              v-model="memberPick.searchType"
               :options="[
                 { value: 'def_nm',      label: '이름' },
                 { value: 'def_loginId', label: '아이디' },

@@ -6,15 +6,16 @@ window.StStatusMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchValue: '', orderSearchValue: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: ''});;
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
 
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -44,6 +45,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* -- 공통 날짜 필터 -- */
             const dateEnd   = ref('');
+
+    /* onDateRangeChange */
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
         const r = boUtil.getDateRange(uiState.dateRange);
@@ -61,6 +64,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const couponList = reactive([]);
     const cacheDataList = reactive([]);
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resC, resV, resCp, resCa] = await Promise.all([
@@ -85,6 +89,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const COMM_RATE = 0.10; // 수수료율 10%
 
+    /* inRange */
     const inRange = (dateStr) => {
       const d = String(dateStr || '').slice(0, 10);
       if (uiState.dateStart && d < uiState.dateStart) return false;
@@ -264,37 +269,67 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* -- 공통 유틸 -- */
     const fmt  = n => Number(n || 0).toLocaleString();
+
+    /* fmtW */
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
+
+    /* fnStatusBadge */
     const fnStatusBadge = s => ({
       '완료':'badge-green', '정산예정':'badge-blue', '마감':'badge-gray',
       '취소완료':'badge-red', '환불완료':'badge-red', '교환완료':'badge-purple',
       '활성':'badge-green', '만료':'badge-gray', '진행중':'badge-blue',
     }[s] || 'badge-gray');
+
+    /* fnTypeBadge */
     const fnTypeBadge = t => ({ '취소':'badge-red', '반품':'badge-orange', '교환':'badge-purple' }[t] || 'badge-gray');
 
+    /* 목록조회 */
     const onSearch = async () => {
       vendorPager.page = 1; orderPager.page = 1; claimPager.page = 1; promoPager.page = 1; settlePager.page = 1;
       await handleSearchData('DEFAULT');
     };
+
+    /* onReset */
     const onReset  = () => {
       uiState.vendorSearchValue = ''; uiState.orderSearchValue = ''; uiState.orderSearchStatus = '';
       uiState.claimSearchType = ''; uiState.claimSearchStatus = ''; uiState.promoSearchValue = ''; uiState.promoSearchType = ''; uiState.settleSearchMonth = '';
       onSearch();
     };
 
+    /* pageNums */
     const pageNums = (cur, last) => { const s = Math.max(1, cur-2), e = Math.min(last, s+4); return Array.from({length: e-s+1}, (_,i) => s+i); };
 
+    /* setVendorPage */
     const setVendorPage = n => { if (n >= 1 && n <= cfVendorPages.value) vendorPager.page = n; };
+
+    /* onVendorSizeChange */
     const onVendorSizeChange = () => { vendorPager.page = 1; };
+
+    /* setOrderPage */
     const setOrderPage = n => { if (n >= 1 && n <= cfOrderPages.value) orderPager.page = n; };
+
+    /* onOrderSizeChange */
     const onOrderSizeChange = () => { orderPager.page = 1; };
+
+    /* setClaimPage */
     const setClaimPage = n => { if (n >= 1 && n <= cfClaimPages.value) claimPager.page = n; };
+
+    /* onClaimSizeChange */
     const onClaimSizeChange = () => { claimPager.page = 1; };
+
+    /* setPromoPage */
     const setPromoPage = n => { if (n >= 1 && n <= cfPromoPages.value) promoPager.page = n; };
+
+    /* onPromoSizeChange */
     const onPromoSizeChange = () => { promoPager.page = 1; };
+
+    /* setSettlePage */
     const setSettlePage = n => { if (n >= 1 && n <= cfSettlePages.value) settlePager.page = n; };
+
+    /* onSettleSizeChange */
     const onSettleSizeChange = () => { settlePager.page = 1; };
 
+    /* exportTab */
     const exportTab = () => {
       const tab = window.safeArrayUtils.safeFind(TABS, t => t.id === uiState.activeTab);
       showToast && showToast(`${tab.label} 데이터를 Excel로 내보냅니다.`, 'info');

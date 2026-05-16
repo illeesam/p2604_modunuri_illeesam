@@ -23,10 +23,14 @@ public class BoSyRoleService {
     private final SyRoleRedisStore roleCache;
     private final SyRoleMenuRedisStore roleMenuCache;
 
+    /* 키조회 */
     public SyRoleDto.Item getById(String id) { return syRoleService.getById(id); }
+    /* 목록조회 */
     public List<SyRoleDto.Item> getList(SyRoleDto.Request req) { return syRoleService.getList(req); }
+    /* 페이지조회 */
     public SyRoleDto.PageResponse getPageData(SyRoleDto.Request req) { return syRoleService.getPageData(req); }
 
+    /* 등록 */
     @Transactional
     public SyRole create(SyRole body) {
         SyRole saved = syRoleService.create(body);
@@ -34,6 +38,7 @@ public class BoSyRoleService {
         return saved;
     }
 
+    /* 수정 */
     @Transactional
     public SyRole update(String id, SyRole body) {
         SyRole saved = syRoleService.update(id, body);
@@ -41,6 +46,7 @@ public class BoSyRoleService {
         return saved;
     }
 
+    /* 삭제 */
     @Transactional
     public void delete(String id) {
         syRoleService.delete(id);
@@ -48,6 +54,7 @@ public class BoSyRoleService {
         roleMenuCache.evict(id);
     }
 
+    /* 목록저장 */
     @Transactional
     public void saveList(List<SyRole> rows) {
         syRoleService.saveList(rows);

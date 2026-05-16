@@ -2,22 +2,35 @@
 (function () {
   const { ref, reactive, computed } = Vue;
 
+  /* fmt */
   const fmt = n => Number(n || 0).toLocaleString('ko-KR');
 
   /* -- 날짜 유틸 -- */
   const pad = n => String(n).padStart(2, '0');
+
+  /* toYmd */
   const toYmd  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+  /* toYm */
   const toYm   = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+
+  /* addMonths */
   const addMonths = (d, n) => { const x = new Date(d); x.setMonth(x.getMonth()+n); return x; };
+
+  /* endOfMonth */
   const endOfMonth = d => new Date(d.getFullYear(), d.getMonth()+1, 0);
 
   /* -- SVG 헬퍼 -- */
   const maxOf = arr => Math.max(1, ...arr);
+
+  /* linePoints */
   const linePoints = (vals, w, h, pad = 10) => {
     const max = maxOf(vals);
     const step = (w - pad * 2) / Math.max(vals.length - 1, 1);
     return vals.map((v, i) => `${pad + i * step},${h - pad - (v / max) * (h - pad * 2)}`).join(' ');
   };
+
+  /* areaPath */
   const areaPath = (vals, w, h, pad = 10) => {
     const pts = linePoints(vals, w, h, pad);
     if (!pts) return '';
@@ -33,10 +46,10 @@
     },
     setup() {
       const { ref, reactive, computed } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
       /* -- 필터 상태 -- */
       const today   = new Date();
@@ -59,19 +72,27 @@
         categories:  [...CATEGORIES],
       });
 
+      /* toggle */
       const toggle = (list, v) => {
         const i = list.indexOf(v);
         if (i >= 0) list.splice(i, 1); else list.push(v);
       };
+
+      /* toggleAll */
       const toggleAll = (key, all) => {
         if (filters[key].length === all.length) filters[key] = [];
         else filters[key] = [...all];
       };
+
+      /* isSel */
       const isSel = (list, v) => list.includes(v);
 
+      /* 목록조회 */
       const onSearch = () => {
         console.log('[대시보드 검색]', JSON.parse(JSON.stringify(filters)));
       };
+
+      /* doExcelDownload */
       const doExcelDownload = () => {
         const rows = [['월','매출','가입','탈퇴','클릭','주문완료']];
         cfMonthLabels.value.forEach((m, i) => {
@@ -86,6 +107,8 @@
         a.click();
         URL.revokeObjectURL(url);
       };
+
+      /* onReset */
       const onReset = () => {
         filters.startDt = startDef;
         filters.endDt   = endDef;
@@ -132,6 +155,8 @@
         if (uiState.tabMode === 'tab') return '1fr';
         return 'repeat(' + parseInt(uiState.tabMode) + ',minmax(0,1fr))';
       });
+
+      /* showPanel */
       const showPanel = (key) => uiState.tabMode === 'tab' ? uiState.activeTab === key : true;
 
       /* -- 보조 대시보드 (원본 KPI 섹션) -- */
@@ -208,6 +233,8 @@
         { label: '무료', value: 58, color: '#10b981' },
         { label: '유료', value: 42, color: '#9ca3af' },
       ];
+
+      /* pct */
       const pct = n => (Math.round(n * 10) / 10).toFixed(1) + '%';
 
       /* -- 월별 레이블 (14개월) -- */

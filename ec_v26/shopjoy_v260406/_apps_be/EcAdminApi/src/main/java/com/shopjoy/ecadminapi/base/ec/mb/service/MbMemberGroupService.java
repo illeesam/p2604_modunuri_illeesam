@@ -27,6 +27,7 @@ public class MbMemberGroupService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 회원 그룹 키조회 */
     public MbMemberGroupDto.Item getById(String id) {
         MbMemberGroupDto.Item dto = mbMemberGroupRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class MbMemberGroupService {
         return mbMemberGroupRepository.selectById(id).orElse(null);
     }
 
+    /* 회원 그룹 상세조회 */
     public MbMemberGroup findById(String id) {
         return mbMemberGroupRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class MbMemberGroupService {
         return mbMemberGroupRepository.findById(id).orElse(null);
     }
 
+    /* 회원 그룹 키검증 */
     public boolean existsById(String id) {
         return mbMemberGroupRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class MbMemberGroupService {
         return true;
     }
 
+    /* 회원 그룹 목록조회 */
     public List<MbMemberGroupDto.Item> getList(MbMemberGroupDto.Request req) {
         return mbMemberGroupRepository.selectList(req);
     }
 
+    /* 회원 그룹 페이지조회 */
     public MbMemberGroupDto.PageResponse getPageData(MbMemberGroupDto.Request req) {
         PageHelper.addPaging(req);
         return mbMemberGroupRepository.selectPageList(req);
     }
 
+    /* 회원 그룹 등록 */
     @Transactional
     public MbMemberGroup create(MbMemberGroup body) {
         body.setMemberGroupId(CmUtil.generateId("mb_member_group"));
@@ -80,6 +86,7 @@ public class MbMemberGroupService {
         return saved;
     }
 
+    /* 회원 그룹 저장 */
     @Transactional
     public MbMemberGroup save(MbMemberGroup entity) {
         if (!existsById(entity.getMemberGroupId()))
@@ -92,6 +99,7 @@ public class MbMemberGroupService {
         return saved;
     }
 
+    /* 회원 그룹 수정 */
     @Transactional
     public MbMemberGroup update(String id, MbMemberGroup body) {
         MbMemberGroup entity = findById(id);
@@ -104,6 +112,7 @@ public class MbMemberGroupService {
         return saved;
     }
 
+    /* 회원 그룹 수정 */
     @Transactional
     public MbMemberGroup updateSelective(MbMemberGroup entity) {
         if (entity.getMemberGroupId() == null) throw new CmBizException("memberGroupId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class MbMemberGroupService {
         return entity;
     }
 
+    /* 회원 그룹 삭제 */
     @Transactional
     public void delete(String id) {
         MbMemberGroup entity = findById(id);
@@ -125,6 +135,7 @@ public class MbMemberGroupService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 회원 그룹 목록저장 */
     @Transactional
     public void saveList(List<MbMemberGroup> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

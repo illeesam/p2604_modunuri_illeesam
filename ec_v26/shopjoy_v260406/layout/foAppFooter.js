@@ -7,10 +7,16 @@ window.foAppFooter = {
     const { ref, reactive } = Vue;
     const uiState = reactive({ menuOpen: false, loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
+
+    /* toggleMenu */
     const toggleMenu = () => { uiState.menuOpen = !uiState.menuOpen; };
+
+    /* closeMenu */
     const closeMenu  = () => { uiState.menuOpen = false; };
     /* 외부(헤더 등)에서 팝업 오픈 요청 수신 */
     window.addEventListener('open-quick-menu', () => { uiState.menuOpen = true; });
+
+    /* goItem */
     const goItem = (root, target) => {
       if (root === 'foOffice') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '#page=' + target : '');

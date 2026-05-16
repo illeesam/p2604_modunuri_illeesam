@@ -30,8 +30,11 @@ public class BoCmChattService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public CmChattRoomDto.Item getById(String id) { return cmChattRoomService.getById(id); }
+    /* 목록조회 */
     public List<CmChattRoomDto.Item> getList(CmChattRoomDto.Request req) { return cmChattRoomService.getList(req); }
+    /* 페이지조회 */
     public CmChattRoomDto.PageResponse getPageData(CmChattRoomDto.Request req) { return cmChattRoomService.getPageData(req); }
 
     @Transactional public CmChattRoom create(CmChattRoom body) {

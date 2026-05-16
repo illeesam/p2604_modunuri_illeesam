@@ -27,6 +27,7 @@ public class OdPayService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 결제 키조회 */
     public OdPayDto.Item getById(String id) {
         OdPayDto.Item dto = odPayRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdPayService {
         return odPayRepository.selectById(id).orElse(null);
     }
 
+    /* 결제 상세조회 */
     public OdPay findById(String id) {
         return odPayRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdPayService {
         return odPayRepository.findById(id).orElse(null);
     }
 
+    /* 결제 키검증 */
     public boolean existsById(String id) {
         return odPayRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdPayService {
         return true;
     }
 
+    /* 결제 목록조회 */
     public List<OdPayDto.Item> getList(OdPayDto.Request req) {
         return odPayRepository.selectList(req);
     }
 
+    /* 결제 페이지조회 */
     public OdPayDto.PageResponse getPageData(OdPayDto.Request req) {
         PageHelper.addPaging(req);
         return odPayRepository.selectPageList(req);
     }
 
+    /* 결제 등록 */
     @Transactional
     public OdPay create(OdPay body) {
         body.setPayId(CmUtil.generateId("od_pay"));
@@ -80,6 +86,7 @@ public class OdPayService {
         return saved;
     }
 
+    /* 결제 저장 */
     @Transactional
     public OdPay save(OdPay entity) {
         if (!existsById(entity.getPayId()))
@@ -92,6 +99,7 @@ public class OdPayService {
         return saved;
     }
 
+    /* 결제 수정 */
     @Transactional
     public OdPay update(String id, OdPay body) {
         OdPay entity = findById(id);
@@ -104,6 +112,7 @@ public class OdPayService {
         return saved;
     }
 
+    /* 결제 수정 */
     @Transactional
     public OdPay updateSelective(OdPay entity) {
         if (entity.getPayId() == null) throw new CmBizException("payId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdPayService {
         return entity;
     }
 
+    /* 결제 삭제 */
     @Transactional
     public void delete(String id) {
         OdPay entity = findById(id);
@@ -125,6 +135,7 @@ public class OdPayService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 결제 목록저장 */
     @Transactional
     public void saveList(List<OdPay> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -27,6 +27,7 @@ public class OdhDlivItemChgHistService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 배송 아이템 변경 이력 키조회 */
     public OdhDlivItemChgHistDto.Item getById(String id) {
         OdhDlivItemChgHistDto.Item dto = odhDlivItemChgHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdhDlivItemChgHistService {
         return odhDlivItemChgHistRepository.selectById(id).orElse(null);
     }
 
+    /* 배송 아이템 변경 이력 상세조회 */
     public OdhDlivItemChgHist findById(String id) {
         return odhDlivItemChgHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdhDlivItemChgHistService {
         return odhDlivItemChgHistRepository.findById(id).orElse(null);
     }
 
+    /* 배송 아이템 변경 이력 키검증 */
     public boolean existsById(String id) {
         return odhDlivItemChgHistRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdhDlivItemChgHistService {
         return true;
     }
 
+    /* 배송 아이템 변경 이력 목록조회 */
     public List<OdhDlivItemChgHistDto.Item> getList(OdhDlivItemChgHistDto.Request req) {
         return odhDlivItemChgHistRepository.selectList(req);
     }
 
+    /* 배송 아이템 변경 이력 페이지조회 */
     public OdhDlivItemChgHistDto.PageResponse getPageData(OdhDlivItemChgHistDto.Request req) {
         PageHelper.addPaging(req);
         return odhDlivItemChgHistRepository.selectPageList(req);
     }
 
+    /* 배송 아이템 변경 이력 등록 */
     @Transactional
     public OdhDlivItemChgHist create(OdhDlivItemChgHist body) {
         body.setDlivItemChgHistId(CmUtil.generateId("odh_dliv_item_chg_hist"));
@@ -80,6 +86,7 @@ public class OdhDlivItemChgHistService {
         return saved;
     }
 
+    /* 배송 아이템 변경 이력 저장 */
     @Transactional
     public OdhDlivItemChgHist save(OdhDlivItemChgHist entity) {
         if (!existsById(entity.getDlivItemChgHistId()))
@@ -92,6 +99,7 @@ public class OdhDlivItemChgHistService {
         return saved;
     }
 
+    /* 배송 아이템 변경 이력 수정 */
     @Transactional
     public OdhDlivItemChgHist update(String id, OdhDlivItemChgHist body) {
         OdhDlivItemChgHist entity = findById(id);
@@ -104,6 +112,7 @@ public class OdhDlivItemChgHistService {
         return saved;
     }
 
+    /* 배송 아이템 변경 이력 수정 */
     @Transactional
     public OdhDlivItemChgHist updateSelective(OdhDlivItemChgHist entity) {
         if (entity.getDlivItemChgHistId() == null) throw new CmBizException("dlivItemChgHistId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdhDlivItemChgHistService {
         return entity;
     }
 
+    /* 배송 아이템 변경 이력 삭제 */
     @Transactional
     public void delete(String id) {
         OdhDlivItemChgHist entity = findById(id);
@@ -125,6 +135,7 @@ public class OdhDlivItemChgHistService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 배송 아이템 변경 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhDlivItemChgHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

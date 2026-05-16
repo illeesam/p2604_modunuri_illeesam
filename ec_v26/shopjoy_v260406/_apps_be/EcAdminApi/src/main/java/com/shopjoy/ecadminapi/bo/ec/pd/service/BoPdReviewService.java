@@ -30,8 +30,11 @@ public class BoPdReviewService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public PdReviewDto.Item getById(String id) { return pdReviewService.getById(id); }
+    /* 목록조회 */
     public List<PdReviewDto.Item> getList(PdReviewDto.Request req) { return pdReviewService.getList(req); }
+    /* 페이지조회 */
     public PdReviewDto.PageResponse getPageData(PdReviewDto.Request req) { return pdReviewService.getPageData(req); }
 
     @Transactional public PdReview create(PdReview body) { return pdReviewService.create(body); }

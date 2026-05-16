@@ -21,6 +21,8 @@
 
   /* _id / saveList rows 검증은 coUtil.chkId / coUtil.chkRowIds 위임 */
   const chkId     = (...a) => coUtil.chkId(...a);
+
+  /* chkRowIds */
   const chkRowIds = (...a) => coUtil.chkRowIds(...a);
 
   const boApiSvc = {};

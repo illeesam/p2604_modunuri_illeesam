@@ -27,6 +27,7 @@ public class PdReviewAttachService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 리뷰 첨부파일 키조회 */
     public PdReviewAttachDto.Item getById(String id) {
         PdReviewAttachDto.Item dto = pdReviewAttachRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PdReviewAttachService {
         return pdReviewAttachRepository.selectById(id).orElse(null);
     }
 
+    /* 리뷰 첨부파일 상세조회 */
     public PdReviewAttach findById(String id) {
         return pdReviewAttachRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PdReviewAttachService {
         return pdReviewAttachRepository.findById(id).orElse(null);
     }
 
+    /* 리뷰 첨부파일 키검증 */
     public boolean existsById(String id) {
         return pdReviewAttachRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PdReviewAttachService {
         return true;
     }
 
+    /* 리뷰 첨부파일 목록조회 */
     public List<PdReviewAttachDto.Item> getList(PdReviewAttachDto.Request req) {
         return pdReviewAttachRepository.selectList(req);
     }
 
+    /* 리뷰 첨부파일 페이지조회 */
     public PdReviewAttachDto.PageResponse getPageData(PdReviewAttachDto.Request req) {
         PageHelper.addPaging(req);
         return pdReviewAttachRepository.selectPageList(req);
     }
 
+    /* 리뷰 첨부파일 등록 */
     @Transactional
     public PdReviewAttach create(PdReviewAttach body) {
         body.setReviewAttachId(CmUtil.generateId("pd_review_attach"));
@@ -80,6 +86,7 @@ public class PdReviewAttachService {
         return saved;
     }
 
+    /* 리뷰 첨부파일 저장 */
     @Transactional
     public PdReviewAttach save(PdReviewAttach entity) {
         if (!existsById(entity.getReviewAttachId()))
@@ -92,6 +99,7 @@ public class PdReviewAttachService {
         return saved;
     }
 
+    /* 리뷰 첨부파일 수정 */
     @Transactional
     public PdReviewAttach update(String id, PdReviewAttach body) {
         PdReviewAttach entity = findById(id);
@@ -104,6 +112,7 @@ public class PdReviewAttachService {
         return saved;
     }
 
+    /* 리뷰 첨부파일 수정 */
     @Transactional
     public PdReviewAttach updateSelective(PdReviewAttach entity) {
         if (entity.getReviewAttachId() == null) throw new CmBizException("reviewAttachId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PdReviewAttachService {
         return entity;
     }
 
+    /* 리뷰 첨부파일 삭제 */
     @Transactional
     public void delete(String id) {
         PdReviewAttach entity = findById(id);
@@ -125,6 +135,7 @@ public class PdReviewAttachService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 리뷰 첨부파일 목록저장 */
     @Transactional
     public void saveList(List<PdReviewAttach> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

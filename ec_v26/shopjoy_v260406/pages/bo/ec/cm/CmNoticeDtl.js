@@ -11,13 +11,14 @@ window.CmNoticeDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.noticeTypes    = codeStore.sgGetGrpCodes('NOTICE_TYPE');
@@ -28,7 +29,11 @@ window.CmNoticeDtl = {
 
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
+
+    /* fnToday */
     const fnToday = () => new Date().toISOString().slice(0, 10);
+
+    /* fnDateAfter */
     const fnDateAfter = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
     const form = reactive({
       noticeId: null, noticeTitle: '', noticeTypeCd: '', isFixed: 'N',
@@ -41,6 +46,7 @@ window.CmNoticeDtl = {
       noticeTitle: yup.string().required('제목을 입력해주세요.'),
     });
 
+    /* handleSearchDetail */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
@@ -63,6 +69,7 @@ window.CmNoticeDtl = {
       if (typeof handleSearchDetail === 'function') await handleSearchDetail();
     });
 
+    /* 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {

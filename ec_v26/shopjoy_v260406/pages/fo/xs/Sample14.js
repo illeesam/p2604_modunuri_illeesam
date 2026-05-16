@@ -12,6 +12,7 @@ window.XsSample14 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -36,6 +37,8 @@ window.XsSample14 = {
       if (selectedCatIds.size === 0) return '카테고리';
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
+
+    /* onCatApply */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
     /* 현재 사용자 인증 상태 */
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
@@ -67,13 +70,19 @@ window.XsSample14 = {
       coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
       cache_banner:'💰', widget_embed:'🧩',
     };
+
+    /* wLabel */
     const wLabel = (t) => WIDGET_LABELS[t] || t || '-';
+
+    /* wIcon */
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
     const cfAllAreas = computed(() =>
       window.sfGetBoCodeStore()?.codes||[]
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
+
+    /* isInRange */
     const isInRange = (panel) => {
       const d = uiState.previewDate;
       if (!d) return true;
@@ -82,6 +91,8 @@ window.XsSample14 = {
       if (panel.dispEndDate   && dt > `${panel.dispEndDate}   ${panel.dispEndTime   || '23:59'}`) return false;
       return true;
     };
+
+    /* panelFilter */
     const panelFilter = (p) => {
       if (uiState.searchStatus       && p.status !== uiState.searchStatus) return false;
       if (!isInRange(p)) return false;
@@ -111,13 +122,16 @@ window.XsSample14 = {
           return { ...area, panels , uiState, codes };
         });
     });
+
     /* 초기 펼침 */
     const initExpand = () => cfAllAreas.value.forEach(a => expandedAreas.add(a.codeValue));
+
     /* 영역 토글 */
     const toggleAreaExpand = (code) => {
       if (expandedAreas.has(code)) expandedAreas.delete(code);
       else expandedAreas.add(code);
     };
+
     /* 패널 체크 */
     const togglePanel = (p) => {
       const id = p.dispId;
@@ -130,6 +144,7 @@ window.XsSample14 = {
         rows.forEach((_, wi) => checkedWidgets.add(`${id}_${wi}`));
       }
     };
+
     /* 위젯 체크 */
     const toggleWidget = (dispId, wi, e) => {
       if (e) e.stopPropagation();
@@ -137,14 +152,20 @@ window.XsSample14 = {
       if (checkedWidgets.has(key)) checkedWidgets.delete(key);
       else checkedWidgets.add(key);
     };
+
     /* 전체 선택/해제 */
     const checkAll  = () => { cfStructAreaList.value.forEach(a => a.panels.forEach(p => { checkedPanels.add(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.add(`${p.dispId}_${wi}`)); })); };
+
+    /* clearAll */
     const clearAll  = () => { checkedPanels.clear(); checkedWidgets.clear(); };
+
     /* 영역 전체 체크 */
     const isAreaAllChecked = (area) =>
       area.panels.length > 0 &&
       area.panels.every(p => checkedPanels.has(p.dispId)) &&
       area.panels.every(p => (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
+
+    /* checkAreaAll */
     const checkAreaAll = (area) => {
       if (isAreaAllChecked(area)) {
         area.panels.forEach(p => { checkedPanels.delete(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.delete(`${p.dispId}_${wi}`)); });
@@ -152,6 +173,8 @@ window.XsSample14 = {
         area.panels.forEach(p => { checkedPanels.add(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.add(`${p.dispId}_${wi}`)); });
       }
     };
+
+    /* isPanelAllChecked */
     const isPanelAllChecked = (p) =>
       checkedPanels.has(p.dispId) &&
       ((p.rows||[]).length === 0 || (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
@@ -170,9 +193,17 @@ window.XsSample14 = {
     });
     /* 화면영역 드롭다운 */
     const cfAreaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
+
+    /* toggleArea */
     const toggleArea = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
+
+    /* selectAllAreas */
     const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
+
+    /* clearAllAreas */
     const clearAllAreas  = () => { selectedAreas.clear(); };
+
+    /* resetDate */
     const resetDate = () => {
       uiState.previewDate = today;
       uiState.previewTime = new Date().toTimeString().slice(0, 5);
@@ -197,6 +228,8 @@ window.XsSample14 = {
       coupon:'#e8587a',      html_editor:'#263238',     event_banner:'#f5576c',
       cache_banner:'#ef6c00',widget_embed:'#718096',
     };
+
+    /* wColor */
     const wColor = (t) => WIDGET_COLORS[t] || '#888';
     // 헤더 카운트용
     const cfPreviewWidgets = computed(() => {
@@ -206,11 +239,15 @@ window.XsSample14 = {
     const dragSrc      = ref(null);
     const dragSrcList  = ref(null);
     const dropZoneIdx  = ref(-1);
+
+    /* onWidgetDragStart */
     const onWidgetDragStart = (w, p, area, evt) => {
       uiState.dragSrc     = { ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel };
       uiState.dragSrcList = null;
       evt.dataTransfer.effectAllowed = 'copy';
     };
+
+    /* onAreaNodeDragStart */
     const onAreaNodeDragStart = (area, evt) => {
       const widgets = (area.panels || []).flatMap(p =>
         (p.rows || []).map(w => ({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel }))
@@ -220,6 +257,8 @@ window.XsSample14 = {
       evt.dataTransfer.effectAllowed = 'copy';
       evt.dataTransfer.setData('text/plain', 'area:' + widgets.length);
     };
+
+    /* onPanelNodeDragStart */
     const onPanelNodeDragStart = (p, area, evt) => {
       const widgets = (p.rows || []).map(w => ({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel }));
       uiState.dragSrcList = widgets;
@@ -227,6 +266,8 @@ window.XsSample14 = {
       evt.dataTransfer.effectAllowed = 'copy';
       evt.dataTransfer.setData('text/plain', 'panel:' + widgets.length);
     };
+
+    /* onDragEnd */
     const onDragEnd = () => { uiState.dragSrc = null; uiState.dragSrcList = null; uiState.dropZoneIdx = -1; };
     /* -- span 팝업 -- */
      // 'tab_ci' 형태 키
@@ -235,7 +276,11 @@ window.XsSample14 = {
       const key = tab + '_' + ci;
       uiState.spanPopupIdx = uiState.spanPopupIdx === key ? null : key;
     };
+
+    /* closeSpanPopup */
     const closeSpanPopup = () => { uiState.spanPopupIdx = null; };
+
+    /* setSpan */
     const setSpan = (tab, ci, axis, delta) => {
       const cell = gridCells[tab][ci];
       if (!cell || !cell.widget) return;
@@ -243,6 +288,7 @@ window.XsSample14 = {
       if (axis === 'col') cell.colSpan = Math.max(1, Math.min(maxCol, (cell.colSpan || 1) + delta));
       if (axis === 'row') cell.rowSpan = Math.max(1, Math.min(4,      (cell.rowSpan || 1) + delta));
     };
+
     /* 빈 행 2개 유지 헬퍼 */
     const ensureTrailingRows = (cells, cols) => {
       let emptyRows = 0;
@@ -256,6 +302,7 @@ window.XsSample14 = {
         emptyRows++;
       }
     };
+
     /* grid2/3/4 */
     const onCellDrop = (tab, ci, evt) => {
       evt.preventDefault();
@@ -289,7 +336,10 @@ window.XsSample14 = {
       uiState.dragSrc = null;
       uiState.dropZoneIdx = -1;
     };
+
+    /* removeCellWidget */
     const removeCellWidget = (tab, ci) => { gridCells[tab][ci] = { widget: null }; };
+
     /* dashboard */
     const onDashDrop = (evt) => {
       evt.preventDefault();
@@ -315,18 +365,24 @@ window.XsSample14 = {
       uiState.dragSrc = null;
       uiState.dropZoneIdx = -1;
     };
+
+    /* onDashItemMd */
     const onDashItemMd = (idx, evt) => {
       dashDrag.on = true; dashDrag.idx = idx;
       dashDrag.sx = evt.clientX; dashDrag.sy = evt.clientY;
       dashDrag.ox = dashItems[idx].x; dashDrag.oy = dashItems[idx].y;
       evt.preventDefault();
     };
+
+    /* onDashResizeMd */
     const onDashResizeMd = (idx, evt) => {
       dashResize.on = true; dashResize.idx = idx;
       dashResize.sx = evt.clientX; dashResize.sy = evt.clientY;
       dashResize.ow = dashItems[idx].w; dashResize.oh = dashItems[idx].h;
       evt.preventDefault(); evt.stopPropagation();
     };
+
+    /* onDashMm */
     const onDashMm = (evt) => {
       if (dashDrag.on && dashDrag.idx >= 0) {
         const snap = DASH_SNAP, dx = evt.clientX - dashDrag.sx, dy = evt.clientY - dashDrag.sy;
@@ -339,11 +395,16 @@ window.XsSample14 = {
         dashItems[dashResize.idx].h = Math.max(80,  Math.round((dashResize.oh + dy) / snap) * snap);
       }
     };
+
+    /* onDashMu */
     const onDashMu = () => {
       dashDrag.on = false; dashDrag.idx = -1;
       dashResize.on = false; dashResize.idx = -1;
     };
+
+    /* removeDashItem */
     const removeDashItem = (idx) => { dashItems.splice(idx, 1); };
+
     /* 탭별 초기화 */
     const clearPreview = () => {
       const tab = uiState.activeTab;
@@ -360,6 +421,8 @@ window.XsSample14 = {
         const popoverArea   = ref(null);
     const popoverPanel  = ref(null);
     const popoverPos    = reactive({ top: 0, left: 0 });
+
+    /* showWidgetInfo */
     const showWidgetInfo = (w, p, area, key, evt) => {
       evt.stopPropagation();
       if (uiState.popoverKey === key) { uiState.popoverKey = null; return; }
@@ -371,6 +434,8 @@ window.XsSample14 = {
       uiState.popoverPanel  = p;
       uiState.popoverKey    = key;
     };
+
+    /* closePopover */
     const closePopover = () => { uiState.popoverKey = null; };
     /* -- 반응형 뷰포트 -- */
         /* auto-fill 기반 반응형: 뷰포트 너비 제약이 걸리면 자동으로 컬럼 축소 */

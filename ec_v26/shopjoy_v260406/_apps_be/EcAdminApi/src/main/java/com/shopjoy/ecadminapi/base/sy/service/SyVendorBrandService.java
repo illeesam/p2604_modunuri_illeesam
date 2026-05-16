@@ -27,6 +27,7 @@ public class SyVendorBrandService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 업체별 브랜드 키조회 */
     public SyVendorBrandDto.Item getById(String id) {
         SyVendorBrandDto.Item dto = syVendorBrandRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyVendorBrandService {
         return syVendorBrandRepository.selectById(id).orElse(null);
     }
 
+    /* 업체별 브랜드 상세조회 */
     public SyVendorBrand findById(String id) {
         return syVendorBrandRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyVendorBrandService {
         return syVendorBrandRepository.findById(id).orElse(null);
     }
 
+    /* 업체별 브랜드 키검증 */
     public boolean existsById(String id) {
         return syVendorBrandRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyVendorBrandService {
         return true;
     }
 
+    /* 업체별 브랜드 목록조회 */
     public List<SyVendorBrandDto.Item> getList(SyVendorBrandDto.Request req) {
         return syVendorBrandRepository.selectList(req);
     }
 
+    /* 업체별 브랜드 페이지조회 */
     public SyVendorBrandDto.PageResponse getPageData(SyVendorBrandDto.Request req) {
         PageHelper.addPaging(req);
         return syVendorBrandRepository.selectPageList(req);
     }
 
+    /* 업체별 브랜드 등록 */
     @Transactional
     public SyVendorBrand create(SyVendorBrand body) {
         body.setVendorBrandId(CmUtil.generateId("sy_vendor_brand"));
@@ -80,6 +86,7 @@ public class SyVendorBrandService {
         return saved;
     }
 
+    /* 업체별 브랜드 저장 */
     @Transactional
     public SyVendorBrand save(SyVendorBrand entity) {
         if (!existsById(entity.getVendorBrandId()))
@@ -92,6 +99,7 @@ public class SyVendorBrandService {
         return saved;
     }
 
+    /* 업체별 브랜드 수정 */
     @Transactional
     public SyVendorBrand update(String id, SyVendorBrand body) {
         SyVendorBrand entity = findById(id);
@@ -104,6 +112,7 @@ public class SyVendorBrandService {
         return saved;
     }
 
+    /* 업체별 브랜드 수정 */
     @Transactional
     public SyVendorBrand updateSelective(SyVendorBrand entity) {
         if (entity.getVendorBrandId() == null) throw new CmBizException("vendorBrandId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyVendorBrandService {
         return entity;
     }
 
+    /* 업체별 브랜드 삭제 */
     @Transactional
     public void delete(String id) {
         SyVendorBrand entity = findById(id);
@@ -125,6 +135,7 @@ public class SyVendorBrandService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 업체별 브랜드 목록저장 */
     @Transactional
     public void saveList(List<SyVendorBrand> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

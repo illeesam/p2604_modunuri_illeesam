@@ -23,36 +23,43 @@ public class BoSyI18nController {
 
     private final BoSyI18nService boSyI18nService;
 
+    /* 키조회 */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyI18nDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.getById(id)));
     }
 
+    /* 목록조회 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyI18nDto.Item>>> list(@Valid @ModelAttribute SyI18nDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.getList(req)));
     }
 
+    /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<SyI18nDto.PageResponse>> page(@Valid @ModelAttribute SyI18nDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.getPageData(req)));
     }
 
+    /* 등록 */
     @PostMapping
     public ResponseEntity<ApiResponse<SyI18n>> create(@RequestBody SyI18n body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyI18nService.create(body)));
     }
 
+    /* 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyI18n>> update(@PathVariable("id") String id, @RequestBody SyI18n body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.update(id, body)));
     }
 
+    /* upsert */
     @PostMapping("/{id}")
     public ResponseEntity<ApiResponse<SyI18n>> upsert(@PathVariable("id") String id, @RequestBody SyI18n body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.update(id, body)));
     }
 
+    /* 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boSyI18nService.delete(id);

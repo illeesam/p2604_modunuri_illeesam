@@ -20,8 +20,11 @@ public class BoMbMemberLoginLogService {
     private final MbhMemberLoginLogService mbhMemberLoginLogService;
     private final MbhMemberLoginLogRepository mbhMemberLoginLogRepository;
 
+    /* 키조회 */
     public MbhMemberLoginLogDto.Item getById(String id) { return mbhMemberLoginLogService.getById(id); }
+    /* 목록조회 */
     public List<MbhMemberLoginLogDto.Item> getList(MbhMemberLoginLogDto.Request req) { return mbhMemberLoginLogService.getList(req); }
+    /* 페이지조회 */
     public MbhMemberLoginLogDto.PageResponse getPageData(MbhMemberLoginLogDto.Request req) { return mbhMemberLoginLogService.getPageData(req); }
 
     /** deleteAll — 전체 삭제 */

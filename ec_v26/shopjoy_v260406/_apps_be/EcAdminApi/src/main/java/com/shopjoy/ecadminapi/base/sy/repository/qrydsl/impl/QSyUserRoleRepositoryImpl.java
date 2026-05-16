@@ -33,6 +33,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     private static final QSyRole rol  = QSyRole.syRole;
     private static final QSyUser usr2 = new QSyUser("usr2");
 
+    /* 사용자별 역할 buildBaseQuery */
     private JPAQuery<SyUserRoleDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyUserRoleDto.Item.class,
@@ -49,6 +50,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                 .leftJoin(usr2).on(usr2.userId.eq(r.grantUserId));
     }
 
+    /* 사용자별 역할 키조회 */
     @Override
     public Optional<SyUserRoleDto.Item> selectById(String userRoleId) {
         SyUserRoleDto.Item dto = buildBaseQuery()
@@ -57,6 +59,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 사용자별 역할 목록조회 */
     @Override
     public List<SyUserRoleDto.Item> selectList(SyUserRoleDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -74,6 +77,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         return query.fetch();
     }
 
+    /* 사용자별 역할 페이지조회 */
     @Override
     public SyUserRoleDto.PageResponse selectPageList(SyUserRoleDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -95,6 +99,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 사용자별 역할 buildCondition */
     private BooleanBuilder buildCondition(SyUserRoleDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -152,6 +157,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         return orders;
     }
 
+    /* 사용자별 역할 수정 */
     @Override
     public int updateSelective(SyUserRole entity) {
         if (entity.getUserRoleId() == null) return 0;

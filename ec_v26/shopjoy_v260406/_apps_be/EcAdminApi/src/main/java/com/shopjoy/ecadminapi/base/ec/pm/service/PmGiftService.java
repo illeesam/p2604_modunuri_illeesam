@@ -27,6 +27,7 @@ public class PmGiftService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 사은품 키조회 */
     public PmGiftDto.Item getById(String id) {
         PmGiftDto.Item dto = pmGiftRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmGiftService {
         return pmGiftRepository.selectById(id).orElse(null);
     }
 
+    /* 사은품 상세조회 */
     public PmGift findById(String id) {
         return pmGiftRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmGiftService {
         return pmGiftRepository.findById(id).orElse(null);
     }
 
+    /* 사은품 키검증 */
     public boolean existsById(String id) {
         return pmGiftRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmGiftService {
         return true;
     }
 
+    /* 사은품 목록조회 */
     public List<PmGiftDto.Item> getList(PmGiftDto.Request req) {
         return pmGiftRepository.selectList(req);
     }
 
+    /* 사은품 페이지조회 */
     public PmGiftDto.PageResponse getPageData(PmGiftDto.Request req) {
         PageHelper.addPaging(req);
         return pmGiftRepository.selectPageList(req);
     }
 
+    /* 사은품 등록 */
     @Transactional
     public PmGift create(PmGift body) {
         body.setGiftId(CmUtil.generateId("pm_gift"));
@@ -80,6 +86,7 @@ public class PmGiftService {
         return saved;
     }
 
+    /* 사은품 저장 */
     @Transactional
     public PmGift save(PmGift entity) {
         if (!existsById(entity.getGiftId()))
@@ -92,6 +99,7 @@ public class PmGiftService {
         return saved;
     }
 
+    /* 사은품 수정 */
     @Transactional
     public PmGift update(String id, PmGift body) {
         PmGift entity = findById(id);
@@ -104,6 +112,7 @@ public class PmGiftService {
         return saved;
     }
 
+    /* 사은품 수정 */
     @Transactional
     public PmGift updateSelective(PmGift entity) {
         if (entity.getGiftId() == null) throw new CmBizException("giftId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmGiftService {
         return entity;
     }
 
+    /* 사은품 삭제 */
     @Transactional
     public void delete(String id) {
         PmGift entity = findById(id);
@@ -125,6 +135,7 @@ public class PmGiftService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 사은품 목록저장 */
     @Transactional
     public void saveList(List<PmGift> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

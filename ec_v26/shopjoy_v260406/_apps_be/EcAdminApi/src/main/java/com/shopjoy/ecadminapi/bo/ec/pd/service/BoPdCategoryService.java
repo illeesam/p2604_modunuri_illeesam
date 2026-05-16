@@ -32,8 +32,11 @@ public class BoPdCategoryService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public PdCategoryDto.Item getById(String id) { return pdCategoryService.getById(id); }
+    /* 목록조회 */
     public List<PdCategoryDto.Item> getList(PdCategoryDto.Request req) { return pdCategoryService.getList(req); }
+    /* 페이지조회 */
     public PdCategoryDto.PageResponse getPageData(PdCategoryDto.Request req) { return pdCategoryService.getPageData(req); }
 
     @Transactional public PdCategory create(PdCategory body) { return pdCategoryService.create(body); }

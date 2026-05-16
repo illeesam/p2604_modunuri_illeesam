@@ -10,9 +10,9 @@ window.DpDispAreaDtl = {
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const codes = reactive({ disp_areas: [], layout_types: [], use_yn: [] });
     const areas = reactive([]);
     const panels = reactive([]);
@@ -20,6 +20,7 @@ window.DpDispAreaDtl = {
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_areas = codeStore.sgGetGrpCodes('DISP_AREA');
@@ -51,9 +52,17 @@ window.DpDispAreaDtl = {
     };
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, target: null });
+
+    /* openPathPick */
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
+
+    /* closePathPick */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
+
+    /* onPathPicked */
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
+
+    /* fnPathLabel */
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.dtlId);
@@ -63,6 +72,8 @@ window.DpDispAreaDtl = {
 
     /* -- 기본 기간: 오늘 ~ +10년 -- */
     const _today = new Date();
+
+    /* _pad */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
@@ -127,6 +138,8 @@ window.DpDispAreaDtl = {
 
     /* -- 패널 선택 팝업 -- */
     const openPick  = () => { uiState.pickOpen = true; uiState.pickSearchValue = ''; };
+
+    /* movePanel */
     const movePanel = (idx, dir) => {
       const arr = cfRelatedPanels.value;
       const target = idx + dir;
@@ -135,6 +148,8 @@ window.DpDispAreaDtl = {
       const tmp = a.sortOrder; a.sortOrder = b.sortOrder; b.sortOrder = tmp;
       showToast && showToast(`[${a.name}] 순서가 ${dir < 0 ? '위로' : '아래로'} 이동되었습니다.`, 'info');
     };
+
+    /* onPanelPicked */
     const onPanelPicked = (p) => {
       if (!form.codeValue) { showToast && showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       p.area = form.codeValue;
@@ -143,7 +158,11 @@ window.DpDispAreaDtl = {
       showToast && showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
       uiState.pickOpen = false;
     };
+
+    /* closePick */
     const closePick = () => { uiState.pickOpen = false; };
+
+    /* removePanel */
     const removePanel = (p) => {
       showConfirm && showConfirm({
         title: '영역에서 제거',
@@ -174,13 +193,19 @@ window.DpDispAreaDtl = {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       uiState.previewPaneWidth = (info?.width || 480) + 40;
     });
+
+    /* onSplitDrag */
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
       const startW = uiState.previewPaneWidth;
+
+      /* onMove */
       const onMove = (ev) => {
         uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
+
+      /* onUp */
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
@@ -188,6 +213,8 @@ window.DpDispAreaDtl = {
       window.addEventListener('mousemove', onMove);
       window.addEventListener('mouseup', onUp);
     };
+
+    /* selectTab */
     const selectTab = (key) => { uiState.activeTab = key; };
     const cfActivePanel = computed(() => {
       if (!activeTab.value.startsWith('panel_')) return null;
@@ -234,6 +261,7 @@ window.DpDispAreaDtl = {
       }
     };
 
+    /* onCancel */
     const onCancel = () => { props.navigate('dpDispAreaMng'); };
 
     /* -- 미리보기 액션 -- */
@@ -247,6 +275,8 @@ window.DpDispAreaDtl = {
       const hash = areaPageMap[form.codeValue] || '';
       window.open(`${window.pageUrl('index.html')}${hash}`, '_blank', 'width=1280,height=900');
     };
+
+    /* openWidgetPreview */
     const openWidgetPreview = (scope) => {
       if (!cfActivePanel.value) return showToast && showToast('미리볼 패널을 선택하세요.', 'error');
       const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
@@ -261,8 +291,11 @@ window.DpDispAreaDtl = {
       'file':'파일', 'coupon':'쿠폰', 'html_editor':'HTML',
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     };
+
+    /* fnWLabel */
     const fnWLabel = (t) => WIDGET_LABEL[t] || t || '-';
 
+    /* addPanelShortcut */
     const addPanelShortcut = () => {
       if (!form.codeId) return showToast && showToast('먼저 영역을 저장해주세요.', 'error');
       props.navigate('dpDispPanelDtl', { id: null, preset: { area: form.codeValue } });
@@ -270,11 +303,15 @@ window.DpDispAreaDtl = {
 
     /* -- 공개 대상 (Area-Panel 매핑) -- */
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
+
+    /* hasPanelVisibility */
     const hasPanelVisibility = (code) => {
       if (!cfActivePanel.value) return false;
       if (!cfActivePanel.value.visibilityTargets) cfActivePanel.value.visibilityTargets = '^PUBLIC^';
       return window.visibilityUtil.has(cfActivePanel.value.visibilityTargets, code);
     };
+
+    /* togglePanelVisibility */
     const togglePanelVisibility = (code) => {
       if (!cfActivePanel.value) return;
       if (!cfActivePanel.value.visibilityTargets) cfActivePanel.value.visibilityTargets = '^PUBLIC^';
@@ -295,11 +332,15 @@ window.DpDispAreaDtl = {
       { code: 'DEV', label: 'DEV' },
       { code: 'TEST', label: 'TEST' },
     ];
+
+    /* hasAreaDispEnv */
     const hasAreaDispEnv = (code) => {
       if (!cfActivePanel.value) return false;
       if (!cfActivePanel.value.areaDispEnv) cfActivePanel.value.areaDispEnv = '^PROD^';
       return cfActivePanel.value.areaDispEnv.includes('^' + code + '^');
     };
+
+    /* toggleAreaDispEnv */
     const toggleAreaDispEnv = (code) => {
       if (!cfActivePanel.value) return;
       if (!cfActivePanel.value.areaDispEnv) cfActivePanel.value.areaDispEnv = '^PROD^';
@@ -316,14 +357,22 @@ window.DpDispAreaDtl = {
       { code: 'TEST', label: 'TEST' },
       { code: 'PROD', label: 'PROD' },
     ];
+
+    /* hasAreaBaseDispEnv */
     const hasAreaBaseDispEnv = (code) => form.areaBaseDispEnv.includes('^' + code + '^');
+
+    /* toggleAreaBaseDispEnv */
     const toggleAreaBaseDispEnv = (code) => {
       const envList = form.areaBaseDispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
       if (i >= 0) envList.splice(i, 1); else envList.push(code);
       form.areaBaseDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
+
+    /* hasAreaBaseVisibility */
     const hasAreaBaseVisibility = (code) => window.visibilityUtil.has(form.areaBaseVisibilityTargets, code);
+
+    /* toggleAreaBaseVisibility */
     const toggleAreaBaseVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.areaBaseVisibilityTargets);
       const i = list.indexOf(code);

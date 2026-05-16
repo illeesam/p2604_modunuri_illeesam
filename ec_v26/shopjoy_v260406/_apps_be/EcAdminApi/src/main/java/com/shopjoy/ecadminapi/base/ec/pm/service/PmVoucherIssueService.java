@@ -27,6 +27,7 @@ public class PmVoucherIssueService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 바우처(상품권) 발행 이력 키조회 */
     public PmVoucherIssueDto.Item getById(String id) {
         PmVoucherIssueDto.Item dto = pmVoucherIssueRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmVoucherIssueService {
         return pmVoucherIssueRepository.selectById(id).orElse(null);
     }
 
+    /* 바우처(상품권) 발행 이력 상세조회 */
     public PmVoucherIssue findById(String id) {
         return pmVoucherIssueRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmVoucherIssueService {
         return pmVoucherIssueRepository.findById(id).orElse(null);
     }
 
+    /* 바우처(상품권) 발행 이력 키검증 */
     public boolean existsById(String id) {
         return pmVoucherIssueRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmVoucherIssueService {
         return true;
     }
 
+    /* 바우처(상품권) 발행 이력 목록조회 */
     public List<PmVoucherIssueDto.Item> getList(PmVoucherIssueDto.Request req) {
         return pmVoucherIssueRepository.selectList(req);
     }
 
+    /* 바우처(상품권) 발행 이력 페이지조회 */
     public PmVoucherIssueDto.PageResponse getPageData(PmVoucherIssueDto.Request req) {
         PageHelper.addPaging(req);
         return pmVoucherIssueRepository.selectPageList(req);
     }
 
+    /* 바우처(상품권) 발행 이력 등록 */
     @Transactional
     public PmVoucherIssue create(PmVoucherIssue body) {
         body.setVoucherIssueId(CmUtil.generateId("pm_voucher_issue"));
@@ -80,6 +86,7 @@ public class PmVoucherIssueService {
         return saved;
     }
 
+    /* 바우처(상품권) 발행 이력 저장 */
     @Transactional
     public PmVoucherIssue save(PmVoucherIssue entity) {
         if (!existsById(entity.getVoucherIssueId()))
@@ -92,6 +99,7 @@ public class PmVoucherIssueService {
         return saved;
     }
 
+    /* 바우처(상품권) 발행 이력 수정 */
     @Transactional
     public PmVoucherIssue update(String id, PmVoucherIssue body) {
         PmVoucherIssue entity = findById(id);
@@ -104,6 +112,7 @@ public class PmVoucherIssueService {
         return saved;
     }
 
+    /* 바우처(상품권) 발행 이력 수정 */
     @Transactional
     public PmVoucherIssue updateSelective(PmVoucherIssue entity) {
         if (entity.getVoucherIssueId() == null) throw new CmBizException("voucherIssueId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmVoucherIssueService {
         return entity;
     }
 
+    /* 바우처(상품권) 발행 이력 삭제 */
     @Transactional
     public void delete(String id) {
         PmVoucherIssue entity = findById(id);
@@ -125,6 +135,7 @@ public class PmVoucherIssueService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 바우처(상품권) 발행 이력 목록저장 */
     @Transactional
     public void saveList(List<PmVoucherIssue> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

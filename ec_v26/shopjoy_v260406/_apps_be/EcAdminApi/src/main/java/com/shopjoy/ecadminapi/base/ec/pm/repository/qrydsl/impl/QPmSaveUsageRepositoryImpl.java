@@ -38,6 +38,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
     private static final QOdOrderItem ite  = QOdOrderItem.odOrderItem;
     private static final QPdProd      prd  = QPdProd.pdProd;
 
+    /* 적립금 사용 이력 baseQuery */
     private JPAQuery<PmSaveUsageDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmSaveUsageDto.Item.class,
@@ -52,6 +53,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
                 .leftJoin(prd).on(prd.prodId.eq(u.prodId));
     }
 
+    /* 적립금 사용 이력 키조회 */
     @Override
     public Optional<PmSaveUsageDto.Item> selectById(String saveUsageId) {
         PmSaveUsageDto.Item dto = baseQuery()
@@ -60,6 +62,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 적립금 사용 이력 목록조회 */
     @Override
     public List<PmSaveUsageDto.Item> selectList(PmSaveUsageDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -78,6 +81,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         return query.fetch();
     }
 
+    /* 적립금 사용 이력 페이지조회 */
     @Override
     public PmSaveUsageDto.PageResponse selectPageList(PmSaveUsageDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -103,6 +107,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 적립금 사용 이력 buildCondition */
     private BooleanBuilder buildCondition(PmSaveUsageDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -159,6 +164,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         return orders;
     }
 
+    /* 적립금 사용 이력 수정 */
     @Override
     public int updateSelective(PmSaveUsage entity) {
         if (entity.getSaveUsageId() == null) return 0;

@@ -53,6 +53,7 @@ public class FoAuthService {
 
     // ── login ─────────────────────────────────────────────────────────────
 
+    /* login */
     @Transactional
     public LoginRes login(LoginReq request, String appTypeCd) {
         MbMember member;
@@ -107,6 +108,7 @@ public class FoAuthService {
 
     // ── join ──────────────────────────────────────────────────────────────
 
+    /* join */
     @Transactional
     public FoJoinRes join(MbMember body, String appTypeCd) {
         if (memberRepository.findByLoginId(body.getLoginId()).isPresent()) {
@@ -131,6 +133,7 @@ public class FoAuthService {
 
     // ── refresh ───────────────────────────────────────────────────────────
 
+    /* refresh */
     @Transactional
     public TokenPair refresh(String expiredAccessToken, String appTypeCd) {
         if (expiredAccessToken == null || expiredAccessToken.isBlank()) {
@@ -191,6 +194,7 @@ public class FoAuthService {
 
     // ── changePassword ────────────────────────────────────────────────────
 
+    /* changePassword */
     @Transactional
     public void changePassword(ChangePasswordReq request, String appTypeCd) {
         String memberId = SecurityUtil.getAuthUser().authId();
@@ -206,6 +210,7 @@ public class FoAuthService {
 
     // ── logout ────────────────────────────────────────────────────────────
 
+    /* logout */
     @Transactional
     public void logout(String accessToken, String appTypeCd, HttpServletRequest request) {
         if (accessToken == null || accessToken.isBlank()) return;
@@ -235,6 +240,7 @@ public class FoAuthService {
 
     // ── private ───────────────────────────────────────────────────────────
 
+    /* buildAccessToken */
     private String buildAccessToken(MbMember member, String appTypeCd) {
         return jwtProvider.createAccessToken(
             AccessTokenClaims.builder()

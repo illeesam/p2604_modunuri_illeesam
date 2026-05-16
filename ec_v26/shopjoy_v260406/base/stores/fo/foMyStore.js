@@ -10,6 +10,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   };
   const CLAIM_DONE = ['취소완료', '환불완료', '교환완료'];
   const CLAIM_TYPE_COLOR = { '취소': '#ef4444', '반품': '#FFBB00', '교환': '#3b82f6' };
+
+  /* CLAIM_STATUS_COLOR */
   const CLAIM_STATUS_COLOR = s => ({
     '취소요청':'#ef4444','취소처리중':'#f97316','취소완료':'#9ca3af',
     '반품요청':'#ef4444','수거예정':'#f59e0b','수거중':'#fb923c','수거완료':'#8b5cf6','환불처리중':'#f97316','환불완료':'#9ca3af',
@@ -27,7 +29,11 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   ];
   const CANCELABLE   = ['주문완료', '결제완료'];
   const SHOW_COURIER = ['배송준비중', '배송중', '배송완료', '완료'];
+
+  /* orderStatusLabel */
   const orderStatusLabel = s => (s === '완료' ? '구매확정' : s);
+
+  /* statusColor */
   const statusColor = s => ({
     '주문완료':'#3b82f6','결제완료':'#8b5cf6','배송준비중':'#f59e0b','배송중':'#f97316',
     '배송완료':'#22c55e','완료':'#6b7280','교환요청':'#f59e0b','반품요청':'#f97316','취소됨':'#9ca3af',
@@ -35,6 +41,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
 
   /* ── 주문 ── */
   const orders = reactive([]);
+
+  /* handleLoadOrders */
   const handleLoadOrders = async () => {
     if (!Array.isArray(orders) || !orders.length) {
       if (!Array.isArray(orders)) Object.assign(orders, []);
@@ -42,6 +50,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
       catch (e) { orders.splice(0, orders.length); }
     }
   };
+
+  /* setOrderStatus */
   const setOrderStatus = (orderId, status) => {
     const o = orders.find(x => x.orderId === orderId);
     if (o) o.status = status;
@@ -50,6 +60,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   /* ── 클레임 ── */
   const claims = reactive([]);
   const claimFilter = ref('전체');
+
+  /* handleLoadClaims */
   const handleLoadClaims = async () => {
     if (!Array.isArray(claims) || !claims.length) {
       if (!Array.isArray(claims)) Object.assign(claims, []);
@@ -66,6 +78,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     if (Array.isArray(claims)) claims.forEach(c => { map[c.orderId] = c; });
     return map;
   });
+
+  /* removeClaim */
   const removeClaim = (claimId) => {
     const idx = claims.findIndex(c => c.claimId === claimId);
     if (idx !== -1) claims.splice(idx, 1);
@@ -74,6 +88,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   /* ── 쿠폰 ── */
   const coupons = reactive([]);
   const couponCode = ref('');
+
+  /* handleLoadCoupons */
   const handleLoadCoupons = async () => {
     if (!Array.isArray(coupons) || !coupons.length) {
       if (!Array.isArray(coupons)) Object.assign(coupons, []);
@@ -81,6 +97,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
       catch (e) { coupons.splice(0, coupons.length); }
     }
   };
+
+  /* discountLabel */
   const discountLabel = c => c.discountType === 'rate' ? c.discountValue + '% 할인'
     : c.discountType === 'shipping' ? '무료배송'
     : c.discountValue.toLocaleString() + '원 할인';
@@ -89,6 +107,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const cashBalance = ref(0);
   const cashHistory = reactive([]);
   const chargeAmount = ref('');
+
+  /* handleLoadCash */
   const handleLoadCash = async () => {
     if (!Array.isArray(cashHistory) || !cashHistory.length) {
       if (!Array.isArray(cashHistory)) Object.assign(cashHistory, []);
@@ -103,6 +123,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   /* ── 문의 ── */
   const inquiries = reactive([]);
   const expandedInquiry = ref(null);
+
+  /* loadInquiries */
   const loadInquiries = async () => {
     if (!Array.isArray(inquiries) || !inquiries.length) {
       if (!Array.isArray(inquiries)) Object.assign(inquiries, []);
@@ -110,11 +132,15 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
       catch (e) { inquiries.splice(0, inquiries.length); }
     }
   };
+
+  /* inquiryStatusColor */
   const inquiryStatusColor = s => ({ '요청':'#3b82f6','처리중':'#f97316','답변완료':'#22c55e','취소됨':'#9ca3af' }[s] || '#9ca3af');
 
   /* ── 채팅 ── */
   const chats = reactive([]);
   const expandedChat = ref(null);
+
+  /* loadChats */
   const loadChats = async () => {
     if (!Array.isArray(chats) || !chats.length) {
       if (!Array.isArray(chats)) Object.assign(chats, []);
@@ -122,6 +148,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
       catch (e) { chats.splice(0, chats.length); }
     }
   };
+
+  /* openChat */
   const openChat = chat => {
     chat.unread = 0;
     expandedChat.value = expandedChat.value === chat.chatId ? null : chat.chatId;
@@ -129,6 +157,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
 
   /* ── 공유 모달 ── */
   const orderDetailModal = reactive({ show: false, order: null });
+
+  /* openOrderModal */
   const openOrderModal = (orderId) => {
     if (!Array.isArray(orders)) return false;
     const o = orders.find(x => x.orderId === orderId);
@@ -145,11 +175,17 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     const start = (pager.page - 1) * pager.size;
     return list.slice(start, start + pager.size);
   };
+
+  /* mkPager */
   const mkPager = () => reactive({ page: 1, size: 50 });
+
+  /* extractOrderId */
   const extractOrderId = desc => {
     const m = (desc || '').match(/ORD-\d{4}-\d{3,}/);
     return m ? m[0] : null;
   };
+
+  /* getCouponUsedOrderItems */
   const getCouponUsedOrderItems = c => {
     if (!c.used || !c.usedOrderId) return null;
     const o = orders.find(x => x.orderId === c.usedOrderId);

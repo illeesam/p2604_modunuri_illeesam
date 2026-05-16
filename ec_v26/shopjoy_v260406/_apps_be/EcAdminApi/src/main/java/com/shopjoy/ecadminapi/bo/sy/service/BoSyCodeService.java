@@ -21,10 +21,14 @@ public class BoSyCodeService {
     private final SyCodeService syCodeService;
     private final SyCodeRedisStore codeCache;
 
+    /* 키조회 */
     public SyCodeDto.Item getById(String id) { return syCodeService.getById(id); }
+    /* 목록조회 */
     public List<SyCodeDto.Item> getList(SyCodeDto.Request req) { return syCodeService.getList(req); }
+    /* 페이지조회 */
     public SyCodeDto.PageResponse getPageData(SyCodeDto.Request req) { return syCodeService.getPageData(req); }
 
+    /* 등록 */
     @Transactional
     public SyCode create(SyCode body) {
         SyCode saved = syCodeService.create(body);
@@ -32,6 +36,7 @@ public class BoSyCodeService {
         return saved;
     }
 
+    /* 수정 */
     @Transactional
     public SyCode update(String id, SyCode body) {
         SyCode saved = syCodeService.update(id, body);
@@ -39,12 +44,14 @@ public class BoSyCodeService {
         return saved;
     }
 
+    /* 삭제 */
     @Transactional
     public void delete(String id) {
         syCodeService.delete(id);
         codeCache.evictAll();
     }
 
+    /* 목록저장 */
     @Transactional
     public void saveList(List<SyCode> rows) {
         syCodeService.saveList(rows);

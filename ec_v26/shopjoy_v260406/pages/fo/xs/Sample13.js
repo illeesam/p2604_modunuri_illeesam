@@ -12,6 +12,7 @@ window.XsSample13 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -33,6 +34,8 @@ window.XsSample13 = {
       if (selectedCatIds.size === 0) return '카테고리';
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
+
+    /* onCatApply */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
     /* 현재 사용자 인증 상태 */
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
@@ -53,6 +56,8 @@ window.XsSample13 = {
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
+
+    /* isInRange */
     const isInRange = (panel) => {
       const d = uiState.previewDate;
       if (!d) return true;
@@ -61,6 +66,8 @@ window.XsSample13 = {
       if (panel.dispEndDate   && dt > `${panel.dispEndDate}   ${panel.dispEndTime   || '23:59'}`) return false;
       return true;
     };
+
+    /* panelFilter */
     const panelFilter = (p) => {
       if (uiState.searchStatus       && p.status !== uiState.searchStatus) return false;
       if (!isInRange(p)) return false;
@@ -84,6 +91,8 @@ window.XsSample13 = {
       coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
       cache_banner:'캐시',       widget_embed:'위젯',
     };
+
+    /* fnWLabel */
     const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
     const WIDGET_ICONS = {
       image_banner:'🖼', product_slider:'🛍', product:'📦',
@@ -93,6 +102,8 @@ window.XsSample13 = {
       coupon:'🎟', html_editor:'</>', event_banner:'🎉',
       cache_banner:'💰', widget_embed:'🧩',
     };
+
+    /* fnWIcon */
     const fnWIcon = (t) => WIDGET_ICONS[t] || '◻';
     const cfFilteredAreas = computed(() =>
       cfAllAreas.value.filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
@@ -109,6 +120,7 @@ window.XsSample13 = {
         return { area, panels , uiState, codes };
       })
     );
+
     /* 패널 단건 소스 */
     const panelSource = (panel) => {
       const rows = panel.rows || [];
@@ -138,20 +150,26 @@ window.XsSample13 = {
       });
       return parts.join('\n\n');
     });
+
+    /* copySource */
     const copySource = () => {
       navigator.clipboard?.writeText(cfSourceText.value).then(() => {
         uiState.copied = true;
         setTimeout(() => { uiState.copied = false; }, 2000);
       });
     };
+
+    /* copyPanel */
     const copyPanel = (panel) => {
       navigator.clipboard?.writeText(panelSource(panel)).then(() => {
         uiState.copiedPanel = panel.dispId;
         setTimeout(() => { uiState.copiedPanel = null; }, 2000);
       });
     };
+
     /* 구문 강조 HTML 생성 (v-html용) */
     const panelSourceHtml = (panel) => {
+      /* esc */
       const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       return panelSource(panel).split('\n').map(line => {
         const el = esc(line);
@@ -166,9 +184,17 @@ window.XsSample13 = {
     };
     /* 화면영역 드롭다운 */
     const cfAreaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
+
+    /* toggleArea */
     const toggleArea    = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
+
+    /* selectAllAreas */
     const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
+
+    /* clearAllAreas */
     const clearAllAreas  = () => { selectedAreas.clear(); };
+
+    /* resetDate */
     const resetDate = () => {
       uiState.previewDate = today;
       uiState.previewTime = new Date().toTimeString().slice(0, 5);

@@ -27,6 +27,7 @@ public class PmGiftIssueService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 사은품 발행 이력 키조회 */
     public PmGiftIssueDto.Item getById(String id) {
         PmGiftIssueDto.Item dto = pmGiftIssueRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmGiftIssueService {
         return pmGiftIssueRepository.selectById(id).orElse(null);
     }
 
+    /* 사은품 발행 이력 상세조회 */
     public PmGiftIssue findById(String id) {
         return pmGiftIssueRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmGiftIssueService {
         return pmGiftIssueRepository.findById(id).orElse(null);
     }
 
+    /* 사은품 발행 이력 키검증 */
     public boolean existsById(String id) {
         return pmGiftIssueRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmGiftIssueService {
         return true;
     }
 
+    /* 사은품 발행 이력 목록조회 */
     public List<PmGiftIssueDto.Item> getList(PmGiftIssueDto.Request req) {
         return pmGiftIssueRepository.selectList(req);
     }
 
+    /* 사은품 발행 이력 페이지조회 */
     public PmGiftIssueDto.PageResponse getPageData(PmGiftIssueDto.Request req) {
         PageHelper.addPaging(req);
         return pmGiftIssueRepository.selectPageList(req);
     }
 
+    /* 사은품 발행 이력 등록 */
     @Transactional
     public PmGiftIssue create(PmGiftIssue body) {
         body.setGiftIssueId(CmUtil.generateId("pm_gift_issue"));
@@ -80,6 +86,7 @@ public class PmGiftIssueService {
         return saved;
     }
 
+    /* 사은품 발행 이력 저장 */
     @Transactional
     public PmGiftIssue save(PmGiftIssue entity) {
         if (!existsById(entity.getGiftIssueId()))
@@ -92,6 +99,7 @@ public class PmGiftIssueService {
         return saved;
     }
 
+    /* 사은품 발행 이력 수정 */
     @Transactional
     public PmGiftIssue update(String id, PmGiftIssue body) {
         PmGiftIssue entity = findById(id);
@@ -104,6 +112,7 @@ public class PmGiftIssueService {
         return saved;
     }
 
+    /* 사은품 발행 이력 수정 */
     @Transactional
     public PmGiftIssue updateSelective(PmGiftIssue entity) {
         if (entity.getGiftIssueId() == null) throw new CmBizException("giftIssueId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmGiftIssueService {
         return entity;
     }
 
+    /* 사은품 발행 이력 삭제 */
     @Transactional
     public void delete(String id) {
         PmGiftIssue entity = findById(id);
@@ -125,6 +135,7 @@ public class PmGiftIssueService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 사은품 발행 이력 목록저장 */
     @Transactional
     public void saveList(List<PmGiftIssue> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

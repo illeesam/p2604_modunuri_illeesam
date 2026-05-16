@@ -27,6 +27,7 @@ public class CmhPushLogService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 푸시 발송 이력 키조회 */
     public CmhPushLogDto.Item getById(String id) {
         CmhPushLogDto.Item dto = cmhPushLogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class CmhPushLogService {
         return cmhPushLogRepository.selectById(id).orElse(null);
     }
 
+    /* 푸시 발송 이력 상세조회 */
     public CmhPushLog findById(String id) {
         return cmhPushLogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class CmhPushLogService {
         return cmhPushLogRepository.findById(id).orElse(null);
     }
 
+    /* 푸시 발송 이력 키검증 */
     public boolean existsById(String id) {
         return cmhPushLogRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class CmhPushLogService {
         return true;
     }
 
+    /* 푸시 발송 이력 목록조회 */
     public List<CmhPushLogDto.Item> getList(CmhPushLogDto.Request req) {
         return cmhPushLogRepository.selectList(req);
     }
 
+    /* 푸시 발송 이력 페이지조회 */
     public CmhPushLogDto.PageResponse getPageData(CmhPushLogDto.Request req) {
         PageHelper.addPaging(req);
         return cmhPushLogRepository.selectPageList(req);
     }
 
+    /* 푸시 발송 이력 등록 */
     @Transactional
     public CmhPushLog create(CmhPushLog body) {
         body.setLogId(CmUtil.generateId("cmh_push_log"));
@@ -80,6 +86,7 @@ public class CmhPushLogService {
         return saved;
     }
 
+    /* 푸시 발송 이력 저장 */
     @Transactional
     public CmhPushLog save(CmhPushLog entity) {
         if (!existsById(entity.getLogId()))
@@ -92,6 +99,7 @@ public class CmhPushLogService {
         return saved;
     }
 
+    /* 푸시 발송 이력 수정 */
     @Transactional
     public CmhPushLog update(String id, CmhPushLog body) {
         CmhPushLog entity = findById(id);
@@ -104,6 +112,7 @@ public class CmhPushLogService {
         return saved;
     }
 
+    /* 푸시 발송 이력 수정 */
     @Transactional
     public CmhPushLog updateSelective(CmhPushLog entity) {
         if (entity.getLogId() == null) throw new CmBizException("logId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class CmhPushLogService {
         return entity;
     }
 
+    /* 푸시 발송 이력 삭제 */
     @Transactional
     public void delete(String id) {
         CmhPushLog entity = findById(id);
@@ -125,6 +135,7 @@ public class CmhPushLogService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 푸시 발송 이력 목록저장 */
     @Transactional
     public void saveList(List<CmhPushLog> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -14,6 +14,7 @@ window.EventView = {
     /* -- 이벤트 데이터 -- */
     const events = reactive([]);
 
+    /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await foApiSvc.pmEvent.getById(props.dtlId, '이벤트상세', '상세조회');
@@ -24,6 +25,7 @@ window.EventView = {
       }
     };
 
+    /* fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;

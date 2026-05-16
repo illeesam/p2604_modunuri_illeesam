@@ -30,8 +30,11 @@ public class BoOdOrderService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public OdOrderDto.Item getById(String id) { return odOrderService.getById(id); }
+    /* 목록조회 */
     public List<OdOrderDto.Item> getList(OdOrderDto.Request req) { return odOrderService.getList(req); }
+    /* 페이지조회 */
     public OdOrderDto.PageResponse getPageData(OdOrderDto.Request req) { return odOrderService.getPageData(req); }
 
     @Transactional public OdOrder create(OdOrder body) {

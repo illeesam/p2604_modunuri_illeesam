@@ -25,6 +25,7 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
     private final JPAQueryFactory queryFactory;
     private static final QZzSample2 s = QZzSample2.zzSample2;
 
+    /* buildBaseQuery */
     private JPAQuery<ZzSample2Dto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(ZzSample2Dto.Item.class,
@@ -64,6 +65,7 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
                 .from(s);
     }
 
+    /* 키조회 */
     @Override
     public Optional<ZzSample2Dto.Item> selectById(String id) {
         ZzSample2Dto.Item dto = buildBaseQuery()
@@ -72,6 +74,7 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         return Optional.ofNullable(dto);
     }
 
+    /* 목록조회 */
     @Override
     public List<ZzSample2Dto.Item> selectList(ZzSample2Dto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -90,6 +93,7 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         return query.fetch();
     }
 
+    /* 페이지조회 */
     @Override
     public ZzSample2Dto.PageResponse selectPageList(ZzSample2Dto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -115,6 +119,7 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* buildCondition */
     private BooleanBuilder buildCondition(ZzSample2Dto.Request search) {
         BooleanBuilder w = new BooleanBuilder();
         if (search == null) return w;
@@ -154,6 +159,7 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         return orders;
     }
 
+    /* 수정 */
     @Override
     public int updateSelective(ZzSample2 entity) {
         if (entity.getSample2Id() == null) return 0;

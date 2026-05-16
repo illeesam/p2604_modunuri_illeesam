@@ -33,11 +33,13 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
 
     private static final QDpPanel p = QDpPanel.dpPanel;
 
+    /* 전시 패널 키조회 */
     @Override
     public Optional<DpPanelDto.Item> selectById(String panelId) {
         return Optional.ofNullable(baseQuery().where(p.panelId.eq(panelId)).fetchOne());
     }
 
+    /* 전시 패널 목록조회 */
     @Override
     public List<DpPanelDto.Item> selectList(DpPanelDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -51,6 +53,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         return query.fetch();
     }
 
+    /* 전시 패널 페이지조회 */
     @Override
     public DpPanelDto.PageResponse selectPageList(DpPanelDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
@@ -65,6 +68,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 전시 패널 baseQuery */
     private JPAQuery<DpPanelDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpPanelDto.Item.class,
                 p.panelId, p.siteId, p.panelNm, p.panelTypeCd, p.pathId,
@@ -74,15 +78,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         )).from(p);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(DpPanelDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -110,8 +106,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         }
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_panel_nm,")) or.or(p.panelNm.likeIgnoreCase(pattern));
@@ -164,6 +160,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         return orders;
     }
 
+    /* 전시 패널 수정 */
     @Override
     public int updateSelective(DpPanel entity) {
         if (entity.getPanelId() == null) return 0;

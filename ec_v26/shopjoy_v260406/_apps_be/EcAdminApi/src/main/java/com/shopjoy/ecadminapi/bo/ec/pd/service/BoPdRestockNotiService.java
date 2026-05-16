@@ -22,8 +22,11 @@ public class BoPdRestockNotiService {
 
     private final PdRestockNotiService pdRestockNotiService;
 
+    /* 키조회 */
     public PdRestockNotiDto.Item getById(String id) { return pdRestockNotiService.getById(id); }
+    /* 목록조회 */
     public List<PdRestockNotiDto.Item> getList(PdRestockNotiDto.Request req) { return pdRestockNotiService.getList(req); }
+    /* 페이지조회 */
     public PdRestockNotiDto.PageResponse getPageData(PdRestockNotiDto.Request req) { return pdRestockNotiService.getPageData(req); }
 
     @Transactional public PdRestockNoti create(PdRestockNoti body) { return pdRestockNotiService.create(body); }

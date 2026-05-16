@@ -8,10 +8,10 @@ window.OdOrderHist = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const orders = reactive([]);
     const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecOrderHistState.tab || 'products', tabMode2: 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
@@ -44,12 +44,14 @@ window.OdOrderHist = {
 
         watch(botTab, v => { window._ecOrderHistState.tab = v; });
 
+    /* 주문 fnLoadCodes */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
 };
 
     const isAppReady = coUtil.useAppCodeReady(uiState, fnLoadCodes);
 
+    /* 주문 showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     const orderItems = reactive([]);

@@ -37,6 +37,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     private static final QSyCode      cdRt = new QSyCode("cd_rt");
     private static final QSyCode      cdRs = new QSyCode("cd_rs");
 
+    /* 정산 대사(Reconciliation) 키조회 */
     @Override
     public Optional<StReconDto.Item> selectById(String id) {
         StReconDto.Item dto = baseListQuery()
@@ -45,6 +46,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 정산 대사(Reconciliation) 목록조회 */
     @Override
     public List<StReconDto.Item> selectList(StReconDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -63,6 +65,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         return query.fetch();
     }
 
+    /* 정산 대사(Reconciliation) 페이지조회 */
     @Override
     public StReconDto.PageResponse selectPageList(StReconDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -88,6 +91,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 정산 대사(Reconciliation) baseListQuery */
     private JPAQuery<StReconDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StReconDto.Item.class,
@@ -111,6 +115,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS").and(cdRs.codeValue.eq(r.reconStatusCd)));
     }
 
+    /* 정산 대사(Reconciliation) buildCondition */
     private BooleanBuilder buildCondition(StReconDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -164,6 +169,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         return orders;
     }
 
+    /* 정산 대사(Reconciliation) 수정 */
     @Override
     public int updateSelective(StRecon entity) {
         if (entity.getReconId() == null) return 0;

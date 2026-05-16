@@ -30,6 +30,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     private static final QSyCode c = QSyCode.syCode;
     private static final QSySite ste = QSySite.sySite;
 
+    /* buildBaseQuery */
     private JPAQuery<SyCodeDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyCodeDto.Item.class,
@@ -43,6 +44,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 .leftJoin(ste).on(ste.siteId.eq(c.siteId));
     }
 
+    /* 키조회 */
     @Override
     public Optional<SyCodeDto.Item> selectById(String codeId) {
         SyCodeDto.Item dto = buildBaseQuery()
@@ -51,6 +53,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 목록조회 */
     @Override
     public List<SyCodeDto.Item> selectList(SyCodeDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -68,6 +71,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         return query.fetch();
     }
 
+    /* 페이지조회 */
     @Override
     public SyCodeDto.PageResponse selectPageList(SyCodeDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -89,15 +93,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyCodeDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -110,8 +106,8 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         if (StringUtils.hasText(s.getUseYn()))           w.and(c.useYn.eq(s.getUseYn()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_label,")) or.or(c.codeLabel.likeIgnoreCase(pattern));
@@ -165,6 +161,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         return orders;
     }
 
+    /* 수정 */
     @Override
     public int updateSelective(SyCode entity) {
         if (entity.getCodeId() == null) return 0;

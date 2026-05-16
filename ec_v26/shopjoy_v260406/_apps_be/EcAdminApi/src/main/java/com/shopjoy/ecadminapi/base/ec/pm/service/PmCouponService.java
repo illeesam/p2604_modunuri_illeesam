@@ -27,6 +27,7 @@ public class PmCouponService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 쿠폰 키조회 */
     public PmCouponDto.Item getById(String id) {
         PmCouponDto.Item dto = pmCouponRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmCouponService {
         return pmCouponRepository.selectById(id).orElse(null);
     }
 
+    /* 쿠폰 상세조회 */
     public PmCoupon findById(String id) {
         return pmCouponRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmCouponService {
         return pmCouponRepository.findById(id).orElse(null);
     }
 
+    /* 쿠폰 키검증 */
     public boolean existsById(String id) {
         return pmCouponRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmCouponService {
         return true;
     }
 
+    /* 쿠폰 목록조회 */
     public List<PmCouponDto.Item> getList(PmCouponDto.Request req) {
         return pmCouponRepository.selectList(req);
     }
 
+    /* 쿠폰 페이지조회 */
     public PmCouponDto.PageResponse getPageData(PmCouponDto.Request req) {
         PageHelper.addPaging(req);
         return pmCouponRepository.selectPageList(req);
     }
 
+    /* 쿠폰 등록 */
     @Transactional
     public PmCoupon create(PmCoupon body) {
         body.setCouponId(CmUtil.generateId("pm_coupon"));
@@ -80,6 +86,7 @@ public class PmCouponService {
         return saved;
     }
 
+    /* 쿠폰 저장 */
     @Transactional
     public PmCoupon save(PmCoupon entity) {
         if (!existsById(entity.getCouponId()))
@@ -92,6 +99,7 @@ public class PmCouponService {
         return saved;
     }
 
+    /* 쿠폰 수정 */
     @Transactional
     public PmCoupon update(String id, PmCoupon body) {
         PmCoupon entity = findById(id);
@@ -104,6 +112,7 @@ public class PmCouponService {
         return saved;
     }
 
+    /* 쿠폰 수정 */
     @Transactional
     public PmCoupon updateSelective(PmCoupon entity) {
         if (entity.getCouponId() == null) throw new CmBizException("couponId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmCouponService {
         return entity;
     }
 
+    /* 쿠폰 삭제 */
     @Transactional
     public void delete(String id) {
         PmCoupon entity = findById(id);
@@ -125,6 +135,7 @@ public class PmCouponService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 쿠폰 목록저장 */
     @Transactional
     public void saveList(List<PmCoupon> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

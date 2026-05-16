@@ -11,10 +11,10 @@ window.SySiteDtl = {
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ site_oper_statuses: [], site_types: ['이커머스','숙박공유','전문가연결','IT매칭','부동산','교육','중고거래','영화예매','음식배달','가격비교','시각화','홈페이지','기타'] });
@@ -38,6 +38,7 @@ window.SySiteDtl = {
       siteDomain: yup.string().required('도메인을 입력해주세요.'),
     });
 
+    /* 사이트 상세조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -54,6 +55,7 @@ window.SySiteDtl = {
       }
     };
 
+    /* 사이트 fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -85,6 +87,7 @@ window.SySiteDtl = {
 
     /* ── 카카오 주소 검색 ── */
     const openKakaoPostcode = () => {
+      /* 사이트 run */
       const run = () => {
         new window.daum.Postcode({
           oncomplete(data) {
@@ -101,6 +104,7 @@ window.SySiteDtl = {
       document.head.appendChild(s);
     };
 
+    /* 사이트 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {

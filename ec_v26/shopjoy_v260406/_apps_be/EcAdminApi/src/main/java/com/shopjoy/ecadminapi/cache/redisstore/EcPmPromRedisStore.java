@@ -32,6 +32,7 @@ public class EcPmPromRedisStore {
 
     // ── 저장 ──────────────────────────────────────────────────────
 
+    /* saveDetail */
     public void saveDetail(String promId, Map<String, Object> promDetail) {
         redis.set(CacheKey.EC_PM_PROM_DTL + promId, promDetail,
                 props.getTtl().getEcPmPromSeconds(), target());
@@ -47,6 +48,7 @@ public class EcPmPromRedisStore {
 
     // ── 조회 ──────────────────────────────────────────────────────
 
+    /* getDetail */
     @SuppressWarnings("unchecked")
     public Optional<Map<String, Object>> getDetail(String promId) {
         return redis.get(CacheKey.EC_PM_PROM_DTL + promId, Map.class, target())
@@ -62,6 +64,7 @@ public class EcPmPromRedisStore {
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
+    /* evictDetail */
     public void evictDetail(String promId) {
         redis.delete(CacheKey.EC_PM_PROM_DTL + promId, target());
     }

@@ -30,8 +30,11 @@ public class BoPmEventService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 키조회 */
     public PmEventDto.Item getById(String id) { return pmEventService.getById(id); }
+    /* 목록조회 */
     public List<PmEventDto.Item> getList(PmEventDto.Request req) { return pmEventService.getList(req); }
+    /* 페이지조회 */
     public PmEventDto.PageResponse getPageData(PmEventDto.Request req) { return pmEventService.getPageData(req); }
 
     @Transactional public PmEvent create(PmEvent body) {

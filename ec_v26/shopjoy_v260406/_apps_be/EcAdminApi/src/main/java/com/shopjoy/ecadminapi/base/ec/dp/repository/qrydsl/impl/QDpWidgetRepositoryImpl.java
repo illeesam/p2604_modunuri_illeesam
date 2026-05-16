@@ -27,11 +27,13 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     private final JPAQueryFactory queryFactory;
     private static final QDpWidget w = QDpWidget.dpWidget;
 
+    /* 전시 위젯 키조회 */
     @Override
     public Optional<DpWidgetDto.Item> selectById(String widgetId) {
         return Optional.ofNullable(baseQuery().where(w.widgetId.eq(widgetId)).fetchOne());
     }
 
+    /* 전시 위젯 목록조회 */
     @Override
     public List<DpWidgetDto.Item> selectList(DpWidgetDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -45,6 +47,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         return query.fetch();
     }
 
+    /* 전시 위젯 페이지조회 */
     @Override
     public DpWidgetDto.PageResponse selectPageList(DpWidgetDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
@@ -59,25 +62,18 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 전시 위젯 baseQuery */
     private JPAQuery<DpWidgetDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpWidgetDto.Item.class,
                 w.widgetId, w.widgetLibId, w.siteId, w.widgetNm, w.widgetTypeCd,
                 w.widgetDesc, w.widgetTitle, w.widgetContent, w.titleShowYn,
-                w.widgetLibRefYn, w.widgetConfigJson, w.previewImgUrl,
+                w.widgetLibRefYn, w.widgetConfigJson, w.thumbnailUrl,
                 w.sortOrd, w.useYn, w.dispEnv,
                 w.regBy, w.regDate, w.updBy, w.updDate
         )).from(w);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(DpWidgetDto.Request s) {
         BooleanBuilder w2 = new BooleanBuilder();
         if (s == null) return w2;
@@ -88,8 +84,8 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         if (StringUtils.hasText(s.getUseYn()))        w2.and(w.useYn.eq(s.getUseYn()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_widget_nm,"))    or.or(w.widgetNm.likeIgnoreCase(pattern));
@@ -143,6 +139,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         return orders;
     }
 
+    /* 전시 위젯 수정 */
     @Override
     public int updateSelective(DpWidget entity) {
         if (entity.getWidgetId() == null) return 0;
@@ -158,7 +155,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         if (entity.getTitleShowYn()      != null) { update.set(w.titleShowYn,      entity.getTitleShowYn());      hasAny = true; }
         if (entity.getWidgetLibRefYn()   != null) { update.set(w.widgetLibRefYn,   entity.getWidgetLibRefYn());   hasAny = true; }
         if (entity.getWidgetConfigJson() != null) { update.set(w.widgetConfigJson, entity.getWidgetConfigJson()); hasAny = true; }
-        if (entity.getPreviewImgUrl()    != null) { update.set(w.previewImgUrl,    entity.getPreviewImgUrl());    hasAny = true; }
+        if (entity.getThumbnailUrl()     != null) { update.set(w.thumbnailUrl,     entity.getThumbnailUrl());     hasAny = true; }
         if (entity.getSortOrd()          != null) { update.set(w.sortOrd,          entity.getSortOrd());          hasAny = true; }
         if (entity.getUseYn()            != null) { update.set(w.useYn,            entity.getUseYn());            hasAny = true; }
         if (entity.getDispEnv()          != null) { update.set(w.dispEnv,          entity.getDispEnv());          hasAny = true; }

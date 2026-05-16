@@ -38,7 +38,10 @@ window.DispX02Area = {
       'cache_banner':'💰', 'widget_embed':'🧩',
     };
 
+    /* wLabel */
     const wLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
+
+    /* wIcon */
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
 
     /* 패널의 위젯 타입 목록 (카드 아이콘용) */
@@ -53,7 +56,10 @@ window.DispX02Area = {
       return `${p.dispStartDate || '∞'} ~ ${p.dispEndDate || '∞'}`;
     };
 
+    /* statusCls */
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
+
+    /* padId */
     const padId = (id) => String(id || 0).padStart(4, '0');
 
     /* 패널기본정보 title 텍스트 */

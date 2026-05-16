@@ -4,13 +4,21 @@
 window.myDateFilterHelper = () => {
   const { ref, computed, reactive } = Vue;
   const today = new Date();
+
+  /* fmt */
   const fmt = d => d.toISOString().slice(0, 10);
+
+  /* calcStart */
   const calcStart = months => { const d = new Date(today); d.setMonth(d.getMonth() - months); return fmt(d); };
   const dateRange = reactive({ start: calcStart(6), end: fmt(today) });
+
+  /* inRange */
   const inRange = dateStr => {
     const d = String(dateStr || '').slice(0, 10).replace(/\./g, '-').replace(/ .*/g, '');
     return (!dateRange.start || d >= dateRange.start) && (!dateRange.end || d <= dateRange.end);
   };
+
+  /* onDateSearch */
   const onDateSearch = ({ startDate, endDate }) => { dateRange.start = startDate; dateRange.end = endDate; };
   return { dateRange, inRange, onDateSearch };
 };
@@ -21,7 +29,11 @@ window.MyDateFilter = {
   setup(props, { emit }) {
     const { ref } = Vue;
     const today = new Date();
+
+    /* fmt */
     const fmt = d => d.toISOString().slice(0, 10);
+
+    /* calcStart */
     const calcStart = months => { const d = new Date(today); d.setMonth(d.getMonth() - months); return fmt(d); };
     const PERIODS = [
       { label: '1달', value: 1 }, { label: '2달', value: 2 }, { label: '3달', value: 3 },
@@ -31,8 +43,14 @@ window.MyDateFilter = {
     const period   = ref(6);
     const startDate = ref(calcStart(6));
     const endDate   = ref(fmt(today));
+
+    /* onPeriodChange */
     const onPeriodChange = () => { startDate.value = calcStart(period.value); endDate.value = fmt(today); };
+
+    /* search */
     const search = () => emit('search', { startDate: startDate.value, endDate: endDate.value });
+
+    /* onReset */
     const onReset = () => {
       period.value = 6;
       startDate.value = calcStart(6);
@@ -122,6 +140,7 @@ window.foMyLayout = {
 
     const cfTabCounts = computed(() => myStore.getTabCounts(props.cartCount));
 
+    /* goTab */
     const goTab = (pageId) => {
       if (pageId === 'myCart') {
         props.navigate('cart');

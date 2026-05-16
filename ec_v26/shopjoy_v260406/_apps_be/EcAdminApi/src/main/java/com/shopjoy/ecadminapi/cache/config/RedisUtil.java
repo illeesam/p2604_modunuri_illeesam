@@ -44,6 +44,7 @@ public class RedisUtil {
 
     // ── 조회 ──────────────────────────────────────────────────────
 
+    /* get */
     public <T> Optional<T> get(String key, Class<T> type) {
         return get(key, type, Target.PRIMARY);
     }
@@ -63,6 +64,7 @@ public class RedisUtil {
 
     // ── 저장 ──────────────────────────────────────────────────────
 
+    /* set */
     public boolean set(String key, Object value, long ttlSeconds) {
         return set(key, value, ttlSeconds, Target.PRIMARY);
     }
@@ -94,6 +96,7 @@ public class RedisUtil {
 
     // ── 삭제 ──────────────────────────────────────────────────────
 
+    /* 삭제 */
     public boolean delete(String key) {
         return delete(key, Target.PRIMARY);
     }
@@ -166,6 +169,7 @@ public class RedisUtil {
 
     // ── 존재 여부 ──────────────────────────────────────────────────
 
+    /* exists */
     public boolean exists(String key) {
         return exists(key, Target.PRIMARY);
     }
@@ -195,6 +199,7 @@ public class RedisUtil {
 
     // ── 내부 ──────────────────────────────────────────────────────
 
+    /* tpl */
     private RedisTemplate<String, Object> tpl(Target target) {
         if (target == Target.SECONDARY && secondaryTemplate != null) return secondaryTemplate;
         return primaryTemplate;

@@ -30,12 +30,14 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 문의 키조회 */
     @Override
     public Optional<SyContactDto.Item> selectById(String contactId) {
         SyContactDto.Item dto = baseQuery().where(c.contactId.eq(contactId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
+    /* 문의 목록조회 */
     @Override
     public List<SyContactDto.Item> selectList(SyContactDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -51,6 +53,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         return query.fetch();
     }
 
+    /* 문의 페이지조회 */
     @Override
     public SyContactDto.PageResponse selectPageList(SyContactDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -70,6 +73,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 문의 baseQuery */
     private JPAQuery<SyContactDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyContactDto.Item.class,
@@ -83,15 +87,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                 .leftJoin(ste).on(ste.siteId.eq(c.siteId));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyContactDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -103,8 +99,8 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         if (StringUtils.hasText(s.getStatus()))    w.and(c.contactStatusCd.eq(s.getStatus()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_member,")) or.or(c.memberNm.likeIgnoreCase(pattern));
@@ -159,6 +155,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         return orders;
     }
 
+    /* 문의 수정 */
     @Override
     public int updateSelective(SyContact entity) {
         if (entity.getContactId() == null) return 0;

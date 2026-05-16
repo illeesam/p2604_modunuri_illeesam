@@ -216,18 +216,19 @@ public class AutoRestService {
 
     /* ── Private helpers ── */
 
+    /* buildParams */
     private QueryParam buildParams(String table, SearchReq search, int limit, int offset) {
         TableConfig cfg = registry.getConfig(table);
         return QueryParam.builder()
                 .schema(SCHEMA)
                 .table(table)
                 .pk(cfg.getPkColumn())
-                .searchFields(filterSearchFields(cfg.getSearchFields(), search.getSearchTypes()))
+                .searchFields(filterSearchFields(cfg.getSearchFields(), search.getSearchType()))
                 .cdFields(cfg.getCdFields())
                 .fkFields(cfg.getFkFields())
                 .dateField(cfg.getDateField() != null ? cfg.getDateField() : "reg_date")
                 .searchValue(search.getSearchValue())
-                .searchTypes(search.getSearchTypes())
+                .searchType(search.getSearchType())
                 .dateStart(search.getDateStart())
                 .dateEnd(search.getDateEnd())
                 .siteId(search.getSiteId())
@@ -240,14 +241,14 @@ public class AutoRestService {
     }
 
     /**
-     * searchTypes(콤마 구분 토큰)에 매칭되는 컬럼만 남긴다.
+     * searchType(콤마 구분 토큰)에 매칭되는 컬럼만 남긴다.
      * 토큰이 컬럼명에 contains 매칭되면 해당 컬럼 포함 (SyUserMapper 등 표준 패턴과 동일 의미).
-     * searchTypes 가 null/빈값이면 전체 searchFields 그대로 반환.
+     * searchType 가 null/빈값이면 전체 searchFields 그대로 반환.
      */
-    private List<String> filterSearchFields(List<String> searchFields, String searchTypes) {
+    private List<String> filterSearchFields(List<String> searchFields, String searchType) {
         if (searchFields == null || searchFields.isEmpty()) return searchFields;
-        if (searchTypes == null || searchTypes.isBlank()) return searchFields;
-        String[] tokens = searchTypes.split(",");
+        if (searchType == null || searchType.isBlank()) return searchFields;
+        String[] tokens = searchType.split(",");
         List<String> result = new ArrayList<>();
         for (String col : searchFields) {
             for (String t : tokens) {

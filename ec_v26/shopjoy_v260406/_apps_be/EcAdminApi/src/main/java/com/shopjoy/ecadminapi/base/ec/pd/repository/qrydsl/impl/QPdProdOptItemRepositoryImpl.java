@@ -31,6 +31,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
     private static final QPdProdOptItem i = QPdProdOptItem.pdProdOptItem;
     private static final QPdProdOpt     opt = QPdProdOpt.pdProdOpt;
 
+    /* 상품 옵션 아이템 키조회 */
     @Override
     public Optional<PdProdOptItemDto.Item> selectById(String optItemId) {
         PdProdOptItemDto.Item dto = baseQuery()
@@ -39,6 +40,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 상품 옵션 아이템 목록조회 */
     @Override
     public List<PdProdOptItemDto.Item> selectList(PdProdOptItemDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -57,6 +59,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         return query.fetch();
     }
 
+    /* 상품 옵션 아이템 페이지조회 */
     @Override
     public PdProdOptItemDto.PageResponse selectPageList(PdProdOptItemDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -101,15 +104,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
                 .from(i);
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(PdProdOptItemDto.Request req) {
         BooleanBuilder w = new BooleanBuilder();
         if (req == null) return w;
@@ -122,8 +117,8 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         if (StringUtils.hasText(req.getOptItemId())) w.and(i.optItemId.eq(req.getOptItemId()));
 
         if (StringUtils.hasText(req.getSearchValue())) {
-            String types = "," + (req.getSearchTypes() == null ? "" : req.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(req.getSearchTypes());
+            String types = "," + (req.getSearchType() == null ? "" : req.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(req.getSearchType());
             String pattern = "%" + req.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_opt_nm,")) or.or(i.optNm.likeIgnoreCase(pattern));
@@ -181,6 +176,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         return orders;
     }
 
+    /* 상품 옵션 아이템 수정 */
     @Override
     public int updateSelective(PdProdOptItem entity) {
         if (entity.getOptItemId() == null) return 0;

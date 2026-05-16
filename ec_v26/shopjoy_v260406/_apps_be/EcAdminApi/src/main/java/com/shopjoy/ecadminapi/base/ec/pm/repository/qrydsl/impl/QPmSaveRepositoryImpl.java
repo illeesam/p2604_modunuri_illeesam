@@ -34,6 +34,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     private static final QMbMember mem  = QMbMember.mbMember;
     private static final QSyCode   cdSt = new QSyCode("cd_st");
 
+    /* 적립금 baseQuery */
     private JPAQuery<PmSaveDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmSaveDto.Item.class,
@@ -47,6 +48,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 .leftJoin(cdSt).on(cdSt.codeGrp.eq("SAVE_TYPE").and(cdSt.codeValue.eq(s.saveTypeCd)));
     }
 
+    /* 적립금 키조회 */
     @Override
     public Optional<PmSaveDto.Item> selectById(String saveId) {
         PmSaveDto.Item dto = baseQuery()
@@ -55,6 +57,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 적립금 목록조회 */
     @Override
     public List<PmSaveDto.Item> selectList(PmSaveDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -73,6 +76,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         return query.fetch();
     }
 
+    /* 적립금 페이지조회 */
     @Override
     public PmSaveDto.PageResponse selectPageList(PmSaveDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -98,6 +102,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 적립금 buildCondition */
     private BooleanBuilder buildCondition(PmSaveDto.Request search) {
         BooleanBuilder w = new BooleanBuilder();
         if (search == null) return w;
@@ -154,6 +159,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         return orders;
     }
 
+    /* 적립금 수정 */
     @Override
     public int updateSelective(PmSave entity) {
         if (entity.getSaveId() == null) return 0;

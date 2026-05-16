@@ -19,8 +19,11 @@ public class BoCmNoticeService {
 
     private final SyNoticeService syNoticeService;
 
+    /* 키조회 */
     public SyNoticeDto.Item getById(String id) { return syNoticeService.getById(id); }
+    /* 목록조회 */
     public List<SyNoticeDto.Item> getList(SyNoticeDto.Request req) { return syNoticeService.getList(req); }
+    /* 페이지조회 */
     public SyNoticeDto.PageResponse getPageData(SyNoticeDto.Request req) { return syNoticeService.getPageData(req); }
 
     @Transactional public SyNotice create(SyNotice body) { return syNoticeService.create(body); }

@@ -8,10 +8,10 @@ window.SyBatchHist = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;
-    const showConfirm  = window.boApp.showConfirm;
-    const showRefModal = window.boApp.showRefModal;
-    const setApiRes    = window.boApp.setApiRes;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const batches = reactive([]);
     const batchLogs = reactive([]);
     const uiState = reactive({ loading: false, isPageCodeLoad: false, error: null, searchBatchId: '', searchStatus: '', expandedSet: new Set() });
@@ -47,6 +47,7 @@ window.SyBatchHist = {
       }
     };
 
+    /* 배치 fnLoadCodes */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -71,27 +72,42 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
+    /* 배치 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* 배치 setPage */
     const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData().then(() => { onExpandAll(); }); } };
+
+    /* 배치 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData().then(() => { onExpandAll(); }); };
+
+    /* 배치 목록조회 */
     const onSearch     = () => { pager.pageNo = 1; handleSearchData('DEFAULT').then(() => { onExpandAll(); }); };
 
     /* ── 메시지 상세 토글 ── */
     const isExpanded = (logId) => uiState.expandedSet.has(logId);
+
+    /* 배치 toggleExpand */
     const toggleExpand = (logId) => {
       if (uiState.expandedSet.has(logId)) uiState.expandedSet.delete(logId);
       else uiState.expandedSet.add(logId);
     };
+
+    /* 배치 onExpandAll */
     const onExpandAll = () => {
       uiState.expandedSet.clear();
       batchLogs.forEach(l => uiState.expandedSet.add(l.logId));
     };
+
+    /* 배치 onCollapseAll */
     const onCollapseAll = () => {
       uiState.expandedSet.clear();
     };
 
+    /* 배치 fnRunBadge */
     const fnRunBadge = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
 
+    /* 배치 fnFmtDuration */
     const fnFmtDuration = (sec) => {
       if (!sec && sec !== 0) return '-';
       if (sec < 60) return `${sec}초`;

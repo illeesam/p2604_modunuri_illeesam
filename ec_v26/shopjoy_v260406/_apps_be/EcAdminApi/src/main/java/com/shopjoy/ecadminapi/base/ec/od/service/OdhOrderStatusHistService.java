@@ -27,6 +27,7 @@ public class OdhOrderStatusHistService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 주문 상태 이력 키조회 */
     public OdhOrderStatusHistDto.Item getById(String id) {
         OdhOrderStatusHistDto.Item dto = odhOrderStatusHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdhOrderStatusHistService {
         return odhOrderStatusHistRepository.selectById(id).orElse(null);
     }
 
+    /* 주문 상태 이력 상세조회 */
     public OdhOrderStatusHist findById(String id) {
         return odhOrderStatusHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdhOrderStatusHistService {
         return odhOrderStatusHistRepository.findById(id).orElse(null);
     }
 
+    /* 주문 상태 이력 키검증 */
     public boolean existsById(String id) {
         return odhOrderStatusHistRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdhOrderStatusHistService {
         return true;
     }
 
+    /* 주문 상태 이력 목록조회 */
     public List<OdhOrderStatusHistDto.Item> getList(OdhOrderStatusHistDto.Request req) {
         return odhOrderStatusHistRepository.selectList(req);
     }
 
+    /* 주문 상태 이력 페이지조회 */
     public OdhOrderStatusHistDto.PageResponse getPageData(OdhOrderStatusHistDto.Request req) {
         PageHelper.addPaging(req);
         return odhOrderStatusHistRepository.selectPageList(req);
     }
 
+    /* 주문 상태 이력 등록 */
     @Transactional
     public OdhOrderStatusHist create(OdhOrderStatusHist body) {
         body.setOrderStatusHistId(CmUtil.generateId("odh_order_status_hist"));
@@ -80,6 +86,7 @@ public class OdhOrderStatusHistService {
         return saved;
     }
 
+    /* 주문 상태 이력 저장 */
     @Transactional
     public OdhOrderStatusHist save(OdhOrderStatusHist entity) {
         if (!existsById(entity.getOrderStatusHistId()))
@@ -92,6 +99,7 @@ public class OdhOrderStatusHistService {
         return saved;
     }
 
+    /* 주문 상태 이력 수정 */
     @Transactional
     public OdhOrderStatusHist update(String id, OdhOrderStatusHist body) {
         OdhOrderStatusHist entity = findById(id);
@@ -104,6 +112,7 @@ public class OdhOrderStatusHistService {
         return saved;
     }
 
+    /* 주문 상태 이력 수정 */
     @Transactional
     public OdhOrderStatusHist updateSelective(OdhOrderStatusHist entity) {
         if (entity.getOrderStatusHistId() == null) throw new CmBizException("orderStatusHistId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdhOrderStatusHistService {
         return entity;
     }
 
+    /* 주문 상태 이력 삭제 */
     @Transactional
     public void delete(String id) {
         OdhOrderStatusHist entity = findById(id);
@@ -125,6 +135,7 @@ public class OdhOrderStatusHistService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 주문 상태 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhOrderStatusHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

@@ -27,6 +27,7 @@ public class PmCacheService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 캐시(충전금) 키조회 */
     public PmCacheDto.Item getById(String id) {
         PmCacheDto.Item dto = pmCacheRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class PmCacheService {
         return pmCacheRepository.selectById(id).orElse(null);
     }
 
+    /* 캐시(충전금) 상세조회 */
     public PmCache findById(String id) {
         return pmCacheRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class PmCacheService {
         return pmCacheRepository.findById(id).orElse(null);
     }
 
+    /* 캐시(충전금) 키검증 */
     public boolean existsById(String id) {
         return pmCacheRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class PmCacheService {
         return true;
     }
 
+    /* 캐시(충전금) 목록조회 */
     public List<PmCacheDto.Item> getList(PmCacheDto.Request req) {
         return pmCacheRepository.selectList(req);
     }
 
+    /* 캐시(충전금) 페이지조회 */
     public PmCacheDto.PageResponse getPageData(PmCacheDto.Request req) {
         PageHelper.addPaging(req);
         return pmCacheRepository.selectPageList(req);
     }
 
+    /* 캐시(충전금) 등록 */
     @Transactional
     public PmCache create(PmCache body) {
         body.setCacheId(CmUtil.generateId("pm_cache"));
@@ -80,6 +86,7 @@ public class PmCacheService {
         return saved;
     }
 
+    /* 캐시(충전금) 저장 */
     @Transactional
     public PmCache save(PmCache entity) {
         if (!existsById(entity.getCacheId()))
@@ -92,6 +99,7 @@ public class PmCacheService {
         return saved;
     }
 
+    /* 캐시(충전금) 수정 */
     @Transactional
     public PmCache update(String id, PmCache body) {
         PmCache entity = findById(id);
@@ -104,6 +112,7 @@ public class PmCacheService {
         return saved;
     }
 
+    /* 캐시(충전금) 수정 */
     @Transactional
     public PmCache updateSelective(PmCache entity) {
         if (entity.getCacheId() == null) throw new CmBizException("cacheId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class PmCacheService {
         return entity;
     }
 
+    /* 캐시(충전금) 삭제 */
     @Transactional
     public void delete(String id) {
         PmCache entity = findById(id);
@@ -125,6 +135,7 @@ public class PmCacheService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 캐시(충전금) 목록저장 */
     @Transactional
     public void saveList(List<PmCache> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

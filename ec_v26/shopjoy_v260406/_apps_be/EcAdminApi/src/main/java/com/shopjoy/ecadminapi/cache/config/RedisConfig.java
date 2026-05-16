@@ -54,6 +54,7 @@ public class RedisConfig {
 
     // ── 팩토리 ────────────────────────────────────────────────────────
 
+    /* createFactory */
     private LettuceConnectionFactory createFactory(RedisProperties.Node node) {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(node.getHost());

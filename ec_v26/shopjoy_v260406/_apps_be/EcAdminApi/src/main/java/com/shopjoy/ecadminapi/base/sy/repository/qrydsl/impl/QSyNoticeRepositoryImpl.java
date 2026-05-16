@@ -30,12 +30,14 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 공지사항 키조회 */
     @Override
     public Optional<SyNoticeDto.Item> selectById(String noticeId) {
         SyNoticeDto.Item dto = baseQuery().where(n.noticeId.eq(noticeId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
+    /* 공지사항 목록조회 */
     @Override
     public List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -51,6 +53,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         return query.fetch();
     }
 
+    /* 공지사항 페이지조회 */
     @Override
     public SyNoticeDto.PageResponse selectPageList(SyNoticeDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -70,6 +73,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 공지사항 baseQuery */
     private JPAQuery<SyNoticeDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyNoticeDto.Item.class,
@@ -83,15 +87,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                 .leftJoin(ste).on(ste.siteId.eq(n.siteId));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(SyNoticeDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -103,8 +99,8 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         if (StringUtils.hasText(s.getIsFixed()))      w.and(n.isFixed.eq(s.getIsFixed()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",def_title,")) or.or(n.noticeTitle.likeIgnoreCase(pattern));
@@ -158,6 +154,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         return orders;
     }
 
+    /* 공지사항 수정 */
     @Override
     public int updateSelective(SyNotice entity) {
         if (entity.getNoticeId() == null) return 0;

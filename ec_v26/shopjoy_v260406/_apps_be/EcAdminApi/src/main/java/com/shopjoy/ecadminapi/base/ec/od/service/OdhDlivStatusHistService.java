@@ -27,6 +27,7 @@ public class OdhDlivStatusHistService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 배송 상태 이력 키조회 */
     public OdhDlivStatusHistDto.Item getById(String id) {
         OdhDlivStatusHistDto.Item dto = odhDlivStatusHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class OdhDlivStatusHistService {
         return odhDlivStatusHistRepository.selectById(id).orElse(null);
     }
 
+    /* 배송 상태 이력 상세조회 */
     public OdhDlivStatusHist findById(String id) {
         return odhDlivStatusHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class OdhDlivStatusHistService {
         return odhDlivStatusHistRepository.findById(id).orElse(null);
     }
 
+    /* 배송 상태 이력 키검증 */
     public boolean existsById(String id) {
         return odhDlivStatusHistRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class OdhDlivStatusHistService {
         return true;
     }
 
+    /* 배송 상태 이력 목록조회 */
     public List<OdhDlivStatusHistDto.Item> getList(OdhDlivStatusHistDto.Request req) {
         return odhDlivStatusHistRepository.selectList(req);
     }
 
+    /* 배송 상태 이력 페이지조회 */
     public OdhDlivStatusHistDto.PageResponse getPageData(OdhDlivStatusHistDto.Request req) {
         PageHelper.addPaging(req);
         return odhDlivStatusHistRepository.selectPageList(req);
     }
 
+    /* 배송 상태 이력 등록 */
     @Transactional
     public OdhDlivStatusHist create(OdhDlivStatusHist body) {
         body.setDlivStatusHistId(CmUtil.generateId("odh_dliv_status_hist"));
@@ -80,6 +86,7 @@ public class OdhDlivStatusHistService {
         return saved;
     }
 
+    /* 배송 상태 이력 저장 */
     @Transactional
     public OdhDlivStatusHist save(OdhDlivStatusHist entity) {
         if (!existsById(entity.getDlivStatusHistId()))
@@ -92,6 +99,7 @@ public class OdhDlivStatusHistService {
         return saved;
     }
 
+    /* 배송 상태 이력 수정 */
     @Transactional
     public OdhDlivStatusHist update(String id, OdhDlivStatusHist body) {
         OdhDlivStatusHist entity = findById(id);
@@ -104,6 +112,7 @@ public class OdhDlivStatusHistService {
         return saved;
     }
 
+    /* 배송 상태 이력 수정 */
     @Transactional
     public OdhDlivStatusHist updateSelective(OdhDlivStatusHist entity) {
         if (entity.getDlivStatusHistId() == null) throw new CmBizException("dlivStatusHistId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class OdhDlivStatusHistService {
         return entity;
     }
 
+    /* 배송 상태 이력 삭제 */
     @Transactional
     public void delete(String id) {
         OdhDlivStatusHist entity = findById(id);
@@ -125,6 +135,7 @@ public class OdhDlivStatusHistService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 배송 상태 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhDlivStatusHist> rows) {
         String authId = SecurityUtil.getAuthUser().authId();

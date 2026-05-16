@@ -19,8 +19,11 @@ public class BoStSettleConfigService {
 
     private final StSettleConfigService stSettleConfigService;
 
+    /* 키조회 */
     public StSettleConfigDto.Item getById(String id) { return stSettleConfigService.getById(id); }
+    /* 목록조회 */
     public List<StSettleConfigDto.Item> getList(StSettleConfigDto.Request req) { return stSettleConfigService.getList(req); }
+    /* 페이지조회 */
     public StSettleConfigDto.PageResponse getPageData(StSettleConfigDto.Request req) { return stSettleConfigService.getPageData(req); }
 
     @Transactional public StSettleConfig create(StSettleConfig body) { return stSettleConfigService.create(body); }

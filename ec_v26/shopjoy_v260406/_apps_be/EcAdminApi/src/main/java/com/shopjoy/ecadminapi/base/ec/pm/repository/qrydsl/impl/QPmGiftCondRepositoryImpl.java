@@ -34,6 +34,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     private static final QSySite     ste  = QSySite.sySite;
     private static final QSyCode     cdGct = new QSyCode("cd_gct");
 
+    /* 사은품 지급 조건 baseQuery */
     private JPAQuery<PmGiftCondDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(PmGiftCondDto.Item.class,
@@ -47,6 +48,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 .leftJoin(cdGct).on(cdGct.codeGrp.eq("GIFT_COND_TYPE").and(cdGct.codeValue.eq(c.condTypeCd)));
     }
 
+    /* 사은품 지급 조건 키조회 */
     @Override
     public Optional<PmGiftCondDto.Item> selectById(String giftCondId) {
         PmGiftCondDto.Item dto = baseQuery()
@@ -55,6 +57,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 사은품 지급 조건 목록조회 */
     @Override
     public List<PmGiftCondDto.Item> selectList(PmGiftCondDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -73,6 +76,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         return query.fetch();
     }
 
+    /* 사은품 지급 조건 페이지조회 */
     @Override
     public PmGiftCondDto.PageResponse selectPageList(PmGiftCondDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -98,6 +102,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 사은품 지급 조건 buildCondition */
     private BooleanBuilder buildCondition(PmGiftCondDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -154,6 +159,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         return orders;
     }
 
+    /* 사은품 지급 조건 수정 */
     @Override
     public int updateSelective(PmGiftCond entity) {
         if (entity.getGiftCondId() == null) return 0;

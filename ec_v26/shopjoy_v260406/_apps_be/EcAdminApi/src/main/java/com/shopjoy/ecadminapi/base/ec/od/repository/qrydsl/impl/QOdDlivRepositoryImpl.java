@@ -38,6 +38,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     private static final QSyCode   cdOc = new QSyCode("cd_oc");
     private static final QSyCode   cdIc = new QSyCode("cd_ic");
 
+    /* 배송 키조회 */
     @Override
     public Optional<OdDlivDto.Item> selectById(String dlivId) {
         OdDlivDto.Item dto = baseQuery()
@@ -46,6 +47,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* 배송 목록조회 */
     @Override
     public List<OdDlivDto.Item> selectList(OdDlivDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -64,6 +66,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         return query.fetch();
     }
 
+    /* 배송 페이지조회 */
     @Override
     public OdDlivDto.PageResponse selectPageList(OdDlivDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
@@ -90,6 +93,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 배송 baseQuery */
     private JPAQuery<OdDlivDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(OdDlivDto.Item.class,
@@ -123,15 +127,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(d.inboundCourierCd)));
     }
 
-    // searchTypes 사용 예 (콤마 경계 매칭):
-    //   - 단일 조건  : searchTypes = "def_blog_title"
-    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
-    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
-    //
-    //   buildCondition 내부에서는
-    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
-    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
-    //   형태로 비교한다.
+    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
     private BooleanBuilder buildCondition(OdDlivDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -139,10 +135,10 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         if (StringUtils.hasText(s.getSiteId())) w.and(d.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getDlivId())) w.and(d.dlivId.eq(s.getDlivId()));
 
-        // searchValue + searchTypes
+        // searchValue + searchType
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchTypes());
+            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
@@ -208,6 +204,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         return orders;
     }
 
+    /* 배송 수정 */
     @Override
     public int updateSelective(OdDliv entity) {
         if (entity.getDlivId() == null) return 0;

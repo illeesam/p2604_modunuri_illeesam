@@ -19,8 +19,11 @@ public class BoPmCacheService {
 
     private final PmCacheService pmCacheService;
 
+    /* 키조회 */
     public PmCacheDto.Item getById(String id) { return pmCacheService.getById(id); }
+    /* 목록조회 */
     public List<PmCacheDto.Item> getList(PmCacheDto.Request req) { return pmCacheService.getList(req); }
+    /* 페이지조회 */
     public PmCacheDto.PageResponse getPageData(PmCacheDto.Request req) { return pmCacheService.getPageData(req); }
 
     @Transactional public PmCache create(PmCache body) { return pmCacheService.create(body); }

@@ -19,8 +19,11 @@ public class BoSyBatchService {
 
     private final SyBatchService syBatchService;
 
+    /* 키조회 */
     public SyBatchDto.Item getById(String id) { return syBatchService.getById(id); }
+    /* 목록조회 */
     public List<SyBatchDto.Item> getList(SyBatchDto.Request req) { return syBatchService.getList(req); }
+    /* 페이지조회 */
     public SyBatchDto.PageResponse getPageData(SyBatchDto.Request req) { return syBatchService.getPageData(req); }
 
     @Transactional public SyBatch create(SyBatch body) { return syBatchService.create(body); }

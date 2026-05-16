@@ -19,8 +19,11 @@ public class BoDpWidgetLibService {
 
     private final DpWidgetLibService dpWidgetLibService;
 
+    /* 키조회 */
     public DpWidgetLibDto.Item getById(String id) { return dpWidgetLibService.getById(id); }
+    /* 목록조회 */
     public List<DpWidgetLibDto.Item> getList(DpWidgetLibDto.Request req) { return dpWidgetLibService.getList(req); }
+    /* 페이지조회 */
     public DpWidgetLibDto.PageResponse getPageData(DpWidgetLibDto.Request req) { return dpWidgetLibService.getPageData(req); }
 
     @Transactional public DpWidgetLib create(DpWidgetLib body) { return dpWidgetLibService.create(body); }

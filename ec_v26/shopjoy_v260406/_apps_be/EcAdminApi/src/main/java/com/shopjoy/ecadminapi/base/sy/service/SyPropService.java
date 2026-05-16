@@ -27,6 +27,7 @@ public class SyPropService {
     @PersistenceContext
     private EntityManager em;
 
+    /* 시스템 속성 키조회 */
     public SyPropDto.Item getById(String id) {
         SyPropDto.Item dto = syPropRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
@@ -38,6 +39,7 @@ public class SyPropService {
         return syPropRepository.selectById(id).orElse(null);
     }
 
+    /* 시스템 속성 상세조회 */
     public SyProp findById(String id) {
         return syPropRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -48,6 +50,7 @@ public class SyPropService {
         return syPropRepository.findById(id).orElse(null);
     }
 
+    /* 시스템 속성 키검증 */
     public boolean existsById(String id) {
         return syPropRepository.existsById(id);
     }
@@ -58,15 +61,18 @@ public class SyPropService {
         return true;
     }
 
+    /* 시스템 속성 목록조회 */
     public List<SyPropDto.Item> getList(SyPropDto.Request req) {
         return syPropRepository.selectList(req);
     }
 
+    /* 시스템 속성 페이지조회 */
     public SyPropDto.PageResponse getPageData(SyPropDto.Request req) {
         PageHelper.addPaging(req);
         return syPropRepository.selectPageList(req);
     }
 
+    /* 시스템 속성 등록 */
     @Transactional
     public SyProp create(SyProp body) {
         body.setPropId(CmUtil.generateId("sy_prop"));
@@ -80,6 +86,7 @@ public class SyPropService {
         return saved;
     }
 
+    /* 시스템 속성 저장 */
     @Transactional
     public SyProp save(SyProp entity) {
         if (!existsById(entity.getPropId()))
@@ -92,6 +99,7 @@ public class SyPropService {
         return saved;
     }
 
+    /* 시스템 속성 수정 */
     @Transactional
     public SyProp update(String id, SyProp body) {
         SyProp entity = findById(id);
@@ -104,6 +112,7 @@ public class SyPropService {
         return saved;
     }
 
+    /* 시스템 속성 수정 */
     @Transactional
     public SyProp updateSelective(SyProp entity) {
         if (entity.getPropId() == null) throw new CmBizException("propId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -117,6 +126,7 @@ public class SyPropService {
         return entity;
     }
 
+    /* 시스템 속성 삭제 */
     @Transactional
     public void delete(String id) {
         SyProp entity = findById(id);
@@ -125,6 +135,7 @@ public class SyPropService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
+    /* 시스템 속성 목록저장 */
     @Transactional
     public void saveList(List<SyProp> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
