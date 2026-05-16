@@ -41,12 +41,7 @@ public class ZzExam3Service {
     public ZzExam3Dto.Item getById(String exam1Id, String exam2Id, String exam3Id) {
         ZzExam3Dto.Item dto = zzExam3Repository.selectById(exam1Id, exam2Id, exam3Id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + exam1Id + "/" + exam2Id + "/" + exam3Id + "::" + CmUtil.svcCallerInfo(this));
-
-        // 상위 exam1 단건
-        dto.setExam1(zzExam1Repository.selectById(exam1Id).orElse(null));
-        // 상위 exam2 단건
-        dto.setExam2(zzExam2Repository.selectById(exam1Id, exam2Id).orElse(null));
-
+        fillRelations(dto);
         return dto;
     }
 
@@ -66,26 +61,34 @@ public class ZzExam3Service {
         return zzExam3Repository.existsById(pk(exam1Id, exam2Id, exam3Id));
     }
 
-    /** getList — 조회 */
+    /** getList — 조회 (각 항목에 상위 exam1 / exam2 포함) */
     public List<ZzExam3Dto.Item> getList(ZzExam3Dto.Request req) {
-        return zzExam3Repository.selectList(req);
+        List<ZzExam3Dto.Item> list = zzExam3Repository.selectList(req);
+        list.forEach(this::fillRelations);
+        return list;
     }
 
-    /** getPageData — 조회 */
+    /** getPageData — 조회 (각 항목에 상위 exam1 / exam2 포함) */
     public ZzExam3Dto.PageResponse getPageData(ZzExam3Dto.Request req) {
         PageHelper.addPaging(req);
-        return zzExam3Repository.selectPageList(req);
+        ZzExam3Dto.PageResponse res = zzExam3Repository.selectPageList(req);
+        if (res.getPageList() != null) res.getPageList().forEach(this::fillRelations);
+        return res;
+    }
+
+    /** 상위 계층(exam1 / exam2) 채우기 */
+    private void fillRelations(ZzExam3Dto.Item item) {
+        item.setExam1(zzExam1Repository.selectById(item.getExam1Id()).orElse(null));
+        item.setExam2(zzExam2Repository.selectById(item.getExam1Id(), item.getExam2Id()).orElse(null));
     }
 
     /** create — 생성 */
     @Transactional
     public ZzExam3 create(ZzExam3 body) {
         if (body.getExam1Id() == null || body.getExam1Id().isBlank()
-                || body.getExam2Id() == null || body.getExam2Id().isBlank()
-                || body.getExam3Id() == null || body.getExam3Id().isBlank())
-            throw new CmBizException("exam1Id, exam2Id, exam3Id 는 필수입니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (zzExam3Repository.existsById(pk(body.getExam1Id(), body.getExam2Id(), body.getExam3Id())))
-            throw new CmBizException("이미 존재하는 데이터입니다: " + body.getExam1Id() + "/" + body.getExam2Id() + "/" + body.getExam3Id() + "::" + CmUtil.svcCallerInfo(this));
+                || body.getExam2Id() == null || body.getExam2Id().isBlank())
+            throw new CmBizException("exam1Id, exam2Id 는 필수입니다." + "::" + CmUtil.svcCallerInfo(this));
+        body.setExam3Id(CmUtil.generateId("zz_exam3"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());

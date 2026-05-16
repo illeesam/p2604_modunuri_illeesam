@@ -54,6 +54,10 @@ public class ZzSamy2Dto {
         private String kindCd;
         private String cateCds;
         private String samy1Id;
+
+        // ── 상위 계층 연관정보 ──
+        private ZzSamy1Dto.Item samy1;   // 상위 samy1 단건 (samy1_id)
+
         // ── 하위 계층 연관정보 ──
         private List<ZzSamy3Dto.Item> samy3s;   // 하위 samy3 목록 (samy2_id)
     }

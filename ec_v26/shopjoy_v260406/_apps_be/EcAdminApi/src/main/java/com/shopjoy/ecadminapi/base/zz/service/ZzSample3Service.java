@@ -36,14 +36,7 @@ public class ZzSample3Service {
     public ZzSample3Dto.Item getById(String id) {
         ZzSample3Dto.Item dto = zzSample3Repository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
-
-        // 상위 sample1 단건 (sample1_id FK)
-        if (StringUtils.hasText(dto.getSample1Id()))
-            dto.setSample1(zzSample1Repository.selectById(dto.getSample1Id()).orElse(null));
-        // 상위 sample2 단건 (sample2_id FK)
-        if (StringUtils.hasText(dto.getSample2Id()))
-            dto.setSample2(zzSample2Repository.selectById(dto.getSample2Id()).orElse(null));
-
+        fillRelations(dto);
         return dto;
     }
 
@@ -74,15 +67,27 @@ public class ZzSample3Service {
         return true;
     }
 
-    /** getList — 조회 */
+    /** getList — 조회 (각 항목에 상위 sample1 / sample2 포함) */
     public List<ZzSample3Dto.Item> getList(ZzSample3Dto.Request req) {
-        return zzSample3Repository.selectList(req);
+        List<ZzSample3Dto.Item> list = zzSample3Repository.selectList(req);
+        list.forEach(this::fillRelations);
+        return list;
     }
 
-    /** getPageData — 조회 */
+    /** getPageData — 조회 (각 항목에 상위 sample1 / sample2 포함) */
     public ZzSample3Dto.PageResponse getPageData(ZzSample3Dto.Request req) {
         PageHelper.addPaging(req);
-        return zzSample3Repository.selectPageList(req);
+        ZzSample3Dto.PageResponse res = zzSample3Repository.selectPageList(req);
+        if (res.getPageList() != null) res.getPageList().forEach(this::fillRelations);
+        return res;
+    }
+
+    /** 상위 계층(sample1 / sample2) 채우기 */
+    private void fillRelations(ZzSample3Dto.Item item) {
+        if (StringUtils.hasText(item.getSample1Id()))
+            item.setSample1(zzSample1Repository.selectById(item.getSample1Id()).orElse(null));
+        if (StringUtils.hasText(item.getSample2Id()))
+            item.setSample2(zzSample2Repository.selectById(item.getSample2Id()).orElse(null));
     }
 
     /** create — 생성 */

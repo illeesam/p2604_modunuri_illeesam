@@ -2,7 +2,10 @@ package com.shopjoy.ecadminapi.base.zz.service;
 
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy3Dto;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSamy3;
+import com.shopjoy.ecadminapi.base.zz.mapper.ZzSamy1Mapper;
+import com.shopjoy.ecadminapi.base.zz.mapper.ZzSamy2Mapper;
 import com.shopjoy.ecadminapi.base.zz.mapper.ZzSamy3Mapper;
+import org.springframework.util.StringUtils;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -19,27 +22,41 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ZzSamy3Service {
 
+    private final ZzSamy1Mapper zzSamy1Mapper;
+    private final ZzSamy2Mapper zzSamy2Mapper;
     private final ZzSamy3Mapper zzSamy3Mapper;
 
-    /** getById — 조회 */
+    /** getById — 조회 (상위 samy1 / samy2 포함) */
     public ZzSamy3Dto.Item getById(String samy3Id) {
         ZzSamy3Dto.Item dto = zzSamy3Mapper.selectById(samy3Id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + samy3Id + "::" + CmUtil.svcCallerInfo(this));
+        fillRelations(dto);
         return dto;
     }
 
-    /** getList — 조회 */
+    /** getList — 조회 (각 항목에 상위 samy1 / samy2 포함) */
     public List<ZzSamy3Dto.Item> getList(ZzSamy3Dto.Request req) {
-        return zzSamy3Mapper.selectList(req);
+        List<ZzSamy3Dto.Item> list = zzSamy3Mapper.selectList(req);
+        list.forEach(this::fillRelations);
+        return list;
     }
 
-    /** getPageData — 조회 */
+    /** getPageData — 조회 (각 항목에 상위 samy1 / samy2 포함) */
     public ZzSamy3Dto.PageResponse getPageData(ZzSamy3Dto.Request req) {
         PageHelper.addPaging(req);
         List<ZzSamy3Dto.Item> list = zzSamy3Mapper.selectPageList(req);
+        list.forEach(this::fillRelations);
         long total = zzSamy3Mapper.selectPageCount(req);
         ZzSamy3Dto.PageResponse res = new ZzSamy3Dto.PageResponse();
         return res.setPageInfo(list, total, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
+    /** 상위 계층(samy1 / samy2) 채우기 */
+    private void fillRelations(ZzSamy3Dto.Item item) {
+        if (StringUtils.hasText(item.getSamy1Id()))
+            item.setSamy1(zzSamy1Mapper.selectById(item.getSamy1Id()));
+        if (StringUtils.hasText(item.getSamy2Id()))
+            item.setSamy2(zzSamy2Mapper.selectById(item.getSamy2Id()));
     }
 
     /** create — 생성 */

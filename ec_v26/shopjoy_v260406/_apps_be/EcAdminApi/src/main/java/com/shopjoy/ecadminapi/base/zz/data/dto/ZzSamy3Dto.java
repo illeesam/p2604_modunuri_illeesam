@@ -55,6 +55,10 @@ public class ZzSamy3Dto {
         private String cateCds;
         private String samy1Id;
         private String samy2Id;
+
+        // ── 상위 계층 연관정보 ──
+        private ZzSamy1Dto.Item samy1;   // 상위 samy1 단건 (samy1_id)
+        private ZzSamy2Dto.Item samy2;   // 상위 samy2 단건 (samy2_id)
     }
 
     @Getter @Setter @NoArgsConstructor

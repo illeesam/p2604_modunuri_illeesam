@@ -31,13 +31,14 @@ public class ZzSamy1Service {
     public ZzSamy1Dto.Item getById(String samy1Id) {
         ZzSamy1Dto.Item dto = zzSamy1Mapper.selectById(samy1Id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + samy1Id + "::" + CmUtil.svcCallerInfo(this));
+        fillRelations(dto);
         return dto;
     }
 
     /** getList — 조회 (각 항목에 하위 samy2s / samy3s 포함) */
     public List<ZzSamy1Dto.Item> getList(ZzSamy1Dto.Request req) {
         List<ZzSamy1Dto.Item> list = zzSamy1Mapper.selectList(req);
-        list.forEach(this::fillChildren);
+        list.forEach(this::fillRelations);
         return list;
     }
 
@@ -45,14 +46,14 @@ public class ZzSamy1Service {
     public ZzSamy1Dto.PageResponse getPageData(ZzSamy1Dto.Request req) {
         PageHelper.addPaging(req);
         List<ZzSamy1Dto.Item> list = zzSamy1Mapper.selectPageList(req);
-        list.forEach(this::fillChildren);
+        list.forEach(this::fillRelations);
         long total = zzSamy1Mapper.selectPageCount(req);
         ZzSamy1Dto.PageResponse res = new ZzSamy1Dto.PageResponse();
         return res.setPageInfo(list, total, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 
     /** 하위 계층(samy2s/samy3s) 채우기 */
-    private void fillChildren(ZzSamy1Dto.Item item) {
+    private void fillRelations(ZzSamy1Dto.Item item) {
         ZzSamy2Dto.Request req2 = new ZzSamy2Dto.Request();
         req2.setSamy1Id(item.getSamy1Id());
         item.setSamy2s(zzSamy2Mapper.selectList(req2));

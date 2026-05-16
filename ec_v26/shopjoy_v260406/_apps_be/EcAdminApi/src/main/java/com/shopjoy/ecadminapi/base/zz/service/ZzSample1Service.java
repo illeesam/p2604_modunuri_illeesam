@@ -37,17 +37,7 @@ public class ZzSample1Service {
     public ZzSample1Dto.Item getById(String id) {
         ZzSample1Dto.Item dto = zzSample1Repository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
-
-        // 하위 sample2 목록 (sample1_id FK)
-        ZzSample2Dto.Request req2 = new ZzSample2Dto.Request();
-        req2.setSample1Id(id);
-        dto.setSample2s(zzSample2Repository.selectList(req2));
-
-        // 하위 sample3 목록 (sample1_id FK)
-        ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
-        req3.setSample1Id(id);
-        dto.setSample3s(zzSample3Repository.selectList(req3));
-
+        fillRelations(dto);
         return dto;
     }
 
@@ -81,7 +71,7 @@ public class ZzSample1Service {
     /** getList — 조회 (각 항목에 하위 sample2s / sample3s 포함) */
     public List<ZzSample1Dto.Item> getList(ZzSample1Dto.Request req) {
         List<ZzSample1Dto.Item> list = zzSample1Repository.selectList(req);
-        list.forEach(this::fillChildren);
+        list.forEach(this::fillRelations);
         return list;
     }
 
@@ -89,12 +79,12 @@ public class ZzSample1Service {
     public ZzSample1Dto.PageResponse getPageData(ZzSample1Dto.Request req) {
         PageHelper.addPaging(req);
         ZzSample1Dto.PageResponse res = zzSample1Repository.selectPageList(req);
-        if (res.getPageList() != null) res.getPageList().forEach(this::fillChildren);
+        if (res.getPageList() != null) res.getPageList().forEach(this::fillRelations);
         return res;
     }
 
     /** 하위 계층(sample2s/sample3s) 채우기 */
-    private void fillChildren(ZzSample1Dto.Item item) {
+    private void fillRelations(ZzSample1Dto.Item item) {
         ZzSample2Dto.Request req2 = new ZzSample2Dto.Request();
         req2.setSample1Id(item.getSample1Id());
         item.setSample2s(zzSample2Repository.selectList(req2));

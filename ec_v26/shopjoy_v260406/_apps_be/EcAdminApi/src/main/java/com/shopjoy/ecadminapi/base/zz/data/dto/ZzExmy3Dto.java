@@ -40,6 +40,10 @@ public class ZzExmy3Dto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
+
+        // ── 상위 계층 연관정보 ──
+        private ZzExmy1Dto.Item exmy1;   // 상위 exmy1 단건 (exmy1_id)
+        private ZzExmy2Dto.Item exmy2;   // 상위 exmy2 단건 (exmy1_id, exmy2_id)
     }
 
     @Getter @Setter @NoArgsConstructor

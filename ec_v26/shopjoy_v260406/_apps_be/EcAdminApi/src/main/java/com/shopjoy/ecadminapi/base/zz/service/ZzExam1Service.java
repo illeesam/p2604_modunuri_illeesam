@@ -37,17 +37,7 @@ public class ZzExam1Service {
     public ZzExam1Dto.Item getById(String exam1Id) {
         ZzExam1Dto.Item dto = zzExam1Repository.selectById(exam1Id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + exam1Id + "::" + CmUtil.svcCallerInfo(this));
-
-        // 하위 exam2 목록
-        ZzExam2Dto.Request req2 = new ZzExam2Dto.Request();
-        req2.setExam1Id(exam1Id);
-        dto.setExam2s(zzExam2Repository.selectList(req2));
-
-        // 하위 exam3 목록
-        ZzExam3Dto.Request req3 = new ZzExam3Dto.Request();
-        req3.setExam1Id(exam1Id);
-        dto.setExam3s(zzExam3Repository.selectList(req3));
-
+        fillRelations(dto);
         return dto;
     }
 
@@ -70,7 +60,7 @@ public class ZzExam1Service {
     /** getList — 조회 (각 항목에 하위 exam2s / exam3s 포함) */
     public List<ZzExam1Dto.Item> getList(ZzExam1Dto.Request req) {
         List<ZzExam1Dto.Item> list = zzExam1Repository.selectList(req);
-        list.forEach(this::fillChildren);
+        list.forEach(this::fillRelations);
         return list;
     }
 
@@ -78,12 +68,12 @@ public class ZzExam1Service {
     public ZzExam1Dto.PageResponse getPageData(ZzExam1Dto.Request req) {
         PageHelper.addPaging(req);
         ZzExam1Dto.PageResponse res = zzExam1Repository.selectPageList(req);
-        if (res.getPageList() != null) res.getPageList().forEach(this::fillChildren);
+        if (res.getPageList() != null) res.getPageList().forEach(this::fillRelations);
         return res;
     }
 
     /** 하위 계층(exam2s/exam3s) 채우기 */
-    private void fillChildren(ZzExam1Dto.Item item) {
+    private void fillRelations(ZzExam1Dto.Item item) {
         ZzExam2Dto.Request req2 = new ZzExam2Dto.Request();
         req2.setExam1Id(item.getExam1Id());
         item.setExam2s(zzExam2Repository.selectList(req2));

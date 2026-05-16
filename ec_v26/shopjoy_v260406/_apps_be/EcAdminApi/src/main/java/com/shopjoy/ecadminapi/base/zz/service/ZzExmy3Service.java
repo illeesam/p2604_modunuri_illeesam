@@ -2,7 +2,10 @@ package com.shopjoy.ecadminapi.base.zz.service;
 
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy3Dto;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExmy3;
+import com.shopjoy.ecadminapi.base.zz.mapper.ZzExmy1Mapper;
+import com.shopjoy.ecadminapi.base.zz.mapper.ZzExmy2Mapper;
 import com.shopjoy.ecadminapi.base.zz.mapper.ZzExmy3Mapper;
+import org.springframework.util.StringUtils;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -19,27 +22,41 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ZzExmy3Service {
 
+    private final ZzExmy1Mapper zzExmy1Mapper;
+    private final ZzExmy2Mapper zzExmy2Mapper;
     private final ZzExmy3Mapper zzExmy3Mapper;
 
-    /** getById — 조회 (복합 PK) */
+    /** getById — 조회 (복합 PK, 상위 exmy1 / exmy2 포함) */
     public ZzExmy3Dto.Item getById(String exmy1Id, String exmy2Id, String exmy3Id) {
         ZzExmy3Dto.Item dto = zzExmy3Mapper.selectById(exmy1Id, exmy2Id, exmy3Id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + exmy1Id + "/" + exmy2Id + "/" + exmy3Id + "::" + CmUtil.svcCallerInfo(this));
+        fillRelations(dto);
         return dto;
     }
 
-    /** getList — 조회 */
+    /** getList — 조회 (각 항목에 상위 exmy1 / exmy2 포함) */
     public List<ZzExmy3Dto.Item> getList(ZzExmy3Dto.Request req) {
-        return zzExmy3Mapper.selectList(req);
+        List<ZzExmy3Dto.Item> list = zzExmy3Mapper.selectList(req);
+        list.forEach(this::fillRelations);
+        return list;
     }
 
-    /** getPageData — 조회 */
+    /** getPageData — 조회 (각 항목에 상위 exmy1 / exmy2 포함) */
     public ZzExmy3Dto.PageResponse getPageData(ZzExmy3Dto.Request req) {
         PageHelper.addPaging(req);
         List<ZzExmy3Dto.Item> list = zzExmy3Mapper.selectPageList(req);
+        list.forEach(this::fillRelations);
         long total = zzExmy3Mapper.selectPageCount(req);
         ZzExmy3Dto.PageResponse res = new ZzExmy3Dto.PageResponse();
         return res.setPageInfo(list, total, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
+    }
+
+    /** 상위 계층(exmy1 / exmy2) 채우기 */
+    private void fillRelations(ZzExmy3Dto.Item item) {
+        if (StringUtils.hasText(item.getExmy1Id()))
+            item.setExmy1(zzExmy1Mapper.selectById(item.getExmy1Id()));
+        if (StringUtils.hasText(item.getExmy1Id()) && StringUtils.hasText(item.getExmy2Id()))
+            item.setExmy2(zzExmy2Mapper.selectById(item.getExmy1Id(), item.getExmy2Id()));
     }
 
     /** create — 생성 */

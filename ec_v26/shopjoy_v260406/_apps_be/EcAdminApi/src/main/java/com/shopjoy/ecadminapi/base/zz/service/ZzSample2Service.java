@@ -37,16 +37,7 @@ public class ZzSample2Service {
     public ZzSample2Dto.Item getById(String id) {
         ZzSample2Dto.Item dto = zzSample2Repository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
-
-        // 상위 sample1 단건 (sample1_id FK)
-        if (StringUtils.hasText(dto.getSample1Id()))
-            dto.setSample1(zzSample1Repository.selectById(dto.getSample1Id()).orElse(null));
-
-        // 하위 sample3 목록 (sample2_id FK)
-        ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
-        req3.setSample2Id(id);
-        dto.setSample3s(zzSample3Repository.selectList(req3));
-
+        fillRelations(dto);
         return dto;
     }
 
@@ -77,23 +68,28 @@ public class ZzSample2Service {
         return true;
     }
 
-    /** getList — 조회 (각 항목에 하위 sample3s 포함) */
+    /** getList — 조회 (각 항목에 상위 sample1 / 하위 sample3s 포함) */
     public List<ZzSample2Dto.Item> getList(ZzSample2Dto.Request req) {
         List<ZzSample2Dto.Item> list = zzSample2Repository.selectList(req);
-        list.forEach(this::fillChildren);
+        list.forEach(this::fillRelations);
         return list;
     }
 
-    /** getPageData — 조회 (각 항목에 하위 sample3s 포함) */
+    /** getPageData — 조회 (각 항목에 상위 sample1 / 하위 sample3s 포함) */
     public ZzSample2Dto.PageResponse getPageData(ZzSample2Dto.Request req) {
         PageHelper.addPaging(req);
         ZzSample2Dto.PageResponse res = zzSample2Repository.selectPageList(req);
-        if (res.getPageList() != null) res.getPageList().forEach(this::fillChildren);
+        if (res.getPageList() != null) res.getPageList().forEach(this::fillRelations);
         return res;
     }
 
-    /** 하위 계층(sample3s) 채우기 */
-    private void fillChildren(ZzSample2Dto.Item item) {
+    /** 상위 계층(sample1) + 하위 계층(sample3s) 채우기 */
+    private void fillRelations(ZzSample2Dto.Item item) {
+        // 상위 sample1 단건 (sample1_id FK)
+        if (StringUtils.hasText(item.getSample1Id()))
+            item.setSample1(zzSample1Repository.selectById(item.getSample1Id()).orElse(null));
+
+        // 하위 sample3 목록 (sample2_id FK)
         ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
         req3.setSample2Id(item.getSample2Id());
         item.setSample3s(zzSample3Repository.selectList(req3));
