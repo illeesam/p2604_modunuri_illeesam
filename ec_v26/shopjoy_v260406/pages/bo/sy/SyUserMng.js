@@ -13,7 +13,7 @@ window.SyUserMng = {
     const users = reactive([]);
     const depts = reactive([]);
         const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, boUsers: [], selectedDeptId: null, sortKey: '', sortDir: 'asc' });
-    const codes = reactive({ user_status: [], user_roles: [], date_range_opts: [] });
+    const codes = reactive({ user_status: [], user_roles: [], user_date_types: [], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'userNm asc', desc: 'userNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
@@ -128,6 +128,7 @@ window.SyUserMng = {
       const codeStore = window.sfGetBoCodeStore();
       codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
       codes.user_roles = codeStore.sgGetGrpCodes('USER_ROLE');
+      codes.user_date_types = codeStore.sgGetGrpCodes('USER_DATE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
@@ -260,9 +261,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <option v-for="c in codes.user_status" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.dateType">
-        <option value="reg_date">등록일</option>
-        <option value="upd_date">수정일</option>
-        <option value="last_login_date">최종로그인일</option>
+        <option v-for="c in codes.user_date_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

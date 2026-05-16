@@ -16,7 +16,7 @@ window.OdCartMng = {
     const pager  = reactive({ pageNo: 1, pageSize: 20, totalCount: 0, totalPage: 1 });
     const search = reactive({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
     const uiState = reactive({ loading: false, selectedIds: [] });
-    const codes = reactive({ sites: [] });
+    const codes = reactive({ sites: [], cart_date_types: [] });
 
     /* ── 회원 선택 팝업 ── */
     const PICK_SIZE = 20;
@@ -199,6 +199,10 @@ window.OdCartMng = {
         const res = await coApiSvc.sySite.getList({}, '장바구니관리', '사이트목록');
         codes.sites = res.data?.data || [];
       } catch (_) {}
+      try {
+        const codeStore = window.sfGetBoCodeStore();
+        codes.cart_date_types = codeStore.sgGetGrpCodes('CART_DATE_TYPE');
+      } catch (_) {}
     };
 
     onMounted(() => { loadCodes(); handleSearchList(); });
@@ -248,8 +252,7 @@ window.OdCartMng = {
 
       <label class="search-label">기간</label>
       <select v-model="search.dateType" class="form-control" style="width:110px;">
-        <option value="reg_date">등록일자</option>
-        <option value="upd_date">수정일자</option>
+        <option v-for="c in codes.cart_date_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="search.dateStart" type="date" class="form-control" style="width:136px;" />
       <span style="margin:0 2px;color:#999;">~</span>

@@ -12,7 +12,7 @@ window.PdProdMng = {
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const products = reactive([]);
     const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
-    const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], date_range_opts: [] });
+    const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], prod_date_types: [], date_range_opts: [] });
 
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'prodNm asc', desc: 'prodNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -89,6 +89,7 @@ window.PdProdMng = {
       codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
       codes.option_types = codeStore.sgGetGrpCodes('OPTION_TYPE');
       codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
+      codes.prod_date_types = codeStore.sgGetGrpCodes('PROD_DATE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
@@ -234,7 +235,7 @@ window.PdProdMng = {
         <button v-if="searchParam.cate" type="button" class="btn btn-secondary btn-sm" @click="clearCate">✕</button>
       </div>
       <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.product_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
-      <select v-model="searchParam.dateType"><option value="reg_date">등록일자</option><option value="upd_date">수정일자</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
+      <select v-model="searchParam.dateType"><option v-for="c in codes.prod_date_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

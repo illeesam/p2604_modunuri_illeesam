@@ -12,9 +12,7 @@ window.StRawMng = {
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', searchMoreOpen: false, loading: false });
     const codes = reactive({ raw_types: [], raw_collect_statuses: [], raw_vendor_divs: [], pay_methods: [], order_statuses_kr: [],
-      confirm_yn_opts: [{ codeValue: 'Y', codeLabel: '확정' }, { codeValue: 'N', codeLabel: '미확정' }],
-      close_yn_opts: [{ codeValue: 'Y', codeLabel: '마감완료' }, { codeValue: 'N', codeLabel: '미마감' }],
-      send_yn_opts: [{ codeValue: 'Y', codeLabel: '전송완료' }, { codeValue: 'N', codeLabel: '미전송' }],
+      confirm_yn_opts: [], close_yn_opts: [], send_yn_opts: [],
       date_range_opts: [],
     });
 
@@ -28,6 +26,9 @@ window.StRawMng = {
         codes.raw_vendor_divs = codeStore.sgGetGrpCodes('RAW_VENDOR_DIV');
         codes.pay_methods = codeStore.sgGetGrpCodes('PAY_METHOD_KR');
         codes.order_statuses_kr = codeStore.sgGetGrpCodes('ORDER_STATUS_KR');
+        codes.confirm_yn_opts = codeStore.sgGetGrpCodes('CONFIRM_YN');
+        codes.close_yn_opts = codeStore.sgGetGrpCodes('CLOSE_YN');
+        codes.send_yn_opts = codeStore.sgGetGrpCodes('SEND_YN');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {

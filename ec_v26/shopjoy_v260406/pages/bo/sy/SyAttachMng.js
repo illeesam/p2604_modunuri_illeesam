@@ -11,7 +11,7 @@ window.SyAttachMng = {
     const attaches = reactive([]);
     const attachGrps = reactive([]);
     const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null });
-    const codes = reactive({ attach_type: [], active_statuses: [], date_range_opts: [] });
+    const codes = reactive({ attach_type: [], active_statuses: [], use_yns: [], storage_types: [], date_range_opts: [] });
     const grpSearchType = ref('');
     const grpSearchValue = ref('');
     const pager = reactive({
@@ -90,6 +90,8 @@ window.SyAttachMng = {
       const codeStore = window.sfGetBoCodeStore();
       codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
       codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      codes.use_yns = codeStore.sgGetGrpCodes('USE_YN');
+      codes.storage_types = codeStore.sgGetGrpCodes('STORAGE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
@@ -314,8 +316,7 @@ window.SyAttachMng = {
           <div class="form-group" style="margin-bottom:8px;">
             <label class="form-label" style="font-size:12px;">상태</label>
             <select class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.useYn">
-              <option value="Y">사용</option>
-              <option value="N">미사용</option>
+              <option v-for="c in codes.use_yns" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
           </div>
           <div style="display:flex;gap:6px;">
@@ -429,9 +430,7 @@ window.SyAttachMng = {
             <div class="form-group" style="margin-bottom:0;">
               <label class="form-label" style="font-size:11px;">스토리지타입</label>
               <select class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.storageType">
-                <option value="LOCAL">LOCAL</option>
-                <option value="AWS_S3">AWS_S3</option>
-                <option value="NCP_OBS">NCP_OBS</option>
+                <option v-for="c in codes.storage_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
             </div>
             <div class="form-group" style="margin-bottom:0;grid-column:span 3;">
@@ -457,8 +456,7 @@ window.SyAttachMng = {
             <div class="form-group" style="margin-bottom:0;">
               <label class="form-label" style="font-size:11px;">썸네일생성</label>
               <select class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.thumbGeneratedYn">
-                <option value="Y">Y</option>
-                <option value="N">N</option>
+                <option v-for="c in codes.use_yns" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
             </div>
             <div class="form-group" style="margin-bottom:0;">

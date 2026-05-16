@@ -14,7 +14,7 @@ window.OdOrderMng = {
     const members = reactive([]);
     const claims = reactive([]);
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
-    const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
+    const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [], order_date_types: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'orderDate asc', desc: 'orderDate desc' } };
 
@@ -97,6 +97,7 @@ window.OdOrderMng = {
       codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
       codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
       codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
+      codes.order_date_types = codeStore.sgGetGrpCodes('ORDER_DATE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
@@ -404,7 +405,7 @@ window.OdOrderMng = {
         <option value="">상태 전체</option>
         <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <select v-model="searchParam.dateType"><option value="order_date">주문일자</option><option value="pay_date">결제일자</option><option value="dliv_ship_date">출고일자</option><option value="reg_date">등록일자</option><option value="upd_date">수정일자</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
+      <select v-model="searchParam.dateType"><option v-for="c in codes.order_date_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

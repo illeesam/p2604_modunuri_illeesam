@@ -253,11 +253,6 @@ window.SyApiLogMng = {
       </select>
       <select v-model="uiState.searchMethod" style="width:100px">
         <option value="">메서드 전체</option>
-        <option v-if="!codes.http_methods.length" value="GET">GET</option>
-        <option v-if="!codes.http_methods.length" value="POST">POST</option>
-        <option v-if="!codes.http_methods.length" value="PUT">PUT</option>
-        <option v-if="!codes.http_methods.length" value="PATCH">PATCH</option>
-        <option v-if="!codes.http_methods.length" value="DELETE">DELETE</option>
         <option v-for="c in codes.http_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.searchPath" placeholder="API 경로 (예: /bo/sy/)" style="width:190px" @keyup.enter="onSearch" />
@@ -281,10 +276,6 @@ window.SyApiLogMng = {
       <input v-model="uiState.searchStatus" placeholder="상태코드 (예: 500)" style="width:150px" @keyup.enter="onSearch" />
       <select v-model="uiState.searchAppTypeCd" style="width:120px">
         <option value="">앱유형 전체</option>
-        <option v-if="!codes.app_types.length" value="ADMIN">관리자</option>
-        <option v-if="!codes.app_types.length" value="MEMBER">회원</option>
-        <option v-if="!codes.app_types.length" value="VENDOR">업체</option>
-        <option v-if="!codes.app_types.length" value="ANON">비로그인</option>
         <option v-for="c in codes.app_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span class="search-label">x-헤더</span>
