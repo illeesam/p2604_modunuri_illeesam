@@ -134,8 +134,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_slipId', label: '전표ID' },
-          { value: 'def_summary', label: '적요' },
+          { value: 'slipId', label: '전표ID' },
+          { value: 'summary', label: '적요' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

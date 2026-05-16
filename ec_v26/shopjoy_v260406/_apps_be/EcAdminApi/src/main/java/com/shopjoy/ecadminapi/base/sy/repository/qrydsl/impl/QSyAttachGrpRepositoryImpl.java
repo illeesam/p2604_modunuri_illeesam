@@ -82,7 +82,7 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
                 .from(g);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyAttachGrpDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;

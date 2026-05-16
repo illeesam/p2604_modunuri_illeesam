@@ -65,7 +65,7 @@ window.Login = {
         const params = { searchValue: memberPick.searchValue, searchType: memberPick.searchType, pageNo: memberPick.pageNo, pageSize: PICK_SIZE };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_loginId,def_phone';
+          params.searchType = 'memberNm,loginId,memberPhone';
         }
         const res = await coApiSvc.mbMember.getPage(
           params,
@@ -402,9 +402,9 @@ window.Login = {
               <bo-multi-check-select
                 v-model="memberPick.searchType"
                 :options="[
-                  { value: 'def_nm',      label: '이름' },
-                  { value: 'def_loginId', label: '로그인ID' },
-                  { value: 'def_phone',   label: '연락처' },
+                  { value: 'memberNm',    label: '이름' },
+                  { value: 'loginId',     label: '로그인ID' },
+                  { value: 'memberPhone', label: '연락처' },
                 ]"
                 placeholder="검색대상 전체"
                 all-label="전체 선택"

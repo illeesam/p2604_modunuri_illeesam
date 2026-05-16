@@ -97,7 +97,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_col11,def_col12" */
+    /* searchType 사용 예  searchType = "col11,col12" */
     private BooleanBuilder buildCondition(ZzExam1Dto.Request search) {
         BooleanBuilder w = new BooleanBuilder();
         if (search == null) return w;
@@ -120,12 +120,12 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
             boolean all  = !StringUtils.hasText(search.getSearchType());
             String v = search.getSearchValue();
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_exam1_id,")) or.or(e.exam1Id.containsIgnoreCase(v));
-            if (all || types.contains(",def_col11,"))     or.or(e.col11.containsIgnoreCase(v));
-            if (all || types.contains(",def_col12,"))     or.or(e.col12.containsIgnoreCase(v));
-            if (all || types.contains(",def_col13,"))     or.or(e.col13.containsIgnoreCase(v));
-            if (all || types.contains(",def_col14,"))     or.or(e.col14.containsIgnoreCase(v));
-            if (all || types.contains(",def_col15,"))     or.or(e.col15.containsIgnoreCase(v));
+            if (all || types.contains(",exam1Id,")) or.or(e.exam1Id.containsIgnoreCase(v));
+            if (all || types.contains(",col11,"))     or.or(e.col11.containsIgnoreCase(v));
+            if (all || types.contains(",col12,"))     or.or(e.col12.containsIgnoreCase(v));
+            if (all || types.contains(",col13,"))     or.or(e.col13.containsIgnoreCase(v));
+            if (all || types.contains(",col14,"))     or.or(e.col14.containsIgnoreCase(v));
+            if (all || types.contains(",col15,"))     or.or(e.col15.containsIgnoreCase(v));
             if (or.getValue() != null) w.and(or);
         }
         return w;

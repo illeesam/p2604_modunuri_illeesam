@@ -85,7 +85,7 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
                 .leftJoin(ste).on(ste.siteId.eq(v.siteId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyVocDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -101,7 +101,7 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_nm,")) or.or(v.vocNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",vocNm,")) or.or(v.vocNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

@@ -86,7 +86,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                 .leftJoin(ste).on(ste.siteId.eq(t.siteId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyTemplateDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;

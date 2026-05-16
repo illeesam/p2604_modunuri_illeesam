@@ -98,7 +98,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(a.targetTypeCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyAlarmDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;

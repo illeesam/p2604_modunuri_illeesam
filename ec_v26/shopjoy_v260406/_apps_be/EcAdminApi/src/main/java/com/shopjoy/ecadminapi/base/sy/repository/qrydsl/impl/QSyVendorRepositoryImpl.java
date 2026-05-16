@@ -101,7 +101,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyVendorDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -118,8 +118,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_nm,"))  or.or(v.vendorNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_ceo,")) or.or(v.ceoNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",vendorNm,"))  or.or(v.vendorNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",ceoNm,")) or.or(v.ceoNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

@@ -111,7 +111,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyhBatchLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -125,7 +125,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_batchNm,")) or.or(l.batchNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",batchNm,")) or.or(l.batchNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

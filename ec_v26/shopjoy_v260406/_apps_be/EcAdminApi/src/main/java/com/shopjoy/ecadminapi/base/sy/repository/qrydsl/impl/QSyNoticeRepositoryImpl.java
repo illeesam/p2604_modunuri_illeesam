@@ -87,7 +87,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                 .leftJoin(ste).on(ste.siteId.eq(n.siteId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyNoticeDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -103,7 +103,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_title,")) or.or(n.noticeTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",noticeTitle,")) or.or(n.noticeTitle.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

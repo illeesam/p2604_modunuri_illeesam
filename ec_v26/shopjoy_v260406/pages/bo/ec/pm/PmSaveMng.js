@@ -65,7 +65,7 @@ window.PmSaveMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_id';
+          params.searchType = 'saveNm,saveId';
         }
         const res = await boApiSvc.pmSave.getPage(params, '적립금관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
@@ -192,8 +192,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm', label: '마일리지명' },
-          { value: 'def_id', label: 'ID' },
+          { value: 'saveNm', label: '마일리지명' },
+          { value: 'saveId', label: 'ID' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

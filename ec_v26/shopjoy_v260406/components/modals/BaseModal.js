@@ -602,7 +602,7 @@ window.SiteSelectModal = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_no,def_code,def_nm,def_domain';
+          params.searchType = 'siteId,siteCode,siteNm,siteDomain';
         }
         const res = await boApiSvc.sySite.getPage(params, '사이트관리', '목록조회');
         const data = res.data?.data;
@@ -635,10 +635,10 @@ window.SiteSelectModal = {
     <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
-        { value: 'def_no',     label: '사이트번호' },
-        { value: 'def_code',   label: '사이트코드' },
-        { value: 'def_nm',     label: '사이트명' },
-        { value: 'def_domain', label: '도메인' },
+        { value: 'siteId',     label: '사이트번호' },
+        { value: 'siteCode',   label: '사이트코드' },
+        { value: 'siteNm',     label: '사이트명' },
+        { value: 'siteDomain', label: '도메인' },
       ]"
       placeholder="검색대상 전체"
       all-label="전체 선택"
@@ -688,7 +688,7 @@ window.VendorSelectModal = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_bizno';
+          params.searchType = 'vendorNm,corpNo';
         }
         const res = await boApiSvc.syVendor.getPage(params, '판매자관리', '목록조회');
         const data = res.data?.data;
@@ -718,8 +718,8 @@ window.VendorSelectModal = {
     <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
-        { value: 'def_nm',    label: '업체명' },
-        { value: 'def_bizno', label: '사업자번호' },
+        { value: 'vendorNm', label: '업체명' },
+        { value: 'corpNo',   label: '사업자번호' },
       ]"
       placeholder="검색대상 전체"
       all-label="전체 선택"
@@ -1035,7 +1035,7 @@ window.MemberSelectModal = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_email,def_id';
+          params.searchType = 'memberNm,memberEmail,memberId';
         }
         const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
@@ -1065,9 +1065,9 @@ window.MemberSelectModal = {
     <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
-        { value: 'def_nm',    label: '이름' },
-        { value: 'def_email', label: '이메일' },
-        { value: 'def_id',    label: 'ID' },
+        { value: 'memberNm',    label: '이름' },
+        { value: 'memberEmail', label: '이메일' },
+        { value: 'memberId',    label: 'ID' },
       ]"
       placeholder="검색대상 전체"
       all-label="전체 선택"
@@ -1116,7 +1116,7 @@ window.OrderSelectModal = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_orderId,def_memberNm,def_prodNm';
+          params.searchType = 'orderId,memberNm,prodNm';
         }
         const res = await boApiSvc.odOrder.getPage(params, '주문관리', '목록조회');
         const data = res.data?.data;
@@ -1146,9 +1146,9 @@ window.OrderSelectModal = {
     <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
-        { value: 'def_orderId',  label: '주문ID' },
-        { value: 'def_memberNm', label: '회원명' },
-        { value: 'def_prodNm',   label: '상품명' },
+        { value: 'orderId',  label: '주문ID' },
+        { value: 'memberNm', label: '회원명' },
+        { value: 'prodNm',   label: '상품명' },
       ]"
       placeholder="검색대상 전체"
       all-label="전체 선택"
@@ -1197,7 +1197,7 @@ window.BbmSelectModal = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_code,def_type';
+          params.searchType = 'bbmNm,bbmCode,bbmType';
         }
         const res = await boApiSvc.syBbm.getPage(params, '게시판모드관리', '목록조회');
         const data = res.data?.data;
@@ -1233,9 +1233,9 @@ window.BbmSelectModal = {
     <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
-        { value: 'def_nm',   label: '게시판명' },
-        { value: 'def_code', label: '코드' },
-        { value: 'def_type', label: '유형' },
+        { value: 'bbmNm',   label: '게시판명' },
+        { value: 'bbmCode', label: '코드' },
+        { value: 'bbmType', label: '유형' },
       ]"
       placeholder="검색대상 전체"
       all-label="전체 선택"
@@ -2631,11 +2631,11 @@ window.RowPickModal = {
     const cfFiltered = computed(() => cfAllRows.value.filter(o => {
       const searchVal = searchValue.value.trim().toLowerCase();
       if (searchVal) {
-        const types = searchType.value || 'def_widgetNm,def_panelNm,def_type';
+        const types = searchType.value || 'widgetNm,panelNm,widgetType';
         const hits = [];
-        if (types.includes('def_widgetNm')) hits.push((o.row.widgetNm   || '').toLowerCase().includes(searchVal));
-        if (types.includes('def_panelNm'))  hits.push((o.__panelName    || '').toLowerCase().includes(searchVal));
-        if (types.includes('def_type'))     hits.push((o.row.widgetType || '').toLowerCase().includes(searchVal));
+        if (types.includes('widgetNm')) hits.push((o.row.widgetNm   || '').toLowerCase().includes(searchVal));
+        if (types.includes('panelNm'))  hits.push((o.__panelName    || '').toLowerCase().includes(searchVal));
+        if (types.includes('widgetType'))     hits.push((o.row.widgetType || '').toLowerCase().includes(searchVal));
         if (!hits.some(Boolean)) return false;
       }
       if (searchStatus.value && o.__status !== searchStatus.value) return false;
@@ -2734,9 +2734,9 @@ window.RowPickModal = {
       <bo-multi-check-select
         v-model="searchType"
         :options="[
-          { value: 'def_widgetNm', label: '위젯명' },
-          { value: 'def_panelNm',  label: '패널명' },
-          { value: 'def_type',     label: '유형' },
+          { value: 'widgetNm', label: '위젯명' },
+          { value: 'panelNm',  label: '패널명' },
+          { value: 'widgetType',     label: '유형' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -2873,10 +2873,10 @@ window.AreaPickModal = {
       if (props.excludeUi && a.uiCode === props.excludeUi) return false;
       const searchVal = searchParam.searchValue.trim().toLowerCase();
       if (searchVal) {
-        const types = searchParam.searchType || 'def_areaCd,def_areaNm';
+        const types = searchParam.searchType || 'areaCd,areaNm';
         const hits = [];
-        if (types.includes('def_areaCd')) hits.push((a.codeValue || '').toLowerCase().includes(searchVal));
-        if (types.includes('def_areaNm')) hits.push((a.codeLabel || '').toLowerCase().includes(searchVal));
+        if (types.includes('areaCd')) hits.push((a.codeValue || '').toLowerCase().includes(searchVal));
+        if (types.includes('areaNm')) hits.push((a.codeLabel || '').toLowerCase().includes(searchVal));
         if (!hits.some(Boolean)) return false;
       }
       if (searchParam.useYn && a.useYn !== searchParam.useYn) return false;
@@ -2966,8 +2966,8 @@ window.AreaPickModal = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_areaCd', label: '영역코드' },
-          { value: 'def_areaNm', label: '영역명' },
+          { value: 'areaCd', label: '영역코드' },
+          { value: 'areaNm', label: '영역명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -3111,10 +3111,10 @@ window.PanelPickModal = {
       if (props.excludeArea && p.area === props.excludeArea) return false;
       const searchVal = searchParam.searchValue.trim().toLowerCase();
       if (searchVal) {
-        const types = searchParam.searchType || 'def_panelNm,def_areaCd';
+        const types = searchParam.searchType || 'panelNm,areaCd';
         const hits = [];
-        if (types.includes('def_panelNm')) hits.push((p.name || '').toLowerCase().includes(searchVal));
-        if (types.includes('def_areaCd'))  hits.push((p.area || '').toLowerCase().includes(searchVal));
+        if (types.includes('panelNm')) hits.push((p.name || '').toLowerCase().includes(searchVal));
+        if (types.includes('areaCd'))  hits.push((p.area || '').toLowerCase().includes(searchVal));
         if (!hits.some(Boolean)) return false;
       }
       if (searchParam.status && p.status !== searchParam.status) return false;
@@ -3208,8 +3208,8 @@ window.PanelPickModal = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_panelNm', label: '패널명' },
-          { value: 'def_areaCd',  label: '영역코드' },
+          { value: 'panelNm', label: '패널명' },
+          { value: 'areaCd',  label: '영역코드' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -3329,11 +3329,11 @@ window.WidgetLibPickModal = {
     const cfFiltered = computed(() => (props.widgetLibs || []).filter(d => {
       const searchVal = searchParam.searchValue.trim().toLowerCase();
       if (searchVal) {
-        const types = searchParam.searchType || 'def_nm,def_desc,def_tag';
+        const types = searchParam.searchType || 'nm,desc,tag';
         const hits = [];
-        if (types.includes('def_nm'))   hits.push((d.name || '').toLowerCase().includes(searchVal));
-        if (types.includes('def_desc')) hits.push((d.desc || '').toLowerCase().includes(searchVal));
-        if (types.includes('def_tag'))  hits.push((d.tags || '').toLowerCase().includes(searchVal));
+        if (types.includes('nm'))   hits.push((d.name || '').toLowerCase().includes(searchVal));
+        if (types.includes('desc')) hits.push((d.desc || '').toLowerCase().includes(searchVal));
+        if (types.includes('tag'))  hits.push((d.tags || '').toLowerCase().includes(searchVal));
         if (!hits.some(Boolean)) return false;
       }
       if (searchParam.type && d.widgetType !== searchParam.type) return false;
@@ -3431,9 +3431,9 @@ window.WidgetLibPickModal = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',   label: '이름' },
-          { value: 'def_desc', label: '설명' },
-          { value: 'def_tag',  label: '태그' },
+          { value: 'nm',   label: '이름' },
+          { value: 'desc', label: '설명' },
+          { value: 'tag',  label: '태그' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -3931,11 +3931,11 @@ window.BizPickModal = {
     const cfFiltered = computed(() => bizs.filter(b => {
       const k = searchParam.searchValue.trim().toLowerCase();
       if (k) {
-        const types = searchParam.searchType || 'def_bizno,def_bizNm,def_ceoNm';
+        const types = searchParam.searchType || 'bizNo,bizNm,ceoNm';
         const hits = [];
-        if (types.includes('def_bizno')) hits.push((b.bizNo || '').includes(k));
-        if (types.includes('def_bizNm')) hits.push((b.bizNm || '').toLowerCase().includes(k));
-        if (types.includes('def_ceoNm')) hits.push((b.ceoNm || '').toLowerCase().includes(k));
+        if (types.includes('bizNo')) hits.push((b.bizNo || '').includes(k));
+        if (types.includes('bizNm')) hits.push((b.bizNm || '').toLowerCase().includes(k));
+        if (types.includes('ceoNm')) hits.push((b.ceoNm || '').toLowerCase().includes(k));
         if (!hits.some(Boolean)) return false;
       }
       if (searchParam.type && b.vendorTypeCd !== searchParam.type) return false;
@@ -3964,9 +3964,9 @@ window.BizPickModal = {
         <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
-            { value: 'def_bizno', label: '사업자번호' },
-            { value: 'def_bizNm', label: '상호' },
-            { value: 'def_ceoNm', label: '대표자' },
+            { value: 'bizNo', label: '사업자번호' },
+            { value: 'bizNm', label: '상호' },
+            { value: 'ceoNm', label: '대표자' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"
@@ -4045,11 +4045,11 @@ window.SimpleUserPickModal = {
       if (cfExcl.value.has(u.boUserId)) return false;
       const k = searchParam.searchValue.trim().toLowerCase();
       if (k) {
-        const types = searchParam.searchType || 'def_nm,def_loginId,def_email';
+        const types = searchParam.searchType || 'nm,loginId,email';
         const hits = [];
-        if (types.includes('def_nm'))      hits.push((u.name    || '').toLowerCase().includes(k));
-        if (types.includes('def_loginId')) hits.push((u.loginId || '').toLowerCase().includes(k));
-        if (types.includes('def_email'))   hits.push((u.email   || '').toLowerCase().includes(k));
+        if (types.includes('nm'))      hits.push((u.name    || '').toLowerCase().includes(k));
+        if (types.includes('loginId')) hits.push((u.loginId || '').toLowerCase().includes(k));
+        if (types.includes('email'))   hits.push((u.email   || '').toLowerCase().includes(k));
         if (!hits.some(Boolean)) return false;
       }
       return true;
@@ -4075,9 +4075,9 @@ window.SimpleUserPickModal = {
         <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
-            { value: 'def_nm',      label: '이름' },
-            { value: 'def_loginId', label: '로그인ID' },
-            { value: 'def_email',   label: '이메일' },
+            { value: 'nm',      label: '이름' },
+            { value: 'loginId', label: '로그인ID' },
+            { value: 'email',   label: '이메일' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"

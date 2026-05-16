@@ -115,7 +115,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyhApiLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -130,7 +130,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_apiNm,")) or.or(l.apiNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",apiNm,")) or.or(l.apiNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

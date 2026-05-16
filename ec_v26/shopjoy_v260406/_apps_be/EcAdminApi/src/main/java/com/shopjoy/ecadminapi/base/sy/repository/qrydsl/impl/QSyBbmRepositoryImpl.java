@@ -87,7 +87,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 .leftJoin(ste).on(ste.siteId.eq(b.siteId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyBbmDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;

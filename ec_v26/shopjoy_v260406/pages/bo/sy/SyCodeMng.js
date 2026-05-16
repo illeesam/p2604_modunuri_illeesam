@@ -259,7 +259,7 @@ window.SyCodeMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (grpParams.searchValue && !grpParams.searchType) {
-          grpParams.searchType = 'codeGrp,def_label,def_value';
+          grpParams.searchType = 'codeGrp,codeLabel,codeValue';
         }
 
         const [grpRes, codeRes] = await Promise.all([
@@ -567,8 +567,8 @@ window.SyCodeMng = {
         v-model="searchParam.searchType"
         :options="[
           { value: 'codeGrp',   label: '코드그룹' },
-          { value: 'def_label', label: '라벨' },
-          { value: 'def_value', label: '코드값' },
+          { value: 'codeLabel', label: '라벨' },
+          { value: 'codeValue', label: '코드값' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

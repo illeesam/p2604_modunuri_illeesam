@@ -100,11 +100,11 @@ window.XsSample01 = {
       allData.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
         if (searchVal) {
-          const types = searchParam.searchType || 'def_nm,def_email,def_phone';
+          const types = searchParam.searchType || 'memberNm,email,phone';
           const hits = [];
-          if (types.includes('def_nm'))    hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_email')) hits.push(String(d.email    || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_phone')) hits.push(String(d.phone    || '').toLowerCase().includes(searchVal));
+          if (types.includes('memberNm'))    hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal));
+          if (types.includes('email')) hits.push(String(d.email    || '').toLowerCase().includes(searchVal));
+          if (types.includes('phone')) hits.push(String(d.phone    || '').toLowerCase().includes(searchVal));
           if (!hits.some(Boolean)) return false;
         }
         if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
@@ -192,11 +192,11 @@ window.XsSample01 = {
         allData.filter(d => {
           const searchVal = searchParam.searchValue.toLowerCase();
           if (searchVal) {
-            const types = searchParam.searchType || 'def_nm,def_email,def_phone';
+            const types = searchParam.searchType || 'memberNm,email,phone';
             const hits = [];
-            if (types.includes('def_nm'))    hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal));
-            if (types.includes('def_email')) hits.push(String(d.email    || '').toLowerCase().includes(searchVal));
-            if (types.includes('def_phone')) hits.push(String(d.phone    || '').toLowerCase().includes(searchVal));
+            if (types.includes('memberNm'))    hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal));
+            if (types.includes('email')) hits.push(String(d.email    || '').toLowerCase().includes(searchVal));
+            if (types.includes('phone')) hits.push(String(d.phone    || '').toLowerCase().includes(searchVal));
             if (!hits.some(Boolean)) return false;
           }
           if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
@@ -257,9 +257,9 @@ window.XsSample01 = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',    label: '이름' },
-          { value: 'def_email', label: '이메일' },
-          { value: 'def_phone', label: '전화번호' },
+          { value: 'memberNm',    label: '이름' },
+          { value: 'email', label: '이메일' },
+          { value: 'phone', label: '전화번호' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

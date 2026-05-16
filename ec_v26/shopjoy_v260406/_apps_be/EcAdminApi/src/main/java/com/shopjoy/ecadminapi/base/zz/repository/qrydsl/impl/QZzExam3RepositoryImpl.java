@@ -102,7 +102,7 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_col31,def_col32" */
+    /* searchType 사용 예  searchType = "col31,col32" */
     private BooleanBuilder buildCondition(ZzExam3Dto.Request search) {
         BooleanBuilder w = new BooleanBuilder();
         if (search == null) return w;
@@ -131,14 +131,14 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
             boolean all  = !StringUtils.hasText(search.getSearchType());
             String v = search.getSearchValue();
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_exam1_id,")) or.or(e.exam1Id.containsIgnoreCase(v));
-            if (all || types.contains(",def_exam2_id,")) or.or(e.exam2Id.containsIgnoreCase(v));
-            if (all || types.contains(",def_exam3_id,")) or.or(e.exam3Id.containsIgnoreCase(v));
-            if (all || types.contains(",def_col31,"))     or.or(e.col31.containsIgnoreCase(v));
-            if (all || types.contains(",def_col32,"))     or.or(e.col32.containsIgnoreCase(v));
-            if (all || types.contains(",def_col33,"))     or.or(e.col33.containsIgnoreCase(v));
-            if (all || types.contains(",def_col34,"))     or.or(e.col34.containsIgnoreCase(v));
-            if (all || types.contains(",def_col35,"))     or.or(e.col35.containsIgnoreCase(v));
+            if (all || types.contains(",exam1Id,")) or.or(e.exam1Id.containsIgnoreCase(v));
+            if (all || types.contains(",exam2Id,")) or.or(e.exam2Id.containsIgnoreCase(v));
+            if (all || types.contains(",exam3Id,")) or.or(e.exam3Id.containsIgnoreCase(v));
+            if (all || types.contains(",col31,"))     or.or(e.col31.containsIgnoreCase(v));
+            if (all || types.contains(",col32,"))     or.or(e.col32.containsIgnoreCase(v));
+            if (all || types.contains(",col33,"))     or.or(e.col33.containsIgnoreCase(v));
+            if (all || types.contains(",col34,"))     or.or(e.col34.containsIgnoreCase(v));
+            if (all || types.contains(",col35,"))     or.or(e.col35.containsIgnoreCase(v));
             if (or.getValue() != null) w.and(or);
         }
         return w;

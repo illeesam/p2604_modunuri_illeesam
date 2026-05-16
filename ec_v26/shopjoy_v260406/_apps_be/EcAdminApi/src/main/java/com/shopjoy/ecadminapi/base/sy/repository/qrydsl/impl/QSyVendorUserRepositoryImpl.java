@@ -106,7 +106,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyVendorUserDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -122,8 +122,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_member_nm,"))           or.or(u.memberNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_vendor_user_dept_nm,")) or.or(u.vendorUserDeptNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberNm,"))           or.or(u.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",vendorUserDeptNm,")) or.or(u.vendorUserDeptNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

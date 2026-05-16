@@ -87,7 +87,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                 .leftJoin(ste).on(ste.siteId.eq(c.siteId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyContactDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;

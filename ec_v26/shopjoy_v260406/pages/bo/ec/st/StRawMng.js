@@ -64,7 +64,7 @@ const rawList = reactive([]);
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_raw_id,def_src_id,def_vendor_nm,prodNm,brandNm';
+          params.searchType = 'rawId,srcId,vendorNm,prodNm,brandNm';
         }
         const res = await boApiSvc.stSettleRaw.getPage(params, '정산데이터관리', '목록조회');
         const data = res.data?.data;
@@ -203,9 +203,9 @@ const rawList = reactive([]);
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_raw_id',    label: '원장ID' },
-          { value: 'def_src_id',    label: '소스ID' },
-          { value: 'def_vendor_nm', label: '업체명' },
+          { value: 'rawId',    label: '원장ID' },
+          { value: 'srcId',    label: '소스ID' },
+          { value: 'vendorNm', label: '업체명' },
           { value: 'prodNm',   label: '상품명' },
           { value: 'brandNm',  label: '브랜드' },
         ]"

@@ -67,10 +67,10 @@ window.XsSample08 = {
       allData.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
         if (searchVal) {
-          const types = searchParam.searchType || 'def_nm,def_parentNm';
+          const types = searchParam.searchType || 'categoryNm,parentNm';
           const hits = [];
-          if (types.includes('def_nm'))       hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_parentNm')) hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal));
+          if (types.includes('categoryNm'))       hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal));
+          if (types.includes('parentNm')) hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal));
           if (!hits.some(Boolean)) return false;
         }
         if (searchParam.useYn && d.useYn !== searchParam.useYn) return false;
@@ -135,10 +135,10 @@ window.XsSample08 = {
         allData.filter(d => {
           const searchVal = searchParam.searchValue.toLowerCase();
           if (searchVal) {
-          const types = searchParam.searchType || 'def_nm,def_parentNm';
+          const types = searchParam.searchType || 'categoryNm,parentNm';
           const hits = [];
-          if (types.includes('def_nm'))       hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_parentNm')) hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal));
+          if (types.includes('categoryNm'))       hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal));
+          if (types.includes('parentNm')) hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal));
           if (!hits.some(Boolean)) return false;
         }
           if (searchParam.useYn && d.useYn !== searchParam.useYn) return false;
@@ -187,8 +187,8 @@ window.XsSample08 = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',       label: '카테고리명' },
-          { value: 'def_parentNm', label: '상위명' },
+          { value: 'categoryNm',       label: '카테고리명' },
+          { value: 'parentNm', label: '상위명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

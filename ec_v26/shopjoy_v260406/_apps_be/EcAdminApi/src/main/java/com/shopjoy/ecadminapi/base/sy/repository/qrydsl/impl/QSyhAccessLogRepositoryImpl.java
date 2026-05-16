@@ -85,7 +85,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyhAccessLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;

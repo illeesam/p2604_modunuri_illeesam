@@ -73,7 +73,7 @@ window.DpDispPanelMng = {
         const params = { pageNo: 1, pageSize: 10000, ...getSortParam(), ...uiParams };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_panel_nm,def_area_cd';
+          params.searchType = 'panelNm,areaCd';
         }
         const [panelsRes, displaysRes] = await Promise.all([
           boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
@@ -479,8 +479,8 @@ window.DpDispPanelMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_panel_nm', label: '패널명' },
-          { value: 'def_area_cd',  label: '영역코드' },
+          { value: 'panelNm', label: '패널명' },
+          { value: 'areaCd',  label: '영역코드' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

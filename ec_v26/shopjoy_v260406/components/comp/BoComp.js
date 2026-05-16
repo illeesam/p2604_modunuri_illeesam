@@ -18,7 +18,7 @@
  * BoPager              — 관리자 공통 페이지네이션
  *
  * BoMultiCheckSelect   — 다중 선택 드롭다운 (체크박스 + ',' 구분 String v-model)
- *                        v-model 은 토큰 콤마결합 문자열 (예: "def_id,def_name")
+ *                        v-model 은 토큰 콤마결합 문자열 (예: "memberId,memberNm")
  *                        options: [{value, label}, ...] 또는 [{codeValue, codeLabel}, ...]
  *                        사용: <bo-multi-check-select v-model="searchType" :options="opts" placeholder="전체" />
  *
@@ -495,7 +495,7 @@ window.BoPathParentSelector = {
  * 다중 선택 드롭다운 (체크박스). v-model 은 콤마(,) 결합 문자열.
  *
  * props:
- *   modelValue       — string. 콤마 결합값 예: "def_id,def_name"
+ *   modelValue       — string. 콤마 결합값 예: "memberId,memberNm"
  *   options          — array. [{value, label}] 또는 [{codeValue, codeLabel}]
  *   placeholder      — string. 선택값 없을 때 표시 (기본 '전체')
  *   allLabel         — string. '전체' 토글 라벨 (기본 '전체')

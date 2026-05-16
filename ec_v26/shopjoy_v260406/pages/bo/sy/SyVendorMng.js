@@ -43,7 +43,7 @@ window.SyVendorMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_bizno,def_id';
+          params.searchType = 'vendorNm,corpNo,vendorId';
         }
         const res = await boApiSvc.syVendor.getPage(params, '판매자관리', '목록조회');
         const data = res.data?.data;
@@ -200,9 +200,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',    label: '업체명' },
-          { value: 'def_bizno', label: '사업자번호' },
-          { value: 'def_id',    label: '업체ID' },
+          { value: 'vendorNm', label: '업체명' },
+          { value: 'corpNo',   label: '사업자번호' },
+          { value: 'vendorId', label: '업체ID' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

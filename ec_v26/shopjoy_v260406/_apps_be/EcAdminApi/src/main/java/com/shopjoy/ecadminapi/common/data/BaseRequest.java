@@ -24,7 +24,7 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor
 public abstract class BaseRequest {
 
-    /** 검색 대상 필드 — def_xxx 토큰 조합. 예: "def_id,def_name" 또는 "def_login def_email" (OR 조건) */
+    /** 검색 대상 필드 — Entity 필드명(camelCase) 토큰 조합. 예: "fieldA,fieldB" 또는 "fieldA fieldB" (OR 조건) */
     @Size(max = 200, message = "searchType 는 200자 이내여야 합니다.")
     private String searchType;
 

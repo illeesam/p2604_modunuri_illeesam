@@ -70,10 +70,10 @@ window.XsSample05 = {
       allData.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
         if (searchVal) {
-          const types = searchParam.searchType || 'def_title,def_author';
+          const types = searchParam.searchType || 'title,author';
           const hits = [];
-          if (types.includes('def_title'))  hits.push(String(d.title  || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_author')) hits.push(String(d.author || '').toLowerCase().includes(searchVal));
+          if (types.includes('title'))  hits.push(String(d.title  || '').toLowerCase().includes(searchVal));
+          if (types.includes('author')) hits.push(String(d.author || '').toLowerCase().includes(searchVal));
           if (!hits.some(Boolean)) return false;
         }
         if (searchParam.category && d.category !== searchParam.category) return false;
@@ -139,10 +139,10 @@ window.XsSample05 = {
         allData.filter(d => {
           const searchVal = searchParam.searchValue.toLowerCase();
           if (searchVal) {
-          const types = searchParam.searchType || 'def_title,def_author';
+          const types = searchParam.searchType || 'title,author';
           const hits = [];
-          if (types.includes('def_title'))  hits.push(String(d.title  || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_author')) hits.push(String(d.author || '').toLowerCase().includes(searchVal));
+          if (types.includes('title'))  hits.push(String(d.title  || '').toLowerCase().includes(searchVal));
+          if (types.includes('author')) hits.push(String(d.author || '').toLowerCase().includes(searchVal));
           if (!hits.some(Boolean)) return false;
         }
           if (searchParam.category && d.category !== searchParam.category) return false;
@@ -192,8 +192,8 @@ window.XsSample05 = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_title',  label: '제목' },
-          { value: 'def_author', label: '작성자' },
+          { value: 'title',  label: '제목' },
+          { value: 'author', label: '작성자' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

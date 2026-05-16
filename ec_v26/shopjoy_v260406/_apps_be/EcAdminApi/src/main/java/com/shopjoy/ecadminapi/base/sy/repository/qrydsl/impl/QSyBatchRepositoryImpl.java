@@ -87,7 +87,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 .leftJoin(ste).on(ste.siteId.eq(b.siteId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyBatchDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;

@@ -88,7 +88,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 .leftJoin(ste).on(ste.siteId.eq(a.siteId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyAttachDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;

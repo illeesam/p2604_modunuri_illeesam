@@ -99,7 +99,7 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_col21,def_col22" */
+    /* searchType 사용 예  searchType = "col21,col22" */
     private BooleanBuilder buildCondition(ZzExam2Dto.Request search) {
         BooleanBuilder w = new BooleanBuilder();
         if (search == null) return w;
@@ -126,13 +126,13 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
             boolean all  = !StringUtils.hasText(search.getSearchType());
             String v = search.getSearchValue();
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_exam1_id,")) or.or(e.exam1Id.containsIgnoreCase(v));
-            if (all || types.contains(",def_exam2_id,")) or.or(e.exam2Id.containsIgnoreCase(v));
-            if (all || types.contains(",def_col21,"))     or.or(e.col21.containsIgnoreCase(v));
-            if (all || types.contains(",def_col22,"))     or.or(e.col22.containsIgnoreCase(v));
-            if (all || types.contains(",def_col23,"))     or.or(e.col23.containsIgnoreCase(v));
-            if (all || types.contains(",def_col24,"))     or.or(e.col24.containsIgnoreCase(v));
-            if (all || types.contains(",def_col25,"))     or.or(e.col25.containsIgnoreCase(v));
+            if (all || types.contains(",exam1Id,")) or.or(e.exam1Id.containsIgnoreCase(v));
+            if (all || types.contains(",exam2Id,")) or.or(e.exam2Id.containsIgnoreCase(v));
+            if (all || types.contains(",col21,"))     or.or(e.col21.containsIgnoreCase(v));
+            if (all || types.contains(",col22,"))     or.or(e.col22.containsIgnoreCase(v));
+            if (all || types.contains(",col23,"))     or.or(e.col23.containsIgnoreCase(v));
+            if (all || types.contains(",col24,"))     or.or(e.col24.containsIgnoreCase(v));
+            if (all || types.contains(",col25,"))     or.or(e.col25.containsIgnoreCase(v));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -144,10 +144,10 @@ window.StSettleCloseMng = {
 
     const cfFilteredClose = computed(() => closeList.filter(r => {
       if (applied.searchValue) {
-        const types = applied.searchType || 'def_closeMon,def_regUserNm';
+        const types = applied.searchType || 'closeMon,regUserNm';
         const hits = [];
-        if (types.includes('def_closeMon')) hits.push(r.closeMon && r.closeMon.includes(applied.searchValue));
-        if (types.includes('def_regUserNm')) hits.push(r.regUserNm && r.regUserNm.includes(applied.searchValue));
+        if (types.includes('closeMon')) hits.push(r.closeMon && r.closeMon.includes(applied.searchValue));
+        if (types.includes('regUserNm')) hits.push(r.regUserNm && r.regUserNm.includes(applied.searchValue));
         if (!hits.some(Boolean)) return false;
       }
       if (applied.searchStatus && r.status !== applied.searchStatus) return false;
@@ -211,8 +211,8 @@ window.StSettleCloseMng = {
       <bo-multi-check-select
         v-model="searchType"
         :options="[
-          { value: 'def_closeMon',  label: '정산월' },
-          { value: 'def_regUserNm', label: '담당자' },
+          { value: 'closeMon',  label: '정산월' },
+          { value: 'regUserNm', label: '담당자' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

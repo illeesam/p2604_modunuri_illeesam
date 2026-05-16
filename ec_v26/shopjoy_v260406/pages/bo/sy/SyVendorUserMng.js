@@ -107,7 +107,7 @@ window.SyVendorUserMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_bizno,def_id';
+          params.searchType = 'vendorNm,corpNo,vendorId';
         }
         const res = await boApiSvc.syVendor.getPage(params, '업체사용자관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data || [];
@@ -513,9 +513,9 @@ window.SyVendorUserMng = {
       <bo-multi-check-select
         v-model="uiState.bizSearchType"
         :options="[
-          { value: 'def_nm',    label: '업체명' },
-          { value: 'def_bizno', label: '사업자번호' },
-          { value: 'def_id',    label: '업체ID' },
+          { value: 'vendorNm', label: '업체명' },
+          { value: 'corpNo',   label: '사업자번호' },
+          { value: 'vendorId', label: '업체ID' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

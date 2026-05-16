@@ -39,7 +39,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_payId,def_vendorNm';
+          params.searchType = 'payId,vendorNm';
         }
         const res = await boApiSvc.stSettlePay.getPage(params, '정산지급관리', '목록조회');
         const data = res.data?.data;
@@ -146,8 +146,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_payId',    label: '지급ID' },
-          { value: 'def_vendorNm', label: '업체명' },
+          { value: 'payId',    label: '지급ID' },
+          { value: 'vendorNm', label: '업체명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

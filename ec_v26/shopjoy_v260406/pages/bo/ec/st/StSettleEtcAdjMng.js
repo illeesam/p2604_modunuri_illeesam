@@ -55,7 +55,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             };
             // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
             if (params.searchValue && !params.searchType) {
-              params.searchType = 'def_id,def_vendorNm,def_reason';
+              params.searchType = 'id,vendorNm,reason';
             }
             return boApiSvc.stSettleEtcAdj.getPage(params, '정산기타조정', '목록조회');
           })()
@@ -201,9 +201,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_id',       label: 'ID' },
-          { value: 'def_vendorNm', label: '업체명' },
-          { value: 'def_reason',   label: '사유' },
+          { value: 'id',       label: 'ID' },
+          { value: 'vendorNm', label: '업체명' },
+          { value: 'reason',   label: '사유' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

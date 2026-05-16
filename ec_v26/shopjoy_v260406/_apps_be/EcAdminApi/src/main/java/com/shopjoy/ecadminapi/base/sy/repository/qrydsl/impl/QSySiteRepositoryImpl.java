@@ -97,7 +97,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SySiteDto.Request q) {
         BooleanBuilder w = new BooleanBuilder();
         if (q == null) return w;

@@ -67,7 +67,7 @@ window.SyAttachMng = {
         if (uiState.selectedGrpId) p.attachGrpId = uiState.selectedGrpId;
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (p.searchValue && !p.searchType) {
-          p.searchType = 'fileNm,def_refId';
+          p.searchType = 'fileNm,refId';
         }
         const attachRes = await boApiSvc.syAttach.getPage(p, '첨부파일관리', '조회');
         const data = attachRes.data?.data;
@@ -364,7 +364,7 @@ window.SyAttachMng = {
             v-model="searchParam.searchType"
             :options="[
               { value: 'fileNm',    label: '파일명' },
-              { value: 'def_refId', label: 'RefID' },
+              { value: 'refId', label: 'RefID' },
             ]"
             placeholder="검색대상 전체"
             all-label="전체 선택"

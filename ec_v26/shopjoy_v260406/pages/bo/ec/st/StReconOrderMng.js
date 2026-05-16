@@ -66,7 +66,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_orderId,def_custNm';
+          params.searchType = 'orderId,custNm';
         }
         const res = await boApiSvc.stRecon.getPage(params, '주문-정산 대사', '목록조회');
         const data = res.data?.data;
@@ -131,8 +131,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_orderId', label: '주문ID' },
-          { value: 'def_custNm',  label: '고객명' },
+          { value: 'orderId', label: '주문ID' },
+          { value: 'custNm',  label: '고객명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
