@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class DpPanelItemDto {
 
@@ -16,6 +17,7 @@ public class DpPanelItemDto {
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String panelItemId;
         @Size(max = 21) private String panelId;
+        private List<String> panelIds;                 // 상위 FK 다건 IN
         @Size(max = 21) private String widgetLibId;
         @Size(max = 30) private String widgetTypeCd;
     }

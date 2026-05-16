@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogReply;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogReplyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -98,6 +99,9 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     private BooleanBuilder buildCondition(CmBlogReplyDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+
+        if (!CollectionUtils.isEmpty(s.getBlogIds())) w.and(r.blogId.in(s.getBlogIds()));
+        if (StringUtils.hasText(s.getBlogId()))    w.and(r.blogId.eq(s.getBlogId()));
 
         if (StringUtils.hasText(s.getSiteId()))    w.and(r.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getCommentId())) w.and(r.commentId.eq(s.getCommentId()));

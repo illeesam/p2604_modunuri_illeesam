@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class DpAreaDto {
 
@@ -19,6 +20,7 @@ public class DpAreaDto {
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String areaId;
         @Size(max = 21) private String uiId;
+        private List<String> uiIds;                   // 상위 FK 다건 IN
         @Size(max = 30) private String areaTypeCd;
     }
 
@@ -39,6 +41,8 @@ public class DpAreaDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<DpAreaPanelDto.Item> panels;   // 영역-패널 연결 목록
     }
 
     @Getter @Setter @NoArgsConstructor

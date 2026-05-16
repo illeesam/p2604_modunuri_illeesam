@@ -8,12 +8,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class MbMemberSnsDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
         @Size(max = 21) private String memberSnsId;
+        @Size(max = 21) private String memberId;       // 상위 FK 필터
+        private List<String> memberIds;                // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor

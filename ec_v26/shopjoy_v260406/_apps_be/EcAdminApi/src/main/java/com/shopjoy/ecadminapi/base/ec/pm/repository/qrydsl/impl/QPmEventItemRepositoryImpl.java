@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEventItem;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -97,6 +98,9 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     private BooleanBuilder buildCondition(PmEventItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+
+        if (!CollectionUtils.isEmpty(s.getEventIds())) w.and(i.eventId.in(s.getEventIds()));
+        if (StringUtils.hasText(s.getEventId()))       w.and(i.eventId.eq(s.getEventId()));
 
         if (StringUtils.hasText(s.getSiteId()))      w.and(i.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getEventItemId())) w.and(i.eventItemId.eq(s.getEventItemId()));

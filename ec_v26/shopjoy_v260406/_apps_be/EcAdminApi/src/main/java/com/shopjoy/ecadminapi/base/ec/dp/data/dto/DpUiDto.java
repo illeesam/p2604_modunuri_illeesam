@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class DpUiDto {
 
@@ -38,6 +39,8 @@ public class DpUiDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<DpAreaDto.Item> areas;     // 영역 목록
     }
 
     @Getter @Setter @NoArgsConstructor

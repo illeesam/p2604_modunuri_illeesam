@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class CmBlogReplyDto {
 
@@ -15,6 +16,8 @@ public class CmBlogReplyDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String commentId;
+        @Size(max = 21) private String blogId;          // 상위 FK 필터
+        private List<String> blogIds;                  // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor

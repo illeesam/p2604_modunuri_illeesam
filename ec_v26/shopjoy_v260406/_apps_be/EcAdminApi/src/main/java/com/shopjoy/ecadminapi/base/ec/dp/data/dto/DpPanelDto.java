@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class DpPanelDto {
 
@@ -40,6 +41,8 @@ public class DpPanelDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<DpPanelItemDto.Item> panelItems;   // 패널 아이템 목록
     }
 
     @Getter @Setter @NoArgsConstructor

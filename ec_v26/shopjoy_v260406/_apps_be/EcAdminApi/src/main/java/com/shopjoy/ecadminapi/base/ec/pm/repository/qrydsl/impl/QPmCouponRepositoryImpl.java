@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -118,6 +119,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
 
+        if (!CollectionUtils.isEmpty(s.getCouponIds())) w.and(c.couponId.in(s.getCouponIds()));
         if (StringUtils.hasText(s.getSiteId()))   w.and(c.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getCouponId())) w.and(c.couponId.eq(s.getCouponId()));
         if (StringUtils.hasText(s.getUseYn()))    w.and(c.useYn.eq(s.getUseYn()));

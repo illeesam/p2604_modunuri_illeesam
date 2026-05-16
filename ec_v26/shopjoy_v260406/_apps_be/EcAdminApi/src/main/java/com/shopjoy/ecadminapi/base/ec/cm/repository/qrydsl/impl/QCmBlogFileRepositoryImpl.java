@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogFile;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogFileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -96,6 +97,9 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     private BooleanBuilder buildCondition(CmBlogFileDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+
+        if (!CollectionUtils.isEmpty(s.getBlogIds())) w.and(f.blogId.in(s.getBlogIds()));
+        if (StringUtils.hasText(s.getBlogId()))    w.and(f.blogId.eq(s.getBlogId()));
 
         if (StringUtils.hasText(s.getBlogImgId())) w.and(f.blogImgId.eq(s.getBlogImgId()));
 

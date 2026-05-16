@@ -14,6 +14,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberAddr;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberAddrRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -89,6 +90,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     private BooleanBuilder buildCondition(MbMemberAddrDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+        if (!CollectionUtils.isEmpty(s.getMemberIds())) w.and(a.memberId.in(s.getMemberIds()));
         if (StringUtils.hasText(s.getMemberAddrId())) w.and(a.memberAddrId.eq(s.getMemberAddrId()));
         if (StringUtils.hasText(s.getMemberId()))     w.and(a.memberId.eq(s.getMemberId()));
 

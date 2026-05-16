@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpAreaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,6 +79,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         if (StringUtils.hasText(s.getPathId()))     w.and(a.pathId.eq(s.getPathId()));
         if (StringUtils.hasText(s.getUseYn()))      w.and(a.useYn.eq(s.getUseYn()));
         if (StringUtils.hasText(s.getAreaId()))     w.and(a.areaId.eq(s.getAreaId()));
+        if (!CollectionUtils.isEmpty(s.getUiIds())) w.and(a.uiId.in(s.getUiIds()));
         if (StringUtils.hasText(s.getUiId()))       w.and(a.uiId.eq(s.getUiId()));
         if (StringUtils.hasText(s.getAreaTypeCd())) w.and(a.areaTypeCd.eq(s.getAreaTypeCd()));
 

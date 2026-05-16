@@ -52,7 +52,18 @@ public class FoMyPageService {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMemberDto.Item dto = memberRepository.selectById(memberId).orElse(null);
         if (dto == null) throw new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this));
+        _itemFillRelations(dto);
         return dto;
+    }
+
+    /** _itemFillRelations — 단건 연관조회 (addrs 채우기) */
+    private void _itemFillRelations(MbMemberDto.Item member) {
+        if (member == null) return;
+
+        // 하위 배송지 목록 조회 (memberId 기준)
+        MbMemberAddrDto.Request addrReq = new MbMemberAddrDto.Request();
+        addrReq.setMemberId(member.getMemberId());
+        member.setAddrs(addrRepository.selectList(addrReq)); // 배송지목록
     }
 
     /** updateMyInfo — 수정 */

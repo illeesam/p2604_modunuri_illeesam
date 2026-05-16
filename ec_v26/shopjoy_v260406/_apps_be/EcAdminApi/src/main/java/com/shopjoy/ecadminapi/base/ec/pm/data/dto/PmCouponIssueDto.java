@@ -46,6 +46,8 @@ public class PmCouponIssueDto {
         private String memberEmail;
         private String memberPhone;
         private String couponTypeCdNm;
+        // ── 연관정보 (목록 시 채움) ──
+        private PmCouponDto.Item coupon;   // 쿠폰 마스터 단건
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PmEventDto {
 
@@ -43,6 +44,9 @@ public class PmEventDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<PmEventItemDto.Item>    eventItems;   // 이벤트 대상상품 목록
+        private List<PmEventBenefitDto.Item> benefits;     // 이벤트 혜택 목록
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -14,6 +14,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberSns;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberSnsRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -85,6 +86,8 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     private BooleanBuilder buildCondition(MbMemberSnsDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+        if (!CollectionUtils.isEmpty(s.getMemberIds())) w.and(m.memberId.in(s.getMemberIds()));
+        if (StringUtils.hasText(s.getMemberId()))    w.and(m.memberId.eq(s.getMemberId()));
         if (StringUtils.hasText(s.getMemberSnsId())) w.and(m.memberSnsId.eq(s.getMemberSnsId()));
 
         if (StringUtils.hasText(s.getDateType())

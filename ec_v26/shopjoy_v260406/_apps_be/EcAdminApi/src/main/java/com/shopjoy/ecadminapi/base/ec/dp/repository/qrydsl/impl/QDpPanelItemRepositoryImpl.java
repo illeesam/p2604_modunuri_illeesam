@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpPanelItem;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpPanelItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -81,6 +82,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         if (StringUtils.hasText(s.getPanelItemId()))  w.and(i.panelItemId.eq(s.getPanelItemId()));
         if (StringUtils.hasText(s.getWidgetTypeCd())) w.and(i.widgetTypeCd.eq(s.getWidgetTypeCd()));
         if (StringUtils.hasText(s.getWidgetLibId()))  w.and(i.widgetLibId.eq(s.getWidgetLibId()));
+        if (!CollectionUtils.isEmpty(s.getPanelIds())) w.and(i.panelId.in(s.getPanelIds()));
         if (StringUtils.hasText(s.getPanelId()))      w.and(i.panelId.eq(s.getPanelId()));
         if (StringUtils.hasText(s.getUseYn()))        w.and(i.useYn.eq(s.getUseYn()));
 

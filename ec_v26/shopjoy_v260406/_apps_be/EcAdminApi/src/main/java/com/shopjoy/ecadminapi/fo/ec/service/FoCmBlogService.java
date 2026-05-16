@@ -1,8 +1,14 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogReplyService;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogFileService;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogTagService;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -15,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * FO 게시물(블로그/FAQ/공지) 서비스
@@ -30,6 +39,9 @@ import java.util.List;
 public class FoCmBlogService {
 
     private final CmBlogRepository cmBlogRepository;
+    private final CmBlogReplyService cmBlogReplyService;
+    private final CmBlogFileService cmBlogFileService;
+    private final CmBlogTagService cmBlogTagService;
     @PersistenceContext
     private EntityManager em;
 

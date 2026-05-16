@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class CmBlogDto {
 
@@ -35,6 +36,10 @@ public class CmBlogDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<CmBlogReplyDto.Item> replies;   // 댓글 목록
+        private List<CmBlogFileDto.Item>  files;     // 첨부 목록
+        private List<CmBlogTagDto.Item>   tags;      // 태그 목록
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class MbMemberAddrDto {
 
@@ -15,6 +16,7 @@ public class MbMemberAddrDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String memberAddrId;
         @Size(max = 21) private String memberId;
+        private List<String> memberIds;                // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor

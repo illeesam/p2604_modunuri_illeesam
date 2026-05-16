@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class MbMemberDto {
 
@@ -46,6 +47,9 @@ public class MbMemberDto {
         private String siteNm;
         private String gradeCdNm;
         private String memberStatusCdNm;
+        // ── 연관정보 (getById / 목록 시 채움) ──
+        private List<MbMemberAddrDto.Item> addrs;     // 배송지 목록
+        private List<MbMemberSnsDto.Item>  snsList;   // SNS 연동 목록
     }
 
     @Getter @Setter @NoArgsConstructor

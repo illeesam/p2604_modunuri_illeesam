@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpAreaPanel;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpAreaPanelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -76,6 +77,8 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
     private BooleanBuilder buildCondition(DpAreaPanelDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+        if (!CollectionUtils.isEmpty(s.getAreaIds())) w.and(p.areaId.in(s.getAreaIds()));
+        if (StringUtils.hasText(s.getAreaId()))      w.and(p.areaId.eq(s.getAreaId()));
         if (StringUtils.hasText(s.getAreaPanelId())) w.and(p.areaPanelId.eq(s.getAreaPanelId()));
         if (StringUtils.hasText(s.getUseYn()))       w.and(p.useYn.eq(s.getUseYn()));
 

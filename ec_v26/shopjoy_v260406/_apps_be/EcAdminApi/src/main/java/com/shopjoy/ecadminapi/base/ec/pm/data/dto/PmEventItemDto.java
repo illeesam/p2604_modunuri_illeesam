@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PmEventItemDto {
 
@@ -15,6 +16,8 @@ public class PmEventItemDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String eventItemId;
+        @Size(max = 21) private String eventId;         // 상위 FK 필터
+        private List<String> eventIds;                 // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor

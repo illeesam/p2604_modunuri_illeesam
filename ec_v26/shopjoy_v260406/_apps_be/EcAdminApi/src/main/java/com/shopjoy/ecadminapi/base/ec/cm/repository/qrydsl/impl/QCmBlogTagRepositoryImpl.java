@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogTag;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogTagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -96,6 +97,9 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     private BooleanBuilder buildCondition(CmBlogTagDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
+
+        if (!CollectionUtils.isEmpty(s.getBlogIds())) w.and(t.blogId.in(s.getBlogIds()));
+        if (StringUtils.hasText(s.getBlogId()))    w.and(t.blogId.eq(s.getBlogId()));
 
         if (StringUtils.hasText(s.getSiteId()))    w.and(t.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getBlogTagId())) w.and(t.blogTagId.eq(s.getBlogTagId()));
