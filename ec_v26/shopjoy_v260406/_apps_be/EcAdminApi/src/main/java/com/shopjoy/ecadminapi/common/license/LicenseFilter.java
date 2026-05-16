@@ -100,6 +100,20 @@
 //        "/actuator"
 //    );
 //
+//    /**
+//     * 이 요청을 라이선스 검증에서 제외할지 판단한다.
+//     *
+//     * <p>제외 조건(하나라도 해당 시 검증 스킵):
+//     * <ul>
+//     *   <li>{@code app.license.enabled=false} — 전체 비활성(local 개발 편의)</li>
+//     *   <li>HTTP OPTIONS — CORS preflight 는 라이선스 헤더가 없음</li>
+//     *   <li>URI 가 {@link #SKIP_PREFIXES} 중 하나로 시작 — 로그인/초기화 데이터
+//     *       API 는 라이선스 로드 이전에 호출되므로 검증 대상에서 제외</li>
+//     * </ul></p>
+//     *
+//     * @param request 현재 요청
+//     * @return 검증 제외 대상이면 {@code true}
+//     */
 //    @Override
 //    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 //        if (!enabled) return true;
@@ -108,6 +122,30 @@
 //        return SKIP_PREFIXES.stream().anyMatch(uri::startsWith);
 //    }
 //
+//    /**
+//     * 요청별 라이선스 검증 본체.
+//     *
+//     * <p>동작 순서와 각 단계 의도:
+//     * <ol>
+//     *   <li><b>헤더 추출</b> — {@code X-License-Code}(코드), {@code X-Buyer-Id}
+//     *       (소유자). boApiAxios/foApiAxios interceptor 가 자동 주입한다.</li>
+//     *   <li><b>MDC 세팅</b> — 본 필터가 JwtAuthFilter 보다 먼저 실행되므로 요청
+//     *       메서드/호스트/경로/IP/시작시각을 직접 MDC 에 넣어 이후 로그 상관관계를
+//     *       확보한다.</li>
+//     *   <li><b>검증</b> — {@link LicenseUtil#verify} 가 토큰 파싱 → 서명 검증 →
+//     *       siteId/buyerId 일치 → 만료를 순서대로 검사한다. 통과 시
+//     *       {@code chain.doFilter} 로 다음 필터/컨트롤러 진행.</li>
+//     *   <li><b>실패</b> — {@link LicenseException} 을 잡아 사유를 error 로그로
+//     *       남기고 {@link #sendError} 로 403 JSON 응답 후 체인 중단(다음 단계로
+//     *       진행하지 않음 → 보호 자원 접근 차단).</li>
+//     * </ol></p>
+//     *
+//     * @param request  현재 요청
+//     * @param response 응답(검증 실패 시 403 본문 작성)
+//     * @param chain    다음 필터 체인(검증 통과 시에만 진행)
+//     * @throws ServletException 체인 처리 중 서블릿 예외
+//     * @throws IOException      응답 쓰기/체인 I/O 예외
+//     */
 //    @Override
 //    protected void doFilterInternal(@NonNull HttpServletRequest request,
 //                                    @NonNull HttpServletResponse response,
@@ -140,6 +178,18 @@
 //        }
 //    }
 //
+//    /**
+//     * local 프로파일 + getInitData 요청에 한해 검증된 payload 리포트를 로그로 출력.
+//     *
+//     * <p>운영/개발 환경에서는 즉시 반환(no-op)하여 로그 노이즈와 정보 노출을
+//     * 막는다. local + URI 에 {@code getInitData} 포함 시에만 siteType/siteId/
+//     * siteNo/buyerId/expireDate 와 헤더로 받은 buyerId 대조 결과를 가독성 있는
+//     * 박스 형태로 남긴다(개발자 확인용).</p>
+//     *
+//     * @param request 현재 요청(URI 판정용)
+//     * @param payload 검증을 통과한 라이선스 payload
+//     * @param buyerId 헤더 {@code X-Buyer-Id} 원본값(payload 와 대조 표시)
+//     */
 //    /** local 프로파일 + getInitData 요청 시 라이선스 payload 리포트 출력 */
 //    private void printReportIfLocal(HttpServletRequest request, LicensePayload payload, String buyerId) {
 //        boolean isLocal = Arrays.asList(environment.getActiveProfiles()).contains("local");
@@ -160,6 +210,17 @@
 //        log.info("  └{}", line);
 //    }
 //
+//    /**
+//     * 프록시 환경을 고려해 클라이언트 실제 IP 를 해석한다.
+//     *
+//     * <p>{@code X-Forwarded-For} → {@code X-Real-IP} → {@code getRemoteAddr()}
+//     * 순으로 조회하며, 비어있거나 {@code "unknown"} 이면 다음 후보로 넘어간다.
+//     * XFF 가 다중 홉(쉼표 구분)인 경우 첫 번째(원 클라이언트) 항목을 사용한다.
+//     * 끝내 못 구하면 {@code "-"} 를 반환(로그 안정성 보장).</p>
+//     *
+//     * @param request 현재 요청
+//     * @return 클라이언트 IP 또는 {@code "-"}
+//     */
 //    private static String resolveClientIp(HttpServletRequest request) {
 //        String ip = request.getHeader("X-Forwarded-For");
 //        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
@@ -171,6 +232,18 @@
 //        return ip != null ? ip : "-";
 //    }
 //
+//    /**
+//     * 라이선스 검증 실패 시 403 JSON 오류 응답을 작성한다.
+//     *
+//     * <p>상태 403(FORBIDDEN) + UTF-8 JSON 으로 {@code status/message/reason} 을
+//     * 내려준다. {@code reason} 은 {@link LicenseException.Reason} 이며 클라이언트가
+//     * 실패 유형(서명/만료/사이트불일치 등)을 식별하는 데 사용한다. 메시지에
+//     * expected/actual 값이 포함될 수 있어 노출 범위에 유의한다.</p>
+//     *
+//     * @param response 응답 객체
+//     * @param e        발생한 라이선스 예외
+//     * @throws IOException 응답 본문 쓰기 실패 시
+//     */
 //    private void sendError(HttpServletResponse response, LicenseException e) throws IOException {
 //        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 //        response.setContentType(MediaType.APPLICATION_JSON_VALUE);

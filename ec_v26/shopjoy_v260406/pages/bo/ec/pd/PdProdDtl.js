@@ -115,10 +115,10 @@ window.PdProdDtl = {
           const p = r[2].data?.data || r[2].data;
           if (p) products.splice(0, products.length, p);
 
-          // 이미지 [3]
+          // 이미지 — getById 응답에 embedded (PdProdDto.Item.images)
           //   pd_prod_img: cdn_img_url / cdn_thumb_url / opt_item_id_1 / opt_item_id_2 / is_thumb / sort_ord
           //   화면용:      previewUrl / isMain (=is_thumb=Y)
-          const imgList = r[3].data?.data || [];
+          const imgList = p.images || [];
           tabData.images.splice(0, tabData.images.length, ...imgList.map(img => ({
             ...img,
             id:          imgIdSeq++,
@@ -132,7 +132,8 @@ window.PdProdDtl = {
           //   백엔드 키:  pd_prod_opt        → optId / optGrpNm / optTypeCd / optInputTypeCd / optLevel / sortOrd
           //              pd_prod_opt_item   → optItemId / optId / optNm / optVal / optValCodeId / parentOptItemId / sortOrd / useYn
           //   화면 키:    {_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptItemId, sortOrd, useYn}]}
-          const optD = r[4].data?.data || {};
+          //   getById 응답에 embedded (PdProdDto.Item.opts: {groups,items})
+          const optD = p.opts || {};
           const optGroups_ = optD.groups || [];
           const optItems_  = optD.items  || [];
           tabData.opts.groups.splice(0, tabData.opts.groups.length, ...optGroups_);
@@ -180,8 +181,8 @@ window.PdProdDtl = {
             optGroups.splice(0, optGroups.length, ...built);
           }
 
-          // SKU [5]
-          const skuList = r[5].data?.data || [];
+          // SKU — getById 응답에 embedded (PdProdDto.Item.skus)
+          const skuList = p.skus || [];
           tabData.skus.splice(0, tabData.skus.length, ...skuList.map(s => ({ ...s, _id: 'sku_' + s.skuId, _optKey: s.skuId, _nm1: s.optItemNm1 || '', _nm2: s.optItemNm2 || '', stock: s.prodOptStock || 0 })));
 
           // 상품설명 [6]

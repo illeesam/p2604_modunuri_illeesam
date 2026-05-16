@@ -27,14 +27,41 @@ import java.util.Map;
 /**
  * 전역 예외 핸들러.
  *
- * 모든 Controller에서 발생하는 예외를 일관된 ApiResponse 형태로 변환한다.
- * 오류 응답에는 descErrStack(스택 추적)과 descErrUserInfo(사용자·요청 정보)를 포함한다.
+ * <p>{@code @RestControllerAdvice} 로 모든 Controller 에서 발생하는 예외를 가로채
+ * 일관된 {@link ApiResponse} (ok=false) 형태로 변환한다. 모든 오류 응답에는
+ * {@code descErrStack}(app 패키지로 필터링된 스택 추적)과
+ * {@code descErrUserInfo}(사용자·요청 정보)를 {@link ApiResponse#withDebug} 로 덧붙인다.</p>
+ *
+ * <p>핸들러 매핑 요약:
+ * <ul>
+ *   <li>{@link MethodArgumentNotValidException} → 400 (필드별 errors 맵 포함)</li>
+ *   <li>{@link CmAuthException} → 예외에 지정된 상태(기본 401)</li>
+ *   <li>{@link CmBizException} → 예외에 지정된 상태(기본 400)</li>
+ *   <li>{@link BadCredentialsException} → 401</li>
+ *   <li>{@link AuthenticationException} → 401</li>
+ *   <li>{@link AccessDeniedException} → 403</li>
+ *   <li>{@link IllegalArgumentException} → 400</li>
+ *   <li>{@link NoResourceFoundException} → 404</li>
+ *   <li>{@link MyBatisSystemException} → 500 (Mapper/DTO 진단 메시지)</li>
+ *   <li>그 외 {@link Exception} → 500</li>
+ * </ul>
+ * 구체 예외 핸들러가 우선 적용되고, 매칭 핸들러가 없으면 {@link #handleGeneral} 가 폴백한다.</p>
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /** @Valid 검증 실패 — 필드별 오류 메시지를 errors 필드에 포함하여 반환 (400) */
+    /**
+     * {@code @Valid}/{@code @Validated} 바인딩 검증 실패를 400 응답으로 변환한다.
+     *
+     * <p>모든 {@link FieldError} 를 순회해 {@code {필드명: 메시지}} 맵(errors)을 만들고,
+     * "필드: 메시지, 필드: 메시지" 형태의 통합 메시지를 함께 구성한다.
+     * 필드 오류가 하나도 없으면 "입력 내용을 확인해주세요." 를 기본 메시지로 사용한다.</p>
+     *
+     * @param ex  필드 바인딩 검증 실패 예외
+     * @param req 디버그 정보 추출용 현재 요청
+     * @return HTTP 400, body 의 {@code data} 에 필드별 오류 맵을 담은 오류 ApiResponse
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest req) {
@@ -51,7 +78,15 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
-    /** 인증/인가 실패 — AuthException에 지정된 HTTP 상태코드로 응답 (기본 401) */
+    /**
+     * {@link CmAuthException} 을 예외 자신이 보유한 상태코드 그대로 오류 응답으로 변환한다.
+     *
+     * <p>기본 401(Unauthorized), 권한 부족 시 403 등. WARN 레벨로 메시지만 로깅한다.</p>
+     *
+     * @param ex  인증/인가 실패 예외 ({@code httpStatus} 보유)
+     * @param req 디버그 정보 추출용 현재 요청
+     * @return {@code ex.getHttpStatus()} 상태의 오류 ApiResponse
+     */
     @ExceptionHandler(CmAuthException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuth(CmAuthException ex, HttpServletRequest req) {
         log.warn("CmAuthException: {}", ex.getMessage());
@@ -60,7 +95,16 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
-    /** 비즈니스 규칙 위반 — BizException에 지정된 HTTP 상태코드로 응답 */
+    /**
+     * {@link CmBizException} 을 예외 자신이 보유한 상태코드 그대로 오류 응답으로 변환한다.
+     *
+     * <p>기본 400(Bad Request), 데이터 미존재 시 404 등. WARN 레벨로 메시지만 로깅한다.
+     * 메시지는 그대로 사용자에게 노출되므로 Service 에서 사용자 친화적 문구를 던져야 한다.</p>
+     *
+     * @param ex  비즈니스 규칙 위반 예외 ({@code httpStatus} 보유)
+     * @param req 디버그 정보 추출용 현재 요청
+     * @return {@code ex.getHttpStatus()} 상태의 오류 ApiResponse
+     */
     @ExceptionHandler(CmBizException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusiness(CmBizException ex, HttpServletRequest req) {
         log.warn("CmBizException: {}", ex.getMessage());
@@ -69,7 +113,16 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
-    /** 로그인 실패 (아이디/비밀번호 불일치) — 401 */
+    /**
+     * Spring Security 로그인 인증 실패(아이디/비밀번호 불일치)를 401 로 변환한다.
+     *
+     * <p>보안상 어떤 항목이 틀렸는지 노출하지 않고 고정 메시지
+     * "아이디 또는 비밀번호가 올바르지 않습니다." 를 반환한다.</p>
+     *
+     * @param ex  자격 증명 불일치 예외
+     * @param req 디버그 정보 추출용 현재 요청
+     * @return HTTP 401 오류 ApiResponse
+     */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex, HttpServletRequest req) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -77,7 +130,17 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
-    /** JWT 없음/만료 등 인증 실패 — 401 */
+    /**
+     * JWT 토큰 누락·만료·서명 오류 등 일반 인증 실패를 401 로 변환한다.
+     *
+     * <p>{@link BadCredentialsException} 도 {@link AuthenticationException} 의 하위지만
+     * 별도 핸들러가 우선 매칭되므로 여기서는 그 외 인증 실패만 처리한다.
+     * 고정 메시지 "인증이 필요합니다." 를 반환한다.</p>
+     *
+     * @param ex  Spring Security 인증 예외
+     * @param req 디버그 정보 추출용 현재 요청
+     * @return HTTP 401 오류 ApiResponse
+     */
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuth(AuthenticationException ex, HttpServletRequest req) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -85,7 +148,17 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
-    /** 권한 부족 (인증은 됐으나 접근 불가) — 403 */
+    /**
+     * 인증은 통과했으나 접근 권한이 없는 경우를 403 으로 변환한다.
+     *
+     * <p>요청 URI 가 {@code /api/bo/} 면 "BO", {@code /api/fo/} 면 "FO" 로 분기해
+     * "접근 권한이 없습니다. (BO|FO|-)" 메시지를 구성한다. 권한 위반은 운영상 중요하므로
+     * ERROR 레벨로 사용자 정보까지 로깅한다.</p>
+     *
+     * @param ex  Spring Security 접근 거부 예외
+     * @param req 요청 URI 판별 및 디버그 정보 추출용 현재 요청
+     * @return HTTP 403 오류 ApiResponse
+     */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccess(AccessDeniedException ex, HttpServletRequest req) {
         String uri = CmUtil.nvl(req.getRequestURI(), "");
@@ -100,7 +173,16 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
-    /** 잘못된 파라미터 등 인수 오류 — 400 */
+    /**
+     * 잘못된 인수 등 {@link IllegalArgumentException} 을 400 으로 변환한다.
+     *
+     * <p>예외 메시지를 그대로 응답 메시지로 사용하므로, 던지는 쪽에서
+     * 사용자에게 노출 가능한 문구인지 유의해야 한다. WARN 레벨로 로깅한다.</p>
+     *
+     * @param ex  잘못된 인수 예외
+     * @param req 디버그 정보 추출용 현재 요청
+     * @return HTTP 400 오류 ApiResponse
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalArg(IllegalArgumentException ex, HttpServletRequest req) {
         log.warn("IllegalArgumentException: {}", ex.getMessage());
@@ -109,7 +191,18 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
-    /** API 경로 없음 — 404 (NoResourceFoundException: No static resource ...) */
+    /**
+     * 매핑된 핸들러/리소스가 없는 요청을 404 로 변환한다.
+     *
+     * <p>Spring 은 매칭 컨트롤러가 없으면 정적 리소스로 시도하다
+     * "No static resource ..." 형태의 {@link NoResourceFoundException} 을 던진다.
+     * 여기서는 "API 경로를 찾을 수 없습니다: METHOD URI" 메시지로 가공한다.
+     * 스택 대신 예외 메시지를 디버그 stack 자리에 넣는다.</p>
+     *
+     * @param ex  리소스 미발견 예외
+     * @param req 메서드/URI 추출 및 디버그 정보용 현재 요청
+     * @return HTTP 404 오류 ApiResponse
+     */
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNoResource(NoResourceFoundException ex, HttpServletRequest req) {
         String msg = "API 경로를 찾을 수 없습니다: " + req.getMethod() + " " + req.getRequestURI();
@@ -125,6 +218,16 @@ public class GlobalExceptionHandler {
      * 흔한 케이스 (OGNL ReflectionException):
      *   - Mapper XML <if test="status != null"> 인데 DTO에 status getter 없음
      *   - 컬럼명과 다른 별칭으로 #{} 바인딩한 경우
+     *
+     * <p>동작: {@code MyBatisQueryInterceptor} 가 기록한 현재 Mapper.method 를 얻고,
+     * 예외 cause 체인을 끝까지 따라가 root 메시지를 정규식으로 파싱한다.
+     * "property named 'xxx' in 'class ...Yyy' " 패턴이 잡히면 누락 getter 와 DTO
+     * 클래스를 안내 메시지에 포함한다. 항상 500 으로 응답하며 원본 예외를
+     * 스택과 함께 ERROR 로깅한다.</p>
+     *
+     * @param ex  MyBatis 실행 시스템 예외
+     * @param req 디버그 정보 추출용 현재 요청
+     * @return HTTP 500, Mapper/DTO 진단 메시지를 담은 오류 ApiResponse
      */
     @ExceptionHandler(MyBatisSystemException.class)
     public ResponseEntity<ApiResponse<Void>> handleMyBatis(MyBatisSystemException ex, HttpServletRequest req) {
@@ -155,7 +258,16 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
-    /** 그 외 처리되지 않은 예외 — 500 (스택 트레이스 포함 ERROR 로깅) */
+    /**
+     * 위 핸들러에 매칭되지 않은 모든 예외의 폴백 — 500 으로 변환한다.
+     *
+     * <p>내부 오류 상세를 숨기기 위해 고정 메시지 "서버 오류가 발생했습니다." 만 반환하고,
+     * 실제 원인은 스택 트레이스와 함께 ERROR 레벨로 로깅한다.</p>
+     *
+     * @param ex  처리되지 않은 일반 예외
+     * @param req 디버그 정보 추출용 현재 요청
+     * @return HTTP 500 오류 ApiResponse
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex, HttpServletRequest req) {
         log.error("Unhandled exception", ex);
@@ -166,7 +278,17 @@ public class GlobalExceptionHandler {
 
     // ── Private helpers ──────────────────────────────────────────
 
-    /** 예외 스택 추적 문자열 생성 — 첫 줄에 예외 메시지 포함, app 패키지만 필터링 */
+    /**
+     * 예외 스택 추적을 디버그용 문자열로 가공한다.
+     *
+     * <p>첫 줄(예외 클래스 + 메시지)은 항상 포함하고, 이후 라인 중
+     * org.apache / org.springframework / jakarta.servlet / java.base / com.fasterxml
+     * 프레임워크 프레임은 제거해 애플리케이션 코드 흐름만 남긴다.
+     * 결과는 {@code descErrStack} 으로 응답에 실린다.</p>
+     *
+     * @param ex 스택을 추출할 예외
+     * @return 필터링된 멀티라인 스택 문자열 (각 줄 끝 개행 포함)
+     */
     private String buildStack(Exception ex) {
         StringWriter sw = new StringWriter();
         ex.printStackTrace(new PrintWriter(sw));
@@ -187,9 +309,16 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 현재 사용자·요청 정보 문자열 생성.
-     * 형태: siteId=01 | userId=xxx | appTypeCd=BO | roleId=R01 | vendorId=V01 | host=127.0.0.1
-     *       | url=/api/... | method=POST | params=...(최대200자) | token=~xxxxxxxxxx
+     * 오류 발생 시점의 사용자·요청 컨텍스트를 한 줄 문자열로 만든다.
+     *
+     * <p>{@code SecurityUtil.getAuthUser()} 에서 인증 주체 정보를, 요청에서 host/url/method/
+     * 쿼리스트링/커스텀 헤더(X-UI-Nm, X-Cmd-Nm)/Authorization 을 모은다.
+     * 쿼리스트링은 200자 초과 시 말줄임표로 절단하고, 토큰은 보안상 마지막 10자만
+     * "~" 접두로 노출한다. siteId 는 현재 고정 "01". 결과는 {@code descErrUserInfo} 로
+     * 응답·로그에 함께 실린다.</p>
+     *
+     * @param req 사용자/요청 정보를 추출할 현재 요청
+     * @return "siteId=.. | userId=.. | ... | token=~xxxxxxxxxx" 형태의 단일 라인 문자열
      */
     private String buildUserInfo(HttpServletRequest req) {
         String siteId      = "01";

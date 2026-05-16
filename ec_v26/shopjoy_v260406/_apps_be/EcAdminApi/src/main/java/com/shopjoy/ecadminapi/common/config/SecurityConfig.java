@@ -74,21 +74,36 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final ErrorLogQueue   errorLogQueue;
 
+    /** 접근 거부 로그 ID 생성용 시각 포맷(yyMMddHHmmss). 뒤에 4자리 난수를 붙여 유니크 ID 구성. */
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
-    /** BO만 허용 */
+    /** URL 인가용 AuthorizationManager — 인증 주체의 appTypeCd 가 BO 인 경우만 허용. */
     private static final AuthorizationManager<RequestAuthorizationContext> BO_ONLY =
         (supplier, ctx) -> new AuthorizationDecision(isAppType(supplier.get(), AuthPrincipal.BO));
 
-    /** FO만 허용 */
+    /** URL 인가용 AuthorizationManager — appTypeCd 가 FO 인 경우만 허용. */
     private static final AuthorizationManager<RequestAuthorizationContext> FO_ONLY =
         (supplier, ctx) -> new AuthorizationDecision(isAppType(supplier.get(), AuthPrincipal.FO));
 
-    /** EXT(외부 시스템)만 허용 */
+    /** URL 인가용 AuthorizationManager — appTypeCd 가 EXT(외부 시스템)인 경우만 허용. */
     private static final AuthorizationManager<RequestAuthorizationContext> EXT_ONLY =
         (supplier, ctx) -> new AuthorizationDecision(isAppType(supplier.get(), AuthPrincipal.EXT));
 
-    /** securityFilterChain */
+    /**
+     * 메인 보안 필터 체인 빈.
+     *
+     * <p>구성: CSRF 비활성(JWT Stateless), CORS 적용, 세션 STATELESS, URL 프리픽스별 인가 규칙,
+     * 접근 거부(403) 핸들러(에러 로그 큐 적재 + JSON 응답), DaoAuthenticationProvider 등록,
+     * {@code JwtAuthFilter} 를 {@link UsernamePasswordAuthenticationFilter} 앞에 삽입.</p>
+     *
+     * <p>인가 규칙 평가 순서가 중요하다: 더 구체적인 /api/fo/my/** 등을 먼저 FO_ONLY 로 막고,
+     * 마지막 /api/fo/** 를 permitAll 로 두어 비로그인 FO 페이지를 허용한다.</p>
+     *
+     * @param http 스프링이 제공하는 {@link HttpSecurity} 빌더
+     * @return 빌드된 {@link SecurityFilterChain}
+     * @throws Exception HttpSecurity 구성/빌드 중 오류. 접근 거부 핸들러 내부에서
+     *                   응답 쓰기 실패 시 발생하는 IOException 도 이 시그니처로 전파될 수 있음
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -163,7 +178,16 @@ public class SecurityConfig {
         return chain;
     }
 
-    /** corsConfigurationSource */
+    /**
+     * CORS 설정 소스 빈.
+     *
+     * <p>localhost/127.0.0.1 전 포트 및 운영 도메인(synology, netlify)을 origin 패턴으로 허용한다.
+     * 자격증명(쿠키·Authorization) 동반 요청을 허용하므로 origin 은 와일드카드(*) 가 아닌
+     * 패턴 목록으로 한정한다(allowCredentials=true 와 '*' 는 브라우저가 거부).</p>
+     *
+     * @return 모든 경로(/**)에 동일 정책을 적용하는 {@link CorsConfigurationSource}.
+     *         preflight 캐시(maxAge)는 7200초(=Chrome 상한)로 두어 OPTIONS 호출 빈도를 최소화
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -179,7 +203,14 @@ public class SecurityConfig {
         return source;
     }
 
-    /** authenticationProvider */
+    /**
+     * DAO 기반 인증 프로바이더 빈.
+     *
+     * <p>{@link UserDetailsService} 로 사용자 조회 + {@link #passwordEncoder()}(BCrypt)로
+     * 비밀번호 검증을 수행한다. 주로 로그인(아이디/비밀번호) 인증 흐름에서 사용된다.</p>
+     *
+     * @return 구성된 {@link DaoAuthenticationProvider}
+     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -188,19 +219,37 @@ public class SecurityConfig {
         return provider;
     }
 
-    /** authenticationManager */
+    /**
+     * 인증 매니저 빈.
+     *
+     * @param config 스프링이 제공하는 {@link AuthenticationConfiguration}
+     * @return 컨테이너가 구성한 {@link AuthenticationManager}(로그인 서비스에서 주입해 사용)
+     * @throws Exception AuthenticationManager 획득 실패 시
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    /** passwordEncoder */
+    /**
+     * 비밀번호 인코더 빈.
+     *
+     * @return BCrypt 해시 인코더. 회원/관리자 비밀번호 저장·검증에 공통 사용
+     *         (알고리즘 변경 시 기존 해시와의 호환성 주의)
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /** isAppType — 여부 */
+    /**
+     * 인증 주체의 앱 유형이 지정 타입과 일치하는지 판정한다(URL 인가 매니저 공통 헬퍼).
+     *
+     * @param auth 현재 Authentication(null 또는 미인증이면 false)
+     * @param type 기대 앱 유형 상수(AuthPrincipal.BO/FO/EXT)
+     * @return principal 이 {@link AuthPrincipal} 이고 appTypeCd 가 type 과 일치하면 true.
+     *         principal 타입 불일치 시 false(익명/타 인증방식 차단)
+     */
     private static boolean isAppType(Authentication auth, String type) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {

@@ -33,10 +33,19 @@ import java.net.InetAddress;
 @RequiredArgsConstructor
 public class ErrorLogConfig {
 
+    /** Appender 에 bind 할 에러 로그 비동기 큐 */
     private final ErrorLogQueue errorLogQueue;
+    /** 활성 프로파일 조회용 — 로그 레코드의 profile 컬럼에 기록 */
     private final Environment   env;
 
-    /** registerAppender — 등록 */
+    /**
+     * Spring 컨텍스트 로드 후 DbErrorLogAppender 를 Logback root logger 에 동적 등록한다.
+     *
+     * <p>Logback 은 Spring 보다 먼저 초기화되므로 logback-spring.xml 에서 Spring 빈을
+     * 참조할 수 없다. 따라서 본 메서드에서 (1) DbErrorLogAppender.bind() 로 큐·서버명·
+     * 프로파일을 정적 필드에 늦게 주입하고, (2) Appender 인스턴스를 생성·start 한 뒤
+     * root logger 에 add 한다. 등록 이후 발생하는 모든 ERROR 로그가 DB 적재 대상이 된다.
+     */
     @PostConstruct
     public void registerAppender() {
         String serverNm = resolveServerName();
@@ -60,7 +69,15 @@ public class ErrorLogConfig {
                 serverNm, profile, errorLogQueue.getQueueSize());
     }
 
-    /** resolveServerName — 결정 */
+    /**
+     * 로그 레코드에 기록할 서버명을 결정한다.
+     *
+     * <p>{@code InetAddress.getLocalHost()} 는 DNS 역조회로 인해 Windows 개발 환경에서
+     * 최대 ~10초 블로킹될 수 있어 사용하지 않는다. OS 환경변수(COMPUTERNAME/HOSTNAME)를
+     * 우선 사용하고, 없으면 DNS 호출이 없는 루프백 호스트명("localhost")으로 폴백한다.
+     *
+     * @return 서버 호스트명
+     */
     private String resolveServerName() {
         // InetAddress.getLocalHost() blocks on DNS reverse lookup (~10s on Windows dev)
         // Use OS env vars first; fall back to loopback address (instant, no DNS)

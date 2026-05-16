@@ -47,13 +47,25 @@ public class FoCmBlogService {
 
     /** getList — 조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {
-        return cmBlogRepository.selectList(req);
+        List<CmBlogDto.Item> list = cmBlogRepository.selectList(req);
+        _listFillRelations(list);
+        return list;
     }
 
     /** getPageData — 조회 */
     public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
-        return cmBlogRepository.selectPageList(req);
+        CmBlogDto.PageResponse res = cmBlogRepository.selectPageList(req);
+        _listFillRelations(res.getPageList());
+        return res;
+    }
+
+    /** getById — 키조회 */
+    public CmBlogDto.Item getById(String blogId) {
+        CmBlogDto.Item dto = cmBlogRepository.selectById(blogId).orElse(null);
+        if (dto == null) throw new CmBizException("존재하지 않는 게시물입니다: " + blogId + "::" + CmUtil.svcCallerInfo(this));
+        _itemFillRelations(dto);
+        return dto;
     }
 
     /** getByIdAndIncrView — 조회 + viewCount 증가 */
@@ -64,7 +76,72 @@ public class FoCmBlogService {
         entity.setViewCount((entity.getViewCount() != null ? entity.getViewCount() : 0) + 1);
         cmBlogRepository.save(entity);
         em.flush();
-        return cmBlogRepository.selectById(blogId).orElse(null);
+        CmBlogDto.Item dto = cmBlogRepository.selectById(blogId).orElse(null);
+        _itemFillRelations(dto);
+        return dto;
+    }
+
+    /** _itemFillRelations — 단건 연관조회 (replies/files/tags 채우기) */
+    private void _itemFillRelations(CmBlogDto.Item blog) {
+        if (blog == null) return;
+        String blogId = blog.getBlogId();
+
+        // 하위 댓글 목록 조회 (blogId 기준)
+        CmBlogReplyDto.Request rReq = new CmBlogReplyDto.Request();
+        rReq.setBlogId(blogId);
+        blog.setReplies(cmBlogReplyService.getList(rReq)); // 댓글목록
+
+        // 하위 첨부 목록 조회 (blogId 기준)
+        CmBlogFileDto.Request fReq = new CmBlogFileDto.Request();
+        fReq.setBlogId(blogId);
+        blog.setFiles(cmBlogFileService.getList(fReq)); // 첨부목록
+
+        // 하위 태그 목록 조회 (blogId 기준)
+        CmBlogTagDto.Request tReq = new CmBlogTagDto.Request();
+        tReq.setBlogId(blogId);
+        blog.setTags(cmBlogTagService.getList(tReq)); // 태그목록
+    }
+
+    /**
+     * _listFillRelations — 목록 일괄 연관조회 (replies/files/tags 를 각각 한 번의 쿼리로 조회 후 분배)
+     * 행마다 쿼리하는 _itemFillRelations 와 달리, N개 행이라도 reply 1회 + file 1회 + tag 1회만 조회한다.
+     */
+    private void _listFillRelations(List<CmBlogDto.Item> list) {
+        if (list == null || list.isEmpty()) return;
+
+        // 부모 키 수집 (중복 제거)
+        List<String> blogIds = list.stream()
+            .map(CmBlogDto.Item::getBlogId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+        if (blogIds.isEmpty()) return;
+
+        // 댓글 일괄조회 → Map<blogId, List<reply>>
+        CmBlogReplyDto.Request rReq = new CmBlogReplyDto.Request();
+        rReq.setBlogIds(blogIds);
+        Map<String, List<CmBlogReplyDto.Item>> replyMap = cmBlogReplyService.getList(rReq).stream()
+            .collect(Collectors.groupingBy(CmBlogReplyDto.Item::getBlogId));
+
+        // 첨부 일괄조회 → Map<blogId, List<file>>
+        CmBlogFileDto.Request fReq = new CmBlogFileDto.Request();
+        fReq.setBlogIds(blogIds);
+        Map<String, List<CmBlogFileDto.Item>> fileMap = cmBlogFileService.getList(fReq).stream()
+            .collect(Collectors.groupingBy(CmBlogFileDto.Item::getBlogId));
+
+        // 태그 일괄조회 → Map<blogId, List<tag>>
+        CmBlogTagDto.Request tReq = new CmBlogTagDto.Request();
+        tReq.setBlogIds(blogIds);
+        Map<String, List<CmBlogTagDto.Item>> tagMap = cmBlogTagService.getList(tReq).stream()
+            .collect(Collectors.groupingBy(CmBlogTagDto.Item::getBlogId));
+
+        // 각 항목에 분배
+        for (CmBlogDto.Item blog : list) {
+            String bid = blog.getBlogId();
+            blog.setReplies(replyMap.getOrDefault(bid, List.of())); // 댓글목록
+            blog.setFiles(fileMap.getOrDefault(bid, List.of()));    // 첨부목록
+            blog.setTags(tagMap.getOrDefault(bid, List.of()));      // 태그목록
+        }
     }
 
     /** create — 생성 */

@@ -53,6 +53,27 @@ window.OdOrderDtl = {
         vendors.splice(0, vendors.length, ...(vendorsRes.data?.data?.pageList || vendorsRes.data?.data?.list || []));
         deliveries.splice(0, deliveries.length, ...(deliveriesRes.data?.data?.pageList || deliveriesRes.data?.data?.list || []));
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
+        // getById 응답에 임베드된 결제내역(pays) 사용
+        payments.splice(0, payments.length, ...((o.pays || []).map(p => ({
+          payMethod: p.payMethodCd || '-',
+          payStatus: p.payStatusCd || '-',
+          amount: p.payAmt || 0,
+          payDate: p.payDate || '-',
+          apprNo: p.pgTransactionId || '-',
+          issuer: p.refundAmt ? ('환불 ' + p.refundAmt) : '-',
+        }))));
+        // getById 응답에 임베드된 주문항목(items) 사용
+        orderItems.splice(0, orderItems.length, ...((o.items || []).map(it => ({
+          ...it,
+          prodNm: it.prodNm,
+          color: it.optItemId1 || '',
+          size: it.optItemId2 || '',
+          qty: it.orderQty || 1,
+          salePrice: it.normalPrice || it.unitPrice || 0,
+          price: it.itemOrderAmt || (it.unitPrice * (it.orderQty || 1)) || 0,
+          discAmount: it.discAmount || 0,
+          discInfo: it.discInfo || '',
+        }))));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -134,8 +155,9 @@ window.OdOrderDtl = {
     };
 
         watch(() => uiState.activeTab, (newVal) => { window._odOrderDtlState.activeTab = newVal; });
-    /* 주문 항목 (샘플 데이터) */
+    /* 주문 항목 / 결제내역 (getById 임베드) */
     const orderItems = reactive([]);
+    const payments = reactive([]);
 
     /* 주문 sampleOrderItems */
     const sampleOrderItems = () => {
@@ -161,10 +183,8 @@ window.OdOrderDtl = {
       }).filter(Boolean);
     };
 
-    /* 주문 initItems */
-    const initItems = async () => {
-      orderItems.splice(0, orderItems.length, ...sampleOrderItems());
-    };
+    /* 주문 initItems — 주문항목은 handleSearchDetail에서 getById 임베드 데이터로 채움 */
+    const initItems = async () => {};
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
@@ -229,12 +249,12 @@ window.OdOrderDtl = {
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
 
-    const cfPaymentList = computed(() => form.totalAmt ? [{
+    const cfPaymentList = computed(() => payments.length ? payments : (form.totalAmt ? [{
       payMethod: form.payMethodCd || '-',
       payStatus: form.payStatusCd || '-',
       amount: form.totalAmt, payDate: form.payDate || form.orderDate || '-',
       apprNo: form.apprNo || '-', issuer: form.payIssuer || '-',
-    }] : []);
+    }] : []));
     const cfStatusHistList = computed(() => {
       if (!form.orderId) return [];
       const d = String(form.orderDate || '').slice(0,10) || '-';

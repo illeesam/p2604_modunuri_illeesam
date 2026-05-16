@@ -35,10 +35,32 @@ window.BlogView = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
-    const cfPostId = computed(() => Number(props.dtlId) || 1);
+    const cfPostId = computed(() => props.dtlId);
+    /* 백엔드 CmBlogDto.Item → 화면 표준 형태로 정규화 (replies/tags/files 연관정보 포함) */
     const cfPost   = computed(() => {
-      const found = posts.find(p => p.id === cfPostId.value);
-      return found || (posts.length > 0 ? posts[0] : { id: 0, title: '', category: '', author: '', date: '', readTime: '', tags: [], viewCount: 0, img: '', imgMid: '', body: '', comments: [] });
+      const raw = posts.length > 0 ? posts[0] : null;
+      if (!raw) return { id: '', title: '', category: '', author: '', date: '', readTime: '', tags: [], files: [], viewCount: 0, img: '', imgMid: '', body: '', comments: [] };
+      const files = raw.files || [];
+      return {
+        id:        raw.blogId,
+        title:     raw.blogTitle || '',
+        category:  raw.blogCateId || '',
+        author:    raw.blogAuthor || '',
+        date:      (raw.regDate || '').toString().slice(0, 10).replace(/-/g, '.'),
+        readTime:  '',
+        viewCount: raw.viewCount || 0,
+        body:      raw.blogContent || raw.blogSummary || '',
+        img:       files[0]?.imgUrl || '',
+        imgMid:    files[1]?.imgUrl || '',
+        files:     files,
+        tags:      (raw.tags || []).map(t => t.tagNm).filter(Boolean),
+        comments:  (raw.replies || []).map(r => ({
+                     id:     r.commentId,
+                     author: r.writerNm || r.writerId || '익명',
+                     date:   (r.regDate || '').toString().slice(0, 10).replace(/-/g, '.'),
+                     text:   r.blogCommentContent || '',
+                   })),
+      };
     });
 
     /* 본문 단락 분리 */
@@ -166,6 +188,17 @@ window.BlogView = {
           <a href="#" style="width:30px;height:30px;border-radius:50%;background:#e60023;display:flex;align-items:center;justify-content:center;text-decoration:none;"
             @click.prevent>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- -- 첨부 파일 ------------------------------------------------------ -->
+      <div v-if="cfPost.files && cfPost.files.length" style="margin-bottom:36px;">
+        <h3 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;">첨부 ({{ cfPost.files.length }})</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+          <a v-for="f in cfPost.files" :key="f.blogImgId" :href="f.imgUrl" target="_blank" rel="noopener"
+            style="display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:4px;font-size:0.8rem;color:var(--text-secondary);text-decoration:none;background:var(--bg-card);">
+            <span>📎</span><span>{{ f.imgAltText || f.imgUrl }}</span>
           </a>
         </div>
       </div>

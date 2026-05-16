@@ -34,13 +34,29 @@ public class AccessLogFilter extends OncePerRequestFilter {
     public static final String ATTR_DEPT_ID   = "_authDeptId";
     public static final String ATTR_VENDOR_ID = "_authVendorId";
 
+    /** logId 생성용 타임스탬프 포맷 (yyMMddHHmmss) */
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
+    /** 비동기 적재 큐 — 요청 스레드는 offer 만 하고 즉시 반환 */
     private final AccessLogQueue      queue;
+    /** 기록 여부·대상 판별 설정 (dbSave / filter / maxBodySize) */
     private final AccessLogProperties props;
+    /** 로그 레코드의 server_nm 컬럼에 기록할 서버 호스트명 */
     private final String              serverNm;
+    /** 로그 레코드의 profile 컬럼에 기록할 활성 프로파일 문자열 */
     private final String              activeProfile;
 
+    /**
+     * 필터 인스턴스 생성자.
+     *
+     * <p>Spring 빈이 아니라 {@link AccessLogConfig} 에서 직접 생성·등록되므로 의존성을
+     * 생성자 인자로 받는다.
+     *
+     * @param queue         비동기 적재 큐
+     * @param props         액세스 로그 설정
+     * @param serverNm      서버 호스트명
+     * @param activeProfile 활성 프로파일 문자열
+     */
     public AccessLogFilter(AccessLogQueue queue, AccessLogProperties props,
                            String serverNm, String activeProfile) {
         this.queue         = queue;
@@ -55,7 +71,29 @@ public class AccessLogFilter extends OncePerRequestFilter {
         return "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 
-    /** doFilterInternal — 실행 */
+    /**
+     * 요청 1건당 1회 실행되어 체인 전후를 감싸고 액세스 로그를 큐에 적재한다.
+     *
+     * <p>동작 순서:
+     * <ol>
+     *   <li>maxBodySize&gt;0 이면 요청/응답을 ContentCaching 래퍼로 감싸 바디를 버퍼링한다.</li>
+     *   <li>요청 시각·시작 시점을 기록한 뒤 체인을 실행한다(인증/컨트롤러 포함).</li>
+     *   <li>finally 에서 체인이 request attribute 에 남긴 인증 정보(_authUserId 등)를 수집한다.
+     *       (JwtAuthFilter 가 MDC 를 finally 에서 clear 하므로 MDC 가 아닌 attribute 사용)</li>
+     *   <li>dbSave 이고 isMatch 통과 시 SyhAccessLog 를 빌드하여 큐에 offer 한다.</li>
+     * </ol>
+     *
+     * <p>엣지케이스: 로그 빌드 중 예외가 발생해도 실제 요청 처리에 영향을 주지 않도록
+     * catch 하여 System.err 로만 출력한다. 응답 바디를 버퍼링한 경우 마지막 finally 에서
+     * 반드시 copyBodyToResponse() 를 호출해야 클라이언트에 응답이 실제 전송된다(필수).
+     * 큐가 가득 차면 offer 내부에서 드롭되어 요청 스레드는 지연 없이 진행된다.
+     *
+     * @param request  원본 HTTP 요청
+     * @param response 원본 HTTP 응답
+     * @param chain    이후 필터 체인
+     * @throws ServletException 체인 처리 중 서블릿 예외
+     * @throws IOException      체인 처리 중 입출력 예외
+     */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
@@ -142,32 +180,66 @@ public class AccessLogFilter extends OncePerRequestFilter {
 
     // ── 유틸 ─────────────────────────────────────────────────────────────
 
-    /* attr */
+    /**
+     * request attribute 값을 String 으로 안전하게 꺼낸다.
+     *
+     * @param req 요청
+     * @param key attribute 키
+     * @param def 값이 없거나 String 이 아닐 때 사용할 기본값
+     * @return attribute 의 String 값, 없으면 def
+     */
     private static String attr(HttpServletRequest req, String key, String def) {
         Object v = req.getAttribute(key);
         return v instanceof String s ? s : def;
     }
 
-    /** bodyOf */
+    /**
+     * 버퍼링된 바디 바이트를 UTF-8 문자열로 변환하고 maxSize 로 절단한다.
+     *
+     * @param bytes   ContentCaching 래퍼가 캐시한 바디 바이트 (null/빈 배열 허용)
+     * @param maxSize 최대 보존 길이(문자 수)
+     * @return 바디 문자열, 바디가 없으면 null
+     */
     private static String bodyOf(byte[] bytes, int maxSize) {
         if (bytes == null || bytes.length == 0) return null;
         String body = new String(bytes, StandardCharsets.UTF_8);
         return body.length() <= maxSize ? body : body.substring(0, maxSize);
     }
 
-    /** truncate */
+    /**
+     * 컬럼 길이 제약에 맞춰 문자열을 절단한다.
+     *
+     * @param s   원본 문자열 (null 허용)
+     * @param max 최대 길이
+     * @return 절단된 문자열, 입력이 null 이면 null
+     */
     private static String truncate(String s, int max) {
         if (s == null) return null;
         return s.length() <= max ? s : s.substring(0, max);
     }
 
-    /** decodeHdr — 디코딩 */
+    /**
+     * URL 인코딩된 헤더 값(한글 UI명/명령명 등)을 UTF-8 로 디코딩한다.
+     *
+     * <p>디코딩 실패 시 원본 문자열을 그대로 반환해 로그 적재가 끊기지 않도록 한다.
+     *
+     * @param s 헤더 원본 값 (null 허용)
+     * @return 디코딩된 문자열, 입력이 null 이면 null, 실패 시 원본
+     */
     private static String decodeHdr(String s) {
         if (s == null) return null;
         try { return java.net.URLDecoder.decode(s, StandardCharsets.UTF_8); } catch (Exception e) { return s; }
     }
 
-    /** resolveIp — 결정 */
+    /**
+     * 프록시/로드밸런서를 고려해 실제 클라이언트 IP 를 결정한다.
+     *
+     * <p>X-Forwarded-For → X-Real-IP → remoteAddr 순으로 우선 적용하며,
+     * X-Forwarded-For 가 콤마로 여러 IP 를 담은 경우 첫 번째(최초 클라이언트)만 취한다.
+     *
+     * @param request 요청
+     * @return 클라이언트 IP, 식별 불가 시 "-"
+     */
     private static String resolveIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
@@ -178,7 +250,14 @@ public class AccessLogFilter extends OncePerRequestFilter {
         return CmUtil.nvl(ip, "-");
     }
 
-    /** generateId — 생성 */
+    /**
+     * 액세스 로그 PK(log_id)를 생성한다.
+     *
+     * <p>형식: "AL" + yyMMddHHmmss(12자리) + 4자리 난수. 초 단위 동시 다발 요청의
+     * 충돌 가능성을 난수로 완화한다.
+     *
+     * @return 생성된 로그 ID
+     */
     private static String generateId() {
         String ts = LocalDateTime.now().format(ID_FMT);
         return "AL" + ts + String.format("%04d", (int) (Math.random() * 10000));

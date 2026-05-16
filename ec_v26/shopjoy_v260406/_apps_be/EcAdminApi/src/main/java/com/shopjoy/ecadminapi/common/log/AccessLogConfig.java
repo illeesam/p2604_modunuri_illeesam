@@ -49,11 +49,23 @@ import java.net.InetAddress;
 @EnableConfigurationProperties(AccessLogProperties.class)
 public class AccessLogConfig {
 
+    /** 액세스 로그를 비동기로 적재·소비하는 큐 (필터가 offer 대상으로 사용) */
     private final AccessLogQueue      accessLogQueue;
+    /** app.access-log.* 설정 (dbSave / filter / maxBodySize / queueSize) */
     private final AccessLogProperties props;
+    /** 활성 프로파일 조회용 — 로그 레코드의 profile 컬럼에 기록 */
     private final Environment         env;
 
-    /** accessLogFilterBean */
+    /**
+     * AccessLogFilter 를 FilterRegistrationBean 으로 등록한다.
+     *
+     * <p>order 를 -200 으로 지정해 Spring Security 기본 필터(-100)보다 먼저 실행되도록 하여
+     * 전체 필터 체인(인증·인가 포함)을 감싸는 위치에 배치한다. 이로써 인증 실패 응답까지
+     * 액세스 로그에 남길 수 있다. 서버명은 호스트명으로, 프로파일은 활성 프로파일 목록으로
+     * 결정하여 필터 인스턴스에 주입한다.
+     *
+     * @return 모든 URL("/*")에 매핑된 AccessLogFilter 등록 빈
+     */
     @Bean
     public FilterRegistrationBean<AccessLogFilter> accessLogFilterBean() {
         String serverNm = resolveServerName();
@@ -71,7 +83,14 @@ public class AccessLogConfig {
         return bean;
     }
 
-    /** resolveServerName — 결정 */
+    /**
+     * 로그 레코드에 기록할 서버명(호스트명)을 결정한다.
+     *
+     * <p>로컬 호스트의 호스트명을 조회하며, 조회 실패(네트워크/DNS 예외) 시 "unknown" 으로
+     * 대체해 필터 등록 자체가 실패하지 않도록 한다.
+     *
+     * @return 호스트명, 조회 실패 시 "unknown"
+     */
     private String resolveServerName() {
         try {
             return InetAddress.getLocalHost().getHostName();

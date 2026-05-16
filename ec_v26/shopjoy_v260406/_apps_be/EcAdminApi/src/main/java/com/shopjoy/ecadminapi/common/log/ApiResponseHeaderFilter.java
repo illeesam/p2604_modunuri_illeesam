@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class ApiResponseHeaderFilter extends OncePerRequestFilter {
 
+    /** 추적 ID 생성용 타임스탬프 포맷 (yyyyMMdd_HHmmss) */
     private static final DateTimeFormatter TRACE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     /** CORS preflight (OPTIONS) 는 응답 헤더 추가 불필요 — 필터 자체 skip */
@@ -27,7 +28,23 @@ public class ApiResponseHeaderFilter extends OncePerRequestFilter {
         return "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 
-    /** doFilterInternal — 실행 */
+    /**
+     * 요청 헤더·request attribute 의 추적/사용자/사이트 정보를 응답 헤더로 되돌려준다.
+     *
+     * <p>요청 헤더의 X-File-Nm/X-Func-Nm/X-Line-No/X-Trace-Id/User-Agent 를 그대로
+     * 응답 헤더에 echo 하고, AccessLogFilter 이후 단계에서 request attribute 에 채워진
+     * _authUserId/_selectedSiteId/_selectedSiteNo/_licenseNo 를 X- 헤더로 노출한다.
+     * 빈 값은 헤더를 설정하지 않는다.
+     *
+     * <p>엣지케이스: 응답이 이미 커밋된 경우 등 헤더 설정 실패는 본 요청 처리에 영향을
+     * 주지 않도록 catch 하여 경고 로그만 남기고 체인을 계속 진행한다.
+     *
+     * @param request  HTTP 요청
+     * @param response HTTP 응답
+     * @param chain    이후 필터 체인
+     * @throws ServletException 체인 처리 중 서블릿 예외
+     * @throws IOException      체인 처리 중 입출력 예외
+     */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
@@ -88,19 +105,36 @@ public class ApiResponseHeaderFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    /** getHeader — 조회 */
+    /**
+     * 요청 헤더 값을 null 안전하게 조회한다.
+     *
+     * @param request 요청
+     * @param name    헤더명
+     * @return 헤더 값, 없으면 빈 문자열
+     */
     private String getHeader(HttpServletRequest request, String name) {
         String value = request.getHeader(name);
         return value != null ? value : "";
     }
 
-    /** getAttr — 조회 */
+    /**
+     * request attribute 값을 String 으로 null 안전하게 조회한다.
+     *
+     * @param request 요청
+     * @param name    attribute 키
+     * @return String 값, 없거나 String 이 아니면 빈 문자열
+     */
     private String getAttr(HttpServletRequest request, String name) {
         Object value = request.getAttribute(name);
         return value instanceof String ? (String) value : "";
     }
 
-    /** isEmpty — 여부 */
+    /**
+     * 헤더 설정 생략 판단용 공백 검사.
+     *
+     * @param value 검사 대상
+     * @return null 이거나 trim 후 비어 있으면 true
+     */
     private boolean isEmpty(String value) {
         return value == null || value.trim().isEmpty();
     }

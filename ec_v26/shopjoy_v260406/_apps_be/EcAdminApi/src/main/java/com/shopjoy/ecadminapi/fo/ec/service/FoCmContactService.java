@@ -1,9 +1,11 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmContactSubmitDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogReplyService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -27,12 +29,24 @@ public class FoCmContactService {
     private static final String CONTACT_CATE = "CONTACT";
 
     private final CmBlogRepository cmBlogRepository;
+    private final CmBlogReplyService cmBlogReplyService;
 
     /** getById — 조회 */
     public CmBlogDto.Item getById(String id) {
         CmBlogDto.Item dto = cmBlogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 문의입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        _itemFillRelations(dto);
         return dto;
+    }
+
+    /** _itemFillRelations — 단건 연관조회 (replies 채우기) */
+    private void _itemFillRelations(CmBlogDto.Item contact) {
+        if (contact == null) return;
+
+        // 하위 답변(댓글) 목록 조회 (blogId 기준)
+        CmBlogReplyDto.Request rReq = new CmBlogReplyDto.Request();
+        rReq.setBlogId(contact.getBlogId());
+        contact.setReplies(cmBlogReplyService.getList(rReq)); // 답변목록
     }
 
     /** submit — 제출 */

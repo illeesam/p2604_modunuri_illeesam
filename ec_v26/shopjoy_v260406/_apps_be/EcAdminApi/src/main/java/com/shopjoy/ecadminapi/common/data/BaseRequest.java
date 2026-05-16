@@ -36,24 +36,31 @@ public abstract class BaseRequest {
     @Size(max = 50, message = "dateType 는 50자 이내여야 합니다.")
     private String dateType;
 
+    /** 기간 검색 시작일 (포함). 형식 yyyy-MM-dd, 최대 10자. dateType 컬럼 기준 비교. */
     @Size(max = 10, message = "dateStart 는 10자 이내여야 합니다.")
     private String dateStart;
 
+    /** 기간 검색 종료일 (포함). 형식 yyyy-MM-dd, 최대 10자. dateType 컬럼 기준 비교. */
     @Size(max = 10, message = "dateEnd 는 10자 이내여야 합니다.")
     private String dateEnd;
 
+    /** 정렬 지정 토큰. 예: "regDate desc" — Mapper XML 의 ORDER BY 분기에 사용. */
     @Size(max = 50, message = "sort 는 50자 이내여야 합니다.")
     private String sort;
 
+    /** 조회할 페이지 번호 (1부터). PageHelper 가 offset 계산에 사용. */
     @Min(value = 1, message = "pageNo 는 1 이상이어야 합니다.")
     @Max(value = 100000, message = "pageNo 는 100000 이하여야 합니다.")
     private Integer pageNo;
 
+    /** 페이지당 건수. 미지정 시 단순 목록(비페이징) 조회로 동작할 수 있음. */
     @Min(value = 1, message = "pageSize 는 1 이상이어야 합니다.")
     @Max(value = 100000, message = "pageSize 는 100000 이하여야 합니다.")
     private Integer pageSize;
 
-    /** PageHelper.addPaging() 호출 시 자동 채워짐 — Mapper XML LIMIT/OFFSET 바인딩용 */
+    /** PageHelper.addPaging() 가 reflection 으로 자동 주입 — Mapper XML LIMIT 바인딩용. 직접 세팅 금지. */
     private Integer limit;
+
+    /** PageHelper.addPaging() 가 reflection 으로 자동 주입 — Mapper XML OFFSET 바인딩용. 직접 세팅 금지. */
     private Integer offset;
 }

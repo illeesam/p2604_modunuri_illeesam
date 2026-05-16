@@ -11,9 +11,21 @@ import java.util.Map;
 
 /**
  * 공통 유틸리티.
+ *
+ * <p>역할/책임: 프로젝트 전반에서 재사용하는 정적 헬퍼 모음.
+ * <ul>
+ *   <li>예외 메시지용 Service 도메인/호출지점 추출(svcDomain/svcCallerInfo)</li>
+ *   <li>파라미터 Map 조립/필수값 검증(params/require)</li>
+ *   <li>'^' 구분 이름 파싱(parseNames)</li>
+ *   <li>null/empty 안전 기본값(nvl 계열)</li>
+ *   <li>테이블명 기반 ID 생성(generateId)</li>
+ * </ul>
+ *
+ * <p>주의사항: 인스턴스화 불가(private 생성자). 모든 메서드는 static.
  */
 public class CmUtil {
 
+    /** 유틸 클래스 — 인스턴스화 금지. */
     private CmUtil() {}
 
     /**
@@ -23,6 +35,9 @@ public class CmUtil {
      * FoMyPageService  → foMyPage
      * </pre>
      * Spring CGLIB 프록시 클래스명("XxxService$$EnhancerBySpringCGLIB$$...") 도 안전 처리.
+     *
+     * @param svc Service 빈 인스턴스 (null 이면 빈 문자열 반환)
+     * @return 첫 글자 소문자화된 도메인명. 'Service' 접미사·CGLIB 프록시 접미사 제거. 추출 불가 시 ""
      */
     public static String svcDomain(Object svc) {
         if (svc == null) return "";
@@ -43,6 +58,11 @@ public class CmUtil {
      * FoMyPageService.changePassword:80 호출 → "foMyPage::changePassword:80"
      * </pre>
      * StackWalker (Java 9+) 사용. CGLIB 프록시 클래스명도 안전 처리.
+     *
+     * <p>skip(1) 로 svcCallerInfo 자신의 스택 프레임을 건너뛰어 직전 호출자(Service 메서드)를 얻는다.
+     *
+     * @param svc Service 빈 인스턴스
+     * @return {@code 도메인::메서드명:라인번호}. 호출 프레임을 얻지 못하면 도메인명만 반환
      */
     public static String svcCallerInfo(Object svc) {
         String domain = svcDomain(svc);
@@ -53,15 +73,28 @@ public class CmUtil {
         return domain + "::" + frame.getMethodName() + ":" + frame.getLineNumber();
     }
 
-    /** @deprecated PageHelper.addPaging(p) 사용 */
+    /**
+     * 페이징 파라미터 추가 (구버전 호환용 위임).
+     *
+     * @param p 쿼리 파라미터 Map
+     * @deprecated {@link PageHelper#addPaging(Map)} 를 직접 사용할 것
+     */
     @Deprecated
     public static void addPaging(Map<String, Object> p) {
         PageHelper.addPaging(p);
     }
 
     /**
-     * null·빈 값을 무시하며 Map 생성.
-     * 사용: CmUtil.params("siteId", siteId, "searchValue", searchValue, ...)
+     * null·빈 문자열을 무시하며 파라미터 Map 생성.
+     *
+     * <p>키/값 쌍을 가변인자로 받아 짝지어 넣는다. 값이 String 이면 blank 일 때 제외,
+     * 그 외 타입이면 null 일 때만 제외한다. 마지막 원소가 짝이 안 맞으면(홀수 개) 무시된다
+     * (반복 조건 {@code i < length - 1}).
+     *
+     * <p>사용: {@code CmUtil.params("siteId", siteId, "searchValue", searchValue, ...)}
+     *
+     * @param keyValues 키, 값, 키, 값 ... 순서의 가변인자 (키는 toString 으로 문자열화)
+     * @return null/blank 가 제거된 HashMap
      */
     public static Map<String, Object> params(Object... keyValues) {
         Map<String, Object> p = new HashMap<>();
@@ -78,8 +111,15 @@ public class CmUtil {
     }
 
     /**
-     * 필수 파라미터 존재 여부 검증. 없으면 CmBizException(400).
-     * 사용: CmUtil.require(p, "siteId", "searchValue")
+     * 필수 파라미터 존재 여부 검증. 없으면 {@link CmBizException}(400).
+     *
+     * <p>값이 null 이거나 toString 결과가 blank 면 누락으로 간주한다.
+     *
+     * <p>사용: {@code CmUtil.require(p, "siteId", "searchValue")}
+     *
+     * @param p    검증 대상 파라미터 Map
+     * @param keys 필수 키 목록
+     * @throws CmBizException 하나라도 누락/blank 인 경우 (가장 먼저 발견된 키 메시지)
      */
     public static void require(Map<String, Object> p, String... keys) {
         for (String key : keys) {
@@ -91,7 +131,12 @@ public class CmUtil {
     }
 
     /**
-     * '^' 구분자로 이름 파싱 (예: "auth^user^role" → ["auth", "user", "role"])
+     * '^' 구분자로 이름 파싱 (예: {@code "auth^user^role"} → {@code ["auth","user","role"]}).
+     *
+     * <p>각 토큰은 trim 되고 빈 토큰은 결과에서 제외된다.
+     *
+     * @param names '^' 로 연결된 문자열 (null/blank 면 빈 리스트)
+     * @return 파싱된 이름 리스트
      */
     public static List<String> parseNames(String names) {
         List<String> items = new ArrayList<>();
@@ -109,89 +154,148 @@ public class CmUtil {
     }
 
     /**
-     * null·빈 값을 기본값으로 치환. null이거나 empty면 defaultValue 반환.
-     * 사용: CmUtil.nvl(value, ""), CmUtil.nvl(value)
+     * null·빈 문자열을 기본값으로 치환.
+     *
+     * @param value        검사할 문자열
+     * @param defaultValue value 가 null/empty 일 때 반환할 기본값
+     * @return value 가 null/empty 면 defaultValue, 아니면 value
      */
     public static String nvl(String value, String defaultValue) {
         return (value == null || value.isEmpty()) ? defaultValue : value;
     }
 
-    /** nvl */
+    /**
+     * null·빈 문자열을 "" 로 치환.
+     *
+     * @param value 검사할 문자열
+     * @return value 가 null/empty 면 "", 아니면 value
+     */
     public static String nvl(String value) {
         return nvl(value, "");
     }
 
     /**
-     * List null 체크. null이면 defaultValue 반환.
-     * 사용: CmUtil.nvlList(value, List.of()), CmUtil.nvlList(value)
+     * List null 치환.
+     *
+     * @param value        검사할 리스트
+     * @param defaultValue null 일 때 반환할 기본 리스트
+     * @return value 가 null 이면 defaultValue, 아니면 value (빈 리스트는 그대로 반환)
      */
     public static <T> List<T> nvlList(List<T> value, List<T> defaultValue) {
         return (value == null) ? defaultValue : value;
     }
 
-    /** nvlList */
+    /**
+     * List null 치환 (기본값: 새 빈 ArrayList).
+     *
+     * @param value 검사할 리스트
+     * @return value 가 null 이면 새 빈 리스트, 아니면 value
+     */
     public static <T> List<T> nvlList(List<T> value) {
         return nvlList(value, new ArrayList<>());
     }
 
     /**
-     * int null 체크. null이면 defaultValue 반환.
-     * 사용: CmUtil.nvlInt(value, 0), CmUtil.nvlInt(value)
+     * Integer null 치환.
+     *
+     * @param value        검사할 값
+     * @param defaultValue null 일 때 반환할 기본값
+     * @return value 가 null 이면 defaultValue, 아니면 value
      */
     public static Integer nvlInt(Integer value, Integer defaultValue) {
         return (value == null) ? defaultValue : value;
     }
 
-    /** nvlInt */
+    /**
+     * Integer null 치환 (기본값 0).
+     *
+     * @param value 검사할 값
+     * @return value 가 null 이면 0, 아니면 value
+     */
     public static Integer nvlInt(Integer value) {
         return nvlInt(value, 0);
     }
 
     /**
-     * long null 체크. null이면 defaultValue 반환.
-     * 사용: CmUtil.nvlLong(value, 0L), CmUtil.nvlLong(value)
+     * Long null 치환.
+     *
+     * @param value        검사할 값
+     * @param defaultValue null 일 때 반환할 기본값
+     * @return value 가 null 이면 defaultValue, 아니면 value
      */
     public static Long nvlLong(Long value, Long defaultValue) {
         return (value == null) ? defaultValue : value;
     }
 
-    /** nvlLong */
+    /**
+     * Long null 치환 (기본값 0L).
+     *
+     * @param value 검사할 값
+     * @return value 가 null 이면 0L, 아니면 value
+     */
     public static Long nvlLong(Long value) {
         return nvlLong(value, 0L);
     }
 
     /**
-     * boolean null 체크. null이면 defaultValue 반환.
-     * 사용: CmUtil.nvlBool(value, false), CmUtil.nvlBool(value)
+     * Boolean null 치환.
+     *
+     * @param value        검사할 값
+     * @param defaultValue null 일 때 반환할 기본값
+     * @return value 가 null 이면 defaultValue, 아니면 value
      */
     public static Boolean nvlBool(Boolean value, Boolean defaultValue) {
         return (value == null) ? defaultValue : value;
     }
 
-    /** nvlBool */
+    /**
+     * Boolean null 치환 (기본값 false).
+     *
+     * @param value 검사할 값
+     * @return value 가 null 이면 false, 아니면 value
+     */
     public static Boolean nvlBool(Boolean value) {
         return nvlBool(value, false);
     }
 
     /**
-     * Map null 체크. null이면 defaultValue 반환.
-     * 사용: CmUtil.nvlMap(value, new HashMap<>()), CmUtil.nvlMap(value)
+     * Map null 치환.
+     *
+     * @param value        검사할 Map
+     * @param defaultValue null 일 때 반환할 기본 Map
+     * @return value 가 null 이면 defaultValue, 아니면 value
      */
     public static <K, V> Map<K, V> nvlMap(Map<K, V> value, Map<K, V> defaultValue) {
         return (value == null) ? defaultValue : value;
     }
 
-    /** nvlMap */
+    /**
+     * Map null 치환 (기본값: 새 빈 HashMap).
+     *
+     * @param value 검사할 Map
+     * @return value 가 null 이면 새 빈 HashMap, 아니면 value
+     */
     public static <K, V> Map<K, V> nvlMap(Map<K, V> value) {
         return nvlMap(value, new HashMap<>());
     }
 
+    /** ID 타임스탬프 포맷 — yyMMddHHmmss(12자리). */
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
-    /** 
-     * 테이블명 기반 ID 생성: prefix + yyMMddHHmmss(12) + rand4(4) 최대 21자
-     * prefix _ 을 split 후 1번인덱스 2글자, 3~5번 인덱스 1글자씩 조합 최대 5글자 대문자
-     * 예: "syh_user_login_hist" → "USLH" + "240610153045" + "1234" → "USLH2406101530451234"
+    /**
+     * 테이블명 기반 ID 생성: {@code prefix + yyMMddHHmmss(12) + rand4(4)} 최대 21자.
+     *
+     * <p>prefix 는 테이블명을 '_' 로 split 한 뒤 도메인(0번)을 제외하고
+     * 1번 세그먼트 앞 2글자 + 이후 세그먼트 각 1글자를 최대 5글자(대문자)로 조합한다.
+     * prefix 추출 실패 시 "XX", 5자 초과 시 앞 5자로 절단.
+     *
+     * <p>예: {@code "syh_user_login_hist"} → {@code "USLH" + "240610153045" + "1234"}
+     * → {@code "USLH2406101530451234"}.
+     *
+     * <p>rand4 는 0~9999 를 4자리 zero-pad — 동일 초 충돌 완화용(완전 유일성 보장 아님).
+     *
+     * @param tableNm 대상 테이블명 (snake_case)
+     * @return 생성된 ID 문자열
      */
     public static String generateId(String tableNm) {
         String prefix = extractPrefix(tableNm);
@@ -202,7 +306,15 @@ public class CmUtil {
         return prefix + ts + rand;
     }
 
-    // 0번 인덱스(도메인) 제외, 1번=첫2자, 2~4번=첫1자, 최대5자 대문자
+    /**
+     * 테이블명에서 ID prefix 추출.
+     *
+     * <p>규칙: '_' split 후 0번 인덱스(도메인 prefix, 예: sy/ec/syh)는 제외.
+     * 1번 세그먼트는 앞 2자, 2번 이후는 각 앞 1자를 누적해 최대 5자(대문자) 생성.
+     *
+     * @param tableNm 테이블명 (null/blank 면 "XX")
+     * @return 대문자 prefix (최대 5자)
+     */
     private static String extractPrefix(String tableNm) {
         if (tableNm == null || tableNm.isBlank()) return "XX";
         String[] parts = tableNm.toUpperCase().split("_");

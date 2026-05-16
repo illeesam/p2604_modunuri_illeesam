@@ -26,6 +26,10 @@
   const foApiSvc = {};
 
   /* ── cm: 블로그/게시물 ──────────────────────────────────────── */
+  /* getById/getPage 응답 data: CmBlogDto.Item + 연관정보 (백엔드 _itemFillRelations/_listFillRelations)
+   *   replies[] (댓글: writerNm/blogCommentContent/regDate)
+   *   files[]   (첨부: imgUrl/thumbUrl/imgAltText)
+   *   tags[]    (태그: tagNm) */
   foApiSvc.cmBltn = {
     getPage(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/ec/cm/bltn/page', { params, ...hdr(uiNm, cmdNm) });
@@ -116,6 +120,9 @@
   };
 
   /* ── pm: 이벤트 ─────────────────────────────────────────────── */
+  /* getById/getPage 응답 data: PmEventDto.Item + 연관정보 (백엔드 _itemFillRelations/_listFillRelations)
+   *   eventItems[] (대상: targetTypeCd/targetId)
+   *   benefits[]   (혜택: benefitNm/benefitValue/conditionDesc) */
   foApiSvc.pmEvent = {
     getPage(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/ec/pm/event/page', { params, ...hdr(uiNm, cmdNm) });

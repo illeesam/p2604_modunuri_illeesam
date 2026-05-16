@@ -39,34 +39,43 @@ window.EventView = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    const cfEventId  = computed(() => Number(props.dtlId) || 1);
-    const cfEvent    = computed(() => events.find(e => e.id === cfEventId.value) || events[0] || null);
-    
+    const cfEventId  = computed(() => props.dtlId);
+    /* 백엔드 PmEventDto.Item → 화면 표준 형태로 정규화 (benefits/eventItems 연관정보 포함) */
+    const cfEvent    = computed(() => {
+      const raw = events.length > 0 ? events[0] : null;
+      if (!raw) return null;
+      return {
+        id:            raw.eventId,
+        title:         raw.eventTitle || raw.eventNm || '',
+        heroEyebrow:   raw.eventTypeCd || 'EVENT',
+        heroSub:       raw.eventDesc || '',
+        heroBg:        'linear-gradient(135deg,#5b6cff 0%,#8a4fff 100%)',
+        heroTextColor: '#ffffff',
+        startDate:     (raw.startDate || '').toString().slice(0, 10),
+        endDate:       (raw.endDate || '').toString().slice(0, 10),
+        body:          raw.eventContent || '',
+        /* PmEventBenefitDto.Item → 카드 표시 */
+        benefits:      (raw.benefits || []).map(b => ({
+                         label: b.benefitNm || b.benefitTypeCd || '혜택',
+                         value: b.benefitValue || '',
+                         desc:  b.conditionDesc || '',
+                         btn:   '자세히',
+                       })),
+        /* PmEventItemDto.Item → 대상 상품/대상 목록 */
+        eventItems:    (raw.eventItems || []).map(it => ({
+                         id:         it.eventItemId,
+                         targetType: it.targetTypeCd || '',
+                         targetId:   it.targetId || '',
+                       })),
+        notice:        (raw.eventDesc || '').split('\n').filter(Boolean),
+      };
+    });
+
     /* 탭 변경 시 0으로 리셋 */
     const setTab = (i) => { uiState.activeTab = i; };
 
-    /* 현재 탭 상품 ID 목록 → 이미지/이름 생성 */
-    const cfTabProds = computed(() => {
-      const set = cfEvent.value.productSets[uiState.activeTab] || [];
-      return set.map(id => ({
-        id,
-        name: `ShopJoy 2026 S/S No.${id}`,
-        price: (Math.floor(Math.random() * 12) + 3) * 10000,
-        origPrice: null,
-        discount: [0,0,10,15,20,30,0,0,10,25,0,15][id % 12],
-        img: id <= 12
-          ? `assets/cdn/prod/img/shop/prod/fashion/fashion-${id}.webp`
-          : `assets/cdn/prod/img/shop/prod/prod_${((id-1)%23)+1}.png`,
-      })).map(p => ({
-        ...p,
-        origPrice: p.discount ? Math.round(p.price / (1 - p.discount/100) / 1000) * 1000 : null,
-        priceStr: p.price.toLocaleString() + '원',
-        origStr: p.origPrice ? Math.round(p.price / (1 - p.discount/100) / 1000 * 1000).toLocaleString() + '원' : null,
-      }));
-    });
-
-    /* 더 많은 프로모션 (현재 이벤트 제외) */
-    const cfPromoEvents = computed(() => events.filter(e => e.id !== cfEventId.value));
+    /* 더 많은 프로모션: 단건 상세 응답이라 목록 없음 → 빈 배열 */
+    const cfPromoEvents = computed(() => []);
 
     onMounted(() => {
       handleSearchData();
@@ -74,7 +83,7 @@ window.EventView = {
 
     // -- return ---------------------------------------------------------------
 
-    return { cfEvent, setTab, cfTabProds, cfPromoEvents, uiState, codes };
+    return { cfEvent, setTab, cfPromoEvents, uiState, codes };
   },
 
   template: /* html */ `
@@ -133,57 +142,27 @@ window.EventView = {
         <div v-for="(b, bi) in cfEvent.benefits" :key="bi"
           style="border:1px solid var(--border);border-radius:12px;padding:24px 16px;">
           <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:10px;">{{ b.label }}</div>
-          <div style="font-size:1.45rem;font-weight:900;color:var(--text-primary);margin-bottom:16px;">{{ b.value }}</div>
+          <div style="font-size:1.45rem;font-weight:900;color:var(--text-primary);margin-bottom:8px;">{{ b.value }}</div>
+          <div v-if="b.desc" style="font-size:0.74rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">{{ b.desc }}</div>
           <button class="btn-blue" style="padding:9px 28px;font-size:0.82rem;border-radius:6px;border:none;cursor:pointer;">{{ b.btn }}</button>
         </div>
       </div>
     </div>
 
-    <!-- -- ④ 이벤트 상품 ----------------------------------------------------- -->
-    <div style="margin-bottom:36px;">
-      <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">이벤트 상품</h2>
-
-      <!-- -- 탭 ---------------------------------------------------------- -->
-      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px;">
-        <button v-for="(tab, ti) in cfEvent.tabs" :key="ti"
-          @click="setTab(ti)"
-          :style="{
-            padding:'10px 20px', background:'none', border:'none', cursor:'pointer',
-            fontSize:'0.85rem',
-            fontWeight: uiState.activeTab===ti ? '700' : '500',
-            color: uiState.activeTab===ti ? 'var(--text-primary)' : 'var(--text-muted)',
-            borderBottom: uiState.activeTab===ti ? '2px solid var(--text-primary)' : '2px solid transparent',
-            marginBottom: '-1px',
-          }">{{ tab }}</button>
-      </div>
-
-      <!-- -- 상품 그리드 ----------------------------------------------------- -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;">
-        <div v-for="p in cfTabProds" :key="p.id"
-          style="cursor:pointer;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:transform .15s,box-shadow .15s;"
-          @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 18px rgba(0,0,0,0.09)'"
-          @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">
-          <div style="aspect-ratio:3/4;overflow:hidden;background:#f8f8f8;">
-            <img :src="p.img" :alt="p.name"
-              style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
-              @mouseenter="$event.target.style.transform='scale(1.04)'"
-              @mouseleave="$event.target.style.transform=''"
-              @error="$event.target.style.display='none'" />
-          </div>
-          <div style="padding:12px 12px 14px;">
-            <div style="font-size:0.78rem;color:var(--text-secondary);line-height:1.4;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ p.name }}</div>
-            <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">
-              <span v-if="p.discount" style="font-size:0.78rem;font-weight:700;color:#ef4444;">{{ p.discount }}%</span>
-              <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ p.priceStr }}</span>
-            </div>
-            <div v-if="p.origStr" style="font-size:0.72rem;color:var(--text-muted);text-decoration:line-through;margin-top:2px;">{{ p.origStr }}</div>
-          </div>
+    <!-- -- ④ 이벤트 대상 (eventItems) ---------------------------------------- -->
+    <div v-if="cfEvent.eventItems && cfEvent.eventItems.length" style="margin-bottom:36px;">
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">이벤트 대상</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+        <div v-for="it in cfEvent.eventItems" :key="it.id"
+          style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:16px;">
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:6px;">{{ it.targetType }}</div>
+          <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);word-break:break-all;">{{ it.targetId }}</div>
         </div>
       </div>
     </div>
 
     <!-- -- ⑤ 더 많은 프로모션 -------------------------------------------------- -->
-    <div style="margin-bottom:36px;">
+    <div v-if="cfPromoEvents.length" style="margin-bottom:36px;">
       <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">더 많은 프로모션 보기</h2>
       <div style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;">
         <div v-for="ev in cfPromoEvents" :key="ev.id"

@@ -53,8 +53,25 @@ window.DpDispPanelDtl = {
           form.useStartDate           = data.useStartDate       ?? form.useStartDate;
           form.useEndDate             = data.useEndDate         ?? form.useEndDate;
           form.pathId                 = data.pathId             ?? form.pathId;
-          /* 위젯 목록은 content_json 에 직렬화되어 저장됨 */
-          if (data.contentJson) {
+          /* 위젯 목록: 임베드된 panelItems 가 있으면 우선 사용, 없으면 content_json 파싱 폴백 */
+          if (Array.isArray(data.panelItems) && data.panelItems.length) {
+            /* DpPanelItemDto.Item → row 별칭 매핑 (Entity 기준) */
+            const mapped = data.panelItems
+              .slice()
+              .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+              .map(it => makeRowData({
+                widgetType:      it.widgetTypeCd,
+                widgetTitle:     it.widgetTitle,
+                title:           it.widgetTitle,
+                titleYn:         it.titleShowYn || 'N',
+                contentTypeCd:   it.contentTypeCd,
+                widgetConfigJson: it.widgetConfigJson,
+                sortOrder:       it.sortOrd,
+                dispYn:          it.dispYn || 'Y',
+              }));
+            rows.splice(0, rows.length, ...mapped);
+          } else if (data.contentJson) {
+            /* 위젯 목록은 content_json 에 직렬화되어 저장됨 */
             try {
               const parsed = JSON.parse(data.contentJson);
               if (Array.isArray(parsed?.rows)) { rows.splice(0, rows.length, ...parsed.rows); }

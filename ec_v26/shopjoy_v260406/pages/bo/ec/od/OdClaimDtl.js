@@ -69,6 +69,18 @@ window.OdClaimDtl = {
         const c = res.data?.data || res.data || {};
         Object.assign(form, { ...c });
         if (!form.claimId) form.claimId = props.dtlId;
+        // getById 응답에 임베드된 클레임항목(claimItems) 사용
+        claimItems.splice(0, claimItems.length, ...((c.claimItems || []).map(x => ({
+          ...x,
+          prodNm: x.prodNm,
+          color: x.prodOption || '',
+          size: '',
+          qty: x.claimQty || 1,
+          salePrice: x.unitPrice || 0,
+          price: x.itemAmt || 0,
+          discAmount: x.discAmount || 0,
+          discInfo: x.discInfo || '',
+        }))));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -82,7 +94,7 @@ window.OdClaimDtl = {
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleSearchDetail();
-      claimItems.splice(0, claimItems.length, ...sampleClaimItems());
+      // 클레임항목은 handleSearchDetail에서 getById 임베드 데이터로 채움
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {

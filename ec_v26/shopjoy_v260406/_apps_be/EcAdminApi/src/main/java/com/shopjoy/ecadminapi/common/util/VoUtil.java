@@ -22,17 +22,31 @@ import java.util.Map;
  *   Map<String, Object> mapBody = (Map<String, Object>) body;
  *   VoUtil.mapCopy(mapBody, entity);
  *   repository.save(entity);
+ *
+ * <p>공통 동작 규칙(모든 copy 메서드):
+ * <ul>
+ *   <li>source/target 중 하나라도 null 이면 target 을 그대로 반환(무동작)</li>
+ *   <li>값이 null 인 필드는 복사하지 않음 → MyBatis {@code <if test="x != null">} 와 정합</li>
+ *   <li>target 에 동일 이름 필드가 없으면 무시(부분 복사 허용)</li>
+ *   <li>대입 타입이 호환되지 않으면(isAssignableFrom 실패) 해당 필드 스킵</li>
+ *   <li>reflection 접근 자체가 실패({@link IllegalAccessException})하면 {@link RuntimeException} 으로 래핑</li>
+ * </ul>
+ *
+ * <p>주의사항: 인스턴스화 불가. 필드명이 정확히 일치해야 매핑된다(getter/setter 무관, 필드 직접 접근).
+ * voCopy 계열은 source 의 선언 필드만(상속 필드 제외) 순회, {@link #voToMap(Object)} 만 상속 필드까지 포함.
  */
 public class VoUtil {
 
+    /** 유틸 클래스 — 인스턴스화 금지. */
     private VoUtil() {}
 
     /**
      * source 객체의 non-null 필드를 target 객체에 복사.
      *
-     * @param source 원본 VO/DTO (요청 데이터)
-     * @param target 대상 Entity (DB 엔티티)
+     * @param source 원본 VO/DTO (요청 데이터, null 이면 target 그대로 반환)
+     * @param target 대상 Entity (DB 엔티티, null 이면 그대로 반환)
      * @return target 객체 (원본 수정 후 반환)
+     * @throws RuntimeException 리플렉션 필드 접근 실패 시 (IllegalAccessException 래핑)
      */
     public static <T> T voCopy(Object source, T target) {
         if (source == null || target == null) {
@@ -84,6 +98,7 @@ public class VoUtil {
      * @param target    대상 Entity
      * @param excludes  복사하지 않을 필드명 배열 (예: "id", "regBy", "regDate")
      * @return target 객체
+     * @throws RuntimeException 리플렉션 필드 접근 실패 시
      */
     public static <T> T voCopy(Object source, T target, String... excludes) {
         if (source == null || target == null) {
@@ -132,9 +147,13 @@ public class VoUtil {
      * Map<String, Object>의 항목을 target Entity에 복사.
      * null 값은 복사하지 않음 (선택적 수정만 반영).
      *
-     * @param source Map 형태의 요청 데이터
+     * <p>타입 검증은 {@code targetField.getType().isAssignableFrom(value.getClass())} 로 수행하므로
+     * Map 값이 박싱 타입과 다르면(예: target Long, value Integer) 복사되지 않음에 주의.
+     *
+     * @param source Map 형태의 요청 데이터 (null 이면 target 그대로 반환)
      * @param target 대상 Entity
      * @return target 객체
+     * @throws RuntimeException 리플렉션 필드 접근 실패 시
      */
     public static <T> T mapCopy(java.util.Map<String, Object> source, T target) {
         if (source == null || target == null) {
@@ -179,6 +198,7 @@ public class VoUtil {
      * @param target   대상 Entity
      * @param excludes 복사하지 않을 필드명 배열
      * @return target 객체
+     * @throws RuntimeException 리플렉션 필드 접근 실패 시
      */
     public static <T> T mapCopy(java.util.Map<String, Object> source, T target, String... excludes) {
         if (source == null || target == null) {
@@ -224,6 +244,8 @@ public class VoUtil {
     /**
      * VO/DTO의 필드를 Entity에 복사 (제외 필드를 ^로 구분된 문자열로 지정).
      *
+     * <p>excludes 가 null/빈 문자열이면 제외 없이 {@link #voCopy(Object, Object)} 와 동일하게 동작.
+     *
      * @param source   원본 VO/DTO
      * @param target   대상 Entity
      * @param excludes 복사하지 않을 필드명 (^로 구분, 예: "id^regBy^regDate")
@@ -243,8 +265,11 @@ public class VoUtil {
      *
      * @param source   원본 VO/DTO
      * @param target   대상 Entity
+     * <p>includes 가 null/빈 문자열이면 아무것도 복사하지 않고 target 그대로 반환.
+     *
      * @param includes 복사할 필드명만 (^로 구분, 예: "memberNm^memberEmail^memberPhone")
      * @return target 객체
+     * @throws RuntimeException 리플렉션 필드 접근 실패 시
      */
     public static <T> T voCopyInclude(Object source, T target, String includes) {
         if (source == null || target == null || includes == null || includes.isEmpty()) {
@@ -296,9 +321,13 @@ public class VoUtil {
      *
      * @param source   원본 VO/DTO
      * @param target   대상 Entity
+     * <p>최종 복사 대상 = (includes 집합) − (excludes 집합). includes 가 null/빈 문자열이면 무동작.
+     * excludes 가 null/빈 문자열이면 제외 없이 includes 전체를 복사.
+     *
      * @param includes 복사할 필드명 (^로 구분, 예: "id^memberNm^memberEmail^regBy")
      * @param excludes 제외할 필드명 (^로 구분, 예: "id^regBy^regDate")
      * @return target 객체
+     * @throws RuntimeException 리플렉션 필드 접근 실패 시
      */
     public static <T> T voCopyIncludeExclude(Object source, T target, String includes, String excludes) {
         if (source == null || target == null || includes == null || includes.isEmpty()) {
@@ -358,6 +387,8 @@ public class VoUtil {
      *
      * @param source   Map 형태의 요청 데이터
      * @param target   대상 Entity
+     * <p>excludes 가 null/빈 문자열이면 제외 없이 {@link #mapCopy(java.util.Map, Object)} 와 동일 동작.
+     *
      * @param excludes 복사하지 않을 필드명 (^로 구분, 예: "id^regBy^regDate")
      * @return target 객체
      */
@@ -374,8 +405,11 @@ public class VoUtil {
      *
      * @param source   Map 형태의 요청 데이터
      * @param target   대상 Entity
+     * <p>includes 가 null/빈 문자열이면 아무것도 복사하지 않고 target 그대로 반환.
+     *
      * @param includes 복사할 필드명만 (^로 구분, 예: "siteId^memberNm^memberEmail")
      * @return target 객체
+     * @throws RuntimeException 리플렉션 필드 접근 실패 시
      */
     public static <T> T mapCopyInclude(java.util.Map<String, Object> source, T target, String includes) {
         if (source == null || target == null || includes == null || includes.isEmpty()) {
@@ -429,8 +463,12 @@ public class VoUtil {
      * - null 값도 그대로 Map 에 포함 (MyBatis <if> 평가에 필요)
      * - 타입 정보 보존 (Integer 는 Integer, String 은 String) — JDBC 타입 추론 유지
      *
+     * <p>static 필드는 제외한다. 상속 체인을 자식→부모 순으로 순회하며,
+     * 동일 이름 필드는 먼저 담긴 자식 클래스 값이 우선(containsKey 가드).
+     *
      * @param source 변환할 VO/DTO 객체 (null 이면 빈 Map 반환)
      * @return source 의 모든 필드를 담은 LinkedHashMap (순서 보존)
+     * @throws RuntimeException 리플렉션 필드 접근 실패 시 (IllegalAccessException 래핑)
      */
     public static Map<String, Object> voToMap(Object source) {
         Map<String, Object> result = new LinkedHashMap<>();

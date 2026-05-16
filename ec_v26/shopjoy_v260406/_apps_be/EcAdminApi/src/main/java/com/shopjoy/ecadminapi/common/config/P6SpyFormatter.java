@@ -20,7 +20,22 @@ import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
  */
 public class P6SpyFormatter implements MessageFormattingStrategy {
 
-    /** formatMessage — 포맷 */
+    /**
+     * P6Spy 가 호출하는 로그 메시지 포맷 콜백. 바인딩 치환된 SQL 을 박스 형태로 정형화한다.
+     *
+     * <p>{@code sql}(바인딩 치환 완료본)을 우선 사용하고, 비어 있으면 {@code prepared}(?
+     * 플레이스홀더 원형)로 폴백한다. {@link MyBatisQueryInterceptor} 가 ThreadLocal 에 남긴
+     * 매퍼 정보·결과 요약을 헤더/푸터에 결합한다.</p>
+     *
+     * @param connectionId 커넥션 ID(미사용)
+     * @param now          타임스탬프 문자열(미사용)
+     * @param elapsed      실행 소요 시간(ms) — 헤더에 표시
+     * @param category     statement 카테고리(미사용)
+     * @param prepared     플레이스홀더 원형 SQL(폴백용)
+     * @param sql          바인딩 치환된 실행 SQL(우선)
+     * @param url          JDBC URL(미사용)
+     * @return 박스 정형화된 로그 문자열. sql·prepared 모두 비면 빈 문자열(빈 로그 라인 억제)
+     */
     @Override
     public String formatMessage(int connectionId, String now, long elapsed,
                                 String category, String prepared, String sql, String url) {
@@ -48,7 +63,16 @@ public class P6SpyFormatter implements MessageFormattingStrategy {
         return sb.toString();
     }
 
-    /** SQL 키워드 앞에 줄바꿈을 삽입하고 각 줄에 │ 프리픽스를 붙여 가독성을 높인다. */
+    /**
+     * SQL 주요 절 키워드 앞에 줄바꿈/들여쓰기를 삽입해 가독성을 높인다.
+     *
+     * <p>SELECT 컬럼 목록을 먼저 분리한 뒤, FROM/JOIN/ON/WHERE/AND/OR/GROUP BY/HAVING/
+     * ORDER BY/LIMIT/OFFSET/INSERT INTO/VALUES/UPDATE/SET/DELETE FROM 키워드를 정규식
+     * {@code (?i)\b키워드\b}(대소문자 무시·단어 경계)로 찾아 들여쓴다.</p>
+     *
+     * @param sql 원본 SQL(trim 후 처리)
+     * @return 각 줄을 trim 하고 3칸 들여쓴 정형 SQL. 빈 줄은 제거
+     */
     private String formatSql(String sql) {
         String s = sql.trim();
 
@@ -81,11 +105,15 @@ public class P6SpyFormatter implements MessageFormattingStrategy {
     }
 
     /**
-     * SELECT col1,col2,col3 FROM ... 형태에서
-     * 컬럼 목록을 한 줄씩 분리한다.
-     * SELECT col1,
-     *        col2,
-     *        col3
+     * {@code SELECT col1,col2,... FROM ...} 에서 컬럼 목록을 한 줄씩 분리한다.
+     *
+     * <p>정규식 {@code (?i)^(SELECT\s+)(.*?)(\s+FROM\b)} 으로 SELECT~FROM 사이를 비탐욕
+     * 캡처한다. 함수 인자의 쉼표를 컬럼 구분자로 오인하지 않도록 괄호 깊이(depth)를 추적해
+     * depth==0 인 최상위 쉼표에서만 분리한다.</p>
+     *
+     * @param sql 원본 SQL
+     * @return 컬럼이 줄 단위로 펼쳐진 SQL. SELECT~FROM 패턴 불일치 시
+     *         (서브쿼리·비SELECT 등) SELECT 한 줄 + 본문 형태로 폴백
      */
     private String splitSelectColumns(String sql) {
         // SELECT ~ FROM 사이의 컬럼 목록 추출

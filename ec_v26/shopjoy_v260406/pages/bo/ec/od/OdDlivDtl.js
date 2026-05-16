@@ -62,6 +62,18 @@ window.OdDlivDtl = {
         if (!form.dlivId) form.dlivId = props.dtlId;
         if (d.dlivStatusCd) form.dlivStatusCd = d.dlivStatusCd;
         if (d.outboundCourierCd) form.outboundCourierCd = d.outboundCourierCd;
+        // getById 응답에 임베드된 배송항목(dlivItems) 사용
+        dlivItems.splice(0, dlivItems.length, ...((d.dlivItems || []).map(it => ({
+          ...it,
+          prodNm: it.prodNm || it.prodId || '',
+          color: it.optItemId1 || '',
+          size: it.optItemId2 || '',
+          qty: it.dlivQty || 1,
+          salePrice: it.unitPrice || 0,
+          price: (it.unitPrice * (it.dlivQty || 1)) || 0,
+          discAmount: it.discAmount || 0,
+          discInfo: it.discInfo || '',
+        }))));
         // 연관 클레임 로드 (주문ID 기준)
         if (form.orderId) {
           try {
@@ -135,10 +147,8 @@ window.OdDlivDtl = {
       }).filter(Boolean);
     };
 
-    /* 배송 initItems */
-    const initItems = async () => {
-      dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
-    };
+    /* 배송 initItems — 배송항목은 handleSearchDetail에서 getById 임베드 데이터로 채움 */
+    const initItems = async () => {};
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
