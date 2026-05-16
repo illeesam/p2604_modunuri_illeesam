@@ -48,7 +48,7 @@ window.SyAlarmMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_title,def_message';
+          params.searchType = 'alarmTitle,alarmMsg';
         }
         const res = await boApiSvc.syAlarm.getPage(params, '알람관리', '목록조회');
         const data = res.data?.data;
@@ -218,8 +218,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_title',   label: '제목' },
-          { value: 'def_message', label: '메시지' },
+          { value: 'alarmTitle', label: '제목' },
+          { value: 'alarmMsg',   label: '메시지' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

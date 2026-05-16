@@ -92,7 +92,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     }
 
     /** 검색조건 빌드 */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(CmBlogTagDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -100,14 +100,14 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         if (StringUtils.hasText(s.getSiteId()))    w.and(t.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getBlogTagId())) w.and(t.blogTagId.eq(s.getBlogTagId()));
 
-        // searchValue + searchType (def_tag_nm)
+        // searchValue + searchType (tagNm)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_tag_nm,")) or.or(t.tagNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",tagNm,")) or.or(t.tagNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

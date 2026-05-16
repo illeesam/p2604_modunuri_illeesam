@@ -72,7 +72,7 @@ window.SyPropMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_pathId,def_key,def_value,def_label';
+          params.searchType = 'pathId,propKey,propValue,propLabel';
         }
         const res = await boApiSvc.syProp.getPage(params, '속성관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
@@ -205,10 +205,10 @@ window.SyPropMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_pathId', label: '표시경로' },
-          { value: 'def_key',    label: '키' },
-          { value: 'def_value',  label: '값' },
-          { value: 'def_label',  label: '라벨' },
+          { value: 'pathId',    label: '표시경로' },
+          { value: 'propKey',   label: '키' },
+          { value: 'propValue', label: '값' },
+          { value: 'propLabel', label: '라벨' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

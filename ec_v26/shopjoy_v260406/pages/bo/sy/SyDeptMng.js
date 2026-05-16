@@ -325,8 +325,8 @@ window.SyDeptMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_code', label: '부서코드' },
-          { value: 'def_nm',   label: '부서명' },
+          { value: 'deptCode', label: '부서코드' },
+          { value: 'deptNm',   label: '부서명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

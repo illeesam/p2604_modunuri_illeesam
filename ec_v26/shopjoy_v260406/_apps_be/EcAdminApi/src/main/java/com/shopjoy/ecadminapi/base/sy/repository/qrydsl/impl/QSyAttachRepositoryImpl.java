@@ -103,8 +103,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_file_nm,"))   or.or(a.fileNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_stored_nm,")) or.or(a.storedNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",fileNm,"))   or.or(a.fileNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",storedNm,")) or.or(a.storedNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

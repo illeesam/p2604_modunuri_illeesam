@@ -63,7 +63,7 @@ window.PmGiftMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_id';
+          params.searchType = 'giftNm,giftId';
         }
         const res = await boApiSvc.pmGift.getPage(params, '선물관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
@@ -190,8 +190,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm', label: '사은품명' },
-          { value: 'def_id', label: 'ID' },
+          { value: 'giftNm', label: '사은품명' },
+          { value: 'giftId', label: 'ID' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

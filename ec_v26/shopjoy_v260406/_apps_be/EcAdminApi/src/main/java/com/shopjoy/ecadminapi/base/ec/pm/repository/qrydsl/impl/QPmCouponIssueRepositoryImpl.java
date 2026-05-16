@@ -115,7 +115,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                 .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE").and(cdCt.codeValue.eq(c.couponTypeCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(PmCouponIssueDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -131,10 +131,10 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_member_nm,")) or.or(m.memberNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_login_id,"))  or.or(m.loginId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_coupon_nm,")) or.or(c.couponNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_coupon_cd,")) or.or(c.couponCd.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberNm,")) or.or(m.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",loginId,"))  or.or(m.loginId.likeIgnoreCase(pattern));
+            if (all || types.contains(",couponNm,")) or.or(c.couponNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",couponCd,")) or.or(c.couponCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

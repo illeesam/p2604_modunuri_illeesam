@@ -144,7 +144,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_userId,"))  or.or(l.userId.like(pattern));
+            if (all || types.contains(",userId,"))  or.or(l.userId.like(pattern));
             // login_id 컬럼이 SyhUserTokenLog 엔티티에 없음 — XML 의 login_id 검색은 생략
             if (or.getValue() != null) w.and(or);
         }

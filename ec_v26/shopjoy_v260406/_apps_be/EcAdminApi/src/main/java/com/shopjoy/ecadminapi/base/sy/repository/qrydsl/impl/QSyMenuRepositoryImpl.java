@@ -112,8 +112,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_nm,"))   or.or(m.menuNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_code,")) or.or(m.menuCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",menuNm,"))   or.or(m.menuNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",menuCode,")) or.or(m.menuCode.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

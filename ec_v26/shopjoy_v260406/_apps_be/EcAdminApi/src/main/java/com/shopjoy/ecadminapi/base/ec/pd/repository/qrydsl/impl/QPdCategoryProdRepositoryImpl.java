@@ -110,7 +110,17 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         if (StringUtils.hasText(s.getSiteId()))         w.and(p.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getCategoryProdId())) w.and(p.categoryProdId.eq(s.getCategoryProdId()));
         if (StringUtils.hasText(s.getProdId()))         w.and(p.prodId.eq(s.getProdId()));
-        if (StringUtils.hasText(s.getCategoryId()))     w.and(p.categoryId.eq(s.getCategoryId()));
+        // categoryIdsCsv(선택+자식, 콤마구분) 지정 시 IN 조건 우선, 아니면 categoryId 단일 매칭
+        if (StringUtils.hasText(s.getCategoryIdsCsv())) {
+            List<String> catIds = new ArrayList<>();
+            for (String c : s.getCategoryIdsCsv().split(",")) {
+                String v = c.trim();
+                if (!v.isEmpty()) catIds.add(v);
+            }
+            if (!catIds.isEmpty()) w.and(p.categoryId.in(catIds));
+        } else if (StringUtils.hasText(s.getCategoryId())) {
+            w.and(p.categoryId.eq(s.getCategoryId()));
+        }
         if (StringUtils.hasText(s.getTypeCd()))         w.and(p.categoryProdTypeCd.eq(s.getTypeCd()));
 
         if (StringUtils.hasText(s.getDateType())

@@ -102,7 +102,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(PmPlanDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -117,8 +117,8 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_plan_nm,"))    or.or(p.planNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_plan_title,")) or.or(p.planTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",planNm,"))    or.or(p.planNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",planTitle,")) or.or(p.planTitle.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

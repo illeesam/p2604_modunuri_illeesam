@@ -92,7 +92,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     }
 
     /** 검색조건 빌드 — Mapper XML pdProdQnaCond 와 동일 동작 (DTO Request 필드 한정) */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdProdQnaDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -102,14 +102,14 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         if (StringUtils.hasText(s.getProdId())) w.and(q.prodId.eq(s.getProdId()));
         if (StringUtils.hasText(s.getUseYn()))  w.and(q.useYn.eq(s.getUseYn()));
 
-        // searchValue + searchType (def_qna_title)
+        // searchValue + searchType (qnaTitle)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_qna_title,")) or.or(q.qnaTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",qnaTitle,")) or.or(q.qnaTitle.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

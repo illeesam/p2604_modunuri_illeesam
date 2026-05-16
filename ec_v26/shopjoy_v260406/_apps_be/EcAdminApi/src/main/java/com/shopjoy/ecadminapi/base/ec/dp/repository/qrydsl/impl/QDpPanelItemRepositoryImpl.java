@@ -74,7 +74,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         )).from(i);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(DpPanelItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -89,7 +89,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_widget_title,")) or.or(i.widgetTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",widgetTitle,")) or.or(i.widgetTitle.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

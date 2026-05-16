@@ -38,15 +38,28 @@ window.PdCategoryProdMng = {
     const cfSelectedCatId = ref(null);
 
 
-    watch(() => cfSelectedCatId.value, async (newVal) => {
-      if (newVal) {
-        pager.pageNo = 1;
-        searchParam.categoryId = newVal;
-        await handleSearchList('DEFAULT');
-      } else {
-        categoryProds.splice(0, categoryProds.length);
-      }
-    });
+    /* 선택 카테고리 + 직속 자식 카테고리 ID 목록 (서버 IN 조회용 — 자식 포함 표시 보존) */
+    const fnCatIdsWithChildren = (catId) => {
+      if (!catId) return [];
+      const childIds = categories
+        .filter(c => c.parentCategoryId === catId)
+        .map(c => c.categoryId);
+      return [catId, ...childIds];
+    };
+
+    /* 카테고리/진열유형 선택 → 상품목록 API 재조회 (클라이언트 filter 미사용) */
+    const handleReloadByCategory = async () => {
+      const catId = cfSelectedCatId.value;
+      if (!catId) { categoryProds.splice(0, categoryProds.length); return; }
+      pager.pageNo = 1;
+      searchParam.categoryId = '';
+      searchParam.categoryIdsCsv = fnCatIdsWithChildren(catId).join(',');
+      searchParam.typeCd = uiState.activeTypeCd;
+      await handleSearchList('DEFAULT');
+    };
+
+    watch(() => cfSelectedCatId.value, handleReloadByCategory);
+    watch(() => uiState.activeTypeCd, () => { if (cfSelectedCatId.value) handleReloadByCategory(); });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -99,7 +112,7 @@ window.PdCategoryProdMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 카테고리-상품 매핑 _initSearchParam */
-    const _initSearchParam = () => ({ prodNm: '', categoryId: '' });
+    const _initSearchParam = () => ({ prodNm: '', categoryId: '', categoryIdsCsv: '', typeCd: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* 카테고리-상품 매핑 목록조회 */
@@ -189,15 +202,7 @@ window.PdCategoryProdMng = {
       TYPE_TABS.forEach(t => { map[t.cd] = categoryProds.filter(cp => cp.categoryProdTypeCd === t.cd).length; });
       return map;
     });
-    const cfFilteredRows = computed(() => {
-      if (!cfSelectedCatId.value) return [];
-      return categoryProds.filter(cp => {
-        const isSameCategory = cp.categoryId === cfSelectedCatId.value;
-        const isChildCategory = categories.some(c => c.parentCategoryId === cfSelectedCatId.value && cp.categoryId === c.categoryId);
-        const isSameType = cp.categoryProdTypeCd === uiState.activeTypeCd;
-        return (isSameCategory || isChildCategory) && isSameType;
-      });
-    });
+    /* cfFilteredRows 제거: 카테고리(자식포함)+진열유형 필터는 서버(API)가 수행 → categoryProds 직접 사용 */
 
     /* -- 드래그 상태 -- */
     const dragoverIdx = ref(null);
@@ -277,12 +282,12 @@ window.PdCategoryProdMng = {
     const cfPickerList = computed(() => {
       const q = pickerSearch.value.toLowerCase();
       if (!q) return products.slice(0, 50);
-      const types = pickerSearchType.value || 'def_nm,def_id,def_cat';
+      const types = pickerSearchType.value || 'prodNm,prodId,cateNm';
       return products.filter(p => {
         const hits = [];
-        if (types.includes('def_nm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
-        if (types.includes('def_id'))  hits.push(String(p.prodId || '').includes(q));
-        if (types.includes('def_cat')) hits.push((p.cateNm || '').toLowerCase().includes(q));
+        if (types.includes('prodNm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
+        if (types.includes('prodId'))  hits.push(String(p.prodId || '').includes(q));
+        if (types.includes('cateNm')) hits.push((p.cateNm || '').toLowerCase().includes(q));
         return hits.some(Boolean);
       }).slice(0, 50);
     });
@@ -315,7 +320,7 @@ window.PdCategoryProdMng = {
       defaultDispStartDate, defaultDispEndDate,
       searchParam, onSearch, onReset,
       pager,
-      cfFilteredRows, cfPickerList,
+      cfPickerList,
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
       fnDepthColor, fnDepthBullet, totalProdCount, cfTypeCountMap,
       dragoverIdx, onDragStart, onDragOver, onDrop,
@@ -418,7 +423,7 @@ window.PdCategoryProdMng = {
             <th style="width:40px;text-align:center">삭제</th>
           </tr></thead>
           <tbody>
-            <tr v-for="(row, idx) in cfFilteredRows" :key="(row && row._id)"
+            <tr v-for="(row, idx) in categoryProds" :key="(row && row._id)"
                 draggable="true"
                 @dragstart="onDragStart(idx)"
                 @dragover.prevent="onDragOver(idx)"
@@ -478,7 +483,7 @@ window.PdCategoryProdMng = {
                 <button class="btn btn-danger btn-xs" @click="removeRow(row)">✕</button>
               </td>
             </tr>
-            <tr v-if="!cfFilteredRows.length">
+            <tr v-if="!categoryProds.length">
               <td :colspan="uiState.activeTypeCd!=='NORMAL' ? 11 : 9" style="text-align:center;padding:32px;color:#aaa">
                 {{ searchParam.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.' }}
               </td>
@@ -493,7 +498,7 @@ window.PdCategoryProdMng = {
                gridTemplateColumns: uiState.tabMode==='2col' ? 'repeat(2,1fr)' : uiState.tabMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
                gap:'10px',
              }">
-          <div v-for="(row, idx) in cfFilteredRows" :key="(row && row._id)"
+          <div v-for="(row, idx) in categoryProds" :key="(row && row._id)"
                draggable="true"
                @dragstart="onDragStart(idx)"
                @dragover.prevent="onDragOver(idx)"
@@ -560,7 +565,7 @@ window.PdCategoryProdMng = {
               </select>
             </template>
           </div>
-          <div v-if="!cfFilteredRows.length"
+          <div v-if="!categoryProds.length"
                style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;border:1px dashed #eee;border-radius:8px">
             등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.
           </div>
@@ -588,9 +593,9 @@ window.PdCategoryProdMng = {
         <bo-multi-check-select
           v-model="pickerSearchType"
           :options="[
-            { value: 'def_nm',  label: '상품명' },
-            { value: 'def_id',  label: 'ID' },
-            { value: 'def_cat', label: '카테고리' },
+            { value: 'prodNm', label: '상품명' },
+            { value: 'prodId', label: 'ID' },
+            { value: 'cateNm', label: '카테고리' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"

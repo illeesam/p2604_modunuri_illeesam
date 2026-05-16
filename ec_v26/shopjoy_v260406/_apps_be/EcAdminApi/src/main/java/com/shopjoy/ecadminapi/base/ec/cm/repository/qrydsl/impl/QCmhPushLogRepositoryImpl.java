@@ -95,7 +95,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     }
 
     /** 검색조건 빌드 */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(CmhPushLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -103,14 +103,14 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         if (StringUtils.hasText(s.getSiteId())) w.and(l.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getLogId()))  w.and(l.logId.eq(s.getLogId()));
 
-        // searchValue + searchType (def_push_log_title)
+        // searchValue + searchType (pushLogTitle)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_push_log_title,")) or.or(l.pushLogTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",pushLogTitle,")) or.or(l.pushLogTitle.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

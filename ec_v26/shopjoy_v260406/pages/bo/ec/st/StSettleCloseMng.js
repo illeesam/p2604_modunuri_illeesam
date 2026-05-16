@@ -63,8 +63,14 @@ window.StSettleCloseMng = {
     const searchValue = ref('');
     const searchStatus = ref('');
 
-    /* 정산 마감 목록조회 */
+    /* 적용된 검색조건 스냅샷 — 입력 즉시 filter 금지, [조회] 시점에만 반영 (UI/UX 검색 방식 정책) */
+    const applied = reactive({ searchType: '', searchValue: '', searchStatus: '' });
+
+    /* 정산 마감 목록조회 — [조회] 클릭/Enter 시점에만 검색조건 적용 */
     const onSearch = async () => {
+      applied.searchType   = searchType.value;
+      applied.searchValue  = searchValue.value;
+      applied.searchStatus = searchStatus.value;
       await handleSearchData('DEFAULT');
     };
 
@@ -137,14 +143,14 @@ window.StSettleCloseMng = {
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
     const cfFilteredClose = computed(() => closeList.filter(r => {
-      if (searchValue.value) {
-        const types = searchType.value || 'def_closeMon,def_regUserNm';
+      if (applied.searchValue) {
+        const types = applied.searchType || 'def_closeMon,def_regUserNm';
         const hits = [];
-        if (types.includes('def_closeMon')) hits.push(r.closeMon && r.closeMon.includes(searchValue.value));
-        if (types.includes('def_regUserNm')) hits.push(r.regUserNm && r.regUserNm.includes(searchValue.value));
+        if (types.includes('def_closeMon')) hits.push(r.closeMon && r.closeMon.includes(applied.searchValue));
+        if (types.includes('def_regUserNm')) hits.push(r.regUserNm && r.regUserNm.includes(applied.searchValue));
         if (!hits.some(Boolean)) return false;
       }
-      if (searchStatus.value && r.status !== searchStatus.value) return false;
+      if (applied.searchStatus && r.status !== applied.searchStatus) return false;
       return true;
     }));
 

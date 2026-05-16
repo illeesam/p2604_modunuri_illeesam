@@ -95,7 +95,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     }
 
     /** 검색조건 빌드 */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(CmChattRoomDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -103,14 +103,15 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         if (StringUtils.hasText(s.getSiteId()))      w.and(r.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getChattRoomId())) w.and(r.chattRoomId.eq(s.getChattRoomId()));
 
-        // searchValue + searchType (def_member_nm)
+        // searchValue + searchType (memberNm | subject)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_member_nm,")) or.or(r.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberNm,")) or.or(r.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",subject,")) or.or(r.subject.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

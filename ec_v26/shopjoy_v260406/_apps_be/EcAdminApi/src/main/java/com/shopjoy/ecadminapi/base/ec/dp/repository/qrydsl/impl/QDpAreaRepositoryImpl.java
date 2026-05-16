@@ -70,7 +70,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         )).from(a);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(DpAreaDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -86,8 +86,8 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_area_nm,")) or.or(a.areaNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_area_cd,")) or.or(a.areaCd.likeIgnoreCase(pattern));
+            if (all || types.contains(",areaNm,")) or.or(a.areaNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",areaCd,")) or.or(a.areaCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

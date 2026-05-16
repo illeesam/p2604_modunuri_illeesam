@@ -102,8 +102,8 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_name,")) or.or(b.batchNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_code,")) or.or(b.batchCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",batchNm,"))   or.or(b.batchNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",batchCode,")) or.or(b.batchCode.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

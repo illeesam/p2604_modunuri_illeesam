@@ -145,14 +145,14 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const cfPickerList   = computed(() => {
       const q    = (uiState.pickerSearch || '').trim().toLowerCase();
       const used = new Set(dtlItems.map(d => d.itemProdId).filter(Boolean));
-      const types = uiState.pickerSearchType || 'def_id,def_nm';
+      const types = uiState.pickerSearchType || 'prodId,prodNm';
       return (products || []).filter(p => {
         if (p.productId === uiState.editSetId) return false;
         if (used.has(p.productId)) return false;
         if (!q) return true;
         const hits = [];
-        if (types.includes('def_id')) hits.push(String(p.productId).includes(q));
-        if (types.includes('def_nm')) hits.push((p.prodNm || '').toLowerCase().includes(q));
+        if (types.includes('prodId')) hits.push(String(p.productId).includes(q));
+        if (types.includes('prodNm')) hits.push((p.prodNm || '').toLowerCase().includes(q));
         return hits.some(Boolean);
       });
     });
@@ -677,8 +677,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <bo-multi-check-select
           v-model="uiState.pickerSearchType"
           :options="[
-            { value: 'def_nm', label: '상품명' },
-            { value: 'def_id', label: 'ID' },
+            { value: 'prodNm', label: '상품명' },
+            { value: 'prodId', label: 'ID' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"

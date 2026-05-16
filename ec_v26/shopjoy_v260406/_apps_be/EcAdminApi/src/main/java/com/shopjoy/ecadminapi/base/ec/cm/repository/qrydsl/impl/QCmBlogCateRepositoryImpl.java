@@ -96,7 +96,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(CmBlogCateDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -111,7 +111,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_blog_cate_nm,")) or.or(c.blogCateNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",blogCateNm,")) or.or(c.blogCateNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

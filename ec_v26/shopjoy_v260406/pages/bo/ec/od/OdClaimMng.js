@@ -44,7 +44,7 @@ window.OdClaimMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_claim_id,def_order_id,def_member_nm,def_prod_nm';
+          params.searchType = 'claimId,orderId,memberNm,prodNm';
         }
         const [claimsRes, membersRes] = await Promise.all([
           boApiSvc.odClaim.getPage(params, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
@@ -398,7 +398,7 @@ window.OdClaimMng = {
         const params = { pageNo: memberPick.pageNo, pageSize: 20, searchValue: memberPick.searchValue || undefined, searchType: memberPick.searchType || undefined };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_loginId';
+          params.searchType = 'memberNm,loginId';
         }
         const res = await boApiSvc.mbMember.getPage(params, '클레임관리', '회원검색');
         const d = res.data?.data || {};
@@ -431,11 +431,11 @@ window.OdClaimMng = {
   <div class="card">
     <div class="search-bar">
       <bo-multi-check-select v-model="searchParam.searchType" :options="[
-          { value: 'def_claim_id',    label: '클레임ID' },
-          { value: 'def_order_id',    label: '주문ID' },
-          { value: 'def_member_nm',   label: '회원명' },
-          { value: 'def_prod_nm',     label: '상품명' },
-          { value: 'def_login_id',    label: '로그인ID' },
+          { value: 'claimId',  label: '클레임ID' },
+          { value: 'orderId',  label: '주문ID' },
+          { value: 'memberNm', label: '회원명' },
+          { value: 'prodNm',   label: '상품명' },
+          { value: 'loginId',  label: '로그인ID' },
         ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
       <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <span class="search-label">회원</span>
@@ -653,8 +653,8 @@ window.OdClaimMng = {
             <bo-multi-check-select
               v-model="memberPick.searchType"
               :options="[
-                { value: 'def_nm',      label: '이름' },
-                { value: 'def_loginId', label: '아이디' },
+                { value: 'memberNm', label: '이름' },
+                { value: 'loginId',  label: '아이디' },
               ]"
               placeholder="검색대상 전체"
               all-label="전체 선택"

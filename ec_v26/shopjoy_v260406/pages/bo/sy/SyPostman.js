@@ -146,13 +146,13 @@ window.SyPostman = {
     const flattenTree = (nodes, depth = 0) => {
       const result = [];
       const searchVal = uiState.treeSearch.toLowerCase();
-      const types = uiState.treeSearchType || 'def_nm,def_url';
+      const types = uiState.treeSearchType || 'label,url';
       for (const n of nodes) {
         if (n.type === 'app' && !appFilter[n.appId]) continue;
         if (searchVal && n.type === 'req') {
           const hits = [];
-          if (types.includes('def_nm'))  hits.push((n.label || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_url')) hits.push((n.url   || '').toLowerCase().includes(searchVal));
+          if (types.includes('label')) hits.push((n.label || '').toLowerCase().includes(searchVal));
+          if (types.includes('url'))   hits.push((n.url   || '').toLowerCase().includes(searchVal));
           if (!hits.some(Boolean)) continue;
         }
         result.push({ n, depth });
@@ -616,8 +616,8 @@ window.SyPostman = {
       <bo-multi-check-select
         v-model="uiState.treeSearchType"
         :options="[
-          { value: 'def_nm',  label: '이름' },
-          { value: 'def_url', label: 'URL' },
+          { value: 'label', label: '이름' },
+          { value: 'url',   label: 'URL' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

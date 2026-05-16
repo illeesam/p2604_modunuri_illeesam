@@ -48,7 +48,7 @@ window.SyUserMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색 (UI 멀티체크 "전체" = 모든 토큰)
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_id,def_login,def_name,def_email';
+          params.searchType = 'userId,loginId,userNm,userEmail';
         }
         if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
         const [resUsers] = await Promise.all([
@@ -242,10 +242,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_id',    label: '사용자ID' },
-          { value: 'def_login', label: '로그인ID' },
-          { value: 'def_name',  label: '이름' },
-          { value: 'def_email', label: '이메일' },
+          { value: 'userId',    label: '사용자ID' },
+          { value: 'loginId',   label: '로그인ID' },
+          { value: 'userNm',    label: '이름' },
+          { value: 'userEmail', label: '이메일' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

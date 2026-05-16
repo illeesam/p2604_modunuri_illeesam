@@ -97,7 +97,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 .leftJoin(cdCs).on(cdCs.codeGrp.eq("USE_YN").and(cdCs.codeValue.eq(c.categoryStatusCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdCategoryDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -113,7 +113,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_category_nm,")) or.or(c.categoryNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",categoryNm,")) or.or(c.categoryNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -91,8 +91,8 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_label,"))  or.or(p.pathLabel.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_remark,")) or.or(p.pathRemark.likeIgnoreCase(pattern));
+            if (all || types.contains(",pathLabel,"))  or.or(p.pathLabel.likeIgnoreCase(pattern));
+            if (all || types.contains(",pathRemark,")) or.or(p.pathRemark.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -44,7 +44,7 @@ window.PdProdMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_prod_id,def_prod_nm,def_prod_code';
+          params.searchType = 'prodId,prodNm,prodCode';
         }
         const res = await boApiSvc.pdProd.getPage(params, '상품관리', '목록조회');
         const data = res.data?.data;
@@ -221,10 +221,10 @@ window.PdProdMng = {
   <div class="card">
     <div class="search-bar">
       <bo-multi-check-select v-model="searchParam.searchType" :options="[
-          { value: 'def_prod_id',   label: '상품ID' },
-          { value: 'def_prod_nm',   label: '상품명' },
-          { value: 'def_prod_code', label: '상품코드' },
-          { value: 'def_brand_nm',  label: '브랜드명' },
+          { value: 'prodId',   label: '상품ID' },
+          { value: 'prodNm',   label: '상품명' },
+          { value: 'prodCode', label: '상품코드' },
+          { value: 'brandNm',  label: '브랜드명' },
         ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
       <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
       <div style="display:flex;align-items:center;gap:4px;">

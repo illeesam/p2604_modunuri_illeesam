@@ -83,7 +83,7 @@ window.PmCouponMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_code';
+          params.searchType = 'couponNm,couponCd';
         }
         const res = await boApiSvc.pmCoupon.getPage(params, '쿠폰관리', '목록조회');
         const data = res.data?.data;
@@ -195,8 +195,8 @@ window.PmCouponMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',   label: '쿠폰명' },
-          { value: 'def_code', label: '코드' },
+          { value: 'couponNm',   label: '쿠폰명' },
+          { value: 'couponCd', label: '코드' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

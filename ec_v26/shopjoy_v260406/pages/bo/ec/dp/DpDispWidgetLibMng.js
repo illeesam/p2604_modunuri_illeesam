@@ -75,7 +75,7 @@ window.DpDispWidgetLibMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_desc,def_tag';
+          params.searchType = 'widgetNm,widgetLibDesc,tag';
         }
         const res = await boApiSvc.dpWidgetLib.getPage(params, '전시위젯라이브러리', '조회');
         const d = res.data?.data;
@@ -216,9 +216,9 @@ window.DpDispWidgetLibMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',   label: '이름' },
-          { value: 'def_desc', label: '설명' },
-          { value: 'def_tag',  label: '태그' },
+          { value: 'widgetNm',   label: '이름' },
+          { value: 'widgetLibDesc', label: '설명' },
+          { value: 'tag',  label: '태그' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

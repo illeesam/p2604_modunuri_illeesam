@@ -109,7 +109,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                 .leftJoin(cdOit).on(cdOit.codeGrp.eq("OPT_INPUT_TYPE").and(cdOit.codeValue.eq(o.optInputTypeCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdProdOptDto.Request req) {
         BooleanBuilder w = new BooleanBuilder();
         if (req == null) return w;
@@ -125,7 +125,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
             boolean all = !StringUtils.hasText(req.getSearchType());
             String pattern = "%" + req.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_opt_grp_nm,")) or.or(o.optGrpNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",optGrpNm,")) or.or(o.optGrpNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

@@ -36,7 +36,7 @@ window.SyBrandMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_code,def_nm,def_en_nm';
+          params.searchType = 'brandCode,brandNm,brandEnNm';
         }
         const res = await boApiSvc.syBrand.getPage(params, '브랜드관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
@@ -308,9 +308,9 @@ window.SyBrandMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_code',  label: '브랜드코드' },
-          { value: 'def_nm',    label: '브랜드명' },
-          { value: 'def_en_nm', label: '영문명' },
+          { value: 'brandCode', label: '브랜드코드' },
+          { value: 'brandNm',   label: '브랜드명' },
+          { value: 'brandEnNm', label: '영문명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

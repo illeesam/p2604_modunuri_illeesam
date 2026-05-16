@@ -76,7 +76,7 @@ window.MbMemGroupMng = {
     /* addRow */
     const addRow = () => {
       const newRow = {
-        groupId: _tempId--, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y',
+        memberGroupId: _tempId--, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y',
         _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
@@ -118,11 +118,11 @@ window.MbMemGroupMng = {
 
     /* cancelChecked */
     const cancelChecked = () => {
-      const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.groupId));
+      const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.memberGroupId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
-        if (!ids.has(row.groupId)) continue;
+        if (!ids.has(row.memberGroupId)) continue;
         if (row._row_status === 'N') continue;
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
@@ -228,11 +228,11 @@ window.MbMemGroupMng = {
           <tr v-else-if="!gridRows.length">
             <td colspan="10" style="text-align:center;padding:30px;color:#aaa;">데이터가 없습니다.</td>
           </tr>
-          <tr v-else v-for="(row, idx) in gridRows" :key="row.groupId"
+          <tr v-else v-for="(row, idx) in gridRows" :key="row.memberGroupId"
               class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
               @click="setFocused(idx)">
             <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-            <td class="col-id-val">{{ row.groupId > 0 ? row.groupId : 'NEW' }}</td>
+            <td class="col-id-val">{{ row.memberGroupId > 0 ? row.memberGroupId : 'NEW' }}</td>
             <td class="col-status-val">
               <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
             </td>

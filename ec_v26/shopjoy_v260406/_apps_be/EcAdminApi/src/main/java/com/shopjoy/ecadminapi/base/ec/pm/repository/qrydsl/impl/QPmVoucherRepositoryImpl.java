@@ -102,7 +102,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(PmVoucherDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -117,7 +117,8 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_voucher_nm,")) or.or(v.voucherNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",voucherNm,")) or.or(v.voucherNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",voucherId,")) or.or(v.voucherId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

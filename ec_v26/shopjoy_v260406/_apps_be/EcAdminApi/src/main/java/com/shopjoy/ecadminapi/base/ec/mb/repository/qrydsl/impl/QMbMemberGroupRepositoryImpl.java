@@ -78,7 +78,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
                 .leftJoin(ste).on(ste.siteId.eq(g.siteId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "groupNm" (Entity 필드명) */
     private BooleanBuilder buildCondition(MbMemberGroupDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -90,7 +90,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_group_nm,")) or.or(g.groupNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",groupNm,")) or.or(g.groupNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

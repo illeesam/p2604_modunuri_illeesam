@@ -45,7 +45,7 @@ window.MbMemGradeMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_code';
+          params.searchType = 'gradeNm,gradeCd';
         }
         const res = await boApiSvc.mbMemGrade.getPage(params, '회원등급관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
@@ -83,7 +83,7 @@ window.MbMemGradeMng = {
     /* addRow */
     const addRow = () => {
       const newRow = {
-        gradeId: _tempId--, gradeCd: '', gradeNm: '', gradeRank: gridRows.length + 1,
+        memberGradeId: _tempId--, gradeCd: '', gradeNm: '', gradeRank: gridRows.length + 1,
         minPurchaseAmt: 0, saveRate: 1, useYn: 'Y',
         _row_status: 'I', _row_check: false, _row_org: null,
       };
@@ -126,11 +126,11 @@ window.MbMemGradeMng = {
 
     /* cancelChecked */
     const cancelChecked = () => {
-      const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.gradeId));
+      const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.memberGradeId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
-        if (!ids.has(row.gradeId)) continue;
+        if (!ids.has(row.memberGradeId)) continue;
         if (row._row_status === 'N') continue;
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
@@ -190,8 +190,8 @@ window.MbMemGradeMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',   label: '등급명' },
-          { value: 'def_code', label: '코드' },
+          { value: 'gradeNm', label: '등급명' },
+          { value: 'gradeCd', label: '코드' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -247,11 +247,11 @@ window.MbMemGradeMng = {
           <tr v-else-if="!gridRows.length">
             <td colspan="12" style="text-align:center;padding:30px;color:#aaa;">데이터가 없습니다.</td>
           </tr>
-          <tr v-else v-for="(row, idx) in gridRows" :key="row.gradeId"
+          <tr v-else v-for="(row, idx) in gridRows" :key="row.memberGradeId"
               class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
               @click="setFocused(idx)">
             <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-            <td class="col-id-val">{{ row.gradeId > 0 ? row.gradeId : 'NEW' }}</td>
+            <td class="col-id-val">{{ row.memberGradeId > 0 ? row.memberGradeId : 'NEW' }}</td>
             <td class="col-status-val">
               <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
             </td>

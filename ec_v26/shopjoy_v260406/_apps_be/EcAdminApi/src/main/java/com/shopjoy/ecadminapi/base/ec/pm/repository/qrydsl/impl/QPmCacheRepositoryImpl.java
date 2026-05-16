@@ -101,7 +101,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                 .leftJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE").and(cdCt.codeValue.eq(c.cacheTypeCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(PmCacheDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -115,7 +115,9 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_member_nm,")) or.or(c.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberNm,")) or.or(c.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberId,")) or.or(c.memberId.likeIgnoreCase(pattern));
+            if (all || types.contains(",cacheDesc,")) or.or(c.cacheDesc.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

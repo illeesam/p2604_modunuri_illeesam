@@ -141,8 +141,8 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_userId,"))  or.or(l.userId.like(pattern));
-            if (all || types.contains(",def_loginId,")) or.or(l.loginId.like(pattern));
+            if (all || types.contains(",userId,"))  or.or(l.userId.like(pattern));
+            if (all || types.contains(",loginId,")) or.or(l.loginId.like(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

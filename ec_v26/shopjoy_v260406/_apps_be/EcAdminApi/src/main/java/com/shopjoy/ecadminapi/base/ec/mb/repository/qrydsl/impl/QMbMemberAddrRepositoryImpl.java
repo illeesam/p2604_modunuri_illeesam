@@ -85,7 +85,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
                 .leftJoin(ste).on(ste.siteId.eq(a.siteId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "addrNm,recvNm" (Entity 필드명) */
     private BooleanBuilder buildCondition(MbMemberAddrDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -97,8 +97,8 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_addr_nm,")) or.or(a.addrNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_recv_nm,")) or.or(a.recvNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",addrNm,")) or.or(a.addrNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",recvNm,")) or.or(a.recvNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

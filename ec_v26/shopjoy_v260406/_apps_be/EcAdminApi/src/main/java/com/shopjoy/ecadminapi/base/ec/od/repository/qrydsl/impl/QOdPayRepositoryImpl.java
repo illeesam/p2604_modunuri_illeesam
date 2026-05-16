@@ -165,7 +165,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(p.refundStatusCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(OdPayDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -180,9 +180,9 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_order_id,"))   or.or(p.orderId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_login_id,"))   or.or(m.loginId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_member_nm,"))  or.or(o.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",orderId,"))   or.or(p.orderId.likeIgnoreCase(pattern));
+            if (all || types.contains(",loginId,"))   or.or(m.loginId.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberNm,"))  or.or(o.memberNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

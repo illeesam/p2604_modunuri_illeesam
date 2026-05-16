@@ -67,7 +67,7 @@ window.PmDiscntMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_id';
+          params.searchType = 'discntNm,discntId';
         }
         const res = await boApiSvc.pmDiscnt.getPage(params, '할인관리', '목록조회');
         const data = res.data?.data;
@@ -195,8 +195,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm', label: '할인명' },
-          { value: 'def_id', label: 'ID' },
+          { value: 'discntNm', label: '할인명' },
+          { value: 'discntId', label: 'ID' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

@@ -64,7 +64,7 @@ const rawList = reactive([]);
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_raw_id,def_src_id,def_vendor_nm,def_prod_nm,def_brand_nm';
+          params.searchType = 'def_raw_id,def_src_id,def_vendor_nm,prodNm,brandNm';
         }
         const res = await boApiSvc.stSettleRaw.getPage(params, '정산데이터관리', '목록조회');
         const data = res.data?.data;
@@ -206,8 +206,8 @@ const rawList = reactive([]);
           { value: 'def_raw_id',    label: '원장ID' },
           { value: 'def_src_id',    label: '소스ID' },
           { value: 'def_vendor_nm', label: '업체명' },
-          { value: 'def_prod_nm',   label: '상품명' },
-          { value: 'def_brand_nm',  label: '브랜드' },
+          { value: 'prodNm',   label: '상품명' },
+          { value: 'brandNm',  label: '브랜드' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

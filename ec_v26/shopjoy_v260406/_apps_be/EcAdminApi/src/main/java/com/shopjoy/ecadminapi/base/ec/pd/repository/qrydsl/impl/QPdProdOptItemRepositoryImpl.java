@@ -104,7 +104,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
                 .from(i);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdProdOptItemDto.Request req) {
         BooleanBuilder w = new BooleanBuilder();
         if (req == null) return w;
@@ -121,7 +121,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
             boolean all = !StringUtils.hasText(req.getSearchType());
             String pattern = "%" + req.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_opt_nm,")) or.or(i.optNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",optNm,")) or.or(i.optNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

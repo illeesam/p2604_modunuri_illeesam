@@ -60,7 +60,7 @@ window.DpDispAreaMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_areaCd,def_areaNm';
+          params.searchType = 'areaCd,areaNm';
         }
         const res = await boApiSvc.dpArea.getPage(params, '전시영역관리', '목록조회');
         const d = res.data?.data;
@@ -166,8 +166,8 @@ const searchParam = reactive(_initSearchParam());
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_areaCd', label: '영역코드' },
-          { value: 'def_areaNm', label: '영역명' },
+          { value: 'areaCd', label: '영역코드' },
+          { value: 'areaNm', label: '영역명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

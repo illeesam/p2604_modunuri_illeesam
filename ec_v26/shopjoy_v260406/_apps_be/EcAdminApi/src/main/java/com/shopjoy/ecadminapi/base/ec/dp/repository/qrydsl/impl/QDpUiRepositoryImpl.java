@@ -96,7 +96,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                 .from(u);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(DpUiDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -128,8 +128,8 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_ui_nm,")) or.or(u.uiNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_ui_cd,")) or.or(u.uiCd.likeIgnoreCase(pattern));
+            if (all || types.contains(",uiNm,")) or.or(u.uiNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",uiCd,")) or.or(u.uiCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

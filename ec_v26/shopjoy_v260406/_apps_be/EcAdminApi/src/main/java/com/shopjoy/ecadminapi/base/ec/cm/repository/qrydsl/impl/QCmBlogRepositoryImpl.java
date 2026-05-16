@@ -94,7 +94,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     }
 
     /** 검색조건 빌드 */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(CmBlogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -103,15 +103,15 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         if (StringUtils.hasText(s.getBlogId()))     w.and(b.blogId.eq(s.getBlogId()));
         if (StringUtils.hasText(s.getUseYn()))      w.and(b.useYn.eq(s.getUseYn()));
 
-        // searchValue + searchType (def_blog_title | def_blog_author)
+        // searchValue + searchType (blogTitle | blogAuthor)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_blog_title,"))  or.or(b.blogTitle.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_blog_author,")) or.or(b.blogAuthor.likeIgnoreCase(pattern));
+            if (all || types.contains(",blogTitle,"))  or.or(b.blogTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",blogAuthor,")) or.or(b.blogAuthor.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

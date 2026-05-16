@@ -112,8 +112,10 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
             boolean all = !StringUtils.hasText(q.getSearchType());
             String pattern = "%" + q.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_id,"))   or.or(s.siteId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_name,")) or.or(s.siteNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",siteId,"))     or.or(s.siteId.likeIgnoreCase(pattern));
+            if (all || types.contains(",siteCode,"))   or.or(s.siteCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",siteNm,"))     or.or(s.siteNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",siteDomain,")) or.or(s.siteDomain.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

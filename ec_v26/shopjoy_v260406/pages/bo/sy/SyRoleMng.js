@@ -583,8 +583,8 @@ window.SyRoleMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_code', label: '역할코드' },
-          { value: 'def_nm',   label: '역할명' },
+          { value: 'roleCode', label: '역할코드' },
+          { value: 'roleNm',   label: '역할명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

@@ -93,7 +93,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     }
 
     /** 검색조건 빌드 — Mapper XML pdReviewCond 와 동일 동작 */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdReviewDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -102,14 +102,14 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         if (StringUtils.hasText(s.getReviewId())) w.and(r.reviewId.eq(s.getReviewId()));
         if (StringUtils.hasText(s.getProdId()))   w.and(r.prodId.eq(s.getProdId()));
 
-        // searchValue + searchType (def_review_title)
+        // searchValue + searchType (reviewTitle)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_review_title,")) or.or(r.reviewTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",reviewTitle,")) or.or(r.reviewTitle.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

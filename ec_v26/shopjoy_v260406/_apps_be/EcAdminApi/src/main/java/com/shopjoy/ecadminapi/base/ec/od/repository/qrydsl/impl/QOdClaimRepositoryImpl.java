@@ -196,7 +196,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(c.exchangeCourierCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(OdClaimDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -214,11 +214,11 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_claim_id,"))   or.or(c.claimId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_order_id,"))   or.or(c.orderId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_member_nm,"))  or.or(c.memberNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_prod_nm,"))    or.or(c.prodNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_login_id,"))   or.or(m.loginId.likeIgnoreCase(pattern));
+            if (all || types.contains(",claimId,"))   or.or(c.claimId.likeIgnoreCase(pattern));
+            if (all || types.contains(",orderId,"))   or.or(c.orderId.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberNm,"))  or.or(c.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",prodNm,"))    or.or(c.prodNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",loginId,"))   or.or(m.loginId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

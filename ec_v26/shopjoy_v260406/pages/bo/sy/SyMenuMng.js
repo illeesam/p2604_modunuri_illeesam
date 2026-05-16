@@ -277,8 +277,8 @@ window.SyMenuMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_code', label: '메뉴코드' },
-          { value: 'def_nm',   label: '메뉴명' },
+          { value: 'menuCode', label: '메뉴코드' },
+          { value: 'menuNm',   label: '메뉴명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

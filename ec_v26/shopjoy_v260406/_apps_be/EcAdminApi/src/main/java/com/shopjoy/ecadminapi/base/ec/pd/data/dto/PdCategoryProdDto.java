@@ -19,6 +19,8 @@ public class PdCategoryProdDto {
         @Size(max = 21) private String categoryId;
         @Size(max = 21) private String prodId;
         @Size(max = 30) private String typeCd;
+        /** 선택 카테고리 + 자식 카테고리 ID 콤마 구분 목록 (지정 시 categoryId 단일 대신 IN 조건으로 조회). 예: "C001,C002,C003" */
+        @Size(max = 2000) private String categoryIdsCsv;
     }
 
     @Getter @Setter @NoArgsConstructor

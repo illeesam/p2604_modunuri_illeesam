@@ -114,8 +114,9 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_title,"))  or.or(a.alarmTitle.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_typeCd,")) or.or(a.alarmTypeCd.likeIgnoreCase(pattern));
+            if (all || types.contains(",alarmTitle,"))  or.or(a.alarmTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",alarmMsg,"))    or.or(a.alarmMsg.likeIgnoreCase(pattern));
+            if (all || types.contains(",alarmTypeCd,")) or.or(a.alarmTypeCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

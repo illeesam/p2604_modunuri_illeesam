@@ -685,14 +685,14 @@ window.PdProdDtl = {
       const q    = (uiState.prodPickerSearch || '').trim().toLowerCase();
       const all  = products;
       const used = (uiState.prodPickerOpen === 'rel' ? relProds : codeProds).map(r => r.prodId);
-      const types = uiState.prodPickerSearchType || 'def_id,def_nm,def_cat';
+      const types = uiState.prodPickerSearchType || 'prodId,prodNm,cateNm';
       return safeFilter(all, p => {
         if (used.includes(p.prodId)) return false;
         if (!q) return true;
         const hits = [];
-        if (types.includes('def_id'))  hits.push(String(p.prodId).includes(q));
-        if (types.includes('def_nm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
-        if (types.includes('def_cat')) hits.push((p.cateNm || '').toLowerCase().includes(q));
+        if (types.includes('prodId'))  hits.push(String(p.prodId).includes(q));
+        if (types.includes('prodNm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
+        if (types.includes('cateNm')) hits.push((p.cateNm || '').toLowerCase().includes(q));
         return hits.some(Boolean);
       });
     });
@@ -808,12 +808,12 @@ window.PdProdDtl = {
     const cfMdUserListFiltered = computed(() => {
       const q = (uiState.mdSearch || '').trim().toLowerCase();
       if (!q) return cfMdUserList.value;
-      const types = (uiState.mdSearchType || mdSearchType.value) || 'def_nm,def_dept,def_role';
+      const types = (uiState.mdSearchType || mdSearchType.value) || 'userNm,deptId,roleId';
       return cfMdUserList.value.filter(u => {
         const hits = [];
-        if (types.includes('def_nm'))   hits.push((u.userNm || '').toLowerCase().includes(q));
-        if (types.includes('def_dept')) hits.push((u.deptId || '').toLowerCase().includes(q));
-        if (types.includes('def_role')) hits.push((u.roleId || '').toLowerCase().includes(q));
+        if (types.includes('userNm'))   hits.push((u.userNm || '').toLowerCase().includes(q));
+        if (types.includes('deptId')) hits.push((u.deptId || '').toLowerCase().includes(q));
+        if (types.includes('roleId')) hits.push((u.roleId || '').toLowerCase().includes(q));
         return hits.some(Boolean);
       });
     });
@@ -1287,9 +1287,9 @@ window.PdProdDtl = {
             <bo-multi-check-select
               v-model="uiState.mdSearchType"
               :options="[
-                { value: 'def_nm',   label: '이름' },
-                { value: 'def_dept', label: '부서' },
-                { value: 'def_role', label: '역할' },
+                { value: 'userNm', label: '이름' },
+                { value: 'deptId', label: '부서' },
+                { value: 'roleId', label: '역할' },
               ]"
               placeholder="검색대상 전체"
               all-label="전체 선택"
@@ -2018,9 +2018,9 @@ window.PdProdDtl = {
             <bo-multi-check-select
               v-model="uiState.prodPickerSearchType"
               :options="[
-                { value: 'def_nm',  label: '상품명' },
-                { value: 'def_id',  label: 'ID' },
-                { value: 'def_cat', label: '카테고리' },
+                { value: 'prodNm', label: '상품명' },
+                { value: 'prodId', label: 'ID' },
+                { value: 'cateNm', label: '카테고리' },
               ]"
               placeholder="검색대상 전체"
               all-label="전체 선택"

@@ -127,7 +127,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(oi.dlivCourierCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(OdOrderItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -142,8 +142,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_order_id,")) or.or(oi.orderId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_prod_nm,"))  or.or(oi.prodNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",orderId,")) or.or(oi.orderId.likeIgnoreCase(pattern));
+            if (all || types.contains(",prodNm,"))  or.or(oi.prodNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

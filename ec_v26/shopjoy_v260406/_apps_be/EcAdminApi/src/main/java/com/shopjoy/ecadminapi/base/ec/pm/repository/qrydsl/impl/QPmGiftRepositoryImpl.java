@@ -109,7 +109,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     }
 
     /** 검색조건 빌드 — Mapper XML pmGiftCond 와 동일 */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(PmGiftDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -118,14 +118,15 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         if (StringUtils.hasText(s.getGiftId()))   w.and(g.giftId.eq(s.getGiftId()));
         if (StringUtils.hasText(s.getUseYn()))    w.and(g.useYn.eq(s.getUseYn()));
 
-        // searchValue + searchType (def_gift_nm)
+        // searchValue + searchType (giftNm)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_gift_nm,")) or.or(g.giftNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",giftNm,")) or.or(g.giftNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",giftId,")) or.or(g.giftId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

@@ -96,7 +96,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                 .from(i);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(OdClaimItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -111,7 +111,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_prod_nm,")) or.or(i.prodNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",prodNm,")) or.or(i.prodNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

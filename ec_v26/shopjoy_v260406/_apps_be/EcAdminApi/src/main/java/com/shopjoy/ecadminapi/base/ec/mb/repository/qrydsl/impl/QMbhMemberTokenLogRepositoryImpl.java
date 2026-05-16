@@ -94,7 +94,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                 .leftJoin(cdTt).on(cdTt.codeGrp.eq("TOKEN_TYPE").and(cdTt.codeValue.eq(l.tokenTypeCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "memberId" (Entity 필드명) */
     private BooleanBuilder buildCondition(MbhMemberTokenLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -106,8 +106,8 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_member_id,")) or.or(l.memberId.likeIgnoreCase(pattern));
-            // def_login_id: l.login_id 컬럼이 엔티티에 없으므로 생략
+            if (all || types.contains(",memberId,")) or.or(l.memberId.likeIgnoreCase(pattern));
+            // loginId: l.login_id 컬럼이 엔티티에 없으므로 생략
             if (or.getValue() != null) w.and(or);
         }
 

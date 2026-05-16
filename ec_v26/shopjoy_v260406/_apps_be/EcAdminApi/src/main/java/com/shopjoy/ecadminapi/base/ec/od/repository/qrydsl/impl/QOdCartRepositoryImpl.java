@@ -114,7 +114,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 .leftJoin(oi2).on(oi2.optItemId.eq(c.optItemId2));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(OdCartDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -130,10 +130,10 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_member_nm,")) or.or(mem.memberNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_member_id,")) or.or(c.memberId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_prod_id,"))   or.or(c.prodId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_prod_nm,"))   or.or(prd.prodNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberNm,")) or.or(mem.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberId,")) or.or(c.memberId.likeIgnoreCase(pattern));
+            if (all || types.contains(",prodId,"))   or.or(c.prodId.likeIgnoreCase(pattern));
+            if (all || types.contains(",prodNm,"))   or.or(prd.prodNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

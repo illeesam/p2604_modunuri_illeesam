@@ -38,7 +38,7 @@ window.SyI18nMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_key,def_desc';
+          params.searchType = 'i18nKey,i18nDesc';
         }
         const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
         const d = res.data?.data;
@@ -155,8 +155,8 @@ window.SyI18nMng = {
         <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
-            { value: 'def_key',  label: '키' },
-            { value: 'def_desc', label: '설명' },
+            { value: 'i18nKey',  label: '키' },
+            { value: 'i18nDesc', label: '설명' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"

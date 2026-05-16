@@ -109,8 +109,8 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_nm,"))  or.or(g.grpNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_grp,")) or.or(g.codeGrp.likeIgnoreCase(pattern));
+            if (all || types.contains(",grpNm,"))   or.or(g.grpNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",codeGrp,")) or.or(g.codeGrp.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

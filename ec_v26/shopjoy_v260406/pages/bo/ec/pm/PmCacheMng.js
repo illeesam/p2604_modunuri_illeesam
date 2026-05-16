@@ -83,7 +83,7 @@ window.PmCacheMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_member_nm,def_member_id,def_content';
+          params.searchType = 'memberNm,memberId,cacheDesc';
         }
         const res = await boApiSvc.pmCache.getPage(params, '캐시관리', '목록조회');
         const data = res.data?.data;
@@ -191,9 +191,9 @@ window.PmCacheMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_member_nm', label: '회원명' },
-          { value: 'def_member_id', label: '회원ID' },
-          { value: 'def_content',   label: '내용' },
+          { value: 'memberNm', label: '회원명' },
+          { value: 'memberId', label: '회원ID' },
+          { value: 'cacheDesc',   label: '내용' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

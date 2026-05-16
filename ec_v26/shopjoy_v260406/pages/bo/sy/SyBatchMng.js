@@ -406,8 +406,8 @@ window.SyBatchMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',   label: '배치명' },
-          { value: 'def_code', label: '배치코드' },
+          { value: 'batchNm',   label: '배치명' },
+          { value: 'batchCode', label: '배치코드' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

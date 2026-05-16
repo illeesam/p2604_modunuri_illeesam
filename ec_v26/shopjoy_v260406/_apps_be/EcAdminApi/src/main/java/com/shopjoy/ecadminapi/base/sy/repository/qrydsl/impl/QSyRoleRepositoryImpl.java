@@ -113,8 +113,8 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_nm,"))   or.or(r.roleNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_code,")) or.or(r.roleCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",roleNm,"))   or.or(r.roleNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",roleCode,")) or.or(r.roleCode.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

@@ -241,16 +241,16 @@ window.DpDispAreaPreview = {
 
     const cfFilteredLibs = computed(() => {
       const searchVal = applied.searchValue;
-      const types = applied.searchType || 'def_nm,def_tag,def_desc';
+      const types = applied.searchType || 'widgetNm,tag,widgetLibDesc';
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
         if (searchVal) {
           const hits = [];
-          if (types.includes('def_nm'))   hits.push((lib.name || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_tag'))  hits.push((lib.tags || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_desc')) hits.push((lib.desc || '').toLowerCase().includes(searchVal));
+          if (types.includes('widgetNm'))   hits.push((lib.name || '').toLowerCase().includes(searchVal));
+          if (types.includes('tag'))  hits.push((lib.tags || '').toLowerCase().includes(searchVal));
+          if (types.includes('widgetLibDesc')) hits.push((lib.desc || '').toLowerCase().includes(searchVal));
           if (!hits.some(Boolean)) return false;
         }
         return true;
@@ -659,9 +659,9 @@ window.DpDispAreaPreview = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',   label: '이름' },
-          { value: 'def_tag',  label: '태그' },
-          { value: 'def_desc', label: '설명' },
+          { value: 'widgetNm',   label: '이름' },
+          { value: 'tag',  label: '태그' },
+          { value: 'widgetLibDesc', label: '설명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

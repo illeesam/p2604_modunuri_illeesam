@@ -106,7 +106,7 @@ window.SyApiLogMng = {
       };
       // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
       if (p.searchValue && !p.searchType) {
-        p.searchType = 'def_ip,def_userId';
+        p.searchType = 'reqIp,userId';
       }
       return p;
     };
@@ -264,8 +264,8 @@ window.SyApiLogMng = {
       <bo-multi-check-select
         v-model="uiState.searchType"
         :options="[
-          { value: 'def_ip',     label: 'IP' },
-          { value: 'def_userId', label: '사용자ID' },
+          { value: 'reqIp',  label: 'IP' },
+          { value: 'userId', label: '사용자ID' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

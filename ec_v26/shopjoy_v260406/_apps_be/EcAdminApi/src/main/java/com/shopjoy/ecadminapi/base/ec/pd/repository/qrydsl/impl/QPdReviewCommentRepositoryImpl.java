@@ -91,7 +91,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     }
 
     /** 검색조건 빌드 — Mapper XML pdReviewCommentCond 와 동일 동작 */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdReviewCommentDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -99,14 +99,14 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         if (StringUtils.hasText(s.getSiteId()))          w.and(c.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getReviewCommentId())) w.and(c.reviewCommentId.eq(s.getReviewCommentId()));
 
-        // searchValue + searchType (def_writer_nm)
+        // searchValue + searchType (writerNm)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_writer_nm,")) or.or(c.writerNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",writerNm,")) or.or(c.writerNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

@@ -43,7 +43,7 @@ window.SySiteMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_code,def_nm,def_domain';
+          params.searchType = 'siteCode,siteNm,siteDomain';
         }
         const res = await boApiSvc.sySite.getPage(params, '사이트관리', '목록조회');
         const data = res.data?.data;
@@ -221,9 +221,9 @@ const detailModal = reactive({
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_code',   label: '사이트코드' },
-          { value: 'def_nm',     label: '사이트명' },
-          { value: 'def_domain', label: '도메인' },
+          { value: 'siteCode',   label: '사이트코드' },
+          { value: 'siteNm',     label: '사이트명' },
+          { value: 'siteDomain', label: '도메인' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

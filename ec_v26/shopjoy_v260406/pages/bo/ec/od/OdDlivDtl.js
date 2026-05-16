@@ -179,7 +179,7 @@ window.OdDlivDtl = {
       return i;
     });
     const cfPaymentList = computed(() => form.orderId ? [{
-      orderId: form.orderId, dlivFee: form.dlivFee || 0,
+      orderId: form.orderId, dlivFee: form.shippingFee || 0,
       payMethod: form.payMethod || '-', payStatus: form.payStatus || '-',
       payDate: form.regDate || '-',
     }] : []);

@@ -113,8 +113,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_name,")) or.or(d.deptNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_code,")) or.or(d.deptCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",deptNm,"))   or.or(d.deptNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",deptCode,")) or.or(d.deptCode.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

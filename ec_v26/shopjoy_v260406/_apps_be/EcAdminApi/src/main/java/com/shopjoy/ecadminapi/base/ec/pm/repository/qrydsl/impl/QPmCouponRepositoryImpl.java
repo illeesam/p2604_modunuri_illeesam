@@ -113,7 +113,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(c.memGradeCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(PmCouponDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -128,9 +128,9 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_coupon_id,")) or.or(c.couponId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_coupon_nm,")) or.or(c.couponNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_coupon_cd,")) or.or(c.couponCd.likeIgnoreCase(pattern));
+            if (all || types.contains(",couponId,")) or.or(c.couponId.likeIgnoreCase(pattern));
+            if (all || types.contains(",couponNm,")) or.or(c.couponNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",couponCd,")) or.or(c.couponCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

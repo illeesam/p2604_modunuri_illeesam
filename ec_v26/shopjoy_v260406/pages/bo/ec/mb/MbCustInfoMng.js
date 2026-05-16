@@ -249,13 +249,13 @@
       /* searchMemberModal */
       const searchMemberModal = () => {
         const searchVal = memberModal.keyword.trim().toLowerCase();
-        const types = memberModal.searchType || 'def_nm,def_email,def_phone';
+        const types = memberModal.searchType || 'memberNm,email,phone';
         memberModal.list = searchVal
           ? members.filter(m => {
               const hits = [];
-              if (types.includes('def_nm'))    hits.push((m.memberNm || '').includes(searchVal));
-              if (types.includes('def_email')) hits.push((m.email || '').toLowerCase().includes(searchVal));
-              if (types.includes('def_phone')) hits.push((m.phone || '').includes(searchVal));
+              if (types.includes('memberNm')) hits.push((m.memberNm || '').includes(searchVal));
+              if (types.includes('email'))    hits.push((m.email || '').toLowerCase().includes(searchVal));
+              if (types.includes('phone'))    hits.push((m.phone || '').includes(searchVal));
               return hits.some(Boolean);
             })
           : [...members];
@@ -702,9 +702,9 @@
           <bo-multi-check-select
             v-model="memberModal.searchType"
             :options="[
-              { value: 'def_nm',    label: '이름' },
-              { value: 'def_email', label: '이메일' },
-              { value: 'def_phone', label: '전화번호' },
+              { value: 'memberNm', label: '이름' },
+              { value: 'email',    label: '이메일' },
+              { value: 'phone',    label: '전화번호' },
             ]"
             placeholder="검색대상 전체"
             all-label="전체 선택"

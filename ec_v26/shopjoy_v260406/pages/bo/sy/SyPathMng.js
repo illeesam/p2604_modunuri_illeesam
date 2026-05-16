@@ -108,7 +108,7 @@ window.SyPathMng = {
         if (uiState.selectedPathId != null) params.parentPathId = uiState.selectedPathId;
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_pathLabel,def_pathRemark';
+          params.searchType = 'pathLabel,pathRemark';
         }
         const res = await boApiSvc.syPath.getPage(params, '경로관리', '목록조회');
         const data = res.data?.data || {};
@@ -279,8 +279,8 @@ window.SyPathMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_pathLabel',  label: '라벨' },
-          { value: 'def_pathRemark', label: '비고' },
+          { value: 'pathLabel',  label: '라벨' },
+          { value: 'pathRemark', label: '비고' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

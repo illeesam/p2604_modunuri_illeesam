@@ -74,7 +74,7 @@ window.CmChattMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_member_nm,def_title';
+          params.searchType = 'memberNm,subject';
         }
         const res = await boApiSvc.cmChatt.getPage(params, '채팅관리', '목록조회');
         const data = res.data?.data;
@@ -183,8 +183,8 @@ window.CmChattMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_member_nm', label: '회원명' },
-          { value: 'def_title',     label: '제목' },
+          { value: 'memberNm', label: '회원명' },
+          { value: 'subject',  label: '제목' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

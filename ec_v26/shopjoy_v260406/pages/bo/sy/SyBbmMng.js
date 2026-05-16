@@ -21,7 +21,7 @@ window.SyBbmMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_code';
+          params.searchType = 'bbmNm,bbmCode';
         }
         const res = await boApiSvc.syBbm.getPage(params, '게시판모드관리', '목록조회');
         const data = res.data?.data;
@@ -179,8 +179,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',   label: '게시판명' },
-          { value: 'def_code', label: '코드' },
+          { value: 'bbmNm',   label: '게시판명' },
+          { value: 'bbmCode', label: '코드' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

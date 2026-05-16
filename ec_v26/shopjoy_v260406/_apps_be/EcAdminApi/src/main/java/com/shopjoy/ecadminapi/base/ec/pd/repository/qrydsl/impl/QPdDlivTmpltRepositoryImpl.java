@@ -104,7 +104,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE").and(cdDpt.codeValue.eq(t.dlivPayTypeCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdDlivTmpltDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -117,7 +117,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_dliv_tmplt_nm,")) or.or(t.dlivTmpltNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",dlivTmpltNm,")) or.or(t.dlivTmpltNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

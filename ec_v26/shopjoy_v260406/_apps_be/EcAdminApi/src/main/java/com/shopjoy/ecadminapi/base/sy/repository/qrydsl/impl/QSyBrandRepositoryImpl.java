@@ -109,8 +109,9 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_name,"))   or.or(b.brandNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_enName,")) or.or(b.brandEnNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",brandCode,")) or.or(b.brandCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",brandNm,"))   or.or(b.brandNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",brandEnNm,")) or.or(b.brandEnNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

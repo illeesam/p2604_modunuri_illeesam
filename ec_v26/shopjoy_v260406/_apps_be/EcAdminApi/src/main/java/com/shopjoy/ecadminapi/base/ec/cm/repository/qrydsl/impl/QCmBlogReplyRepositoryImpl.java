@@ -94,7 +94,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     }
 
     /** 검색조건 빌드 */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(CmBlogReplyDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -102,14 +102,14 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         if (StringUtils.hasText(s.getSiteId()))    w.and(r.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getCommentId())) w.and(r.commentId.eq(s.getCommentId()));
 
-        // searchValue + searchType (def_writer_nm)
+        // searchValue + searchType (writerNm)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_writer_nm,")) or.or(r.writerNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",writerNm,")) or.or(r.writerNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

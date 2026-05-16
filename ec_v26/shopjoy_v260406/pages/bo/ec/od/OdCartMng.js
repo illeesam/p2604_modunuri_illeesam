@@ -53,7 +53,7 @@ window.OdCartMng = {
         const params = { pageNo: memberPick.pageNo, pageSize: PICK_SIZE, searchValue: memberPick.searchValue || undefined, searchType: memberPick.searchType || undefined };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_loginId,def_email';
+          params.searchType = 'memberNm,loginId';
         }
         const res = await boApiSvc.mbMember.getPage(
           params,
@@ -117,7 +117,7 @@ window.OdCartMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_member_nm,def_member_id,def_login_id,def_prod_nm';
+          params.searchType = 'memberNm,memberId,prodNm';
         }
         const res = await boApiSvc.odCart.getPage(params, '장바구니관리', '조회');
         const d = res.data?.data || {};
@@ -238,10 +238,10 @@ window.OdCartMng = {
 
       <label class="search-label">검색</label>
       <bo-multi-check-select v-model="search.searchType" :options="[
-          { value: 'def_member_nm', label: '회원명' },
-          { value: 'def_member_id', label: '회원ID' },
-          { value: 'def_prod_id',   label: '상품ID' },
-          { value: 'def_prod_nm',   label: '상품명' },
+          { value: 'memberNm', label: '회원명' },
+          { value: 'memberId', label: '회원ID' },
+          { value: 'prodId',   label: '상품ID' },
+          { value: 'prodNm',   label: '상품명' },
         ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
       <input v-model="search.searchValue" class="form-control" style="width:180px;" placeholder="검색어 입력"
              @keyup.enter="onSearch" />
@@ -387,9 +387,9 @@ window.OdCartMng = {
             <bo-multi-check-select
               v-model="memberPick.searchType"
               :options="[
-                { value: 'def_nm',      label: '이름' },
-                { value: 'def_loginId', label: '아이디' },
-                { value: 'def_email',   label: '이메일' },
+                { value: 'memberNm', label: '이름' },
+                { value: 'loginId',  label: '아이디' },
+                { value: 'loginId',  label: '이메일' },
               ]"
               placeholder="검색대상 전체"
               all-label="전체 선택"

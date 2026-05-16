@@ -127,7 +127,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(d.inboundCourierCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(OdDlivDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -142,12 +142,12 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_dliv_id,"))    or.or(d.dlivId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_order_id,"))   or.or(d.orderId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_tracking,"))   or.or(d.outboundTrackingNo.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_recv_nm,"))    or.or(d.recvNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_recv_phone,")) or.or(d.recvPhone.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_member_nm,"))  or.or(o.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",dlivId,"))    or.or(d.dlivId.likeIgnoreCase(pattern));
+            if (all || types.contains(",orderId,"))   or.or(d.orderId.likeIgnoreCase(pattern));
+            if (all || types.contains(",outboundTrackingNo,"))   or.or(d.outboundTrackingNo.likeIgnoreCase(pattern));
+            if (all || types.contains(",recvNm,"))    or.or(d.recvNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",recvPhone,")) or.or(d.recvPhone.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberNm,"))  or.or(o.memberNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

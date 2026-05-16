@@ -102,8 +102,8 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_author,")) or.or(b.authorNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_title,"))  or.or(b.bbsTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",authorNm,")) or.or(b.authorNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",bbsTitle,")) or.or(b.bbsTitle.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

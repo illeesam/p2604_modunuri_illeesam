@@ -85,7 +85,7 @@ window.SyUserLoginHist = {
       };
       // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
       if (p.searchValue && !p.searchType) {
-        p.searchType = 'def_userId,def_loginId';
+        p.searchType = 'userId,loginId';
       }
       return p;
     };
@@ -220,8 +220,8 @@ window.SyUserLoginHist = {
       <bo-multi-check-select
         v-model="uiState.searchType"
         :options="[
-          { value: 'def_userId',  label: '사용자ID' },
-          { value: 'def_loginId', label: '로그인ID' },
+          { value: 'userId',  label: '사용자ID' },
+          { value: 'loginId', label: '로그인ID' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

@@ -103,8 +103,8 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_member,")) or.or(c.memberNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_title,"))  or.or(c.contactTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",memberNm,"))     or.or(c.memberNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",contactTitle,")) or.or(c.contactTitle.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

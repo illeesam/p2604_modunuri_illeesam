@@ -94,7 +94,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                 .from(b);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(PmEventBenefitDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -108,7 +108,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_benefit_nm,")) or.or(b.benefitNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",benefitNm,")) or.or(b.benefitNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

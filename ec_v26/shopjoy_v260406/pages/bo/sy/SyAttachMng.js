@@ -19,17 +19,7 @@ window.SyAttachMng = {
       pageNums: [], pageSizes: [10, 20, 50, 100],
     });
 
-    const cfFilteredGrps = computed(() => {
-      const searchVal = grpSearchValue.value.trim().toLowerCase();
-      if (!searchVal) return attachGrps;
-      const types = grpSearchType.value || 'def_grpNm,def_grpCode';
-      return attachGrps.filter(g => {
-        const hits = [];
-        if (types.includes('def_grpNm'))   hits.push((g.grpNm   || '').toLowerCase().includes(searchVal));
-        if (types.includes('def_grpCode')) hits.push((g.grpCode || '').toLowerCase().includes(searchVal));
-        return hits.some(Boolean);
-      });
-    });
+    /* 그룹 검색은 클라이언트 filter 금지 — API 재조회(onGrpSearch)로만 갱신 (UI/UX 검색 방식 정책) */
 
     /* 첨부파일 fnBuildPageNums */
     const fnBuildPageNums = () => {
@@ -45,15 +35,24 @@ window.SyAttachMng = {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
     };
 
-    // 그룹 목록 로드
+    // 그룹 목록 로드 (검색어는 API 파라미터로 전달 — 서버 조회)
     const handleLoadGrps = async () => {
       try {
-        const grpRes = await boApiSvc.syAttachGrp.getPage({ pageNo: 1, pageSize: 10000 }, '첨부파일관리', '그룹조회');
+        const p = { pageNo: 1, pageSize: 10000 };
+        const sv = grpSearchValue.value.trim();
+        if (sv) {
+          p.searchValue = sv;
+          p.searchType = grpSearchType.value || 'attachGrpNm,attachGrpCode';
+        }
+        const grpRes = await boApiSvc.syAttachGrp.getPage(p, '첨부파일관리', '그룹조회');
         attachGrps.splice(0, attachGrps.length, ...(grpRes.data?.data?.pageList || grpRes.data?.data?.list || []));
       } catch (err) {
         console.error('[catch-info]', err);
       }
     };
+
+    /* 그룹 검색 — [조회] 버튼/Enter 시에만 API 재조회 */
+    const onGrpSearch = async () => { await handleLoadGrps(); };
 
     // 파일 목록 조회 (서버사이드 페이징)
     const handleSearchData = async () => {
@@ -68,7 +67,7 @@ window.SyAttachMng = {
         if (uiState.selectedGrpId) p.attachGrpId = uiState.selectedGrpId;
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (p.searchValue && !p.searchType) {
-          p.searchType = 'def_fileNm,def_refId';
+          p.searchType = 'fileNm,def_refId';
         }
         const attachRes = await boApiSvc.syAttach.getPage(p, '첨부파일관리', '조회');
         const data = attachRes.data?.data;
@@ -123,7 +122,7 @@ window.SyAttachMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* -- 첨부그룹 -- */
-    const grpForm = reactive({ grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
+    const grpForm = reactive({ attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
 
     /* 첨부파일 selectGrp */
     const selectGrp = (id) => {
@@ -138,7 +137,7 @@ window.SyAttachMng = {
     /* 첨부파일 openGrpNew */
     const openGrpNew = () => {
       uiState.grpEditId = null; uiState.grpEditMode = true;
-      Object.assign(grpForm, { grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
+      Object.assign(grpForm, { attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
     };
 
     /* 첨부파일 openGrpEdit */
@@ -149,7 +148,7 @@ window.SyAttachMng = {
 
     /* 첨부파일 handleSaveGrp */
     const handleSaveGrp = async () => {
-      if (!grpForm.grpNm || !grpForm.grpCode) { showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
+      if (!grpForm.attachGrpNm || !grpForm.attachGrpCode) { showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       try {
         if (uiState.grpEditId === null) {
           await boApi.post('/bo/sy/attach-grp', { ...grpForm }, coUtil.apiHdr('첨부파일관리', '그룹등록'));
@@ -167,7 +166,7 @@ window.SyAttachMng = {
 
     /* 첨부파일 handleDeleteGrp */
     const handleDeleteGrp = async (g) => {
-      const ok = await showConfirm('그룹 삭제', `[${g.grpNm}] 그룹을 삭제하시겠습니까?`);
+      const ok = await showConfirm('그룹 삭제', `[${g.attachGrpNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
         await boApi.delete(`/bo/sy/attach-grp/${g.attachGrpId}`, coUtil.apiHdr('첨부파일관리', '그룹삭제'));
@@ -250,7 +249,7 @@ window.SyAttachMng = {
     // -- return ---------------------------------------------------------------
     return {
       attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
-      attachGrps, cfFilteredGrps, grpSearchType, grpSearchValue, grpForm, pager,
+      attachGrps, grpSearchType, grpSearchValue, onGrpSearch, grpForm, pager,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
@@ -272,13 +271,16 @@ window.SyAttachMng = {
           <bo-multi-check-select
             v-model="grpSearchType"
             :options="[
-              { value: 'def_grpNm',   label: '그룹명' },
-              { value: 'def_grpCode', label: '코드' },
+              { value: 'attachGrpNm',   label: '그룹명' },
+              { value: 'attachGrpCode', label: '코드' },
             ]"
             placeholder="검색대상 전체"
             all-label="전체 선택"
             min-width="100%" />
-          <input v-model="grpSearchValue" placeholder="검색어 입력" style="width:100%;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;margin-top:4px;" />
+          <div style="display:flex;gap:4px;margin-top:4px;">
+            <input v-model="grpSearchValue" @keyup.enter="onGrpSearch" placeholder="검색어 입력 후 Enter" style="flex:1;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" />
+            <button class="btn btn-primary btn-sm" style="font-size:12px;padding:4px 10px;flex-shrink:0;" @click="onGrpSearch">조회</button>
+          </div>
         </div>
 
         <!-- 그룹 폼 -->
@@ -289,30 +291,31 @@ window.SyAttachMng = {
           </div>
           <div class="form-group" style="margin-bottom:6px;">
             <label class="form-label" style="font-size:12px;">그룹명 <span class="req">*</span></label>
-            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.grpNm" placeholder="그룹명" />
+            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.attachGrpNm" placeholder="그룹명" />
           </div>
           <div class="form-group" style="margin-bottom:6px;">
             <label class="form-label" style="font-size:12px;">그룹코드 <span class="req">*</span></label>
-            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.grpCode" placeholder="PRODUCT_IMG" />
+            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.attachGrpCode" placeholder="PRODUCT_IMG" />
           </div>
           <div class="form-group" style="margin-bottom:6px;">
             <label class="form-label" style="font-size:12px;">허용확장자</label>
-            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.allowExt" placeholder="jpg,png,pdf" />
+            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.fileExtAllow" placeholder="jpg,png,pdf" />
           </div>
           <div style="display:flex;gap:6px;margin-bottom:6px;">
             <div class="form-group" style="flex:1;margin-bottom:0;">
               <label class="form-label" style="font-size:12px;">최대개수</label>
-              <input class="form-control" style="font-size:12px;padding:4px 8px;" type="number" v-model.number="grpForm.maxCount" min="1" />
+              <input class="form-control" style="font-size:12px;padding:4px 8px;" type="number" v-model.number="grpForm.maxFileCount" min="1" />
             </div>
             <div class="form-group" style="flex:1;margin-bottom:0;">
               <label class="form-label" style="font-size:12px;">최대크기(MB)</label>
-              <input class="form-control" style="font-size:12px;padding:4px 8px;" type="number" v-model.number="grpForm.maxSizeMb" min="1" />
+              <input class="form-control" style="font-size:12px;padding:4px 8px;" type="number" v-model.number="grpForm.maxFileSize" min="1" />
             </div>
           </div>
           <div class="form-group" style="margin-bottom:8px;">
             <label class="form-label" style="font-size:12px;">상태</label>
-            <select class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.status">
-              <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+            <select class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.useYn">
+              <option value="Y">사용</option>
+              <option value="N">미사용</option>
             </select>
           </div>
           <div style="display:flex;gap:6px;">
@@ -322,14 +325,14 @@ window.SyAttachMng = {
         </div>
 
         <!-- 그룹 목록 -->
-        <div v-for="g in cfFilteredGrps" :key="g.attachGrpId"
+        <div v-for="g in attachGrps" :key="g.attachGrpId"
           style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;border-radius:4px;transition:background .15s;"
           :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#fff0f4;border-left:3px solid #e8587a;' : ''"
           @click="selectGrp(g.attachGrpId)">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div style="font-size:13px;font-weight:600;color:#333;">{{ g.grpNm }}</div>
-              <div style="font-size:11px;color:#888;margin-top:2px;">{{ g.grpCode }} | 최대 {{ g.maxCount }}개 / {{ g.maxSizeMb }}MB</div>
+              <div style="font-size:13px;font-weight:600;color:#333;">{{ g.attachGrpNm }}</div>
+              <div style="font-size:11px;color:#888;margin-top:2px;">{{ g.attachGrpCode }} | 최대 {{ g.maxFileCount }}개 / {{ g.maxFileSize }}MB</div>
               <div style="font-size:10px;color:#bbb;margin-top:1px;">#{{ g.attachGrpId }}</div>
             </div>
             <div style="display:flex;gap:4px;" @click.stop>
@@ -338,12 +341,12 @@ window.SyAttachMng = {
             </div>
           </div>
           <div style="margin-top:4px;">
-            <span class="badge" :class="fnStatusBadge(g.status)" style="font-size:10px;">{{ g.status }}</span>
-            <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ g.allowExt }}</span>
+            <span class="badge" :class="g.useYn==='Y' ? 'badge-green' : 'badge-gray'" style="font-size:10px;">{{ g.useYn==='Y' ? '사용' : '미사용' }}</span>
+            <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ g.fileExtAllow }}</span>
             <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ cfSiteNm }}</span>
           </div>
         </div>
-        <div v-if="!cfFilteredGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">{{ grpSearchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}</div>
+        <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">{{ grpSearchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}</div>
       </div>
     </div>
 
@@ -353,15 +356,15 @@ window.SyAttachMng = {
         <!-- 검색바 -->
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
           <b style="font-size:14px;white-space:nowrap;">첨부파일관리
-            <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">— {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.grpNm }}</span>
+            <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">— {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.attachGrpNm }}</span>
             <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">(전체)</span>
           </b>
           <input v-model="searchParam.attachGrpId" placeholder="첨부그룹ID" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:130px;" @keyup.enter="onSearch" />
           <bo-multi-check-select
             v-model="searchParam.searchType"
             :options="[
-              { value: 'def_fileNm', label: '파일명' },
-              { value: 'def_refId',  label: 'RefID' },
+              { value: 'fileNm',    label: '파일명' },
+              { value: 'def_refId', label: 'RefID' },
             ]"
             placeholder="검색대상 전체"
             all-label="전체 선택"
@@ -505,7 +508,7 @@ window.SyAttachMng = {
             <tr v-else v-for="(a, idx) in attaches" :key="a.attachId">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td>
-                <span style="font-size:11px;color:#666;">{{ a.attachGrpNm || attachGrps.find(g=>g.attachGrpId===a.attachGrpId)?.grpNm }}</span>
+                <span style="font-size:11px;color:#666;">{{ a.attachGrpNm || attachGrps.find(g=>g.attachGrpId===a.attachGrpId)?.attachGrpNm }}</span>
                 <span style="font-size:10px;color:#bbb;margin-left:4px;">#{{ a.attachGrpId }}</span>
               </td>
               <td style="font-size:12px;word-break:break-all;">{{ a.fileNm }}</td>

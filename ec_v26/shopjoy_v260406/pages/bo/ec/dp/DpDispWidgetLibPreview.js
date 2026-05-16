@@ -200,22 +200,36 @@ window.DpDispWidgetLibPreview = {
     const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: '', searchType: '', searchValue: ''});
     const searchParam = reactive(_initSearchParam());
 
+    /* 적용된 조회 조건 스냅샷 — 검색조건 입력 즉시 filter 금지, [조회] 시점에만 반영 (UI/UX 검색 방식 정책) */
+    const applied = reactive({ type: '', status: '활성', searchType: '', searchValue: '' });
+
+    /* 목록조회 — [조회] 클릭/Enter 시점에만 검색조건 적용 */
+    const onSearch = () => {
+      Object.assign(applied, {
+        type:       searchParam.filterType,
+        status:     searchParam.filterStatus,
+        searchType: searchParam.searchType,
+        searchValue: (searchParam.searchValue || '').trim().toLowerCase(),
+      });
+    };
+
     /* onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
+      Object.assign(applied, { type: '', status: '활성', searchType: '', searchValue: '' });
     };
 
     const cfFilteredLibs = computed(() => {
-      const searchVal = (searchParam.searchValue || '').trim().toLowerCase();
-      const types = searchParam.searchType || 'def_nm,def_tag,def_desc';
+      const searchVal = applied.searchValue;
+      const types = applied.searchType || 'widgetNm,tag,widgetLibDesc';
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
-        if (searchParam.filterType   && lib.widgetType !== searchParam.filterType) return false;
-        if (searchParam.filterStatus && lib.status     !== searchParam.filterStatus) return false;
+        if (applied.type   && lib.widgetType !== applied.type) return false;
+        if (applied.status && lib.status     !== applied.status) return false;
         if (searchVal) {
           const hits = [];
-          if (types.includes('def_nm'))   hits.push((lib.name || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_tag'))  hits.push((lib.tags || '').toLowerCase().includes(searchVal));
-          if (types.includes('def_desc')) hits.push((lib.desc || '').toLowerCase().includes(searchVal));
+          if (types.includes('widgetNm'))   hits.push((lib.name || '').toLowerCase().includes(searchVal));
+          if (types.includes('tag'))  hits.push((lib.tags || '').toLowerCase().includes(searchVal));
+          if (types.includes('widgetLibDesc')) hits.push((lib.desc || '').toLowerCase().includes(searchVal));
           if (!hits.some(Boolean)) return false;
         }
         return true;
@@ -554,8 +568,8 @@ window.DpDispWidgetLibPreview = {
       cfSiteNm, today,
       VIEWPORT, codes,
       wIcon, wTypeLabel,
-      searchParam, cfDispWidgetTypes,
-      onReset, cfFilteredLibs,
+      searchParam, cfDispWidgetTypes, applied,
+      onSearch, onReset, cfFilteredLibs,
       onTreeSelect,
       cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
@@ -629,16 +643,17 @@ window.DpDispWidgetLibPreview = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',   label: '이름' },
-          { value: 'def_tag',  label: '태그' },
-          { value: 'def_desc', label: '설명' },
+          { value: 'widgetNm',   label: '이름' },
+          { value: 'tag',  label: '태그' },
+          { value: 'widgetLibDesc', label: '설명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
         min-width="130px" />
-      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" />
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="onSearch" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
-      <button @click="onReset" style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#666;">초기화</button>
+      <button @click="onSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
+      <button @click="onReset" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">초기화</button>
     </div>
   </div>
 

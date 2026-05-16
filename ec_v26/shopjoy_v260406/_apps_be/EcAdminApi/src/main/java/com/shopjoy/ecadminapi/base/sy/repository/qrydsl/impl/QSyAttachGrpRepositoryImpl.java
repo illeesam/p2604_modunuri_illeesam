@@ -94,7 +94,8 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_attach_grp_nm,")) or.or(g.attachGrpNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",attachGrpNm,"))   or.or(g.attachGrpNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",attachGrpCode,")) or.or(g.attachGrpCode.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

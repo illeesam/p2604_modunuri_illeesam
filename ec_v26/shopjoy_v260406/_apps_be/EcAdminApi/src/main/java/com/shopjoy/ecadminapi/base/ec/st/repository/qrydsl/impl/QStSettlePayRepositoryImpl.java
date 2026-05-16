@@ -110,7 +110,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(p.payStatusCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(StSettlePayDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -118,11 +118,11 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         if (StringUtils.hasText(c.getSiteId()))      w.and(p.siteId.eq(c.getSiteId()));
         if (StringUtils.hasText(c.getSettlePayId())) w.and(p.settlePayId.eq(c.getSettlePayId()));
 
-        // searchValue / searchType — def_bank_nm
+        // searchValue / searchType — bankNm
         if (StringUtils.hasText(c.getSearchValue())) {
             String types = "," + (c.getSearchType() == null ? "" : c.getSearchType().trim()) + ",";
             BooleanBuilder or = new BooleanBuilder();
-            if (!StringUtils.hasText(types) || types.contains(",def_bank_nm,")) {
+            if (!StringUtils.hasText(types) || types.contains(",bankNm,")) {
                 or.or(p.bankNm.containsIgnoreCase(c.getSearchValue()));
             }
             if (or.getValue() != null) w.and(or);

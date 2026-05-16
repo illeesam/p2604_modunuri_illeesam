@@ -97,7 +97,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 .from(e);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(PmEventDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -112,8 +112,8 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_event_nm,"))    or.or(e.eventNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_event_title,")) or.or(e.eventTitle.likeIgnoreCase(pattern));
+            if (all || types.contains(",eventNm,"))    or.or(e.eventNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",eventTitle,")) or.or(e.eventTitle.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

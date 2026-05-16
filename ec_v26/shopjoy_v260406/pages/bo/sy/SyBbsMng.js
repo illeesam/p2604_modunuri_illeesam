@@ -44,7 +44,7 @@ window.SyBbsMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_title,def_author';
+          params.searchType = 'bbsTitle,authorNm';
         }
         const res = await boApiSvc.syBbs.getPage(params, '게시판관리', '목록조회');
         const data = res.data?.data;
@@ -236,8 +236,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_title',  label: '제목' },
-          { value: 'def_author', label: '작성자' },
+          { value: 'bbsTitle', label: '제목' },
+          { value: 'authorNm', label: '작성자' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

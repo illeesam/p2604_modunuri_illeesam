@@ -102,8 +102,9 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_nm,"))   or.or(t.templateNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_code,")) or.or(t.templateCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",templateNm,"))      or.or(t.templateNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",templateCode,"))    or.or(t.templateCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",templateSubject,")) or.or(t.templateSubject.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

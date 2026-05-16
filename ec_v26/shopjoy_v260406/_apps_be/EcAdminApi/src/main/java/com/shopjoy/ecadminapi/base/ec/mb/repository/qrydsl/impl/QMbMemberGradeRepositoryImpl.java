@@ -82,7 +82,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(g.gradeCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "gradeNm,gradeCd" (Entity 필드명) */
     private BooleanBuilder buildCondition(MbMemberGradeDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -94,8 +94,8 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_grade_nm,")) or.or(g.gradeNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_grade_cd,")) or.or(g.gradeCd.likeIgnoreCase(pattern));
+            if (all || types.contains(",gradeNm,")) or.or(g.gradeNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",gradeCd,")) or.or(g.gradeCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

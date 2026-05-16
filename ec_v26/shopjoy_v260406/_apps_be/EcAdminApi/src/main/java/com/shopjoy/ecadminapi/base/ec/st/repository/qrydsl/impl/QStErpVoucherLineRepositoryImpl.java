@@ -95,18 +95,18 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
                 .from(l);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(StErpVoucherLineDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
 
         if (StringUtils.hasText(c.getErpVoucherLineId())) w.and(l.erpVoucherLineId.eq(c.getErpVoucherLineId()));
 
-        // searchValue / searchType — def_account_nm
+        // searchValue / searchType — accountNm
         if (StringUtils.hasText(c.getSearchValue())) {
             String types = "," + (c.getSearchType() == null ? "" : c.getSearchType().trim()) + ",";
             BooleanBuilder or = new BooleanBuilder();
-            if (!StringUtils.hasText(types) || types.contains(",def_account_nm,")) {
+            if (!StringUtils.hasText(types) || types.contains(",accountNm,")) {
                 or.or(l.accountNm.containsIgnoreCase(c.getSearchValue()));
             }
             if (or.getValue() != null) w.and(or);

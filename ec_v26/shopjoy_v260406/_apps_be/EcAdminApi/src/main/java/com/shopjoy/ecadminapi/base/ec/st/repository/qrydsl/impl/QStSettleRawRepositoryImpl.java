@@ -181,7 +181,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(r.payMethodCd)));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(StSettleRawDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -189,14 +189,14 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         if (StringUtils.hasText(c.getSiteId()))      w.and(r.siteId.eq(c.getSiteId()));
         if (StringUtils.hasText(c.getSettleRawId())) w.and(r.settleRawId.eq(c.getSettleRawId()));
 
-        // searchValue / searchType — def_prod_nm, def_brand_nm
+        // searchValue / searchType — prodNm, brandNm
         if (StringUtils.hasText(c.getSearchValue())) {
             String types = "," + (c.getSearchType() == null ? "" : c.getSearchType().trim()) + ",";
             BooleanBuilder or = new BooleanBuilder();
-            if (!StringUtils.hasText(types) || types.contains(",def_prod_nm,")) {
+            if (!StringUtils.hasText(types) || types.contains(",prodNm,")) {
                 or.or(r.prodNm.containsIgnoreCase(c.getSearchValue()));
             }
-            if (!StringUtils.hasText(types) || types.contains(",def_brand_nm,")) {
+            if (!StringUtils.hasText(types) || types.contains(",brandNm,")) {
                 or.or(r.brandNm.containsIgnoreCase(c.getSearchValue()));
             }
             if (or.getValue() != null) w.and(or);

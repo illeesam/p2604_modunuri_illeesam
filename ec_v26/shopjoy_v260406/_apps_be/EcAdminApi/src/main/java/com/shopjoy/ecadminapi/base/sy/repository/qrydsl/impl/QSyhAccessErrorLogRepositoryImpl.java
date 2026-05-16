@@ -105,9 +105,9 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_ip,"))        or.or(l.reqIp.like(pattern));
-            if (all || types.contains(",def_userId,"))    or.or(l.userId.like(pattern));
-            if (all || types.contains(",def_errorType,")) or.or(l.errorType.like(pattern));
+            if (all || types.contains(",reqIp,"))     or.or(l.reqIp.like(pattern));
+            if (all || types.contains(",userId,"))    or.or(l.userId.like(pattern));
+            if (all || types.contains(",errorType,")) or.or(l.errorType.like(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

@@ -43,7 +43,7 @@ window.SyContactMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_title,def_memberNm';
+          params.searchType = 'contactTitle,memberNm';
         }
         const res = await boApiSvc.syContact.getPage(params, '문의관리', '목록조회');
         const data = res.data?.data;
@@ -176,8 +176,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_title',    label: '제목' },
-          { value: 'def_memberNm', label: '회원명' },
+          { value: 'contactTitle', label: '제목' },
+          { value: 'memberNm',     label: '회원명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

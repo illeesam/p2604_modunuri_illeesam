@@ -99,7 +99,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                 .from(d);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(PmDiscntDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -114,7 +114,8 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_discnt_nm,")) or.or(d.discntNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",discntNm,")) or.or(d.discntNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",discntId,")) or.or(d.discntId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

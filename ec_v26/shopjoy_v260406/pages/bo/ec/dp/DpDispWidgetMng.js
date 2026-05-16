@@ -75,7 +75,7 @@ window.DpDispWidgetMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (widgetParams.searchValue && !widgetParams.searchType) {
-          widgetParams.searchType = 'def_nm,def_desc,def_tag';
+          widgetParams.searchType = 'widgetNm,widgetDesc,tag';
         }
         const [res, resLibs] = await Promise.all([
           boApiSvc.dpWidget.getPage(widgetParams, '전시위젯관리', '조회'),
@@ -236,9 +236,9 @@ window.DpDispWidgetMng = {
         <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
-            { value: 'def_nm',   label: '이름' },
-            { value: 'def_desc', label: '설명' },
-            { value: 'def_tag',  label: '태그' },
+            { value: 'widgetNm',   label: '이름' },
+            { value: 'widgetDesc', label: '설명' },
+            { value: 'tag',  label: '태그' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"

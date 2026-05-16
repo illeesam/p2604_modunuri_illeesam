@@ -97,7 +97,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
                 .leftJoin(prd2).on(prd2.prodId.eq(i.itemProdId));
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdProdSetItemDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -110,7 +110,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_item_nm,")) or.or(i.itemNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",itemNm,")) or.or(i.itemNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

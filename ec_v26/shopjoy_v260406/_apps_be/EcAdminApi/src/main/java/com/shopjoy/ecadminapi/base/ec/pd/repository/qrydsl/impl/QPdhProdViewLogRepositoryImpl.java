@@ -106,7 +106,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdhProdViewLogDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -114,14 +114,14 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         if (StringUtils.hasText(s.getSiteId())) w.and(l.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getLogId()))  w.and(l.logId.eq(s.getLogId()));
 
-        // searchValue + searchType (def_ref_nm)
+        // searchValue + searchType (refNm)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_ref_nm,")) or.or(l.refNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",refNm,")) or.or(l.refNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

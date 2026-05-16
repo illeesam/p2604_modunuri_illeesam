@@ -78,7 +78,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         )).from(l);
     }
 
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanBuilder buildCondition(DpWidgetLibDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -109,8 +109,9 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_widget_nm,"))   or.or(l.widgetNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_widget_code,")) or.or(l.widgetCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",widgetNm,"))   or.or(l.widgetNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",widgetCode,")) or.or(l.widgetCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",widgetLibDesc,")) or.or(l.widgetLibDesc.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

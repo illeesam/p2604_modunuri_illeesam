@@ -110,8 +110,8 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_label,")) or.or(c.codeLabel.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_value,")) or.or(c.codeValue.likeIgnoreCase(pattern));
+            if (all || types.contains(",codeLabel,")) or.or(c.codeLabel.likeIgnoreCase(pattern));
+            if (all || types.contains(",codeValue,")) or.or(c.codeValue.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

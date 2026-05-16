@@ -6,6 +6,11 @@ window.StStatusMng = {
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    /* 적용된 검색조건 스냅샷 — 입력(uiState.*)은 즉시 화면에 반영하지 않고, [조회] 시점에만 이 값으로 동기화 (UI/UX 검색 방식 정책) */
+    const applied = reactive({
+      vendorSearchValue: '', orderSearchValue: '', orderSearchStatus: '',
+      claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: '',
+    });
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
@@ -118,7 +123,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // -- return ---------------------------------------------------------------
 
         return { vendorId: v.vendorId, vendorNm: v.vendorNm, orderCnt: vOrders.length, sales, refund, netSales, comm, settle: netSales - comm };
-      }).filter(r => !uiState.vendorSearchValue || r.vendorNm.includes(uiState.vendorSearchValue));
+      }).filter(r => !applied.vendorSearchValue || r.vendorNm.includes(applied.vendorSearchValue));
     });
     const cfVendorTotal = computed(() => cfVendorRows.value.length);
     const cfVendorPages = computed(() => Math.max(1, Math.ceil(cfVendorTotal.value / vendorPager.size)));
@@ -132,10 +137,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const orderPager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfOrderRows = computed(() => {
-      const searchVal = uiState.orderSearchValue.trim().toLowerCase();
+      const searchVal = applied.orderSearchValue.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(orderList, o => {
         if (!inRange(o.orderDate)) return false;
-        if (uiState.orderSearchStatus && o.status !== uiState.orderSearchStatus) return false;
+        if (applied.orderSearchStatus && o.status !== applied.orderSearchStatus) return false;
         if (searchVal && !o.orderId.toLowerCase().includes(searchVal) && !o.userNm.toLowerCase().includes(searchVal) && !o.prodNm.toLowerCase().includes(searchVal)) return false;
         return true;
       }).map(o => {
@@ -169,8 +174,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const cfClaimRows = computed(() => {
       return window.safeArrayUtils.safeFilter(claimList, c => {
         if (!inRange(c.requestDate)) return false;
-        if (uiState.claimSearchType   && c.type   !== uiState.claimSearchType)   return false;
-        if (uiState.claimSearchStatus && c.status !== uiState.claimSearchStatus) return false;
+        if (applied.claimSearchType   && c.type   !== applied.claimSearchType)   return false;
+        if (applied.claimSearchStatus && c.status !== applied.claimSearchStatus) return false;
         return true;
       }).map(c => {
         const isCompleted = ['환불완료','취소완료','교환완료'].includes(c.status);
@@ -200,7 +205,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const promoPager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfPromoRows = computed(() => {
-      const searchVal = uiState.promoSearchValue.trim().toLowerCase();
+      const searchVal = applied.promoSearchValue.trim().toLowerCase();
       const couponRows = couponList.map(c => {
         const discountAmt = c.discountType === 'amount' ? c.discountValue * c.useCount
           : c.discountType === 'rate' ? Math.round(50000 * (c.discountValue / 100) * c.useCount) // 평균 주문금액 가정
@@ -220,7 +225,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       ];
       const allRows = [...couponRows, ...cacheRows];
       return allRows.filter(r => {
-        if (uiState.promoSearchType && r.promoType !== uiState.promoSearchType) return false;
+        if (applied.promoSearchType && r.promoType !== applied.promoSearchType) return false;
         if (searchVal && !r.promoNm.toLowerCase().includes(searchVal) && !r.promoType.toLowerCase().includes(searchVal)) return false;
         return true;
       });
@@ -260,7 +265,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // -- return ---------------------------------------------------------------
 
         return { ...r, net, comm, promo, settle, statusCd: settle > 0 ? '정산예정' : '마감' };
-      }).filter(r => !uiState.settleSearchMonth || r.month.includes(uiState.settleSearchMonth));
+      }).filter(r => !applied.settleSearchMonth || r.month.includes(applied.settleSearchMonth));
     });
     const cfSettleTotal    = computed(() => cfSettleRows.value.length);
     const cfSettlePages    = computed(() => Math.max(1, Math.ceil(cfSettleTotal.value / settlePager.size)));
@@ -283,9 +288,22 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* fnTypeBadge */
     const fnTypeBadge = t => ({ '취소':'badge-red', '반품':'badge-orange', '교환':'badge-purple' }[t] || 'badge-gray');
 
-    /* 목록조회 */
+    /* 입력값(uiState.*) → 적용 스냅샷(applied.*) 동기화 */
+    const fnSyncApplied = () => {
+      applied.vendorSearchValue = uiState.vendorSearchValue;
+      applied.orderSearchValue  = uiState.orderSearchValue;
+      applied.orderSearchStatus = uiState.orderSearchStatus;
+      applied.claimSearchType   = uiState.claimSearchType;
+      applied.claimSearchStatus = uiState.claimSearchStatus;
+      applied.promoSearchValue  = uiState.promoSearchValue;
+      applied.promoSearchType   = uiState.promoSearchType;
+      applied.settleSearchMonth = uiState.settleSearchMonth;
+    };
+
+    /* 목록조회 — [조회] 클릭/Enter 시점에만 검색조건 적용 */
     const onSearch = async () => {
       vendorPager.page = 1; orderPager.page = 1; claimPager.page = 1; promoPager.page = 1; settlePager.page = 1;
+      fnSyncApplied();
       await handleSearchData('DEFAULT');
     };
 

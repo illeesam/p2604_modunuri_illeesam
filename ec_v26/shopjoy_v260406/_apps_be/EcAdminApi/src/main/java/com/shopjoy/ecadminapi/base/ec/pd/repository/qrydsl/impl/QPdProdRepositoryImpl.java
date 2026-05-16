@@ -185,7 +185,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     }
 
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */
-    /* searchType 사용 예  searchType = "def_blog_title,def_blog_author" */
+    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanBuilder buildCondition(PdProdDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -198,17 +198,17 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         if (StringUtils.hasText(s.getCategoryId())) w.and(p.categoryId.eq(s.getCategoryId()));
         if (StringUtils.hasText(s.getVendorId()))   w.and(p.vendorId.eq(s.getVendorId()));
 
-        // searchValue + searchType (def_prod_id | def_prod_nm | def_prod_code | def_brand_nm)
+        // searchValue + searchType (prodId | prodNm | prodCode | brandNm)
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
             boolean all = !StringUtils.hasText(s.getSearchType());
             String pattern = "%" + s.getSearchValue() + "%";
 
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",def_prod_id,"))   or.or(p.prodId.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_prod_nm,"))   or.or(p.prodNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_prod_code,")) or.or(p.prodCode.likeIgnoreCase(pattern));
-            if (all || types.contains(",def_brand_nm,"))  or.or(b.brandNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",prodId,"))   or.or(p.prodId.likeIgnoreCase(pattern));
+            if (all || types.contains(",prodNm,"))   or.or(p.prodNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",prodCode,")) or.or(p.prodCode.likeIgnoreCase(pattern));
+            if (all || types.contains(",brandNm,"))  or.or(b.brandNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

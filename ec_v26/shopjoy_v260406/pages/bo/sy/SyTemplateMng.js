@@ -43,7 +43,7 @@ window.SyTemplateMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_subject';
+          params.searchType = 'templateNm,templateSubject';
         }
         const res = await boApiSvc.syTemplate.getPage(params, '템플릿관리', '목록조회');
         const data = res.data?.data;
@@ -225,8 +225,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',      label: '템플릿명' },
-          { value: 'def_subject', label: '제목' },
+          { value: 'templateNm',      label: '템플릿명' },
+          { value: 'templateSubject', label: '제목' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"

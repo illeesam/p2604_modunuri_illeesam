@@ -74,7 +74,7 @@ window.MbMemberMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'def_nm,def_email';
+          params.searchType = 'memberNm,loginId';
         }
         const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
@@ -242,8 +242,8 @@ window.MbMemberMng = {
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'def_nm',    label: '이름' },
-          { value: 'def_email', label: '이메일' },
+          { value: 'memberNm', label: '이름' },
+          { value: 'loginId',  label: '이메일' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
