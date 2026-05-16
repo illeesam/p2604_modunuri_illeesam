@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.dto;
+package com.shopjoy.ecadminapi.base.zz.data.dto;
 
 import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;

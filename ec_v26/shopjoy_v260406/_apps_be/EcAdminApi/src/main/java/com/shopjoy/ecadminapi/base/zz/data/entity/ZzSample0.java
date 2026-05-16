@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.entity;
+package com.shopjoy.ecadminapi.base.zz.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

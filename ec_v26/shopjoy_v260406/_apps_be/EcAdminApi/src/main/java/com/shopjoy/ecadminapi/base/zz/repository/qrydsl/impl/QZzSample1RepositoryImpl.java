@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
+package com.shopjoy.ecadminapi.base.zz.repository.qrydsl.impl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
@@ -7,10 +7,10 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QZzSample1;
-import com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample1;
-import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QZzSample1Repository;
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample1Dto;
+import com.shopjoy.ecadminapi.base.zz.data.entity.QZzSample1;
+import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample1;
+import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzSample1Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -40,10 +40,10 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
                         s.explnCn,
                         s.cdInfwSeCd,
                         s.useYn,
-                        s.rgtr,
-                        s.regDt,
-                        s.mdfr,
-                        s.mdfcnDt,
+                        s.regBy,
+                        s.regDate,
+                        s.updBy,
+                        s.updDate,
                         s.groupCd,
                         s.col01,
                         s.col02,
@@ -132,7 +132,7 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = search == null ? null : search.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, s.regDt));
+            orders.add(new OrderSpecifier(Order.DESC, s.regDate));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -144,8 +144,8 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("sample1Id".equals(field)) {
                     orders.add(new OrderSpecifier(order, s.sample1Id));
-                } else if ("regDt".equals(field)) {
-                    orders.add(new OrderSpecifier(order, s.regDt));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.regDate));
                 }
             }
         }
@@ -170,8 +170,8 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         if (entity.getExplnCn()    != null) { update.set(s.explnCn,    entity.getExplnCn());    hasAny = true; }
         if (entity.getCdInfwSeCd() != null) { update.set(s.cdInfwSeCd, entity.getCdInfwSeCd()); hasAny = true; }
         if (entity.getUseYn()      != null) { update.set(s.useYn,      entity.getUseYn());      hasAny = true; }
-        if (entity.getMdfr()       != null) { update.set(s.mdfr,       entity.getMdfr());       hasAny = true; }
-        if (entity.getMdfcnDt()    != null) { update.set(s.mdfcnDt,    entity.getMdfcnDt());    hasAny = true; }
+        if (entity.getUpdBy()      != null) { update.set(s.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getUpdDate()    != null) { update.set(s.updDate,    entity.getUpdDate());    hasAny = true; }
         if (entity.getGroupCd()    != null) { update.set(s.groupCd,    entity.getGroupCd());    hasAny = true; }
         if (entity.getStatusCd()   != null) { update.set(s.statusCd,   entity.getStatusCd());   hasAny = true; }
         if (entity.getTypeCd()     != null) { update.set(s.typeCd,     entity.getTypeCd());     hasAny = true; }

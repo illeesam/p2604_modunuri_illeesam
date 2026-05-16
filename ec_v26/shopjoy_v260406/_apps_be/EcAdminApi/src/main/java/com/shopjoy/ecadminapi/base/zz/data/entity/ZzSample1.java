@@ -1,22 +1,24 @@
-package com.shopjoy.ecadminapi.base.sy.data.entity;
+package com.shopjoy.ecadminapi.base.zz.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "zz_sample1", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
-public class ZzSample1 {
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
+public class ZzSample1 extends BaseEntity {
 
     @Id
-    @Column(name = "sample1_id", length = 20, nullable = false)
+    @Column(name = "sample1_id", length = 21, nullable = false)
     private String sample1Id;
 
     @Column(name = "cd_grp", length = 50)
@@ -51,18 +53,6 @@ public class ZzSample1 {
 
     @Column(name = "use_yn", length = 20)
     private String useYn;
-
-    @Column(name = "rgtr", length = 20)
-    private String rgtr;
-
-    @Column(name = "reg_dt")
-    private LocalDate regDt;
-
-    @Column(name = "mdfr", length = 20)
-    private String mdfr;
-
-    @Column(name = "mdfcn_dt")
-    private LocalDate mdfcnDt;
 
     @Column(name = "group_cd", length = 200)
     private String groupCd;

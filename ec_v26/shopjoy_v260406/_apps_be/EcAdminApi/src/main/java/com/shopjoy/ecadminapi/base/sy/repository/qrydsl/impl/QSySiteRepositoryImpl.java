@@ -93,6 +93,15 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    // searchTypes 사용 예 (콤마 경계 매칭):
+    //   - 단일 조건  : searchTypes = "def_blog_title"
+    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
+    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
+    //
+    //   buildCondition 내부에서는
+    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
+    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
+    //   형태로 비교한다.
     private BooleanBuilder buildCondition(SySiteDto.Request q) {
         BooleanBuilder w = new BooleanBuilder();
         if (q == null) return w;
@@ -103,12 +112,12 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         if (StringUtils.hasText(q.getTypeCd())) w.and(s.siteTypeCd.eq(q.getTypeCd()));
 
         if (StringUtils.hasText(q.getSearchValue())) {
-            String types = q.getSearchTypes();
-            boolean all = !StringUtils.hasText(types);
+            String types = "," + (q.getSearchTypes() == null ? "" : q.getSearchTypes().trim()) + ",";
+            boolean all = !StringUtils.hasText(q.getSearchTypes());
             String pattern = "%" + q.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains("def_id"))   or.or(s.siteId.likeIgnoreCase(pattern));
-            if (all || types.contains("def_name")) or.or(s.siteNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",def_id,"))   or.or(s.siteId.likeIgnoreCase(pattern));
+            if (all || types.contains(",def_name,")) or.or(s.siteNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

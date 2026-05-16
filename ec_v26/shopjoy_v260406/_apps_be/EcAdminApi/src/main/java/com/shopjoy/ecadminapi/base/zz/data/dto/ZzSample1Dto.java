@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.dto;
+package com.shopjoy.ecadminapi.base.zz.data.dto;
 
 import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class ZzSample1Dto {
 
@@ -32,10 +33,10 @@ public class ZzSample1Dto {
         private String explnCn;
         private String cdInfwSeCd;
         private String useYn;
-        private String rgtr;
-        private LocalDate regDt;
-        private String mdfr;
-        private LocalDate mdfcnDt;
+        private String regBy;
+        private LocalDateTime regDate;
+        private String updBy;
+        private LocalDateTime updDate;
         private String groupCd;
         private String col01;
         private String col02;
@@ -51,6 +52,9 @@ public class ZzSample1Dto {
         private String divCd;
         private String kindCd;
         private String cateCds;
+        // ── 연관정보 (getById 시 채움) ──
+        private List<ZzSample2Dto.Item> sample2s;   // 하위 sample2 목록 (sample1_id)
+        private List<ZzSample3Dto.Item> sample3s;   // 하위 sample3 목록 (sample1_id)
     }
 
     @Getter @Setter @NoArgsConstructor

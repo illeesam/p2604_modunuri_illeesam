@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.sy.controller;
+package com.shopjoy.ecadminapi.base.zz.controller;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample2Dto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample2;
-import com.shopjoy.ecadminapi.base.sy.service.ZzSample2Service;
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample2Dto;
+import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample2;
+import com.shopjoy.ecadminapi.base.zz.service.ZzSample2Service;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

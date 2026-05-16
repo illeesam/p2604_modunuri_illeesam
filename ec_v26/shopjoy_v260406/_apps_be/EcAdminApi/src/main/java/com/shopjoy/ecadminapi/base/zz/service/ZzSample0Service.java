@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.sy.service;
+package com.shopjoy.ecadminapi.base.zz.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample0Dto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample0;
-import com.shopjoy.ecadminapi.base.sy.repository.ZzSample0Repository;
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample0Dto;
+import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample0;
+import com.shopjoy.ecadminapi.base.zz.repository.ZzSample0Repository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -27,7 +27,7 @@ public class ZzSample0Service {
     @PersistenceContext
     private EntityManager em;
 
-    /** getById — 조회 */
+    /** getById — 조회 (zz_sample0 은 FK 없는 독립 테이블 — 단건만 반환) */
     public ZzSample0Dto.Item getById(String id) {
         ZzSample0Dto.Item dto = zzSample0Repository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));

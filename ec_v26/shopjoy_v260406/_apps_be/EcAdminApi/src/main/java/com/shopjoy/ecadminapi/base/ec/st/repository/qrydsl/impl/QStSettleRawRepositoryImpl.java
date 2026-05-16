@@ -177,6 +177,15 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(r.payMethodCd)));
     }
 
+    // searchTypes 사용 예 (콤마 경계 매칭):
+    //   - 단일 조건  : searchTypes = "def_blog_title"
+    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
+    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
+    //
+    //   buildCondition 내부에서는
+    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
+    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
+    //   형태로 비교한다.
     private BooleanBuilder buildCondition(StSettleRawDto.Request c) {
         BooleanBuilder w = new BooleanBuilder();
         if (c == null) return w;
@@ -186,12 +195,12 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 
         // searchValue / searchTypes — def_prod_nm, def_brand_nm
         if (StringUtils.hasText(c.getSearchValue())) {
-            String types = c.getSearchTypes();
+            String types = "," + (c.getSearchTypes() == null ? "" : c.getSearchTypes().trim()) + ",";
             BooleanBuilder or = new BooleanBuilder();
-            if (!StringUtils.hasText(types) || types.contains("def_prod_nm")) {
+            if (!StringUtils.hasText(types) || types.contains(",def_prod_nm,")) {
                 or.or(r.prodNm.containsIgnoreCase(c.getSearchValue()));
             }
-            if (!StringUtils.hasText(types) || types.contains("def_brand_nm")) {
+            if (!StringUtils.hasText(types) || types.contains(",def_brand_nm,")) {
                 or.or(r.brandNm.containsIgnoreCase(c.getSearchValue()));
             }
             if (or.getValue() != null) w.and(or);

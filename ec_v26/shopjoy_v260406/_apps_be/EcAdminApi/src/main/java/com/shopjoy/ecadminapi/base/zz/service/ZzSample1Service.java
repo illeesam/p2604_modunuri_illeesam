@@ -1,8 +1,12 @@
-package com.shopjoy.ecadminapi.base.sy.service;
+package com.shopjoy.ecadminapi.base.zz.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample1;
-import com.shopjoy.ecadminapi.base.sy.repository.ZzSample1Repository;
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample1Dto;
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample2Dto;
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample3Dto;
+import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample1;
+import com.shopjoy.ecadminapi.base.zz.repository.ZzSample1Repository;
+import com.shopjoy.ecadminapi.base.zz.repository.ZzSample2Repository;
+import com.shopjoy.ecadminapi.base.zz.repository.ZzSample3Repository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -14,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -23,14 +27,27 @@ import java.util.List;
 public class ZzSample1Service {
 
     private final ZzSample1Repository zzSample1Repository;
+    private final ZzSample2Repository zzSample2Repository;
+    private final ZzSample3Repository zzSample3Repository;
 
     @PersistenceContext
     private EntityManager em;
 
-    /** getById — 조회 */
+    /** getById — 조회 (하위 sample2s / sample3s 포함, sample1_id 기준) */
     public ZzSample1Dto.Item getById(String id) {
         ZzSample1Dto.Item dto = zzSample1Repository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+
+        // 하위 sample2 목록 (sample1_id FK)
+        ZzSample2Dto.Request req2 = new ZzSample2Dto.Request();
+        req2.setSample1Id(id);
+        dto.setSample2s(zzSample2Repository.selectList(req2));
+
+        // 하위 sample3 목록 (sample1_id FK)
+        ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
+        req3.setSample1Id(id);
+        dto.setSample3s(zzSample3Repository.selectList(req3));
+
         return dto;
     }
 
@@ -61,25 +78,40 @@ public class ZzSample1Service {
         return true;
     }
 
-    /** getList — 조회 */
+    /** getList — 조회 (각 항목에 하위 sample2s / sample3s 포함) */
     public List<ZzSample1Dto.Item> getList(ZzSample1Dto.Request req) {
-        return zzSample1Repository.selectList(req);
+        List<ZzSample1Dto.Item> list = zzSample1Repository.selectList(req);
+        list.forEach(this::fillChildren);
+        return list;
     }
 
-    /** getPageData — 조회 */
+    /** getPageData — 조회 (각 항목에 하위 sample2s / sample3s 포함) */
     public ZzSample1Dto.PageResponse getPageData(ZzSample1Dto.Request req) {
         PageHelper.addPaging(req);
-        return zzSample1Repository.selectPageList(req);
+        ZzSample1Dto.PageResponse res = zzSample1Repository.selectPageList(req);
+        if (res.getPageList() != null) res.getPageList().forEach(this::fillChildren);
+        return res;
+    }
+
+    /** 하위 계층(sample2s/sample3s) 채우기 */
+    private void fillChildren(ZzSample1Dto.Item item) {
+        ZzSample2Dto.Request req2 = new ZzSample2Dto.Request();
+        req2.setSample1Id(item.getSample1Id());
+        item.setSample2s(zzSample2Repository.selectList(req2));
+
+        ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
+        req3.setSample1Id(item.getSample1Id());
+        item.setSample3s(zzSample3Repository.selectList(req3));
     }
 
     /** create — 생성 */
     @Transactional
     public ZzSample1 create(ZzSample1 body) {
         body.setSample1Id(CmUtil.generateId("zz_sample1"));
-        body.setRgtr(SecurityUtil.getAuthUser().authId());
-        body.setRegDt(LocalDate.now());
-        body.setMdfr(SecurityUtil.getAuthUser().authId());
-        body.setMdfcnDt(LocalDate.now());
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
+        body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
         ZzSample1 saved = zzSample1Repository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
@@ -90,8 +122,8 @@ public class ZzSample1Service {
     public ZzSample1 save(ZzSample1 entity) {
         if (entity.getSample1Id() == null || !zzSample1Repository.existsById(entity.getSample1Id()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSample1Id() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setMdfr(SecurityUtil.getAuthUser().authId());
-        entity.setMdfcnDt(LocalDate.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         return zzSample1Repository.save(entity);
     }
 
@@ -100,9 +132,9 @@ public class ZzSample1Service {
     public ZzSample1 update(String id, ZzSample1 body) {
         ZzSample1 entity = zzSample1Repository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
-        VoUtil.voCopyExclude(body, entity, "sample1Id^rgtr^regDt");
-        entity.setMdfr(SecurityUtil.getAuthUser().authId());
-        entity.setMdfcnDt(LocalDate.now());
+        VoUtil.voCopyExclude(body, entity, "sample1Id^regBy^regDate");
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         ZzSample1 saved = zzSample1Repository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

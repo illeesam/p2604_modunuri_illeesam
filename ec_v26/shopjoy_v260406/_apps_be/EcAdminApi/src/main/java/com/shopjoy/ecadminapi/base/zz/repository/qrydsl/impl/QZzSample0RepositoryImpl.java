@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
+package com.shopjoy.ecadminapi.base.zz.repository.qrydsl.impl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
@@ -7,10 +7,10 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample0Dto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QZzSample0;
-import com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample0;
-import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QZzSample0Repository;
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample0Dto;
+import com.shopjoy.ecadminapi.base.zz.data.entity.QZzSample0;
+import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample0;
+import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzSample0Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 

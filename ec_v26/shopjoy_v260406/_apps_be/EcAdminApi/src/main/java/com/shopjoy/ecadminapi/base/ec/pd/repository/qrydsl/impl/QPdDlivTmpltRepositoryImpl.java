@@ -100,6 +100,15 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE").and(cdDpt.codeValue.eq(t.dlivPayTypeCd)));
     }
 
+    // searchTypes 사용 예 (콤마 경계 매칭):
+    //   - 단일 조건  : searchTypes = "def_blog_title"
+    //   - 복합 조건  : searchTypes = "def_blog_title,def_blog_author"   (UI 에서 aaa,bbb 형태로 전달)
+    //   - 미지정     : searchTypes = null/"" 이면 all=true 로 전체 컬럼 OR 검색
+    //
+    //   buildCondition 내부에서는
+    //     String types = "," + searchTypes + ",";   // 예: ",def_blog_title,def_blog_author,"
+    //     types.contains(",def_blog_title,")         // 토큰 경계 정확 매칭 (부분문자열 오매칭 방지)
+    //   형태로 비교한다.
     private BooleanBuilder buildCondition(PdDlivTmpltDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
@@ -108,11 +117,11 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         if (StringUtils.hasText(s.getDlivTmpltId())) w.and(t.dlivTmpltId.eq(s.getDlivTmpltId()));
 
         if (StringUtils.hasText(s.getSearchValue())) {
-            String types = s.getSearchTypes();
-            boolean all = !StringUtils.hasText(types);
+            String types = "," + (s.getSearchTypes() == null ? "" : s.getSearchTypes().trim()) + ",";
+            boolean all = !StringUtils.hasText(s.getSearchTypes());
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains("def_dliv_tmplt_nm")) or.or(t.dlivTmpltNm.likeIgnoreCase(pattern));
+            if (all || types.contains(",def_dliv_tmplt_nm,")) or.or(t.dlivTmpltNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
 

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
+package com.shopjoy.ecadminapi.base.zz.repository.qrydsl.impl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
@@ -7,10 +7,10 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample2Dto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QZzSample2;
-import com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample2;
-import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QZzSample2Repository;
+import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample2Dto;
+import com.shopjoy.ecadminapi.base.zz.data.entity.QZzSample2;
+import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample2;
+import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzSample2Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -40,10 +40,10 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
                         s.explnCn,
                         s.cdInfwSeCd,
                         s.useYn,
-                        s.rgtr,
-                        s.regDt,
-                        s.mdfr,
-                        s.mdfcnDt,
+                        s.regBy,
+                        s.regDate,
+                        s.updBy,
+                        s.updDate,
                         s.groupCd,
                         s.col01,
                         s.col02,
@@ -58,7 +58,8 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
                         s.typeCd,
                         s.divCd,
                         s.kindCd,
-                        s.cateCds
+                        s.cateCds,
+                        s.sample1Id
                 ))
                 .from(s);
     }
@@ -119,6 +120,7 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         if (search == null) return w;
 
         if (StringUtils.hasText(search.getSample2Id())) w.and(s.sample2Id.eq(search.getSample2Id()));
+        if (StringUtils.hasText(search.getSample1Id())) w.and(s.sample1Id.eq(search.getSample1Id()));
         if (StringUtils.hasText(search.getUseYn()))     w.and(s.useYn.eq(search.getUseYn()));
         return w;
     }
@@ -132,7 +134,7 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = search == null ? null : search.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, s.regDt));
+            orders.add(new OrderSpecifier(Order.DESC, s.regDate));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -144,8 +146,8 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("sample2Id".equals(field)) {
                     orders.add(new OrderSpecifier(order, s.sample2Id));
-                } else if ("regDt".equals(field)) {
-                    orders.add(new OrderSpecifier(order, s.regDt));
+                } else if ("regDate".equals(field)) {
+                    orders.add(new OrderSpecifier(order, s.regDate));
                 }
             }
         }
@@ -170,14 +172,15 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         if (entity.getExplnCn()    != null) { update.set(s.explnCn,    entity.getExplnCn());    hasAny = true; }
         if (entity.getCdInfwSeCd() != null) { update.set(s.cdInfwSeCd, entity.getCdInfwSeCd()); hasAny = true; }
         if (entity.getUseYn()      != null) { update.set(s.useYn,      entity.getUseYn());      hasAny = true; }
-        if (entity.getMdfr()       != null) { update.set(s.mdfr,       entity.getMdfr());       hasAny = true; }
-        if (entity.getMdfcnDt()    != null) { update.set(s.mdfcnDt,    entity.getMdfcnDt());    hasAny = true; }
+        if (entity.getUpdBy()      != null) { update.set(s.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getUpdDate()    != null) { update.set(s.updDate,    entity.getUpdDate());    hasAny = true; }
         if (entity.getGroupCd()    != null) { update.set(s.groupCd,    entity.getGroupCd());    hasAny = true; }
         if (entity.getStatusCd()   != null) { update.set(s.statusCd,   entity.getStatusCd());   hasAny = true; }
         if (entity.getTypeCd()     != null) { update.set(s.typeCd,     entity.getTypeCd());     hasAny = true; }
         if (entity.getDivCd()      != null) { update.set(s.divCd,      entity.getDivCd());      hasAny = true; }
         if (entity.getKindCd()     != null) { update.set(s.kindCd,     entity.getKindCd());     hasAny = true; }
         if (entity.getCateCds()    != null) { update.set(s.cateCds,    entity.getCateCds());    hasAny = true; }
+        if (entity.getSample1Id()  != null) { update.set(s.sample1Id,  entity.getSample1Id());  hasAny = true; }
 
         if (!hasAny) return 0;
 

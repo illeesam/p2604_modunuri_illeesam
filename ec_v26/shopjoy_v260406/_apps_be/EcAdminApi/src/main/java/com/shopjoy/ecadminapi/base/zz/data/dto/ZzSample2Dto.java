@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.dto;
+package com.shopjoy.ecadminapi.base.zz.data.dto;
 
 import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
@@ -8,13 +8,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class ZzSample2Dto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
         @Size(max = 21) private String sample2Id;
+        @Size(max = 21) private String sample1Id;   // 상위 FK 필터
         @Size(max = 1) private String useYn;
     }
 
@@ -32,10 +34,10 @@ public class ZzSample2Dto {
         private String explnCn;
         private String cdInfwSeCd;
         private String useYn;
-        private String rgtr;
-        private LocalDate regDt;
-        private String mdfr;
-        private LocalDate mdfcnDt;
+        private String regBy;
+        private LocalDateTime regDate;
+        private String updBy;
+        private LocalDateTime updDate;
         private String groupCd;
         private String col01;
         private String col02;
@@ -51,6 +53,10 @@ public class ZzSample2Dto {
         private String divCd;
         private String kindCd;
         private String cateCds;
+        private String sample1Id;            // 상위 FK
+        // ── 연관정보 (getById 시 채움) ──
+        private ZzSample1Dto.Item       sample1;    // 상위 sample1 단건 (sample1_id)
+        private List<ZzSample3Dto.Item> sample3s;   // 하위 sample3 목록 (sample2_id)
     }
 
     @Getter @Setter @NoArgsConstructor
