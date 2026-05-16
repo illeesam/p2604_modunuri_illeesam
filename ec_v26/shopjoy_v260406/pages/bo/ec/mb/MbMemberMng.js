@@ -240,7 +240,7 @@ window.MbMemberMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">이름/이메일/ID</label>
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',    label: '이름' },

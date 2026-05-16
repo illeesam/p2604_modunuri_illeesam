@@ -280,7 +280,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
       <div style="margin-bottom:12px;">
         <div style="font-size:12px;color:#888;margin-bottom:6px;">💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.</div>
-        <tui-html-editor v-model="form.bannerImage" height="320px" />
+        <base-html-editor v-model="form.bannerImage" height="320px" />
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">💾 저장</button>
@@ -402,13 +402,13 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       </div>
 
       <template v-if="activeContentTab===1">
-        <tui-html-editor v-model="form.content1" height="420px" />
+        <base-html-editor v-model="form.content1" height="420px" />
       </template>
       <template v-if="activeContentTab===2">
-        <tui-html-editor v-model="form.content2" height="420px" />
+        <base-html-editor v-model="form.content2" height="420px" />
       </template>
       <template v-if="activeContentTab===3">
-        <tui-html-editor v-model="form.content3" height="420px" />
+        <base-html-editor v-model="form.content3" height="420px" />
       </template>
 
       <div class="form-actions" v-if="!cfDtlMode" style="margin-top:12px;">

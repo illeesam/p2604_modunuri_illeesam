@@ -188,7 +188,7 @@ window.PmCacheMng = {
   <div class="page-title">캐쉬관리</div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_member_nm', label: '회원명' },

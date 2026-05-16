@@ -1,23 +1,34 @@
 /**
  * BoComp.js — 관리자 공통 UI 컴포넌트
  *
- * PathTree           — bizCd 기반 경로 트리 컨테이너 (API 조회 + 상태 관리 자급자족)
- *                      bizCd별 캐시 관리, 전체펼치기/닫기 슬롯 포함
- *                      emit: select(pathId)
- *                      사용: <path-tree biz-cd="sy_brand" :show-biz-cd="true" @select="fn" />
+ * ※ BoComp.js 컴포넌트는 모두 'Bo' prefix / 'bo-' 태그를 사용한다.
  *
- * PathTreeNode       — sy_path 트리 재귀 노드 (PathTree 내부 + 직접 사용 가능)
- *                      showBizCd prop으로 #bizCd 표시 제어
+ * BoPathTree           — bizCd 기반 경로 트리 컨테이너 (API 조회 + 상태 관리 자급자족)
+ *                        bizCd별 캐시 관리, 전체펼치기/닫기 슬롯 포함
+ *                        emit: select(pathId)
+ *                        사용: <bo-path-tree biz-cd="sy_brand" :show-biz-cd="true" @select="fn" />
  *
- * PathParentSelector — 부모경로 선택 모달용 재귀 노드
+ * BoPathTreeNode       — sy_path 트리 재귀 노드 (BoPathTree 내부 + 직접 사용 가능)
+ *                        showBizCd prop으로 #bizCd 표시 제어
  *
- * MultiCheckSelect   — 다중 선택 드롭다운 (체크박스 + ',' 구분 String v-model)
- *                      v-model 은 토큰 콤마결합 문자열 (예: "def_id,def_name")
- *                      options: [{value, label}, ...] 또는 [{codeValue, codeLabel}, ...]
- *                      사용: <multi-check-select v-model="searchType" :options="opts" placeholder="전체" />
+ * BoPathParentSelector — 부모경로 선택 모달용 재귀 노드
+ *
+ * BoCategoryTree       — 카테고리 트리 패널 & 피커 모달 (mode="tree" | "picker")
+ *
+ * BoPager              — 관리자 공통 페이지네이션
+ *
+ * BoMultiCheckSelect   — 다중 선택 드롭다운 (체크박스 + ',' 구분 String v-model)
+ *                        v-model 은 토큰 콤마결합 문자열 (예: "def_id,def_name")
+ *                        options: [{value, label}, ...] 또는 [{codeValue, codeLabel}, ...]
+ *                        사용: <bo-multi-check-select v-model="searchType" :options="opts" placeholder="전체" />
+ *
+ * BoDateTimePicker     — 일자 + 시분 선택 공통 컴포넌트 (date input + time input + 현재 버튼)
+ *                        v-model 은 단일 datetime 문자열 'YYYY-MM-DDTHH:mm' (기존 datetime-local 호환)
+ *                        사용: <bo-date-time-picker v-model="form.sendDate" />
+ *                              <bo-date-time-picker v-model="form.saleStartDate" :readonly="ro" placeholder-date="즉시" />
  */
 
-/* ── PathTree 컨테이너 ────────────────────────────────────────────────────
+/* ── BoPathTree 컨테이너 ──────────────────────────────────────────────────
  * props:
  *   bizCd      — string  필수. 조회할 업무코드 (예: 'sy_brand')
  *   selected   — pathId  현재 선택값 (v-model 없이 단방향)
@@ -26,8 +37,8 @@
  * emits:
  *   select(pathId)  노드 클릭 시 (null = 전체)
  * ──────────────────────────────────────────────────────────────────────── */
-window.PathTree = {
-  name: 'PathTree',
+window.BoPathTree = {
+  name: 'BoPathTree',
   props: {
     bizCd:       { type: String,  required: true },
     selected:    { default: null },
@@ -134,19 +145,19 @@ window.PathTree = {
     <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
   </div>
   <div v-if="loading" style="font-size:11px;color:#aaa;padding:8px;text-align:center;">로딩중...</div>
-  <path-tree-node v-else
+  <bo-path-tree-node v-else
     :node="tree" :expanded="expanded" :selected="selected"
     :on-toggle="toggleNode" :on-select="selectNode"
     :depth="0" :show-biz-cd="showBizCd" />
 </div>`,
 };
 
-/* ── PathTreeNode 재귀 노드 ────────────────────────────────────────────────
- * PathTree 내부용이지만 직접 사용도 가능 (기존 호환 유지)
+/* ── BoPathTreeNode 재귀 노드 ──────────────────────────────────────────────
+ * BoPathTree 내부용이지만 직접 사용도 가능 (기존 호환 유지)
  * props: node, expanded, selected, onToggle, onSelect, depth, showBizCd
  * ──────────────────────────────────────────────────────────────────────── */
-window.PathTreeNode = {
-  name: 'PathTreeNode',
+window.BoPathTreeNode = {
+  name: 'BoPathTreeNode',
   props: {
     node:      { type: Object,   required: true },
     expanded:  { type: Object,   required: true },
@@ -186,14 +197,14 @@ window.PathTreeNode = {
     <span v-if="node.count != null" style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:8px;flex-shrink:0;">{{ node.count }}</span>
   </div>
   <div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
-    <path-tree-node v-for="ch in node.children" :key="ch.pathId"
+    <bo-path-tree-node v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" :show-biz-cd="showBizCd" />
   </div>
 </div>`,
 };
 
-/* ── CategoryTree — 카테고리 트리 패널 & 피커 모달 ──────────────────────────
+/* ── BoCategoryTree — 카테고리 트리 패널 & 피커 모달 ────────────────────────
  * mode="tree"   — 좌측 패널 트리 (PdCategoryMng, PdCategoryProdMng)
  *   props: selected(categoryId), onSelect(id), showCount(fn)
  *   emits: select(categoryId | null)
@@ -205,8 +216,8 @@ window.PathTreeNode = {
  * 공통: API에서 카테고리 목록을 자체 조회 (boApiSvc.pdCategory.getPage)
  *       전체펼치기/닫기, 검색(picker), depth 색상/기호 내장
  * ──────────────────────────────────────────────────────────────────────── */
-window.CategoryTree = {
-  name: 'CategoryTree',
+window.BoCategoryTree = {
+  name: 'BoCategoryTree',
   props: {
     mode:       { type: String,   default: 'tree' },   // 'tree' | 'picker'
     selected:   { default: null },                      // tree mode: 선택된 categoryId
@@ -457,9 +468,9 @@ window.BoPager = {
 </div>`,
 };
 
-/* ── PathParentSelector 재귀 노드 ──────────────────────────────────────── */
-window.PathParentSelector = {
-  name: 'PathParentSelector',
+/* ── BoPathParentSelector 재귀 노드 ────────────────────────────────────── */
+window.BoPathParentSelector = {
+  name: 'BoPathParentSelector',
   props: ['node', 'expanded', 'onToggle', 'onSelect', 'depth'],
   template: /* html */`
 <div>
@@ -474,13 +485,13 @@ window.PathParentSelector = {
     <span style="flex:1;font-size:13px;">{{ node.pathLabel || '(이름없음)' }}</span>
   </div>
   <div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
-    <path-parent-selector v-for="ch in node.children" :key="ch.pathId"
+    <bo-path-parent-selector v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>
 </div>`,
 };
 
-/* ── MultiCheckSelect ────────────────────────────────────────────────────
+/* ── BoMultiCheckSelect ──────────────────────────────────────────────────
  * 다중 선택 드롭다운 (체크박스). v-model 은 콤마(,) 결합 문자열.
  *
  * props:
@@ -502,8 +513,8 @@ window.PathParentSelector = {
  *   - 1~2개 → "라벨1, 라벨2"
  *   - 3개 이상 → "라벨1 외 N개"
  * ──────────────────────────────────────────────────────────────────────── */
-window.MultiCheckSelect = {
-  name: 'MultiCheckSelect',
+window.BoMultiCheckSelect = {
+  name: 'BoMultiCheckSelect',
   props: {
     modelValue:  { type: String,  default: '' },
     options:     { type: Array,   required: true },
@@ -599,5 +610,123 @@ window.MultiCheckSelect = {
       <span>{{ o.label }}</span>
     </label>
   </div>
+</div>`,
+};
+
+/* ── BoDateTimePicker — 일자 + 시분 선택 공통 컴포넌트 ─────────────────────
+ * 일자(type=date) 와 시분(type=time) input 을 한 쌍으로 묶는다.
+ * 두 가지 바인딩 모드를 지원한다.
+ *
+ *  ① 단일 모드 (권장 / 기본) — 외부로 단일 datetime 문자열 노출
+ *     <bo-date-time-picker v-model="form.sendDate" />
+ *     v-model 값: 'YYYY-MM-DDTHH:mm' (기존 input type="datetime-local" 호환)
+ *
+ *  ② 분리 모드 — 날짜 필드와 시분 필드가 이미 분리된 기존 화면용
+ *     <bo-date-time-picker v-model:date="row.startDate" v-model:time="row.startTime" />
+ *     date='YYYY-MM-DD', time='HH:mm' 두 값을 각각 양방향 바인딩
+ *     (date / time prop 중 하나라도 바인딩되면 분리 모드로 동작)
+ *
+ * props:
+ *   modelValue  — string. ① 단일 모드 'YYYY-MM-DDTHH:mm' (빈값=미설정)
+ *   date        — string. ② 분리 모드 날짜 'YYYY-MM-DD'
+ *   time        — string. ② 분리 모드 시분 'HH:mm'
+ *   splitMode   — boolean. true 로 분리 모드 강제 (기본: date/time prop 사용 시 자동)
+ *   readonly    — boolean. 읽기전용 (input disabled, 현재/지움 버튼 숨김)
+ *   showNow     — boolean. '현재' 버튼 노출 (기본 true)
+ *   showClear   — boolean. '지움' 버튼 노출 (기본 true)
+ *   defaultTime — string.  날짜만 선택했을 때 채울 기본 시각 (기본 '00:00')
+ *   placeholderDate — string. 값 없을 때 우측 안내문구 (예: '즉시', '무기한')
+ *   dateWidth   — string.  날짜 input 너비 (기본 '150px')
+ *   timeWidth   — string.  시분 input 너비 (기본 '110px')
+ *   inputClass  — string.  input 에 적용할 클래스 (기본 'form-control')
+ *
+ * emits:
+ *   update:modelValue(str)  ① 'YYYY-MM-DDTHH:mm' (둘 다 비면 '')
+ *   update:date(str)        ② 'YYYY-MM-DD' (비면 '')
+ *   update:time(str)        ② 'HH:mm' (비면 '')
+ * ──────────────────────────────────────────────────────────────────────── */
+window.BoDateTimePicker = {
+  name: 'BoDateTimePicker',
+  props: {
+    modelValue:      { type: String,  default: '' },
+    date:            { type: String,  default: null },
+    time:            { type: String,  default: null },
+    splitMode:       { type: Boolean, default: false },
+    readonly:        { type: Boolean, default: false },
+    showNow:         { type: Boolean, default: true },
+    showClear:       { type: Boolean, default: true },
+    defaultTime:     { type: String,  default: '00:00' },
+    placeholderDate: { type: String,  default: '' },
+    dateWidth:       { type: String,  default: '150px' },
+    timeWidth:       { type: String,  default: '110px' },
+    inputClass:      { type: String,  default: 'form-control' },
+  },
+  emits: ['update:modelValue', 'update:date', 'update:time'],
+  setup(props, { emit }) {
+    const { computed } = Vue;
+
+    /* 분리 모드 여부 — date/time prop 이 바인딩됐거나 splitMode 강제 시 */
+    const cfSplit = computed(() => props.splitMode || props.date != null || props.time != null);
+
+    /* 화면 표시용 날짜/시분 — 모드별 소스 분기 */
+    const cfParts = computed(() => {
+      if (cfSplit.value) {
+        return { date: (props.date || '').trim(), time: (props.time || '').trim().slice(0, 5) };
+      }
+      const raw = (props.modelValue || '').toString().trim();
+      if (!raw) return { date: '', time: '' };
+      const sep = raw.includes('T') ? 'T' : ' ';
+      const [d = '', t = ''] = raw.split(sep);
+      return { date: d.trim(), time: (t || '').trim().slice(0, 5) };
+    });
+
+    /* 날짜/시분 확정값 emit — 모드별 분기 */
+    const emitParts = (date, time) => {
+      if (cfSplit.value) {
+        emit('update:date', date || '');
+        emit('update:time', time || '');
+        return;
+      }
+      if (!date && !time) { emit('update:modelValue', ''); return; }
+      const d = date || new Date().toISOString().slice(0, 10);
+      const t = time || props.defaultTime || '00:00';
+      emit('update:modelValue', d + 'T' + t);
+    };
+
+    /* onDateChange */
+    const onDateChange = (e) => emitParts(e.target.value, cfParts.value.time);
+
+    /* onTimeChange */
+    const onTimeChange = (e) => emitParts(cfParts.value.date, e.target.value);
+
+    /* onNow — 현재 일시로 채움 */
+    const onNow = () => {
+      const now = new Date();
+      emitParts(now.toISOString().slice(0, 10), now.toTimeString().slice(0, 5));
+    };
+
+    /* onClear */
+    const onClear = () => emitParts('', '');
+
+    /* inputClass 가 비면 최소 테두리 스타일을 인라인으로 보강 */
+    const cfBaseStyle = computed(() =>
+      props.inputClass ? '' : 'font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;');
+
+    return { cfParts, cfBaseStyle, onDateChange, onTimeChange, onNow, onClear };
+  },
+  template: /* html */`
+<div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;">
+  <input type="date" :class="inputClass" :value="cfParts.date"
+         :disabled="readonly" @change="onDateChange"
+         :style="cfBaseStyle+'width:'+dateWidth+';margin:0;flex-shrink:0;'" />
+  <input type="time" :class="inputClass" :value="cfParts.time"
+         :disabled="readonly" @change="onTimeChange"
+         :style="cfBaseStyle+'width:'+timeWidth+';margin:0;flex-shrink:0;'" />
+  <span v-if="placeholderDate && !cfParts.date && !cfParts.time"
+        style="font-size:11px;color:#aaa;white-space:nowrap;">{{ placeholderDate }}</span>
+  <button v-if="showNow && !readonly" type="button" @click="onNow"
+          style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">🕐 현재</button>
+  <button v-if="showClear && !readonly && (cfParts.date || cfParts.time)" type="button" @click="onClear"
+          style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">✕ 지움</button>
 </div>`,
 };

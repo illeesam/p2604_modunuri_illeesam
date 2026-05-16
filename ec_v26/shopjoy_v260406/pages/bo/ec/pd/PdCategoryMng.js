@@ -436,7 +436,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
         <div v-if="uiState.selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectNode(null)">전체보기</div>
       </div>
-      <category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" @select="selectNode" />
+      <bo-category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" @select="selectNode" />
     </div>
 
     <!-- -- 우측: 카테고리 그리드 ------------------------------------------------- -->

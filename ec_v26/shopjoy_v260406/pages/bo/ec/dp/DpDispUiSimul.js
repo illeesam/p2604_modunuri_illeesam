@@ -127,14 +127,13 @@ window.DpDispUiSimul = {
       const d = searchParam.previewDate;
       if (!d) return true;
       const t  = searchParam.previewTime || '00:00';
-      const dt = `${d} ${t}`;
-      if (panel.dispStartDate) {
-        const ps = `${panel.dispStartDate} ${panel.dispStartTime || '00:00'}`;
-        if (dt < ps) return false;
+      const dt = `${d}T${t}`;
+      const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
+      if (panel.dispStartDt) {
+        if (dt < _norm(panel.dispStartDt)) return false;
       }
-      if (panel.dispEndDate) {
-        const pe = `${panel.dispEndDate} ${panel.dispEndTime || '23:59'}`;
-        if (dt > pe) return false;
+      if (panel.dispEndDt) {
+        if (dt > _norm(panel.dispEndDt)) return false;
       }
       return true;
     };
@@ -388,8 +387,8 @@ window.DpDispUiSimul = {
             const rows = p.rows || [];
             lines.push({ type:'blank' });
             /* ── 패널 메타 주석 ── */
-            const _period = (p.dispStartDate || p.dispEndDate)
-              ? `${p.dispStartDate || '∞'}${p.dispStartTime ? ' '+p.dispStartTime : ''} ~ ${p.dispEndDate || '∞'}${p.dispEndTime ? ' '+p.dispEndTime : ''}`
+            const _period = (p.dispStartDt || p.dispEndDt)
+              ? `${p.dispStartDt || '∞'} ~ ${p.dispEndDt || '∞'}`
               : '기간없음';
             const _panelLayout = p.layoutType === 'dashboard'
               ? 'dashboard'
@@ -413,10 +412,8 @@ window.DpDispUiSimul = {
               A('condition',     p.condition || '항상 표시',             true),
               A('authRequired',  p.authRequired  || '~', !!p.authRequired),
               A('authGrade',     p.authGrade     || '~', !!p.authGrade),
-              A('dispStartDate', p.dispStartDate || '~', !!p.dispStartDate),
-              A('dispStartTime', p.dispStartTime || '~', !!p.dispStartTime),
-              A('dispEndDate',   p.dispEndDate   || '~', !!p.dispEndDate),
-              A('dispEndTime',   p.dispEndTime   || '~', !!p.dispEndTime),
+              A('dispStartDt',   p.dispStartDt   || '~', !!p.dispStartDt),
+              A('dispEndDt',     p.dispEndDt     || '~', !!p.dispEndDt),
               A('sortOrder',     p.sortOrder != null ? p.sortOrder : '~', p.sortOrder != null),
             ]});
             if (rows.length === 0) {
@@ -959,9 +956,8 @@ window.DpDispUiSimul = {
       <!-- ── 전시일시 ─────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
-        <input type="date" v-model="searchParam.previewDate" class="form-control" style="width:148px;margin:0;font-size:13px;" />
-        <input type="time" v-model="searchParam.previewTime" class="form-control" style="width:145px;margin:0;font-size:13px;" />
-        <button @click="resetDate" style="font-size:11px;padding:4px 10px;border:1px solid #d0d0d0;border-radius:10px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;">🕐 현재</button>
+        <bo-date-time-picker v-model:date="searchParam.previewDate" v-model:time="searchParam.previewTime"
+          :show-clear="false" date-width="148px" time-width="145px" />
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;"></div>
 
@@ -1120,10 +1116,8 @@ window.DpDispUiSimul = {
       <!-- ── ② 조건 행 1: 전시일시 · 상태 · 노출조건 · 인증필요 · 등급제한 ─────────────────── -->
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #ece8f8;">
         <span class="search-label" style="font-size:11px;">전시일시</span>
-        <input type="date" v-model="dispUiForm.date"
-          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;width:130px;" />
-        <input type="time" v-model="dispUiForm.time"
-          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;width:90px;" />
+        <bo-date-time-picker v-model:date="dispUiForm.date" v-model:time="dispUiForm.time"
+          :show-now="false" :show-clear="false" input-class="" date-width="130px" time-width="90px" />
         <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
         <span class="search-label" style="font-size:11px;">상태</span>
         <select v-model="dispUiForm.status"

@@ -384,7 +384,7 @@ window.OdOrderMng = {
   <div class="page-title">주문관리</div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select v-model="searchParam.searchType" :options="[
+      <bo-multi-check-select v-model="searchParam.searchType" :options="[
           { value: 'def_order_id',    label: '주문ID' },
           { value: 'def_member_nm',   label: '회원명' },
           { value: 'def_login_id',    label: '로그인ID' },
@@ -612,7 +612,7 @@ window.OdOrderMng = {
         <div style="display:flex;gap:8px;margin-top:12px;">
           <div style="position:relative;flex:1;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;">🔍</span>
-            <multi-check-select
+            <bo-multi-check-select
               v-model="memberPick.searchType"
               :options="[
                 { value: 'def_nm',      label: '이름' },

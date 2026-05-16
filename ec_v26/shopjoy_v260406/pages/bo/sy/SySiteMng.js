@@ -218,7 +218,7 @@ const detailModal = reactive({
 <div>
   <div class="page-title">사이트관리</div>  <div class="card">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_code',   label: '사이트코드' },
@@ -256,7 +256,7 @@ const detailModal = reactive({
         <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree biz-cd="sy_site" :selected="uiState.selectedPath" @select="selectNode" />
+        <bo-path-tree biz-cd="sy_site" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
     <div>

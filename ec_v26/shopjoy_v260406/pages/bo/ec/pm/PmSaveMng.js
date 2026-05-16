@@ -189,7 +189,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   <div class="page-title">마일리지관리</div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm', label: '마일리지명' },

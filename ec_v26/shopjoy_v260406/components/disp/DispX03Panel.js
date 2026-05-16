@@ -26,10 +26,8 @@ window.DispX03Panel = {
       // ✓ 필터링 관련 정보 병합 (패널-아이템 레벨)
       dispYn:       w.dispYn !== undefined ? w.dispYn : 'Y',  // widget item의 dispYn 우선
       useYn:        w.useYn !== undefined ? w.useYn : 'Y',    // widget 마스터의 useYn 우선
-      dispStartDate: w.dispStartDate || '',
-      dispStartTime: w.dispStartTime || '',
-      dispEndDate:   w.dispEndDate || '',
-      dispEndTime:   w.dispEndTime || '',
+      dispStartDt:   w.dispStartDt || '',
+      dispEndDt:     w.dispEndDt || '',
       useStartDate:  w.useStartDate || '',
       useEndDate:    w.useEndDate || '',
       dispEnv:       w.dispEnv || '^PROD^',

@@ -69,9 +69,10 @@ window.DispX01Ui = {
       // ✓ 전시기간 체크 (UI-Area 매핑)
       if (pm.date) {
         const t  = pm.time || '00:00';
-        const dt = `${pm.date} ${t}`;
-        if (p.dispStartDate && dt < `${p.dispStartDate} ${p.dispStartTime || '00:00'}`) return false;
-        if (p.dispEndDate   && dt > `${p.dispEndDate}   ${p.dispEndTime   || '23:59'}`) return false;
+        const dt = `${pm.date}T${t}`;
+        const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
+        if (p.dispStartDt && dt < _norm(p.dispStartDt)) return false;
+        if (p.dispEndDt   && dt > _norm(p.dispEndDt))   return false;
       }
       // ✓ 전시환경 체크 (UI-Area 매핑)
       if (p.dispEnv && pm.dispEnv && !p.dispEnv.includes('^' + pm.dispEnv + '^')) return false;
@@ -191,8 +192,8 @@ window.DispX01Ui = {
         } else {
           panels.forEach(p => {
             lines.push({ type:'blank' });
-            const _period = (p.dispStartDate || p.dispEndDate)
-              ? `${p.dispStartDate||'∞'}${p.dispStartTime?' '+p.dispStartTime:''} ~ ${p.dispEndDate||'∞'}${p.dispEndTime?' '+p.dispEndTime:''}`
+            const _period = (p.dispStartDt || p.dispEndDt)
+              ? `${p.dispStartDt||'∞'} ~ ${p.dispEndDt||'∞'}`
               : '기간없음';
             const _pLayout = p.layoutType === 'dashboard' ? 'dashboard' : `${p.layoutType||'grid'}:${p.gridCols||1}`;
             const _pTitleYn = p.titleYn === 'Y' ? (p.title || '(제목없음)') : '미표시';
@@ -499,7 +500,7 @@ window.DispX01Ui = {
                   표시형식:{{ p.layoutType||'grid' }}:{{ p.gridCols||1 }},
                   정렬:{{ p.sortOrder != null ? p.sortOrder : '-' }},
                   타이틀:{{ p.titleYn==='Y' ? (p.title||'(제목없음)') : '미표시' }},
-                  기간: {{ (p.dispStartDate||p.dispEndDate) ? (p.dispStartDate||'∞')+' ~ '+(p.dispEndDate||'∞') : '기간없음' }}
+                  기간: {{ (p.dispStartDt||p.dispEndDt) ? (p.dispStartDt||'∞')+' ~ '+(p.dispEndDt||'∞') : '기간없음' }}
                   &nbsp;|&nbsp;상태: {{ p.status||'-' }}
                 </span>
                 <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:8px;">위젯 {{ (p.rows||[]).length }}개</span>

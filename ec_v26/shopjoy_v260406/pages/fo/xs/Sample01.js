@@ -254,7 +254,7 @@ window.XsSample01 = {
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',    label: '이름' },

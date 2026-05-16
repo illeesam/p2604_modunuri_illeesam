@@ -476,7 +476,7 @@ window.DpDispPanelMng = {
   <div class="page-title">전시패널관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 전시패널 관리</span></div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_panel_nm', label: '패널명' },
@@ -501,9 +501,8 @@ window.DpDispPanelMng = {
     <!-- -- 2행: 전시일·노출조건·인증 ---------------------------------------------- -->
     <div class="search-bar" style="margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
       <span class="search-label">전시일시</span>
-      <input type="date" v-model="searchParam.dispDate" class="date-range-input" style="width:145px;" />
-      <input type="time" v-model="searchParam.dispTime" class="date-range-input" style="width:145px;" />
-      <button @click="setDispNow" style="font-size:11px;padding:3px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;">🕐 현재</button>
+      <bo-date-time-picker v-model:date="searchParam.dispDate" v-model:time="searchParam.dispTime"
+        :show-clear="false" input-class="date-range-input" date-width="145px" time-width="145px" />
       <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
       <span class="search-label">공개대상</span>
       <select v-model="searchParam.visibility" style="min-width:100px;">
@@ -526,7 +525,7 @@ window.DpDispPanelMng = {
       <span v-if="uiState.selectedPath != null" @click="selectPathNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
     </div>
     <div style="max-height:55vh;overflow:auto;">
-      <path-tree biz-cd="ec_disp_panel" :selected="uiState.selectedPath" @select="selectPathNode" />
+      <bo-path-tree biz-cd="ec_disp_panel" :selected="uiState.selectedPath" @select="selectPathNode" />
     </div>
   </div>
 
@@ -612,8 +611,8 @@ window.DpDispPanelMng = {
                   <span v-if="d.authGrade" style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ d.authGrade }}↑</span>
                 </span>
                 <span><b style="color:#888;">전시기간:</b>
-                  <template v-if="d.dispStartDate || d.dispEndDate">
-                    {{ d.dispStartDate || '∞' }} {{ d.dispStartTime || '' }} ~ {{ d.dispEndDate || '∞' }} {{ d.dispEndTime || '' }}
+                  <template v-if="d.dispStartDt || d.dispEndDt">
+                    {{ d.dispStartDt || '∞' }} ~ {{ d.dispEndDt || '∞' }}
                   </template>
                   <span v-else style="color:#ccc;">없음</span>
                 </span>
@@ -735,12 +734,12 @@ window.DpDispPanelMng = {
           <span v-if="uiState.cardPreviewItem.authRequired && uiState.cardPreviewItem.authGrade" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:12px;padding:4px 12px;">{{ uiState.cardPreviewItem.authGrade }} 이상</span>
         </div>
         <!-- -- 전시 기간 ---------------------------------------------------- -->
-        <div v-if="uiState.cardPreviewItem.dispStartDate || uiState.cardPreviewItem.dispEndDate"
+        <div v-if="uiState.cardPreviewItem.dispStartDt || uiState.cardPreviewItem.dispEndDt"
           style="font-size:12px;color:#555;background:#f8faff;border:1px solid #e0e8f8;border-radius:8px;padding:10px 14px;margin-bottom:16px;">
           <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">📅 전시 기간</div>
-          <span>{{ uiState.cardPreviewItem.dispStartDate || '∞' }} {{ uiState.cardPreviewItem.dispStartTime || '' }}</span>
+          <span>{{ uiState.cardPreviewItem.dispStartDt || '∞' }}</span>
           <span style="color:#aaa;margin:0 8px;">~</span>
-          <span>{{ uiState.cardPreviewItem.dispEndDate || '∞' }} {{ uiState.cardPreviewItem.dispEndTime || '' }}</span>
+          <span>{{ uiState.cardPreviewItem.dispEndDt || '∞' }}</span>
         </div>
         <div v-else style="font-size:12px;color:#bbb;margin-bottom:16px;">전시 기간 미설정</div>
         <!-- -- 위젯 구성 ---------------------------------------------------- -->

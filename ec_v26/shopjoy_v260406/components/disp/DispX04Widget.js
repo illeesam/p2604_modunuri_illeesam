@@ -47,9 +47,10 @@ window.DispX04Widget = {
         // ✓ 전시기간 체크 (panel item 레벨)
         if (pm.date) {
           const t  = pm.time || '00:00';
-          const dt = `${pm.date} ${t}`;
-          if (w.dispStartDate && dt < `${w.dispStartDate} ${w.dispStartTime || '00:00'}`) return false;
-          if (w.dispEndDate   && dt > `${w.dispEndDate}   ${w.dispEndTime   || '23:59'}`) return false;
+          const dt = `${pm.date}T${t}`;
+          const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
+          if (w.dispStartDt && dt < _norm(w.dispStartDt)) return false;
+          if (w.dispEndDt   && dt > _norm(w.dispEndDt))   return false;
         }
 
         // ✓ 전시환경 체크 (panel item 레벨)
@@ -375,7 +376,7 @@ window.DispX04Widget = {
 
   <!-- ─── 바코드 / QR코드 ─── -->
   <template v-else-if="widget.widgetType==='barcode'||widget.widgetType==='qrcode'||widget.widgetType==='barcode_qrcode'">
-    <barcode-widget :widget="widget" />
+    <co-barcode-widget :widget="widget" />
   </template>
 
   <!-- ─── 동영상 플레이어 ─── -->
@@ -396,7 +397,7 @@ window.DispX04Widget = {
 
   <!-- ─── 카운트다운 타이머 ─── -->
   <template v-else-if="widget.widgetType==='countdown'">
-    <countdown-widget :widget="widget" />
+    <co-countdown-widget :widget="widget" />
   </template>
 
   <!-- ─── 결제위젯 ─── -->

@@ -213,7 +213,7 @@ window.DpDispWidgetLibMng = {
   <div class="page-title">위젯라이브러리관리</div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '이름' },
@@ -247,7 +247,7 @@ window.DpDispWidgetLibMng = {
         <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree biz-cd="ec_disp_widget_lib" :selected="uiState.selectedPath" @select="selectNode" />
+        <bo-path-tree biz-cd="ec_disp_widget_lib" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
     <div>

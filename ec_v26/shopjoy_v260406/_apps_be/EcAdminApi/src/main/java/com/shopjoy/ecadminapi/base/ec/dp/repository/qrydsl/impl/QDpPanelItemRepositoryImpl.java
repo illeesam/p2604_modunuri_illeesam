@@ -68,7 +68,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
                 i.panelItemId, i.panelId, i.widgetLibId, i.widgetTypeCd,
                 i.widgetTitle, i.widgetContent, i.titleShowYn, i.widgetLibRefYn,
                 i.contentTypeCd, i.sortOrd, i.widgetConfigJson,
-                i.visibilityTargets, i.dispYn, i.dispStartDate, i.dispStartTime, i.dispEndDate, i.dispEndTime,
+                i.visibilityTargets, i.dispYn, i.dispStartDt, i.dispEndDt,
                 i.dispEnv, i.useYn,
                 i.regBy, i.regDate, i.updBy, i.updDate
         )).from(i);
@@ -157,10 +157,8 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         if (entity.getWidgetConfigJson()  != null) { update.set(i.widgetConfigJson,  entity.getWidgetConfigJson());  hasAny = true; }
         if (entity.getVisibilityTargets() != null) { update.set(i.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
         if (entity.getDispYn()            != null) { update.set(i.dispYn,            entity.getDispYn());            hasAny = true; }
-        if (entity.getDispStartDate()     != null) { update.set(i.dispStartDate,     entity.getDispStartDate());     hasAny = true; }
-        if (entity.getDispStartTime()     != null) { update.set(i.dispStartTime,     entity.getDispStartTime());     hasAny = true; }
-        if (entity.getDispEndDate()       != null) { update.set(i.dispEndDate,       entity.getDispEndDate());       hasAny = true; }
-        if (entity.getDispEndTime()       != null) { update.set(i.dispEndTime,       entity.getDispEndTime());       hasAny = true; }
+        if (entity.getDispStartDt()       != null) { update.set(i.dispStartDt,       entity.getDispStartDt());       hasAny = true; }
+        if (entity.getDispEndDt()         != null) { update.set(i.dispEndDt,         entity.getDispEndDt());         hasAny = true; }
         if (entity.getDispEnv()           != null) { update.set(i.dispEnv,           entity.getDispEnv());           hasAny = true; }
         if (entity.getUseYn()             != null) { update.set(i.useYn,             entity.getUseYn());             hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(i.updBy,             entity.getUpdBy());             hasAny = true; }

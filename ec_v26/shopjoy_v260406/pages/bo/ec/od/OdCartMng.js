@@ -237,7 +237,7 @@ window.OdCartMng = {
       </div>
 
       <label class="search-label">검색</label>
-      <multi-check-select v-model="search.searchType" :options="[
+      <bo-multi-check-select v-model="search.searchType" :options="[
           { value: 'def_member_nm', label: '회원명' },
           { value: 'def_member_id', label: '회원ID' },
           { value: 'def_prod_id',   label: '상품ID' },
@@ -384,7 +384,7 @@ window.OdCartMng = {
         <!-- 검색바 -->
         <div style="display:flex;gap:8px;margin-top:12px;">
           <div style="position:relative;flex:1;">
-            <multi-check-select
+            <bo-multi-check-select
               v-model="memberPick.searchType"
               :options="[
                 { value: 'def_nm',      label: '이름' },

@@ -217,7 +217,7 @@ window.SyUserLoginHist = {
         <option v-for="c in codes.login_results" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.searchIp" placeholder="IP 주소" style="width:140px" @keyup.enter="onSearch" />
-      <multi-check-select
+      <bo-multi-check-select
         v-model="uiState.searchType"
         :options="[
           { value: 'def_userId',  label: '사용자ID' },

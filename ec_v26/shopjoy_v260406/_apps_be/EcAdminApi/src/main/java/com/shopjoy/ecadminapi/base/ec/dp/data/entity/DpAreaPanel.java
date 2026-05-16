@@ -7,8 +7,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
@@ -45,21 +44,13 @@ public class DpAreaPanel extends BaseEntity {
     @Column(name = "disp_yn", length = 1)
     private String dispYn;
 
-    @Comment("전시시작일")
-    @Column(name = "disp_start_date")
-    private LocalDate dispStartDate;
+    @Comment("전시시작일시")
+    @Column(name = "disp_start_dt")
+    private LocalDateTime dispStartDt;
 
-    @Comment("전시시작시간")
-    @Column(name = "disp_start_time")
-    private LocalTime dispStartTime;
-
-    @Comment("전시종료일")
-    @Column(name = "disp_end_date")
-    private LocalDate dispEndDate;
-
-    @Comment("전시종료시간")
-    @Column(name = "disp_end_time")
-    private LocalTime dispEndTime;
+    @Comment("전시종료일시")
+    @Column(name = "disp_end_dt")
+    private LocalDateTime dispEndDt;
 
     @Comment("전시 환경 (^PROD^DEV^TEST^ 형식)")
     @Column(name = "disp_env", length = 50)

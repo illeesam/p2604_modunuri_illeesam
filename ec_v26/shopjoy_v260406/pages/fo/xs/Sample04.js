@@ -768,7 +768,7 @@ window.XsSample04 = {
     <dept-tree-modal :bo-data="boData" @select="bShowToast($event.deptId?'선택: '+$event.deptNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='categoryTree'">
-    <category-tree-modal :bo-data="boData" @select="bShowToast($event.categoryId?'선택: '+$event.categoryNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
+    <bo-category-tree-modal :bo-data="boData" @select="bShowToast($event.categoryId?'선택: '+$event.categoryNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
   </template>
 
   <!-- -- ⑯ 전시 미리보기 ------------------------------------------------------ -->

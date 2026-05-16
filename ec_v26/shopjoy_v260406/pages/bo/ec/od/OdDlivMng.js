@@ -407,7 +407,7 @@ window.OdDlivMng = {
   <div class="page-title">배송관리</div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select v-model="searchParam.searchType" :options="[
+      <bo-multi-check-select v-model="searchParam.searchType" :options="[
           { value: 'def_dliv_id',     label: '배송ID' },
           { value: 'def_order_id',    label: '주문ID' },
           { value: 'def_tracking',    label: '운송장번호' },
@@ -621,7 +621,7 @@ window.OdDlivMng = {
         <div style="display:flex;gap:8px;margin-top:12px;">
           <div style="position:relative;flex:1;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;">🔍</span>
-            <multi-check-select
+            <bo-multi-check-select
               v-model="memberPick.searchType"
               :options="[
                 { value: 'def_nm',      label: '이름' },

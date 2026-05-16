@@ -276,7 +276,7 @@ window.SyPathMng = {
       <label class="search-label">업무코드</label>
       <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:180px" @keyup.enter="onSearch">
       <label class="search-label">라벨/비고</label>
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_pathLabel',  label: '라벨' },
@@ -312,7 +312,7 @@ window.SyPathMng = {
         <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto">
-        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
+        <bo-path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
@@ -417,7 +417,7 @@ window.SyPathMng = {
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
                @click="selectParent(null)">(루트 — 상위없음)</div>
-          <path-parent-selector :node="cfParentTree" :expanded="parentModal.expanded"
+          <bo-path-parent-selector :node="cfParentTree" :expanded="parentModal.expanded"
             :on-toggle="toggleParentNode" :on-select="selectParent" :depth="0" />
         </div>
       </div>

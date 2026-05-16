@@ -83,6 +83,7 @@
 
   <!-- ■ B3.1: Base Components & Error Handlers ■ -->
   <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/CoWidgetComp.js"></script>
   <script src="pages/base/foError404.js"></script>
 
   <!-- ■ B3.2: Display Hierarchy Components ■ -->
@@ -177,6 +178,8 @@
     app.component('DispX02Area',     window.DispX02Area);
     app.component('DispX03Panel',    window.DispX03Panel);
     app.component('DispX04Widget',   window.DispX04Widget);
+    app.component('CoBarcodeWidget',  window.CoBarcodeWidget  || { template: '<div/>' });
+    app.component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' });
     app.component('DispUiPage',      window.DispUiPage);
     ['DispUi01', 'DispUi02', 'DispUi03', 'DispUi04', 'DispUi05', 'DispUi06'].forEach(name => {
       if (window[name]) app.component(name, window[name]);

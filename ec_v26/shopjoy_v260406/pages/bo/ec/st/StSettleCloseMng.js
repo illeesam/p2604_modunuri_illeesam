@@ -202,7 +202,7 @@ window.StSettleCloseMng = {
   <!-- -- 마감 이력 ---------------------------------------------------------- -->
   <div class="card" style="margin-top:12px">
     <div class="search-bar" style="margin-bottom:12px">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchType"
         :options="[
           { value: 'def_closeMon',  label: '정산월' },

@@ -699,7 +699,7 @@
       </div>
       <div style="flex:1;overflow:auto;padding:0 4px;">
         <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
-          <multi-check-select
+          <bo-multi-check-select
             v-model="memberModal.searchType"
             :options="[
               { value: 'def_nm',    label: '이름' },

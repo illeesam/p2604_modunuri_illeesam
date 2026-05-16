@@ -399,7 +399,7 @@ window.Login = {
           <div style="display:flex;gap:6px;margin-bottom:10px;">
             <div style="position:relative;flex:1;">
               <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
-              <multi-check-select
+              <bo-multi-check-select
                 v-model="memberPick.searchType"
                 :options="[
                   { value: 'def_nm',      label: '이름' },

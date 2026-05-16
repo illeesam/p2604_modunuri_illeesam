@@ -613,7 +613,7 @@ window.SyPostman = {
           <input type="checkbox" v-model="appFilter[key]" style="display:none;" />{{ meta.label }}
         </label>
       </div>
-      <multi-check-select
+      <bo-multi-check-select
         v-model="uiState.treeSearchType"
         :options="[
           { value: 'def_nm',  label: '이름' },

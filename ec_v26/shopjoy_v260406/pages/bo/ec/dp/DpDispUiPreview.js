@@ -636,10 +636,8 @@ window.DpDispUiPreview = {
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
-        <input type="date" v-model="searchParam.previewDate" class="form-control" style="width:136px;margin:0;font-size:12px;" />
-        <input type="time" v-model="searchParam.previewTime" class="form-control" style="width:90px;margin:0;font-size:12px;" />
-        <button @click="searchParam.previewDate=today;searchParam.previewTime=new Date().toTimeString().slice(0,5)"
-          style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;">🕐 현재</button>
+        <bo-date-time-picker v-model:date="searchParam.previewDate" v-model:time="searchParam.previewTime"
+          :show-clear="false" date-width="136px" time-width="90px" />
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <div style="display:flex;align-items:center;gap:5px;">
@@ -667,7 +665,7 @@ window.DpDispUiPreview = {
           <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '이름' },

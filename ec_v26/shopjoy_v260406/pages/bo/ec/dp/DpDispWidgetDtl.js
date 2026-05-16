@@ -10,7 +10,7 @@ window.DpDispWidgetDtl = {
   },
   emits: ['close'],
   setup(props, { emit }) {
-    const { reactive, computed, ref, onMounted, onBeforeUnmount, watch, nextTick } = Vue;
+    const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
@@ -202,8 +202,6 @@ window.DpDispWidgetDtl = {
       handleInitNewForm();
     });
 
-    /* 컴포넌트 unmount 시 Toast UI Editor 인스턴스 정리 */
-    onBeforeUnmount(() => { _disposeTui(); });
 
     /* 정책: 수정 클릭 시 항상 상세 API 호출.
      * 부모 Mng 가 reloadTrigger 를 ++ 하면 (같은 id 재클릭 / 다른 id 클릭 모두 포함) form 초기화 후 새 데이터 로드 */
@@ -445,89 +443,7 @@ window.DpDispWidgetDtl = {
       authGrade: '',
     }));
 
-    /* -- Toast UI Editor (HTML 에디터 유형용) -- */
-    const tuiEditorEl = ref(null);
-    const htmlEditMode = ref('wysiwyg');
-    let tuiInst = null;
-    let tuiSyncing = false;
-
-    /* _disposeTui */
-    const _disposeTui = () => {
-      if (tuiInst) { try { tuiInst.destroy(); } catch (_) {} tuiInst = null; }
-    };
-
-    /* _initTui */
-    const _initTui = () => {
-      if (tuiInst) return;
-      const el = tuiEditorEl.value;
-      if (!el) return;
-      const Editor = (window.toastui && window.toastui.Editor) || window.Editor;
-      if (!Editor) { console.warn('[TuiEditor] not loaded'); return; }
-      tuiInst = new Editor({
-        el, height: '320px', initialEditType: 'wysiwyg',
-        previewStyle: 'vertical', hideModeSwitch: true,
-        language: 'ko-KR', usageStatistics: false,
-        initialValue: form.htmlContent || '',
-        toolbarItems: [
-          ['heading', 'bold', 'italic', 'strike'],
-          ['hr', 'quote'],
-          ['ul', 'ol', 'task'],
-          ['table', 'image', 'link'],
-          ['code', 'codeblock'],
-        ],
-        hooks: {
-          addImageBlobHook: (blob, callback) => {
-            const reader = new FileReader();
-            reader.onload = (e) => callback(e.target.result, blob.name || '이미지');
-            reader.readAsDataURL(blob);
-          },
-        },
-      });
-      tuiInst.on('change', () => {
-        if (tuiSyncing) return;
-        try { form.htmlContent = tuiInst.getHTML(); } catch (_) {}
-      });
-    };
-
-    /* _syncTuiFromForm */
-    const _syncTuiFromForm = () => {
-      if (!tuiInst) return;
-
-      /* cur */
-      const cur = (() => { try { return tuiInst.getHTML(); } catch (_) { return ''; } })();
-      const next = form.htmlContent || '';
-      if (cur === next) return;
-      tuiSyncing = true;
-      try { tuiInst.setHTML(next, false); }
-      finally { setTimeout(() => { tuiSyncing = false; }, 30); }
-    };
-
-    /* Toast UI Editor 라이프사이클 */
-    watch(cfIsHtmlEditor, async (val) => {
-      if (!val) { _disposeTui(); return; }
-      htmlEditMode.value = 'wysiwyg';
-      await nextTick();
-      for (let i = 0; i < 8 && !tuiEditorEl.value; i++) {
-        await new Promise(r => setTimeout(r, 25));
-      }
-      _initTui();
-    }, { immediate: true });
-
-    watch(tuiEditorEl, (el) => {
-      if (!el) return;
-      if (cfIsHtmlEditor.value && !tuiInst && htmlEditMode.value === 'wysiwyg') _initTui();
-    });
-
-    watch(() => form.htmlContent, () => {
-      if (cfIsHtmlEditor.value && tuiInst) _syncTuiFromForm();
-    });
-
-    watch(htmlEditMode, async (m) => {
-      if (m !== 'wysiwyg') return;
-      await nextTick();
-      if (!tuiInst) _initTui();
-      else _syncTuiFromForm();
-    });
+    /* HTML 에디터는 공통 <base-html-editor> 컴포넌트가 처리 (Toast UI Editor) */
 
     /* -- Yup 유효성 -- */
     const schema = window.yup.object({
@@ -666,7 +582,6 @@ window.DpDispWidgetDtl = {
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
       cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
-      tuiEditorEl, htmlEditMode,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
     };
   },
@@ -858,25 +773,9 @@ window.DpDispWidgetDtl = {
           </div>
         </div>
 
-        <!-- -- HTML 에디터 (Toast UI Editor + HTML 소스 토글) ----------------- -->
+        <!-- -- HTML 에디터 (공통 BaseHtmlEditor — Toast UI Editor) ----------- -->
         <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-            <div style="display:flex;gap:4px;">
-              <button type="button" @click="htmlEditMode = 'wysiwyg'"
-                :style="htmlEditMode === 'wysiwyg' ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
-                style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;transition:all .15s;">디자인</button>
-              <button type="button" @click="htmlEditMode = 'source'"
-                :style="htmlEditMode === 'source' ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
-                style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">&lt;/&gt; HTML</button>
-            </div>
-            <button type="button" @click="form.htmlContent = ''"
-              style="font-size:11px;padding:3px 10px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;">비우기</button>
-          </div>
-          <div v-show="htmlEditMode === 'wysiwyg'" ref="tuiEditorEl" style="background:#fff;border-radius:6px;"></div>
-          <textarea v-show="htmlEditMode === 'source'" v-model="form.htmlContent"
-            spellcheck="false"
-            style="width:100%;min-height:240px;padding:12px 14px;border:1px solid #d9d9d9;border-radius:6px;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;margin:0;background:#fafafa;outline:none;"
-            placeholder="&lt;section style='padding:16px;background:#f9f9f9'&gt;&#10;  &lt;h3&gt;제목&lt;/h3&gt;&#10;  &lt;p&gt;내용&lt;/p&gt;&#10;&lt;/section&gt;"></textarea>
+          <base-html-editor v-model="form.htmlContent" height="320px" />
         </div>
 
         <!-- -- 파일목록 ----------------------------------------------------- -->

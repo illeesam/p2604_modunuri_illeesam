@@ -163,7 +163,7 @@ window.SyTemplateDtl = {
         <!-- -- HTML 에디터 (메일, 시스템알림) ------------------------------------- -->
         <template v-if="cfUseHtmlEditor">
           <div v-if="cfDtlMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
-          <tui-html-editor v-else v-model="form.content" height="320px" />
+          <base-html-editor v-else v-model="form.content" height="320px" />
         </template>
         <!-- -- 텍스트 영역 --------------------------------------------------- -->
         <textarea v-else class="form-control" v-model="form.content"

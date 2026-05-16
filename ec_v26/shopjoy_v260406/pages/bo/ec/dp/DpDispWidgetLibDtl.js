@@ -10,7 +10,7 @@ window.DpDispWidgetLibDtl = {
   },
   emits: ['close'],
   setup(props, { emit }) {
-    const { reactive, computed, ref, onMounted, onBeforeUnmount, watch, nextTick } = Vue;
+    const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
@@ -196,8 +196,6 @@ window.DpDispWidgetLibDtl = {
       handleInitNewForm();
     });
 
-    /* 컴포넌트 unmount 시 Toast UI Editor 인스턴스 정리 */
-    onBeforeUnmount(() => { _disposeTui(); });
 
     /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -438,110 +436,7 @@ window.DpDispWidgetLibDtl = {
       authGrade: '',
     }));
 
-    /* -- Toast UI Editor (HTML 에디터 유형용) ------------------------------------
-     * - tuiEditorEl: ref div (WYSIWYG 마운트 위치)
-     * - htmlEditMode: 'wysiwyg' | 'source' (탭 전환)
-     * - tuiInst: Toast UI Editor 인스턴스
-     * 이미지: URL/업로드/클립보드/드래그앤드롭 모두 Base64 로 자동 변환
-     * 한국어 IME / 한글 입력 안정 지원 (NHN 제작)
-     * -------------------------------------------------------------------------- */
-    const tuiEditorEl = ref(null);
-    const htmlEditMode = ref('wysiwyg');
-    let tuiInst = null;
-    let tuiSyncing = false; /* 외부 setHTML 시 change 이벤트 무한루프 방지 */
-
-    /* _disposeTui */
-    const _disposeTui = () => {
-      if (tuiInst) { try { tuiInst.destroy(); } catch (_) {} tuiInst = null; }
-    };
-
-    /* _initTui */
-    const _initTui = async () => {
-      if (tuiInst) return;
-      const el = tuiEditorEl.value;
-      if (!el) return;
-      const Editor = (window.toastui && window.toastui.Editor) || window.Editor;
-      if (!Editor) { console.warn('[TuiEditor] not loaded'); return; }
-      tuiInst = new Editor({
-        el,
-        height: '320px',
-        initialEditType: 'wysiwyg',
-        previewStyle: 'vertical',
-        hideModeSwitch: true,
-        language: 'ko-KR',
-        usageStatistics: false,
-        initialValue: form.htmlContent || '',
-        toolbarItems: [
-          ['heading', 'bold', 'italic', 'strike'],
-          ['hr', 'quote'],
-          ['ul', 'ol', 'task'],
-          ['table', 'image', 'link'],
-          ['code', 'codeblock'],
-        ],
-        hooks: {
-          /* 이미지 업로드: Base64 인라인 (서버 업로드 없이 즉시 미리보기) */
-          addImageBlobHook: (blob, callback) => {
-            const reader = new FileReader();
-            reader.onload = (e) => callback(e.target.result, blob.name || '이미지');
-            reader.readAsDataURL(blob);
-          },
-        },
-      });
-      /* WYSIWYG 변경 → form.htmlContent 동기화 (무한루프 차단) */
-      tuiInst.on('change', () => {
-        if (tuiSyncing) return;
-        try { form.htmlContent = tuiInst.getHTML(); } catch (_) {}
-      });
-    };
-
-    /* form.htmlContent 가 외부에서 (API 재로드, 소스 모드 편집) 바뀌면 Tui 에 반영 */
-    const _syncTuiFromForm = () => {
-      if (!tuiInst) return;
-
-      /* cur */
-      const cur = (() => { try { return tuiInst.getHTML(); } catch (_) { return ''; } })();
-      const next = form.htmlContent || '';
-      if (cur === next) return;
-      tuiSyncing = true;
-      try { tuiInst.setHTML(next, false); } finally {
-        /* setHTML 직후 change 이벤트가 한 번 발생할 수 있어 macrotask 후 해제 */
-        setTimeout(() => { tuiSyncing = false; }, 30);
-      }
-    };
-
-    /* ============================================================
-     * Toast UI Editor 라이프사이클
-     * ============================================================ */
-    /* 1) cfIsHtmlEditor 가 true 가 되면 init / false 가 되면 dispose */
-    watch(cfIsHtmlEditor, async (val) => {
-      if (!val) { _disposeTui(); return; }
-      htmlEditMode.value = 'wysiwyg';
-      await nextTick();
-      /* DOM 마운트 대기 (v-if 통과 후 ref 잡힘) */
-      for (let i = 0; i < 8 && !tuiEditorEl.value; i++) {
-        await new Promise(r => setTimeout(r, 25));
-      }
-      _initTui();
-    }, { immediate: true });
-
-    /* 2) ref div 가 마운트되는 순간에도 init 시도 (cfIsHtmlEditor true 인 채로 첫 렌더) */
-    watch(tuiEditorEl, (el) => {
-      if (!el) return;
-      if (cfIsHtmlEditor.value && !tuiInst && htmlEditMode.value === 'wysiwyg') _initTui();
-    });
-
-    /* 3) form.htmlContent 외부 변경 (API 재로드, 소스 모드 편집) → Tui 동기화 */
-    watch(() => form.htmlContent, () => {
-      if (cfIsHtmlEditor.value && tuiInst) _syncTuiFromForm();
-    });
-
-    /* 4) 모드 토글 (소스 → WYSIWYG 복귀 시 Tui 가 form.htmlContent 를 다시 보여주도록) */
-    watch(htmlEditMode, async (m) => {
-      if (m !== 'wysiwyg') return;
-      await nextTick();
-      if (!tuiInst) _initTui();
-      else _syncTuiFromForm();
-    });
+    /* HTML 에디터는 공통 <base-html-editor> 컴포넌트가 처리 (Toast UI Editor) */
 
     /* -- Yup 유효성 -- */
     const schema = window.yup.object({
@@ -660,7 +555,6 @@ window.DpDispWidgetLibDtl = {
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
       cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
-      tuiEditorEl, htmlEditMode,
     };
   },
   template: /* html */`
@@ -808,27 +702,9 @@ window.DpDispWidgetLibDtl = {
           </div>
         </div>
 
-        <!-- -- HTML 에디터 (Toast UI Editor + HTML 소스 토글) ----------------- -->
+        <!-- -- HTML 에디터 (공통 BaseHtmlEditor — Toast UI Editor) ----------- -->
         <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-            <div style="display:flex;gap:4px;">
-              <button type="button" @click="htmlEditMode = 'wysiwyg'"
-                :style="htmlEditMode === 'wysiwyg' ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
-                style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;transition:all .15s;">디자인</button>
-              <button type="button" @click="htmlEditMode = 'source'"
-                :style="htmlEditMode === 'source' ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
-                style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">&lt;/&gt; HTML</button>
-            </div>
-            <button type="button" @click="form.htmlContent = ''"
-              style="font-size:11px;padding:3px 10px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;">비우기</button>
-          </div>
-          <!-- WYSIWYG: Toast UI Editor 마운트 영역 -->
-          <div v-show="htmlEditMode === 'wysiwyg'" ref="tuiEditorEl" style="background:#fff;border-radius:6px;"></div>
-          <!-- HTML 소스 -->
-          <textarea v-show="htmlEditMode === 'source'" v-model="form.htmlContent"
-            spellcheck="false"
-            style="width:100%;min-height:260px;padding:12px 14px;border:1px solid #d9d9d9;border-radius:6px;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;margin:0;background:#fafafa;outline:none;"
-            placeholder="&lt;section style='padding:16px;background:#f9f9f9'&gt;&#10;  &lt;h3&gt;제목&lt;/h3&gt;&#10;  &lt;p&gt;내용&lt;/p&gt;&#10;&lt;/section&gt;"></textarea>
+          <base-html-editor v-model="form.htmlContent" height="320px" />
         </div>
 
         <!-- -- 파일목록 ----------------------------------------------------- -->

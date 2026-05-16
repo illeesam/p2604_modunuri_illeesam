@@ -84,7 +84,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
                 .select(Projections.bean(DpUiAreaDto.Item.class,
                         a.uiAreaId, a.uiId, a.areaId, a.areaSortOrd,
                         a.visibilityTargets, a.dispEnv, a.dispYn,
-                        a.dispStartDate, a.dispStartTime, a.dispEndDate, a.dispEndTime, a.useYn,
+                        a.dispStartDt, a.dispEndDt, a.useYn,
                         a.regBy, a.regDate, a.updBy, a.updDate
                 ))
                 .from(a);
@@ -161,10 +161,8 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         if (entity.getVisibilityTargets() != null) { update.set(a.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
         if (entity.getDispEnv()           != null) { update.set(a.dispEnv,           entity.getDispEnv());           hasAny = true; }
         if (entity.getDispYn()            != null) { update.set(a.dispYn,            entity.getDispYn());            hasAny = true; }
-        if (entity.getDispStartDate()     != null) { update.set(a.dispStartDate,     entity.getDispStartDate());     hasAny = true; }
-        if (entity.getDispStartTime()     != null) { update.set(a.dispStartTime,     entity.getDispStartTime());     hasAny = true; }
-        if (entity.getDispEndDate()       != null) { update.set(a.dispEndDate,       entity.getDispEndDate());       hasAny = true; }
-        if (entity.getDispEndTime()       != null) { update.set(a.dispEndTime,       entity.getDispEndTime());       hasAny = true; }
+        if (entity.getDispStartDt()       != null) { update.set(a.dispStartDt,       entity.getDispStartDt());       hasAny = true; }
+        if (entity.getDispEndDt()         != null) { update.set(a.dispEndDt,         entity.getDispEndDt());         hasAny = true; }
         if (entity.getUseYn()             != null) { update.set(a.useYn,             entity.getUseYn());             hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(a.updBy,             entity.getUpdBy());             hasAny = true; }
         if (entity.getUpdDate()           != null) { update.set(a.updDate,           entity.getUpdDate());           hasAny = true; }

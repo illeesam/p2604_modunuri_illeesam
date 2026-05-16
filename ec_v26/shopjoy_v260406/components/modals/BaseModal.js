@@ -632,7 +632,7 @@ window.SiteSelectModal = {
       <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
         title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
     </span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <multi-check-select
+    <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
         { value: 'def_no',     label: '사이트번호' },
@@ -715,7 +715,7 @@ window.VendorSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <multi-check-select
+    <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
         { value: 'def_nm',    label: '업체명' },
@@ -1062,7 +1062,7 @@ window.MemberSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <multi-check-select
+    <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
         { value: 'def_nm',    label: '이름' },
@@ -1143,7 +1143,7 @@ window.OrderSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <multi-check-select
+    <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
         { value: 'def_orderId',  label: '주문ID' },
@@ -1230,7 +1230,7 @@ window.BbmSelectModal = {
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:560px;">
     <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <multi-check-select
+    <bo-multi-check-select
       v-model="searchParam.searchType"
       :options="[
         { value: 'def_nm',   label: '게시판명' },
@@ -2731,7 +2731,7 @@ window.RowPickModal = {
       <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchType"
         :options="[
           { value: 'def_widgetNm', label: '위젯명' },
@@ -2963,7 +2963,7 @@ window.AreaPickModal = {
       <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_areaCd', label: '영역코드' },
@@ -3205,7 +3205,7 @@ window.PanelPickModal = {
       <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_panelNm', label: '패널명' },
@@ -3428,7 +3428,7 @@ window.WidgetLibPickModal = {
 
     <!-- 검색 -->
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '이름' },
@@ -3961,7 +3961,7 @@ window.BizPickModal = {
         <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
       </div>
       <div style="display:flex;gap:6px;margin-top:12px;">
-        <multi-check-select
+        <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
             { value: 'def_bizno', label: '사업자번호' },
@@ -4072,7 +4072,7 @@ window.SimpleUserPickModal = {
         <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
       </div>
       <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
-        <multi-check-select
+        <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
             { value: 'def_nm',      label: '이름' },

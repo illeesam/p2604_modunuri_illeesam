@@ -274,7 +274,7 @@ window.SyMenuMng = {
 
   <div class="card">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_code', label: '메뉴코드' },
@@ -307,7 +307,7 @@ window.SyMenuMng = {
         <span v-if="uiState.selectedTreeId != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree biz-cd="sy_menu" :selected="uiState.selectedTreeId" @select="selectNode" />
+        <bo-path-tree biz-cd="sy_menu" :selected="uiState.selectedTreeId" @select="selectNode" />
       </div>
     </div>
     <div>

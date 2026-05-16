@@ -7,9 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 public class DpUiAreaDto {
 
@@ -28,10 +26,8 @@ public class DpUiAreaDto {
         private String visibilityTargets;
         private String dispEnv;
         private String dispYn;
-        private LocalDate dispStartDate;
-        private LocalTime dispStartTime;
-        private LocalDate dispEndDate;
-        private LocalTime dispEndTime;
+        private LocalDateTime dispStartDt;
+        private LocalDateTime dispEndDt;
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;

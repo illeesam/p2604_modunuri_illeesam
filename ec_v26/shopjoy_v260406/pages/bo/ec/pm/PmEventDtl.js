@@ -267,7 +267,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
       <div style="margin-bottom:12px;">
         <div style="font-size:12px;color:#888;margin-bottom:6px;">💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.</div>
-        <tui-html-editor v-model="form.bannerImage" height="320px" />
+        <base-html-editor v-model="form.bannerImage" height="320px" />
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
@@ -405,7 +405,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           <span style="font-size:12px;color:#888;">로그인 회원에게만 표시됩니다</span>
         </div>
         <div v-if="cfDtlMode" class="form-control" style="min-height:160px;line-height:1.6;" v-html="form['content'+n] || '<span style=color:#bbb>-</span>'"></div>
-        <tui-html-editor v-else :model-value="form['content'+n]" @update:model-value="v => form['content'+n] = v" height="220px" />
+        <base-html-editor v-else :model-value="form['content'+n]" @update:model-value="v => form['content'+n] = v" height="220px" />
       </div>
       <div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
         <template v-if="cfDtlMode">

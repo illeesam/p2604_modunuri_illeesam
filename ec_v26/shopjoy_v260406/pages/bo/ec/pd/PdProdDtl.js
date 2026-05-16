@@ -1231,7 +1231,7 @@ window.PdProdDtl = {
     </div>
 
     <!-- -- 카테고리 피커 모달 --------------------------------------------------- -->
-    <category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"
+    <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"
                    @select="addCategory" @close="catPickerOpen=false" />
 
     <!-- -- 업체 / 상품유형 ---------------------------------------------------- -->
@@ -1284,7 +1284,7 @@ window.PdProdDtl = {
           </div>
           <!-- -- 검색 ----------------------------------------------------- -->
           <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
-            <multi-check-select
+            <bo-multi-check-select
               v-model="uiState.mdSearchType"
               :options="[
                 { value: 'def_nm',   label: '이름' },
@@ -1349,11 +1349,11 @@ window.PdProdDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">판매 시작일시 <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL=즉시)</span></label>
-        <input class="form-control" type="datetime-local" v-model="form.saleStartDate" />
+        <bo-date-time-picker v-model="form.saleStartDate" placeholder-date="즉시" />
       </div>
       <div class="form-group">
         <label class="form-label">판매 종료일시 <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL=무기한)</span></label>
-        <input class="form-control" type="datetime-local" v-model="form.saleEndDate" />
+        <bo-date-time-picker v-model="form.saleEndDate" placeholder-date="무기한" />
       </div>
     </div>
 
@@ -1684,7 +1684,7 @@ window.PdProdDtl = {
 
           <!-- -- HTML 에디터 방식 (Toast UI) ------------------------------------ -->
           <div v-else-if="block.type==='html'" style="padding:12px;">
-            <tui-html-editor v-model="block.content" height="240px" />
+            <base-html-editor v-model="block.content" height="240px" />
           </div>
         </div>
       </div>
@@ -1753,11 +1753,11 @@ window.PdProdDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">노출 시작 (advrt_start_date)</label>
-        <input class="form-control" type="datetime-local" v-model="form.advrtStartDate" />
+        <bo-date-time-picker v-model="form.advrtStartDate" />
       </div>
       <div class="form-group">
         <label class="form-label">노출 종료 (advrt_end_date)</label>
-        <input class="form-control" type="datetime-local" v-model="form.advrtEndDate" />
+        <bo-date-time-picker v-model="form.advrtEndDate" />
       </div>
     </div>
 
@@ -2015,7 +2015,7 @@ window.PdProdDtl = {
           </div>
           <!-- -- 검색 ----------------------------------------------------- -->
           <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
-            <multi-check-select
+            <bo-multi-check-select
               v-model="uiState.prodPickerSearchType"
               :options="[
                 { value: 'def_nm',  label: '상품명' },
@@ -2162,16 +2162,20 @@ window.PdProdDtl = {
             <tr v-for="(row, idx) in cfPlanVisible" :key="row?._id" :style="planRowStyle(row._row_status)">
               <td style="text-align:center;"><input type="checkbox" v-model="row._checked" /></td>
               <td>
-                <div style="display:flex;gap:2px;">
-                  <input type="date" v-model="row.startDate" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:104px;" />
-                  <input type="time" v-model="row.startTime" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:64px;" />
-                </div>
+                <bo-date-time-picker
+                  :date="row.startDate" :time="row.startTime"
+                  @update:date="v => { row.startDate = v; onPlanChange(row); }"
+                  @update:time="v => { row.startTime = v; onPlanChange(row); }"
+                  :show-now="false" :show-clear="false"
+                  date-width="104px" time-width="64px" />
               </td>
               <td>
-                <div style="display:flex;gap:2px;">
-                  <input type="date" v-model="row.endDate" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:104px;" />
-                  <input type="time" v-model="row.endTime" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:64px;" />
-                </div>
+                <bo-date-time-picker
+                  :date="row.endDate" :time="row.endTime"
+                  @update:date="v => { row.endDate = v; onPlanChange(row); }"
+                  @update:time="v => { row.endTime = v; onPlanChange(row); }"
+                  :show-now="false" :show-clear="false"
+                  date-width="104px" time-width="64px" />
               </td>
               <td>
                 <select v-model="row.planStatus" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;">

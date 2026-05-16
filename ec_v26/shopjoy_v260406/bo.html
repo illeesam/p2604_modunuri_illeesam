@@ -64,7 +64,7 @@
          B3.1: Base 컴포넌트 (Modal, Comp)
          B3.2: 모달 설정 (BoModals)
          B3.3: 전시 컴포넌트 계층 (DispX01~X04)
-         B3.4: 전시 위젯 라이브러리 (BarcodeWidget, CountdownWidget)
+         B3.4: 전시 위젯 라이브러리 (CoBarcodeWidget, CoCountdownWidget — FO·BO 공통)
 
        ■ BODY 섹션 - B4.x: Page 관리 (비즈니스 로직)
          B4.1: EC Domain - 회원(MB) - 가나다순
@@ -185,7 +185,6 @@
   <!-- ■ B3.1: Base Components ■ -->
   <script src="components/comp/BaseComp.js"></script>
   <script src="components/comp/BoComp.js"></script>
-  <script src="components/comp/TuiHtmlEditor.js"></script>
   <script src="components/modals/BaseModal.js"></script>
 
   <!-- ■ B3.2: Modal Setup ■ -->
@@ -198,9 +197,8 @@
   <script src="components/disp/DispX03Panel.js"></script>
   <script src="components/disp/DispX04Widget.js"></script>
 
-  <!-- ■ B3.4: Display Widget Libraries ■ -->
-  <script src="components/dispWidgets/BarcodeWidget.js"></script>
-  <script src="components/dispWidgets/CountdownWidget.js"></script>
+  <!-- ■ B3.4: Display Widget Libraries (FO·BO 공통) ■ -->
+  <script src="components/comp/CoWidgetComp.js"></script>
 
   <!-- ═══════════════════════════════════════════════════════════════════════════
        B4.x: Page 관리 (비즈니스 로직 - EC Domain)

@@ -87,9 +87,10 @@ window.XsSample12 = {
     const isInRange = (panel) => {
       const d = uiState.previewDate;
       if (!d) return true;
-      const dt = `${d} ${uiState.previewTime || '00:00'}`;
-      if (panel.dispStartDate && dt < `${panel.dispStartDate} ${panel.dispStartTime || '00:00'}`) return false;
-      if (panel.dispEndDate   && dt > `${panel.dispEndDate}   ${panel.dispEndTime   || '23:59'}`) return false;
+      const dt = `${d}T${uiState.previewTime || '00:00'}`;
+      const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
+      if (panel.dispStartDt && dt < _norm(panel.dispStartDt)) return false;
+      if (panel.dispEndDt   && dt > _norm(panel.dispEndDt))   return false;
       return true;
     };
 

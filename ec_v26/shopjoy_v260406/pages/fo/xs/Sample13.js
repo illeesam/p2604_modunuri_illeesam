@@ -61,9 +61,10 @@ window.XsSample13 = {
     const isInRange = (panel) => {
       const d = uiState.previewDate;
       if (!d) return true;
-      const dt = `${d} ${uiState.previewTime || '00:00'}`;
-      if (panel.dispStartDate && dt < `${panel.dispStartDate} ${panel.dispStartTime || '00:00'}`) return false;
-      if (panel.dispEndDate   && dt > `${panel.dispEndDate}   ${panel.dispEndTime   || '23:59'}`) return false;
+      const dt = `${d}T${uiState.previewTime || '00:00'}`;
+      const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
+      if (panel.dispStartDt && dt < _norm(panel.dispStartDt)) return false;
+      if (panel.dispEndDt   && dt > _norm(panel.dispEndDt))   return false;
       return true;
     };
 
@@ -353,8 +354,8 @@ window.XsSample13 = {
           <span v-if="panel.authRequired" style="font-size:9px;background:#fce4ec;color:#c62828;border-radius:6px;padding:1px 6px;">인증</span>
           <span v-if="panel.authGrade" style="font-size:9px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;padding:1px 6px;">{{ panel.authGrade }}↑</span>
         </div>
-        <div v-if="panel.dispStartDate||panel.dispEndDate" style="font-size:9px;color:#aaa;margin-top:4px;">
-          📅 {{ panel.dispStartDate||'∞' }} ~ {{ panel.dispEndDate||'∞' }}
+        <div v-if="panel.dispStartDt||panel.dispEndDt" style="font-size:9px;color:#aaa;margin-top:4px;">
+          📅 {{ panel.dispStartDt||'∞' }} ~ {{ panel.dispEndDt||'∞' }}
         </div>
         <div style="font-size:9px;color:#bbb;margin-top:6px;">위젯 {{ (panel.rows||[]).length }}개</div>
       </div>

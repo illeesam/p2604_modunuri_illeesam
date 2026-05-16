@@ -563,7 +563,7 @@ window.SyCodeMng = {
   <!-- -- 검색 영역 -------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_grp',   label: '코드그룹' },
@@ -601,7 +601,7 @@ window.SyCodeMng = {
         <span v-if="uiState.grpSelectedPath" @click="grpSelectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:50vh;overflow:auto;">
-        <path-tree biz-cd="sy_code_grp" :selected="uiState.grpSelectedPath" @select="grpSelectNode" />
+        <bo-path-tree biz-cd="sy_code_grp" :selected="uiState.grpSelectedPath" @select="grpSelectNode" />
       </div>
     </div>
 

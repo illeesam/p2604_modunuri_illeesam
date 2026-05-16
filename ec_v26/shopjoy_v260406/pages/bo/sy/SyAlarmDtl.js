@@ -154,7 +154,7 @@ window.SyAlarmDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">발송일시</label>
-        <input class="form-control" type="datetime-local" v-model="form.sendDate" :readonly="cfDtlMode" />
+        <bo-date-time-picker v-model="form.sendDate" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-group">

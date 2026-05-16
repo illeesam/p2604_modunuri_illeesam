@@ -269,7 +269,7 @@ window.SyAttachMng = {
           <button class="btn btn-primary btn-sm" @click="openGrpNew">+ 신규</button>
         </div>
         <div style="padding:0 0 10px 0;">
-          <multi-check-select
+          <bo-multi-check-select
             v-model="grpSearchType"
             :options="[
               { value: 'def_grpNm',   label: '그룹명' },
@@ -357,7 +357,7 @@ window.SyAttachMng = {
             <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">(전체)</span>
           </b>
           <input v-model="searchParam.attachGrpId" placeholder="첨부그룹ID" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:130px;" @keyup.enter="onSearch" />
-          <multi-check-select
+          <bo-multi-check-select
             v-model="searchParam.searchType"
             :options="[
               { value: 'def_fileNm', label: '파일명' },

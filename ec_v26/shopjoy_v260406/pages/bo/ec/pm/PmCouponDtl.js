@@ -370,7 +370,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       </div>
       <div style="margin-top:16px;">
         <label class="form-label">메모</label>
-        <tui-html-editor v-model="form.memo" height="200px" />
+        <base-html-editor v-model="form.memo" height="200px" />
       </div>
       <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <div class="form-group">

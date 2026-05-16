@@ -192,7 +192,7 @@ window.PmCouponMng = {
   <div class="page-title">쿠폰관리</div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '쿠폰명' },

@@ -152,7 +152,7 @@ window.SyI18nMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">키/설명</label>
-        <multi-check-select
+        <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
             { value: 'def_key',  label: '키' },

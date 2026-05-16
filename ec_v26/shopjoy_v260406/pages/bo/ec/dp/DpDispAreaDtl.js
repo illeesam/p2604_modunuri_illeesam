@@ -625,7 +625,7 @@ window.DpDispAreaDtl = {
             내용
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📝 영역코멘트</div>
-          <tui-html-editor v-model="form.htmlDesc" height="280px" />
+          <base-html-editor v-model="form.htmlDesc" height="280px" />
         </div><!-- -- /내용 -------------------------------------------------------------- -->
 
       </div>
@@ -647,8 +647,8 @@ window.DpDispAreaDtl = {
           <span><b style="color:#888;">표시:</b> {{ cfActivePanel.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(cfActivePanel.gridCols||1)+'열' }}</span>
           <span><b style="color:#888;">순서:</b> {{ cfActivePanel.sortOrder != null ? cfActivePanel.sortOrder : '-' }}</span>
           <span><b style="color:#888;">패널기본전시기간:</b>
-            <template v-if="cfActivePanel.dispStartDate || cfActivePanel.dispEndDate">
-              {{ cfActivePanel.dispStartDate || '∞' }} ~ {{ cfActivePanel.dispEndDate || '∞' }}
+            <template v-if="cfActivePanel.dispStartDt || cfActivePanel.dispEndDt">
+              {{ cfActivePanel.dispStartDt || '∞' }} ~ {{ cfActivePanel.dispEndDt || '∞' }}
             </template>
             <span v-else style="color:#ccc;">없음</span>
           </span>
@@ -671,16 +671,14 @@ window.DpDispAreaDtl = {
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
             📅 전시기간 <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
           </div>
-          <div style="display:grid;grid-template-columns:auto 1fr auto 1fr;align-items:center;gap:6px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
-            <span style="font-size:11px;color:#888;white-space:nowrap;">시작</span>
-            <div style="display:flex;gap:6px;">
-              <input type="date" class="form-control" v-model="cfActivePanel.areaDispStartDate" style="flex:1;min-width:0;margin:0;" placeholder="시작일" />
-              <input type="time" class="form-control" v-model="cfActivePanel.areaDispStartTime" style="width:100px;flex-shrink:0;margin:0;" placeholder="시작시간" />
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">시작</span>
+              <bo-date-time-picker v-model:date="cfActivePanel.areaDispStartDate" v-model:time="cfActivePanel.areaDispStartTime" />
             </div>
-            <span style="font-size:11px;color:#888;white-space:nowrap;padding:0 2px;">종료</span>
-            <div style="display:flex;gap:6px;">
-              <input type="date" class="form-control" v-model="cfActivePanel.areaDispEndDate" style="flex:1;min-width:0;margin:0;" placeholder="종료일" />
-              <input type="time" class="form-control" v-model="cfActivePanel.areaDispEndTime" style="width:100px;flex-shrink:0;margin:0;" placeholder="종료시간" />
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">종료</span>
+              <bo-date-time-picker v-model:date="cfActivePanel.areaDispEndDate" v-model:time="cfActivePanel.areaDispEndTime" />
             </div>
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>

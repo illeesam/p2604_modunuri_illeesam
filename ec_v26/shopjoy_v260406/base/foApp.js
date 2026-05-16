@@ -1128,6 +1128,8 @@
   /* ── pages/fo/xd/ (전시 UI 데모) — 스크립트 미로드 시 건너뜀 ── */
   /* ── pages/fo/xs/ (샘플) — 스크립트 미로드 시 건너뜀 ── */
   /* ── components/comp/ (공통 컴포넌트) ── */
+  .component('CoBarcodeWidget',  window.CoBarcodeWidget  || { template: '<div/>' })
+  .component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' })
   .component('BaseAttachGrp', window.BaseAttachGrp)
   /* ── components/modals/ — 상세 모달 ── */
   .component('CustomerModal',        window.CustomerModal)

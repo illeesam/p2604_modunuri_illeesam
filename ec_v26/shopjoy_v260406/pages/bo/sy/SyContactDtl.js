@@ -234,7 +234,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       <div class="form-group">
         <label class="form-label">문의 내용 <span v-if="!cfDtlMode" class="req">*</span></label>
         <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
-        <tui-html-editor v-else v-model="form.content" height="220px" />
+        <base-html-editor v-else v-model="form.content" height="220px" />
         <span v-if="errors.content" class="field-error">{{ errors.content }}</span>
       </div>
       <div class="form-actions">
@@ -260,7 +260,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       <div class="form-group">
         <label class="form-label">답변 내용 <span v-if="!form.answer" class="badge badge-orange" style="margin-left:4px;">미답변</span></label>
         <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.answer || '<span style=color:#bbb>-</span>'"></div>
-        <tui-html-editor v-else v-model="form.answer" height="240px" />
+        <base-html-editor v-else v-model="form.answer" height="240px" />
       </div>
       <div class="form-actions">
         <template v-if="cfDtlMode">

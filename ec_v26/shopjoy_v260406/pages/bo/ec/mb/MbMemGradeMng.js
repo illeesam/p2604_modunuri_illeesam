@@ -187,7 +187,7 @@ window.MbMemGradeMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">등급명/코드</label>
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',   label: '등급명' },

@@ -261,7 +261,7 @@ window.SyApiLogMng = {
         <option v-for="c in codes.http_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.searchPath" placeholder="API 경로 (예: /bo/sy/)" style="width:190px" @keyup.enter="onSearch" />
-      <multi-check-select
+      <bo-multi-check-select
         v-model="uiState.searchType"
         :options="[
           { value: 'def_ip',     label: 'IP' },

@@ -222,7 +222,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 <div>
   <div class="page-title">템플릿관리</div>  <div class="card">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_nm',      label: '템플릿명' },
@@ -258,7 +258,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree biz-cd="sy_template" :selected="uiState.selectedPath" @select="selectNode" />
+        <bo-path-tree biz-cd="sy_template" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
     <div>

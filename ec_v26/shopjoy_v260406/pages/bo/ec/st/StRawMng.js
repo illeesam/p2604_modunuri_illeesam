@@ -200,7 +200,7 @@ const rawList = reactive([]);
         <option value="">수집상태 전체</option>
         <option v-for="c in codes.raw_collect_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_raw_id',    label: '원장ID' },

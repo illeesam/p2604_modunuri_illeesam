@@ -517,7 +517,7 @@ window.OdOrderDtl = {
     <div class="form-group">
       <label class="form-label">메모</label>
       <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
-      <tui-html-editor v-else v-model="form.memo" height="180px" />
+      <base-html-editor v-else v-model="form.memo" height="180px" />
     </div>
     <div class="form-actions" v-if="!cfDtlMode">
       <template v-if="cfDtlMode">

@@ -66,7 +66,7 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
     private JPAQuery<DpAreaPanelDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpAreaPanelDto.Item.class,
                 p.areaPanelId, p.areaId, p.panelId, p.panelSortOrd,
-                p.visibilityTargets, p.dispYn, p.dispStartDate, p.dispStartTime, p.dispEndDate, p.dispEndTime,
+                p.visibilityTargets, p.dispYn, p.dispStartDt, p.dispEndDt,
                 p.dispEnv, p.useYn,
                 p.regBy, p.regDate, p.updBy, p.updDate
         )).from(p);
@@ -134,10 +134,8 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         if (entity.getPanelSortOrd()      != null) { update.set(p.panelSortOrd,      entity.getPanelSortOrd());      hasAny = true; }
         if (entity.getVisibilityTargets() != null) { update.set(p.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
         if (entity.getDispYn()            != null) { update.set(p.dispYn,            entity.getDispYn());            hasAny = true; }
-        if (entity.getDispStartDate()     != null) { update.set(p.dispStartDate,     entity.getDispStartDate());     hasAny = true; }
-        if (entity.getDispStartTime()     != null) { update.set(p.dispStartTime,     entity.getDispStartTime());     hasAny = true; }
-        if (entity.getDispEndDate()       != null) { update.set(p.dispEndDate,       entity.getDispEndDate());       hasAny = true; }
-        if (entity.getDispEndTime()       != null) { update.set(p.dispEndTime,       entity.getDispEndTime());       hasAny = true; }
+        if (entity.getDispStartDt()       != null) { update.set(p.dispStartDt,       entity.getDispStartDt());       hasAny = true; }
+        if (entity.getDispEndDt()         != null) { update.set(p.dispEndDt,         entity.getDispEndDt());         hasAny = true; }
         if (entity.getDispEnv()           != null) { update.set(p.dispEnv,           entity.getDispEnv());           hasAny = true; }
         if (entity.getUseYn()             != null) { update.set(p.useYn,             entity.getUseYn());             hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(p.updBy,             entity.getUpdBy());             hasAny = true; }

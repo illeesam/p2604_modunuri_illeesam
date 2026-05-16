@@ -163,7 +163,7 @@ const searchParam = reactive(_initSearchParam());
   <div class="card">
     <div class="search-bar">
       <label class="search-label">키워드</label>
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_areaCd', label: '영역코드' },
@@ -191,7 +191,7 @@ const searchParam = reactive(_initSearchParam());
         <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree biz-cd="ec_disp_area" :selected="uiState.selectedPath" @select="selectNode" />
+        <bo-path-tree biz-cd="ec_disp_area" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
     <div class="card">

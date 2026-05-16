@@ -214,7 +214,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     <div class="card">
       <div class="search-bar">
         <label class="search-label">제목/작성자</label>
-        <multi-check-select
+        <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
             { value: 'def_title',  label: '제목' },
@@ -300,7 +300,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
           </select>
         </div>
         <div class="form-group" style="grid-column:1/-1"><label class="form-label">요약</label><input class="form-control" v-model="detailModal.form.blogSummary" placeholder="목록에 표시될 요약 내용"></div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">본문</label><textarea class="form-control" rows="8" v-model="detailModal.form.blogContent"></textarea></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">본문</label><base-html-editor v-model="detailModal.form.blogContent" height="320px" /></div>
       </div>
     </div>
 </div>`

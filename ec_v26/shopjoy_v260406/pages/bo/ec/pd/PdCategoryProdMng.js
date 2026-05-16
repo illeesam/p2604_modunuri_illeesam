@@ -350,7 +350,7 @@ window.PdCategoryProdMng = {
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
         <div v-if="cfSelectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectNode(null)">전체</div>
       </div>
-      <category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" @select="selectNode" />
+      <bo-category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" @select="selectNode" />
     </div>
 
     <!-- -- 우측 상품 목록 ----------------------------------------------------- -->
@@ -584,7 +584,7 @@ window.PdCategoryProdMng = {
           </div>
           <button class="btn btn-secondary btn-xs" @click="pickerOpen=false">닫기</button>
         </div>
-        <multi-check-select
+        <bo-multi-check-select
           v-model="pickerSearchType"
           :options="[
             { value: 'def_nm',  label: '상품명' },

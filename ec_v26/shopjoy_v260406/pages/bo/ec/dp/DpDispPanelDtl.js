@@ -186,7 +186,7 @@ window.DpDispPanelDtl = {
       useStartDate: DEFAULT_START_DATE, useEndDate: DEFAULT_END_DATE,
       /* 위젯별 전시기간 (미설정 시 패널 기간 사용) */
       dispYn: 'Y',
-      dispStartDate: DEFAULT_START_DATE, dispStartTime: '00:00', dispEndDate: DEFAULT_END_DATE, dispEndTime: '23:59',
+      dispStartDt: DEFAULT_START_DATE + 'T00:00', dispEndDt: DEFAULT_END_DATE + 'T23:59',
       /* 위젯 전시 환경 */
       dispEnv: '^DEV^',
       ...overrides,
@@ -923,7 +923,7 @@ window.DpDispPanelDtl = {
               <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
               <span v-else style="color:#bbb;">내용 없음</span>
             </div>
-            <tui-html-editor v-else v-model="form.htmlDesc" height="280px" />
+            <base-html-editor v-else v-model="form.htmlDesc" height="280px" />
           </div><!-- -- /내용 -------------------------------------------------------------- -->
 
           <div class="form-actions" v-if="!cfDtlMode">
@@ -1003,16 +1003,14 @@ window.DpDispPanelDtl = {
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
               📅 전시기간 <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
             </div>
-            <div style="display:grid;grid-template-columns:auto 1fr auto 1fr;align-items:center;gap:6px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
-              <span style="font-size:11px;color:#888;white-space:nowrap;">시작</span>
-              <div style="display:flex;gap:6px;">
-                <input type="date" class="form-control" v-model="cfActiveRow.dispStartDate" style="flex:1;min-width:0;margin:0;" :readonly="cfDtlMode" />
-                <input type="time" class="form-control" v-model="cfActiveRow.dispStartTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="cfDtlMode" />
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">시작</span>
+                <bo-date-time-picker v-model="cfActiveRow.dispStartDt" :readonly="cfDtlMode" />
               </div>
-              <span style="font-size:11px;color:#888;white-space:nowrap;padding:0 2px;">종료</span>
-              <div style="display:flex;gap:6px;">
-                <input type="date" class="form-control" v-model="cfActiveRow.dispEndDate" style="flex:1;min-width:0;margin:0;" :readonly="cfDtlMode" />
-                <input type="time" class="form-control" v-model="cfActiveRow.dispEndTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="cfDtlMode" />
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">종료</span>
+                <bo-date-time-picker v-model="cfActiveRow.dispEndDt" :readonly="cfDtlMode" />
               </div>
             </div>
 
@@ -1101,7 +1099,7 @@ window.DpDispPanelDtl = {
                 <span v-if="cfActiveRow.htmlContent" v-html="cfActiveRow.htmlContent"></span>
                 <span v-else style="color:#bbb;">내용 없음</span>
               </div>
-              <tui-html-editor v-else v-model="cfActiveRow.htmlContent" height="280px" />
+              <base-html-editor v-else v-model="cfActiveRow.htmlContent" height="280px" />
             </div>
 
             <!-- -- 파일목록 ------------------------------------------------- -->
@@ -1430,7 +1428,7 @@ window.DpDispPanelDtl = {
               <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
               <span v-else style="color:#bbb;">내용 없음</span>
             </div>
-            <div v-else v-model="form.htmlDesc" is="tui-html-editor" height="280px" style="margin-bottom:16px;"></div>
+            <div v-else v-model="form.htmlDesc" is="base-html-editor" height="280px" style="margin-bottom:16px;"></div>
             <div class="form-actions" v-if="!cfDtlMode">
               <template v-if="cfDtlMode">
                 <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>

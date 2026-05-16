@@ -305,7 +305,7 @@ window.SyBrandMng = {
     <div class="search-bar">
       <label class="search-label">업무코드</label>
       <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:160px" @keyup.enter="onSearch">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_code',  label: '브랜드코드' },
@@ -343,7 +343,7 @@ window.SyBrandMng = {
         <span v-if="uiState.selectedPath != null" @click="onPathSelect(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree biz-cd="sy_brand" :show-biz-cd="true" :selected="uiState.selectedPath" @select="onPathSelect" />
+        <bo-path-tree biz-cd="sy_brand" :show-biz-cd="true" :selected="uiState.selectedPath" @select="onPathSelect" />
       </div>
     </div>
 

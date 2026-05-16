@@ -225,7 +225,7 @@ window.SyBbsDtl = {
     <div v-else-if="cfContentType==='htmleditor'" class="form-group">
       <label class="form-label">내용</label>
       <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
-      <tui-html-editor v-else v-model="form.contentHtml" height="320px" />
+      <base-html-editor v-else v-model="form.contentHtml" height="320px" />
     </div>
 
     <!-- ── 첨부파일 ───────────────────────────────────────────────────────── -->

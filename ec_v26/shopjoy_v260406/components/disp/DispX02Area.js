@@ -52,8 +52,8 @@ window.DispX02Area = {
 
     /* 카드 모드: 기간 텍스트 */
     const periodText = (p) => {
-      if (!p.dispStartDate && !p.dispEndDate) return '기간 없음';
-      return `${p.dispStartDate || '∞'} ~ ${p.dispEndDate || '∞'}`;
+      if (!p.dispStartDt && !p.dispEndDt) return '기간 없음';
+      return `${p.dispStartDt || '∞'} ~ ${p.dispEndDt || '∞'}`;
     };
 
     /* statusCls */
@@ -126,8 +126,8 @@ window.DispX02Area = {
             <span v-else style="color:#ccc;font-size:11px;">-</span>
           </td>
           <td style="padding:6px 10px;color:#888;font-size:11px;">
-            <template v-if="p.dispStartDate || p.dispEndDate">
-              {{ p.dispStartDate || '∞' }} ~ {{ p.dispEndDate || '∞' }}
+            <template v-if="p.dispStartDt || p.dispEndDt">
+              {{ p.dispStartDt || '∞' }} ~ {{ p.dispEndDt || '∞' }}
             </template>
             <span v-else style="color:#ccc;">기간 없음</span>
           </td>

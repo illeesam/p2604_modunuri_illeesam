@@ -220,7 +220,7 @@ window.PdProdMng = {
   </div>
   <div class="card">
     <div class="search-bar">
-      <multi-check-select v-model="searchParam.searchType" :options="[
+      <bo-multi-check-select v-model="searchParam.searchType" :options="[
           { value: 'def_prod_id',   label: '상품ID' },
           { value: 'def_prod_nm',   label: '상품명' },
           { value: 'def_prod_code', label: '상품코드' },
@@ -277,7 +277,7 @@ window.PdProdMng = {
   </div>
 
   <!-- -- 카테고리 선택 모달 ----------------------------------------------------- -->
-  <category-tree-modal
+  <bo-category-tree-modal
     v-if="catModal && catModal.show"
     :exclude-id="null"
     @select="onCatSelect"

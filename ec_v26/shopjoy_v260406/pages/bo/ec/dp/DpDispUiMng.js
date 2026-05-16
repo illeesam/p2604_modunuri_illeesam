@@ -183,7 +183,7 @@ window.DpDispUiMng = {
         <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree biz-cd="ec_disp_ui" :selected="uiState.selectedPath" @select="selectNode" />
+        <bo-path-tree biz-cd="ec_disp_ui" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
     <div class="card">

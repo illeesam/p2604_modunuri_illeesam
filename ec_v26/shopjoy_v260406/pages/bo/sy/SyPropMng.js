@@ -202,7 +202,7 @@ window.SyPropMng = {
   <!-- -- 검색 바 ----------------------------------------------------------- -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
-      <multi-check-select
+      <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
           { value: 'def_pathId', label: '표시경로' },
@@ -240,7 +240,7 @@ window.SyPropMng = {
         <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree biz-cd="sy_prop" :selected="uiState.selectedPath" @select="selectNode" />
+        <bo-path-tree biz-cd="sy_prop" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
 
@@ -355,7 +355,7 @@ window.PropTreeNode = {
     <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">{{ node.count }}</span>
   </div>
   <div v-if="expanded.has(node.path) && node.children.length>0">
-    <path-tree-node v-for="ch in node.children" :key="ch.path"
+    <bo-path-tree-node v-for="ch in node.children" :key="ch.path"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>

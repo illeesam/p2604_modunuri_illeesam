@@ -233,7 +233,7 @@ window.DpDispWidgetMng = {
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
         <label class="form-label">검색어</label>
-        <multi-check-select
+        <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
             { value: 'def_nm',   label: '이름' },
@@ -276,7 +276,7 @@ window.DpDispWidgetMng = {
       <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
     </div>
     <div style="max-height:65vh;overflow:auto;">
-      <path-tree biz-cd="ec_disp_widget" :selected="uiState.selectedPath" @select="selectNode" />
+      <bo-path-tree biz-cd="ec_disp_widget" :selected="uiState.selectedPath" @select="selectNode" />
     </div>
   </div>
 

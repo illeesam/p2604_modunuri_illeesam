@@ -670,7 +670,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <strong style="font-size:15px">구성품 상품 선택</strong>
           <button class="btn btn-secondary btn-xs" @click="uiState.pickerOpen=false">닫기</button>
         </div>
-        <multi-check-select
+        <bo-multi-check-select
           v-model="uiState.pickerSearchType"
           :options="[
             { value: 'def_nm', label: '상품명' },
@@ -711,7 +711,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
   </teleport>
 
   <!-- -- 카테고리 피커 모달 ----------------------------------------------------- -->
-  <category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
+  <bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
                  @select="addCategory" @close="uiState.catPickerOpen=false" />
 </div>`
 };
