@@ -3,13 +3,13 @@
 
 CREATE TABLE shopjoy_2604.syh_alarm_send_hist (
     send_hist_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id             VARCHAR(21) ,
+    site_id             VARCHAR(21)  NOT NULL,
     alarm_id            VARCHAR(21)  NOT NULL,
     member_id           VARCHAR(21) ,
     channel             VARCHAR(20) ,
     send_to             VARCHAR(200),
     send_date           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-    send_hist_status_cd VARCHAR(20)  DEFAULT 'SENT',
+    send_hist_status_cd VARCHAR(20)  DEFAULT 'SENT'::character varying,
     error_msg           VARCHAR(500),
     reg_by              VARCHAR(30) ,
     reg_date            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -31,3 +31,5 @@ COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.reg_by IS '등록자 (sy_user
 COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.upd_date IS '수정일';
+
+CREATE INDEX idx_syh_alarm_send_hist_site ON shopjoy_2604.syh_alarm_send_hist USING btree (site_id);

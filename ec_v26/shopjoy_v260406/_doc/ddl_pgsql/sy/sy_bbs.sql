@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.sy_bbs (
     bbs_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     bbm_id        VARCHAR(21)  NOT NULL,
     parent_bbs_id VARCHAR(21) ,
     member_id     VARCHAR(21) ,
@@ -14,8 +14,8 @@ CREATE TABLE shopjoy_2604.sy_bbs (
     view_count    INTEGER      DEFAULT 0,
     like_count    INTEGER      DEFAULT 0,
     comment_count INTEGER      DEFAULT 0,
-    is_fixed      VARCHAR(1)   DEFAULT 'N',
-    bbs_status_cd VARCHAR(20)  DEFAULT 'ACTIVE',
+    is_fixed      VARCHAR(1)   DEFAULT 'N'::bpchar,
+    bbs_status_cd VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     reg_by        VARCHAR(30) ,
     reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by        VARCHAR(30) ,
@@ -43,3 +43,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_bbs.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
+
+CREATE INDEX idx_sy_bbs_site ON shopjoy_2604.sy_bbs USING btree (site_id);

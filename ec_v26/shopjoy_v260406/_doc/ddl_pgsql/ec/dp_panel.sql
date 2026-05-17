@@ -3,15 +3,15 @@
 
 CREATE TABLE shopjoy_2604.dp_panel (
     panel_id                    VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                     VARCHAR(21) ,
+    site_id                     VARCHAR(21)  NOT NULL,
     panel_nm                    VARCHAR(100) NOT NULL,
     panel_type_cd               VARCHAR(30) ,
     path_id                     VARCHAR(21) ,
     visibility_targets          VARCHAR(200),
-    use_yn                      VARCHAR(1)   DEFAULT 'Y',
+    use_yn                      VARCHAR(1)   DEFAULT 'Y'::bpchar,
     use_start_date              DATE        ,
     use_end_date                DATE        ,
-    disp_panel_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE',
+    disp_panel_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     disp_panel_status_cd_before VARCHAR(20) ,
     content_json                TEXT        ,
     reg_by                      VARCHAR(30) ,
@@ -37,3 +37,5 @@ COMMENT ON COLUMN shopjoy_2604.dp_panel.reg_by IS '등록자 (sy_user.user_id, m
 COMMENT ON COLUMN shopjoy_2604.dp_panel.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.dp_panel.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_panel.upd_date IS '수정일';
+
+CREATE INDEX idx_dp_panel_site ON shopjoy_2604.dp_panel USING btree (site_id);

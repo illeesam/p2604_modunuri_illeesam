@@ -3,11 +3,11 @@
 
 CREATE TABLE shopjoy_2604.mbh_member_login_log (
     log_id            VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id           VARCHAR(21) ,
+    site_id           VARCHAR(21)  NOT NULL,
     member_id         VARCHAR(21) ,
     login_id          VARCHAR(100),
     login_date        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-    result_cd         VARCHAR(20)  DEFAULT 'SUCCESS',
+    result_cd         VARCHAR(20)  DEFAULT 'SUCCESS'::character varying,
     fail_cnt          INTEGER      DEFAULT 0,
     ip                VARCHAR(50) ,
     device            VARCHAR(200),
@@ -59,3 +59,4 @@ COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.cmd_nm IS '기능명 (X-Cmd-
 CREATE INDEX idx_mbh_member_login_log_date ON shopjoy_2604.mbh_member_login_log USING btree (login_date);
 CREATE INDEX idx_mbh_member_login_log_ip ON shopjoy_2604.mbh_member_login_log USING btree (ip);
 CREATE INDEX idx_mbh_member_login_log_member ON shopjoy_2604.mbh_member_login_log USING btree (member_id);
+CREATE INDEX idx_mbh_member_login_log_site ON shopjoy_2604.mbh_member_login_log USING btree (site_id);

@@ -7,11 +7,12 @@ CREATE TABLE shopjoy_2604.pd_prod_rel (
     rel_prod_id      VARCHAR(21) NOT NULL,
     prod_rel_type_cd VARCHAR(20) NOT NULL,
     sort_ord         INTEGER     DEFAULT 0,
-    use_yn           VARCHAR(1)  DEFAULT 'Y',
+    use_yn           VARCHAR(1)  DEFAULT 'Y'::bpchar,
     reg_by           VARCHAR(30),
     reg_date         TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30),
-    upd_date         TIMESTAMP  
+    upd_date         TIMESTAMP  ,
+    site_id          VARCHAR(21) NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_rel IS '상품 연관 관계 (연관상품/코디상품)';
@@ -28,4 +29,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_rel.upd_date IS '수정일';
 
 CREATE INDEX idx_pd_prod_rel_prod_id ON shopjoy_2604.pd_prod_rel USING btree (prod_id, prod_rel_type_cd, sort_ord);
 CREATE INDEX idx_pd_prod_rel_rel_prod_id ON shopjoy_2604.pd_prod_rel USING btree (rel_prod_id);
+CREATE INDEX idx_pd_prod_rel_site ON shopjoy_2604.pd_prod_rel USING btree (site_id);
 CREATE UNIQUE INDEX pd_prod_rel_prod_id_rel_prod_id_prod_rel_type_cd_key ON shopjoy_2604.pd_prod_rel USING btree (prod_id, rel_prod_id, prod_rel_type_cd);

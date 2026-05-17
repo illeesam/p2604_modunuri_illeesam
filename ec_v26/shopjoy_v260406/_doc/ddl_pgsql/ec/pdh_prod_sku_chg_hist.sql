@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pdh_prod_sku_chg_hist (
     hist_id     VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id     VARCHAR(21) ,
+    site_id     VARCHAR(21)  NOT NULL,
     sku_id      VARCHAR(21)  NOT NULL,
     prod_id     VARCHAR(21)  NOT NULL,
     chg_type_cd VARCHAR(30)  NOT NULL,
@@ -33,4 +33,5 @@ COMMENT ON COLUMN shopjoy_2604.pdh_prod_sku_chg_hist.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_sku_chg_hist.reg_date IS '등록일';
 
 CREATE INDEX idx_pdh_prod_sku_chg_hist_prod ON shopjoy_2604.pdh_prod_sku_chg_hist USING btree (prod_id);
+CREATE INDEX idx_pdh_prod_sku_chg_hist_site ON shopjoy_2604.pdh_prod_sku_chg_hist USING btree (site_id);
 CREATE INDEX idx_pdh_prod_sku_chg_hist_sku ON shopjoy_2604.pdh_prod_sku_chg_hist USING btree (sku_id);

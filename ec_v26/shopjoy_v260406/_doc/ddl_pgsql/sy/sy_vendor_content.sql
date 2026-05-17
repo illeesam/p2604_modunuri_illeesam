@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.sy_vendor_content (
     vendor_content_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                  VARCHAR(21) ,
+    site_id                  VARCHAR(21)  NOT NULL,
     vendor_id                VARCHAR(21)  NOT NULL,
     content_type_cd          VARCHAR(30)  NOT NULL,
     vendor_content_title     VARCHAR(200),
@@ -13,12 +13,12 @@ CREATE TABLE shopjoy_2604.sy_vendor_content (
     image_url                VARCHAR(500),
     link_url                 VARCHAR(500),
     attach_grp_id            VARCHAR(21) ,
-    lang_cd                  VARCHAR(10)  DEFAULT 'ko',
+    lang_cd                  VARCHAR(10)  DEFAULT 'ko'::character varying,
     start_date               TIMESTAMP   ,
     end_date                 TIMESTAMP   ,
     sort_ord                 INTEGER      DEFAULT 0,
-    vendor_content_status_cd VARCHAR(20)  DEFAULT 'ACTIVE',
-    use_yn                   VARCHAR(1)   DEFAULT 'Y',
+    vendor_content_status_cd VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
+    use_yn                   VARCHAR(1)   DEFAULT 'Y'::bpchar,
     view_count               INTEGER      DEFAULT 0,
     vendor_content_remark    VARCHAR(500),
     reg_by                   VARCHAR(30) ,
@@ -53,6 +53,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.upd_by IS '수정자 (sy_user.u
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.upd_date IS '수정일';
 
 CREATE INDEX idx_sy_vendor_content_date ON shopjoy_2604.sy_vendor_content USING btree (start_date, end_date);
+CREATE INDEX idx_sy_vendor_content_site ON shopjoy_2604.sy_vendor_content USING btree (site_id);
 CREATE INDEX idx_sy_vendor_content_status ON shopjoy_2604.sy_vendor_content USING btree (vendor_content_status_cd);
 CREATE INDEX idx_sy_vendor_content_type ON shopjoy_2604.sy_vendor_content USING btree (content_type_cd);
 CREATE INDEX idx_sy_vendor_content_vendor ON shopjoy_2604.sy_vendor_content USING btree (vendor_id);

@@ -4,11 +4,11 @@
 CREATE TABLE shopjoy_2604.pm_gift_issue (
     gift_issue_id               VARCHAR(21) NOT NULL PRIMARY KEY,
     gift_id                     VARCHAR(21) NOT NULL,
-    site_id                     VARCHAR(21),
+    site_id                     VARCHAR(21) NOT NULL,
     member_id                   VARCHAR(21) NOT NULL,
     order_id                    VARCHAR(21),
     issue_date                  TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
-    gift_issue_status_cd        VARCHAR(20) DEFAULT 'ISSUED',
+    gift_issue_status_cd        VARCHAR(20) DEFAULT 'ISSUED'::character varying,
     gift_issue_status_cd_before VARCHAR(20),
     gift_issue_memo             TEXT       ,
     reg_by                      VARCHAR(30),
@@ -35,3 +35,4 @@ COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.upd_date IS '수정일';
 CREATE INDEX idx_pm_gift_issue_gift ON shopjoy_2604.pm_gift_issue USING btree (gift_id);
 CREATE INDEX idx_pm_gift_issue_member ON shopjoy_2604.pm_gift_issue USING btree (member_id);
 CREATE INDEX idx_pm_gift_issue_order ON shopjoy_2604.pm_gift_issue USING btree (order_id);
+CREATE INDEX idx_pm_gift_issue_site ON shopjoy_2604.pm_gift_issue USING btree (site_id);

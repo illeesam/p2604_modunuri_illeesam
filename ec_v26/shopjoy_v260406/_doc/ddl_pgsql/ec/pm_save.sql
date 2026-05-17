@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pm_save (
     save_id      VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21),
+    site_id      VARCHAR(21) NOT NULL,
     member_id    VARCHAR(21) NOT NULL,
     save_type_cd VARCHAR(20) NOT NULL,
     save_amt     BIGINT      NOT NULL,
@@ -34,4 +34,5 @@ COMMENT ON COLUMN shopjoy_2604.pm_save.reg_date IS '등록일';
 
 CREATE INDEX idx_pm_save_expire ON shopjoy_2604.pm_save USING btree (expire_date);
 CREATE INDEX idx_pm_save_member ON shopjoy_2604.pm_save USING btree (member_id);
+CREATE INDEX idx_pm_save_site ON shopjoy_2604.pm_save USING btree (site_id);
 CREATE INDEX idx_pm_save_type ON shopjoy_2604.pm_save USING btree (save_type_cd);

@@ -24,6 +24,10 @@ public class DpAreaPanel extends BaseEntity {
     @Column(name = "area_panel_id", length = 21, nullable = false)
     private String areaPanelId;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("영역ID (dp_area.area_id)")
     @Column(name = "area_id", length = 21, nullable = false)
     private String areaId;

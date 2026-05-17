@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pd_prod_set_item (
     set_item_id  VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21) ,
+    site_id      VARCHAR(21)  NOT NULL,
     set_prod_id  VARCHAR(21)  NOT NULL,
     item_prod_id VARCHAR(21) ,
     item_sku_id  VARCHAR(21) ,
@@ -11,7 +11,7 @@ CREATE TABLE shopjoy_2604.pd_prod_set_item (
     item_qty     INTEGER      DEFAULT 1,
     item_desc    VARCHAR(300),
     sort_ord     INTEGER      DEFAULT 0,
-    use_yn       VARCHAR(1)   DEFAULT 'Y',
+    use_yn       VARCHAR(1)   DEFAULT 'Y'::bpchar,
     reg_by       VARCHAR(30) ,
     reg_date     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by       VARCHAR(30) ,
@@ -33,3 +33,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.reg_by IS '등록자 (sy_user.us
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.upd_by IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.upd_date IS '수정일';
+
+CREATE INDEX idx_pd_prod_set_item_site ON shopjoy_2604.pd_prod_set_item USING btree (site_id);

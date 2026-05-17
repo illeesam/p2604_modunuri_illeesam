@@ -24,7 +24,7 @@ public class PdProdOptItem extends BaseEntity {
     private String optItemId;
 
     @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("옵션ID (pd_prod_opt.opt_id)")

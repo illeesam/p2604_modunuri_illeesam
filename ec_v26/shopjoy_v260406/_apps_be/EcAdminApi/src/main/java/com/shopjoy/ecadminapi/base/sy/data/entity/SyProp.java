@@ -23,7 +23,7 @@ public class SyProp extends BaseEntity {
     private String propId;
 
     @Comment("사이트ID (sy_site.site_id, NULL=전역)")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("점(.) 구분 표시경로 (aa.bb.cc)")

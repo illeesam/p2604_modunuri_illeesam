@@ -3,12 +3,12 @@
 
 CREATE TABLE shopjoy_2604.pd_category (
     category_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                   VARCHAR(21) ,
+    site_id                   VARCHAR(21)  NOT NULL,
     parent_category_id        VARCHAR(21) ,
     category_nm               VARCHAR(100) NOT NULL,
     category_depth            INTEGER      DEFAULT 1,
     sort_ord                  INTEGER      DEFAULT 0,
-    category_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE',
+    category_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     category_status_cd_before VARCHAR(20) ,
     img_url                   VARCHAR(500),
     category_desc             TEXT        ,
@@ -33,3 +33,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_category.reg_by IS '등록자 (sy_user.user_id
 COMMENT ON COLUMN shopjoy_2604.pd_category.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_category.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_category.upd_date IS '수정일';
+
+CREATE INDEX idx_pd_category_site ON shopjoy_2604.pd_category USING btree (site_id);

@@ -23,6 +23,10 @@ public class SyI18nMsg extends BaseEntity {
     @Column(name = "i18n_msg_id", length = 21, nullable = false)
     private String i18nMsgId;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("다국어ID (sy_i18n.i18n_id)")
     @Column(name = "i18n_id", length = 21, nullable = false)
     private String i18nId;

@@ -3,15 +3,15 @@
 
 CREATE TABLE shopjoy_2604.sy_notice (
     notice_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21) ,
+    site_id          VARCHAR(21)  NOT NULL,
     notice_title     VARCHAR(200) NOT NULL,
     notice_type_cd   VARCHAR(30) ,
-    is_fixed         VARCHAR(1)   DEFAULT 'N',
+    is_fixed         VARCHAR(1)   DEFAULT 'N'::bpchar,
     content_html     TEXT        ,
     attach_grp_id    VARCHAR(21) ,
     start_date       TIMESTAMP   ,
     end_date         TIMESTAMP   ,
-    notice_status_cd VARCHAR(20)  DEFAULT 'ACTIVE',
+    notice_status_cd VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     view_count       INTEGER      DEFAULT 0,
     reg_by           VARCHAR(30) ,
     reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -35,3 +35,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_notice.reg_by IS '등록자 (sy_user.user_id, 
 COMMENT ON COLUMN shopjoy_2604.sy_notice.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.upd_date IS '수정일';
+
+CREATE INDEX idx_sy_notice_site ON shopjoy_2604.sy_notice USING btree (site_id);

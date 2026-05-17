@@ -18,7 +18,7 @@ CREATE TABLE shopjoy_2604.st_settle (
     adj_amt                 BIGINT       DEFAULT 0,
     etc_adj_amt             BIGINT       DEFAULT 0,
     final_settle_amt        BIGINT       DEFAULT 0,
-    settle_status_cd        VARCHAR(20)  DEFAULT 'DRAFT',
+    settle_status_cd        VARCHAR(20)  DEFAULT 'DRAFT'::character varying,
     settle_status_cd_before VARCHAR(20) ,
     settle_memo             TEXT        ,
     reg_by                  VARCHAR(30) ,
@@ -52,6 +52,7 @@ COMMENT ON COLUMN shopjoy_2604.st_settle.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.st_settle.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.st_settle.upd_date IS '수정일';
 
+CREATE INDEX idx_st_settle_site ON shopjoy_2604.st_settle USING btree (site_id);
 CREATE INDEX idx_st_settle_status ON shopjoy_2604.st_settle USING btree (settle_status_cd);
 CREATE INDEX idx_st_settle_vendor ON shopjoy_2604.st_settle USING btree (site_id, vendor_id);
 CREATE INDEX idx_st_settle_ym ON shopjoy_2604.st_settle USING btree (settle_ym);

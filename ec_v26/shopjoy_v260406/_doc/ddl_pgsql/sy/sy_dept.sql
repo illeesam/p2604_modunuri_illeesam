@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.sy_dept (
     dept_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21) ,
+    site_id        VARCHAR(21)  NOT NULL,
     dept_code      VARCHAR(50)  NOT NULL,
     dept_nm        VARCHAR(100) NOT NULL,
     parent_dept_id VARCHAR(21) ,
     dept_type_cd   VARCHAR(20) ,
     manager_id     VARCHAR(21) ,
     sort_ord       INTEGER      DEFAULT 0,
-    use_yn         VARCHAR(1)   DEFAULT 'Y',
+    use_yn         VARCHAR(1)   DEFAULT 'Y'::bpchar,
     dept_remark    VARCHAR(300),
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -34,4 +34,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_dept.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.upd_date IS '수정일';
 
+CREATE INDEX idx_sy_dept_site ON shopjoy_2604.sy_dept USING btree (site_id);
 CREATE UNIQUE INDEX sy_dept_dept_code_key ON shopjoy_2604.sy_dept USING btree (dept_code);

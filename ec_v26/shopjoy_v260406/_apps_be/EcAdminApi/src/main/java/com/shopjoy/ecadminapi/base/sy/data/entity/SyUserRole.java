@@ -25,6 +25,10 @@ public class SyUserRole extends BaseEntity {
     @Column(name = "user_role_id", length = 21, nullable = false)
     private String userRoleId;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("사용자ID (sy_user.user_id, UNIQUE with role_id)")
     @Column(name = "user_id", length = 21, nullable = false)
     private String userId;

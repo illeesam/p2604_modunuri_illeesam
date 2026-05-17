@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.sy_brand (
     brand_id     VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21) ,
+    site_id      VARCHAR(21)  NOT NULL,
     brand_code   VARCHAR(50)  NOT NULL,
     brand_nm     VARCHAR(100) NOT NULL,
     brand_en_nm  VARCHAR(100),
@@ -11,7 +11,7 @@ CREATE TABLE shopjoy_2604.sy_brand (
     logo_url     VARCHAR(500),
     vendor_id    VARCHAR(21) ,
     sort_ord     INTEGER      DEFAULT 0,
-    use_yn       VARCHAR(1)   DEFAULT 'Y',
+    use_yn       VARCHAR(1)   DEFAULT 'Y'::bpchar,
     brand_remark VARCHAR(300),
     reg_by       VARCHAR(30) ,
     reg_date     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -36,4 +36,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_brand.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.upd_date IS '수정일';
 
+CREATE INDEX idx_sy_brand_site ON shopjoy_2604.sy_brand USING btree (site_id);
 CREATE UNIQUE INDEX sy_brand_brand_code_key ON shopjoy_2604.sy_brand USING btree (brand_code);

@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.od_cart (
     cart_id       VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     member_id     VARCHAR(21) ,
     session_key   VARCHAR(100),
     prod_id       VARCHAR(21)  NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.od_cart (
     unit_price    BIGINT       DEFAULT 0,
     order_qty     INTEGER      DEFAULT 1,
     item_price    BIGINT       DEFAULT 0,
-    is_checked    VARCHAR(1)   DEFAULT 'Y',
+    is_checked    VARCHAR(1)   DEFAULT 'Y'::bpchar,
     reg_by        VARCHAR(30) ,
     reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by        VARCHAR(30) ,
@@ -41,3 +41,4 @@ COMMENT ON COLUMN shopjoy_2604.od_cart.upd_date IS '수정일';
 CREATE INDEX idx_od_cart_member ON shopjoy_2604.od_cart USING btree (member_id);
 CREATE INDEX idx_od_cart_prod ON shopjoy_2604.od_cart USING btree (prod_id);
 CREATE INDEX idx_od_cart_session ON shopjoy_2604.od_cart USING btree (session_key);
+CREATE INDEX idx_od_cart_site ON shopjoy_2604.od_cart USING btree (site_id);

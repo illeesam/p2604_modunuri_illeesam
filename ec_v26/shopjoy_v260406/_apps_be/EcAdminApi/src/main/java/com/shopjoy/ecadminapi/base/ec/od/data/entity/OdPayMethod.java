@@ -23,6 +23,10 @@ public class OdPayMethod extends BaseEntity {
     @Column(name = "pay_method_id", length = 21, nullable = false)
     private String payMethodId;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;

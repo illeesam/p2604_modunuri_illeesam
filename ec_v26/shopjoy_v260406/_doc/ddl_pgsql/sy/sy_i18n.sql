@@ -3,13 +3,13 @@
 
 CREATE TABLE shopjoy_2604.sy_i18n (
     i18n_id       VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     i18n_key      VARCHAR(200) NOT NULL,
     i18n_desc     VARCHAR(200),
-    i18n_scope_cd VARCHAR(20)  DEFAULT 'COMMON',
+    i18n_scope_cd VARCHAR(20)  DEFAULT 'COMMON'::character varying,
     i18n_category VARCHAR(50) ,
     sort_ord      INTEGER      DEFAULT 0,
-    use_yn        VARCHAR(1)   DEFAULT 'Y',
+    use_yn        VARCHAR(1)   DEFAULT 'Y'::bpchar,
     reg_by        VARCHAR(30) ,
     reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by        VARCHAR(30) ,

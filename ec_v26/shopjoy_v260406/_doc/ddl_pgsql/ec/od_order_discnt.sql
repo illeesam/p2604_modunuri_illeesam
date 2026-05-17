@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.od_order_discnt (
     order_discnt_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21) ,
+    site_id         VARCHAR(21)  NOT NULL,
     order_id        VARCHAR(21)  NOT NULL,
     discnt_type_cd  VARCHAR(30)  NOT NULL,
     coupon_id       VARCHAR(21) ,
@@ -11,7 +11,7 @@ CREATE TABLE shopjoy_2604.od_order_discnt (
     discnt_rate     NUMERIC(5,2),
     discnt_amt      BIGINT       DEFAULT 0,
     base_item_amt   BIGINT       DEFAULT 0,
-    restore_yn      VARCHAR(1)   DEFAULT 'N',
+    restore_yn      VARCHAR(1)   DEFAULT 'N'::bpchar,
     restore_amt     BIGINT       DEFAULT 0,
     restore_date    TIMESTAMP   ,
     reg_by          VARCHAR(30) ,
@@ -39,4 +39,5 @@ COMMENT ON COLUMN shopjoy_2604.od_order_discnt.reg_date IS '등록일시';
 CREATE INDEX idx_od_order_discnt_coupon ON shopjoy_2604.od_order_discnt USING btree (coupon_id) WHERE (coupon_id IS NOT NULL);
 CREATE INDEX idx_od_order_discnt_order ON shopjoy_2604.od_order_discnt USING btree (order_id);
 CREATE INDEX idx_od_order_discnt_restore ON shopjoy_2604.od_order_discnt USING btree (restore_yn);
+CREATE INDEX idx_od_order_discnt_site ON shopjoy_2604.od_order_discnt USING btree (site_id);
 CREATE INDEX idx_od_order_discnt_type ON shopjoy_2604.od_order_discnt USING btree (discnt_type_cd);

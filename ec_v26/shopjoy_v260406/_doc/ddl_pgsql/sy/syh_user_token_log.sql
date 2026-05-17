@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.syh_user_token_log (
     log_id           VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21) ,
+    site_id          VARCHAR(21)  NOT NULL,
     user_id          VARCHAR(21)  NOT NULL,
     login_log_id     VARCHAR(21) ,
     action_cd        VARCHAR(20)  NOT NULL,
@@ -55,4 +55,5 @@ COMMENT ON COLUMN shopjoy_2604.syh_user_token_log.access_token_exp IS '액세스
 CREATE INDEX idx_syh_user_token_log_action ON shopjoy_2604.syh_user_token_log USING btree (action_cd);
 CREATE INDEX idx_syh_user_token_log_date ON shopjoy_2604.syh_user_token_log USING btree (reg_date);
 CREATE INDEX idx_syh_user_token_log_login_log ON shopjoy_2604.syh_user_token_log USING btree (login_log_id);
+CREATE INDEX idx_syh_user_token_log_site ON shopjoy_2604.syh_user_token_log USING btree (site_id);
 CREATE INDEX idx_syh_user_token_log_user ON shopjoy_2604.syh_user_token_log USING btree (user_id);

@@ -3,12 +3,12 @@
 
 CREATE TABLE shopjoy_2604.pd_prod_opt (
     opt_id            VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id           VARCHAR(21),
+    site_id           VARCHAR(21) NOT NULL,
     prod_id           VARCHAR(21) NOT NULL,
     opt_grp_nm        VARCHAR(50) NOT NULL,
     opt_level         INTEGER     NOT NULL DEFAULT 1,
     opt_type_cd       VARCHAR(20),
-    opt_input_type_cd VARCHAR(20) DEFAULT 'SELECT',
+    opt_input_type_cd VARCHAR(20) DEFAULT 'SELECT'::character varying,
     sort_ord          INTEGER     DEFAULT 0,
     reg_by            VARCHAR(30),
     reg_date          TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -29,3 +29,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.reg_by IS '등록자 (sy_user.user_id
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.upd_date IS '수정일';
+
+CREATE INDEX idx_pd_prod_opt_site ON shopjoy_2604.pd_prod_opt USING btree (site_id);

@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.odh_claim_item_status_hist (
     claim_item_status_hist_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                     VARCHAR(21) ,
+    site_id                     VARCHAR(21)  NOT NULL,
     claim_item_id               VARCHAR(21)  NOT NULL,
     claim_id                    VARCHAR(21) ,
     order_item_id               VARCHAR(21) ,
@@ -41,3 +41,4 @@ CREATE INDEX idx_od_ci_status_hist_claim ON shopjoy_2604.odh_claim_item_status_h
 CREATE INDEX idx_od_ci_status_hist_date ON shopjoy_2604.odh_claim_item_status_hist USING btree (chg_date);
 CREATE INDEX idx_od_ci_status_hist_item ON shopjoy_2604.odh_claim_item_status_hist USING btree (claim_item_id);
 CREATE INDEX idx_od_ci_status_hist_oi ON shopjoy_2604.odh_claim_item_status_hist USING btree (order_item_id);
+CREATE INDEX idx_odh_claim_item_status_hist_site ON shopjoy_2604.odh_claim_item_status_hist USING btree (site_id);

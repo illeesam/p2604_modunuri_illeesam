@@ -25,7 +25,7 @@ public class CmhPushLog extends BaseEntity {
     private String logId;
 
     @Comment("사이트ID")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("발송채널 (코드: PUSH_CHANNEL)")

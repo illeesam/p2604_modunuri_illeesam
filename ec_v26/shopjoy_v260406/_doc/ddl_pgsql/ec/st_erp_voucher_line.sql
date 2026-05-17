@@ -17,7 +17,8 @@ CREATE TABLE shopjoy_2604.st_erp_voucher_line (
     reg_by              VARCHAR(30) ,
     reg_date            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by              VARCHAR(30) ,
-    upd_date            TIMESTAMP   
+    upd_date            TIMESTAMP   ,
+    site_id             VARCHAR(21)  NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.st_erp_voucher_line IS 'ERP 전표 라인 (분개 항목, 차변/대변 1행씩)';
@@ -38,5 +39,6 @@ COMMENT ON COLUMN shopjoy_2604.st_erp_voucher_line.reg_date IS '등록일';
 
 CREATE INDEX idx_st_erp_voucher_line_account ON shopjoy_2604.st_erp_voucher_line USING btree (account_cd);
 CREATE INDEX idx_st_erp_voucher_line_ref ON shopjoy_2604.st_erp_voucher_line USING btree (ref_id);
+CREATE INDEX idx_st_erp_voucher_line_site ON shopjoy_2604.st_erp_voucher_line USING btree (site_id);
 CREATE INDEX idx_st_erp_voucher_line_voucher ON shopjoy_2604.st_erp_voucher_line USING btree (erp_voucher_id);
 CREATE UNIQUE INDEX st_erp_voucher_line_erp_voucher_id_line_no_key ON shopjoy_2604.st_erp_voucher_line USING btree (erp_voucher_id, line_no);

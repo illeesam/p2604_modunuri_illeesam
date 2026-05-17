@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.pd_prod_bundle_item (
     bundle_item_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21) ,
+    site_id        VARCHAR(21)  NOT NULL,
     bundle_prod_id VARCHAR(21)  NOT NULL,
     item_prod_id   VARCHAR(21)  NOT NULL,
     item_sku_id    VARCHAR(21) ,
     item_qty       INTEGER      DEFAULT 1,
     price_rate     NUMERIC(5,2) NOT NULL,
     sort_ord       INTEGER      DEFAULT 0,
-    use_yn         VARCHAR(1)   DEFAULT 'Y',
+    use_yn         VARCHAR(1)   DEFAULT 'Y'::bpchar,
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
@@ -34,4 +34,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.upd_date IS '수정일';
 
 CREATE INDEX idx_pd_prod_bundle_item_bundle ON shopjoy_2604.pd_prod_bundle_item USING btree (bundle_prod_id, sort_ord);
 CREATE INDEX idx_pd_prod_bundle_item_item ON shopjoy_2604.pd_prod_bundle_item USING btree (item_prod_id);
+CREATE INDEX idx_pd_prod_bundle_item_site ON shopjoy_2604.pd_prod_bundle_item USING btree (site_id);
 CREATE UNIQUE INDEX pd_prod_bundle_item_bundle_prod_id_item_prod_id_key ON shopjoy_2604.pd_prod_bundle_item USING btree (bundle_prod_id, item_prod_id);

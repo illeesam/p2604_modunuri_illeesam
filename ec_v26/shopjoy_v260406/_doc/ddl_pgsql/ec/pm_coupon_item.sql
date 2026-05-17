@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.pm_coupon_item (
     coupon_item_id VARCHAR(21) NOT NULL PRIMARY KEY,
     coupon_id      VARCHAR(21) NOT NULL,
-    site_id        VARCHAR(21),
+    site_id        VARCHAR(21) NOT NULL,
     target_type_cd VARCHAR(20) NOT NULL,
     target_id      VARCHAR(21) NOT NULL,
     reg_by         VARCHAR(30),
@@ -23,5 +23,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon_item.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_item.reg_date IS '등록일';
 
 CREATE INDEX idx_pm_coupon_item_coupon ON shopjoy_2604.pm_coupon_item USING btree (coupon_id);
+CREATE INDEX idx_pm_coupon_item_site ON shopjoy_2604.pm_coupon_item USING btree (site_id);
 CREATE INDEX idx_pm_coupon_item_target ON shopjoy_2604.pm_coupon_item USING btree (target_type_cd, target_id);
 CREATE UNIQUE INDEX pm_coupon_item_coupon_id_target_type_cd_target_id_key ON shopjoy_2604.pm_coupon_item USING btree (coupon_id, target_type_cd, target_id);

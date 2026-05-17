@@ -27,7 +27,7 @@ public class OdOrderItem extends BaseEntity {
     private String orderItemId;
 
     @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("주문ID (od_order.)")

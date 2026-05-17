@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pm_save_usage (
     save_usage_id VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21),
+    site_id       VARCHAR(21) NOT NULL,
     member_id     VARCHAR(21) NOT NULL,
     order_id      VARCHAR(21),
     order_item_id VARCHAR(21),
@@ -34,3 +34,4 @@ CREATE INDEX idx_pm_save_usage_item ON shopjoy_2604.pm_save_usage USING btree (o
 CREATE INDEX idx_pm_save_usage_member ON shopjoy_2604.pm_save_usage USING btree (member_id);
 CREATE INDEX idx_pm_save_usage_order ON shopjoy_2604.pm_save_usage USING btree (order_id);
 CREATE INDEX idx_pm_save_usage_prod ON shopjoy_2604.pm_save_usage USING btree (prod_id);
+CREATE INDEX idx_pm_save_usage_site ON shopjoy_2604.pm_save_usage USING btree (site_id);

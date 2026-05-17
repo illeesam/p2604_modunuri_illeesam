@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pm_event_benefit (
     benefit_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21) ,
+    site_id         VARCHAR(21)  NOT NULL,
     event_id        VARCHAR(21)  NOT NULL,
     benefit_nm      VARCHAR(100) NOT NULL,
     benefit_type_cd VARCHAR(20) ,
@@ -33,3 +33,4 @@ COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.upd_by IS '수정자 (sy_user.us
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.upd_date IS '수정일';
 
 CREATE INDEX idx_pm_event_benefit_event ON shopjoy_2604.pm_event_benefit USING btree (event_id);
+CREATE INDEX idx_pm_event_benefit_site ON shopjoy_2604.pm_event_benefit USING btree (site_id);

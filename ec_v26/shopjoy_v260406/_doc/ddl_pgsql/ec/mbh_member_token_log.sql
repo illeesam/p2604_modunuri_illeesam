@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.mbh_member_token_log (
     log_id           VARCHAR(21)   NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21)  ,
+    site_id          VARCHAR(21)   NOT NULL,
     member_id        VARCHAR(21)   NOT NULL,
     login_log_id     VARCHAR(21)  ,
     action_cd        VARCHAR(20)   NOT NULL,
@@ -56,3 +56,4 @@ CREATE INDEX idx_mbh_member_token_log_action ON shopjoy_2604.mbh_member_token_lo
 CREATE INDEX idx_mbh_member_token_log_date ON shopjoy_2604.mbh_member_token_log USING btree (reg_date);
 CREATE INDEX idx_mbh_member_token_log_login_log ON shopjoy_2604.mbh_member_token_log USING btree (login_log_id);
 CREATE INDEX idx_mbh_member_token_log_member ON shopjoy_2604.mbh_member_token_log USING btree (member_id);
+CREATE INDEX idx_mbh_member_token_log_site ON shopjoy_2604.mbh_member_token_log USING btree (site_id);

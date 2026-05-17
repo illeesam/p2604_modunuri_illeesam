@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.pm_plan_item (
     plan_item_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
     plan_id        VARCHAR(21)  NOT NULL,
-    site_id        VARCHAR(21) ,
+    site_id        VARCHAR(21)  NOT NULL,
     prod_id        VARCHAR(21)  NOT NULL,
     sort_ord       INTEGER      DEFAULT 0,
     plan_item_memo VARCHAR(500),
@@ -28,4 +28,5 @@ COMMENT ON COLUMN shopjoy_2604.pm_plan_item.upd_date IS '수정일';
 
 CREATE INDEX idx_pm_plan_item_plan ON shopjoy_2604.pm_plan_item USING btree (plan_id);
 CREATE INDEX idx_pm_plan_item_prod ON shopjoy_2604.pm_plan_item USING btree (prod_id);
+CREATE INDEX idx_pm_plan_item_site ON shopjoy_2604.pm_plan_item USING btree (site_id);
 CREATE UNIQUE INDEX pm_plan_item_plan_id_prod_id_key ON shopjoy_2604.pm_plan_item USING btree (plan_id, prod_id);

@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.sy_prop (
     prop_id      VARCHAR(21)  NOT NULL DEFAULT nextval('sy_prop_prop_id_seq'::regclass) PRIMARY KEY,
-    site_id      VARCHAR(21) ,
+    site_id      VARCHAR(21)  NOT NULL,
     path_id      VARCHAR(21)  NOT NULL,
     prop_key     VARCHAR(100) NOT NULL,
     prop_value   TEXT        ,
     prop_label   VARCHAR(200) NOT NULL,
-    prop_type_cd VARCHAR(20)  DEFAULT 'STRING',
+    prop_type_cd VARCHAR(20)  DEFAULT 'STRING'::character varying,
     sort_ord     INTEGER      DEFAULT 0,
-    use_yn       VARCHAR(1)   DEFAULT 'Y',
+    use_yn       VARCHAR(1)   DEFAULT 'Y'::bpchar,
     prop_remark  VARCHAR(500),
     reg_by       VARCHAR(30) ,
     reg_date     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,

@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.sy_batch (
     batch_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id           VARCHAR(21) ,
+    site_id           VARCHAR(21)  NOT NULL,
     batch_code        VARCHAR(50)  NOT NULL,
     batch_nm          VARCHAR(100) NOT NULL,
     batch_desc        TEXT        ,
@@ -12,8 +12,8 @@ CREATE TABLE shopjoy_2604.sy_batch (
     batch_last_run    TIMESTAMP   ,
     batch_next_run    TIMESTAMP   ,
     batch_run_count   INTEGER      DEFAULT 0,
-    batch_status_cd   VARCHAR(20)  DEFAULT 'ACTIVE',
-    batch_run_status  VARCHAR(20)  DEFAULT 'IDLE',
+    batch_status_cd   VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
+    batch_run_status  VARCHAR(20)  DEFAULT 'IDLE'::character varying,
     batch_timeout_sec INTEGER      DEFAULT 300,
     batch_memo        TEXT        ,
     reg_by            VARCHAR(30) ,
@@ -44,4 +44,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_batch.upd_by IS '수정자 (sy_user.user_id, e
 COMMENT ON COLUMN shopjoy_2604.sy_batch.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 
+CREATE INDEX idx_sy_batch_site ON shopjoy_2604.sy_batch USING btree (site_id);
 CREATE UNIQUE INDEX sy_batch_batch_code_key ON shopjoy_2604.sy_batch USING btree (batch_code);

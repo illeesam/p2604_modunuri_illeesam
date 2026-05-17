@@ -3,16 +3,16 @@
 
 CREATE TABLE shopjoy_2604.sy_vendor_brand (
     vendor_brand_id     VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id             VARCHAR(21) ,
+    site_id             VARCHAR(21)  NOT NULL,
     vendor_id           VARCHAR(21)  NOT NULL,
     brand_id            VARCHAR(21)  NOT NULL,
-    is_main             VARCHAR(1)   DEFAULT 'N',
+    is_main             VARCHAR(1)   DEFAULT 'N'::bpchar,
     contract_cd         VARCHAR(20) ,
     start_date          DATE        ,
     end_date            DATE        ,
     commission_rate     NUMERIC(5,2),
     sort_ord            INTEGER      DEFAULT 0,
-    use_yn              VARCHAR(1)   DEFAULT 'Y',
+    use_yn              VARCHAR(1)   DEFAULT 'Y'::bpchar,
     vendor_brand_remark VARCHAR(500),
     reg_by              VARCHAR(30) ,
     reg_date            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -39,6 +39,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.upd_by IS '수정자 (sy_user.use
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.upd_date IS '수정일';
 
 CREATE INDEX idx_sy_vendor_brand_brand ON shopjoy_2604.sy_vendor_brand USING btree (brand_id);
+CREATE INDEX idx_sy_vendor_brand_site ON shopjoy_2604.sy_vendor_brand USING btree (site_id);
 CREATE INDEX idx_sy_vendor_brand_use ON shopjoy_2604.sy_vendor_brand USING btree (use_yn);
 CREATE INDEX idx_sy_vendor_brand_vendor ON shopjoy_2604.sy_vendor_brand USING btree (vendor_id);
 CREATE UNIQUE INDEX sy_vendor_brand_vendor_id_brand_id_key ON shopjoy_2604.sy_vendor_brand USING btree (vendor_id, brand_id);

@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pd_review (
     review_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21) ,
+    site_id                 VARCHAR(21)  NOT NULL,
     prod_id                 VARCHAR(21)  NOT NULL,
     member_id               VARCHAR(21)  NOT NULL,
     review_title            VARCHAR(200) NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE shopjoy_2604.pd_review (
     rating                  NUMERIC(3,1) NOT NULL,
     helpful_cnt             INTEGER      DEFAULT 0,
     unhelpful_cnt           INTEGER      DEFAULT 0,
-    review_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE',
+    review_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     review_status_cd_before VARCHAR(20) ,
     review_date             TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     reg_by                  VARCHAR(30) ,
@@ -41,4 +41,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_review.upd_date IS '수정일';
 CREATE INDEX idx_pd_review_date ON shopjoy_2604.pd_review USING btree (review_date);
 CREATE INDEX idx_pd_review_member ON shopjoy_2604.pd_review USING btree (member_id);
 CREATE INDEX idx_pd_review_prod ON shopjoy_2604.pd_review USING btree (prod_id);
+CREATE INDEX idx_pd_review_site ON shopjoy_2604.pd_review USING btree (site_id);
 CREATE INDEX idx_pd_review_status ON shopjoy_2604.pd_review USING btree (review_status_cd);

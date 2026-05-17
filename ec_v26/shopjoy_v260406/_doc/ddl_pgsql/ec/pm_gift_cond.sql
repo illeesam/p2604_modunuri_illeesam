@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.pm_gift_cond (
     gift_cond_id   VARCHAR(21) NOT NULL PRIMARY KEY,
     gift_id        VARCHAR(21) NOT NULL,
-    site_id        VARCHAR(21),
+    site_id        VARCHAR(21) NOT NULL,
     cond_type_cd   VARCHAR(20) NOT NULL,
     min_order_amt  BIGINT      DEFAULT 0,
     target_type_cd VARCHAR(20),
@@ -27,3 +27,4 @@ COMMENT ON COLUMN shopjoy_2604.pm_gift_cond.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pm_gift_cond.reg_date IS '등록일';
 
 CREATE INDEX idx_pm_gift_cond_gift ON shopjoy_2604.pm_gift_cond USING btree (gift_id);
+CREATE INDEX idx_pm_gift_cond_site ON shopjoy_2604.pm_gift_cond USING btree (site_id);

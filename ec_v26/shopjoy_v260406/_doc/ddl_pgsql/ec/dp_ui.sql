@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.dp_ui (
     ui_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21) ,
+    site_id        VARCHAR(21)  NOT NULL,
     ui_cd          VARCHAR(50)  NOT NULL,
     ui_nm          VARCHAR(100) NOT NULL,
     ui_desc        VARCHAR(300),
     device_type_cd VARCHAR(30) ,
     path_id        VARCHAR(21) ,
     sort_ord       INTEGER      DEFAULT 0,
-    use_yn         VARCHAR(1)   DEFAULT 'Y',
+    use_yn         VARCHAR(1)   DEFAULT 'Y'::bpchar,
     use_start_date DATE        ,
     use_end_date   DATE        ,
     reg_by         VARCHAR(30) ,

@@ -6,12 +6,12 @@ CREATE TABLE shopjoy_2604.st_settle_config (
     site_id              VARCHAR(21)  NOT NULL,
     vendor_id            VARCHAR(21) ,
     category_id          VARCHAR(21) ,
-    settle_cycle_cd      VARCHAR(20)  DEFAULT 'MONTHLY',
+    settle_cycle_cd      VARCHAR(20)  DEFAULT 'MONTHLY'::character varying,
     settle_day           INTEGER      DEFAULT 10,
     commission_rate      NUMERIC(5,2) DEFAULT 0,
     min_settle_amt       BIGINT       DEFAULT 0,
     settle_config_remark VARCHAR(500),
-    use_yn               VARCHAR(1)   DEFAULT 'Y',
+    use_yn               VARCHAR(1)   DEFAULT 'Y'::bpchar,
     reg_by               VARCHAR(30) ,
     reg_date             TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by               VARCHAR(30) ,
@@ -35,5 +35,6 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_config.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.st_settle_config.upd_date IS '수정일';
 
 CREATE INDEX idx_st_settle_config_category ON shopjoy_2604.st_settle_config USING btree (site_id, category_id);
+CREATE INDEX idx_st_settle_config_site ON shopjoy_2604.st_settle_config USING btree (site_id);
 CREATE INDEX idx_st_settle_config_vendor ON shopjoy_2604.st_settle_config USING btree (site_id, vendor_id);
 CREATE UNIQUE INDEX st_settle_config_site_id_vendor_id_category_id_key ON shopjoy_2604.st_settle_config USING btree (site_id, vendor_id, category_id);

@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.pm_save_item (
     save_item_id   VARCHAR(21) NOT NULL PRIMARY KEY,
     save_id        VARCHAR(21) NOT NULL,
-    site_id        VARCHAR(21),
+    site_id        VARCHAR(21) NOT NULL,
     target_type_cd VARCHAR(20) NOT NULL,
     target_id      VARCHAR(21) NOT NULL,
     reg_by         VARCHAR(30),
@@ -25,6 +25,7 @@ COMMENT ON COLUMN shopjoy_2604.pm_save_item.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.pm_save_item.upd_by IS '수정자 ID';
 COMMENT ON COLUMN shopjoy_2604.pm_save_item.upd_date IS '수정일시';
 
+CREATE INDEX idx_pm_save_item_site ON shopjoy_2604.pm_save_item USING btree (site_id);
 CREATE INDEX idx_pm_si_reg_date ON shopjoy_2604.pm_save_item USING btree (reg_date DESC);
 CREATE INDEX idx_pm_si_save_id ON shopjoy_2604.pm_save_item USING btree (save_id);
 CREATE INDEX idx_pm_si_site_id ON shopjoy_2604.pm_save_item USING btree (site_id);

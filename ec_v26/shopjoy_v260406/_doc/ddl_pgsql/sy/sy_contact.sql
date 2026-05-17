@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.sy_contact (
     contact_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id           VARCHAR(21) ,
+    site_id           VARCHAR(21)  NOT NULL,
     member_id         VARCHAR(21) ,
     member_nm         VARCHAR(50) ,
     category_cd       VARCHAR(30) ,
     contact_title     VARCHAR(200) NOT NULL,
     contact_content   TEXT         NOT NULL,
     attach_grp_id     VARCHAR(21) ,
-    contact_status_cd VARCHAR(20)  DEFAULT 'PENDING',
+    contact_status_cd VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     contact_answer    TEXT        ,
     answer_user_id    VARCHAR(21) ,
     answer_date       TIMESTAMP   ,
@@ -39,3 +39,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_contact.reg_by IS '등록자 (sy_user.user_id,
 COMMENT ON COLUMN shopjoy_2604.sy_contact.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.upd_date IS '수정일';
+
+CREATE INDEX idx_sy_contact_site ON shopjoy_2604.sy_contact USING btree (site_id);

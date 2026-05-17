@@ -23,7 +23,7 @@ public class SyDept extends BaseEntity {
     private String deptId;
 
     @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("부서코드")

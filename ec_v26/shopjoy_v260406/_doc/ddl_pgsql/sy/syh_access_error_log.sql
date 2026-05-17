@@ -30,7 +30,8 @@ CREATE TABLE shopjoy_2604.syh_access_error_log (
     file_nm      VARCHAR(200) ,
     func_nm      VARCHAR(200) ,
     line_no      VARCHAR(10)  ,
-    trace_id     VARCHAR(50)  
+    trace_id     VARCHAR(50)  ,
+    site_id      VARCHAR(21)   NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.syh_access_error_log IS 'HTTP 요청 에러 로그 (비동기 수집)';
@@ -58,6 +59,7 @@ COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.logger_nm IS '로거 클래�
 COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.log_dt IS '에러 발생 시각';
 COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.reg_date IS 'DB 저장 시각';
 
+CREATE INDEX idx_syh_access_error_log_site ON shopjoy_2604.syh_access_error_log USING btree (site_id);
 CREATE INDEX idx_syh_ael_error_type ON shopjoy_2604.syh_access_error_log USING btree (error_type);
 CREATE INDEX idx_syh_ael_log_dt ON shopjoy_2604.syh_access_error_log USING btree (log_dt DESC);
 CREATE INDEX idx_syh_ael_req_path ON shopjoy_2604.syh_access_error_log USING btree (req_path);

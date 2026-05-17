@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.od_refund (
     refund_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21) ,
+    site_id                 VARCHAR(21)  NOT NULL,
     order_id                VARCHAR(21)  NOT NULL,
     claim_id                VARCHAR(21) ,
     refund_type_cd          VARCHAR(20)  NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.od_refund (
     refund_save_amt         BIGINT       DEFAULT 0,
     refund_cache_amt        BIGINT       DEFAULT 0,
     total_refund_amt        BIGINT       DEFAULT 0,
-    refund_status_cd        VARCHAR(20)  DEFAULT 'PENDING',
+    refund_status_cd        VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     refund_status_cd_before VARCHAR(20) ,
     refund_req_date         TIMESTAMP   ,
     refund_complt_date      TIMESTAMP   ,
@@ -53,4 +53,5 @@ COMMENT ON COLUMN shopjoy_2604.od_refund.upd_date IS '수정일시';
 CREATE INDEX idx_od_refund_claim ON shopjoy_2604.od_refund USING btree (claim_id) WHERE (claim_id IS NOT NULL);
 CREATE INDEX idx_od_refund_order ON shopjoy_2604.od_refund USING btree (order_id);
 CREATE INDEX idx_od_refund_req_date ON shopjoy_2604.od_refund USING btree (refund_req_date);
+CREATE INDEX idx_od_refund_site ON shopjoy_2604.od_refund USING btree (site_id);
 CREATE INDEX idx_od_refund_status ON shopjoy_2604.od_refund USING btree (refund_status_cd);

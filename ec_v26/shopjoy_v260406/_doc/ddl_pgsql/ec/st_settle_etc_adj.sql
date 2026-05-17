@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.st_settle_etc_adj (
     settle_etc_adj_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
     settle_id           VARCHAR(21)  NOT NULL,
-    site_id             VARCHAR(21) ,
+    site_id             VARCHAR(21)  NOT NULL,
     etc_adj_type_cd     VARCHAR(20)  NOT NULL,
     etc_adj_dir_cd      VARCHAR(10)  NOT NULL,
     etc_adj_amt         BIGINT       NOT NULL,
@@ -31,3 +31,4 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_etc_adj.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.st_settle_etc_adj.upd_date IS '수정일';
 
 CREATE INDEX idx_st_settle_etc_adj_settle ON shopjoy_2604.st_settle_etc_adj USING btree (settle_id);
+CREATE INDEX idx_st_settle_etc_adj_site ON shopjoy_2604.st_settle_etc_adj USING btree (site_id);

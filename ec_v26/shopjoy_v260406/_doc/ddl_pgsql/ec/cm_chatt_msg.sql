@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.cm_chatt_msg (
     chatt_msg_id  VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21),
+    site_id       VARCHAR(21) NOT NULL,
     chatt_room_id VARCHAR(21) NOT NULL,
     sender_cd     VARCHAR(20) NOT NULL,
     msg_text      TEXT       ,
     ref_type      VARCHAR(20),
     ref_id        VARCHAR(21),
     send_date     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
-    read_yn       VARCHAR(1)  DEFAULT 'N',
+    read_yn       VARCHAR(1)  DEFAULT 'N'::bpchar,
     reg_by        VARCHAR(30),
     reg_date      TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by        VARCHAR(30),
@@ -31,3 +31,5 @@ COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.reg_by IS '등록자 (sy_user.user_i
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.upd_date IS '수정일';
+
+CREATE INDEX idx_cm_chatt_msg_site ON shopjoy_2604.cm_chatt_msg USING btree (site_id);

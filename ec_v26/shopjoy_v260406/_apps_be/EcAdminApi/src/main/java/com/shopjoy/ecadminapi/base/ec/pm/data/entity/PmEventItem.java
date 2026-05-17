@@ -28,7 +28,7 @@ public class PmEventItem extends BaseEntity {
     private String eventId;
 
     @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("대상유형 (코드: EVENT_ITEM_TARGET — PRODUCT/CATEGORY/VENDOR/BRAND)")

@@ -3,29 +3,27 @@
 
 CREATE TABLE shopjoy_2604.pd_prod (
     prod_id               VARCHAR(21)   NOT NULL PRIMARY KEY,
-    site_id               VARCHAR(21)  ,
+    site_id               VARCHAR(21)   NOT NULL,
     category_id           VARCHAR(21)  ,
     brand_id              VARCHAR(21)  ,
     vendor_id             VARCHAR(21)  ,
     md_user_id            VARCHAR(21)  ,
     prod_nm               VARCHAR(200)  NOT NULL,
-    prod_type_cd          VARCHAR(20)   DEFAULT 'SINGLE',
+    prod_type_cd          VARCHAR(20)   DEFAULT 'SINGLE'::character varying,
     prod_code             VARCHAR(50)  ,
     list_price            BIGINT        DEFAULT 0,
     sale_price            BIGINT        DEFAULT 0,
     purchase_price        BIGINT       ,
     margin_rate           NUMERIC(5,2) ,
-    platform_fee_rate     NUMERIC(5,2) ,
-    platform_fee_amount   BIGINT       ,
     prod_stock            INTEGER       DEFAULT 0,
-    prod_status_cd        VARCHAR(20)   DEFAULT 'ACTIVE',
+    prod_status_cd        VARCHAR(20)   DEFAULT 'ACTIVE'::character varying,
     prod_status_cd_before VARCHAR(20)  ,
     thumbnail_url         VARCHAR(500) ,
     content_html          TEXT         ,
     weight                NUMERIC(10,2),
     size_info_cd          VARCHAR(100) ,
-    is_new                VARCHAR(1)    DEFAULT 'N',
-    is_best               VARCHAR(1)    DEFAULT 'N',
+    is_new                VARCHAR(1)    DEFAULT 'N'::bpchar,
+    is_best               VARCHAR(1)    DEFAULT 'N'::bpchar,
     view_count            INTEGER       DEFAULT 0,
     sale_count            INTEGER       DEFAULT 0,
     sale_start_date       TIMESTAMP    ,
@@ -34,20 +32,22 @@ CREATE TABLE shopjoy_2604.pd_prod (
     max_buy_qty           INTEGER      ,
     day_max_buy_qty       INTEGER      ,
     id_max_buy_qty        INTEGER      ,
-    adlt_yn               VARCHAR(1)    DEFAULT 'N',
-    same_day_dliv_yn      VARCHAR(1)    DEFAULT 'N',
-    sold_out_yn           VARCHAR(1)    DEFAULT 'N',
+    adlt_yn               VARCHAR(1)    DEFAULT 'N'::bpchar,
+    same_day_dliv_yn      VARCHAR(1)    DEFAULT 'N'::bpchar,
+    sold_out_yn           VARCHAR(1)    DEFAULT 'N'::bpchar,
     dliv_tmplt_id         VARCHAR(21)  ,
-    coupon_use_yn         VARCHAR(1)    DEFAULT 'Y',
-    save_use_yn           VARCHAR(1)    DEFAULT 'Y',
-    discnt_use_yn         VARCHAR(1)    DEFAULT 'Y',
+    coupon_use_yn         VARCHAR(1)    DEFAULT 'Y'::bpchar,
+    save_use_yn           VARCHAR(1)    DEFAULT 'Y'::bpchar,
+    discnt_use_yn         VARCHAR(1)    DEFAULT 'Y'::bpchar,
     advrt_stmt            VARCHAR(500) ,
     advrt_start_date      TIMESTAMP    ,
     advrt_end_date        TIMESTAMP    ,
     reg_by                VARCHAR(30)  ,
     reg_date              TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     upd_by                VARCHAR(30)  ,
-    upd_date              TIMESTAMP    
+    upd_date              TIMESTAMP    ,
+    platform_fee_rate     NUMERIC(5,2) ,
+    platform_fee_amount   BIGINT       
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod IS '상품';
@@ -64,8 +64,6 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.list_price IS '정가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.sale_price IS '판매가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.purchase_price IS '매입가(원가) — 내부 관리용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.margin_rate IS '마진율 (%) — 내부 관리용';
-COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_rate   IS '플랫폼수수료 율 (%) — 내부 관리용';
-COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_amount IS '플랫폼수수료 금액 (원) — 내부 관리용. rate 와 amount 중 입력된 값을 우선 사용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_stock IS '재고수량';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_status_cd IS '상태 (코드: PRODUCT_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_status_cd_before IS '변경 전 상품상태 (코드: PRODUCT_STATUS)';
@@ -97,3 +95,7 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.reg_by IS '등록자 (sy_user.user_id, mb
 COMMENT ON COLUMN shopjoy_2604.pd_prod.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.upd_date IS '수정일';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_rate IS '플랫폼수수료 율 (%) — 내부 관리용';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_amount IS '플랫폼수수료 금액 (원) — 내부 관리용. rate 와 amount 중 입력된 값을 우선 사용';
+
+CREATE INDEX idx_pd_prod_site ON shopjoy_2604.pd_prod USING btree (site_id);

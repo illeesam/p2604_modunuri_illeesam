@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pm_save_issue (
     save_issue_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                VARCHAR(21) ,
+    site_id                VARCHAR(21)  NOT NULL,
     member_id              VARCHAR(21)  NOT NULL,
     save_issue_type_cd     VARCHAR(20)  NOT NULL,
     save_amt               BIGINT       NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE shopjoy_2604.pm_save_issue (
     order_item_id          VARCHAR(21) ,
     prod_id                VARCHAR(21) ,
     expire_date            TIMESTAMP   ,
-    issue_status_cd        VARCHAR(20)  DEFAULT 'PENDING',
+    issue_status_cd        VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     issue_status_cd_before VARCHAR(20) ,
     save_memo              VARCHAR(300),
     reg_by                 VARCHAR(30) ,
@@ -48,5 +48,6 @@ CREATE INDEX idx_pm_save_issue_expire ON shopjoy_2604.pm_save_issue USING btree 
 CREATE INDEX idx_pm_save_issue_item ON shopjoy_2604.pm_save_issue USING btree (order_item_id);
 CREATE INDEX idx_pm_save_issue_member ON shopjoy_2604.pm_save_issue USING btree (member_id);
 CREATE INDEX idx_pm_save_issue_order ON shopjoy_2604.pm_save_issue USING btree (order_id);
+CREATE INDEX idx_pm_save_issue_site ON shopjoy_2604.pm_save_issue USING btree (site_id);
 CREATE INDEX idx_pm_save_issue_status ON shopjoy_2604.pm_save_issue USING btree (issue_status_cd);
 CREATE INDEX idx_pm_save_issue_type ON shopjoy_2604.pm_save_issue USING btree (save_issue_type_cd);

@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.syh_api_log (
     log_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id     VARCHAR(21) ,
+    site_id     VARCHAR(21)  NOT NULL,
     api_type_cd VARCHAR(50)  NOT NULL,
     api_nm      VARCHAR(100),
     method_cd   VARCHAR(10) ,
@@ -11,7 +11,7 @@ CREATE TABLE shopjoy_2604.syh_api_log (
     req_body    TEXT        ,
     res_body    TEXT        ,
     http_status INTEGER     ,
-    result_cd   VARCHAR(20)  DEFAULT 'SUCCESS',
+    result_cd   VARCHAR(20)  DEFAULT 'SUCCESS'::character varying,
     error_msg   VARCHAR(500),
     elapsed_ms  INTEGER     ,
     ref_type_cd VARCHAR(30) ,
@@ -54,4 +54,5 @@ COMMENT ON COLUMN shopjoy_2604.syh_api_log.cmd_nm IS '작업명 (X-Cmd-Nm 헤더
 
 CREATE INDEX idx_syh_api_log_date ON shopjoy_2604.syh_api_log USING btree (call_date);
 CREATE INDEX idx_syh_api_log_ref ON shopjoy_2604.syh_api_log USING btree (ref_type_cd, ref_id);
+CREATE INDEX idx_syh_api_log_site ON shopjoy_2604.syh_api_log USING btree (site_id);
 CREATE INDEX idx_syh_api_log_type ON shopjoy_2604.syh_api_log USING btree (api_type_cd, result_cd);

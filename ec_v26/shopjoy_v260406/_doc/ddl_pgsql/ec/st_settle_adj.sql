@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.st_settle_adj (
     settle_adj_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
     settle_id       VARCHAR(21)  NOT NULL,
-    site_id         VARCHAR(21) ,
+    site_id         VARCHAR(21)  NOT NULL,
     adj_type_cd     VARCHAR(20)  NOT NULL,
     adj_amt         BIGINT       NOT NULL,
     adj_reason      VARCHAR(200) NOT NULL,
@@ -31,3 +31,4 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_adj.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.st_settle_adj.aprv_status_cd IS '승인상태 (코드: SETTLE_ADJ_STATUS — 대기/승인/반려)';
 
 CREATE INDEX idx_st_settle_adj_settle ON shopjoy_2604.st_settle_adj USING btree (settle_id);
+CREATE INDEX idx_st_settle_adj_site ON shopjoy_2604.st_settle_adj USING btree (site_id);

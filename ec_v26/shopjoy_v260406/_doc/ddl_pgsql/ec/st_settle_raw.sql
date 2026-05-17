@@ -5,7 +5,7 @@ CREATE TABLE shopjoy_2604.st_settle_raw (
     settle_raw_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
     site_id              VARCHAR(21)  NOT NULL,
     raw_type_cd          VARCHAR(20)  NOT NULL,
-    raw_status_cd        VARCHAR(20)  DEFAULT 'PENDING',
+    raw_status_cd        VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     raw_status_cd_before VARCHAR(20) ,
     order_id             VARCHAR(21)  NOT NULL,
     order_no             VARCHAR(30) ,
@@ -50,7 +50,7 @@ CREATE TABLE shopjoy_2604.st_settle_raw (
     gift_id              VARCHAR(21) ,
     gift_amt             BIGINT       DEFAULT 0,
     pay_method_cd        VARCHAR(20) ,
-    buy_confirm_yn       VARCHAR(1)   DEFAULT 'N',
+    buy_confirm_yn       VARCHAR(1)   DEFAULT 'N'::bpchar,
     buy_confirm_date     TIMESTAMP   ,
     bundle_price_rate    NUMERIC(5,2),
     settle_target_amt    BIGINT       DEFAULT 0,
@@ -59,12 +59,12 @@ CREATE TABLE shopjoy_2604.st_settle_raw (
     settle_amt           BIGINT       DEFAULT 0,
     settle_period        VARCHAR(7)  ,
     settle_id            VARCHAR(21) ,
-    close_yn             VARCHAR(1)   DEFAULT 'N',
+    close_yn             VARCHAR(1)   DEFAULT 'N'::bpchar,
     close_date           TIMESTAMP   ,
     settle_close_id      VARCHAR(21) ,
     erp_voucher_id       VARCHAR(21) ,
     erp_voucher_line_no  INTEGER     ,
-    erp_send_yn          VARCHAR(1)   DEFAULT 'N',
+    erp_send_yn          VARCHAR(1)   DEFAULT 'N'::bpchar,
     erp_send_date        TIMESTAMP   ,
     reg_by               VARCHAR(30) ,
     reg_date             TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -164,6 +164,7 @@ CREATE INDEX idx_st_settle_raw_period ON shopjoy_2604.st_settle_raw USING btree 
 CREATE INDEX idx_st_settle_raw_prod ON shopjoy_2604.st_settle_raw USING btree (prod_id);
 CREATE INDEX idx_st_settle_raw_promo ON shopjoy_2604.st_settle_raw USING btree (promo_id);
 CREATE INDEX idx_st_settle_raw_settle ON shopjoy_2604.st_settle_raw USING btree (settle_id);
+CREATE INDEX idx_st_settle_raw_site ON shopjoy_2604.st_settle_raw USING btree (site_id);
 CREATE INDEX idx_st_settle_raw_sku ON shopjoy_2604.st_settle_raw USING btree (sku_id);
 CREATE INDEX idx_st_settle_raw_status ON shopjoy_2604.st_settle_raw USING btree (raw_status_cd);
 CREATE INDEX idx_st_settle_raw_vendor ON shopjoy_2604.st_settle_raw USING btree (site_id, vendor_id);

@@ -3,11 +3,11 @@
 
 CREATE TABLE shopjoy_2604.cm_blog_cate (
     blog_cate_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id             VARCHAR(21) ,
+    site_id             VARCHAR(21)  NOT NULL,
     blog_cate_nm        VARCHAR(100) NOT NULL,
     parent_blog_cate_id VARCHAR(21) ,
     sort_ord            INTEGER      DEFAULT 0,
-    use_yn              VARCHAR(1)   DEFAULT 'Y',
+    use_yn              VARCHAR(1)   DEFAULT 'Y'::bpchar,
     reg_by              VARCHAR(30) ,
     reg_date            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by              VARCHAR(30) ,
@@ -25,3 +25,5 @@ COMMENT ON COLUMN shopjoy_2604.cm_blog_cate.reg_by IS '등록자 (sy_user.user_i
 COMMENT ON COLUMN shopjoy_2604.cm_blog_cate.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_cate.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_cate.upd_date IS '수정일';
+
+CREATE INDEX idx_cm_blog_cate_site ON shopjoy_2604.cm_blog_cate USING btree (site_id);

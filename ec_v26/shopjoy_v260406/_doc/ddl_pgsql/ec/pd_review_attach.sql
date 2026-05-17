@@ -3,10 +3,10 @@
 
 CREATE TABLE shopjoy_2604.pd_review_attach (
     review_attach_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21) ,
+    site_id          VARCHAR(21)  NOT NULL,
     review_id        VARCHAR(21)  NOT NULL,
     attach_id        VARCHAR(21)  NOT NULL,
-    media_type_cd    VARCHAR(20)  DEFAULT 'IMAGE',
+    media_type_cd    VARCHAR(20)  DEFAULT 'IMAGE'::character varying,
     thumb_url        VARCHAR(500),
     sort_ord         INTEGER      DEFAULT 0,
     reg_by           VARCHAR(30) ,
@@ -28,5 +28,6 @@ COMMENT ON COLUMN shopjoy_2604.pd_review_attach.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_review_attach.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pd_review_attach.upd_date IS '수정일';
 
+CREATE INDEX idx_pd_review_attach_site ON shopjoy_2604.pd_review_attach USING btree (site_id);
 CREATE INDEX idx_pd_review_media_attach ON shopjoy_2604.pd_review_attach USING btree (attach_id);
 CREATE INDEX idx_pd_review_media_review ON shopjoy_2604.pd_review_attach USING btree (review_id);

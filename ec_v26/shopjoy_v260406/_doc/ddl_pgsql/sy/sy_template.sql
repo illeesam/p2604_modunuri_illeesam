@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.sy_template (
     template_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21) ,
+    site_id          VARCHAR(21)  NOT NULL,
     template_type_cd VARCHAR(20)  NOT NULL,
     template_code    VARCHAR(50)  NOT NULL,
     template_nm      VARCHAR(100) NOT NULL,
     template_subject VARCHAR(200),
     template_content TEXT         NOT NULL,
     sample_params    TEXT        ,
-    use_yn           VARCHAR(1)   DEFAULT 'Y',
+    use_yn           VARCHAR(1)   DEFAULT 'Y'::bpchar,
     reg_by           VARCHAR(30) ,
     reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30) ,
@@ -34,4 +34,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_template.upd_by IS '수정자 (sy_user.user_id
 COMMENT ON COLUMN shopjoy_2604.sy_template.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_template.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 
+CREATE INDEX idx_sy_template_site ON shopjoy_2604.sy_template USING btree (site_id);
 CREATE UNIQUE INDEX sy_template_template_type_cd_template_code_key ON shopjoy_2604.sy_template USING btree (template_type_cd, template_code);

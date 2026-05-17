@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.mb_like (
     like_id        VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21),
+    site_id        VARCHAR(21) NOT NULL,
     member_id      VARCHAR(21) NOT NULL,
     target_type_cd VARCHAR(20) NOT NULL,
     target_id      VARCHAR(21) NOT NULL,
@@ -25,5 +25,6 @@ COMMENT ON COLUMN shopjoy_2604.mb_like.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.mb_like.upd_date IS '수정일';
 
 CREATE INDEX idx_mb_like_member ON shopjoy_2604.mb_like USING btree (member_id);
+CREATE INDEX idx_mb_like_site ON shopjoy_2604.mb_like USING btree (site_id);
 CREATE INDEX idx_mb_like_target ON shopjoy_2604.mb_like USING btree (target_type_cd, target_id);
 CREATE UNIQUE INDEX idx_mb_like_unique ON shopjoy_2604.mb_like USING btree (member_id, target_type_cd, target_id);

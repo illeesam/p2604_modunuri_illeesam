@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pm_cache (
     cache_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     member_id     VARCHAR(21)  NOT NULL,
     member_nm     VARCHAR(50) ,
     cache_type_cd VARCHAR(20)  NOT NULL,
@@ -37,3 +37,5 @@ COMMENT ON COLUMN shopjoy_2604.pm_cache.reg_by IS '등록자 (sy_user.user_id, m
 COMMENT ON COLUMN shopjoy_2604.pm_cache.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_cache.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_cache.upd_date IS '수정일';
+
+CREATE INDEX idx_pm_cache_site ON shopjoy_2604.pm_cache USING btree (site_id);

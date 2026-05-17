@@ -28,7 +28,7 @@ public class PmDiscntItem extends BaseEntity {
     private String discntId;
 
     @Comment("사이트ID")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("대상유형 (코드: DISCNT_ITEM_TARGET)")

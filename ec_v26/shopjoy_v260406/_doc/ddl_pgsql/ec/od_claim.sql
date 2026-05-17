@@ -3,18 +3,18 @@
 
 CREATE TABLE shopjoy_2604.od_claim (
     claim_id                   VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                    VARCHAR(21) ,
+    site_id                    VARCHAR(21)  NOT NULL,
     order_id                   VARCHAR(21)  NOT NULL,
     member_id                  VARCHAR(21) ,
     member_nm                  VARCHAR(50) ,
     claim_type_cd              VARCHAR(20)  NOT NULL,
-    claim_status_cd            VARCHAR(20)  DEFAULT 'REQUESTED',
+    claim_status_cd            VARCHAR(20)  DEFAULT 'REQUESTED'::character varying,
     claim_status_cd_before     VARCHAR(20) ,
     reason_cd                  VARCHAR(50) ,
     reason_detail              TEXT        ,
     prod_nm                    VARCHAR(200),
-    customer_fault_yn          VARCHAR(1)   DEFAULT 'N',
-    claim_cancel_yn            VARCHAR(1)   DEFAULT 'N',
+    customer_fault_yn          VARCHAR(1)   DEFAULT 'N'::bpchar,
+    claim_cancel_yn            VARCHAR(1)   DEFAULT 'N'::bpchar,
     claim_cancel_date          TIMESTAMP   ,
     claim_cancel_reason_cd     VARCHAR(50) ,
     claim_cancel_reason_detail VARCHAR(300),
@@ -60,7 +60,7 @@ CREATE TABLE shopjoy_2604.od_claim (
     exchange_tracking_no       VARCHAR(100),
     outbound_dliv_id           VARCHAR(21) ,
     total_shipping_fee         BIGINT       DEFAULT 0,
-    shipping_fee_paid_yn       VARCHAR(1)   DEFAULT 'N',
+    shipping_fee_paid_yn       VARCHAR(1)   DEFAULT 'N'::bpchar,
     shipping_fee_paid_date     TIMESTAMP   ,
     shipping_fee_memo          VARCHAR(300),
     reg_by                     VARCHAR(30) ,
@@ -159,5 +159,6 @@ COMMENT ON COLUMN shopjoy_2604.od_claim.appr_aprv_date IS '결재일시';
 CREATE INDEX idx_od_claim_date ON shopjoy_2604.od_claim USING btree (request_date);
 CREATE INDEX idx_od_claim_member ON shopjoy_2604.od_claim USING btree (member_id);
 CREATE INDEX idx_od_claim_order ON shopjoy_2604.od_claim USING btree (order_id);
+CREATE INDEX idx_od_claim_site ON shopjoy_2604.od_claim USING btree (site_id);
 CREATE INDEX idx_od_claim_status ON shopjoy_2604.od_claim USING btree (claim_status_cd);
 CREATE INDEX idx_od_claim_type ON shopjoy_2604.od_claim USING btree (claim_type_cd);

@@ -10,6 +10,7 @@ CREATE TABLE shopjoy_2604.sy_i18n_msg (
     reg_date    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by      VARCHAR(30),
     upd_date    TIMESTAMP  ,
+    site_id     VARCHAR(21) NOT NULL,
     CONSTRAINT fk_sy_i18n_msg_i18n FOREIGN KEY (i18n_id) REFERENCES shopjoy_2604.sy_i18n (i18n_id)
 );
 
@@ -25,4 +26,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_i18n_msg.upd_date IS '수정일';
 
 CREATE INDEX idx_sy_i18n_msg_i18n ON shopjoy_2604.sy_i18n_msg USING btree (i18n_id);
 CREATE INDEX idx_sy_i18n_msg_lang ON shopjoy_2604.sy_i18n_msg USING btree (lang_cd);
+CREATE INDEX idx_sy_i18n_msg_site ON shopjoy_2604.sy_i18n_msg USING btree (site_id);
 CREATE UNIQUE INDEX sy_i18n_msg_i18n_id_lang_cd_key ON shopjoy_2604.sy_i18n_msg USING btree (i18n_id, lang_cd);

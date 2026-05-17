@@ -3,10 +3,10 @@
 
 CREATE TABLE shopjoy_2604.mb_member_group (
     member_group_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21) ,
+    site_id         VARCHAR(21)  NOT NULL,
     group_nm        VARCHAR(100) NOT NULL,
     group_memo      TEXT        ,
-    use_yn          VARCHAR(1)   DEFAULT 'Y',
+    use_yn          VARCHAR(1)   DEFAULT 'Y'::character varying,
     reg_by          VARCHAR(30) ,
     reg_date        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(30) ,

@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.sy_vendor (
     vendor_id           VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id             VARCHAR(21) ,
+    site_id             VARCHAR(21)  NOT NULL,
     vendor_no           VARCHAR(20)  NOT NULL,
     corp_no             VARCHAR(20) ,
     vendor_nm           VARCHAR(100) NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE shopjoy_2604.sy_vendor (
     vendor_reg_url      VARCHAR(500),
     open_date           DATE        ,
     contract_date       DATE        ,
-    vendor_status_cd    VARCHAR(20)  DEFAULT 'ACTIVE',
+    vendor_status_cd    VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     path_id             VARCHAR(21) ,
     vendor_remark       VARCHAR(500),
     reg_by              VARCHAR(30) ,

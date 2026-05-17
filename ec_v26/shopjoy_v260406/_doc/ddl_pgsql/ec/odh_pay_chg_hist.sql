@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.odh_pay_chg_hist (
     pay_chg_hist_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id              VARCHAR(21) ,
+    site_id              VARCHAR(21)  NOT NULL,
     pay_id               VARCHAR(21)  NOT NULL,
     order_id             VARCHAR(21)  NOT NULL,
     pay_status_cd_before VARCHAR(20) ,
@@ -47,3 +47,4 @@ CREATE INDEX idx_odh_pay_chg_hist_chg_type ON shopjoy_2604.odh_pay_chg_hist USIN
 CREATE INDEX idx_odh_pay_chg_hist_date ON shopjoy_2604.odh_pay_chg_hist USING btree (chg_date);
 CREATE INDEX idx_odh_pay_chg_hist_order ON shopjoy_2604.odh_pay_chg_hist USING btree (order_id);
 CREATE INDEX idx_odh_pay_chg_hist_pay ON shopjoy_2604.odh_pay_chg_hist USING btree (pay_id);
+CREATE INDEX idx_odh_pay_chg_hist_site ON shopjoy_2604.odh_pay_chg_hist USING btree (site_id);

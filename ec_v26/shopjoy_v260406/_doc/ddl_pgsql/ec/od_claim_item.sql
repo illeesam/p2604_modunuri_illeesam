@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.od_claim_item (
     claim_item_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                     VARCHAR(21) ,
+    site_id                     VARCHAR(21)  NOT NULL,
     claim_id                    VARCHAR(21)  NOT NULL,
     order_item_id               VARCHAR(21)  NOT NULL,
     prod_id                     VARCHAR(21) ,
@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.od_claim_item (
     claim_qty                   INTEGER      DEFAULT 1,
     item_amt                    BIGINT       DEFAULT 0,
     refund_amt                  BIGINT       DEFAULT 0,
-    claim_item_status_cd        VARCHAR(20)  DEFAULT 'REQUESTED',
+    claim_item_status_cd        VARCHAR(20)  DEFAULT 'REQUESTED'::character varying,
     claim_item_status_cd_before VARCHAR(20) ,
     return_shipping_fee         BIGINT       DEFAULT 0,
     inbound_shipping_fee        BIGINT       DEFAULT 0,
@@ -45,3 +45,5 @@ COMMENT ON COLUMN shopjoy_2604.od_claim_item.reg_by IS '등록자 (sy_user.user_
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.upd_date IS '수정일';
+
+CREATE INDEX idx_od_claim_item_site ON shopjoy_2604.od_claim_item USING btree (site_id);

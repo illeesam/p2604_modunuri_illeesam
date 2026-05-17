@@ -8,7 +8,7 @@ CREATE TABLE shopjoy_2604.st_erp_voucher (
     settle_id                    VARCHAR(21) ,
     settle_ym                    VARCHAR(6)  ,
     erp_voucher_type_cd          VARCHAR(20)  NOT NULL,
-    erp_voucher_status_cd        VARCHAR(20)  DEFAULT 'DRAFT',
+    erp_voucher_status_cd        VARCHAR(20)  DEFAULT 'DRAFT'::character varying,
     erp_voucher_status_cd_before VARCHAR(20) ,
     voucher_date                 DATE         NOT NULL,
     erp_voucher_desc             VARCHAR(500),
@@ -46,6 +46,7 @@ COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.upd_date IS '수정일';
 
 CREATE INDEX idx_st_erp_voucher_no ON shopjoy_2604.st_erp_voucher USING btree (erp_voucher_no);
 CREATE INDEX idx_st_erp_voucher_settle ON shopjoy_2604.st_erp_voucher USING btree (settle_id);
+CREATE INDEX idx_st_erp_voucher_site ON shopjoy_2604.st_erp_voucher USING btree (site_id);
 CREATE INDEX idx_st_erp_voucher_status ON shopjoy_2604.st_erp_voucher USING btree (erp_voucher_status_cd);
 CREATE INDEX idx_st_erp_voucher_vendor ON shopjoy_2604.st_erp_voucher USING btree (site_id, vendor_id);
 CREATE INDEX idx_st_erp_voucher_ym ON shopjoy_2604.st_erp_voucher USING btree (settle_ym);

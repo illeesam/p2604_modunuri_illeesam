@@ -3,12 +3,12 @@
 
 CREATE TABLE shopjoy_2604.pd_tag (
     tag_id    VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id   VARCHAR(21) ,
+    site_id   VARCHAR(21)  NOT NULL,
     tag_nm    VARCHAR(100) NOT NULL,
     tag_desc  VARCHAR(300),
     use_count INTEGER      DEFAULT 0,
     sort_ord  INTEGER      DEFAULT 0,
-    use_yn    VARCHAR(1)   DEFAULT 'Y',
+    use_yn    VARCHAR(1)   DEFAULT 'Y'::bpchar,
     reg_by    VARCHAR(30) ,
     reg_date  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by    VARCHAR(30) ,
@@ -29,4 +29,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_tag.upd_by IS '수정자 (sy_user.user_id, mb_
 COMMENT ON COLUMN shopjoy_2604.pd_tag.upd_date IS '수정일';
 
 CREATE INDEX idx_pd_tag_nm ON shopjoy_2604.pd_tag USING btree (tag_nm);
+CREATE INDEX idx_pd_tag_site ON shopjoy_2604.pd_tag USING btree (site_id);
 CREATE UNIQUE INDEX pd_tag_site_id_tag_nm_key ON shopjoy_2604.pd_tag USING btree (site_id, tag_nm);

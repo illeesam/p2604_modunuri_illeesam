@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.syh_send_msg_log (
     log_id         VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21) ,
+    site_id        VARCHAR(21)  NOT NULL,
     channel_cd     VARCHAR(20)  NOT NULL,
     template_id    VARCHAR(21) ,
     template_code  VARCHAR(50) ,
@@ -16,7 +16,7 @@ CREATE TABLE shopjoy_2604.syh_send_msg_log (
     content        TEXT        ,
     params         TEXT        ,
     kakao_tpl_code VARCHAR(50) ,
-    result_cd      VARCHAR(20)  DEFAULT 'SUCCESS',
+    result_cd      VARCHAR(20)  DEFAULT 'SUCCESS'::character varying,
     result_msg     VARCHAR(200),
     fail_reason    VARCHAR(500),
     send_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -58,5 +58,6 @@ CREATE INDEX idx_syh_send_msg_log_channel ON shopjoy_2604.syh_send_msg_log USING
 CREATE INDEX idx_syh_send_msg_log_date ON shopjoy_2604.syh_send_msg_log USING btree (send_date);
 CREATE INDEX idx_syh_send_msg_log_member ON shopjoy_2604.syh_send_msg_log USING btree (member_id);
 CREATE INDEX idx_syh_send_msg_log_ref ON shopjoy_2604.syh_send_msg_log USING btree (ref_type_cd, ref_id);
+CREATE INDEX idx_syh_send_msg_log_site ON shopjoy_2604.syh_send_msg_log USING btree (site_id);
 CREATE INDEX idx_syh_send_msg_log_template ON shopjoy_2604.syh_send_msg_log USING btree (template_id);
 CREATE INDEX idx_syh_send_msg_log_user ON shopjoy_2604.syh_send_msg_log USING btree (user_id);

@@ -23,7 +23,7 @@ public class SyAttach extends BaseEntity {
     @Column(name = "attach_id", length = 21, nullable = false)
     private String attachId;
 
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("파일 그룹 ID (sy_attach_grp과 연계)")

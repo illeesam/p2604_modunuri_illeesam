@@ -18,6 +18,10 @@ public class SyPath extends BaseEntity {
     @Column(name = "path_id", length = 21)
     private String pathId;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("업무코드 (참조 테이블명, 예: sy_brand / sy_code_grp / sy_prop)")
     @Column(name = "biz_cd", length = 50, nullable = false)
     private String bizCd;

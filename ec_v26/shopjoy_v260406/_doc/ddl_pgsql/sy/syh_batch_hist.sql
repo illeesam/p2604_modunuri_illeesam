@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.syh_batch_hist (
     batch_hist_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     batch_id      VARCHAR(21)  NOT NULL,
     batch_code    VARCHAR(50) ,
     batch_nm      VARCHAR(100),
@@ -39,3 +39,5 @@ COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.reg_by IS '등록자 (sy_user.user
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.upd_date IS '수정일';
+
+CREATE INDEX idx_syh_batch_hist_site ON shopjoy_2604.syh_batch_hist USING btree (site_id);

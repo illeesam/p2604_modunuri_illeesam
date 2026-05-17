@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.sy_attach (
     attach_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id            VARCHAR(21) ,
+    site_id            VARCHAR(21)  NOT NULL,
     attach_grp_id      VARCHAR(21)  NOT NULL,
     file_nm            VARCHAR(300) NOT NULL,
     file_size          BIGINT      ,
@@ -19,7 +19,7 @@ CREATE TABLE shopjoy_2604.sy_attach (
     thumb_stored_nm    VARCHAR(300),
     thumb_url          VARCHAR(500),
     thumb_cdn_url      VARCHAR(500),
-    thumb_generated_yn VARCHAR(1)   DEFAULT 'N',
+    thumb_generated_yn VARCHAR(1)   DEFAULT 'N'::character varying,
     sort_ord           INTEGER      DEFAULT 0,
     attach_memo        VARCHAR(300),
     reg_by             VARCHAR(30) ,
@@ -43,5 +43,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_attach.physical_path IS '실제 물리 저장 
 CREATE INDEX idx_sy_attach_file_ext ON shopjoy_2604.sy_attach USING btree (file_ext);
 CREATE INDEX idx_sy_attach_grp_id ON shopjoy_2604.sy_attach USING btree (attach_grp_id);
 CREATE INDEX idx_sy_attach_reg_date ON shopjoy_2604.sy_attach USING btree (reg_date);
+CREATE INDEX idx_sy_attach_site ON shopjoy_2604.sy_attach USING btree (site_id);
 CREATE INDEX idx_sy_attach_site_id ON shopjoy_2604.sy_attach USING btree (site_id);
 CREATE INDEX idx_sy_attach_storage_type ON shopjoy_2604.sy_attach USING btree (storage_type);

@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pm_coupon_usage (
     usage_id         VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21) ,
+    site_id          VARCHAR(21)  NOT NULL,
     coupon_id        VARCHAR(21)  NOT NULL,
     coupon_code      VARCHAR(50) ,
     coupon_nm        VARCHAR(100),
@@ -45,3 +45,4 @@ CREATE INDEX idx_pm_coupon_usage_item ON shopjoy_2604.pm_coupon_usage USING btre
 CREATE INDEX idx_pm_coupon_usage_member ON shopjoy_2604.pm_coupon_usage USING btree (member_id);
 CREATE INDEX idx_pm_coupon_usage_order ON shopjoy_2604.pm_coupon_usage USING btree (order_id);
 CREATE INDEX idx_pm_coupon_usage_prod ON shopjoy_2604.pm_coupon_usage USING btree (prod_id);
+CREATE INDEX idx_pm_coupon_usage_site ON shopjoy_2604.pm_coupon_usage USING btree (site_id);

@@ -7,7 +7,7 @@ CREATE TABLE shopjoy_2604.mb_device_token (
     site_id         VARCHAR(21)  NOT NULL,
     member_id       VARCHAR(21) ,
     os_type         VARCHAR(10) ,
-    benefit_noti_yn VARCHAR(1)   DEFAULT 'Y',
+    benefit_noti_yn VARCHAR(1)   DEFAULT 'Y'::character varying,
     alim_read_date  TIMESTAMP   ,
     reg_date        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_date        TIMESTAMP   ,

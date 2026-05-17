@@ -7,12 +7,13 @@ CREATE TABLE shopjoy_2604.cm_path (
     parent_path_id BIGINT      ,
     path_label     VARCHAR(200) NOT NULL,
     sort_ord       INTEGER      DEFAULT 0,
-    use_yn         VARCHAR(1)   DEFAULT 'Y',
+    use_yn         VARCHAR(1)   DEFAULT 'Y'::bpchar,
     path_remark    VARCHAR(500),
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
-    upd_date       TIMESTAMP   
+    upd_date       TIMESTAMP   ,
+    site_id        VARCHAR(21)  NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.cm_path IS '경로 (업무별 트리)';
@@ -27,3 +28,5 @@ COMMENT ON COLUMN shopjoy_2604.cm_path.reg_by IS '등록자 (sy_user.user_id, mb
 COMMENT ON COLUMN shopjoy_2604.cm_path.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.cm_path.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_path.upd_date IS '수정일';
+
+CREATE INDEX idx_cm_path_site ON shopjoy_2604.cm_path USING btree (site_id);

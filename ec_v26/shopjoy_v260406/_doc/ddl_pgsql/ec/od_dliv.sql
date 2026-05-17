@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.od_dliv (
     dliv_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id               VARCHAR(21) ,
+    site_id               VARCHAR(21)  NOT NULL,
     order_id              VARCHAR(21)  NOT NULL,
     claim_id              VARCHAR(21) ,
     vendor_id             VARCHAR(21) ,
@@ -14,14 +14,14 @@ CREATE TABLE shopjoy_2604.od_dliv (
     recv_zip              VARCHAR(10) ,
     recv_addr             VARCHAR(200),
     recv_addr_detail      VARCHAR(200),
-    dliv_div_cd           VARCHAR(20)  DEFAULT 'OUTBOUND',
+    dliv_div_cd           VARCHAR(20)  DEFAULT 'OUTBOUND'::character varying,
     dliv_type_cd          VARCHAR(20) ,
     dliv_pay_type_cd      VARCHAR(20) ,
     outbound_courier_cd   VARCHAR(30) ,
     outbound_tracking_no  VARCHAR(100),
     inbound_courier_cd    VARCHAR(30) ,
     inbound_tracking_no   VARCHAR(100),
-    dliv_status_cd        VARCHAR(20)  DEFAULT 'READY',
+    dliv_status_cd        VARCHAR(20)  DEFAULT 'READY'::character varying,
     dliv_status_cd_before VARCHAR(20) ,
     dliv_ship_date        TIMESTAMP   ,
     dliv_date             TIMESTAMP   ,
@@ -95,5 +95,6 @@ COMMENT ON COLUMN shopjoy_2604.od_dliv.appr_aprv_date IS '결재일시';
 CREATE INDEX idx_od_dliv_claim ON shopjoy_2604.od_dliv USING btree (claim_id) WHERE (claim_id IS NOT NULL);
 CREATE INDEX idx_od_dliv_order ON shopjoy_2604.od_dliv USING btree (order_id);
 CREATE INDEX idx_od_dliv_ship_date ON shopjoy_2604.od_dliv USING btree (dliv_ship_date);
+CREATE INDEX idx_od_dliv_site ON shopjoy_2604.od_dliv USING btree (site_id);
 CREATE INDEX idx_od_dliv_status ON shopjoy_2604.od_dliv USING btree (dliv_status_cd);
 CREATE INDEX idx_od_dliv_type ON shopjoy_2604.od_dliv USING btree (dliv_div_cd, dliv_type_cd);

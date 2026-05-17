@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.pm_event_item (
     event_item_id  VARCHAR(21) NOT NULL PRIMARY KEY,
     event_id       VARCHAR(21) NOT NULL,
-    site_id        VARCHAR(21),
+    site_id        VARCHAR(21) NOT NULL,
     target_type_cd VARCHAR(20) NOT NULL,
     target_id      VARCHAR(21) NOT NULL,
     sort_no        INTEGER     DEFAULT 0,
@@ -25,5 +25,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_event_item.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pm_event_item.reg_date IS '등록일';
 
 CREATE INDEX idx_pm_event_item_event ON shopjoy_2604.pm_event_item USING btree (event_id);
+CREATE INDEX idx_pm_event_item_site ON shopjoy_2604.pm_event_item USING btree (site_id);
 CREATE INDEX idx_pm_event_item_target ON shopjoy_2604.pm_event_item USING btree (target_type_cd, target_id);
 CREATE UNIQUE INDEX pm_event_item_event_id_target_type_cd_target_id_key ON shopjoy_2604.pm_event_item USING btree (event_id, target_type_cd, target_id);

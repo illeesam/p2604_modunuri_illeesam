@@ -23,6 +23,10 @@ public class CmBlogGood extends BaseEntity {
     @Column(name = "like_id", length = 21, nullable = false)
     private String likeId;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("블로그ID (cm_bltn.)")
     @Column(name = "blog_id", length = 21, nullable = false)
     private String blogId;

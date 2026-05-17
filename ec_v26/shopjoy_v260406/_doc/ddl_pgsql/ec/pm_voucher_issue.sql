@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.pm_voucher_issue (
     voucher_issue_id               VARCHAR(21) NOT NULL PRIMARY KEY,
     voucher_id                     VARCHAR(21) NOT NULL,
-    site_id                        VARCHAR(21),
+    site_id                        VARCHAR(21) NOT NULL,
     member_id                      VARCHAR(21),
     voucher_code                   VARCHAR(50) NOT NULL,
     issue_date                     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -12,7 +12,7 @@ CREATE TABLE shopjoy_2604.pm_voucher_issue (
     use_date                       TIMESTAMP  ,
     order_id                       VARCHAR(21),
     use_amt                        BIGINT     ,
-    voucher_issue_status_cd        VARCHAR(20) DEFAULT 'ISSUED',
+    voucher_issue_status_cd        VARCHAR(20) DEFAULT 'ISSUED'::character varying,
     voucher_issue_status_cd_before VARCHAR(20),
     reg_by                         VARCHAR(30),
     reg_date                       TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -41,5 +41,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.upd_date IS '수정일';
 CREATE INDEX idx_pm_voucher_issue_expire ON shopjoy_2604.pm_voucher_issue USING btree (expire_date);
 CREATE INDEX idx_pm_voucher_issue_member ON shopjoy_2604.pm_voucher_issue USING btree (member_id);
 CREATE INDEX idx_pm_voucher_issue_order ON shopjoy_2604.pm_voucher_issue USING btree (order_id);
+CREATE INDEX idx_pm_voucher_issue_site ON shopjoy_2604.pm_voucher_issue USING btree (site_id);
 CREATE INDEX idx_pm_voucher_issue_voucher ON shopjoy_2604.pm_voucher_issue USING btree (voucher_id);
 CREATE UNIQUE INDEX pm_voucher_issue_voucher_code_key ON shopjoy_2604.pm_voucher_issue USING btree (voucher_code);

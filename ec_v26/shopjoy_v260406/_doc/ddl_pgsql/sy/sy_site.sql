@@ -16,7 +16,7 @@ CREATE TABLE shopjoy_2604.sy_site (
     site_address     VARCHAR(300),
     site_business_no VARCHAR(20) ,
     site_ceo         VARCHAR(50) ,
-    site_status_cd   VARCHAR(20)  DEFAULT 'ACTIVE',
+    site_status_cd   VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     config_json      TEXT        ,
     reg_by           VARCHAR(30) ,
     reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -48,4 +48,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_site.upd_by IS '수정자 (sy_user.user_id, ec
 COMMENT ON COLUMN shopjoy_2604.sy_site.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_site.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 
+CREATE INDEX idx_sy_site_site ON shopjoy_2604.sy_site USING btree (site_id);
 CREATE UNIQUE INDEX sy_site_site_code_key ON shopjoy_2604.sy_site USING btree (site_code);

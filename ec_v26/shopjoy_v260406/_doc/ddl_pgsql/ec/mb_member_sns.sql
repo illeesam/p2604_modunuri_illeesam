@@ -9,7 +9,8 @@ CREATE TABLE shopjoy_2604.mb_member_sns (
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
-    upd_date       TIMESTAMP   
+    upd_date       TIMESTAMP   ,
+    site_id        VARCHAR(21)  NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.mb_member_sns IS '회원 SNS 연동';
@@ -22,4 +23,5 @@ COMMENT ON COLUMN shopjoy_2604.mb_member_sns.reg_date IS '등록일시';
 
 CREATE INDEX idx_mb_member_sns_channel ON shopjoy_2604.mb_member_sns USING btree (sns_channel_cd);
 CREATE INDEX idx_mb_member_sns_member ON shopjoy_2604.mb_member_sns USING btree (member_id);
+CREATE INDEX idx_mb_member_sns_site ON shopjoy_2604.mb_member_sns USING btree (site_id);
 CREATE UNIQUE INDEX mb_sns_member_member_id_sns_channel_cd_key ON shopjoy_2604.mb_member_sns USING btree (member_id, sns_channel_cd);

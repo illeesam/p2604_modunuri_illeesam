@@ -7,7 +7,7 @@ CREATE TABLE shopjoy_2604.zz_sample0 (
     sample_desc  VARCHAR(500),
     sample_value VARCHAR(100),
     sort_ord     INTEGER      DEFAULT 0,
-    use_yn       VARCHAR(1)   DEFAULT 'Y',
+    use_yn       VARCHAR(1)   DEFAULT 'Y'::bpchar,
     col01        VARCHAR(200),
     col02        VARCHAR(200),
     col03        VARCHAR(200),

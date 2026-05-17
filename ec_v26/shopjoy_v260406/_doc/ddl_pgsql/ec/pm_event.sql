@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pm_event (
     event_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                VARCHAR(21) ,
+    site_id                VARCHAR(21)  NOT NULL,
     event_nm               VARCHAR(100) NOT NULL,
     event_type_cd          VARCHAR(20) ,
     img_url                VARCHAR(500),
@@ -13,12 +13,12 @@ CREATE TABLE shopjoy_2604.pm_event (
     end_date               DATE         NOT NULL,
     notice_start           DATE        ,
     notice_end             DATE        ,
-    event_status_cd        VARCHAR(20)  DEFAULT 'DRAFT',
+    event_status_cd        VARCHAR(20)  DEFAULT 'DRAFT'::character varying,
     event_status_cd_before VARCHAR(20) ,
     target_type_cd         VARCHAR(20) ,
     sort_ord               INTEGER      DEFAULT 0,
     view_cnt               INTEGER      DEFAULT 0,
-    use_yn                 VARCHAR(1)   DEFAULT 'Y',
+    use_yn                 VARCHAR(1)   DEFAULT 'Y'::bpchar,
     event_desc             TEXT        ,
     reg_by                 VARCHAR(30) ,
     reg_date               TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -51,5 +51,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_event.upd_by IS '수정자 (sy_user.user_id, m
 COMMENT ON COLUMN shopjoy_2604.pm_event.upd_date IS '수정일';
 
 CREATE INDEX idx_pm_event_date ON shopjoy_2604.pm_event USING btree (start_date, end_date);
+CREATE INDEX idx_pm_event_site ON shopjoy_2604.pm_event USING btree (site_id);
 CREATE INDEX idx_pm_event_status ON shopjoy_2604.pm_event USING btree (event_status_cd);
 CREATE INDEX idx_pm_event_type ON shopjoy_2604.pm_event USING btree (event_type_cd);

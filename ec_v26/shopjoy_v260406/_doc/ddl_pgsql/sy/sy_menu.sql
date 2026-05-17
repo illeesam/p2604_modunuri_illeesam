@@ -3,15 +3,15 @@
 
 CREATE TABLE shopjoy_2604.sy_menu (
     menu_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21) ,
+    site_id        VARCHAR(21)  NOT NULL,
     menu_code      VARCHAR(50)  NOT NULL,
     menu_nm        VARCHAR(100) NOT NULL,
     parent_menu_id VARCHAR(21) ,
     menu_url       VARCHAR(200),
-    menu_type_cd   VARCHAR(20)  DEFAULT 'PAGE',
+    menu_type_cd   VARCHAR(20)  DEFAULT 'PAGE'::character varying,
     icon_class     VARCHAR(100),
     sort_ord       INTEGER      DEFAULT 0,
-    use_yn         VARCHAR(1)   DEFAULT 'Y',
+    use_yn         VARCHAR(1)   DEFAULT 'Y'::bpchar,
     menu_remark    VARCHAR(300),
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -36,4 +36,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_menu.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.upd_date IS '수정일';
 
+CREATE INDEX idx_sy_menu_site ON shopjoy_2604.sy_menu USING btree (site_id);
 CREATE UNIQUE INDEX sy_menu_menu_code_key ON shopjoy_2604.sy_menu USING btree (menu_code);

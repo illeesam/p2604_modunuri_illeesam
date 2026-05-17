@@ -23,7 +23,7 @@ public class SyI18n extends BaseEntity {
     private String i18nId;
 
     @Comment("사이트ID (sy_site.site_id, NULL=전체 공용)")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("다국어 키 (예: common.bt.save, error.FORBIDDEN)")

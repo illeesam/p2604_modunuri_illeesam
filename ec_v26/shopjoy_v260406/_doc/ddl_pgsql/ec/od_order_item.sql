@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.od_order_item (
     order_item_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                     VARCHAR(21) ,
+    site_id                     VARCHAR(21)  NOT NULL,
     order_id                    VARCHAR(21)  NOT NULL,
     prod_id                     VARCHAR(21)  NOT NULL,
     sku_id                      VARCHAR(21) ,
@@ -27,15 +27,15 @@ CREATE TABLE shopjoy_2604.od_order_item (
     save_rate                   NUMERIC(5,2),
     save_use_amt                BIGINT       DEFAULT 0,
     save_schd_amt               BIGINT       DEFAULT 0,
-    order_item_status_cd        VARCHAR(20)  DEFAULT 'ORDERED',
+    order_item_status_cd        VARCHAR(20)  DEFAULT 'ORDERED'::character varying,
     order_item_status_cd_before VARCHAR(20) ,
-    claim_yn                    VARCHAR(1)   DEFAULT 'N',
-    buy_confirm_yn              VARCHAR(1)   DEFAULT 'N',
+    claim_yn                    VARCHAR(1)   DEFAULT 'N'::bpchar,
+    buy_confirm_yn              VARCHAR(1)   DEFAULT 'N'::bpchar,
     buy_confirm_schd_date       DATE        ,
     buy_confirm_date            TIMESTAMP   ,
-    settle_yn                   VARCHAR(1)   DEFAULT 'N',
+    settle_yn                   VARCHAR(1)   DEFAULT 'N'::bpchar,
     settle_date                 TIMESTAMP   ,
-    reserve_sale_yn             VARCHAR(1)   DEFAULT 'N',
+    reserve_sale_yn             VARCHAR(1)   DEFAULT 'N'::bpchar,
     reserve_dliv_schd_date      TIMESTAMP   ,
     bundle_group_id             VARCHAR(36) ,
     bundle_price_rate           NUMERIC(5,2),
@@ -103,4 +103,5 @@ CREATE INDEX idx_od_order_item_confirm ON shopjoy_2604.od_order_item USING btree
 CREATE INDEX idx_od_order_item_order ON shopjoy_2604.od_order_item USING btree (order_id);
 CREATE INDEX idx_od_order_item_prod ON shopjoy_2604.od_order_item USING btree (prod_id);
 CREATE INDEX idx_od_order_item_settle ON shopjoy_2604.od_order_item USING btree (settle_yn);
+CREATE INDEX idx_od_order_item_site ON shopjoy_2604.od_order_item USING btree (site_id);
 CREATE INDEX idx_od_order_item_status ON shopjoy_2604.od_order_item USING btree (order_item_status_cd);

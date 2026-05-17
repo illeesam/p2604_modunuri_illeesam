@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.od_order_item_discnt (
     item_discnt_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21) ,
+    site_id          VARCHAR(21)  NOT NULL,
     order_id         VARCHAR(21)  NOT NULL,
     order_item_id    VARCHAR(21)  NOT NULL,
     discnt_type_cd   VARCHAR(30)  NOT NULL,
@@ -38,3 +38,4 @@ CREATE INDEX idx_od_item_discnt_coupon ON shopjoy_2604.od_order_item_discnt USIN
 CREATE INDEX idx_od_item_discnt_item ON shopjoy_2604.od_order_item_discnt USING btree (order_item_id);
 CREATE INDEX idx_od_item_discnt_order ON shopjoy_2604.od_order_item_discnt USING btree (order_id);
 CREATE INDEX idx_od_item_discnt_type ON shopjoy_2604.od_order_item_discnt USING btree (discnt_type_cd);
+CREATE INDEX idx_od_order_item_discnt_site ON shopjoy_2604.od_order_item_discnt USING btree (site_id);

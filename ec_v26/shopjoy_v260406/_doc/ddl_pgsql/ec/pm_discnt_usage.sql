@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pm_discnt_usage (
     discnt_usage_id VARCHAR(21)   NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21)  ,
+    site_id         VARCHAR(21)   NOT NULL,
     discnt_id       VARCHAR(21)   NOT NULL,
     discnt_nm       VARCHAR(100) ,
     member_id       VARCHAR(21)  ,
@@ -41,3 +41,4 @@ CREATE INDEX idx_pm_discnt_usage_item ON shopjoy_2604.pm_discnt_usage USING btre
 CREATE INDEX idx_pm_discnt_usage_member ON shopjoy_2604.pm_discnt_usage USING btree (member_id);
 CREATE INDEX idx_pm_discnt_usage_order ON shopjoy_2604.pm_discnt_usage USING btree (order_id);
 CREATE INDEX idx_pm_discnt_usage_prod ON shopjoy_2604.pm_discnt_usage USING btree (prod_id);
+CREATE INDEX idx_pm_discnt_usage_site ON shopjoy_2604.pm_discnt_usage USING btree (site_id);

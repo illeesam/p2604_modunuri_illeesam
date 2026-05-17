@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pdh_prod_view_log (
     log_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id     VARCHAR(21) ,
+    site_id     VARCHAR(21)  NOT NULL,
     member_id   VARCHAR(21) ,
     session_key VARCHAR(100),
     prod_id     VARCHAR(21)  NOT NULL,
@@ -41,3 +41,4 @@ COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.upd_date IS '수정일';
 CREATE INDEX idx_ec_pvl_date ON shopjoy_2604.pdh_prod_view_log USING btree (view_date);
 CREATE INDEX idx_ec_pvl_member ON shopjoy_2604.pdh_prod_view_log USING btree (member_id);
 CREATE INDEX idx_ec_pvl_ref ON shopjoy_2604.pdh_prod_view_log USING btree (prod_id, ref_id);
+CREATE INDEX idx_pdh_prod_view_log_site ON shopjoy_2604.pdh_prod_view_log USING btree (site_id);

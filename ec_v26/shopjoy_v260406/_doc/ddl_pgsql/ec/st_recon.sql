@@ -6,7 +6,7 @@ CREATE TABLE shopjoy_2604.st_recon (
     site_id                VARCHAR(21) NOT NULL,
     vendor_id              VARCHAR(21),
     recon_type_cd          VARCHAR(20) NOT NULL,
-    recon_status_cd        VARCHAR(20) DEFAULT 'MISMATCH',
+    recon_status_cd        VARCHAR(20) DEFAULT 'MISMATCH'::character varying,
     recon_status_cd_before VARCHAR(20),
     settle_id              VARCHAR(21),
     settle_raw_id          VARCHAR(21),
@@ -51,5 +51,6 @@ COMMENT ON COLUMN shopjoy_2604.st_recon.upd_date IS '수정일';
 CREATE INDEX idx_st_recon_period ON shopjoy_2604.st_recon USING btree (settle_period);
 CREATE INDEX idx_st_recon_ref ON shopjoy_2604.st_recon USING btree (ref_id);
 CREATE INDEX idx_st_recon_settle ON shopjoy_2604.st_recon USING btree (settle_id);
+CREATE INDEX idx_st_recon_site ON shopjoy_2604.st_recon USING btree (site_id);
 CREATE INDEX idx_st_recon_type ON shopjoy_2604.st_recon USING btree (recon_type_cd, recon_status_cd);
 CREATE INDEX idx_st_recon_vendor ON shopjoy_2604.st_recon USING btree (site_id, vendor_id);

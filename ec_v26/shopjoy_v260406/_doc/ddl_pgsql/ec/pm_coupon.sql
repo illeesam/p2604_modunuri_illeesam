@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pm_coupon (
     coupon_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21) ,
+    site_id                 VARCHAR(21)  NOT NULL,
     coupon_cd               VARCHAR(50)  NOT NULL,
     coupon_nm               VARCHAR(100) NOT NULL,
     coupon_type_cd          VARCHAR(20)  NOT NULL,
@@ -18,18 +18,18 @@ CREATE TABLE shopjoy_2604.pm_coupon (
     coupon_desc             TEXT        ,
     valid_from              DATE        ,
     valid_to                DATE        ,
-    coupon_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE',
+    coupon_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     coupon_status_cd_before VARCHAR(20) ,
-    use_yn                  VARCHAR(1)   DEFAULT 'Y',
+    use_yn                  VARCHAR(1)   DEFAULT 'Y'::bpchar,
     target_type_cd          VARCHAR(20) ,
     target_value            VARCHAR(200),
     mem_grade_cd            VARCHAR(20) ,
     self_cdiv_rate          NUMERIC(5,2) DEFAULT 100,
     seller_cdiv_rate        NUMERIC(5,2) DEFAULT 0,
     seller_cdiv_remark      VARCHAR(300),
-    dvc_pc_yn               VARCHAR(1)   DEFAULT 'Y',
-    dvc_mweb_yn             VARCHAR(1)   DEFAULT 'Y',
-    dvc_mapp_yn             VARCHAR(1)   DEFAULT 'Y',
+    dvc_pc_yn               VARCHAR(1)   DEFAULT 'Y'::bpchar,
+    dvc_mweb_yn             VARCHAR(1)   DEFAULT 'Y'::bpchar,
+    dvc_mapp_yn             VARCHAR(1)   DEFAULT 'Y'::bpchar,
     memo                    TEXT        ,
     reg_by                  VARCHAR(30) ,
     reg_date                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -74,6 +74,7 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon.upd_date IS '수정일';
 
 CREATE INDEX idx_pm_coupon_code ON shopjoy_2604.pm_coupon USING btree (coupon_cd);
 CREATE INDEX idx_pm_coupon_grade ON shopjoy_2604.pm_coupon USING btree (mem_grade_cd);
+CREATE INDEX idx_pm_coupon_site ON shopjoy_2604.pm_coupon USING btree (site_id);
 CREATE INDEX idx_pm_coupon_status ON shopjoy_2604.pm_coupon USING btree (coupon_status_cd);
 CREATE INDEX idx_pm_coupon_type ON shopjoy_2604.pm_coupon USING btree (coupon_type_cd);
 CREATE UNIQUE INDEX pm_coupon_coupon_cd_key ON shopjoy_2604.pm_coupon USING btree (coupon_cd);

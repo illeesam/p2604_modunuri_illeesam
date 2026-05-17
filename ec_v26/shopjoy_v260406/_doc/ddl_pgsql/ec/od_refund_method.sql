@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.od_refund_method (
     refund_method_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21) ,
+    site_id                 VARCHAR(21)  NOT NULL,
     refund_id               VARCHAR(21)  NOT NULL,
     order_id                VARCHAR(21)  NOT NULL,
     pay_method_cd           VARCHAR(20)  NOT NULL,
     refund_priority         INTEGER      DEFAULT 1,
     refund_amt              BIGINT       DEFAULT 0,
     refund_avail_amt        BIGINT       DEFAULT 0,
-    refund_status_cd        VARCHAR(20)  DEFAULT 'PENDING',
+    refund_status_cd        VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     refund_status_cd_before VARCHAR(20) ,
     refund_date             TIMESTAMP   ,
     pay_id                  VARCHAR(21) ,
@@ -46,4 +46,5 @@ CREATE INDEX idx_od_refund_method_order ON shopjoy_2604.od_refund_method USING b
 CREATE INDEX idx_od_refund_method_pay ON shopjoy_2604.od_refund_method USING btree (pay_id) WHERE (pay_id IS NOT NULL);
 CREATE INDEX idx_od_refund_method_prio ON shopjoy_2604.od_refund_method USING btree (refund_id, refund_priority);
 CREATE INDEX idx_od_refund_method_refund ON shopjoy_2604.od_refund_method USING btree (refund_id);
+CREATE INDEX idx_od_refund_method_site ON shopjoy_2604.od_refund_method USING btree (site_id);
 CREATE INDEX idx_od_refund_method_status ON shopjoy_2604.od_refund_method USING btree (refund_status_cd);

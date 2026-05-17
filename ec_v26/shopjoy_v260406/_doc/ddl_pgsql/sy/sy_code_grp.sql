@@ -3,12 +3,12 @@
 
 CREATE TABLE shopjoy_2604.sy_code_grp (
     code_grp_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     code_grp      VARCHAR(50)  NOT NULL,
     grp_nm        VARCHAR(100) NOT NULL,
     path_id       VARCHAR(21) ,
     code_grp_desc VARCHAR(300),
-    use_yn        VARCHAR(1)   DEFAULT 'Y',
+    use_yn        VARCHAR(1)   DEFAULT 'Y'::bpchar,
     reg_by        VARCHAR(30) ,
     reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by        VARCHAR(30) ,
@@ -29,4 +29,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_code_grp.upd_by IS '수정자 (sy_user.user_id
 COMMENT ON COLUMN shopjoy_2604.sy_code_grp.upd_date IS '수정일';
 
 CREATE INDEX idx_sy_code_grp_code ON shopjoy_2604.sy_code_grp USING btree (code_grp);
+CREATE INDEX idx_sy_code_grp_site ON shopjoy_2604.sy_code_grp USING btree (site_id);
 CREATE UNIQUE INDEX sy_code_grp_site_id_code_grp_key ON shopjoy_2604.sy_code_grp USING btree (site_id, code_grp);

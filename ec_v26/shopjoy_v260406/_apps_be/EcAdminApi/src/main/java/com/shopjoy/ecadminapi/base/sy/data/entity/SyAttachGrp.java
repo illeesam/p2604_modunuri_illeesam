@@ -23,6 +23,10 @@ public class SyAttachGrp extends BaseEntity {
     @Column(name = "attach_grp_id", length = 21, nullable = false)
     private String attachGrpId;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("그룹 코드 (businessCode + \"_\" + timestamp)")
     @Column(name = "attach_grp_code", length = 50, nullable = false)
     private String attachGrpCode;

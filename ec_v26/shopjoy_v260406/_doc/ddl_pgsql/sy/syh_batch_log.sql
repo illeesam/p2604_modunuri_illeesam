@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.syh_batch_log (
     batch_log_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21) ,
+    site_id      VARCHAR(21)  NOT NULL,
     batch_id     VARCHAR(21)  NOT NULL,
     batch_code   VARCHAR(50) ,
     batch_nm     VARCHAR(100),
@@ -42,4 +42,5 @@ COMMENT ON COLUMN shopjoy_2604.syh_batch_log.upd_date IS '수정일';
 
 CREATE INDEX idx_syh_batch_log_batch ON shopjoy_2604.syh_batch_log USING btree (batch_id);
 CREATE INDEX idx_syh_batch_log_date ON shopjoy_2604.syh_batch_log USING btree (run_at);
+CREATE INDEX idx_syh_batch_log_site ON shopjoy_2604.syh_batch_log USING btree (site_id);
 CREATE INDEX idx_syh_batch_log_status ON shopjoy_2604.syh_batch_log USING btree (run_status);

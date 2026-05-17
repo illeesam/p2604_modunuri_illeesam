@@ -4,14 +4,14 @@
 CREATE TABLE shopjoy_2604.st_settle_pay (
     settle_pay_id        VARCHAR(21) NOT NULL PRIMARY KEY,
     settle_id            VARCHAR(21) NOT NULL,
-    site_id              VARCHAR(21),
+    site_id              VARCHAR(21) NOT NULL,
     vendor_id            VARCHAR(21) NOT NULL,
     pay_amt              BIGINT      NOT NULL,
-    pay_method_cd        VARCHAR(20) DEFAULT 'BANK_TRANSFER',
+    pay_method_cd        VARCHAR(20) DEFAULT 'BANK_TRANSFER'::character varying,
     bank_nm              VARCHAR(50),
     bank_account         VARCHAR(50),
     bank_holder          VARCHAR(50),
-    pay_status_cd        VARCHAR(20) DEFAULT 'PENDING',
+    pay_status_cd        VARCHAR(20) DEFAULT 'PENDING'::character varying,
     pay_status_cd_before VARCHAR(20),
     pay_date             TIMESTAMP  ,
     pay_by               VARCHAR(20),
@@ -43,5 +43,6 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_pay.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.st_settle_pay.upd_date IS '수정일';
 
 CREATE INDEX idx_st_settle_pay_settle ON shopjoy_2604.st_settle_pay USING btree (settle_id);
+CREATE INDEX idx_st_settle_pay_site ON shopjoy_2604.st_settle_pay USING btree (site_id);
 CREATE INDEX idx_st_settle_pay_status ON shopjoy_2604.st_settle_pay USING btree (pay_status_cd);
 CREATE INDEX idx_st_settle_pay_vendor ON shopjoy_2604.st_settle_pay USING btree (vendor_id);

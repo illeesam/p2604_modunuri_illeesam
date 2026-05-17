@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.pm_discnt_item (
     discnt_item_id VARCHAR(21) NOT NULL PRIMARY KEY,
     discnt_id      VARCHAR(21) NOT NULL,
-    site_id        VARCHAR(21),
+    site_id        VARCHAR(21) NOT NULL,
     target_type_cd VARCHAR(20) NOT NULL,
     target_id      VARCHAR(21) NOT NULL,
     reg_by         VARCHAR(30),
@@ -23,5 +23,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_discnt_item.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt_item.reg_date IS '등록일';
 
 CREATE INDEX idx_pm_discnt_item_discnt ON shopjoy_2604.pm_discnt_item USING btree (discnt_id);
+CREATE INDEX idx_pm_discnt_item_site ON shopjoy_2604.pm_discnt_item USING btree (site_id);
 CREATE INDEX idx_pm_discnt_item_target ON shopjoy_2604.pm_discnt_item USING btree (target_type_cd, target_id);
 CREATE UNIQUE INDEX pm_discnt_item_discnt_id_target_type_cd_target_id_key ON shopjoy_2604.pm_discnt_item USING btree (discnt_id, target_type_cd, target_id);

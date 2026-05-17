@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.sy_role (
     role_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21) ,
+    site_id        VARCHAR(21)  NOT NULL,
     role_code      VARCHAR(50)  NOT NULL,
     role_nm        VARCHAR(100) NOT NULL,
     parent_role_id VARCHAR(21) ,
     role_type_cd   VARCHAR(20) ,
     sort_ord       INTEGER      DEFAULT 0,
-    use_yn         VARCHAR(1)   DEFAULT 'Y',
-    restrict_perm  VARCHAR(1)   DEFAULT 'N',
+    use_yn         VARCHAR(1)   DEFAULT 'Y'::bpchar,
+    restrict_perm  VARCHAR(1)   DEFAULT 'N'::bpchar,
     role_remark    VARCHAR(300),
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -36,4 +36,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_role.upd_by IS '수정자 (sy_user.user_id, ec
 COMMENT ON COLUMN shopjoy_2604.sy_role.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_role.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 
+CREATE INDEX idx_sy_role_site ON shopjoy_2604.sy_role USING btree (site_id);
 CREATE UNIQUE INDEX sy_role_role_code_key ON shopjoy_2604.sy_role USING btree (role_code);

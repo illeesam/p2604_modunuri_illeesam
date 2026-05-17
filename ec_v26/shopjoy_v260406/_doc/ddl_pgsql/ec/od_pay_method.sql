@@ -8,11 +8,12 @@ CREATE TABLE shopjoy_2604.od_pay_method (
     pay_method_nm      VARCHAR(100) NOT NULL,
     pay_method_alias   VARCHAR(100),
     pay_key_no         VARCHAR(200),
-    main_method_yn     VARCHAR(1)   DEFAULT 'N',
+    main_method_yn     VARCHAR(1)   DEFAULT 'N'::character varying,
     reg_by             VARCHAR(30) ,
     reg_date           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by             VARCHAR(30) ,
-    upd_date           TIMESTAMP   
+    upd_date           TIMESTAMP   ,
+    site_id            VARCHAR(21)  NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.od_pay_method IS '마이페이지 등록 결제수단';
@@ -29,4 +30,5 @@ COMMENT ON COLUMN shopjoy_2604.od_pay_method.upd_by IS '수정자ID';
 COMMENT ON COLUMN shopjoy_2604.od_pay_method.upd_date IS '수정일시';
 
 CREATE INDEX idx_od_pay_method_member ON shopjoy_2604.od_pay_method USING btree (member_id);
+CREATE INDEX idx_od_pay_method_site ON shopjoy_2604.od_pay_method USING btree (site_id);
 CREATE INDEX idx_od_pay_method_type ON shopjoy_2604.od_pay_method USING btree (pay_method_type_cd);

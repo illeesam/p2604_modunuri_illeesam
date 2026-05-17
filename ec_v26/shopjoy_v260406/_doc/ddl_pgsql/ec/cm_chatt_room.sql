@@ -3,12 +3,12 @@
 
 CREATE TABLE shopjoy_2604.cm_chatt_room (
     chatt_room_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                VARCHAR(21) ,
+    site_id                VARCHAR(21)  NOT NULL,
     member_id              VARCHAR(21)  NOT NULL,
     member_nm              VARCHAR(50) ,
     admin_user_id          VARCHAR(21) ,
     subject                VARCHAR(200),
-    chatt_status_cd        VARCHAR(20)  DEFAULT 'PENDING',
+    chatt_status_cd        VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     chatt_status_cd_before VARCHAR(20) ,
     last_msg_date          TIMESTAMP   ,
     member_unread_cnt      INTEGER      DEFAULT 0,
@@ -42,6 +42,7 @@ COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.upd_date IS '수정일';
 
+CREATE INDEX idx_cm_chatt_room_site ON shopjoy_2604.cm_chatt_room USING btree (site_id);
 CREATE INDEX idx_od_chatt_admin ON shopjoy_2604.cm_chatt_room USING btree (admin_user_id);
 CREATE INDEX idx_od_chatt_member ON shopjoy_2604.cm_chatt_room USING btree (member_id);
 CREATE INDEX idx_od_chatt_status ON shopjoy_2604.cm_chatt_room USING btree (chatt_status_cd);

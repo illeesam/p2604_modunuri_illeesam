@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.syh_send_email_log (
     log_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     template_id   VARCHAR(21) ,
     template_code VARCHAR(50) ,
     member_id     VARCHAR(21) ,
@@ -15,7 +15,7 @@ CREATE TABLE shopjoy_2604.syh_send_email_log (
     subject       VARCHAR(300) NOT NULL,
     content       TEXT        ,
     params        TEXT        ,
-    result_cd     VARCHAR(20)  DEFAULT 'SUCCESS',
+    result_cd     VARCHAR(20)  DEFAULT 'SUCCESS'::character varying,
     fail_reason   VARCHAR(500),
     send_date     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     ref_type_cd   VARCHAR(30) ,
@@ -53,5 +53,6 @@ COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.upd_date IS '수정일';
 CREATE INDEX idx_syh_send_email_log_date ON shopjoy_2604.syh_send_email_log USING btree (send_date);
 CREATE INDEX idx_syh_send_email_log_member ON shopjoy_2604.syh_send_email_log USING btree (member_id);
 CREATE INDEX idx_syh_send_email_log_ref ON shopjoy_2604.syh_send_email_log USING btree (ref_type_cd, ref_id);
+CREATE INDEX idx_syh_send_email_log_site ON shopjoy_2604.syh_send_email_log USING btree (site_id);
 CREATE INDEX idx_syh_send_email_log_template ON shopjoy_2604.syh_send_email_log USING btree (template_id);
 CREATE INDEX idx_syh_send_email_log_user ON shopjoy_2604.syh_send_email_log USING btree (user_id);

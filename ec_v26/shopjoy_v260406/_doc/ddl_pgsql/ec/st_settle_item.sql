@@ -4,12 +4,12 @@
 CREATE TABLE shopjoy_2604.st_settle_item (
     settle_item_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
     settle_id           VARCHAR(21)  NOT NULL,
-    site_id             VARCHAR(21) ,
+    site_id             VARCHAR(21)  NOT NULL,
     order_id            VARCHAR(21)  NOT NULL,
     order_item_id       VARCHAR(21)  NOT NULL,
     vendor_id           VARCHAR(21)  NOT NULL,
     prod_id             VARCHAR(21) ,
-    settle_item_type_cd VARCHAR(20)  DEFAULT 'SALE',
+    settle_item_type_cd VARCHAR(20)  DEFAULT 'SALE'::character varying,
     order_date          TIMESTAMP   ,
     order_qty           INTEGER      DEFAULT 1,
     unit_price          BIGINT       DEFAULT 0,
@@ -46,5 +46,6 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_item.reg_date IS '등록일';
 
 CREATE INDEX idx_st_settle_item_order ON shopjoy_2604.st_settle_item USING btree (order_id);
 CREATE INDEX idx_st_settle_item_settle ON shopjoy_2604.st_settle_item USING btree (settle_id);
+CREATE INDEX idx_st_settle_item_site ON shopjoy_2604.st_settle_item USING btree (site_id);
 CREATE INDEX idx_st_settle_item_vendor ON shopjoy_2604.st_settle_item USING btree (vendor_id);
 CREATE UNIQUE INDEX st_settle_item_settle_id_order_item_id_key ON shopjoy_2604.st_settle_item USING btree (settle_id, order_item_id);

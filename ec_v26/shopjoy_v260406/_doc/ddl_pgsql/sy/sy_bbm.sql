@@ -3,18 +3,18 @@
 
 CREATE TABLE shopjoy_2604.sy_bbm (
     bbm_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21) ,
+    site_id         VARCHAR(21)  NOT NULL,
     bbm_code        VARCHAR(50)  NOT NULL,
     bbm_nm          VARCHAR(100) NOT NULL,
     path_id         VARCHAR(21) ,
-    bbm_type_cd     VARCHAR(20)  DEFAULT 'NORMAL',
-    allow_comment   VARCHAR(1)   DEFAULT 'N',
-    allow_attach    VARCHAR(1)   DEFAULT 'N',
-    allow_like      VARCHAR(1)   DEFAULT 'N',
-    content_type_cd VARCHAR(20)  DEFAULT 'TEXT',
-    scope_type_cd   VARCHAR(20)  DEFAULT 'ALL',
+    bbm_type_cd     VARCHAR(20)  DEFAULT 'NORMAL'::character varying,
+    allow_comment   VARCHAR(1)   DEFAULT 'N'::bpchar,
+    allow_attach    VARCHAR(1)   DEFAULT 'N'::bpchar,
+    allow_like      VARCHAR(1)   DEFAULT 'N'::bpchar,
+    content_type_cd VARCHAR(20)  DEFAULT 'TEXT'::character varying,
+    scope_type_cd   VARCHAR(20)  DEFAULT 'ALL'::character varying,
     sort_ord        INTEGER      DEFAULT 0,
-    use_yn          VARCHAR(1)   DEFAULT 'Y',
+    use_yn          VARCHAR(1)   DEFAULT 'Y'::bpchar,
     bbm_remark      VARCHAR(300),
     reg_by          VARCHAR(30) ,
     reg_date        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -41,4 +41,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_bbm.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_bbm.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_bbm.upd_date IS '수정일';
 
+CREATE INDEX idx_sy_bbm_site ON shopjoy_2604.sy_bbm USING btree (site_id);
 CREATE UNIQUE INDEX sy_bbm_bbm_code_key ON shopjoy_2604.sy_bbm USING btree (bbm_code);

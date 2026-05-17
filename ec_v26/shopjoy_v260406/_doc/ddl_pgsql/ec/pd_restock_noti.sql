@@ -3,11 +3,11 @@
 
 CREATE TABLE shopjoy_2604.pd_restock_noti (
     restock_noti_id VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21),
+    site_id         VARCHAR(21) NOT NULL,
     prod_id         VARCHAR(21) NOT NULL,
     sku_id          VARCHAR(21),
     member_id       VARCHAR(21) NOT NULL,
-    noti_yn         VARCHAR(1)  DEFAULT 'N',
+    noti_yn         VARCHAR(1)  DEFAULT 'N'::character varying,
     noti_date       TIMESTAMP  ,
     reg_by          VARCHAR(30),
     reg_date        TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -31,4 +31,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_restock_noti.upd_date IS '수정일시';
 CREATE INDEX idx_pd_restock_noti_member ON shopjoy_2604.pd_restock_noti USING btree (member_id);
 CREATE INDEX idx_pd_restock_noti_noti ON shopjoy_2604.pd_restock_noti USING btree (noti_yn);
 CREATE INDEX idx_pd_restock_noti_prod ON shopjoy_2604.pd_restock_noti USING btree (prod_id);
+CREATE INDEX idx_pd_restock_noti_site ON shopjoy_2604.pd_restock_noti USING btree (site_id);
 CREATE UNIQUE INDEX pd_restock_noti_prod_id_sku_id_member_id_key ON shopjoy_2604.pd_restock_noti USING btree (prod_id, sku_id, member_id);

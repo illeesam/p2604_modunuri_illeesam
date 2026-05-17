@@ -3,15 +3,15 @@
 
 CREATE TABLE shopjoy_2604.mb_member (
     member_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21) ,
+    site_id                 VARCHAR(21)  NOT NULL,
     login_id                VARCHAR(100) NOT NULL,
     login_pwd_hash          VARCHAR(255) NOT NULL,
     member_nm               VARCHAR(50)  NOT NULL,
     member_phone            VARCHAR(20) ,
     member_gender           VARCHAR(1)  ,
     birth_date              DATE        ,
-    grade_cd                VARCHAR(20)  DEFAULT 'BASIC',
-    member_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE',
+    grade_cd                VARCHAR(20)  DEFAULT 'BASIC'::character varying,
+    member_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     member_status_cd_before VARCHAR(20) ,
     join_date               TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     last_login              TIMESTAMP   ,
@@ -54,4 +54,5 @@ COMMENT ON COLUMN shopjoy_2604.mb_member.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.mb_member.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.upd_date IS '수정일';
 
+CREATE INDEX idx_mb_member_site ON shopjoy_2604.mb_member USING btree (site_id);
 CREATE UNIQUE INDEX mb_member_member_email_key ON shopjoy_2604.mb_member USING btree (login_id);

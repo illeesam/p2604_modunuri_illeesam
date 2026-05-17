@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.od_pay (
     pay_id                  VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21) ,
+    site_id                 VARCHAR(21)  NOT NULL,
     order_id                VARCHAR(21)  NOT NULL,
     claim_id                VARCHAR(21) ,
     pay_div_cd              VARCHAR(20) ,
@@ -12,7 +12,7 @@ CREATE TABLE shopjoy_2604.od_pay (
     pay_method_cd           VARCHAR(20)  NOT NULL,
     pay_channel_cd          VARCHAR(20) ,
     pay_amt                 BIGINT       NOT NULL,
-    pay_status_cd           VARCHAR(20)  DEFAULT 'PENDING',
+    pay_status_cd           VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     pay_status_cd_before    VARCHAR(20) ,
     pay_date                TIMESTAMP   ,
     pg_company_cd           VARCHAR(20) ,
@@ -97,5 +97,6 @@ CREATE INDEX idx_od_pay_div ON shopjoy_2604.od_pay USING btree (pay_div_cd, pay_
 CREATE INDEX idx_od_pay_method ON shopjoy_2604.od_pay USING btree (pay_method_cd, pay_status_cd);
 CREATE INDEX idx_od_pay_order ON shopjoy_2604.od_pay USING btree (order_id);
 CREATE INDEX idx_od_pay_pg_tid ON shopjoy_2604.od_pay USING btree (pg_transaction_id);
+CREATE INDEX idx_od_pay_site ON shopjoy_2604.od_pay USING btree (site_id);
 CREATE INDEX idx_od_pay_status ON shopjoy_2604.od_pay USING btree (pay_status_cd);
 CREATE INDEX idx_od_pay_vbank_due ON shopjoy_2604.od_pay USING btree (vbank_due_date) WHERE (vbank_due_date IS NOT NULL);

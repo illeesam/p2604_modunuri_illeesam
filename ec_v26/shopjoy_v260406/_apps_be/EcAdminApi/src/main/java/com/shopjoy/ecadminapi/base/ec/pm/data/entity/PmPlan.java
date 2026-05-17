@@ -25,7 +25,7 @@ public class PmPlan extends BaseEntity {
     private String planId;
 
     @Comment("사이트ID")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("기획전명 (내부용)")

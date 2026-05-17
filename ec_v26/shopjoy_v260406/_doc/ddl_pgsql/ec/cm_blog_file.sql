@@ -11,7 +11,8 @@ CREATE TABLE shopjoy_2604.cm_blog_file (
     reg_by       VARCHAR(30) ,
     reg_date     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_date     TIMESTAMP   ,
-    upd_by       VARCHAR(30) 
+    upd_by       VARCHAR(30) ,
+    site_id      VARCHAR(21)  NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.cm_blog_file IS '블로그 이미지';
@@ -24,4 +25,5 @@ COMMENT ON COLUMN shopjoy_2604.cm_blog_file.sort_ord IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.reg_date IS '등록일';
 
+CREATE INDEX idx_cm_blog_file_site ON shopjoy_2604.cm_blog_file USING btree (site_id);
 CREATE INDEX idx_cm_bltn_file_blog ON shopjoy_2604.cm_blog_file USING btree (blog_id);

@@ -3,13 +3,13 @@
 
 CREATE TABLE shopjoy_2604.mb_member_grade (
     member_grade_id  VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21) ,
+    site_id          VARCHAR(21)  NOT NULL,
     grade_cd         VARCHAR(20)  NOT NULL,
     grade_nm         VARCHAR(50)  NOT NULL,
     grade_rank       INTEGER      DEFAULT 1,
     min_purchase_amt BIGINT       DEFAULT 0,
     save_rate        NUMERIC(5,2) DEFAULT 1.00,
-    use_yn           VARCHAR(1)   DEFAULT 'Y',
+    use_yn           VARCHAR(1)   DEFAULT 'Y'::character varying,
     reg_by           VARCHAR(30) ,
     reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30) ,

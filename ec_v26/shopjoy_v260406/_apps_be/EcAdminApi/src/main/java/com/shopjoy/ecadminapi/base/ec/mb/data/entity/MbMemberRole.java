@@ -25,6 +25,10 @@ public class MbMemberRole extends BaseEntity {
     @Column(name = "member_role_id", length = 21, nullable = false)
     private String memberRoleId;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("회원 ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;

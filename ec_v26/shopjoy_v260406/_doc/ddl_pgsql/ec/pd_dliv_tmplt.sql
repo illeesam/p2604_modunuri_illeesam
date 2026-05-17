@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pd_dliv_tmplt (
     dliv_tmplt_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id            VARCHAR(21) ,
+    site_id            VARCHAR(21)  NOT NULL,
     vendor_id          VARCHAR(21) ,
     dliv_tmplt_nm      VARCHAR(100) NOT NULL,
     dliv_method_cd     VARCHAR(20) ,
@@ -19,8 +19,8 @@ CREATE TABLE shopjoy_2604.pd_dliv_tmplt (
     return_addr        VARCHAR(200),
     return_addr_detail VARCHAR(200),
     return_tel_no      VARCHAR(20) ,
-    base_dliv_yn       VARCHAR(1)   DEFAULT 'N',
-    use_yn             VARCHAR(1)   DEFAULT 'Y',
+    base_dliv_yn       VARCHAR(1)   DEFAULT 'N'::character varying,
+    use_yn             VARCHAR(1)   DEFAULT 'Y'::character varying,
     reg_by             VARCHAR(30) ,
     reg_date           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by             VARCHAR(30) ,

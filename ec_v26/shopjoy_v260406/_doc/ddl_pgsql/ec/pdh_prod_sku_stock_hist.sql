@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pdh_prod_sku_stock_hist (
     hist_id       VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     sku_id        VARCHAR(21)  NOT NULL,
     prod_id       VARCHAR(21)  NOT NULL,
     stock_before  INTEGER      NOT NULL,
@@ -40,4 +40,5 @@ CREATE INDEX idx_pdh_prod_sku_stock_hist_date ON shopjoy_2604.pdh_prod_sku_stock
 CREATE INDEX idx_pdh_prod_sku_stock_hist_order ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (order_item_id) WHERE (order_item_id IS NOT NULL);
 CREATE INDEX idx_pdh_prod_sku_stock_hist_prod ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (prod_id);
 CREATE INDEX idx_pdh_prod_sku_stock_hist_reason ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (chg_reason_cd);
+CREATE INDEX idx_pdh_prod_sku_stock_hist_site ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (site_id);
 CREATE INDEX idx_pdh_prod_sku_stock_hist_sku ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (sku_id);

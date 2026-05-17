@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.odh_pay_status_hist (
     pay_status_hist_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id              VARCHAR(21) ,
+    site_id              VARCHAR(21)  NOT NULL,
     pay_id               VARCHAR(21)  NOT NULL,
     order_id             VARCHAR(21)  NOT NULL,
     pay_status_cd_before VARCHAR(20) ,
@@ -38,3 +38,4 @@ COMMENT ON COLUMN shopjoy_2604.odh_pay_status_hist.upd_date IS '수정일';
 CREATE INDEX idx_odh_pay_status_hist_date ON shopjoy_2604.odh_pay_status_hist USING btree (chg_date);
 CREATE INDEX idx_odh_pay_status_hist_order ON shopjoy_2604.odh_pay_status_hist USING btree (order_id);
 CREATE INDEX idx_odh_pay_status_hist_pay ON shopjoy_2604.odh_pay_status_hist USING btree (pay_id);
+CREATE INDEX idx_odh_pay_status_hist_site ON shopjoy_2604.odh_pay_status_hist USING btree (site_id);

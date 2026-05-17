@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.odh_order_item_chg_hist (
     order_item_chg_hist_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                VARCHAR(21) ,
+    site_id                VARCHAR(21)  NOT NULL,
     order_id               VARCHAR(21)  NOT NULL,
     order_item_id          VARCHAR(21)  NOT NULL,
     chg_type_cd            VARCHAR(30)  NOT NULL,
@@ -39,4 +39,5 @@ COMMENT ON COLUMN shopjoy_2604.odh_order_item_chg_hist.upd_date IS '수정일';
 CREATE INDEX idx_odh_order_item_chg_hist_date ON shopjoy_2604.odh_order_item_chg_hist USING btree (chg_date);
 CREATE INDEX idx_odh_order_item_chg_hist_item ON shopjoy_2604.odh_order_item_chg_hist USING btree (order_item_id);
 CREATE INDEX idx_odh_order_item_chg_hist_order ON shopjoy_2604.odh_order_item_chg_hist USING btree (order_id);
+CREATE INDEX idx_odh_order_item_chg_hist_site ON shopjoy_2604.odh_order_item_chg_hist USING btree (site_id);
 CREATE INDEX idx_odh_order_item_chg_hist_type ON shopjoy_2604.odh_order_item_chg_hist USING btree (chg_type_cd);

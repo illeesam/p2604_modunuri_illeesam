@@ -2,7 +2,7 @@
 -- 다목적 샘플/코드성 데이터 저장소 2
 
 CREATE TABLE shopjoy_2604.zz_sample2 (
-    sample2_id    VARCHAR(20)   NOT NULL PRIMARY KEY,
+    sample2_id    VARCHAR(21)   NOT NULL PRIMARY KEY,
     cd_grp        VARCHAR(50)  ,
     cd_vl         VARCHAR(20)  ,
     cd_nm         VARCHAR(200) ,
@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.zz_sample2 (
     attr_nm4      VARCHAR(200) ,
     expln_cn      VARCHAR(2000),
     cd_infw_se_cd VARCHAR(20)  ,
-    use_yn        VARCHAR(20)   DEFAULT 'Y',
+    use_yn        VARCHAR(20)   DEFAULT 'Y'::character varying,
     rgtr          VARCHAR(20)  ,
     reg_dt        DATE         ,
     mdfr          VARCHAR(20)  ,
@@ -32,7 +32,8 @@ CREATE TABLE shopjoy_2604.zz_sample2 (
     type_cd       VARCHAR(20)  ,
     div_cd        VARCHAR(20)  ,
     kind_cd       VARCHAR(20)  ,
-    cate_cds      VARCHAR(100) 
+    cate_cds      VARCHAR(100) ,
+    sample1_id    VARCHAR(21)  
 );
 
 COMMENT ON TABLE  shopjoy_2604.zz_sample2 IS '다목적 샘플/코드성 데이터 저장소 2';

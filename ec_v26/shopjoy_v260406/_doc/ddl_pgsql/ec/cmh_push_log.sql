@@ -3,14 +3,14 @@
 
 CREATE TABLE shopjoy_2604.cmh_push_log (
     log_id           VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21) ,
+    site_id          VARCHAR(21)  NOT NULL,
     channel_cd       VARCHAR(20)  NOT NULL,
     template_id      VARCHAR(21) ,
     member_id        VARCHAR(21) ,
     recv_addr        VARCHAR(200) NOT NULL,
     push_log_title   VARCHAR(200),
     push_log_content TEXT        ,
-    result_cd        VARCHAR(20)  DEFAULT 'SUCCESS',
+    result_cd        VARCHAR(20)  DEFAULT 'SUCCESS'::character varying,
     fail_reason      VARCHAR(500),
     send_date        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     ref_type_cd      VARCHAR(30) ,
@@ -40,6 +40,7 @@ COMMENT ON COLUMN shopjoy_2604.cmh_push_log.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.cmh_push_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cmh_push_log.upd_date IS '수정일';
 
+CREATE INDEX idx_cmh_push_log_site ON shopjoy_2604.cmh_push_log USING btree (site_id);
 CREATE INDEX idx_sy_push_log_channel ON shopjoy_2604.cmh_push_log USING btree (channel_cd, result_cd);
 CREATE INDEX idx_sy_push_log_date ON shopjoy_2604.cmh_push_log USING btree (send_date);
 CREATE INDEX idx_sy_push_log_member ON shopjoy_2604.cmh_push_log USING btree (member_id);

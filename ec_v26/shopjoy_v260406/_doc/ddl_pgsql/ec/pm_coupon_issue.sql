@@ -3,11 +3,11 @@
 
 CREATE TABLE shopjoy_2604.pm_coupon_issue (
     issue_id   VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id    VARCHAR(21),
+    site_id    VARCHAR(21) NOT NULL,
     coupon_id  VARCHAR(21) NOT NULL,
     member_id  VARCHAR(21) NOT NULL,
     issue_date TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
-    use_yn     VARCHAR(1)  DEFAULT 'N',
+    use_yn     VARCHAR(1)  DEFAULT 'N'::bpchar,
     use_date   TIMESTAMP  ,
     order_id   VARCHAR(21),
     reg_by     VARCHAR(30),
@@ -29,3 +29,5 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.reg_by IS '등록자 (sy_user.use
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.upd_date IS '수정일';
+
+CREATE INDEX idx_pm_coupon_issue_site ON shopjoy_2604.pm_coupon_issue USING btree (site_id);

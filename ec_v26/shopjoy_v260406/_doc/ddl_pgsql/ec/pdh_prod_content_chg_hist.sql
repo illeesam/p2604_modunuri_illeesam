@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pdh_prod_content_chg_hist (
     hist_id         VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21) ,
+    site_id         VARCHAR(21)  NOT NULL,
     prod_id         VARCHAR(21)  NOT NULL,
     prod_content_id VARCHAR(21)  NOT NULL,
     content_type_cd VARCHAR(50) ,
@@ -35,3 +35,4 @@ COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.upd_by IS '수정자 (s
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.upd_date IS '수정일';
 
 CREATE INDEX idx_pdh_prod_content_chg_hist_prod ON shopjoy_2604.pdh_prod_content_chg_hist USING btree (prod_id, chg_date DESC);
+CREATE INDEX idx_pdh_prod_content_chg_hist_site ON shopjoy_2604.pdh_prod_content_chg_hist USING btree (site_id);

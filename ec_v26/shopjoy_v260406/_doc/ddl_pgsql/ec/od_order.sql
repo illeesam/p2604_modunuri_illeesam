@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.od_order (
     order_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                VARCHAR(21) ,
+    site_id                VARCHAR(21)  NOT NULL,
     member_id              VARCHAR(21)  NOT NULL,
     member_nm              VARCHAR(50) ,
     orderer_email          VARCHAR(100),
@@ -24,7 +24,7 @@ CREATE TABLE shopjoy_2604.od_order (
     org_pay_amt            BIGINT      ,
     pay_method_cd          VARCHAR(20) ,
     pay_date               TIMESTAMP   ,
-    order_status_cd        VARCHAR(20)  DEFAULT 'PENDING',
+    order_status_cd        VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     order_status_cd_before VARCHAR(20) ,
     recv_nm                VARCHAR(50) ,
     recv_phone             VARCHAR(20) ,
@@ -119,4 +119,5 @@ COMMENT ON COLUMN shopjoy_2604.od_order.appr_aprv_date IS '결재일시';
 CREATE INDEX idx_od_order_channel ON shopjoy_2604.od_order USING btree (access_channel_cd);
 CREATE INDEX idx_od_order_date ON shopjoy_2604.od_order USING btree (order_date);
 CREATE INDEX idx_od_order_member ON shopjoy_2604.od_order USING btree (member_id);
+CREATE INDEX idx_od_order_site ON shopjoy_2604.od_order USING btree (site_id);
 CREATE INDEX idx_od_order_status ON shopjoy_2604.od_order USING btree (order_status_cd);

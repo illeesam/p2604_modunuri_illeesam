@@ -25,7 +25,7 @@ public class OdhOrderChgHist extends BaseEntity {
     private String orderChgHistId;
 
     @Comment("사이트ID")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("주문ID")

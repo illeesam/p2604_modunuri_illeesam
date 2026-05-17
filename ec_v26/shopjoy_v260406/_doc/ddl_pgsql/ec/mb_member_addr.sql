@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.mb_member_addr (
     member_addr_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21) ,
+    site_id        VARCHAR(21)  NOT NULL,
     member_id      VARCHAR(21)  NOT NULL,
     addr_nm        VARCHAR(50) ,
     recv_nm        VARCHAR(50)  NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE shopjoy_2604.mb_member_addr (
     zip_cd         VARCHAR(10) ,
     addr           VARCHAR(200),
     addr_detail    VARCHAR(200),
-    is_default     VARCHAR(1)   DEFAULT 'N',
+    is_default     VARCHAR(1)   DEFAULT 'N'::bpchar,
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
@@ -35,3 +35,4 @@ COMMENT ON COLUMN shopjoy_2604.mb_member_addr.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.mb_member_addr.upd_date IS '수정일';
 
 CREATE INDEX idx_mb_member_addr_member ON shopjoy_2604.mb_member_addr USING btree (member_id);
+CREATE INDEX idx_mb_member_addr_site ON shopjoy_2604.mb_member_addr USING btree (site_id);

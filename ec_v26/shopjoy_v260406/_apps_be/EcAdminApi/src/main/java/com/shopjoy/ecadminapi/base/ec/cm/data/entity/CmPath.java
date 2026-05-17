@@ -23,6 +23,10 @@ public class CmPath extends BaseEntity {
     @Column(name = "biz_cd", length = 50, nullable = false)
     private String bizCd;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("부모 경로ID (sy_path., 루트는 NULL)")
     @Column(name = "parent_path_id")
     private Long parentPathId;

@@ -25,7 +25,7 @@ public class PmSave extends BaseEntity {
     private String saveId;
 
     @Comment("사이트ID")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("회원ID (mb_member.member_id)")

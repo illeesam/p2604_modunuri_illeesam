@@ -28,7 +28,7 @@ public class StSettleAdj extends BaseEntity {
     private String settleId;
 
     @Comment("사이트ID")
-    @Column(name = "site_id", length = 21)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Comment("조정유형 (코드: SETTLE_ADJ_TYPE — ADD/DEDUCT)")

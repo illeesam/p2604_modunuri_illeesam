@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.cm_blog (
     blog_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21) ,
+    site_id      VARCHAR(21)  NOT NULL,
     blog_cate_id VARCHAR(21) ,
     blog_title   VARCHAR(200) NOT NULL,
     blog_summary VARCHAR(500),
@@ -11,8 +11,8 @@ CREATE TABLE shopjoy_2604.cm_blog (
     blog_author  VARCHAR(100),
     prod_id      VARCHAR(21) ,
     view_count   INTEGER      DEFAULT 0,
-    use_yn       VARCHAR(1)   DEFAULT 'Y',
-    is_notice    VARCHAR(1)   DEFAULT 'N',
+    use_yn       VARCHAR(1)   DEFAULT 'Y'::bpchar,
+    is_notice    VARCHAR(1)   DEFAULT 'N'::bpchar,
     reg_by       VARCHAR(30) ,
     reg_date     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by       VARCHAR(30) ,
@@ -39,3 +39,4 @@ COMMENT ON COLUMN shopjoy_2604.cm_blog.upd_date IS '수정일';
 CREATE INDEX idx_cm_blog_cate ON shopjoy_2604.cm_blog USING btree (blog_cate_id);
 CREATE INDEX idx_cm_blog_date ON shopjoy_2604.cm_blog USING btree (reg_date DESC);
 CREATE INDEX idx_cm_blog_prod ON shopjoy_2604.cm_blog USING btree (prod_id);
+CREATE INDEX idx_cm_blog_site ON shopjoy_2604.cm_blog USING btree (site_id);

@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.st_settle_close (
     settle_close_id  VARCHAR(21)  NOT NULL PRIMARY KEY,
     settle_id        VARCHAR(21)  NOT NULL,
-    site_id          VARCHAR(21) ,
+    site_id          VARCHAR(21)  NOT NULL,
     close_status_cd  VARCHAR(20)  NOT NULL,
     close_reason     VARCHAR(200),
     final_settle_amt BIGINT       DEFAULT 0,
@@ -30,3 +30,4 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_close.reg_date IS '등록일';
 
 CREATE INDEX idx_st_settle_close_date ON shopjoy_2604.st_settle_close USING btree (close_date);
 CREATE INDEX idx_st_settle_close_settle ON shopjoy_2604.st_settle_close USING btree (settle_id);
+CREATE INDEX idx_st_settle_close_site ON shopjoy_2604.st_settle_close USING btree (site_id);

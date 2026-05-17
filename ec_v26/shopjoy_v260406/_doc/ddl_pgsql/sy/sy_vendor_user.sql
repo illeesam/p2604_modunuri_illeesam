@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.sy_vendor_user (
     vendor_user_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id               VARCHAR(21) ,
+    site_id               VARCHAR(21)  NOT NULL,
     vendor_id             VARCHAR(21)  NOT NULL,
     user_id               VARCHAR(21) ,
     role_id               VARCHAR(21) ,
@@ -14,11 +14,11 @@ CREATE TABLE shopjoy_2604.sy_vendor_user (
     vendor_user_mobile    VARCHAR(20)  NOT NULL,
     vendor_user_email     VARCHAR(100) NOT NULL,
     birth_date            DATE        ,
-    is_main               VARCHAR(1)   DEFAULT 'N',
-    auth_yn               VARCHAR(1)   DEFAULT 'N',
+    is_main               VARCHAR(1)   DEFAULT 'N'::bpchar,
+    auth_yn               VARCHAR(1)   DEFAULT 'N'::bpchar,
     join_date             DATE        ,
     leave_date            DATE        ,
-    vendor_user_status_cd VARCHAR(20)  DEFAULT 'ACTIVE',
+    vendor_user_status_cd VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     vendor_user_remark    VARCHAR(500),
     reg_by                VARCHAR(30) ,
     reg_date              TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -51,6 +51,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.upd_date IS '수정일';
 
 CREATE INDEX idx_sy_vendor_user_role ON shopjoy_2604.sy_vendor_user USING btree (role_id);
+CREATE INDEX idx_sy_vendor_user_site ON shopjoy_2604.sy_vendor_user USING btree (site_id);
 CREATE INDEX idx_sy_vendor_user_status ON shopjoy_2604.sy_vendor_user USING btree (vendor_user_status_cd);
 CREATE INDEX idx_sy_vendor_user_user ON shopjoy_2604.sy_vendor_user USING btree (user_id);
 CREATE INDEX idx_sy_vendor_user_vendor ON shopjoy_2604.sy_vendor_user USING btree (vendor_id);

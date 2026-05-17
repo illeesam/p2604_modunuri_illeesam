@@ -14,6 +14,7 @@ CREATE TABLE shopjoy_2604.mb_member_role (
     reg_date           TIMESTAMP    DEFAULT now(),
     upd_by             VARCHAR(30) ,
     upd_date           TIMESTAMP   ,
+    site_id            VARCHAR(21)  NOT NULL,
     CONSTRAINT fk_mb_member_role_grant FOREIGN KEY (grant_user_id) REFERENCES shopjoy_2604.sy_user (user_id),
     CONSTRAINT fk_mb_member_role_member FOREIGN KEY (member_id) REFERENCES shopjoy_2604.mb_member (member_id),
     CONSTRAINT fk_mb_member_role_role FOREIGN KEY (role_id) REFERENCES shopjoy_2604.sy_role (role_id)
@@ -31,3 +32,4 @@ COMMENT ON COLUMN shopjoy_2604.mb_member_role.member_role_remark IS '비고';
 
 CREATE INDEX idx_mb_member_role_member ON shopjoy_2604.mb_member_role USING btree (member_id);
 CREATE INDEX idx_mb_member_role_role ON shopjoy_2604.mb_member_role USING btree (role_id);
+CREATE INDEX idx_mb_member_role_site ON shopjoy_2604.mb_member_role USING btree (site_id);

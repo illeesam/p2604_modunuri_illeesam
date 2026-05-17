@@ -24,6 +24,10 @@ public class DpUiArea extends BaseEntity {
     @Column(name = "ui_area_id", length = 21, nullable = false)
     private String uiAreaId;
 
+    @Comment("사이트ID (sy_site.site_id)")
+    @Column(name = "site_id", length = 21, nullable = false)
+    private String siteId;
+
     @Comment("UIID (dp_ui.ui_id)")
     @Column(name = "ui_id", length = 21, nullable = false)
     private String uiId;

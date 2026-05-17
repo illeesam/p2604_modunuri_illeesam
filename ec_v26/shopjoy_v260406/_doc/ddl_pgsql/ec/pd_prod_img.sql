@@ -3,7 +3,7 @@
 
 CREATE TABLE shopjoy_2604.pd_prod_img (
     prod_img_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     prod_id       VARCHAR(21)  NOT NULL,
     opt_item_id_1 VARCHAR(21) ,
     opt_item_id_2 VARCHAR(21) ,
@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.pd_prod_img (
     cdn_thumb_url TEXT        ,
     img_alt_text  VARCHAR(200),
     sort_ord      INTEGER      DEFAULT 0,
-    is_thumb      VARCHAR(1)   DEFAULT 'N',
+    is_thumb      VARCHAR(1)   DEFAULT 'N'::bpchar,
     reg_by        VARCHAR(30) ,
     reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by        VARCHAR(30) ,
@@ -39,3 +39,4 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_img.upd_by IS '수정자 (sy_user.user_id
 COMMENT ON COLUMN shopjoy_2604.pd_prod_img.upd_date IS '수정일';
 
 CREATE INDEX idx_pd_prod_img_opt ON shopjoy_2604.pd_prod_img USING btree (prod_id, opt_item_id_1, opt_item_id_2);
+CREATE INDEX idx_pd_prod_img_site ON shopjoy_2604.pd_prod_img USING btree (site_id);

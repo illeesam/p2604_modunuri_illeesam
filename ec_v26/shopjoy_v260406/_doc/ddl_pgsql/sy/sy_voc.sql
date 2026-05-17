@@ -3,12 +3,12 @@
 
 CREATE TABLE shopjoy_2604.sy_voc (
     voc_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) ,
+    site_id       VARCHAR(21)  NOT NULL,
     voc_master_cd VARCHAR(20)  NOT NULL,
     voc_detail_cd VARCHAR(20)  NOT NULL,
     voc_nm        VARCHAR(100) NOT NULL,
     voc_content   TEXT        ,
-    use_yn        VARCHAR(1)   DEFAULT 'Y',
+    use_yn        VARCHAR(1)   DEFAULT 'Y'::character varying,
     reg_by        VARCHAR(30) ,
     reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by        VARCHAR(30) ,
