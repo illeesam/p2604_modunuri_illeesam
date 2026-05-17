@@ -31,11 +31,11 @@ public class MbhMemberTokenLog extends BaseEntity {
     @Column(name = "auth_id", length = 21)
     private String authId;
 
-    @Comment("회원ID (mb_member.member_id)")
+    @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
-    @Comment("최초 로그인 로그ID (mb_member_login_log.)")
+    @Comment("최초 로그인 로그ID (mb_member_login_log.)")
     @Column(name = "login_log_id", length = 21)
     private String loginLogId;
 

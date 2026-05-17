@@ -14,7 +14,7 @@ CREATE TABLE shopjoy_2604.cm_blog_good (
 
 COMMENT ON TABLE  shopjoy_2604.cm_blog_good IS '블로그 좋아요';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_good.like_id IS '좋아요ID';
-COMMENT ON COLUMN shopjoy_2604.cm_blog_good.blog_id IS '블로그ID (cm_bltn.)';
+COMMENT ON COLUMN shopjoy_2604.cm_blog_good.blog_id IS '블로그ID (cm_bltn.)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_good.user_id IS '사용자ID (sy_member.user_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_good.reg_date IS '등록일';
 

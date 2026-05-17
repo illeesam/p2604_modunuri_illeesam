@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.pd_review_comment (
 COMMENT ON TABLE  shopjoy_2604.pd_review_comment IS '리뷰 댓글';
 COMMENT ON COLUMN shopjoy_2604.pd_review_comment.review_comment_id IS '댓글ID';
 COMMENT ON COLUMN shopjoy_2604.pd_review_comment.site_id IS '사이트ID';
-COMMENT ON COLUMN shopjoy_2604.pd_review_comment.review_id IS '리뷰ID (pd_review.)';
+COMMENT ON COLUMN shopjoy_2604.pd_review_comment.review_id IS '리뷰ID (pd_review.)';
 COMMENT ON COLUMN shopjoy_2604.pd_review_comment.parent_reply_id IS '상위댓글ID (대댓글)';
 COMMENT ON COLUMN shopjoy_2604.pd_review_comment.writer_type_cd IS '작성자유형 (코드: REVIEW_WRITER_TYPE — MEMBER/SELLER/ADMIN)';
 COMMENT ON COLUMN shopjoy_2604.pd_review_comment.writer_id IS '작성자ID';

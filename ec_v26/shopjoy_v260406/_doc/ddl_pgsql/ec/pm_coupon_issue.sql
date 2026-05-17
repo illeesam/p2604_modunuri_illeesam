@@ -25,9 +25,9 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.issue_date IS '발급일시';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.use_yn IS '사용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.use_date IS '사용일시';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.order_id IS '사용주문ID';
-COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.upd_date IS '수정일';
 
 CREATE INDEX idx_pm_coupon_issue_site ON shopjoy_2604.pm_coupon_issue USING btree (site_id);

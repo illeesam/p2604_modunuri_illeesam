@@ -15,8 +15,8 @@ CREATE TABLE shopjoy_2604.pd_prod_tag (
 COMMENT ON TABLE  shopjoy_2604.pd_prod_tag IS '상품-태그 매핑';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.prod_tag_id IS '상품태그ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.site_id IS '사이트ID';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.prod_id IS '상품ID (pd_prod.prod_id)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.tag_id IS '태그ID (pd_tag.)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.prod_id IS '상품ID (pd_prod.prod_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.tag_id IS '태그ID (pd_tag.)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.reg_date IS '등록일';
 

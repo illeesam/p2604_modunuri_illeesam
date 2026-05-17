@@ -22,8 +22,8 @@ CREATE TABLE shopjoy_2604.odh_dliv_item_chg_hist (
 COMMENT ON TABLE  shopjoy_2604.odh_dliv_item_chg_hist IS '배송 품목 변경 이력';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.dliv_item_chg_hist_id IS '이력ID';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.site_id IS '사이트ID';
-COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.dliv_id IS '배송ID (od_dliv.)';
-COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.dliv_item_id IS '배송품목ID (od_dliv_item.)';
+COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.dliv_id IS '배송ID (od_dliv.)';
+COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.dliv_item_id IS '배송품목ID (od_dliv_item.)';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.chg_type_cd IS '변경유형코드 (QTY/STATUS/CARRIER/TRACK_NO/RECV_INFO)';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.chg_field IS '변경 필드명';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.before_val IS '변경전값';

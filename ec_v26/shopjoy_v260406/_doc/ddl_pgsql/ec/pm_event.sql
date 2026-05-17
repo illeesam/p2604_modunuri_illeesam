@@ -45,9 +45,9 @@ COMMENT ON COLUMN shopjoy_2604.pm_event.sort_ord IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.pm_event.view_cnt IS '조회수';
 COMMENT ON COLUMN shopjoy_2604.pm_event.use_yn IS '사용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.pm_event.event_desc IS '이벤트설명';
-COMMENT ON COLUMN shopjoy_2604.pm_event.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_event.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_event.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.pm_event.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_event.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_event.upd_date IS '수정일';
 
 CREATE INDEX idx_pm_event_date ON shopjoy_2604.pm_event USING btree (start_date, end_date);

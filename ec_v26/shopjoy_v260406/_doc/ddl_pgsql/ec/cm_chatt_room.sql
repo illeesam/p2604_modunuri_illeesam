@@ -37,9 +37,9 @@ COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.admin_unread_cnt IS '관리자 미�
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.chatt_memo IS '메모';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.close_date IS '종료일시';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.close_reason IS '종료사유';
-COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_room.upd_date IS '수정일';
 
 CREATE INDEX idx_cm_chatt_room_site ON shopjoy_2604.cm_chatt_room USING btree (site_id);

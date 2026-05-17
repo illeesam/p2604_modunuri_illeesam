@@ -29,9 +29,9 @@ COMMENT ON COLUMN shopjoy_2604.pd_category.category_status_cd IS '상태 (코드
 COMMENT ON COLUMN shopjoy_2604.pd_category.category_status_cd_before IS '변경 전 카테고리상태 (코드: USE_YN)';
 COMMENT ON COLUMN shopjoy_2604.pd_category.img_url IS '이미지URL';
 COMMENT ON COLUMN shopjoy_2604.pd_category.category_desc IS '설명';
-COMMENT ON COLUMN shopjoy_2604.pd_category.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_category.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_category.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.pd_category.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_category.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_category.upd_date IS '수정일';
 
 CREATE INDEX idx_pd_category_site ON shopjoy_2604.pd_category USING btree (site_id);

@@ -27,11 +27,11 @@ public class OdClaimItem extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("클레임ID (od_claim.)")
+    @Comment("클레임ID (od_claim.)")
     @Column(name = "claim_id", length = 21, nullable = false)
     private String claimId;
 
-    @Comment("주문상품ID (od_order_item.)")
+    @Comment("주문상품ID (od_order_item.)")
     @Column(name = "order_item_id", length = 21, nullable = false)
     private String orderItemId;
 

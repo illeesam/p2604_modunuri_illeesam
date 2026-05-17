@@ -32,8 +32,8 @@ CREATE TABLE shopjoy_2604.mbh_member_token_log (
 COMMENT ON TABLE  shopjoy_2604.mbh_member_token_log IS '회원 토큰 이력';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.log_id IS '로그ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.site_id IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.member_id IS '회원ID (mb_member.member_id)';
-COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.login_log_id IS '최초 로그인 로그ID (mb_member_login_log.)';
+COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.member_id IS '회원ID (mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.login_log_id IS '최초 로그인 로그ID (mb_member_login_log.)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.action_cd IS '토큰 액션 (코드: TOKEN_ACTION — ISSUE/REFRESH/REVOKE/EXPIRE)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.token_type_cd IS '토큰 유형 (코드: TOKEN_TYPE — ACCESS/REFRESH)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.access_token IS '토큰값 (SHA-256 해시 저장 권장)';
@@ -42,9 +42,9 @@ COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.prev_token IS '갱신 전 �
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.ip IS 'IP주소';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.device_info IS 'User-Agent';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.revoke_reason IS '폐기 사유 (LOGOUT/FORCE/EXPIRED 등)';
-COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.refresh_token IS '리푸레쉬 토큰';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.auth_id IS '인증ID';

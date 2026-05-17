@@ -27,7 +27,7 @@ public class CmPath extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("부모 경로ID (sy_path., 루트는 NULL)")
+    @Comment("부모 경로ID (sy_path., 루트는 NULL)")
     @Column(name = "parent_path_id")
     private Long parentPathId;
 

@@ -16,7 +16,7 @@ CREATE TABLE shopjoy_2604.mb_like (
 COMMENT ON TABLE  shopjoy_2604.mb_like IS '좋아요 (위시리스트)';
 COMMENT ON COLUMN shopjoy_2604.mb_like.like_id IS '좋아요ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.mb_like.site_id IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN shopjoy_2604.mb_like.member_id IS '회원ID (mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.mb_like.member_id IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_like.target_type_cd IS '대상유형 (코드: LIKE_TARGET_TYPE — PRODUCT/BLOG/EVENT)';
 COMMENT ON COLUMN shopjoy_2604.mb_like.target_id IS '대상ID';
 COMMENT ON COLUMN shopjoy_2604.mb_like.reg_by IS '등록자';

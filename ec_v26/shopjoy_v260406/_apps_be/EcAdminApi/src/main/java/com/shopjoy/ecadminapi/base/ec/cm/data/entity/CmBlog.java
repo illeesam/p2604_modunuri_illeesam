@@ -27,7 +27,7 @@ public class CmBlog extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("블로그카테고리ID (cm_bltn_cate.blog_cate_id)")
+    @Comment("블로그카테고리ID (cm_bltn_cate.blog_cate_id)")
     @Column(name = "blog_cate_id", length = 21)
     private String blogCateId;
 
@@ -47,7 +47,7 @@ public class CmBlog extends BaseEntity {
     @Column(name = "blog_author", length = 100)
     private String blogAuthor;
 
-    @Comment("상품ID (pd_prod.prod_id, 상품 관련 글일 때만)")
+    @Comment("상품ID (pd_prod.prod_id, 상품 관련 글일 때만)")
     @Column(name = "prod_id", length = 21)
     private String prodId;
 

@@ -25,7 +25,7 @@ COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.log_id IS '로그ID (YYMMDDhhmm
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.member_id IS '회원ID (비회원 NULL)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.session_key IS '비회원 세션키';
-COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.prod_id IS '상품ID (pd_prod.prod_id)';
+COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.prod_id IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.ref_id IS '참조ID (prod_id 등)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.ref_nm IS '참조명 스냅샷';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.search_kw IS '검색어 (SEARCH 유형)';
@@ -33,9 +33,9 @@ COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.ip IS 'IP주소';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.device IS 'User-Agent';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.referrer IS '유입경로 URL';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.view_date IS '조회일시';
-COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.upd_date IS '수정일';
 
 CREATE INDEX idx_ec_pvl_date ON shopjoy_2604.pdh_prod_view_log USING btree (view_date);

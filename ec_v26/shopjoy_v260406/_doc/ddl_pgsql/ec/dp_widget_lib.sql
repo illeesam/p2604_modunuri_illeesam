@@ -35,9 +35,9 @@ COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.widget_config_json IS '설정 스�
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.is_system IS '시스템기본위젯 Y/N';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.sort_ord IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.use_yn IS '사용여부 Y/N';
-COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.upd_date IS '수정일';
 
 CREATE UNIQUE INDEX dp_widget_lib_widget_code_key ON shopjoy_2604.dp_widget_lib USING btree (widget_code);

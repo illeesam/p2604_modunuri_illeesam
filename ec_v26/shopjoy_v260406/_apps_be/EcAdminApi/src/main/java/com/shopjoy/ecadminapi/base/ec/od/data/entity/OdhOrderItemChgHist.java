@@ -28,11 +28,11 @@ public class OdhOrderItemChgHist extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("주문ID (od_order.)")
+    @Comment("주문ID (od_order.)")
     @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
-    @Comment("주문품목ID (od_order_item.)")
+    @Comment("주문품목ID (od_order_item.)")
     @Column(name = "order_item_id", length = 21, nullable = false)
     private String orderItemId;
 

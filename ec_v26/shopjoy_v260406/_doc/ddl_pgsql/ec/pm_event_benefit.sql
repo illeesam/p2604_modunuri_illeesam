@@ -27,9 +27,9 @@ COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.condition_desc IS '조건 설명
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.benefit_value IS '혜택 값';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.coupon_id IS '연결 쿠폰ID';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.sort_ord IS '정렬순서';
-COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.upd_date IS '수정일';
 
 CREATE INDEX idx_pm_event_benefit_event ON shopjoy_2604.pm_event_benefit USING btree (event_id);

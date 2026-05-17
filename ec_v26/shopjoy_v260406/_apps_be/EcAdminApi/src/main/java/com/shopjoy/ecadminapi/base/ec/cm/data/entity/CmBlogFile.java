@@ -27,7 +27,7 @@ public class CmBlogFile extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("블로그ID (cm_bltn.)")
+    @Comment("블로그ID (cm_bltn.)")
     @Column(name = "blog_id", length = 21, nullable = false)
     private String blogId;
 

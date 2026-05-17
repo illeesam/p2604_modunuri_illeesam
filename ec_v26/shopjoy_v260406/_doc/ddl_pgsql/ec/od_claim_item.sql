@@ -27,8 +27,8 @@ CREATE TABLE shopjoy_2604.od_claim_item (
 COMMENT ON TABLE  shopjoy_2604.od_claim_item IS '클레임 항목 (클레임 대상 주문상품 명세)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.claim_item_id IS '클레임항목ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.site_id IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN shopjoy_2604.od_claim_item.claim_id IS '클레임ID (od_claim.)';
-COMMENT ON COLUMN shopjoy_2604.od_claim_item.order_item_id IS '주문상품ID (od_order_item.)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.claim_id IS '클레임ID (od_claim.)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.order_item_id IS '주문상품ID (od_order_item.)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_id IS '상품ID';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_nm IS '상품명 (주문시점 스냅샷)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_option IS '옵션 (색상/사이즈 스냅샷)';
@@ -41,9 +41,9 @@ COMMENT ON COLUMN shopjoy_2604.od_claim_item.claim_item_status_cd_before IS '변
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.return_shipping_fee IS '해당 항목의 수거배송료';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.inbound_shipping_fee IS '해당 항목의 반입배송료';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.exchange_shipping_fee IS '해당 항목의 교환 발송배송료';
-COMMENT ON COLUMN shopjoy_2604.od_claim_item.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.od_claim_item.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.upd_date IS '수정일';
 
 CREATE INDEX idx_od_claim_item_site ON shopjoy_2604.od_claim_item USING btree (site_id);

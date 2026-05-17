@@ -28,11 +28,11 @@ public class OdhPayChgHist extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("결제ID (od_pay.)")
+    @Comment("결제ID (od_pay.)")
     @Column(name = "pay_id", length = 21, nullable = false)
     private String payId;
 
-    @Comment("주문ID (od_order.)")
+    @Comment("주문ID (od_order.)")
     @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
@@ -64,7 +64,7 @@ public class OdhPayChgHist extends BaseEntity {
     @Column(name = "refund_pg_tid", length = 100)
     private String refundPgTid;
 
-    @Comment("변경 담당자 (sy_user.user_id, mb_member.member_id)")
+    @Comment("변경 담당자 (sy_user.user_id, mb_member.member_id)")
     @Column(name = "chg_user_id", length = 21)
     private String chgUserId;
 

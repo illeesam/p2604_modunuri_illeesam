@@ -27,11 +27,11 @@ public class PdProdTag extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("상품ID (pd_prod.prod_id)")
+    @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Comment("태그ID (pd_tag.)")
+    @Comment("태그ID (pd_tag.)")
     @Column(name = "tag_id", length = 21, nullable = false)
     private String tagId;
 

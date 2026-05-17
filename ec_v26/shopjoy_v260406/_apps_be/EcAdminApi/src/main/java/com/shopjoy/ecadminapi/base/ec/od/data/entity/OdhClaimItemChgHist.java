@@ -28,11 +28,11 @@ public class OdhClaimItemChgHist extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("클레임ID (od_claim.)")
+    @Comment("클레임ID (od_claim.)")
     @Column(name = "claim_id", length = 21, nullable = false)
     private String claimId;
 
-    @Comment("클레임품목ID (od_claim_item.)")
+    @Comment("클레임품목ID (od_claim_item.)")
     @Column(name = "claim_item_id", length = 21, nullable = false)
     private String claimItemId;
 

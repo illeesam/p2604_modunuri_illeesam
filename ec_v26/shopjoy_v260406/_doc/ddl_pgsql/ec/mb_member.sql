@@ -49,9 +49,9 @@ COMMENT ON COLUMN shopjoy_2604.mb_member.member_zip_code IS '우편번호';
 COMMENT ON COLUMN shopjoy_2604.mb_member.member_addr IS '주소';
 COMMENT ON COLUMN shopjoy_2604.mb_member.member_addr_detail IS '상세주소';
 COMMENT ON COLUMN shopjoy_2604.mb_member.member_memo IS '메모';
-COMMENT ON COLUMN shopjoy_2604.mb_member.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.mb_member.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.mb_member.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.mb_member.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.upd_date IS '수정일';
 
 CREATE INDEX idx_mb_member_site ON shopjoy_2604.mb_member USING btree (site_id);

@@ -21,7 +21,7 @@ CREATE TABLE shopjoy_2604.odh_claim_chg_hist (
 COMMENT ON TABLE  shopjoy_2604.odh_claim_chg_hist IS '클레임 변경 이력';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_chg_hist.claim_chg_hist_id IS '이력ID';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_chg_hist.site_id IS '사이트ID';
-COMMENT ON COLUMN shopjoy_2604.odh_claim_chg_hist.claim_id IS '클레임ID (od_claim.)';
+COMMENT ON COLUMN shopjoy_2604.odh_claim_chg_hist.claim_id IS '클레임ID (od_claim.)';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_chg_hist.chg_type_cd IS '변경유형코드 (CLAIM_TYPE/REASON/AMOUNT/APPROVAL/MEMO/REFUND)';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_chg_hist.chg_field IS '변경 필드명';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_chg_hist.before_val IS '변경전값';

@@ -18,7 +18,7 @@ CREATE TABLE shopjoy_2604.pd_review_attach (
 COMMENT ON TABLE  shopjoy_2604.pd_review_attach IS '리뷰 이미지/동영상';
 COMMENT ON COLUMN shopjoy_2604.pd_review_attach.review_attach_id IS '미디어ID';
 COMMENT ON COLUMN shopjoy_2604.pd_review_attach.site_id IS '사이트ID';
-COMMENT ON COLUMN shopjoy_2604.pd_review_attach.review_id IS '리뷰ID (pd_review.)';
+COMMENT ON COLUMN shopjoy_2604.pd_review_attach.review_id IS '리뷰ID (pd_review.)';
 COMMENT ON COLUMN shopjoy_2604.pd_review_attach.attach_id IS '첨부파일ID (sy_attach.attach_id) — url·파일명 여기서 조회';
 COMMENT ON COLUMN shopjoy_2604.pd_review_attach.media_type_cd IS '미디어유형 (코드: MEDIA_TYPE)';
 COMMENT ON COLUMN shopjoy_2604.pd_review_attach.thumb_url IS '동영상 썸네일URL (이미지는 sy_attach.url 사용)';

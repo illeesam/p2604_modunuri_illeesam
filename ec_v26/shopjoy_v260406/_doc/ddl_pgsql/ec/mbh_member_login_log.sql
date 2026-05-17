@@ -48,9 +48,9 @@ COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.access_token IS '액세스 �
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.access_token_exp IS '액세스 토큰 만료일시';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.refresh_token IS '리프레시 토큰 (SHA-256 해시값 저장 권장)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.refresh_token_exp IS '리프레시 토큰 만료일시';
-COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.reg_date IS '등록일';
-COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.auth_id IS '인증ID';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.ui_nm IS '화면명 (X-UI-Nm 헤더)';

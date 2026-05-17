@@ -29,11 +29,11 @@ public class PdReview extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("상품ID (pd_prod.prod_id)")
+    @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Comment("회원ID (mb_member.member_id)")
+    @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 

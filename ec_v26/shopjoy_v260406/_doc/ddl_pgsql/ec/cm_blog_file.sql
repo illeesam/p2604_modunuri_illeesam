@@ -17,12 +17,12 @@ CREATE TABLE shopjoy_2604.cm_blog_file (
 
 COMMENT ON TABLE  shopjoy_2604.cm_blog_file IS '블로그 이미지';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.blog_img_id IS '블로그이미지ID';
-COMMENT ON COLUMN shopjoy_2604.cm_blog_file.blog_id IS '블로그ID (cm_bltn.)';
+COMMENT ON COLUMN shopjoy_2604.cm_blog_file.blog_id IS '블로그ID (cm_bltn.)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.img_url IS '원본 이미지 URL';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.thumb_url IS '썸네일 이미지 URL';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.img_alt_text IS '이미지 대체텍스트';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.sort_ord IS '정렬순서';
-COMMENT ON COLUMN shopjoy_2604.cm_blog_file.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.cm_blog_file.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.reg_date IS '등록일';
 
 CREATE INDEX idx_cm_blog_file_site ON shopjoy_2604.cm_blog_file USING btree (site_id);

@@ -27,7 +27,7 @@ public class MbLike extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("회원ID (mb_member.member_id)")
+    @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 

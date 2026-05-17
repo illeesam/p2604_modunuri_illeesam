@@ -36,7 +36,7 @@ public class PdhProdViewLog extends BaseEntity {
     @Column(name = "session_key", length = 100)
     private String sessionKey;
 
-    @Comment("상품ID (pd_prod.prod_id)")
+    @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
