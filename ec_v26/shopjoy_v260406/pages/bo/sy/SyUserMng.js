@@ -318,18 +318,18 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </table>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-  <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
-    </div>
-    <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" 
-      
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      :on-list-reload="handleSearchData"
-    />
-  </div>
 </div>
+</div>
+<!-- 사용자 수정: 2열 그리드 밖 → 좌측 부서트리 영역까지 전체폭 사용 -->
+<div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
+  <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+    <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+  </div>
+  <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+    :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :reload-trigger="uiStateDetail.reloadTrigger"
+    :on-list-reload="handleSearchData"
+  />
 </div>
 `
 };

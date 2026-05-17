@@ -194,13 +194,13 @@ window.PdDlivTmpltMng = {
   <div class="card">
       <div class="search-bar">
         <label class="search-label">템플릿명</label>
-        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="템플릿명 검색">
+        <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="템플릿명 검색">
         <label class="search-label">배송방법</label>
-        <select class="form-control" v-model="searchParam.method">
+        <select v-model="searchParam.method">
           <option value="">전체</option><option v-for="m in codes.dliv_methods" :key="m.value" :value="m.value">{{ m.label }}</option>
         </select>
         <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchParam.use">
+        <select v-model="searchParam.use">
           <option value="">전체</option>
           <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>

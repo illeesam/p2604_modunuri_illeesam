@@ -134,9 +134,9 @@ window.PdRestockNotiMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">상품명</label>
-        <input class="form-control" v-model="searchParam.prod" @keyup.enter="() => onSearch?.()" placeholder="상품명 검색">
+        <input v-model="searchParam.prod" @keyup.enter="() => onSearch?.()" placeholder="상품명 검색">
         <label class="search-label">알림발송</label>
-        <select class="form-control" v-model="searchParam.noti">
+        <select v-model="searchParam.noti">
           <option value="">전체</option><option v-for="o in codes.send_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
         <div class="search-actions">

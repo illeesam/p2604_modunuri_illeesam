@@ -727,6 +727,10 @@ window.SyRoleMng = {
               title="하단 메뉴접근권한 / 대상사용자 설정">설정</button>
           </td>
           <td class="col-act-delete-val">
+            <button v-if="row.roleId > 0 && row._row_status !== 'D'"
+              class="btn btn-blue btn-xs" style="margin-right:4px;"
+              @click.stop="onOpenSetting(idx)"
+              title="하단 메뉴접근권한 / 대상사용자 설정">상세</button>
             <button v-if="['N','U'].includes(row._row_status)"
               class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
           </td>

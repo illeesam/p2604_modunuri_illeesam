@@ -161,7 +161,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <th style="width:128px;">실행일시</th>
         <th style="width:66px;text-align:center;">소요시간</th>
         <th style="width:66px;text-align:center;">결과</th>
-        <th>메시지</th>
+        <th style="width:auto;">메시지</th>
         <th style="width:32px;"></th>
       </tr>
     </thead>
@@ -180,7 +180,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <td style="color:#555;font-family:monospace;font-size:11px;">{{ log.runAt }}</td>
           <td style="text-align:center;color:#666;">{{ fnFmtDuration(log.durationMs) }}</td>
           <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(log.runStatus)">{{ log.runStatus }}</span></td>
-          <td style="font-size:11px;max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+          <td style="font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;"
             :style="log.runStatus==='실패' ? 'color:#dc2626;' : 'color:#555;'">
             {{ log.message }}
           </td>

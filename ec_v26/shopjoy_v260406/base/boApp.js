@@ -2013,2099 +2013,926 @@
 <div @click="onRootClick">
   <!-- ① TOP NAV -->
   <nav class="bo-top-nav">
-    <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" title="사이드바">☰</button>
-    <span class="brand" @click="navigate('dashboard')" style="display: inline-flex; align-items: center; gap: 8px">
-      ShopJoy
-      <span
-        class="fo-site-badge"
-        :title="'FO_SITE_NO=' + (currentFoSiteNo || '-') + ' BO_SITE_NO=' + (currentBoSiteNo || '-') + ' — 클릭: 연관사이트'"
-        :data-tip="'FO_SITE_NO=' + (currentFoSiteNo || '-') + ' BO_SITE_NO=' + (currentBoSiteNo || '-')"
-        style="display: inline-flex; gap: 4px; font-family: monospace; font-size: 11px; cursor: pointer"
-        @click.stop="toggleRelatedSite"
-      >
-        <span
-          :style="{fontWeight:800,color: currentFoSiteNo==='03'?'#7b1fa2':currentFoSiteNo==='02'?'#2e7d6b':currentFoSiteNo==='9999'?'#bbb':'#ff8aa5'}"
-        >
-          {{ currentFoSiteNo || '-' }}
-        </span>
-        <span
-          :style="{fontWeight:800,color: currentBoSiteNo==='03'?'#7b1fa2':currentBoSiteNo==='02'?'#2e7d6b':currentBoSiteNo==='9999'?'#bbb':'#ff8aa5'}"
-        >
-          {{ currentBoSiteNo || '-' }}
-        </span>
-      </span>
-      <span
-        :title="'active=' + cfBoActive"
-        :style="{
+  <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" title="사이드바">☰</button>
+  <span class="brand" @click="navigate('dashboard')" style="display:inline-flex;align-items:center;gap:8px;">
+  ShopJoy
+  <span class="fo-site-badge"
+  :title="'FO_SITE_NO=' + (currentFoSiteNo || '-') + ' BO_SITE_NO=' + (currentBoSiteNo || '-') + ' — 클릭: 연관사이트'"
+  :data-tip="'FO_SITE_NO=' + (currentFoSiteNo || '-') + ' BO_SITE_NO=' + (currentBoSiteNo || '-')"
+  style="display:inline-flex;gap:4px;font-family:monospace;font-size:11px;cursor:pointer;"
+  @click.stop="toggleRelatedSite">
+  <span :style="{fontWeight:800,color: currentFoSiteNo==='03'?'#7b1fa2':currentFoSiteNo==='02'?'#2e7d6b':currentFoSiteNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentFoSiteNo || '-' }}</span>
+  <span :style="{fontWeight:800,color: currentBoSiteNo==='03'?'#7b1fa2':currentBoSiteNo==='02'?'#2e7d6b':currentBoSiteNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentBoSiteNo || '-' }}</span>
+  </span>
+  <span
+  :title="'active=' + cfBoActive"
+  :style="{
   fontFamily:'monospace', fontSize:'10px', fontWeight:700, padding:'1px 6px',
   borderRadius:'4px', border:'1px solid',
   color: cfBoActive==='prod'?'#fff':cfBoActive==='dev'?'#1565c0':cfBoActive==='local'?'#7a5800':'#555',
   background: cfBoActive==='prod'?'#e53935':cfBoActive==='dev'?'#e3f0fb':cfBoActive==='local'?'#fff59d':'#f0f0f0',
   borderColor: cfBoActive==='prod'?'#c62828':cfBoActive==='dev'?'#90caf9':cfBoActive==='local'?'#f9a825':'#ccc',
-  }"
-      >
-        {{ cfBoActive }}
-      </span>
-    </span>
-    <div class="top-nav-menus">
-      <span
-        v-for="tm in TOP_MENUS"
-        :key="tm.id"
-        class="top-nav-item"
-        :class="{active: activeTop===tm.id}"
-        @click="setTopMenu(tm.id)"
-      >
-        {{ tm.label }}
-      </span>
-    </div>
+  }">{{ cfBoActive }}</span>
+  </span>
+  <div class="top-nav-menus">
+  <span v-for="tm in TOP_MENUS" :key="tm.id"
+  class="top-nav-item" :class="{active: activeTop===tm.id}"
+  @click="setTopMenu(tm.id)">{{ tm.label }}</span>
+  </div>
 
-    <!-- 도움말 버튼 -->
-    <button
-      @click.stop="showHelp()"
-      title="도움말"
-      style="
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 10px;
-        font-size: 11px;
-        font-weight: 600;
-        color: #e8587a;
-        background: rgba(232, 88, 122, 0.08);
-        border: 1px solid rgba(232, 88, 122, 0.25);
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.15s;
-        flex-shrink: 0;
-      "
-      @mouseenter="$event.target.style.background='rgba(232,88,122,0.18)'"
-      @mouseleave="$event.target.style.background='rgba(232,88,122,0.08)'"
-    >
-      <span style="font-size: 13px">❓</span>
-      도움말
-    </button>
+  <!-- 도움말 버튼 -->
+  <button @click.stop="showHelp()"
+  title="도움말"
+  style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;font-weight:600;color:#e8587a;background:rgba(232,88,122,0.08);border:1px solid rgba(232,88,122,0.25);border-radius:6px;cursor:pointer;transition:all .15s;flex-shrink:0;"
+  @mouseenter="$event.target.style.background='rgba(232,88,122,0.18)'"
+  @mouseleave="$event.target.style.background='rgba(232,88,122,0.08)'">
+  <span style="font-size:13px;">❓</span> 도움말
+  </button>
 
-    <!-- 로그인/유저 영역 -->
-    <div class="top-nav-user" @click.stop>
-      <template v-if="cfIsLoggedIn">
-        <select
-          v-if="currentAuthUserRoles.length > 1"
-          class="user-role-select"
-          v-model="activeRoleId"
-          @change="onRoleChange"
-          :title="'역할 ' + currentAuthUserRoles.length + '개 보유'"
-          style="
-            margin-right: 4px;
-            padding: 3px 6px;
-            font-size: 11px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            background: #fff;
-            color: #374151;
-            max-width: 480px;
-            min-width: 320px;
-          "
-        >
-          <option v-for="r in currentAuthUserRoles" :key="r.roleId" :value="r.roleId">{{ rolePath(r) }}</option>
-        </select>
-        <span
-          v-if="currentAuthUserRoles.length >= 2"
-          :title="'역할 ' + currentAuthUserRoles.length + '개 보유'"
-          style="
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 18px;
-            height: 18px;
-            padding: 0 5px;
-            margin-right: 8px;
-            font-size: 10px;
-            font-weight: 700;
-            color: #fff;
-            background: linear-gradient(135deg, #ff6b9d, #c44569);
-            border-radius: 9px;
-          "
-        >
-          {{ currentAuthUserRoles.length }}
-        </span>
-        <span
-          v-else-if="currentAuthUserRoles.length === 1"
-          class="user-role-label"
-          style="margin-right: 8px; font-size: 11px; color: #cdb4ff; font-weight: 500"
-        >
-          {{ rolePath(currentAuthUserRoles[0]) }}
-        </span>
-        <span class="user-name-label">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</span>
-        <button
-          class="user-avatar-btn"
-          @click="uiState.userMenuShow=!uiState.userMenuShow"
-          :title="currentAuthUser?.email || ''"
-        >
-          {{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}
-        </button>
-        <div v-if="uiState.userMenuShow" class="user-dropdown">
-          <div class="user-dropdown-header">
-            <div class="user-dropdown-name">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</div>
-            <div class="user-dropdown-role">{{ currentAuthUser?.role || '' }}</div>
-            <div class="user-dropdown-email">{{ currentAuthUser?.email || '' }}</div>
-          </div>
-          <div class="user-dropdown-sep"></div>
-          <div class="user-dropdown-item" @click="openProfile">🙍 프로필</div>
-          <div class="user-dropdown-item" @click="openPwChange">🔑 비밀번호 변경</div>
-          <div class="user-dropdown-sep"></div>
-          <div class="user-dropdown-item danger" @click="doLogout">↩ 로그아웃</div>
-        </div>
-      </template>
-      <template v-else>
-        <button class="login-btn" @click="openLogin('login')">🔐 로그인</button>
-      </template>
-    </div>
+  <!-- 로그인/유저 영역 -->
+  <div class="top-nav-user" @click.stop>
+  <template v-if="cfIsLoggedIn">
+  <select v-if="currentAuthUserRoles.length > 1" class="user-role-select" v-model="activeRoleId" @change="onRoleChange"
+  :title="'역할 ' + currentAuthUserRoles.length + '개 보유'"
+  style="margin-right:4px;padding:3px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;max-width:480px;min-width:320px;">
+  <option v-for="r in currentAuthUserRoles" :key="r.roleId" :value="r.roleId">{{ rolePath(r) }}</option>
+  </select>
+  <span v-if="currentAuthUserRoles.length >= 2"
+  :title="'역할 ' + currentAuthUserRoles.length + '개 보유'"
+  style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-right:8px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#ff6b9d,#c44569);border-radius:9px;">{{ currentAuthUserRoles.length }}</span>
+  <span v-else-if="currentAuthUserRoles.length === 1" class="user-role-label"
+  style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentAuthUserRoles[0]) }}</span>
+  <span class="user-name-label">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</span>
+  <button class="user-avatar-btn" @click="uiState.userMenuShow=!uiState.userMenuShow" :title="currentAuthUser?.email || ''">
+  {{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}
+  </button>
+  <div v-if="uiState.userMenuShow" class="user-dropdown">
+  <div class="user-dropdown-header">
+  <div class="user-dropdown-name">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</div>
+  <div class="user-dropdown-role">{{ currentAuthUser?.role || '' }}</div>
+  <div class="user-dropdown-email">{{ currentAuthUser?.email || '' }}</div>
+  </div>
+  <div class="user-dropdown-sep"></div>
+  <div class="user-dropdown-item" @click="openProfile">🙍 프로필</div>
+  <div class="user-dropdown-item" @click="openPwChange">🔑 비밀번호 변경</div>
+  <div class="user-dropdown-sep"></div>
+  <div class="user-dropdown-item danger" @click="doLogout">↩ 로그아웃</div>
+  </div>
+  </template>
+  <template v-else>
+  <button class="login-btn" @click="openLogin('login')">🔐 로그인</button>
+  </template>
+  </div>
   </nav>
 
   <!-- ② TAB BAR -->
   <div class="bo-tab-bar-wrap">
-    <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
-    <div class="bo-tab-bar" ref="tabBarRef">
-      <div
-        v-for="tab in openTabs"
-        :key="tab.id"
-        class="bo-tab"
-        :class="{active: cfActiveTabId===tab.id}"
-        @click="navigate(tab.id)"
-        @contextmenu.prevent="showCtxMenu($event, tab.id)"
-      >
-        <span
-          @click.stop="toggleKeep(tab.id)"
-          :title="keptTabIds.has(tab.id) ? '고정 해제' : '고정 (탭 전환 시 상태 유지)'"
-          style="
-            font-size: 9px;
-            cursor: pointer;
-            margin-right: 3px;
-            transition: all 0.15s;
-            flex-shrink: 0;
-            line-height: 1;
-          "
-          :style="keptTabIds.has(tab.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.2;color:#999;'"
-        >
-          📌
-        </span>
-        <span class="tab-label">{{ tab.label }}</span>
-        <span class="tab-close-btn" @click.stop="closeTab(tab.id, $event)">✕</span>
-      </div>
-    </div>
-    <button class="tab-scroll-btn" @click="scrollTabs(1)" title="오른쪽">&#8250;</button>
+  <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
+  <div class="bo-tab-bar" ref="tabBarRef">
+  <div v-for="tab in openTabs" :key="tab.id"
+  class="bo-tab" :class="{active: cfActiveTabId===tab.id}"
+  @click="navigate(tab.id)"
+  @contextmenu.prevent="showCtxMenu($event, tab.id)">
+  <span @click.stop="toggleKeep(tab.id)"
+  :title="keptTabIds.has(tab.id) ? '고정 해제' : '고정 (탭 전환 시 상태 유지)'"
+  style="font-size:9px;cursor:pointer;margin-right:3px;transition:all .15s;flex-shrink:0;line-height:1;"
+  :style="keptTabIds.has(tab.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.2;color:#999;'">📌</span>
+  <span class="tab-label">{{ tab.label }}</span>
+  <span class="tab-close-btn" @click.stop="closeTab(tab.id, $event)">✕</span>
+  </div>
+  </div>
+  <button class="tab-scroll-btn" @click="scrollTabs(1)" title="오른쪽">&#8250;</button>
   </div>
 
   <!-- ③ BODY -->
   <div class="bo-body">
-    <!-- Left Sidebar -->
-    <nav class="bo-left-nav" :class="{closed: !leftMenuOpen}">
-      <div class="left-nav-top">
-        <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
-        <template v-for="item in (LEFT_MENUS[activeTop] || [])" :key="item?.group || item?.id">
-          <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
-          <div
-            v-else
-            class="left-nav-item left-nav-sub-item"
-            :class="{active: cfActiveTabId===item.id}"
-            @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
-            :title="'Ctrl+클릭: 새창'"
-          >
-            {{ item.label }}
-            <span
-              class="left-fav-star"
-              :class="{active: isFav(item.id)}"
-              @click.stop="toggleFav(item.id)"
-              :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'"
-            >
-              ★
-            </span>
-          </div>
-        </template>
-      </div>
 
-      <!-- 열린화면 / 즐겨찾기 (하단 고정) -->
-      <div class="left-nav-open-section">
-        <!-- 목록 (위) -->
-        <div class="left-nav-open-list">
-          <!-- 즐겨찾기 목록 -->
-          <template v-if="sidebarTab==='fav'">
-            <div v-if="cfFavList.length===0" class="left-nav-open-empty">즐겨찾기가 없습니다.</div>
-            <div
-              v-for="fav in cfFavList"
-              :key="fav.id"
-              class="left-nav-open-item"
-              :class="{active: cfActiveTabId===fav.id}"
-              @click="navigate(fav.id)"
-            >
-              <span
-                @click.stop="toggleFavKeep(fav.id)"
-                :title="favKeepSet.has(fav.id) ? '고정 해제' : '고정 (열 때 상태 유지)'"
-                style="font-size: 9px; cursor: pointer; margin-right: 4px; flex-shrink: 0; transition: all 0.15s"
-                :style="favKeepSet.has(fav.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.22;color:#999;'"
-              >
-                📌
-              </span>
-              <span class="left-nav-open-path">
-                <span class="left-nav-open-group">{{ fav.topLabel }}</span>
-                <span class="left-nav-open-sep">›</span>
-                <span class="left-nav-open-label">{{ fav.label }}</span>
-              </span>
-              <span class="left-fav-star active" @click.stop="toggleFav(fav.id)" title="즐겨찾기 해제">★</span>
-            </div>
-          </template>
-          <!-- 열린화면 목록 -->
-          <template v-if="sidebarTab==='open'">
-            <div v-if="cfOpenTabsWithGroup.length===0" class="left-nav-open-empty">열린 화면이 없습니다.</div>
-            <div
-              v-for="tab in cfOpenTabsWithGroup"
-              :key="tab.id"
-              class="left-nav-open-item"
-              :class="{active: cfActiveTabId===tab.id}"
-              @click="navigate(tab.id)"
-            >
-              <span class="left-nav-open-path">
-                <span class="left-nav-open-group">{{ tab.topLabel }}</span>
-                <span class="left-nav-open-sep">›</span>
-                <span class="left-nav-open-label">{{ tab.label }}</span>
-              </span>
-              <span
-                class="left-fav-star"
-                :class="{active: isFav(tab.id)}"
-                @click.stop="toggleFav(tab.id)"
-                :title="isFav(tab.id)?'즐겨찾기 해제':'즐겨찾기 추가'"
-              >
-                ★
-              </span>
-              <span class="left-nav-open-close" @click.stop="closeTab(tab.id, $event)">✕</span>
-            </div>
-          </template>
-        </div>
-        <!-- 탭 버튼 (최하단 고정) -->
-        <div class="left-nav-section-tabs">
-          <button class="left-nav-section-tab" :class="{active: sidebarTab==='fav'}" @click="sidebarTab='fav'">
-            ★ 즐겨찾기
-          </button>
-          <button class="left-nav-section-tab" :class="{active: sidebarTab==='open'}" @click="sidebarTab='open'">
-            열린화면
-          </button>
-        </div>
-        <!-- 연관사이트 (별도 행) -->
-        <div style="padding: 6px 10px; border-top: 1px solid #eef0f3; background: #fafbfc">
-          <button
-            @click.stop="toggleRelatedSite"
-            style="
-              width: 100%;
-              display: flex;
-              align-items: center;
-              gap: 6px;
-              padding: 6px 10px;
-              background: #fff;
-              border: 1px solid #eee;
-              border-radius: 6px;
-              cursor: pointer;
-              font-size: 12px;
-              color: #555;
-            "
-            title="연관사이트 열기"
-          >
-            <span>🔗 연관사이트</span>
-            <span style="margin-left: auto; display: inline-flex; gap: 5px; font-family: monospace">
-              <span
-                :style="{fontWeight:800,color: currentFoSiteNo==='03'?'#7b1fa2':currentFoSiteNo==='02'?'#2e7d6b':currentFoSiteNo==='9999'?'#888':'#9f2946'}"
-              >
-                {{ currentFoSiteNo || '-' }}
-              </span>
-              <span
-                :style="{fontWeight:800,color: currentBoSiteNo==='03'?'#7b1fa2':currentBoSiteNo==='02'?'#2e7d6b':currentBoSiteNo==='9999'?'#888':'#9f2946'}"
-              >
-                {{ currentBoSiteNo || '-' }}
-              </span>
-            </span>
-            <span style="font-size: 9px; color: #bbb">▾</span>
-          </button>
-        </div>
-
-        <!-- 연관사이트 팝업 레이어 -->
-        <div
-          v-if="uiState.relatedSiteOpen"
-          @click="uiState.relatedSiteOpen=false"
-          style="position: fixed; inset: 0; z-index: 9998; background: rgba(0, 0, 0, 0.25)"
-        ></div>
-        <div
-          v-if="uiState.relatedSiteOpen"
-          @click.stop
-          style="
-            position: fixed;
-            left: 12px;
-            bottom: 56px;
-            z-index: 9999;
-            width: 360px;
-            max-height: 75vh;
-            overflow: auto;
-            background: #fff;
-            border: 1px solid #ffc9d6;
-            border-radius: 12px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-          "
-        >
-          <div
-            style="
-              padding: 12px 14px;
-              border-bottom: 1px solid #ffc9d6;
-              background: linear-gradient(135deg, #fff0f4, #ffe4ec);
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-            "
-          >
-            <span style="font-weight: 800; font-size: 13px; color: #9f2946">
-              <span style="color: #e8587a; font-size: 9px; margin-right: 6px">●</span>
-              🔗 연관사이트
-            </span>
-            <button
-              @click="uiState.relatedSiteOpen=false"
-              style="
-                background: none;
-                border: none;
-                font-size: 13px;
-                color: #9f2946;
-                cursor: pointer;
-                padding: 2px 6px;
-                border-radius: 4px;
-              "
-            >
-              ✕
-            </button>
-          </div>
-          <div style="padding: 12px">
-            <!-- _SITE_NO (FO / BO 분리 링크) -->
-            <div
-              style="
-                background: #fafbfc;
-                border: 1px solid #eef0f3;
-                border-radius: 10px;
-                padding: 12px;
-                margin-bottom: 12px;
-              "
-            >
-              <div
-                style="
-                  font-size: 12px;
-                  font-weight: 800;
-                  color: #2e7d6b;
-                  margin-bottom: 10px;
-                  padding-bottom: 8px;
-                  border-bottom: 1px solid #def0e8;
-                "
-              >
-                🌈 _SITE_NO
-                <span style="font-size: 10.5px; color: #888; font-weight: 600">
-                  (FO: {{ currentFoSiteNo || '-' }}, BO: {{ currentBoSiteNo || '-' }})
-                </span>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 4px">
-                <div
-                  v-for="p in SITE_PAIR_MENU"
-                  :key="p.fo+'_'+p.bo"
-                  style="display: flex; gap: 6px; align-items: center"
-                >
-                  <button
-                    type="button"
-                    @click="goFoSite(p.fo)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFoSiteNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentFoSiteNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentFoSiteNo===p.fo?'#2e7d6b':'#444',fontWeight: currentFoSiteNo===p.fo?700:500,transition:'all .12s'}"
-                    onmouseover="
-                      this.style.background = '#e0f2ec';
-                      this.style.color = '#2e7d6b';
-                    "
-                    onmouseout="
-                      if (this.dataset.active !== '1') {
-                        this.style.background = 'transparent';
-                        this.style.color = '#444';
-                      }
-                    "
-                    :data-active="currentFoSiteNo===p.fo?'1':'0'"
-                    title="index.html 새창 오픈"
-                  >
-                    <span>{{ currentFoSiteNo===p.fo?'●':'○' }}</span>
-                    <span>FO={{ p.fo }}</span>
-                    <span style="margin-left: auto; font-size: 10px; color: #aaa">↗</span>
-                  </button>
-                  <button
-                    type="button"
-                    @click="goBoSite(p.bo)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentBoSiteNo===p.bo?'#f3e5f5':'transparent',border:'1px solid '+(currentBoSiteNo===p.bo?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentBoSiteNo===p.bo?'#7b1fa2':'#444',fontWeight: currentBoSiteNo===p.bo?700:500,transition:'all .12s'}"
-                    onmouseover="
-                      this.style.background = '#f3e5f5';
-                      this.style.color = '#7b1fa2';
-                    "
-                    onmouseout="
-                      if (this.dataset.active !== '1') {
-                        this.style.background = 'transparent';
-                        this.style.color = '#444';
-                      }
-                    "
-                    :data-active="currentBoSiteNo===p.bo?'1':'0'"
-                    title="bo.html 새창 오픈"
-                  >
-                    <span>{{ currentBoSiteNo===p.bo?'●':'○' }}</span>
-                    <span>BO={{ p.bo }}</span>
-                    <span style="margin-left: auto; font-size: 10px; color: #aaa">↗</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- dispUi -->
-            <div style="background: #fafbfc; border: 1px solid #eef0f3; border-radius: 10px; padding: 12px">
-              <div
-                style="
-                  font-size: 12px;
-                  font-weight: 800;
-                  color: #c2410c;
-                  margin-bottom: 10px;
-                  padding-bottom: 8px;
-                  border-bottom: 1px solid #f5e8de;
-                "
-              >
-                🖥 dispUi (샘플)
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 2px">
-                <div
-                  v-for="it in DISP_LINKS"
-                  :key="it.hash"
-                  style="display: flex; align-items: center; gap: 6px; padding: 4px 6px"
-                >
-                  <span style="width: 18px; text-align: center; font-size: 12.5px">{{ it.icon }}</span>
-                  <span style="flex: 1; font-size: 12.5px; color: #333">{{ it.label }}</span>
-                  <button
-                    @click="openRelatedLink('disp-fo-ui.html' + it.hash)"
-                    style="
-                      padding: 3px 9px;
-                      font-size: 11px;
-                      font-weight: 600;
-                      background: #e0f2fe;
-                      color: #0369a1;
-                      border: 1px solid #bae6fd;
-                      border-radius: 5px;
-                      cursor: pointer;
-                    "
-                    title="사용자 미리보기"
-                  >
-                    사용자 ↗
-                  </button>
-                  <button
-                    @click="openRelatedLink('disp-bo-ui.html' + it.hash)"
-                    style="
-                      padding: 3px 9px;
-                      font-size: 11px;
-                      font-weight: 600;
-                      background: #fef3eb;
-                      color: #c2410c;
-                      border: 1px solid #f5e8de;
-                      border-radius: 5px;
-                      cursor: pointer;
-                    "
-                    title="관리자 미리보기"
-                  >
-                    관리자 ↗
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="bo-main">
-      <div class="bo-wrap">
-        <!-- 초기화 중 로딩 표시 -->
-        <div
-          v-if="!boInitReady"
-          style="
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 200px;
-            color: #aaa;
-            font-size: 14px;
-          "
-        >
-          <span>초기화 중...</span>
-        </div>
-        <template v-else>
-          <!-- 고정된 탭: v-show로 항상 마운트 유지, 전환 시 상태 보존 -->
-          <component
-            v-for="keptId in keptTabIds"
-            :key="'kept_' + keptId"
-            :is="PAGE_COMP_MAP[keptId]"
-            v-show="page === keptId"
-            :navigate="navigate"
-            :dtl-id="dtlId"
-          />
-          <!-- 비고정 현재 탭: 전환 시 재마운트 -->
-          <div v-if="!keptTabIds.has(page)" :key="page + '_' + (refreshKeys[page] || 0)" style="display: contents">
-            <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate" />
-            <mb-member-mng v-else-if="page==='mbMemberMng'" :navigate="navigate" />
-            <mb-member-dtl v-else-if="page==='mbMemberDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <pd-prod-mng v-else-if="page==='pdProdMng'" :navigate="navigate" />
-            <pd-prod-dtl v-else-if="page==='pdProdDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <od-order-mng v-else-if="page==='odOrderMng'" :navigate="navigate" />
-            <od-order-dtl v-else-if="page==='odOrderDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <od-claim-mng v-else-if="page==='odClaimMng'" :navigate="navigate" />
-            <od-claim-dtl v-else-if="page==='odClaimDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <od-dliv-mng v-else-if="page==='odDlivMng'" :navigate="navigate" />
-            <od-dliv-dtl v-else-if="page==='odDlivDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <od-cart-mng v-else-if="page==='odCartMng'" :navigate="navigate" />
-            <pm-coupon-mng v-else-if="page==='pmCouponMng'" :navigate="navigate" />
-            <pm-coupon-dtl v-else-if="page==='pmCouponDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <pm-cache-mng v-else-if="page==='pmCacheMng'" :navigate="navigate" />
-            <pm-discnt-mng v-else-if="page==='pmDiscntMng'" :navigate="navigate" />
-            <pm-save-mng v-else-if="page==='pmSaveMng'" :navigate="navigate" />
-            <pm-gift-mng v-else-if="page==='pmGiftMng'" :navigate="navigate" />
-            <pm-voucher-mng v-else-if="page==='pmVoucherMng'" :navigate="navigate" />
-            <pm-cache-dtl v-else-if="page==='pmCacheDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <dp-disp-panel-mng v-else-if="page==='dpDispPanelMng'" :navigate="navigate" />
-            <dp-disp-area-preview v-else-if="page==='dpDispAreaPreview'" :navigate="navigate" />
-            <dp-disp-ui-preview v-else-if="page==='dpDispUiPreview'" :navigate="navigate" />
-            <dp-disp-ui-simul v-else-if="page==='dpDispUiSimul'" :navigate="navigate" />
-            <dp-disp-panel-preview v-else-if="page==='dpDispPanelPreview'" :navigate="navigate" />
-            <dp-disp-widget-preview v-else-if="page==='dpDispWidgetPreview'" :navigate="navigate" />
-            <dp-disp-area-mng v-else-if="page==='dpDispAreaMng'" :navigate="navigate" />
-            <dp-disp-ui-mng v-else-if="page==='dpDispUiMng'" :navigate="navigate" />
-            <dp-disp-widget-mng v-else-if="page==='dpDispWidgetMng'" :navigate="navigate" />
-            <dp-disp-panel-dtl v-else-if="page==='dpDispPanelDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <dp-disp-widget-lib-mng v-else-if="page==='dpDispWidgetLibMng'" :navigate="navigate" />
-            <dp-disp-widget-lib-dtl v-else-if="page==='dpDispWidgetLibDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <dp-disp-widget-lib-preview v-else-if="page==='dpDispWidgetLibPreview'" :navigate="navigate" />
-            <dp-disp-relation-mng v-else-if="page==='dpDispRelationMng'" :navigate="navigate" />
-            <pm-event-mng v-else-if="page==='pmEventMng'" :navigate="navigate" />
-            <pm-event-dtl v-else-if="page==='pmEventDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <pm-plan-mng v-else-if="page==='pmPlanMng'" :navigate="navigate" />
-            <pm-plan-dtl v-else-if="page==='pmPlanDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <mb-cust-info-mng v-else-if="page==='mbCustInfoMng'" :navigate="navigate" />
-            <sy-contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" />
-            <sy-contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <cm-chatt-mng v-else-if="page==='cmChattMng'" :navigate="navigate" />
-            <cm-chatt-dtl v-else-if="page==='cmChattDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <sy-site-mng v-else-if="page==='sySiteMng'" :navigate="navigate" />
-            <sy-site-dtl v-else-if="page==='sySiteDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <sy-code-mng v-else-if="page==='syCodeMng'" :navigate="navigate" />
-            <sy-code-dtl v-else-if="page==='syCodeDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <sy-brand-mng v-else-if="page==='syBrandMng'" :navigate="navigate" />
-            <sy-attach-mng v-else-if="page==='syAttachMng'" :navigate="navigate" />
-            <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" />
-            <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <sy-vendor-mng v-else-if="page==='syVendorMng'" :navigate="navigate" />
-            <sy-biz-mng v-else-if="page==='syBizMng'" :navigate="navigate" />
-            <sy-vendor-user-mng v-else-if="page==='syVendorUserMng'" :navigate="navigate" />
-            <sy-vendor-dtl v-else-if="page==='syVendorDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <pd-category-mng v-else-if="page==='pdCategoryMng'" :navigate="navigate" />
-            <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <pd-category-prod-mng v-else-if="page==='pdCategoryProdMng'" :navigate="navigate" />
-            <sy-user-mng v-else-if="page==='syUserMng'" :navigate="navigate" />
-            <sy-user-dtl v-else-if="page==='syUserDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <sy-batch-mng v-else-if="page==='syBatchMng'" :navigate="navigate" />
-            <sy-batch-dtl v-else-if="page==='syBatchDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <sy-dept-mng v-else-if="page==='syDeptMng'" :navigate="navigate" />
-            <sy-menu-mng v-else-if="page==='syMenuMng'" :navigate="navigate" />
-            <sy-role-mng v-else-if="page==='syRoleMng'" :navigate="navigate" />
-            <cm-notice-mng v-else-if="page==='cmNoticeMng'" :navigate="navigate" />
-            <sy-alarm-mng v-else-if="page==='syAlarmMng'" :navigate="navigate" />
-            <sy-prop-mng v-else-if="page==='syPropMng'" :navigate="navigate" />
-            <sy-path-mng v-else-if="page==='syPathMng'" :navigate="navigate" />
-            <sy-bbm-mng v-else-if="page==='syBbmMng'" :navigate="navigate" />
-            <sy-bbs-mng v-else-if="page==='syBbsMng'" :navigate="navigate" />
-            <sy-i18n-mng v-else-if="page==='syI18nMng'" :navigate="navigate" />
-            <!-- ── 회원 추가 ── -->
-            <mb-mem-grade-mng v-else-if="page==='mbMemGradeMng'" :navigate="navigate" />
-            <mb-mem-group-mng v-else-if="page==='mbMemGroupMng'" :navigate="navigate" />
-            <!-- ── 상품 추가 ── -->
-            <pd-dliv-tmplt-mng v-else-if="page==='pdDlivTmpltMng'" :navigate="navigate" />
-            <pd-bundle-mng v-else-if="page==='pdBundleMng'" :navigate="navigate" />
-            <pd-set-mng v-else-if="page==='pdSetMng'" :navigate="navigate" />
-            <pd-review-mng v-else-if="page==='pdReviewMng'" :navigate="navigate" />
-            <pd-qna-mng v-else-if="page==='pdQnaMng'" :navigate="navigate" />
-            <pd-restock-noti-mng v-else-if="page==='pdRestockNotiMng'" :navigate="navigate" />
-            <pd-tag-mng v-else-if="page==='pdTagMng'" :navigate="navigate" />
-            <!-- ── 정산 ── -->
-            <st-config-mng v-else-if="page==='stConfigMng'" :navigate="navigate" />
-            <st-raw-mng v-else-if="page==='stRawMng'" :navigate="navigate" />
-            <st-settle-adj-mng v-else-if="page==='stSettleAdjMng'" :navigate="navigate" />
-            <st-settle-etc-adj-mng v-else-if="page==='stSettleEtcAdjMng'" :navigate="navigate" />
-            <st-settle-close-mng v-else-if="page==='stSettleCloseMng'" :navigate="navigate" />
-            <st-settle-pay-mng v-else-if="page==='stSettlePayMng'" :navigate="navigate" />
-            <st-status-mng v-else-if="page==='stStatusMng'" :navigate="navigate" />
-            <st-recon-order-mng v-else-if="page==='stReconOrderMng'" :navigate="navigate" />
-            <st-recon-pay-mng v-else-if="page==='stReconPayMng'" :navigate="navigate" />
-            <st-recon-claim-mng v-else-if="page==='stReconClaimMng'" :navigate="navigate" />
-            <st-recon-vendor-mng v-else-if="page==='stReconVendorMng'" :navigate="navigate" />
-            <st-erp-gen-mng v-else-if="page==='stErpGenMng'" :navigate="navigate" />
-            <st-erp-view-mng v-else-if="page==='stErpViewMng'" :navigate="navigate" />
-            <st-erp-recon-mng v-else-if="page==='stErpReconMng'" :navigate="navigate" />
-            <sy-member-login-hist v-else-if="page==='syMemberLoginHist'" :navigate="navigate" />
-            <sy-user-login-hist v-else-if="page==='syUserLoginHist'" :navigate="navigate" />
-            <sy-api-log-mng v-else-if="page==='syApiLogMng'" :navigate="navigate" />
-            <sy-postman v-else-if="page==='syPostman'" :navigate="navigate" />
-            <zd-store v-else-if="page==='zdStore'" :navigate="navigate" />
-            <zd-local-storage v-else-if="page==='zdLocalStorage'" :navigate="navigate" />
-            <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
-            <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
-            <bo-error-404 v-else :navigate="navigate" :page-id="page" />
-          </div>
-          <!-- /비고정 탭 래퍼 -->
-        </template>
-      </div>
-    </div>
-
-    <!-- Right Panel: 공통 필터 -->
-    <div class="bo-right-panel" :class="{collapsed: !rightPanelOpen}">
-      <div class="right-panel-header" @click="rightPanelOpen=!rightPanelOpen">
-        <span class="right-panel-title">공통 필터</span>
-        <span style="font-size: 11px; color: #bbb">{{ rightPanelOpen ? '▶' : '◀' }}</span>
-      </div>
-      <div v-show="rightPanelOpen" class="right-panel-body">
-        <div class="popup-sel">
-          <div class="popup-sel-label">
-            사이트
-            <span style="color: #e8587a; font-size: 10px">필수</span>
-            <span
-              style="
-                display: inline-block;
-                width: 14px;
-                height: 14px;
-                border-radius: 50%;
-                background: #e5e7eb;
-                color: #555;
-                font-size: 10px;
-                text-align: center;
-                line-height: 14px;
-                margin-left: 4px;
-                cursor: help;
-                font-weight: 700;
-              "
-              title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)"
-            >
-              ?
-            </span>
-          </div>
-          <div class="popup-sel-row" @click="openSelectModal('site')">
-            <span
-              v-if="filterSite"
-              style="font-family: monospace; font-size: 11px; color: #e8587a; font-weight: 700; margin-right: 6px"
-            >
-              {{ filterSite.siteNo || String(filterSite.siteId).slice(-2) }}
-            </span>
-            <span v-if="filterSite" class="popup-sel-name">{{ filterSite.siteNm || '-' }}</span>
-            <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="filterSite" class="popup-sel-id">{{ filterSite.siteCode || '' }}</span>
-            <span class="popup-sel-btn">🔍</span>
-          </div>
-        </div>
-        <div class="popup-sel">
-          <div class="popup-sel-label">
-            판매업체
-            <span v-if="commonFilter.vendorId" class="popup-sel-clear" @click.stop="clearFilter('vendor')">✕</span>
-          </div>
-          <div class="popup-sel-row" @click="openSelectModal('vendor')">
-            <span v-if="filterVendor" class="popup-sel-name">{{ filterVendor.vendorNm }}</span>
-            <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="filterVendor" class="popup-sel-id">{{ filterVendor.vendorId }}</span>
-            <span class="popup-sel-btn">🔍</span>
-          </div>
-        </div>
-        <div class="popup-sel">
-          <div class="popup-sel-label">
-            판매사용자
-            <span v-if="commonFilter.userId" class="popup-sel-clear" @click.stop="clearFilter('boUser')">✕</span>
-          </div>
-          <div class="popup-sel-row" @click="openSelectModal('boUser')">
-            <span v-if="cfFilterBoUser" class="popup-sel-name">{{ cfFilterBoUser.name }}</span>
-            <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="cfFilterBoUser" class="popup-sel-id">{{ cfFilterBoUser.boUserId }}</span>
-            <span class="popup-sel-btn">🔍</span>
-          </div>
-        </div>
-        <div class="popup-sel">
-          <div class="popup-sel-label">
-            배송업체
-            <span v-if="commonFilter.dlivVendorId" class="popup-sel-clear" @click.stop="clearFilter('dlivVendor')">
-              ✕
-            </span>
-          </div>
-          <div class="popup-sel-row" @click="openSelectModal('dlivVendor')">
-            <span v-if="cfFilterDlivVendor" class="popup-sel-name">{{ cfFilterDlivVendor.vendorNm }}</span>
-            <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="cfFilterDlivVendor" class="popup-sel-id">{{ cfFilterDlivVendor.vendorId }}</span>
-            <span class="popup-sel-btn">🔍</span>
-          </div>
-        </div>
-        <div class="popup-sel">
-          <div class="popup-sel-label">
-            회원
-            <span v-if="commonFilter.memberId" class="popup-sel-clear" @click.stop="clearFilter('member')">✕</span>
-          </div>
-          <div class="popup-sel-row" @click="openSelectModal('member')">
-            <span v-if="filterMember" class="popup-sel-name">{{ filterMember.memberNm }}</span>
-            <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="filterMember" class="popup-sel-id">{{ filterMember.memberId }}</span>
-            <span class="popup-sel-btn">🔍</span>
-          </div>
-        </div>
-        <div class="popup-sel">
-          <div class="popup-sel-label">
-            주문
-            <span v-if="commonFilter.orderId" class="popup-sel-clear" @click.stop="clearFilter('order')">✕</span>
-          </div>
-          <div class="popup-sel-row" @click="openSelectModal('order')">
-            <span v-if="filterOrder" class="popup-sel-name">{{ filterOrder.orderId }}</span>
-            <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="filterOrder" class="popup-sel-id">{{ filterOrder.userNm }}</span>
-            <span class="popup-sel-btn">🔍</span>
-          </div>
-        </div>
-
-        <!-- API 로그 섹션 -->
-        <div style="padding: 12px 8px; border-top: 1px solid #e5e7eb; margin-top: 12px">
-          <div
-            style="
-              font-size: 12px;
-              font-weight: 600;
-              color: #374151;
-              margin-bottom: 8px;
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-            "
-          >
-            <span>📡 API 로그</span>
-            <button
-              v-if="apiLogs.length"
-              @click="clearApiLogs"
-              style="
-                font-size: 10px;
-                padding: 2px 6px;
-                background: #ef4444;
-                color: white;
-                border: none;
-                border-radius: 2px;
-                cursor: pointer;
-                font-weight: 600;
-              "
-            >
-              Clear
-            </button>
-          </div>
-          <div v-if="apiLogs.length === 0" style="font-size: 11px; color: #9ca3af; padding: 8px; text-align: center">
-            로그 없음
-          </div>
-          <div
-            v-else
-            style="
-              max-height: 525px;
-              overflow-y: auto;
-              border: 1px solid #e5e7eb;
-              border-radius: 3px;
-              background: white;
-            "
-          >
-            <div
-              v-for="(log, idx) in apiLogs"
-              :key="idx"
-              @mouseenter="onApiLogEnter(log)"
-              @mouseleave="onApiLogLeave(log)"
-              style="
-                padding: 6px 8px;
-                border-bottom: 1px solid #f3f4f6;
-                font-size: 10px;
-                font-family: monospace;
-                cursor: pointer;
-                position: relative;
-              "
-              :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }"
-            >
-              <div
-                v-if="log.uiLabel"
-                style="
-                  font-size: 9px;
-                  font-weight: 700;
-                  color: #7c3aed;
-                  margin-bottom: 2px;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                  letter-spacing: -0.2px;
-                "
-              >
-                {{ log.uiLabel }}
-              </div>
-              <div
-                style="
-                  display: grid;
-                  grid-template-columns: 18px 50px 32px 1fr 28px 18px;
-                  gap: 2px;
-                  align-items: center;
-                "
-              >
-                <div
-                  :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', textAlign: 'center', fontSize: '9px', fontWeight: isWithin60Seconds(log.time) ? '700' : '400' }"
-                >
-                  {{ apiLogs.length - idx }}
-                </div>
-                <div
-                  :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', whiteSpace: 'nowrap', fontWeight: isWithin60Seconds(log.time) ? '700' : '400', fontSize: '9px' }"
-                >
-                  {{ getRelativeTime(log.time) }}
-                </div>
-                <div
-                  :style="{ color: log.method === 'GET' ? '#3b82f6' : log.method === 'POST' ? '#8b5cf6' : '#f59e0b', fontWeight: '600', textAlign: 'center' }"
-                >
-                  {{ log.method }}
-                </div>
-                <div
-                  style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: log.hasError ? '#ef4444' : '#374151';"
-                >
-                  {{ log.url }}
-                </div>
-                <div
-                  :style="{ color: getApiStatusColor(log.status), fontWeight: '600', textAlign: 'center', fontSize: '10px' }"
-                >
-                  {{ log.status }}
-                </div>
-                <div
-                  @click.stop="toggleApiLogLock(log)"
-                  style="
-                    text-align: center;
-                    cursor: pointer;
-                    font-size: 12px;
-                    color: #6b7280;
-                    user-select: none;
-                    padding: 2px;
-                  "
-                >
-                  {{ apiLogLockedDetail === log ? '🔒' : '🔓' }}
-                </div>
-              </div>
-              <div
-                v-if="!log.hasError && log.resData"
-                style="
-                  grid-column: 1 / -1;
-                  font-size: 9px;
-                  color: #6b7280;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                  padding: 1px 2px 2px 20px;
-                  line-height: 1.3;
-                "
-              >
-                ▶ {{ (function(d){ try{ const o=JSON.parse(d); const inner = o?.data?.data ?? o?.data ?? o; /* totalCnt
-                */ const totalCnt = (x) => x.pageTotalCount ?? x.totalCount ?? x.total ?? '?'; if(inner==null) return
-                ''; if(Array.isArray(inner)) return '[' + inner.length + '건] ' +
-                JSON.stringify(inner[0]||{}).slice(0,100); if(inner.pageList) return '[' + (inner.pageList.length||0) +
-                '건/' + totalCnt(inner) + '] ' + JSON.stringify(inner.pageList[0]||{}).slice(0,100); if(inner.list)
-                return '[' + (inner.list.length||0) + '건/' + totalCnt(inner) + '] ' +
-                JSON.stringify(inner.list[0]||{}).slice(0,100); return JSON.stringify(inner).slice(0,120); }catch(_){
-                return ''; } })(log.resData) }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- API 로그 호버 상세 레이어 -->
-        <div
-          v-if="apiLogHoverDetail || apiLogLockedDetail"
-          style="
-            position: fixed;
-            top: 200px;
-            right: 220px;
-            width: 650px;
-            max-height: 858px;
-            background: white;
-            border: 2px solid #8b5cf6;
-            border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1001;
-            font-size: 11px;
-            font-family: monospace;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-          "
-        >
-          <!-- 헤더 -->
-          <div
-            style="
-              padding: 12px;
-              background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-              border-bottom: 1px solid #d1d5db;
-              flex-shrink: 0;
-            "
-          >
-            <div style="font-weight: 700; color: #374151; font-size: 12px; margin-bottom: 6px">
-              📡 API 요청/응답 상세
-              <span style="color: #ef4444; margin-left: 4px">
-                #{{ apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) >= 0 ? apiLogs.length -
-                apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) : '-' }}
-              </span>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-              <div style="flex: 1; overflow: hidden">
-                <div style="color: #374151; font-size: 11px; word-break: break-all; line-height: 1.5">
-                  <span style="color: #6b7280; font-weight: 600">
-                    {{ (apiLogLockedDetail || apiLogHoverDetail).method }}
-                  </span>
-                  <span style="color: #6b7280; margin: 0 4px">:</span>
-                  <span style="color: #374151">{{ (apiLogLockedDetail || apiLogHoverDetail).url }}</span>
-                </div>
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
-                <span style="color: #6b7280; font-size: 10px; white-space: nowrap">
-                  {{ (apiLogLockedDetail || apiLogHoverDetail).time }}
-                </span>
-                <button
-                  v-if="apiLogLockedDetail"
-                  @click="toggleApiLogLock(apiLogLockedDetail)"
-                  style="
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    font-size: 14px;
-                    color: #6b7280;
-                    padding: 0;
-                    width: 20px;
-                    height: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                  "
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 상태 정보 -->
-          <div
-            style="
-              padding: 8px 12px;
-              background: #fafbfc;
-              border-bottom: 1px solid #e5e7eb;
-              display: flex;
-              align-items: center;
-              gap: 16px;
-              flex-shrink: 0;
-            "
-          >
-            <div>
-              <span style="color: #6b7280; font-size: 10px; font-weight: 600">상태:</span>
-              <div
-                :style="{ display: 'inline-block', background: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#ecfdf5' : '#fef2f2', color: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#10b981' : '#ef4444', padding: '4px 8px', borderRadius: '2px', fontWeight: '700', border: '1px solid ' + (((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#10b981' : '#ef4444'), fontSize: '11px', marginLeft: '4px' }"
-              >
-                {{ (apiLogLockedDetail || apiLogHoverDetail).status }}
-              </div>
-            </div>
-            <div>
-              <span style="color: #6b7280; font-size: 10px; font-weight: 600">소요시간:</span>
-              <span style="color: #374151; font-size: 10px; margin-left: 4px">
-                {{ (apiLogLockedDetail || apiLogHoverDetail).duration }}ms
-              </span>
-            </div>
-          </div>
-
-          <!-- 요청/응답 데이터 -->
-          <div
-            style="
-              flex: 1;
-              overflow: hidden;
-              display: grid;
-              grid-template-rows: 130px 1fr 2fr;
-              gap: 8px;
-              padding: 8px;
-              background: white;
-            "
-          >
-            <!-- Headers -->
-            <div
-              style="
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-                border: 1px solid #8b5cf6;
-                border-radius: 2px;
-              "
-            >
-              <div
-                style="
-                  padding: 4px 6px;
-                  background: #ede9fe;
-                  border-bottom: 1px solid #8b5cf6;
-                  font-weight: 600;
-                  color: #5b21b6;
-                  font-size: 10px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                "
-              >
-                <span>📋 Headers</span>
-                <span
-                  v-if="(apiLogLockedDetail || apiLogHoverDetail).uiLabel"
-                  style="color: #7c3aed; font-size: 11px; font-weight: 700"
-                >
-                  {{ (apiLogLockedDetail || apiLogHoverDetail).uiLabel }}
-                </span>
-              </div>
-              <div
-                style="
-                  flex: 1;
-                  overflow-y: auto;
-                  padding: 6px 8px;
-                  background: #fafbfc;
-                  color: #374151;
-                  white-space: pre-wrap;
-                  word-break: break-word;
-                  line-height: 1.8;
-                  font-size: 10px;
-                  font-family: &quot;Courier New&quot;, monospace;
-                "
-              >
-                {{ (apiLogLockedDetail || apiLogHoverDetail).headers || '-' }}
-              </div>
-            </div>
-
-            <!-- Request -->
-            <div
-              style="
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-                border: 1px solid #e5e7eb;
-                border-radius: 2px;
-              "
-            >
-              <div
-                style="
-                  padding: 4px 6px;
-                  background: #f9fafb;
-                  border-bottom: 1px solid #e5e7eb;
-                  font-weight: 600;
-                  color: #6b7280;
-                  font-size: 10px;
-                "
-              >
-                📤 Request
-              </div>
-              <div
-                style="
-                  flex: 1;
-                  overflow-y: auto;
-                  padding: 6px;
-                  background: #fafbfc;
-                  color: #374151;
-                  white-space: pre-wrap;
-                  word-break: break-word;
-                  line-height: 1.4;
-                  font-size: 10px;
-                "
-              >
-                {{ formatJsonData((apiLogLockedDetail || apiLogHoverDetail).reqData) }}
-              </div>
-            </div>
-
-            <!-- Response -->
-            <div
-              style="
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-                border: 1px solid #e5e7eb;
-                border-radius: 2px;
-              "
-            >
-              <div
-                style="
-                  padding: 4px 6px;
-                  background: #f9fafb;
-                  border-bottom: 1px solid #e5e7eb;
-                  font-weight: 600;
-                  color: #6b7280;
-                  font-size: 10px;
-                "
-              >
-                📥 Response
-              </div>
-              <div
-                style="
-                  flex: 1;
-                  overflow-y: auto;
-                  padding: 6px;
-                  background: #fafbfc;
-                  color: #374151;
-                  white-space: pre-wrap;
-                  word-break: break-word;
-                  line-height: 1.4;
-                  font-size: 10px;
-                "
-              >
-                {{ formatJsonData((apiLogLockedDetail || apiLogHoverDetail).resData) }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Left Sidebar -->
+  <nav class="bo-left-nav" :class="{closed: !leftMenuOpen}">
+  <div class="left-nav-top">
+  <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
+  <template v-for="item in (LEFT_MENUS[activeTop] || [])" :key="item?.group || item?.id">
+  <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
+  <div v-else class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
+  @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
+  :title="'Ctrl+클릭: 새창'">
+  {{ item.label }}
+  <span class="left-fav-star" :class="{active: isFav(item.id)}"
+  @click.stop="toggleFav(item.id)" :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
   </div>
-  <!-- /bo-body -->
+  </template>
+  </div>
+
+  <!-- 열린화면 / 즐겨찾기 (하단 고정) -->
+  <div class="left-nav-open-section">
+  <!-- 목록 (위) -->
+  <div class="left-nav-open-list">
+  <!-- 즐겨찾기 목록 -->
+  <template v-if="sidebarTab==='fav'">
+  <div v-if="cfFavList.length===0" class="left-nav-open-empty">즐겨찾기가 없습니다.</div>
+  <div v-for="fav in cfFavList" :key="fav.id"
+  class="left-nav-open-item" :class="{active: cfActiveTabId===fav.id}"
+  @click="navigate(fav.id)">
+  <span @click.stop="toggleFavKeep(fav.id)"
+  :title="favKeepSet.has(fav.id) ? '고정 해제' : '고정 (열 때 상태 유지)'"
+  style="font-size:9px;cursor:pointer;margin-right:4px;flex-shrink:0;transition:all .15s;"
+  :style="favKeepSet.has(fav.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.22;color:#999;'">📌</span>
+  <span class="left-nav-open-path">
+  <span class="left-nav-open-group">{{ fav.topLabel }}</span>
+  <span class="left-nav-open-sep"> › </span>
+  <span class="left-nav-open-label">{{ fav.label }}</span>
+  </span>
+  <span class="left-fav-star active" @click.stop="toggleFav(fav.id)" title="즐겨찾기 해제">★</span>
+  </div>
+  </template>
+  <!-- 열린화면 목록 -->
+  <template v-if="sidebarTab==='open'">
+  <div v-if="cfOpenTabsWithGroup.length===0" class="left-nav-open-empty">열린 화면이 없습니다.</div>
+  <div v-for="tab in cfOpenTabsWithGroup" :key="tab.id"
+  class="left-nav-open-item" :class="{active: cfActiveTabId===tab.id}"
+  @click="navigate(tab.id)">
+  <span class="left-nav-open-path">
+  <span class="left-nav-open-group">{{ tab.topLabel }}</span>
+  <span class="left-nav-open-sep"> › </span>
+  <span class="left-nav-open-label">{{ tab.label }}</span>
+  </span>
+  <span class="left-fav-star" :class="{active: isFav(tab.id)}"
+  @click.stop="toggleFav(tab.id)" :title="isFav(tab.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
+  <span class="left-nav-open-close" @click.stop="closeTab(tab.id, $event)">✕</span>
+  </div>
+  </template>
+  </div>
+  <!-- 탭 버튼 (최하단 고정) -->
+  <div class="left-nav-section-tabs">
+  <button class="left-nav-section-tab" :class="{active: sidebarTab==='fav'}"
+  @click="sidebarTab='fav'">★ 즐겨찾기</button>
+  <button class="left-nav-section-tab" :class="{active: sidebarTab==='open'}"
+  @click="sidebarTab='open'">열린화면</button>
+  </div>
+  <!-- 연관사이트 (별도 행) -->
+  <div style="padding:6px 10px;border-top:1px solid #eef0f3;background:#fafbfc;">
+  <button @click.stop="toggleRelatedSite"
+  style="width:100%;display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border:1px solid #eee;border-radius:6px;cursor:pointer;font-size:12px;color:#555;"
+  title="연관사이트 열기">
+  <span>🔗 연관사이트</span>
+  <span style="margin-left:auto;display:inline-flex;gap:5px;font-family:monospace;">
+  <span :style="{fontWeight:800,color: currentFoSiteNo==='03'?'#7b1fa2':currentFoSiteNo==='02'?'#2e7d6b':currentFoSiteNo==='9999'?'#888':'#9f2946'}">{{ currentFoSiteNo || '-' }}</span>
+  <span :style="{fontWeight:800,color: currentBoSiteNo==='03'?'#7b1fa2':currentBoSiteNo==='02'?'#2e7d6b':currentBoSiteNo==='9999'?'#888':'#9f2946'}">{{ currentBoSiteNo || '-' }}</span>
+  </span>
+  <span style="font-size:9px;color:#bbb;">▾</span>
+  </button>
+  </div>
+
+  <!-- 연관사이트 팝업 레이어 -->
+  <div v-if="uiState.relatedSiteOpen"
+  @click="uiState.relatedSiteOpen=false"
+  style="position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.25);"></div>
+  <div v-if="uiState.relatedSiteOpen"
+  @click.stop
+  style="position:fixed;left:12px;bottom:56px;z-index:9999;width:360px;max-height:75vh;overflow:auto;background:#fff;border:1px solid #ffc9d6;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+  <div style="padding:12px 14px;border-bottom:1px solid #ffc9d6;background:linear-gradient(135deg,#fff0f4,#ffe4ec);display:flex;align-items:center;justify-content:space-between;">
+  <span style="font-weight:800;font-size:13px;color:#9f2946;"><span style="color:#e8587a;font-size:9px;margin-right:6px;">●</span>🔗 연관사이트</span>
+  <button @click="uiState.relatedSiteOpen=false" style="background:none;border:none;font-size:13px;color:#9f2946;cursor:pointer;padding:2px 6px;border-radius:4px;">✕</button>
+  </div>
+  <div style="padding:12px;">
+  <!-- _SITE_NO (FO / BO 분리 링크) -->
+  <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;margin-bottom:12px;">
+  <div style="font-size:12px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:10.5px;color:#888;font-weight:600;">(FO: {{ currentFoSiteNo || '-' }}, BO: {{ currentBoSiteNo || '-' }})</span></div>
+  <div style="display:flex;flex-direction:column;gap:4px;">
+  <div v-for="p in SITE_PAIR_MENU" :key="p.fo+'_'+p.bo"
+  style="display:flex;gap:6px;align-items:center;">
+  <button type="button" @click="goFoSite(p.fo)"
+  :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFoSiteNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentFoSiteNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentFoSiteNo===p.fo?'#2e7d6b':'#444',fontWeight: currentFoSiteNo===p.fo?700:500,transition:'all .12s'}"
+  onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
+  onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
+  :data-active="currentFoSiteNo===p.fo?'1':'0'"
+  title="index.html 새창 오픈">
+  <span>{{ currentFoSiteNo===p.fo?'●':'○' }}</span>
+  <span>FO={{ p.fo }}</span>
+  <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
+  </button>
+  <button type="button" @click="goBoSite(p.bo)"
+  :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentBoSiteNo===p.bo?'#f3e5f5':'transparent',border:'1px solid '+(currentBoSiteNo===p.bo?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentBoSiteNo===p.bo?'#7b1fa2':'#444',fontWeight: currentBoSiteNo===p.bo?700:500,transition:'all .12s'}"
+  onmouseover="this.style.background='#f3e5f5';this.style.color='#7b1fa2';"
+  onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
+  :data-active="currentBoSiteNo===p.bo?'1':'0'"
+  title="bo.html 새창 오픈">
+  <span>{{ currentBoSiteNo===p.bo?'●':'○' }}</span>
+  <span>BO={{ p.bo }}</span>
+  <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
+  </button>
+  </div>
+  </div>
+  </div>
+
+  <!-- dispUi -->
+  <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
+  <div style="font-size:12px;font-weight:800;color:#c2410c;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5e8de;">🖥 dispUi (샘플)</div>
+  <div style="display:flex;flex-direction:column;gap:2px;">
+  <div v-for="it in DISP_LINKS" :key="it.hash"
+  style="display:flex;align-items:center;gap:6px;padding:4px 6px;">
+  <span style="width:18px;text-align:center;font-size:12.5px;">{{ it.icon }}</span>
+  <span style="flex:1;font-size:12.5px;color:#333;">{{ it.label }}</span>
+  <button @click="openRelatedLink('disp-fo-ui.html' + it.hash)"
+  style="padding:3px 9px;font-size:11px;font-weight:600;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:5px;cursor:pointer;"
+  title="사용자 미리보기">사용자 ↗</button>
+  <button @click="openRelatedLink('disp-bo-ui.html' + it.hash)"
+  style="padding:3px 9px;font-size:11px;font-weight:600;background:#fef3eb;color:#c2410c;border:1px solid #f5e8de;border-radius:5px;cursor:pointer;"
+  title="관리자 미리보기">관리자 ↗</button>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="bo-main">
+  <div class="bo-wrap">
+  <!-- 초기화 중 로딩 표시 -->
+  <div v-if="!boInitReady" style="display:flex;align-items:center;justify-content:center;height:200px;color:#aaa;font-size:14px;">
+  <span>초기화 중...</span>
+  </div>
+  <template v-else>
+  <!-- 고정된 탭: v-show로 항상 마운트 유지, 전환 시 상태 보존 -->
+  <component
+  v-for="keptId in keptTabIds" :key="'kept_' + keptId"
+  :is="PAGE_COMP_MAP[keptId]"
+  v-show="page === keptId"
+  :navigate="navigate"
+  :dtl-id="dtlId"
+  />
+  <!-- 비고정 현재 탭: 전환 시 재마운트 -->
+  <div v-if="!keptTabIds.has(page)" :key="page + '_' + (refreshKeys[page] || 0)" style="display:contents;">
+  <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate" />
+  <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" />
+  <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" />
+  <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" />
+  <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" />
+  <od-claim-dtl  v-else-if="page==='odClaimDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <od-dliv-mng  v-else-if="page==='odDlivMng'"  :navigate="navigate" />
+  <od-dliv-dtl  v-else-if="page==='odDlivDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <od-cart-mng  v-else-if="page==='odCartMng'"  :navigate="navigate" />
+  <pm-coupon-mng  v-else-if="page==='pmCouponMng'"  :navigate="navigate" />
+  <pm-coupon-dtl  v-else-if="page==='pmCouponDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <pm-cache-mng  v-else-if="page==='pmCacheMng'"  :navigate="navigate" />
+  <pm-discnt-mng v-else-if="page==='pmDiscntMng'" :navigate="navigate" />
+  <pm-save-mng  v-else-if="page==='pmSaveMng'"  :navigate="navigate" />
+  <pm-gift-mng  v-else-if="page==='pmGiftMng'"  :navigate="navigate" />
+  <pm-voucher-mng v-else-if="page==='pmVoucherMng'" :navigate="navigate" />
+  <pm-cache-dtl  v-else-if="page==='pmCacheDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <dp-disp-panel-mng  v-else-if="page==='dpDispPanelMng'"  :navigate="navigate" />
+  <dp-disp-area-preview  v-else-if="page==='dpDispAreaPreview'"  :navigate="navigate" />
+  <dp-disp-ui-preview  v-else-if="page==='dpDispUiPreview'"  :navigate="navigate" />
+  <dp-disp-ui-simul  v-else-if="page==='dpDispUiSimul'"  :navigate="navigate" />
+  <dp-disp-panel-preview v-else-if="page==='dpDispPanelPreview'" :navigate="navigate" />
+  <dp-disp-widget-preview v-else-if="page==='dpDispWidgetPreview'" :navigate="navigate" />
+  <dp-disp-area-mng  v-else-if="page==='dpDispAreaMng'"  :navigate="navigate" />
+  <dp-disp-ui-mng  v-else-if="page==='dpDispUiMng'"  :navigate="navigate" />
+  <dp-disp-widget-mng  v-else-if="page==='dpDispWidgetMng'"  :navigate="navigate" />
+  <dp-disp-panel-dtl  v-else-if="page==='dpDispPanelDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <dp-disp-widget-lib-mng  v-else-if="page==='dpDispWidgetLibMng'"  :navigate="navigate" />
+  <dp-disp-widget-lib-dtl  v-else-if="page==='dpDispWidgetLibDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <dp-disp-widget-lib-preview v-else-if="page==='dpDispWidgetLibPreview'" :navigate="navigate" />
+  <dp-disp-relation-mng v-else-if="page==='dpDispRelationMng'" :navigate="navigate" />
+  <pm-event-mng  v-else-if="page==='pmEventMng'"  :navigate="navigate" />
+  <pm-event-dtl  v-else-if="page==='pmEventDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <pm-plan-mng  v-else-if="page==='pmPlanMng'"  :navigate="navigate" />
+  <pm-plan-dtl  v-else-if="page==='pmPlanDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <mb-cust-info-mng v-else-if="page==='mbCustInfoMng'" :navigate="navigate" />
+  <sy-contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" />
+  <sy-contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :dtl-id="dtlId" />
+  <cm-chatt-mng  v-else-if="page==='cmChattMng'"  :navigate="navigate" />
+  <cm-chatt-dtl  v-else-if="page==='cmChattDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <sy-site-mng  v-else-if="page==='sySiteMng'"  :navigate="navigate" />
+  <sy-site-dtl  v-else-if="page==='sySiteDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <sy-code-mng  v-else-if="page==='syCodeMng'"  :navigate="navigate" />
+  <sy-code-dtl  v-else-if="page==='syCodeDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <sy-brand-mng  v-else-if="page==='syBrandMng'"  :navigate="navigate" />
+  <sy-attach-mng  v-else-if="page==='syAttachMng'"  :navigate="navigate" />
+  <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" />
+  <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :dtl-id="dtlId" />
+  <sy-vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate" />
+  <sy-biz-mng  v-else-if="page==='syBizMng'"  :navigate="navigate" />
+  <sy-vendor-user-mng v-else-if="page==='syVendorUserMng'" :navigate="navigate" />
+  <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <pd-category-mng v-else-if="page==='pdCategoryMng'" :navigate="navigate" />
+  <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate" :dtl-id="dtlId" />
+  <pd-category-prod-mng v-else-if="page==='pdCategoryProdMng'" :navigate="navigate" />
+  <sy-user-mng  v-else-if="page==='syUserMng'"  :navigate="navigate" />
+  <sy-user-dtl  v-else-if="page==='syUserDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <sy-batch-mng  v-else-if="page==='syBatchMng'"  :navigate="navigate" />
+  <sy-batch-dtl  v-else-if="page==='syBatchDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <sy-dept-mng  v-else-if="page==='syDeptMng'"  :navigate="navigate" />
+  <sy-menu-mng  v-else-if="page==='syMenuMng'"  :navigate="navigate" />
+  <sy-role-mng  v-else-if="page==='syRoleMng'"  :navigate="navigate" />
+  <cm-notice-mng  v-else-if="page==='cmNoticeMng'"  :navigate="navigate" />
+  <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" />
+  <sy-prop-mng  v-else-if="page==='syPropMng'"  :navigate="navigate" />
+  <sy-path-mng  v-else-if="page==='syPathMng'"  :navigate="navigate" />
+  <sy-bbm-mng  v-else-if="page==='syBbmMng'"  :navigate="navigate" />
+  <sy-bbs-mng  v-else-if="page==='syBbsMng'"  :navigate="navigate" />
+  <sy-i18n-mng  v-else-if="page==='syI18nMng'"  :navigate="navigate" />
+  <!-- ── 회원 추가 ── -->
+  <mb-mem-grade-mng  v-else-if="page==='mbMemGradeMng'"  :navigate="navigate" />
+  <mb-mem-group-mng  v-else-if="page==='mbMemGroupMng'"  :navigate="navigate" />
+  <!-- ── 상품 추가 ── -->
+  <pd-dliv-tmplt-mng  v-else-if="page==='pdDlivTmpltMng'"  :navigate="navigate" />
+  <pd-bundle-mng  v-else-if="page==='pdBundleMng'"  :navigate="navigate" />
+  <pd-set-mng  v-else-if="page==='pdSetMng'"  :navigate="navigate" />
+  <pd-review-mng  v-else-if="page==='pdReviewMng'"  :navigate="navigate" />
+  <pd-qna-mng  v-else-if="page==='pdQnaMng'"  :navigate="navigate" />
+  <pd-restock-noti-mng v-else-if="page==='pdRestockNotiMng'" :navigate="navigate" />
+  <pd-tag-mng  v-else-if="page==='pdTagMng'"  :navigate="navigate" />
+  <!-- ── 정산 ── -->
+  <st-config-mng  v-else-if="page==='stConfigMng'"  :navigate="navigate" />
+  <st-raw-mng  v-else-if="page==='stRawMng'"  :navigate="navigate" />
+  <st-settle-adj-mng  v-else-if="page==='stSettleAdjMng'"  :navigate="navigate" />
+  <st-settle-etc-adj-mng v-else-if="page==='stSettleEtcAdjMng'" :navigate="navigate" />
+  <st-settle-close-mng v-else-if="page==='stSettleCloseMng'"  :navigate="navigate" />
+  <st-settle-pay-mng  v-else-if="page==='stSettlePayMng'"  :navigate="navigate" />
+  <st-status-mng  v-else-if="page==='stStatusMng'"  :navigate="navigate" />
+  <st-recon-order-mng  v-else-if="page==='stReconOrderMng'"  :navigate="navigate" />
+  <st-recon-pay-mng  v-else-if="page==='stReconPayMng'"  :navigate="navigate" />
+  <st-recon-claim-mng  v-else-if="page==='stReconClaimMng'"  :navigate="navigate" />
+  <st-recon-vendor-mng v-else-if="page==='stReconVendorMng'"  :navigate="navigate" />
+  <st-erp-gen-mng  v-else-if="page==='stErpGenMng'"  :navigate="navigate" />
+  <st-erp-view-mng  v-else-if="page==='stErpViewMng'"  :navigate="navigate" />
+  <st-erp-recon-mng  v-else-if="page==='stErpReconMng'"  :navigate="navigate" />
+  <sy-member-login-hist v-else-if="page==='syMemberLoginHist'" :navigate="navigate" />
+  <sy-user-login-hist  v-else-if="page==='syUserLoginHist'"  :navigate="navigate" />
+  <sy-api-log-mng      v-else-if="page==='syApiLogMng'"      :navigate="navigate" />
+  <sy-postman  v-else-if="page==='syPostman'"  :navigate="navigate" />
+  <zd-store  v-else-if="page==='zdStore'"  :navigate="navigate" />
+  <zd-local-storage  v-else-if="page==='zdLocalStorage'"  :navigate="navigate" />
+  <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
+  <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
+  <bo-error-404 v-else :navigate="navigate" :page-id="page" />
+  </div><!-- /비고정 탭 래퍼 -->
+  </template>
+  </div>
+  </div>
+
+  <!-- Right Panel: 공통 필터 -->
+  <div class="bo-right-panel" :class="{collapsed: !rightPanelOpen}">
+  <div class="right-panel-header" @click="rightPanelOpen=!rightPanelOpen">
+  <span class="right-panel-title">공통 필터</span>
+  <span style="font-size:11px;color:#bbb;">{{ rightPanelOpen ? '▶' : '◀' }}</span>
+  </div>
+  <div v-show="rightPanelOpen" class="right-panel-body">
+  <div class="popup-sel">
+  <div class="popup-sel-label">사이트 <span style="color:#e8587a;font-size:10px;">필수</span>
+  <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#e5e7eb;color:#555;font-size:10px;text-align:center;line-height:14px;margin-left:4px;cursor:help;font-weight:700;"
+  title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
+  </div>
+  <div class="popup-sel-row" @click="openSelectModal('site')">
+  <span v-if="filterSite" style="font-family:monospace;font-size:11px;color:#e8587a;font-weight:700;margin-right:6px;">{{ filterSite.siteNo || String(filterSite.siteId).slice(-2) }}</span>
+  <span v-if="filterSite" class="popup-sel-name">{{ filterSite.siteNm || '-' }}</span>
+  <span v-else class="popup-sel-placeholder">선택하세요</span>
+  <span v-if="filterSite" class="popup-sel-id">{{ filterSite.siteCode || '' }}</span>
+  <span class="popup-sel-btn">🔍</span>
+  </div>
+  </div>
+  <div class="popup-sel">
+  <div class="popup-sel-label">판매업체
+  <span v-if="commonFilter.vendorId" class="popup-sel-clear" @click.stop="clearFilter('vendor')">✕</span>
+  </div>
+  <div class="popup-sel-row" @click="openSelectModal('vendor')">
+  <span v-if="filterVendor" class="popup-sel-name">{{ filterVendor.vendorNm }}</span>
+  <span v-else class="popup-sel-placeholder">선택하세요</span>
+  <span v-if="filterVendor" class="popup-sel-id">{{ filterVendor.vendorId }}</span>
+  <span class="popup-sel-btn">🔍</span>
+  </div>
+  </div>
+  <div class="popup-sel">
+  <div class="popup-sel-label">판매사용자
+  <span v-if="commonFilter.userId" class="popup-sel-clear" @click.stop="clearFilter('boUser')">✕</span>
+  </div>
+  <div class="popup-sel-row" @click="openSelectModal('boUser')">
+  <span v-if="cfFilterBoUser" class="popup-sel-name">{{ cfFilterBoUser.name }}</span>
+  <span v-else class="popup-sel-placeholder">선택하세요</span>
+  <span v-if="cfFilterBoUser" class="popup-sel-id">{{ cfFilterBoUser.boUserId }}</span>
+  <span class="popup-sel-btn">🔍</span>
+  </div>
+  </div>
+  <div class="popup-sel">
+  <div class="popup-sel-label">배송업체
+  <span v-if="commonFilter.dlivVendorId" class="popup-sel-clear" @click.stop="clearFilter('dlivVendor')">✕</span>
+  </div>
+  <div class="popup-sel-row" @click="openSelectModal('dlivVendor')">
+  <span v-if="cfFilterDlivVendor" class="popup-sel-name">{{ cfFilterDlivVendor.vendorNm }}</span>
+  <span v-else class="popup-sel-placeholder">선택하세요</span>
+  <span v-if="cfFilterDlivVendor" class="popup-sel-id">{{ cfFilterDlivVendor.vendorId }}</span>
+  <span class="popup-sel-btn">🔍</span>
+  </div>
+  </div>
+  <div class="popup-sel">
+  <div class="popup-sel-label">회원
+  <span v-if="commonFilter.memberId" class="popup-sel-clear" @click.stop="clearFilter('member')">✕</span>
+  </div>
+  <div class="popup-sel-row" @click="openSelectModal('member')">
+  <span v-if="filterMember" class="popup-sel-name">{{ filterMember.memberNm }}</span>
+  <span v-else class="popup-sel-placeholder">선택하세요</span>
+  <span v-if="filterMember" class="popup-sel-id">{{ filterMember.memberId }}</span>
+  <span class="popup-sel-btn">🔍</span>
+  </div>
+  </div>
+  <div class="popup-sel">
+  <div class="popup-sel-label">주문
+  <span v-if="commonFilter.orderId" class="popup-sel-clear" @click.stop="clearFilter('order')">✕</span>
+  </div>
+  <div class="popup-sel-row" @click="openSelectModal('order')">
+  <span v-if="filterOrder" class="popup-sel-name">{{ filterOrder.orderId }}</span>
+  <span v-else class="popup-sel-placeholder">선택하세요</span>
+  <span v-if="filterOrder" class="popup-sel-id">{{ filterOrder.userNm }}</span>
+  <span class="popup-sel-btn">🔍</span>
+  </div>
+  </div>
+
+  <!-- API 로그 섹션 -->
+  <div style="padding: 12px 8px; border-top: 1px solid #e5e7eb; margin-top: 12px;">
+  <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+  <span>📡 API 로그</span>
+  <button v-if="apiLogs.length" @click="clearApiLogs" style="font-size: 10px; padding: 2px 6px; background: #ef4444; color: white; border: none; border-radius: 2px; cursor: pointer; font-weight: 600;">Clear</button>
+  </div>
+  <div v-if="apiLogs.length === 0" style="font-size: 11px; color: #9ca3af; padding: 8px; text-align: center;">로그 없음</div>
+  <div v-else style="max-height: 525px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 3px; background: white;">
+  <div v-for="(log, idx) in apiLogs" :key="idx"
+  @mouseenter="onApiLogEnter(log)"
+  @mouseleave="onApiLogLeave(log)"
+  style="padding: 6px 8px; border-bottom: 1px solid #f3f4f6; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
+  :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }">
+  <div v-if="log.uiLabel" style="font-size: 9px; font-weight: 700; color: #7c3aed; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.2px;">{{ log.uiLabel }}</div>
+  <div style="display: grid; grid-template-columns: 18px 50px 32px 1fr 28px 18px; gap: 2px; align-items: center;">
+  <div :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', textAlign: 'center', fontSize: '9px', fontWeight: isWithin60Seconds(log.time) ? '700' : '400' }">{{ apiLogs.length - idx }}</div>
+  <div :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', whiteSpace: 'nowrap', fontWeight: isWithin60Seconds(log.time) ? '700' : '400', fontSize: '9px' }">{{ getRelativeTime(log.time) }}</div>
+  <div :style="{ color: log.method === 'GET' ? '#3b82f6' : log.method === 'POST' ? '#8b5cf6' : '#f59e0b', fontWeight: '600', textAlign: 'center' }">{{ log.method }}</div>
+  <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: log.hasError ? '#ef4444' : '#374151';">{{ log.url }}</div>
+  <div :style="{ color: getApiStatusColor(log.status), fontWeight: '600', textAlign: 'center', fontSize: '10px' }">{{ log.status }}</div>
+  <div @click.stop="toggleApiLogLock(log)" style="text-align: center; cursor: pointer; font-size: 12px; color: #6b7280; user-select: none; padding: 2px;">{{ apiLogLockedDetail === log ? '🔒' : '🔓' }}</div>
+  </div>
+  <div v-if="!log.hasError && log.resData" style="grid-column: 1 / -1; font-size: 9px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 2px 2px 20px; line-height: 1.3;">
+  ▶ {{ (function(d){ try{
+  const o=JSON.parse(d);
+  const inner = o?.data?.data ?? o?.data ?? o;
+
+  /* totalCnt */
+  const totalCnt = (x) => x.pageTotalCount ?? x.totalCount ?? x.total ?? '?';
+  if(inner==null) return '';
+  if(Array.isArray(inner)) return '[' + inner.length + '건] ' + JSON.stringify(inner[0]||{}).slice(0,100);
+  if(inner.pageList) return '[' + (inner.pageList.length||0) + '건/' + totalCnt(inner) + '] ' + JSON.stringify(inner.pageList[0]||{}).slice(0,100);
+  if(inner.list) return '[' + (inner.list.length||0) + '건/' + totalCnt(inner) + '] ' + JSON.stringify(inner.list[0]||{}).slice(0,100);
+  return JSON.stringify(inner).slice(0,120);
+  }catch(_){ return ''; } })(log.resData) }}
+  </div>
+  </div>
+  </div>
+  </div>
+
+  <!-- API 로그 호버 상세 레이어 -->
+  <div v-if="apiLogHoverDetail || apiLogLockedDetail" style="position: fixed; top: 200px; right: 220px; width: 650px; max-height: 858px; background: white; border: 2px solid #8b5cf6; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: hidden; display: flex; flex-direction: column;">
+  <!-- 헤더 -->
+  <div style="padding: 12px; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-bottom: 1px solid #d1d5db; flex-shrink: 0;">
+  <div style="font-weight: 700; color: #374151; font-size: 12px; margin-bottom: 6px;">📡 API 요청/응답 상세 <span style="color: #ef4444; margin-left: 4px;">#{{ apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) >= 0 ? apiLogs.length - apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) : '-' }}</span></div>
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+  <div style="flex: 1; overflow: hidden;">
+  <div style="color: #374151; font-size: 11px; word-break: break-all; line-height: 1.5;">
+  <span style="color: #6b7280; font-weight: 600;">{{ (apiLogLockedDetail || apiLogHoverDetail).method }}</span>
+  <span style="color: #6b7280; margin: 0 4px;">:</span>
+  <span style="color: #374151;">{{ (apiLogLockedDetail || apiLogHoverDetail).url }}</span>
+  </div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+  <span style="color: #6b7280; font-size: 10px; white-space: nowrap;">{{ (apiLogLockedDetail || apiLogHoverDetail).time }}</span>
+  <button v-if="apiLogLockedDetail" @click="toggleApiLogLock(apiLogLockedDetail)" style="background: none; border: none; cursor: pointer; font-size: 14px; color: #6b7280; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">✕</button>
+  </div>
+  </div>
+  </div>
+
+  <!-- 상태 정보 -->
+  <div style="padding: 8px 12px; background: #fafbfc; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 16px; flex-shrink: 0;">
+  <div>
+  <span style="color: #6b7280; font-size: 10px; font-weight: 600;">상태:</span>
+  <div :style="{ display: 'inline-block', background: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#ecfdf5' : '#fef2f2', color: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#10b981' : '#ef4444', padding: '4px 8px', borderRadius: '2px', fontWeight: '700', border: '1px solid ' + (((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#10b981' : '#ef4444'), fontSize: '11px', marginLeft: '4px' }">{{ (apiLogLockedDetail || apiLogHoverDetail).status }}</div>
+  </div>
+  <div>
+  <span style="color: #6b7280; font-size: 10px; font-weight: 600;">소요시간:</span>
+  <span style="color: #374151; font-size: 10px; margin-left: 4px;">{{ (apiLogLockedDetail || apiLogHoverDetail).duration }}ms</span>
+  </div>
+  </div>
+
+  <!-- 요청/응답 데이터 -->
+  <div style="flex: 1; overflow: hidden; display: grid; grid-template-rows: 130px 1fr 2fr; gap: 8px; padding: 8px; background: white;">
+  <!-- Headers -->
+  <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #8b5cf6; border-radius: 2px;">
+  <div style="padding: 4px 6px; background: #ede9fe; border-bottom: 1px solid #8b5cf6; font-weight: 600; color: #5b21b6; font-size: 10px; display: flex; align-items: center; justify-content: space-between;">
+  <span>📋 Headers</span>
+  <span v-if="(apiLogLockedDetail || apiLogHoverDetail).uiLabel" style="color: #7c3aed; font-size: 11px; font-weight: 700;">{{ (apiLogLockedDetail || apiLogHoverDetail).uiLabel }}</span>
+  </div>
+  <div style="flex: 1; overflow-y: auto; padding: 6px 8px; background: #fafbfc; color: #374151; white-space: pre-wrap; word-break: break-word; line-height: 1.8; font-size: 10px; font-family: 'Courier New', monospace;">{{ (apiLogLockedDetail || apiLogHoverDetail).headers || '-' }}</div>
+  </div>
+
+  <!-- Request -->
+  <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 2px;">
+  <div style="padding: 4px 6px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 10px;">📤 Request</div>
+  <div style="flex: 1; overflow-y: auto; padding: 6px; background: #fafbfc; color: #374151; white-space: pre-wrap; word-break: break-word; line-height: 1.4; font-size: 10px;">{{ formatJsonData((apiLogLockedDetail || apiLogHoverDetail).reqData) }}</div>
+  </div>
+
+  <!-- Response -->
+  <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 2px;">
+  <div style="padding: 4px 6px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 10px;">📥 Response</div>
+  <div style="flex: 1; overflow-y: auto; padding: 6px; background: #fafbfc; color: #374151; white-space: pre-wrap; word-break: break-word; line-height: 1.4; font-size: 10px;">{{ formatJsonData((apiLogLockedDetail || apiLogHoverDetail).resData) }}</div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+
+  </div><!-- /bo-body -->
 
   <!-- 선택 모달들 -->
-  <site-select-modal
-    v-if="selectModal.show && selectModal.type==='site'"
-    @select="onSelectItem('site', $event)"
-    @close="closeSelectModal"
-  />
-  <vendor-select-modal
-    v-if="selectModal.show && selectModal.type==='vendor'"
-    @select="onSelectItem('vendor', $event)"
-    @close="closeSelectModal"
-  />
-  <vendor-select-modal
-    v-if="selectModal.show && selectModal.type==='dlivVendor'"
-    @select="onSelectItem('dlivVendor', $event)"
-    @close="closeSelectModal"
-  />
-  <bo-user-select-modal
-    v-if="selectModal.show && selectModal.type==='boUser'"
-    @select="onSelectItem('boUser', $event)"
-    @close="closeSelectModal"
-  />
-  <member-select-modal
-    v-if="selectModal.show && selectModal.type==='member'"
-    @select="onSelectItem('member', $event)"
-    @close="closeSelectModal"
-  />
-  <order-select-modal
-    v-if="selectModal.show && selectModal.type==='order'"
-    @select="onSelectItem('order', $event)"
-    @close="closeSelectModal"
-  />
+  <site-select-modal v-if="selectModal.show && selectModal.type==='site'"  @select="onSelectItem('site', $event)" @close="closeSelectModal" />
+  <vendor-select-modal v-if="selectModal.show && selectModal.type==='vendor'"  @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
+  <vendor-select-modal v-if="selectModal.show && selectModal.type==='dlivVendor'"  @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
+  <bo-user-select-modal v-if="selectModal.show && selectModal.type==='boUser'"  @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
+  <member-select-modal v-if="selectModal.show && selectModal.type==='member'"  @select="onSelectItem('member', $event)" @close="closeSelectModal" />
+  <order-select-modal v-if="selectModal.show && selectModal.type==='order'"  @select="onSelectItem('order', $event)" @close="closeSelectModal" />
 
   <!-- 참조 모달 -->
-  <bo-ref-modal v-if="refModal && refModal.show" :state="refModal" @close="closeRefModal" />
+  <bo-ref-modal v-if="refModal && refModal.show" :state="refModal"  @close="closeRefModal" />
 
   <!-- 도움말 모달 -->
   <help-bo-modal v-if="helpModal.show" :show="helpModal.show" :topic="helpModal.topic" @close="helpModal.show=false" />
 
   <!-- Confirm -->
   <div v-if="confirmState && confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">
-    <div class="confirm-box">
-      <div class="confirm-icon">💾</div>
-      <div class="confirm-title">{{ confirmState.title }}</div>
-      <div class="confirm-msg">{{ confirmState.msg }}</div>
-      <!-- 상세 배지 (details 있을 때만) -->
-      <div v-if="confirmState.details && confirmState.details.length" class="confirm-details">
-        <span v-for="d in confirmState.details" :key="d.label" class="badge confirm-detail-badge" :class="d.cls">
-          {{ d.label }}
-        </span>
-      </div>
-      <div class="confirm-actions">
-        <button class="btn btn-secondary" @click="closeConfirm(false)">{{ confirmState.btnCancel }}</button>
-        <button class="btn btn-primary" @click="closeConfirm(true)">{{ confirmState.btnOk }}</button>
-      </div>
-    </div>
+  <div class="confirm-box">
+  <div class="confirm-icon">💾</div>
+  <div class="confirm-title">{{ confirmState.title }}</div>
+  <div class="confirm-msg">{{ confirmState.msg }}</div>
+  <!-- 상세 배지 (details 있을 때만) -->
+  <div v-if="confirmState.details && confirmState.details.length" class="confirm-details">
+  <span v-for="d in confirmState.details" :key="d.label"
+  class="badge confirm-detail-badge" :class="d.cls">{{ d.label }}</span>
+  </div>
+  <div class="confirm-actions">
+  <button class="btn btn-secondary" @click="closeConfirm(false)">{{ confirmState.btnCancel }}</button>
+  <button class="btn btn-primary" @click="closeConfirm(true)">{{ confirmState.btnOk }}</button>
+  </div>
+  </div>
   </div>
 
   <!-- API Progress Overlay -->
   <div v-if="isApiLoading" class="api-progress-overlay">
-    <div class="api-progress-card">
-      <div class="api-progress-dots">
-        <div class="bo-dot"></div>
-        <div class="bo-dot"></div>
-        <div class="bo-dot"></div>
-        <div class="bo-dot"></div>
-      </div>
-      <div class="api-progress-label">처리중입니다...</div>
-    </div>
+  <div class="api-progress-card">
+  <div class="api-progress-dots">
+  <div class="bo-dot"></div>
+  <div class="bo-dot"></div>
+  <div class="bo-dot"></div>
+  <div class="bo-dot"></div>
+  </div>
+  <div class="api-progress-label">처리중입니다...</div>
+  </div>
   </div>
 
   <!-- Toast 누적 스택 -->
   <div class="toast-container">
-    <div v-if="toasts.length > 1" class="toast-close-all">
-      <span class="toast-close-all-btn" @click="closeAllToasts">✕ 전체닫기 ({{ toasts.length }})</span>
-      <span class="toast-close-all-sep">|</span>
-      <span class="toast-close-all-btn" @click="toggleToastDetail">
-        {{ toastShowDetail ? '▲ 전체접기' : '▼ 전체펼치기' }}
-      </span>
-    </div>
-    <div
-      v-for="t in toasts"
-      :key="t.id"
-      class="toast-item"
-      :class="['toast-'+t.type, { 'toast-expanded': t.expanded }]"
-    >
-      <!-- 헤더 행: 제목 + ▼/▲ + ✕ -->
-      <div class="toast-header-row">
-        <div class="toast-msg-title">{{ (t.msgTitle || t.msg).split(String.fromCharCode(10))[0] }}</div>
-        <span
-          v-if="t.type === 'error'"
-          class="toast-expand-icon"
-          @click.stop="t.expanded = !t.expanded"
-          :title="t.expanded ? '접기' : '더보기'"
-        >
-          {{ t.expanded ? '▲' : '▼' }}
-        </span>
-        <span class="toast-close-x" @click.stop="closeToast(t.id)">✕</span>
-      </div>
-      <!-- 서브 정보: URL/status 줄 -->
-      <div v-if="t.msgDetail" class="toast-msg-detail">{{ t.msgDetail }}</div>
-      <!-- 상태코드 한글 안내 -->
-      <div v-if="t.statusHint" class="toast-status-hint">💡 {{ t.statusHint }}</div>
-      <!-- 펼쳐진 상세 내용 -->
-      <div v-if="t.expanded" class="toast-error-details">
-        <pre class="toast-error-content">{{ t.errorDetails || (t.msgTitle || t.msg) }}</pre>
-      </div>
-      <div v-if="!t.persistent" class="toast-progress"></div>
-    </div>
+  <div v-if="toasts.length > 1" class="toast-close-all">
+  <span class="toast-close-all-btn" @click="closeAllToasts">✕ 전체닫기 ({{ toasts.length }})</span>
+  <span class="toast-close-all-sep">|</span>
+  <span class="toast-close-all-btn" @click="toggleToastDetail">{{ toastShowDetail ? '▲ 전체접기' : '▼ 전체펼치기' }}</span>
+  </div>
+  <div v-for="t in toasts" :key="t.id"
+  class="toast-item" :class="['toast-'+t.type, { 'toast-expanded': t.expanded }]">
+  <!-- 헤더 행: 제목 + ▼/▲ + ✕ -->
+  <div class="toast-header-row">
+  <div class="toast-msg-title">{{ (t.msgTitle || t.msg).split(String.fromCharCode(10))[0] }}</div>
+  <span v-if="t.type === 'error'" class="toast-expand-icon"
+  @click.stop="t.expanded = !t.expanded" :title="t.expanded ? '접기' : '더보기'">{{ t.expanded ? '▲' : '▼' }}</span>
+  <span class="toast-close-x" @click.stop="closeToast(t.id)">✕</span>
+  </div>
+  <!-- 서브 정보: URL/status 줄 -->
+  <div v-if="t.msgDetail" class="toast-msg-detail">{{ t.msgDetail }}</div>
+  <!-- 상태코드 한글 안내 -->
+  <div v-if="t.statusHint" class="toast-status-hint">💡 {{ t.statusHint }}</div>
+  <!-- 펼쳐진 상세 내용 -->
+  <div v-if="t.expanded" class="toast-error-details">
+  <pre class="toast-error-content">{{ t.errorDetails || (t.msgTitle || t.msg) }}</pre>
+  </div>
+  <div v-if="!t.persistent" class="toast-progress"></div>
+  </div>
   </div>
 
   <!-- API 응답 패널 -->
-  <div
-    v-if="apiResPanel && apiResPanel.show"
-    style="
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 8900;
-      width: 440px;
-      max-height: 55vh;
-      background: #1e1e2e;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    "
-  >
-    <div
-      style="
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 14px;
-        background: #2a2a3e;
-        flex-shrink: 0;
-      "
-    >
-      <span style="font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px">
-        API 응답
-        <span
-          v-if="apiResPanel.res"
-          :style="{padding:'2px 8px',borderRadius:'10px',fontSize:'11px',fontWeight:'600',background:apiResPanel.res.ok?'#166534':'#7f1d1d',color:apiResPanel.res.ok?'#4ade80':'#f87171'}"
-        >
-          {{ apiResPanel.res.ok ? '✓ 성공' : '✕ 오류' }}
-          <template v-if="apiResPanel.res.status">· HTTP {{ apiResPanel.res.status }}</template>
-        </span>
-      </span>
-      <button
-        @click="closeApiResPanel"
-        style="
-          background: none;
-          border: none;
-          color: #888;
-          cursor: pointer;
-          font-size: 16px;
-          line-height: 1;
-          padding: 2px 4px;
-        "
-        title="닫기"
-      >
-        ✕
-      </button>
-    </div>
-    <div style="overflow-y: auto; padding: 12px 14px; flex: 1">
-      <pre
-        style="
-          margin: 0;
-          font-size: 11px;
-          color: #e2e8f0;
-          white-space: pre-wrap;
-          word-break: break-all;
-          line-height: 1.6;
-        "
-      >
-{{ JSON.stringify(apiResPanel.res, null, 2) }}</pre
-      >
-    </div>
+  <div v-if="apiResPanel && apiResPanel.show" style="position:fixed;bottom:20px;right:20px;z-index:8900;width:440px;max-height:55vh;background:#1e1e2e;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;overflow:hidden;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#2a2a3e;flex-shrink:0;">
+  <span style="font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
+  API 응답
+  <span v-if="apiResPanel.res" :style="{padding:'2px 8px',borderRadius:'10px',fontSize:'11px',fontWeight:'600',background:apiResPanel.res.ok?'#166534':'#7f1d1d',color:apiResPanel.res.ok?'#4ade80':'#f87171'}">
+  {{ apiResPanel.res.ok ? '✓ 성공' : '✕ 오류' }}
+  <template v-if="apiResPanel.res.status"> · HTTP {{ apiResPanel.res.status }}</template>
+  </span>
+  </span>
+  <button @click="closeApiResPanel" style="background:none;border:none;color:#888;cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;" title="닫기">✕</button>
+  </div>
+  <div style="overflow-y:auto;padding:12px 14px;flex:1;">
+  <pre style="margin:0;font-size:11px;color:#e2e8f0;white-space:pre-wrap;word-break:break-all;line-height:1.6;">{{ JSON.stringify(apiResPanel.res, null, 2) }}</pre>
+  </div>
   </div>
 
   <!-- 탭 컨텍스트 메뉴 -->
-  <div
-    v-if="ctxMenu && ctxMenu.show"
-    class="tab-ctx-menu"
-    :style="{left: ctxMenu.x+'px', top: ctxMenu.y+'px'}"
-    @click.stop
-  >
-    <div class="tab-ctx-item" @click="ctxClose">현재 닫기</div>
-    <div class="tab-ctx-item" @click="ctxCloseLeft">왼쪽 닫기</div>
-    <div class="tab-ctx-item" @click="ctxCloseRight">오른쪽 닫기</div>
-    <div class="tab-ctx-item" @click="ctxCloseOthers">기타 닫기</div>
-    <div class="tab-ctx-sep"></div>
-    <div class="tab-ctx-item" @click="ctxCloseAll">전체 닫기</div>
-    <div class="tab-ctx-sep"></div>
-    <div class="tab-ctx-item" @click="ctxNewWindow">↗ 새창</div>
-    <div class="tab-ctx-item" @click="ctxRefresh">↺ 새로고침</div>
+  <div v-if="ctxMenu && ctxMenu.show"
+  class="tab-ctx-menu"
+  :style="{left: ctxMenu.x+'px', top: ctxMenu.y+'px'}"
+  @click.stop>
+  <div class="tab-ctx-item" @click="ctxClose">현재 닫기</div>
+  <div class="tab-ctx-item" @click="ctxCloseLeft">왼쪽 닫기</div>
+  <div class="tab-ctx-item" @click="ctxCloseRight">오른쪽 닫기</div>
+  <div class="tab-ctx-item" @click="ctxCloseOthers">기타 닫기</div>
+  <div class="tab-ctx-sep"></div>
+  <div class="tab-ctx-item" @click="ctxCloseAll">전체 닫기</div>
+  <div class="tab-ctx-sep"></div>
+  <div class="tab-ctx-item" @click="ctxNewWindow">↗ 새창</div>
+  <div class="tab-ctx-item" @click="ctxRefresh">↺ 새로고침</div>
   </div>
 
   <!-- 프로필 모달 -->
   <div v-if="uiState.profileModalShow" class="modal-overlay" @click.self="uiState.profileModalShow=false">
-    <div class="modal-box" style="max-width: 440px">
-      <div class="modal-header">
-        <span class="modal-title">🙍 프로필</span>
-        <span class="modal-close" @click="uiState.profileModalShow=false">✕</span>
-      </div>
-      <div
-        style="
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 20px;
-          padding: 14px;
-          background: #fff5f7;
-          border-radius: 10px;
-        "
-      >
-        <!-- 프로필 사진 -->
-        <label
-          style="position: relative; cursor: pointer; flex-shrink: 0"
-          :title="profileImgUploading ? '업로드 중...' : '클릭하여 사진 변경'"
-        >
-          <img
-            v-if="profileImg.cdnImgUrl"
-            :src="profileImg.cdnImgUrl"
-            style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #e8587a"
-          />
-          <div
-            v-else
-            style="
-              width: 64px;
-              height: 64px;
-              border-radius: 50%;
-              background: #e8587a;
-              color: #fff;
-              font-size: 24px;
-              font-weight: 700;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            "
-          >
-            {{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}
-          </div>
-          <div
-            style="
-              position: absolute;
-              bottom: 0;
-              right: 0;
-              width: 20px;
-              height: 20px;
-              border-radius: 50%;
-              background: #e8587a;
-              color: #fff;
-              font-size: 11px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              border: 2px solid #fff;
-            "
-          >
-            <span v-if="profileImgUploading">⏳</span>
-            <span v-else>📷</span>
-          </div>
-          <input
-            type="file"
-            accept="image/*"
-            style="display: none"
-            :disabled="profileImgUploading"
-            @change="onProfileImgChange"
-          />
-        </label>
-        <div>
-          <div style="font-size: 15px; font-weight: 700; color: #1a1a2e">
-            {{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}
-          </div>
-          <div style="font-size: 12px; color: #e8587a; font-weight: 600; margin-top: 3px">
-            {{ currentAuthUser?.role || '' }}
-          </div>
-          <div style="font-size: 11px; color: #aaa; margin-top: 2px">가입일: {{ currentAuthUser?.regDate || '' }}</div>
-          <div v-if="profileImg.cdnImgUrl" style="font-size: 11px; color: #bbb; margin-top: 2px">
-            <span style="cursor: pointer; color: #e8587a" @click.prevent="onProfileImgRemove">✕ 사진 삭제</span>
-          </div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">
-            이름
-            <span class="req">*</span>
-          </label>
-          <input class="form-control" v-model="profileForm.name" placeholder="이름" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">연락처</label>
-          <input class="form-control" v-model="profileForm.phone" placeholder="010-0000-0000" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">이메일</label>
-        <div class="readonly-field">{{ profileForm.email }}</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">부서</label>
-        <input class="form-control" v-model="profileForm.dept" placeholder="부서명" />
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" @click="saveProfile">저장</button>
-        <button class="btn btn-secondary" @click="uiState.profileModalShow=false">취소</button>
-      </div>
-    </div>
+  <div class="modal-box" style="max-width:440px;">
+  <div class="modal-header">
+  <span class="modal-title">🙍 프로필</span>
+  <span class="modal-close" @click="uiState.profileModalShow=false">✕</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px;background:#fff5f7;border-radius:10px;">
+  <!-- 프로필 사진 -->
+  <label style="position:relative;cursor:pointer;flex-shrink:0;" :title="profileImgUploading ? '업로드 중...' : '클릭하여 사진 변경'">
+  <img v-if="profileImg.cdnImgUrl"
+    :src="profileImg.cdnImgUrl"
+    style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #e8587a;" />
+  <div v-else style="width:64px;height:64px;border-radius:50%;background:#e8587a;color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;">
+    {{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}
+  </div>
+  <div style="position:absolute;bottom:0;right:0;width:20px;height:20px;border-radius:50%;background:#e8587a;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;">
+    <span v-if="profileImgUploading">⏳</span><span v-else>📷</span>
+  </div>
+  <input type="file" accept="image/*" style="display:none;" :disabled="profileImgUploading" @change="onProfileImgChange" />
+  </label>
+  <div>
+  <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</div>
+  <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ currentAuthUser?.role || '' }}</div>
+  <div style="font-size:11px;color:#aaa;margin-top:2px;">가입일: {{ currentAuthUser?.regDate || '' }}</div>
+  <div v-if="profileImg.cdnImgUrl" style="font-size:11px;color:#bbb;margin-top:2px;">
+    <span style="cursor:pointer;color:#e8587a;" @click.prevent="onProfileImgRemove">✕ 사진 삭제</span>
+  </div>
+  </div>
+  </div>
+  <div class="form-row">
+  <div class="form-group">
+  <label class="form-label">이름 <span class="req">*</span></label>
+  <input class="form-control" v-model="profileForm.name" placeholder="이름" />
+  </div>
+  <div class="form-group">
+  <label class="form-label">연락처</label>
+  <input class="form-control" v-model="profileForm.phone" placeholder="010-0000-0000" />
+  </div>
+  </div>
+  <div class="form-group">
+  <label class="form-label">이메일</label>
+  <div class="readonly-field">{{ profileForm.email }}</div>
+  </div>
+  <div class="form-group">
+  <label class="form-label">부서</label>
+  <input class="form-control" v-model="profileForm.dept" placeholder="부서명" />
+  </div>
+  <div class="form-actions">
+  <button class="btn btn-primary" @click="saveProfile">저장</button>
+  <button class="btn btn-secondary" @click="uiState.profileModalShow=false">취소</button>
+  </div>
+  </div>
   </div>
 
   <!-- 사용자 선택 모달 -->
-  <div v-if="userPickModal.show" class="modal-overlay" style="z-index: 1100" @click.self="userPickModal.show=false">
-    <div
-      class="modal-box"
-      style="
-        max-width: 820px;
-        width: 96%;
-        padding: 0;
-        border-radius: 16px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        max-height: 90vh;
-      "
-    >
-      <!-- 모달 헤더 -->
-      <div
-        style="
-          background: linear-gradient(135deg, #fff0f4, #ffe4ec, #ffd5e1);
-          padding: 14px 20px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          border-bottom: 1px solid #ffc8d6;
-          flex-shrink: 0;
-        "
-      >
-        <div style="display: flex; align-items: center; gap: 10px">
-          <span style="font-size: 18px">👥</span>
-          <div>
-            <div style="font-size: 14px; font-weight: 800; color: #1a1a2e">사용자 선택</div>
-            <div style="font-size: 10px; color: #e8587a; margin-top: 1px">
-              선택 시 마스터 패스워드(1111)로 자동 로그인
-            </div>
-          </div>
-        </div>
-        <button
-          @click="userPickModal.show=false"
-          style="
-            background: none;
-            border: none;
-            cursor: pointer;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            color: #e8587a;
-          "
-          onmouseover="this.style.background = '#ffd5e1'"
-          onmouseout="this.style.background = 'none'"
-        >
-          ✕
-        </button>
-      </div>
-      <!-- 본문 (스크롤 영역) -->
-      <div style="padding: 14px 18px; overflow-y: auto; flex: 1">
-        <!-- 검색바 -->
-        <div style="display: flex; gap: 6px; margin-bottom: 10px">
-          <div style="position: relative; flex: 1">
-            <span
-              style="
-                position: absolute;
-                left: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #ccc;
-                font-size: 13px;
-              "
-            >
-              🔍
-            </span>
-            <input
-              class="form-control"
-              v-model="userPickModal.searchValue"
-              placeholder="이름 / 로그인ID / 이메일 검색..."
-              @keyup.enter="onUserPickSearch"
-              style="padding-left: 32px; height: 34px"
-            />
-          </div>
-          <button class="btn btn-primary btn-sm" @click="onUserPickSearch" style="padding: 0 16px; font-weight: 700">
-            조회
-          </button>
-        </div>
-        <!-- 건수 -->
-        <div style="font-size: 11px; color: #aaa; margin-bottom: 8px">
-          총
-          <b style="color: #e8587a">{{ cfPickTotal }}</b>
-          명
-        </div>
-        <!-- 테이블 -->
-        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #f0e0e8">
-          <table style="width: 100%; border-collapse: collapse; font-size: 12px">
-            <thead>
-              <tr style="background: linear-gradient(90deg, #fdf0f4, #fce8ef)">
-                <th
-                  style="
-                    padding: 6px 8px;
-                    text-align: center;
-                    width: 32px;
-                    font-weight: 700;
-                    color: #c04070;
-                    border-bottom: 2px solid #f5c0d0;
-                    white-space: nowrap;
-                  "
-                >
-                  번호
-                </th>
-                <th
-                  style="
-                    padding: 6px 8px;
-                    text-align: left;
-                    font-weight: 700;
-                    color: #c04070;
-                    border-bottom: 2px solid #f5c0d0;
-                  "
-                >
-                  이름
-                </th>
-                <th
-                  style="
-                    padding: 6px 8px;
-                    text-align: left;
-                    font-weight: 700;
-                    color: #c04070;
-                    border-bottom: 2px solid #f5c0d0;
-                  "
-                >
-                  로그인ID
-                </th>
-                <th
-                  style="
-                    padding: 6px 8px;
-                    text-align: left;
-                    font-weight: 700;
-                    color: #c04070;
-                    border-bottom: 2px solid #f5c0d0;
-                  "
-                >
-                  사이트
-                </th>
-                <th
-                  style="
-                    padding: 6px 8px;
-                    text-align: left;
-                    font-weight: 700;
-                    color: #c04070;
-                    border-bottom: 2px solid #f5c0d0;
-                  "
-                >
-                  부서
-                </th>
-                <th
-                  style="
-                    padding: 6px 8px;
-                    text-align: left;
-                    font-weight: 700;
-                    color: #c04070;
-                    border-bottom: 2px solid #f5c0d0;
-                  "
-                >
-                  권한
-                </th>
-                <th
-                  style="
-                    padding: 6px 8px;
-                    text-align: center;
-                    font-weight: 700;
-                    color: #c04070;
-                    border-bottom: 2px solid #f5c0d0;
-                  "
-                >
-                  상태
-                </th>
-                <th
-                  style="
-                    padding: 6px 8px;
-                    text-align: left;
-                    font-weight: 700;
-                    color: #c04070;
-                    border-bottom: 2px solid #f5c0d0;
-                  "
-                >
-                  이메일
-                </th>
-                <th style="padding: 6px 8px; text-align: center; width: 44px; border-bottom: 2px solid #f5c0d0"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="userPickModal.loading">
-                <td colspan="9" style="text-align: center; color: #ccc; padding: 24px; font-size: 12px">
-                  ⏳ 조회 중...
-                </td>
-              </tr>
-              <tr v-else-if="!cfPickRows.length">
-                <td colspan="9" style="text-align: center; color: #ccc; padding: 24px; font-size: 12px">
-                  🔍 검색 결과가 없습니다.
-                </td>
-              </tr>
-              <template v-else>
-                <tr
-                  v-for="(u, idx) in cfPickRows"
-                  :key="u.loginId || u.userId"
-                  @click="onUserPick(u)"
-                  :style="loginForm.loginId===(u.loginId||u.userId)
+  <div v-if="userPickModal.show" class="modal-overlay" style="z-index:1100;" @click.self="userPickModal.show=false">
+  <div class="modal-box" style="max-width:820px;width:96%;padding:0;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;max-height:90vh;">
+  <!-- 모달 헤더 -->
+  <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffc8d6;flex-shrink:0;">
+  <div style="display:flex;align-items:center;gap:10px;">
+  <span style="font-size:18px;">👥</span>
+  <div>
+  <div style="font-size:14px;font-weight:800;color:#1a1a2e;">사용자 선택</div>
+  <div style="font-size:10px;color:#e8587a;margin-top:1px;">선택 시 마스터 패스워드(1111)로 자동 로그인</div>
+  </div>
+  </div>
+  <button @click="userPickModal.show=false" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">✕</button>
+  </div>
+  <!-- 본문 (스크롤 영역) -->
+  <div style="padding:14px 18px;overflow-y:auto;flex:1;">
+  <!-- 검색바 -->
+  <div style="display:flex;gap:6px;margin-bottom:10px;">
+  <div style="position:relative;flex:1;">
+  <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
+  <input class="form-control" v-model="userPickModal.searchValue" placeholder="이름 / 로그인ID / 이메일 검색..."
+  @keyup.enter="onUserPickSearch" style="padding-left:32px;height:34px;" />
+  </div>
+  <button class="btn btn-primary btn-sm" @click="onUserPickSearch" style="padding:0 16px;font-weight:700;">조회</button>
+  </div>
+  <!-- 건수 -->
+  <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
+  총 <b style="color:#e8587a;">{{ cfPickTotal }}</b>명
+  </div>
+  <!-- 테이블 -->
+  <div style="overflow-x:auto;border-radius:8px;border:1px solid #f0e0e8;">
+  <table style="width:100%;border-collapse:collapse;font-size:12px;">
+  <thead>
+  <tr style="background:linear-gradient(90deg,#fdf0f4,#fce8ef);">
+  <th style="padding:6px 8px;text-align:center;width:32px;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;white-space:nowrap;">번호</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">이름</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">로그인ID</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">사이트</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">부서</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">권한</th>
+  <th style="padding:6px 8px;text-align:center;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">상태</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">이메일</th>
+  <th style="padding:6px 8px;text-align:center;width:44px;border-bottom:2px solid #f5c0d0;"></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr v-if="userPickModal.loading">
+  <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">⏳ 조회 중...</td>
+  </tr>
+  <tr v-else-if="!cfPickRows.length">
+  <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">🔍 검색 결과가 없습니다.</td>
+  </tr>
+  <template v-else>
+  <tr v-for="(u, idx) in cfPickRows" :key="u.loginId || u.userId"
+  @click="onUserPick(u)"
+  :style="loginForm.loginId===(u.loginId||u.userId)
     ? 'background:#fff0f4;cursor:pointer;'
     : 'background:'+(idx%2===0?'#fff':'#fdfafe')+';cursor:pointer;'"
-                  onmouseover="this.style.background = '#fff5f8'"
-                  onmouseout="this.style.background = ''"
-                >
-                  <td
-                    style="
-                      padding: 5px 8px;
-                      text-align: center;
-                      color: #ccc;
-                      font-size: 11px;
-                      border-bottom: 1px solid #f5eef2;
-                    "
-                  >
-                    {{ (userPickModal.pageNo-1)*20+idx+1 }}
-                  </td>
-                  <td style="padding: 5px 8px; border-bottom: 1px solid #f5eef2">
-                    <div style="display: flex; align-items: center; gap: 6px">
-                      <div
-                        style="
-                          width: 22px;
-                          height: 22px;
-                          border-radius: 50%;
-                          background: linear-gradient(135deg, #f9a8c9, #e8587a);
-                          color: #fff;
-                          font-size: 10px;
-                          font-weight: 700;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          flex-shrink: 0;
-                        "
-                      >
-                        {{ (u.userNm||u.label||'?').charAt(0) }}
-                      </div>
-                      <span style="font-weight: 700; color: #1a1a2e; white-space: nowrap">
-                        {{ u.userNm || u.label || '-' }}
-                      </span>
-                    </div>
-                  </td>
-                  <td
-                    style="
-                      padding: 5px 8px;
-                      color: #888;
-                      border-bottom: 1px solid #f5eef2;
-                      font-family: monospace;
-                      font-size: 11px;
-                    "
-                  >
-                    {{ u.loginId }}
-                  </td>
-                  <td style="padding: 5px 8px; color: #777; border-bottom: 1px solid #f5eef2; white-space: nowrap">
-                    {{ u.siteNm || '-' }}
-                  </td>
-                  <td style="padding: 5px 8px; color: #777; border-bottom: 1px solid #f5eef2; white-space: nowrap">
-                    {{ u.deptNm || '-' }}
-                  </td>
-                  <td style="padding: 5px 8px; border-bottom: 1px solid #f5eef2">
-                    <span
-                      v-if="u.roleNm"
-                      style="
-                        display: inline-block;
-                        padding: 1px 7px;
-                        border-radius: 9px;
-                        background: #ede9fe;
-                        color: #7c3aed;
-                        font-size: 10px;
-                        font-weight: 700;
-                        white-space: nowrap;
-                      "
-                    >
-                      {{ u.roleNm }}
-                    </span>
-                    <span v-else style="color: #ddd">—</span>
-                  </td>
-                  <td style="padding: 5px 8px; text-align: center; border-bottom: 1px solid #f5eef2">
-                    <span
-                      v-if="u.userStatusCd==='ACTIVE'"
-                      style="
-                        display: inline-block;
-                        padding: 1px 8px;
-                        border-radius: 9px;
-                        background: #dcfce7;
-                        color: #16a34a;
-                        font-size: 10px;
-                        font-weight: 700;
-                      "
-                    >
-                      활성
-                    </span>
-                    <span
-                      v-else
-                      style="
-                        display: inline-block;
-                        padding: 1px 8px;
-                        border-radius: 9px;
-                        background: #fee2e2;
-                        color: #dc2626;
-                        font-size: 10px;
-                        font-weight: 700;
-                      "
-                    >
-                      {{ u.userStatusCdNm || '비활성' }}
-                    </span>
-                  </td>
-                  <td style="padding: 5px 8px; color: #999; font-size: 11px; border-bottom: 1px solid #f5eef2">
-                    {{ u.userEmail || '-' }}
-                  </td>
-                  <td style="padding: 5px 8px; text-align: center; border-bottom: 1px solid #f5eef2">
-                    <button
-                      @click.stop="onUserPick(u)"
-                      style="
-                        background: linear-gradient(135deg, #f9a8c9, #e8587a);
-                        color: #fff;
-                        border: none;
-                        border-radius: 6px;
-                        padding: 3px 10px;
-                        font-size: 10px;
-                        font-weight: 700;
-                        cursor: pointer;
-                      "
-                      onmouseover="this.style.opacity = '.82'"
-                      onmouseout="this.style.opacity = '1'"
-                    >
-                      선택
-                    </button>
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <!-- 페이지네이션 (스크롤 밖 고정) -->
-      <div
-        v-if="cfPickTotalPage > 1"
-        style="
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 4px;
-          padding: 10px 18px;
-          border-top: 1px solid #f5eef2;
-          flex-shrink: 0;
-          flex-wrap: wrap;
-        "
-      >
-        <button
-          @click="onUserPickPage(1)"
-          :disabled="userPickModal.pageNo===1"
-          style="
-            border: 1px solid #f0c0d0;
-            background: #fff;
-            color: #e8587a;
-            border-radius: 6px;
-            padding: 3px 8px;
-            font-size: 11px;
-            cursor: pointer;
-          "
-          :style="userPickModal.pageNo===1?'opacity:.35;cursor:default;':''"
-        >
-          «
-        </button>
-        <button
-          @click="onUserPickPage(userPickModal.pageNo-1)"
-          :disabled="userPickModal.pageNo===1"
-          style="
-            border: 1px solid #f0c0d0;
-            background: #fff;
-            color: #e8587a;
-            border-radius: 6px;
-            padding: 3px 8px;
-            font-size: 11px;
-            cursor: pointer;
-          "
-          :style="userPickModal.pageNo===1?'opacity:.35;cursor:default;':''"
-        >
-          ‹
-        </button>
-        <template v-for="p in cfPickTotalPage" :key="p">
-          <button
-            v-if="Math.abs(p-userPickModal.pageNo)<=2||p===1||p===cfPickTotalPage"
-            @click="onUserPickPage(p)"
-            :style="userPickModal.pageNo===p
+  onmouseover="this.style.background='#fff5f8'" onmouseout="this.style.background=''">
+  <td style="padding:5px 8px;text-align:center;color:#ccc;font-size:11px;border-bottom:1px solid #f5eef2;">{{ (userPickModal.pageNo-1)*20+idx+1 }}</td>
+  <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
+  <div style="display:flex;align-items:center;gap:6px;">
+  <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ (u.userNm||u.label||'?').charAt(0) }}</div>
+  <span style="font-weight:700;color:#1a1a2e;white-space:nowrap;">{{ u.userNm || u.label || '-' }}</span>
+  </div>
+  </td>
+  <td style="padding:5px 8px;color:#888;border-bottom:1px solid #f5eef2;font-family:monospace;font-size:11px;">{{ u.loginId }}</td>
+  <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ u.siteNm || '-' }}</td>
+  <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ u.deptNm || '-' }}</td>
+  <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
+  <span v-if="u.roleNm" style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;white-space:nowrap;">{{ u.roleNm }}</span>
+  <span v-else style="color:#ddd;">—</span>
+  </td>
+  <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
+  <span v-if="u.userStatusCd==='ACTIVE'" style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">활성</span>
+  <span v-else style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">{{ u.userStatusCdNm || '비활성' }}</span>
+  </td>
+  <td style="padding:5px 8px;color:#999;font-size:11px;border-bottom:1px solid #f5eef2;">{{ u.userEmail || '-' }}</td>
+  <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
+  <button @click.stop="onUserPick(u)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">선택</button>
+  </td>
+  </tr>
+  </template>
+  </tbody>
+  </table>
+  </div>
+  </div>
+  <!-- 페이지네이션 (스크롤 밖 고정) -->
+  <div v-if="cfPickTotalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:4px;padding:10px 18px;border-top:1px solid #f5eef2;flex-shrink:0;flex-wrap:wrap;">
+  <button @click="onUserPickPage(1)" :disabled="userPickModal.pageNo===1"
+  style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="userPickModal.pageNo===1?'opacity:.35;cursor:default;':''">«</button>
+  <button @click="onUserPickPage(userPickModal.pageNo-1)" :disabled="userPickModal.pageNo===1"
+  style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="userPickModal.pageNo===1?'opacity:.35;cursor:default;':''">‹</button>
+  <template v-for="p in cfPickTotalPage" :key="p">
+  <button v-if="Math.abs(p-userPickModal.pageNo)<=2||p===1||p===cfPickTotalPage"
+  @click="onUserPickPage(p)"
+  :style="userPickModal.pageNo===p
     ? 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;font-weight:700;'
     : 'background:#fff;color:#888;border:1px solid #eee;'"
-            style="min-width: 28px; height: 28px; border-radius: 6px; font-size: 11px; cursor: pointer"
-          >
-            {{ p }}
-          </button>
-        </template>
-        <button
-          @click="onUserPickPage(userPickModal.pageNo+1)"
-          :disabled="userPickModal.pageNo===cfPickTotalPage"
-          style="
-            border: 1px solid #f0c0d0;
-            background: #fff;
-            color: #e8587a;
-            border-radius: 6px;
-            padding: 3px 8px;
-            font-size: 11px;
-            cursor: pointer;
-          "
-          :style="userPickModal.pageNo===cfPickTotalPage?'opacity:.35;cursor:default;':''"
-        >
-          ›
-        </button>
-        <button
-          @click="onUserPickPage(cfPickTotalPage)"
-          :disabled="userPickModal.pageNo===cfPickTotalPage"
-          style="
-            border: 1px solid #f0c0d0;
-            background: #fff;
-            color: #e8587a;
-            border-radius: 6px;
-            padding: 3px 8px;
-            font-size: 11px;
-            cursor: pointer;
-          "
-          :style="userPickModal.pageNo===cfPickTotalPage?'opacity:.35;cursor:default;':''"
-        >
-          »
-        </button>
-      </div>
-    </div>
+  style="min-width:28px;height:28px;border-radius:6px;font-size:11px;cursor:pointer;">{{ p }}</button>
+  </template>
+  <button @click="onUserPickPage(userPickModal.pageNo+1)" :disabled="userPickModal.pageNo===cfPickTotalPage"
+  style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="userPickModal.pageNo===cfPickTotalPage?'opacity:.35;cursor:default;':''">›</button>
+  <button @click="onUserPickPage(cfPickTotalPage)" :disabled="userPickModal.pageNo===cfPickTotalPage"
+  style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="userPickModal.pageNo===cfPickTotalPage?'opacity:.35;cursor:default;':''">»</button>
+  </div>
+  </div>
   </div>
 
   <!-- 비밀번호 변경 모달 -->
   <div v-if="uiState.pwModalShow" class="modal-overlay" @click.self="uiState.pwModalShow=false">
-    <div class="modal-box" style="max-width: 380px">
-      <div class="modal-header">
-        <span class="modal-title">🔑 비밀번호 변경</span>
-        <span class="modal-close" @click="uiState.pwModalShow=false">✕</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          현재 비밀번호
-          <span class="req">*</span>
-        </label>
-        <input
-          class="form-control"
-          type="password"
-          v-model="pwForm.current"
-          placeholder="현재 비밀번호"
-          autocomplete="current-password"
-        />
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          새 비밀번호
-          <span class="req">*</span>
-        </label>
-        <input
-          class="form-control"
-          type="password"
-          v-model="pwForm.next"
-          placeholder="새 비밀번호 (6자 이상)"
-          autocomplete="new-password"
-        />
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          새 비밀번호 확인
-          <span class="req">*</span>
-        </label>
-        <input
-          class="form-control"
-          type="password"
-          v-model="pwForm.confirm"
-          placeholder="새 비밀번호 재입력"
-          @keyup.enter="savePwChange"
-          autocomplete="new-password"
-        />
-      </div>
-      <div v-if="pwError" class="login-error">{{ pwError }}</div>
-      <div class="form-actions">
-        <button class="btn btn-primary" @click="savePwChange">변경</button>
-        <button class="btn btn-secondary" @click="uiState.pwModalShow=false">취소</button>
-      </div>
-    </div>
+  <div class="modal-box" style="max-width:380px;">
+  <div class="modal-header">
+  <span class="modal-title">🔑 비밀번호 변경</span>
+  <span class="modal-close" @click="uiState.pwModalShow=false">✕</span>
+  </div>
+  <div class="form-group">
+  <label class="form-label">현재 비밀번호 <span class="req">*</span></label>
+  <input class="form-control" type="password" v-model="pwForm.current" placeholder="현재 비밀번호" autocomplete="current-password" />
+  </div>
+  <div class="form-group">
+  <label class="form-label">새 비밀번호 <span class="req">*</span></label>
+  <input class="form-control" type="password" v-model="pwForm.next" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password" />
+  </div>
+  <div class="form-group">
+  <label class="form-label">새 비밀번호 확인 <span class="req">*</span></label>
+  <input class="form-control" type="password" v-model="pwForm.confirm" placeholder="새 비밀번호 재입력" @keyup.enter="savePwChange" autocomplete="new-password" />
+  </div>
+  <div v-if="pwError" class="login-error">{{ pwError }}</div>
+  <div class="form-actions">
+  <button class="btn btn-primary" @click="savePwChange">변경</button>
+  <button class="btn btn-secondary" @click="uiState.pwModalShow=false">취소</button>
+  </div>
+  </div>
   </div>
 
   <!-- 로그인 / 회원가입 모달 -->
   <div v-if="loginModal && loginModal.show" class="modal-overlay" @click.self="closeLogin">
-    <div class="login-modal-box">
-      <div class="login-modal-header">
-        <div class="login-tabs">
-          <span :class="{active: loginModal.tab==='login'}" @click="loginModal.tab='login';  loginError=''">
-            로그인
-          </span>
-          <span :class="{active: loginModal.tab==='register'}" @click="loginModal.tab='register'; loginError=''">
-            회원가입
-          </span>
-        </div>
-        <span class="modal-close" @click="closeLogin">✕</span>
-      </div>
+  <div class="login-modal-box">
+  <div class="login-modal-header">
+  <div class="login-tabs">
+  <span :class="{active: loginModal.tab==='login'}"  @click="loginModal.tab='login';  loginError=''">로그인</span>
+  <span :class="{active: loginModal.tab==='register'}" @click="loginModal.tab='register'; loginError=''">회원가입</span>
+  </div>
+  <span class="modal-close" @click="closeLogin">✕</span>
+  </div>
 
-      <!-- 로그인 폼 -->
-      <div v-if="loginModal.tab==='login'">
-        <div class="form-group">
-          <label class="form-label">로그인 ID</label>
-          <input
-            class="form-control"
-            v-model="loginForm.loginId"
-            placeholder="로그인 ID 입력"
-            @keyup.enter="doLogin"
-            autocomplete="username"
-          />
-        </div>
-        <div class="form-group">
-          <label class="form-label">비밀번호</label>
-          <input
-            class="form-control"
-            type="password"
-            v-model="loginForm.loginPwd"
-            placeholder="비밀번호 입력"
-            @keyup.enter="doLogin"
-            autocomplete="current-password"
-          />
-        </div>
-        <div class="form-group">
-          <label class="form-label">인증방식</label>
-          <div class="auth-methods">
-            <label
-              v-for="m in AUTH_METHODS"
-              :key="m"
-              class="auth-method-item"
-              :class="{active: loginForm.authMethod===m}"
-            >
-              <input type="radio" :value="m" v-model="loginForm.authMethod" style="display: none" />
-              {{ m }}
-            </label>
-          </div>
-        </div>
-        <div v-if="loginError" class="login-error">{{ loginError }}</div>
-        <button class="btn btn-primary" style="width: 100%; margin-top: 4px" @click="doLogin">로그인</button>
-        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #aaa">
-          <span>계정이 없으신가요?</span>
-          <span
-            style="color: #e8587a; cursor: pointer; margin-left: 6px; font-weight: 600"
-            @click="loginModal.tab='register';loginError=''"
-          >
-            회원가입
-          </span>
-        </div>
-        <div style="text-align: center; margin-top: 14px">
-          <button
-            @click="openUserPick"
-            style="
-              background: none;
-              border: none;
-              cursor: pointer;
-              font-size: 0.72rem;
-              color: #aaa;
-              text-decoration: underline;
-              padding: 0;
-            "
-          >
-            사용자 선택하여 로그인 (개발)
-          </button>
-        </div>
-      </div>
+  <!-- 로그인 폼 -->
+  <div v-if="loginModal.tab==='login'">
+  <div class="form-group">
+  <label class="form-label">로그인 ID</label>
+  <input class="form-control" v-model="loginForm.loginId" placeholder="로그인 ID 입력" @keyup.enter="doLogin" autocomplete="username" />
+  </div>
+  <div class="form-group">
+  <label class="form-label">비밀번호</label>
+  <input class="form-control" type="password" v-model="loginForm.loginPwd" placeholder="비밀번호 입력" @keyup.enter="doLogin" autocomplete="current-password" />
+  </div>
+  <div class="form-group">
+  <label class="form-label">인증방식</label>
+  <div class="auth-methods">
+  <label v-for="m in AUTH_METHODS" :key="m"
+  class="auth-method-item" :class="{active: loginForm.authMethod===m}">
+  <input type="radio" :value="m" v-model="loginForm.authMethod" style="display:none" />
+  {{ m }}
+  </label>
+  </div>
+  </div>
+  <div v-if="loginError" class="login-error">{{ loginError }}</div>
+  <button class="btn btn-primary" style="width:100%;margin-top:4px;" @click="doLogin">로그인</button>
+  <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
+  <span>계정이 없으신가요?</span>
+  <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="loginModal.tab='register';loginError=''">회원가입</span>
+  </div>
+  <div style="text-align:center;margin-top:14px;">
+  <button @click="openUserPick" style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:#aaa;text-decoration:underline;padding:0;">사용자 선택하여 로그인 (개발)</button>
+  </div>
+  </div>
 
-      <!-- 회원가입 폼 -->
-      <div v-if="loginModal.tab==='register'">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">
-              이름
-              <span class="req">*</span>
-            </label>
-            <input class="form-control" v-model="regForm.name" placeholder="이름" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">연락처</label>
-            <input class="form-control" v-model="regForm.phone" placeholder="010-0000-0000" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">
-            이메일
-            <span class="req">*</span>
-          </label>
-          <input class="form-control" v-model="regForm.email" placeholder="이메일 입력" autocomplete="email" />
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">
-              비밀번호
-              <span class="req">*</span>
-            </label>
-            <input class="form-control" type="password" v-model="regForm.password" placeholder="비밀번호" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">
-              비밀번호 확인
-              <span class="req">*</span>
-            </label>
-            <input
-              class="form-control"
-              type="password"
-              v-model="regForm.confirmPw"
-              placeholder="재입력"
-              @keyup.enter="doRegister"
-            />
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">역할</label>
-          <select class="form-control" v-model="regForm.role">
-            <option v-for="c in userRoles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div v-if="loginError" class="login-error">{{ loginError }}</div>
-        <button class="btn btn-primary" style="width: 100%; margin-top: 4px" @click="doRegister">가입하기</button>
-        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #aaa">
-          <span>이미 계정이 있으신가요?</span>
-          <span
-            style="color: #e8587a; cursor: pointer; margin-left: 6px; font-weight: 600"
-            @click="loginModal.tab='login';loginError=''"
-          >
-            로그인
-          </span>
-        </div>
-      </div>
-    </div>
+  <!-- 회원가입 폼 -->
+  <div v-if="loginModal.tab==='register'">
+  <div class="form-row">
+  <div class="form-group">
+  <label class="form-label">이름 <span class="req">*</span></label>
+  <input class="form-control" v-model="regForm.name" placeholder="이름" />
+  </div>
+  <div class="form-group">
+  <label class="form-label">연락처</label>
+  <input class="form-control" v-model="regForm.phone" placeholder="010-0000-0000" />
+  </div>
+  </div>
+  <div class="form-group">
+  <label class="form-label">이메일 <span class="req">*</span></label>
+  <input class="form-control" v-model="regForm.email" placeholder="이메일 입력" autocomplete="email" />
+  </div>
+  <div class="form-row">
+  <div class="form-group">
+  <label class="form-label">비밀번호 <span class="req">*</span></label>
+  <input class="form-control" type="password" v-model="regForm.password" placeholder="비밀번호" />
+  </div>
+  <div class="form-group">
+  <label class="form-label">비밀번호 확인 <span class="req">*</span></label>
+  <input class="form-control" type="password" v-model="regForm.confirmPw" placeholder="재입력" @keyup.enter="doRegister" />
+  </div>
+  </div>
+  <div class="form-group">
+  <label class="form-label">역할</label>
+  <select class="form-control" v-model="regForm.role">
+  <option v-for="c in userRoles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+  </select>
+  </div>
+  <div v-if="loginError" class="login-error">{{ loginError }}</div>
+  <button class="btn btn-primary" style="width:100%;margin-top:4px;" @click="doRegister">가입하기</button>
+  <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
+  <span>이미 계정이 있으신가요?</span>
+  <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="loginModal.tab='login';loginError=''">로그인</span>
+  </div>
+  </div>
+  </div>
   </div>
 </div>
 `,

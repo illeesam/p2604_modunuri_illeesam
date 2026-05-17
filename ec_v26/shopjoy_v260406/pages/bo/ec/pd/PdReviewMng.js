@@ -273,25 +273,19 @@ window.PdReviewMng = {
 <div>
   <div class="page-title">상품리뷰관리</div>
     <div class="card">
-      <div class="search-bar" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:flex-end">
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <label class="search-label">리뷰제목</label>
-          <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <label class="search-label">상태</label>
-          <select class="form-control" v-model="searchParam.status">
-            <option value="">전체</option><option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
-          </select>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <label class="search-label">평점</label>
-          <select class="form-control" v-model="searchParam.rating">
-            <option value="">전체</option>
-            <option v-for="o in codes.review_rating_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </div>
-        <div class="search-actions" style="gap:6px">
+      <div class="search-bar">
+        <label class="search-label">리뷰제목</label>
+        <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
+        <label class="search-label">상태</label>
+        <select v-model="searchParam.status">
+          <option value="">전체</option><option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
+        </select>
+        <label class="search-label">평점</label>
+        <select v-model="searchParam.rating">
+          <option value="">전체</option>
+          <option v-for="o in codes.review_rating_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
+        </select>
+        <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
         </div>

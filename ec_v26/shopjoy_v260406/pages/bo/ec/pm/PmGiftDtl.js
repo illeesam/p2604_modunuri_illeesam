@@ -16,13 +16,23 @@ window.PmGiftDtl = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+    const vendors = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmGiftDtlState.tab || 'info', tabMode2: window._pmGiftDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ gift_cond_types: [], gift_statuses: [] });
 
     // 단건 조회
+    /* 소속업체 목록 로드 (vendor 선택 모달용) */
+    const loadVendors = async () => {
+      try {
+        const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
+        vendors.splice(0, vendors.length, ...(_vr.data?.data?.pageList || _vr.data?.data?.list || []));
+      } catch (e) { console.warn('[PmGiftDtl.js] vendor load failed', e); }
+    };
+
     const handleSearchDetail = async () => {
+      await loadVendors();
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
@@ -109,7 +119,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
-      const v = vendors.value.find(x => x.vendorId === form.vendorId);
+      const v = vendors.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
 
@@ -200,7 +210,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfIsView, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, cfSelectedVendorNm, selectVendor };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfIsView, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -293,7 +303,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
             <span class="modal-close" @click="showVendorModal=false">×</span>
           </div>
           <div style="padding:0;max-height:400px;overflow-y:auto;">
-            <div v-for="v in ([] || [])" :key="v?.vendorId"
+            <div v-for="v in vendors" :key="v?.vendorId"
               style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
               :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
               @click="selectVendor(v.vendorId, v.vendorNm)">
