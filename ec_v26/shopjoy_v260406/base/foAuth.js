@@ -102,11 +102,12 @@
         const d = res.data.data;
         _store.saSetSession(_buildAuthUser(d, d.loginId), d.accessToken);
 
-        /* 로그인 후 추가 사용자 정보 조회 */
+        /* 로그인 후 추가 사용자 정보 조회 (GET — 백엔드 getUser 는 @GetMapping) */
         try {
-          const userRes = await coApiSvc.cmFoAppStore.getUserPost('시스템', '사용자정보조회');
-          if (userRes?.data?.data?.member) {
-            _store.saSetAuthUser(userRes.data.data.member);
+          const userRes = await coApiSvc.cmFoAppStore.getUser('시스템', '사용자정보조회');
+          const userData = userRes?.data?.data?.syUser;
+          if (userData) {
+            _store.saSetAuthUser(userData);
           }
         } catch (e) {
           console.warn('[foAuth.login] getUser fetch failed:', e);

@@ -98,7 +98,6 @@
     },
     getAuth(uiNm, cmdNm)     { return global.foApi.get('/co/cm/fo-app-store/getAuth',  hdr(uiNm, cmdNm)); },
     getUser(uiNm, cmdNm)     { return global.foApi.get('/co/cm/fo-app-store/getUser',  hdr(uiNm, cmdNm)); },
-    getUserPost(uiNm, cmdNm) { return global.foApi.post('/co/cm/fo-app-store/getUser', '', hdr(uiNm, cmdNm)); },
     getRoles(uiNm, cmdNm)    { return global.foApi.get('/co/cm/fo-app-store/getRoles', hdr(uiNm, cmdNm)); },
     getMenus(uiNm, cmdNm)    { return global.foApi.get('/co/cm/fo-app-store/getMenus', hdr(uiNm, cmdNm)); },
     getCodes(uiNm, cmdNm)    { return global.foApi.get('/co/cm/fo-app-store/getCodes', hdr(uiNm, cmdNm)); },
