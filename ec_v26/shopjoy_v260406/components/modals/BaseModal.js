@@ -16,13 +16,13 @@
    사용법 (부모):
      const modal = reactive({ show: false, kind: '', reloadTrigger: 0 });
 
-     /* openA */
+     // openA
      const openA = () => { modal.kind = 'a'; modal.reloadTrigger++; modal.show = true; };
 
-     /* openB */
+     // openB
      const openB = () => { modal.kind = 'b'; modal.reloadTrigger++; modal.show = true; };
 
-     /* refresh */
+     // refresh
      const refresh = () => { modal.reloadTrigger++; };
 
    템플릿:
