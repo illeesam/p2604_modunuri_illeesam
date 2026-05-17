@@ -119,12 +119,10 @@ public class FoPdProdService {
         // 각 항목에 분배
         for (PdProdDto.Item prod : list) {
             String pid = prod.getProdId();
-            Map<String, Object> opts = new LinkedHashMap<>();
-            opts.put("groups", groupMap.getOrDefault(pid, List.of()));
-            opts.put("items",  itemMap.getOrDefault(pid, List.of()));
-            prod.setImages(imgMap.getOrDefault(pid, List.of())); // 이미지목록
-            prod.setOpts(opts); // 옵션(그룹/항목)
-            prod.setSkus(skuMap.getOrDefault(pid, List.of())); // SKU목록
+            prod.setProdImgs(imgMap.getOrDefault(pid, List.of())); // 이미지목록
+            prod.setProdOpts(groupMap.getOrDefault(pid, List.of())); // 옵션목록
+            prod.setProdOptItems(itemMap.getOrDefault(pid, List.of())); // 옵션아이템목록
+            prod.setProdSkus(skuMap.getOrDefault(pid, List.of())); // SKU목록
         }
     }
 
@@ -145,31 +143,27 @@ public class FoPdProdService {
         // 하위 상품이미지 목록 조회 (prodId 기준)
         PdProdImgDto.Request imgReq = new PdProdImgDto.Request();
         imgReq.setProdId(prodId);
-        List<PdProdImgDto.Item> images = pdProdImgService.getList(imgReq);
+        List<PdProdImgDto.Item> prodImgs = pdProdImgService.getList(imgReq);
 
         // 하위 옵션그룹 목록 조회 (prodId 기준)
         PdProdOptDto.Request optReq = new PdProdOptDto.Request();
         optReq.setProdId(prodId);
-        List<PdProdOptDto.Item> groups = pdProdOptService.getList(optReq);
+        List<PdProdOptDto.Item> prodOpts = pdProdOptService.getList(optReq);
 
         // 하위 옵션항목 목록 조회 (prodId 기준)
         PdProdOptItemDto.Request itemReq = new PdProdOptItemDto.Request();
         itemReq.setProdId(prodId);
-        List<PdProdOptItemDto.Item> items = pdProdOptItemService.getList(itemReq);
+        List<PdProdOptItemDto.Item> prodOptItems = pdProdOptItemService.getList(itemReq);
 
         // 하위 SKU 목록 조회 (prodId 기준)
         PdProdSkuDto.Request skuReq = new PdProdSkuDto.Request();
         skuReq.setProdId(prodId);
-        List<PdProdSkuDto.Item> skus = pdProdSkuService.getList(skuReq);
+        List<PdProdSkuDto.Item> prodSkus = pdProdSkuService.getList(skuReq);
 
-        // 옵션 그룹/항목 묶음 구성 후 분배
-        Map<String, Object> opts = new LinkedHashMap<>();
-        opts.put("groups", groups);
-        opts.put("items",  items);
-
-        prod.setImages(images); // 이미지목록
-        prod.setOpts(opts); // 옵션(그룹/항목)
-        prod.setSkus(skus); // SKU목록
+        prod.setProdImgs(prodImgs); // 이미지목록
+        prod.setProdOpts(prodOpts); // 옵션목록
+        prod.setProdOptItems(prodOptItems); // 옵션아이템목록
+        prod.setProdSkus(prodSkus); // SKU목록
     }
 
     /* ── Tier 2: lazy load ──────────────────────────────────── */

@@ -106,7 +106,7 @@ window.Prod02View = {
         const data = fnPickData(res) || {};
         const prod = data.prod || data;
         if (prod && prod.prodId) {
-          const merged = fnMergeProdOpts(prod, data.opts || { groups: [], items: [] }, data.skus || [], data.images || []);
+          const merged = fnMergeProdOpts(prod, { groups: data.prodOpts || [], items: data.prodOptItems || [] }, data.prodSkus || [], data.prodImgs || []);
           fnApplySvProduct(merged);
         }
         uiState.prodApiLoaded = true;

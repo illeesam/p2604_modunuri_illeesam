@@ -147,10 +147,10 @@ window.Prod01View = {
         const prod = data.prod || data;
         if (prod && prod.prodId) {
           /* opts/skus/images 를 화면이 기대하는 형태(opt1s/opt2s/opt2Prices)로 변환 후 prod 에 합쳐 주입 */
-          const optsObj  = data.opts   || { groups: [], items: [] };
-          const skusList = data.skus   || [];
-          const imgList  = data.images || [];
-          const merged   = fnMergeProdOpts(prod, optsObj, skusList, imgList);
+          const prodOpts  = { groups: data.prodOpts || [], items: data.prodOptItems || [] };
+          const prodSkus  = data.prodSkus || [];
+          const prodImgs  = data.prodImgs || [];
+          const merged    = fnMergeProdOpts(prod, prodOpts, prodSkus, prodImgs);
           fnApplySvProduct(merged);
           uiState.prodApiLoaded = true;
           /* 첫 색상 자동 선택 (이미 선택된 상태가 아닐 때만) */
