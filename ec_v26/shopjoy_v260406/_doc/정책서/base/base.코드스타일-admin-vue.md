@@ -5,6 +5,59 @@
 
 ---
 
+## ⛔ 0-A. 템플릿 속성값에 `&` 문자 사용 금지 ⭐ (최우선 · 빌드 크래시 유발)
+
+### 증상
+
+브라우저 콘솔에 다음 에러가 발생하며 **해당 컴포넌트 전체가 렌더되지 않는다**:
+
+```
+SyntaxError: Unexpected token ')'
+  at new Function (<anonymous>)
+  at vue.global.prod.js ...
+(또는) Cannot read properties of undefined (reading '0' / 'length')
+```
+
+### 원인
+
+이 프로젝트는 빌드 없이 `vue.global.prod.js`(브라우저 런타임 템플릿 컴파일)를 사용한다.
+이 빌드의 HTML 파서는 **속성값(attribute value) 안에서 `&` 를 만나면 HTML 엔티티로 간주해
+`decodeEntities` 를 호출**하는데, 런타임 빌드에는 엔티티 디코더가 주입되지 않아 **컴파일러가
+즉시 크래시**한다. `&&`(논리 AND), 단일 `&`(URL 쿼리스트링), `&amp;` 등 **`&` 가 들어간
+모든 속성값**이 대상이다.
+
+> 검증 완료: `<div :class="a && b">` / `<a href="x?p=1&q=2">` / `v-if="a && b"` /
+> `:key="(g && g.id)"` — **전부 크래시**. `{{ a && b }}`(텍스트 노드 mustache)는 정상.
+> `<`, `>`, `||`, 삼항 `?:` 는 속성값 안에서도 안전.
+
+### 금지 / 대체
+
+| 구분 | ❌ 금지 (속성값 내) | ✅ 대체 |
+|------|--------------------|---------|
+| 논리 AND | `:class="a && b ? 'x' : 'y'"` | `:class="coUtil.cofAnd(a, b) ? 'x' : 'y'"` |
+| 다중 AND | `v-if="a && b && c"` | `v-if="coUtil.cofAnd(a, b, c)"` |
+| `:key` | `:key="(g && g.id)"` | `:key="coUtil.cofAnd(g, g.id)"` |
+| URL 내 `&` | `:href="'u?a=1&b=2'"` | `:href="'u?a=1&b=2'"` (문자열 내 `&`→`&`) |
+| 텍스트 노드 | `{{ a && b }}` | **그대로 허용** (mustache 는 안전) |
+
+`coUtil.cofAnd(...args)` — `&&` 단축평가와 의미 100% 동일(첫 falsy 반환, 모두 truthy 면
+마지막 인자). `utils/coUtil.js` 정의, FO·BO 전 진입점에서 컴포넌트보다 먼저 로드됨.
+
+> ⚠️ **연산자 우선순위 주의**: `&&` 는 삼항 `?:` 보다 우선순위가 높다.
+> `a && b ? c : d` ≡ `(a && b) ? c : d` 이므로 `coUtil.cofAnd(a, b) ? c : d` 로 치환한다.
+> `coUtil.cofAnd(a, b ? c : d)` 처럼 삼항을 인자 안으로 넣으면 **의미가 바뀐다**.
+
+### 점검 명령
+
+```bash
+# 속성값(태그 내부)에 & 가 남아 있는지 — 결과가 있으면 위반
+grep -nE '(:[a-zA-Z-]+|v-[a-z]+|@[a-z.]+)="[^"]*&' pages/bo/**/*.js components/**/*.js
+```
+
+신규/수정 컴포넌트는 작성 후 위 grep 으로 0건임을 확인한다.
+
+---
+
 ## 0. watch / computed 최소화 원칙 ⭐
 
 **핵심 방침**: `watch`와 `computed`는 꼭 필요한 경우에만 사용하고, 가능하면 직접 함수 호출 방식으로 대체한다.
