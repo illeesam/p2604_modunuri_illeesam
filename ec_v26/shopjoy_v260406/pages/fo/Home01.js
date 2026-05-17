@@ -182,7 +182,7 @@ window.Home01 = {
         <div style="background:#f5f5f5;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
           @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
           @mouseleave="$event.currentTarget.querySelector('.prod-hover').style.opacity='0'">
-          <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
+          <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
           <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;"
             :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355', color:'#fff' }">{{ p.badge }}</span>
           <!-- -- 좋아요 (좋아요 상태면 항상 표시) ------------------------------------ -->
@@ -270,7 +270,7 @@ window.Home01 = {
         @mouseleave="$event.currentTarget.style.transform=''"
         @click="selectProd(p)">
         <div style="background:#f5f5f5;padding:20px;margin-bottom:12px;position:relative;aspect-ratio:1;overflow:hidden;">
-          <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
+          <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
           <span v-if="p.originalPrice && p.priceNum" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">
             -{{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%
           </span>

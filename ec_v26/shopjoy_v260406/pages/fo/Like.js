@@ -65,7 +65,7 @@ window.Like = {
 
       <!-- -- 이미지 -------------------------------------------------------- -->
       <div style="position:relative;aspect-ratio:1;background:#fff;padding:clamp(8px,2vw,16px);overflow:hidden;" @click="selectProd(p)">
-        <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
+        <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
         <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;color:#fff;"
           :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355' }">{{ p.badge }}</span>
         <!-- -- 좋아요 해제 --------------------------------------------------- -->

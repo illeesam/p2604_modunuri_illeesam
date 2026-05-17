@@ -2,6 +2,31 @@
    ShopJoy - FO Vue 3 SPA (의류 쇼핑몰)
    ============================================ */
 (function () {
+  /* ── 전역 이미지 로드 실패 폴백 (noimage 표시) ──────────────────────
+     모든 <img> 에 일괄 적용. error 이벤트는 버블링하지 않으므로
+     document 캡처 단계로 위임. 무한루프 방지 플래그(_noimg) 사용. */
+  (function () {
+    const NO_IMAGE =
+      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">' +
+        '<rect width="200" height="200" fill="#f2f3f5"/>' +
+        '<g fill="none" stroke="#c4c8cf" stroke-width="4">' +
+        '<rect x="48" y="56" width="104" height="78" rx="6"/>' +
+        '<circle cx="76" cy="84" r="11"/>' +
+        '<path d="M58 128 L92 96 L114 116 L132 102 L142 128 Z" fill="#c4c8cf" stroke="none"/>' +
+        '</g>' +
+        '<text x="100" y="162" font-family="sans-serif" font-size="15" fill="#9aa0a8" text-anchor="middle">No Image</text>' +
+        '</svg>'
+      );
+    window.NO_IMAGE = NO_IMAGE;
+    document.addEventListener('error', function (e) {
+      const t = e.target;
+      if (!t || t.tagName !== 'IMG' || t.dataset._noimg === '1') return;
+      t.dataset._noimg = '1';
+      t.src = NO_IMAGE;
+    }, true);
+  })();
+
   const _s = document.createElement('style');
   _s.id = 'fo-app-styles';
   _s.textContent = `

@@ -250,7 +250,7 @@ window.Order = {
         <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;">📦 주문 상품</div>
         <div v-for="item in uiState.resultData.items" :key="item.prodId"
           style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
-          <div style="width:40px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--bg-base);"><img v-if="item.image" :src="item.image" style="width:100%;height:100%;object-fit:cover;" /></div>
+          <div style="width:40px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--bg-base);"><img :src="item.image || window.NO_IMAGE" style="width:100%;height:100%;object-fit:cover;" /></div>
           <div style="flex:1;">
             <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.prodNm }}</div>
             <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} × {{ item.qty }}</div>

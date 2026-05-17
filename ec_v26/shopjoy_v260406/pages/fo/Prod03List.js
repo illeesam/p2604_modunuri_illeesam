@@ -429,7 +429,7 @@ window.Prod03List = {
 
       <!-- -- 썸네일 -------------------------------------------------------- -->
       <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;">
-        <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
+        <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
           @mouseenter="$event.target.style.transform='scale(1.05)'"
           @mouseleave="$event.target.style.transform=''"
           @error="$event.target.style.display='none'" />
