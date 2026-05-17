@@ -244,6 +244,33 @@
    *     return coUtil.cofChkId(_id, uiNm, cmdNm) || global.boApi.get(`/path/${_id}`, hdr(uiNm, cmdNm));
    *   }
    */
+  /**
+   * 논리 AND 단축평가 헬퍼 — 템플릿 속성값 안의 `A && B` 대체용.
+   *
+   * <p>배경: 이 프로젝트의 Vue 글로벌 빌드는 `Vue.compile()`(브라우저 런타임 템플릿
+   * 컴파일) 시 `decodeEntities` 가 주입되지 않아, 속성값(`:style`, `:class`, `v-if`,
+   * `@click` 등) 안에 `&` 문자(주로 `&&`)가 있으면 컴파일러가 크래시한다.
+   * 따라서 속성값의 `A && B` 를 `coUtil.cofAnd(A, B)` 로 치환해 `&` 를 제거한다.</p>
+   *
+   * <p>JS `&&` 단축평가와 의미가 100% 동일하다: 인자를 좌→우로 평가하다 처음
+   * falsy 값을 만나면 그 값을 반환하고, 모두 truthy 면 마지막 인자를 반환한다.
+   * (`a && b` ≡ `cofAnd(a, b)`, `a && b && c` ≡ `cofAnd(a, b, c)`)</p>
+   *
+   * <p>주의: 인자는 호출 시점에 모두 평가되므로 진짜 단축평가(부수효과/지연)는
+   * 아니다. 템플릿 표현식은 부수효과가 없어야 하므로 실사용상 동치다.</p>
+   *
+   * @param {...*} args 평가할 피연산자들 (좌→우)
+   * @returns 처음 만난 falsy 값, 모두 truthy 면 마지막 인자(인자 없으면 true)
+   */
+  function cofAnd() {
+    let v = true;
+    for (let i = 0; i < arguments.length; i++) {
+      v = arguments[i];
+      if (!v) return v;
+    }
+    return v;
+  }
+
   function cofChkId(_id, uiNm, cmdNm) {
     if (_id != null && _id !== '') return null;
     const label = [uiNm, cmdNm].filter(Boolean).join(' > ');
@@ -477,6 +504,7 @@
   global.coUtil.cofGetCallerInfo = global.coUtil.cofGetCallerInfo || cofGetCallerInfo;
   global.coUtil.cofGenerateTraceId = global.coUtil.cofGenerateTraceId || (() => cofApiInfo.cofGenerateTraceId());
   global.coUtil.cofApiInfo = global.coUtil.cofApiInfo || cofApiInfo;
+  global.coUtil.cofAnd = global.coUtil.cofAnd || cofAnd;
   global.coUtil.cofChkId = global.coUtil.cofChkId || cofChkId;
   global.coUtil.cofChkRowIds = global.coUtil.cofChkRowIds || cofChkRowIds;
   global.coUtil.cofSha256 = global.coUtil.cofSha256 || cofSha256;

@@ -49,6 +49,7 @@ public class MvcLogAspect {
         SERVICE("■■ ▶▶", "■■ ◀◀"),
         MAPPER("■■ ▶▶▶", "■■ ◀◀◀"),
         REPOSITORY("■■ ▶▶▶", "■■ ◀◀◀"),
+        REPOSITORY_QDSL("■■ ▶▶▶▩", "■■ ◀◀◀▩"),
         DEFAULT("■■ ▶", "■■ ◀");
 
         private final String inPrefix;
@@ -82,6 +83,8 @@ public class MvcLogAspect {
             if (upper.contains("CLIENT")) return CLIENT;
             if (upper.contains("SERVICE")) return SERVICE;
             if (upper.contains("MAPPER")) return MAPPER;
+            // Querydsl 커스텀 구현체(Q*Impl): REPOSITORY 보다 먼저 판별 (별도 ▩ 프리픽스)
+            if (upper.startsWith("Q") && upper.endsWith("IMPL")) return REPOSITORY_QDSL;
             if (upper.contains("REPOSITORY")) return REPOSITORY;
             return DEFAULT;
         }
@@ -128,6 +131,13 @@ public class MvcLogAspect {
 
         String simpleName = getComponentName(pjp);
         String methodName = pjp.getSignature().getName();
+
+        // Querydsl 커스텀 인터페이스(QXxxRepository)는 껍데기 — 실제 SQL은 그 Impl(QXxxRepositoryImpl)이
+        // 수행하므로, 인터페이스 측 로그는 생략하고 Impl 한 줄(▩)만 남긴다. (중복 2줄 방지)
+        if (simpleName.startsWith("Q") && simpleName.endsWith("Repository")) {
+            return pjp.proceed();
+        }
+
         ComponentType type = ComponentType.fromClassName(simpleName);
 
         String strInParams = formatInputParams(pjp);

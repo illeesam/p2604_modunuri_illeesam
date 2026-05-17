@@ -241,14 +241,14 @@ window.OdDlivDtl = {
           background: (tabMode2==='tab' && tab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
           color: (tabMode2==='tab' && tab===t.id) ? '#e8587a' : '#666',
           boxShadow: (tabMode2==='tab' && tab===t.id) ? '0 2px 8px rgba(232,88,122,0.18)' : 'none',
-          borderBottom: (tabMode2==='tab' && tab===t.id) ? '2px solid #e8587a' : '2px solid transparent',
+          borderBottom: (tabMode2==='tab' && tab===t.id) ? '2px solid #e8587a' : '2px solid transparent'
         }">
         <span style="font-size:14px;">{{ t.icon }}</span>
         <span>{{ t.label }}</span>
         <span v-if="t.count !== undefined" :style="{
           fontSize:'10.5px', fontWeight:800, padding:'1px 7px', borderRadius:'10px',
           background: (tabMode2==='tab' && tab===t.id) ? '#e8587a' : '#e5e7eb',
-          color: (tabMode2==='tab' && tab===t.id) ? '#fff' : '#666', minWidth:'18px', textAlign:'center',
+          color: (tabMode2==='tab' && tab===t.id) ? '#fff' : '#666', minWidth:'18px', textAlign:'center'
         }">{{ t.count }}</span>
       </button>
     </div>
@@ -260,7 +260,7 @@ window.OdDlivDtl = {
           fontWeight: tabMode2===v.id ? 800 : 600,
           background: tabMode2===v.id ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
           color: tabMode2===v.id ? '#e8587a' : '#888',
-          boxShadow: tabMode2===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none',
+          boxShadow: tabMode2===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none'
         }">
         <span style="font-size:15px;">{{ v.icon }}</span>
       </button>
@@ -286,12 +286,12 @@ window.OdDlivDtl = {
               height: idx === cfCurrentStepIdx ? '14px' : '10px',
               borderRadius:'50%', marginBottom:'6px', flexShrink:0, transition:'all .15s',
               boxShadow: idx === cfCurrentStepIdx ? '0 0 0 3px rgba(14,165,233,0.3)' : 'none',
-              background: idx <= cfCurrentStepIdx ? '#0ea5e9' : '#bbb',
+              background: idx <= cfCurrentStepIdx ? '#0ea5e9' : '#bbb'
             }"></div>
             <div :style="{
               fontSize:'11.5px', fontWeight: idx === cfCurrentStepIdx ? 800 : 600,
               color: idx === cfCurrentStepIdx ? '#0284c7' : (idx < cfCurrentStepIdx ? '#444' : '#bbb'),
-              whiteSpace:'nowrap',
+              whiteSpace:'nowrap'
             }">{{ step }}</div>
             <span v-if="step==='배송완료' && form.outboundTrackingNo"
               @click="openTracking(form.outboundCourierCd, form.outboundTrackingNo)"

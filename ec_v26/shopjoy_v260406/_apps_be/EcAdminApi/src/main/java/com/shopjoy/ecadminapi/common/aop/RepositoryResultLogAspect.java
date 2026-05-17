@@ -50,14 +50,26 @@ public class RepositoryResultLogAspect {
         String callerInfo = loggingEnabled ? getCallerInfo() : null;
         Object[] args = joinPoint.getArgs();
 
+        boolean isSaveDelete = methodName.startsWith("save") || methodName.startsWith("delete");
+
+        // 1단계: proceed() 전에 헤더 박스 출력 → 그 사이에 실제 SQL 로그가 끼어든다.
+        if (loggingEnabled) {
+            if (isSaveDelete) {
+                logSaveDeleteHeader(simpleClassName, fullClassName, methodName, callerInfo, args);
+            } else {
+                logResultHeader(simpleClassName, fullClassName, methodName, callerInfo, args);
+            }
+        }
+
         try {
             Object result = joinPoint.proceed();
 
+            // 2단계: proceed() 후에 결과 박스 출력 (=== 닫힘선으로 종료).
             if (loggingEnabled) {
-                if (methodName.startsWith("save") || methodName.startsWith("delete")) {
-                    logSaveDeleteResult(simpleClassName, fullClassName, methodName, callerInfo, args, result);
+                if (isSaveDelete) {
+                    logSaveDeleteResult(methodName, result);
                 } else {
-                    logResult(simpleClassName, fullClassName, methodName, callerInfo, args, result);
+                    logResult(result);
                 }
             }
 
@@ -142,17 +154,32 @@ public class RepositoryResultLogAspect {
      * @param args            메서드 인자(있으면 Parameters 라인 출력)
      * @param result          반환값(null 허용)
      */
-    private void logResult(String simpleClassName, String fullClassName, String methodName,
-                           String callerInfo, Object[] args, Object result) {
+    private void logResultHeader(String simpleClassName, String fullClassName, String methodName,
+                                 String callerInfo, Object[] args) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n").append("=".repeat(70)).append("\n");
+        sb.append("\n").append("▶▶▶ ").append("=".repeat(65)).append("\n");
         sb.append("   Called From: ").append(callerInfo).append("\n");
         sb.append("   Interface: ").append(fullClassName).append(" ").append(simpleClassName)
-          .append(".").append(methodName).append("()\n");
+          .append(".").append(methodName).append("()");
         if (args.length > 0) {
-            sb.append("   Parameters: ").append(formatParameters(args)).append("\n");
+            sb.append("\n   Parameters: ").append(formatParameters(args));
         }
-        sb.append("=".repeat(70)).append("\n");
+        log.debug("{}", sb);
+    }
+
+    /**
+     * 조회 메서드 결과를 박스 형태로 DEBUG 로깅한다. ({@link #logResultHeader} 와 짝)
+     *
+     * <p>{@code proceed()} 후 호출되어, 헤더 박스와 그 사이에 출력된 실제 SQL 로그
+     * 다음에 결과를 이어 붙이고 {@code ===} 닫힘선으로 종료한다.</p>
+     *
+     * <p>Optional 은 존재 여부 표기, List/Collection 은 상위 3건만 미리보기 후 총 건수 표기,
+     * 단일 객체는 필드 덤프. 빈 컬렉션은 "NO DATA" 로 명시한다(쿼리 결과 0건 즉시 식별).</p>
+     *
+     * @param result 반환값(null 허용)
+     */
+    private void logResult(Object result) {
+        StringBuilder sb = new StringBuilder("\n");
 
         if (result == null) {
             sb.append("Result: null\n");
@@ -202,30 +229,42 @@ public class RepositoryResultLogAspect {
      * @param args            메서드 인자(args[0] 을 대상 엔티티/컬렉션으로 간주)
      * @param result          반환값(null 허용)
      */
-    private void logSaveDeleteResult(String simpleClassName, String fullClassName, String methodName,
-                                     String callerInfo, Object[] args, Object result) {
+    private void logSaveDeleteHeader(String simpleClassName, String fullClassName, String methodName,
+                                     String callerInfo, Object[] args) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n").append("=".repeat(70)).append("\n");
+        sb.append("\n").append("▶▶▶ ").append("=".repeat(65)).append("\n");
         sb.append("   Called From: ").append(callerInfo).append("\n");
         sb.append("   Interface: ").append(fullClassName).append(" ").append(simpleClassName)
-          .append(".").append(methodName).append("()\n");
+          .append(".").append(methodName).append("()");
 
         if (args.length > 0) {
             if (methodName.startsWith("save")) {
-                sb.append("   Operation: INSERT/UPDATE\n");
-                sb.append("   Entity: ").append(formatObject(args[0])).append("\n");
+                sb.append("\n   Operation: INSERT/UPDATE");
+                sb.append("\n   Entity: ").append(formatObject(args[0]));
             } else if (methodName.startsWith("delete")) {
-                sb.append("   Operation: DELETE\n");
+                sb.append("\n   Operation: DELETE");
                 if (args[0] instanceof Collection<?> c) {
-                    sb.append("   Entities: ").append(args[0].getClass().getSimpleName())
-                      .append(" (count: ").append(c.size()).append(")\n");
+                    sb.append("\n   Entities: ").append(args[0].getClass().getSimpleName())
+                      .append(" (count: ").append(c.size()).append(")");
                 } else {
-                    sb.append("   Entity: ").append(formatObject(args[0])).append("\n");
+                    sb.append("\n   Entity: ").append(formatObject(args[0]));
                 }
             }
         }
+        log.debug("{}", sb);
+    }
 
-        sb.append("-".repeat(70)).append("\n");
+    /**
+     * save/delete 변경 메서드의 결과를 박스 형태로 DEBUG 로깅한다. ({@link #logSaveDeleteHeader} 와 짝)
+     *
+     * <p>{@code proceed()} 후 호출되어, 헤더 박스와 그 사이에 출력된 실제 SQL 로그
+     * 다음에 결과를 이어 붙이고 {@code ===} 닫힘선으로 종료한다.</p>
+     *
+     * @param methodName 메서드명(현재 분기 없음 — 시그니처 일관성 유지용)
+     * @param result     반환값(null 허용)
+     */
+    private void logSaveDeleteResult(String methodName, Object result) {
+        StringBuilder sb = new StringBuilder("\n");
         sb.append("Result: ").append(result != null ? formatObject(result) : "null").append("\n");
         sb.append("=".repeat(70));
         log.debug("{}", sb);

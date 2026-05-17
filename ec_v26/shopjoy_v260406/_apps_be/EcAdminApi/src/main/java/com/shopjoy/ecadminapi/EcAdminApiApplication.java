@@ -36,7 +36,10 @@ public class EcAdminApiApplication {
         checkFileStorageConfiguration(ctx);
 
         long elapsedMs = System.currentTimeMillis() - startedAt;
-        log.info("⏱  [구동 소요 시간] {}.{}초 ({} ms)", elapsedMs / 1000, String.format("%03d", elapsedMs % 1000), elapsedMs);
+        String port = ctx.getEnvironment().getProperty("server.port", "8080");
+        log.info("⏱  [구동 소요 시간] {}.{}초 ({} ms) :: {} 가 ({}) 모드로 시작되었습니다. (port: {})",
+                elapsedMs / 1000, String.format("%03d", elapsedMs % 1000), elapsedMs,
+                EcAdminApiApplication.class.getSimpleName(), profiles, port);
     }
 
     /** checkDatabaseConnection — 검증 */

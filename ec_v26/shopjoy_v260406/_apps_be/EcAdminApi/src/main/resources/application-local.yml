@@ -4,7 +4,7 @@ spring:
   # ────────────────────────────────────────────────────────────
   main:
     lazy-initialization: true        # 빈 지연 초기화 (실제 호출 시점에 생성)
-    banner-mode: off                 # Spring 배너 출력 생략
+    banner-mode: console             # banner.txt 콘솔 출력 (구동 시간 영향 없음 — ms 미만)
     register-shutdown-hook: false    # ShutdownHook 등록 생략 (DevTools 가 어차피 재시작)
 
   # JMX 비활성 — local 에서 불필요
