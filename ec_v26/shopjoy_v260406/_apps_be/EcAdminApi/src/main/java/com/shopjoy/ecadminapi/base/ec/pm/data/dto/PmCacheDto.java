@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.base.ec.pm.data.dto;
 import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -41,4 +42,10 @@ public class PmCacheDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class PageResponse extends BasePageResponse<Item, Request> {}
+
+    /** 캐쉬 잔액 응답 — { "balance": 1000 } */
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class BalanceRes {
+        private long balance;   // 현재 회원 캐쉬(충전금) 잔액
+    }
 }

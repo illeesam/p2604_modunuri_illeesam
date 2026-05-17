@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
-import com.shopjoy.ecadminapi.base.sy.data.vo.SyAlarmReq;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -133,43 +132,5 @@ public class SyAlarmService {
         syAlarmRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-    }
-
-    // ── _row_status 기반 저장 (기존 호환) ────────────────────────────
-
-    /* 알람 saveByRowStatus */
-    @Transactional
-    public SyAlarm saveByRowStatus(SyAlarmReq req) {
-        return doSaveByRowStatus(req);
-    }
-
-    /* 알람 saveListByRowStatus */
-    @Transactional
-    public List<SyAlarm> saveListByRowStatus(List<SyAlarmReq> list) {
-        List<SyAlarm> result = new java.util.ArrayList<>();
-        for (SyAlarmReq req : list) {
-            SyAlarm saved = doSaveByRowStatus(req);
-            if (saved != null) result.add(saved);
-        }
-        return result;
-    }
-
-    /* 알람 doSaveByRowStatus */
-    private SyAlarm doSaveByRowStatus(SyAlarmReq req) {
-        return switch (req.getRowStatus()) {
-            case "I" -> create(req.toEntity());
-            case "U" -> {
-                if (!existsById(req.getAlarmId()))
-                    throw new CmBizException("존재하지 않는 알람입니다: " + req.getAlarmId() + "::" + CmUtil.svcCallerInfo(this));
-                yield save(req.toEntity());
-            }
-            case "D" -> {
-                if (!existsById(req.getAlarmId()))
-                    throw new CmBizException("존재하지 않는 알람입니다: " + req.getAlarmId() + "::" + CmUtil.svcCallerInfo(this));
-                syAlarmRepository.deleteById(req.getAlarmId());
-                yield null;
-            }
-            default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus() + "::" + CmUtil.svcCallerInfo(this));
-        };
     }
 }

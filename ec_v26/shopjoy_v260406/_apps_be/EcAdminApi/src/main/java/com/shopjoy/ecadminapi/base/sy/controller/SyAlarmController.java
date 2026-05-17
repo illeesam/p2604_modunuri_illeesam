@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.sy.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
-import com.shopjoy.ecadminapi.base.sy.data.vo.SyAlarmReq;
 import com.shopjoy.ecadminapi.base.sy.service.SyAlarmService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -21,8 +20,6 @@ import java.util.List;
  * PUT    /api/base/sy/alarm/{id}      — 전체 수정 (JPA)
  * PATCH  /api/base/sy/alarm/{id}      — 선택 필드 수정 (MyBatis)
  * DELETE /api/base/sy/alarm/{id}      — 삭제 (JPA)
- * POST   /api/base/sy/alarm/save      — _row_status 단건 저장 (I/U/D)
- * POST   /api/base/sy/alarm/save-list — _row_status 목록 저장 (I/U/D)
  */
 @RestController
 @RequestMapping("/api/base/sy/alarm")
@@ -74,17 +71,5 @@ public class SyAlarmController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
-    }
-
-    /* 알람 saveByRowStatus */
-    @PostMapping("/save")
-    public ResponseEntity<ApiResponse<SyAlarm>> saveByRowStatus(@RequestBody @Valid SyAlarmReq req) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveByRowStatus(req)));
-    }
-
-    /* 알람 saveListByRowStatus */
-    @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<SyAlarm>>> saveListByRowStatus(@RequestBody @Valid List<SyAlarmReq> list) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveListByRowStatus(list)));
     }
 }

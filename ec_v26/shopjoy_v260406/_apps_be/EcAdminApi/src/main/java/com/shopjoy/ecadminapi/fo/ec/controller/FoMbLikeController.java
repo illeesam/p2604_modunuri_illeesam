@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * FO 찜(Like) API — 현재 로그인 회원 전용
@@ -33,12 +32,12 @@ public class FoMbLikeController {
 
     /** toggle — 전환 */
     @PostMapping("/{targetTypeCd}/{targetId}")
-    public ResponseEntity<ApiResponse<Map<String, Boolean>>> toggle(
+    public ResponseEntity<ApiResponse<MbLikeDto.ToggleRes>> toggle(
             @PathVariable("targetTypeCd") String targetTypeCd,
             @PathVariable("targetId") String targetId,
             @RequestParam(value = "siteId", required = false) String siteId) {
         boolean liked = foMbLikeService.toggle(targetTypeCd, targetId, siteId);
-        return ResponseEntity.ok(ApiResponse.ok(Map.of("liked", liked)));
+        return ResponseEntity.ok(ApiResponse.ok(new MbLikeDto.ToggleRes(liked)));
     }
 
     /** unlike */

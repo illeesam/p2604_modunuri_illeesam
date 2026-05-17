@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,4 +39,10 @@ public class MbLikeDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class PageResponse extends BasePageResponse<Item, Request> {}
+
+    /** 찜 토글 응답 — { "liked": true/false } */
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ToggleRes {
+        private boolean liked;   // 토글 후 찜 상태 (true=찜됨, false=취소됨)
+    }
 }

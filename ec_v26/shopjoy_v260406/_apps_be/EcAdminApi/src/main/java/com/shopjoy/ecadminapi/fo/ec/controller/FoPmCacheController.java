@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 /**
  * FO 캐쉬(충전금) API
  * GET /api/fo/ec/pm/cache/balance — 현재 회원 잔액
@@ -28,8 +26,8 @@ public class FoPmCacheController {
 
     /** balance */
     @GetMapping("/balance")
-    public ResponseEntity<ApiResponse<Map<String, Long>>> balance(@Valid @ModelAttribute PmCacheDto.Request req) {
+    public ResponseEntity<ApiResponse<PmCacheDto.BalanceRes>> balance(@Valid @ModelAttribute PmCacheDto.Request req) {
         long bal = foPmCacheService.getBalance(req);
-        return ResponseEntity.ok(ApiResponse.ok(Map.of("balance", bal)));
+        return ResponseEntity.ok(ApiResponse.ok(new PmCacheDto.BalanceRes(bal)));
     }
 }
