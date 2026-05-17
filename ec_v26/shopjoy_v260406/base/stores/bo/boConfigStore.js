@@ -11,8 +11,52 @@
 
   const { defineStore } = Pinia;
 
+  /* site_no → site_id 매핑 (coUtil.siteNoToSiteId 와 동일 규칙) */
+  const _toSiteId = (no) => 'SITE' + String(no || '01').padStart(6, '0');
+
+  /* BO 사이트 정보 결정 + localStorage 영속화 + 구 키 마이그레이션.
+     우선순위: URL ?SITE_NO= → localStorage(siteNo) → '01'.
+     로그인/앱초기화(=store 생성) 시점에 호출되어 modu-bo-siteNo / modu-bo-siteId 를 항상 남긴다. */
+  const _resolveBoSite = () => {
+    let no = '01', id;
+    try {
+      // 구 키(언더스코어) → 신 키(카멜) 마이그레이션
+      const oldNo = localStorage.getItem('modu-bo-site_no');
+      if (oldNo && !localStorage.getItem('modu-bo-siteNo')) {
+        localStorage.setItem('modu-bo-siteNo', oldNo);
+      }
+      if (localStorage.getItem('modu-bo-site_no')) localStorage.removeItem('modu-bo-site_no');
+      const oldId = localStorage.getItem('modu-bo-site_id');
+      if (oldId && !localStorage.getItem('modu-bo-siteId')) {
+        localStorage.setItem('modu-bo-siteId', oldId);
+      }
+      if (localStorage.getItem('modu-bo-site_id')) localStorage.removeItem('modu-bo-site_id');
+
+      const u = new URLSearchParams(location.search).get('SITE_NO');
+      no = u || localStorage.getItem('modu-bo-siteNo') || '01';
+      id = (!u && localStorage.getItem('modu-bo-siteId')) || _toSiteId(no);
+
+      // 항상 localStorage 에 영속화 (로그인만 해도 키 생성)
+      localStorage.setItem('modu-bo-siteNo', no);
+      localStorage.setItem('modu-bo-siteId', id);
+    } catch (_) {
+      no = no || '01';
+      id = id || 'SITE000001';
+    }
+    return { no, id };
+  };
+
   window.useBoConfigStore = defineStore('boConfig', {
-    state: () => ({
+    state: () => {
+      // store 생성(=로그인/앱초기화) 시점에 site 결정 + localStorage 영속화
+      const _site = _resolveBoSite();
+      return {
+      // 사이트 번호(01/02/03/9999)
+      svSiteNo: _site.no,
+
+      // 사이트 ID(SITE000001 ...) — modu-bo-siteId 우선, 없으면 site_no 매핑
+      svSiteId: _site.id,
+
       // 공통 코드 (CODE_GRP: CODE_LIST)
       svCodes: {},
 
@@ -25,7 +69,8 @@
       // 로딩 상태
       svLoading: false,
       svError: null,
-    }),
+      };
+    },
 
     getters: {
       // 특정 코드 그룹 조회

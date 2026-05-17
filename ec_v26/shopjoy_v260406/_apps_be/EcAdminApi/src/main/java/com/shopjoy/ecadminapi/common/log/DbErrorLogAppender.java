@@ -27,6 +27,8 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
     private static final int    MAX_STACK_LEN  = 3000;
     /** 에러 메시지 저장 최대 길이(문자) */
     private static final int    MAX_MSG_LEN    = 2000;
+    /** site_id 는 NOT NULL — MDC siteId 미설정/"-" 시 대표 사이트로 fallback */
+    private static final String DEFAULT_SITE_ID = "SITE000001";
     /** logId 생성용 타임스탬프 포맷 (yyMMddHHmmss) */
     private static final DateTimeFormatter ID_FMT =
             DateTimeFormatter.ofPattern("yyMMddHHmmss");
@@ -85,8 +87,11 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
 
         try {
             Map<String, String> mdc = event.getMDCPropertyMap();
+            String siteId = mdc.get("siteId");
+            if (siteId == null || siteId.isBlank() || "-".equals(siteId)) siteId = DEFAULT_SITE_ID;
             SyhAccessErrorLog entry = SyhAccessErrorLog.builder()
                     .logId(generateId())
+                    .siteId(siteId)
                     // 요청 정보
                     .reqMethod(mdc.getOrDefault("reqMethod", "-"))
                     .reqHost  (mdc.getOrDefault("reqHost",   "-"))

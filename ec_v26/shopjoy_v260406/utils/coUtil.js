@@ -92,16 +92,29 @@
       return '';
     },
 
+    // site_no(01/02/03/9999) → site_id(SITE000001 ...) 매핑
+    // 규칙: 'SITE' + 6자리 0 패딩. 빈 값이면 대표 사이트(SITE000001)
+    siteNoToSiteId(siteNo) {
+      const no = String(siteNo || '').trim();
+      if (!no) return 'SITE000001';
+      return 'SITE' + no.padStart(6, '0');
+    },
+
     // 사이트 ID 조회 (DB 사이트 아이디)
+    // 우선순위: BO store svSiteId → localStorage(modu-{bo|fo}-site_id) → site_no 매핑
     getCurrentSiteId() {
       try {
-        // BO: useBoConfigStore
         const boConfig = global.useBoConfigStore?.();
         if (boConfig?.svSiteId) {
           return boConfig.svSiteId;
         }
       } catch (e) {}
-      return '';
+      try {
+        const ls = localStorage.getItem('modu-bo-siteId')
+                || localStorage.getItem('modu-fo-siteId');
+        if (ls) return ls;
+      } catch (e) {}
+      return this.siteNoToSiteId(this.getCurrentSiteNo());
     },
 
     // 사이트 번호 조회 (사이트 구분 번호: 01/02/03)

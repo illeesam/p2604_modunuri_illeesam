@@ -8,1499 +8,2008 @@
   - 03: 프로모션 제외 */
   const _BO_SITE_NO = window.BO_SITE_NO || '01';
   const _ALL_TOP_MENUS = [
-  { id: 'member',  label: '회원관리' },
-  { id: 'product',  label: '상품관리' },
-  { id: 'order',  label: '주문관리' },
-  { id: 'promotion', label: '프로모션' },
-  { id: 'display',  label: '전시관리' },
-  { id: 'customer',  label: '고객센터' },
-  { id: 'settle',  label: '정산' },
-  { id: 'system',  label: '시스템' },
-  { id: 'devtools',  label: '개발도구' },
+    { id: 'member', label: '회원관리' },
+    { id: 'product', label: '상품관리' },
+    { id: 'order', label: '주문관리' },
+    { id: 'promotion', label: '프로모션' },
+    { id: 'display', label: '전시관리' },
+    { id: 'customer', label: '고객센터' },
+    { id: 'settle', label: '정산' },
+    { id: 'system', label: '시스템' },
+    { id: 'devtools', label: '개발도구' },
   ];
-  const TOP_MENUS = _ALL_TOP_MENUS.filter(m => {
-  if (_BO_SITE_NO === '02' && m.id === 'customer')  return false;
-  if (_BO_SITE_NO === '03' && m.id === 'promotion') return false;
-  return true;
+  const TOP_MENUS = _ALL_TOP_MENUS.filter((m) => {
+    if (_BO_SITE_NO === '02' && m.id === 'customer') return false;
+    if (_BO_SITE_NO === '03' && m.id === 'promotion') return false;
+    return true;
   });
 
   const LEFT_MENUS = {
-  member:  [
-  { group: '회원' },
-  { id: 'mbMemberMng',  label: '회원관리' },
-  { group: '등급·그룹' },
-  { id: 'mbMemGradeMng',  label: '회원등급관리' },
-  { id: 'mbMemGroupMng',  label: '회원그룹관리' },
-  ],
-  product:  [
-  { group: '상품' },
-  { id: 'pdProdMng',  label: '상품관리' },
-  { id: 'pdBundleMng',  label: '묶음상품관리' },
-  { id: 'pdSetMng',  label: '세트상품관리' },
-  { group: '카테고리' },
-  { id: 'pdCategoryMng',  label: '카테고리관리' },
-  { id: 'pdCategoryProdMng', label: '카테고리상품관리' },
-  { group: '상품템플릿' },
-  { id: 'pdDlivTmpltMng',  label: '배송템플릿관리' },
-  { group: '상품정보관리' },
-  { id: 'pdReviewMng',  label: '상품리뷰관리' },
-  { id: 'pdQnaMng',  label: '상품Q&A관리' },
-  { id: 'pdRestockNotiMng', label: '재입고알림' },
-  { id: 'pdTagMng',  label: '태그관리' },
-  ],
-  order:  [{ id: 'odOrderMng',  label: '주문관리' }, { id: 'odClaimMng', label: '클레임관리' }, { id: 'odDlivMng', label: '배송관리' }, { id: 'odCartMng', label: '장바구니관리' }],
-  promotion: [
-  { group: '판촉' },
-  { id: 'pmCouponMng',  label: '쿠폰관리' },
-  { id: 'pmCacheMng',  label: '캐쉬관리' },
-  { id: 'pmDiscntMng',  label: '할인관리' },
-  { id: 'pmSaveMng',  label: '마일리지관리' },
-  { id: 'pmGiftMng',  label: '사은품관리' },
-  { id: 'pmVoucherMng', label: '상품권관리' },
-  { group: '이벤트' },
-  { id: 'pmEventMng',  label: '이벤트관리' },
-  { id: 'pmPlanMng',  label: '기획전관리' },
-  ],
-  display:  [
-  { group: '미리보기' },
-  { id: 'dpDispUiPreview',  label: '전시UI미리보기' },
-  { id: 'dpDispAreaPreview',  label: '전시영역미리보기' },
-  { id: 'dpDispPanelPreview',  label: '전시패널미리보기' },
-  { id: 'dpDispWidgetPreview',  label: '전시위젯미리보기' },
-  { id: 'dpDispWidgetLibPreview', label: '전시위젯Lib미리보기' },
-  { group: '전시관리' },
-  { id: 'dpDispUiMng',  label: '전시UI관리' },
-  { id: 'dpDispAreaMng',  label: '전시영역관리' },
-  { id: 'dpDispPanelMng',  label: '전시패널관리' },
-  { group: '전시위젯관리' },
-  { id: 'dpDispWidgetMng',  label: '전시위젯관리' },
-  { group: '전시리소스' },
-  { id: 'dpDispWidgetLibMng',  label: '전시위젯Lib' },
-  { group: '개발지원' },
-  { id: 'dpDispUiSimul',  label: '전시UI시뮬레이션' },
-  { id: 'dpDispRelationMng',  label: '전시관계도' },
-  ],
-  customer:  [
-  { group: '고객' },
-  { id: 'mbCustInfoMng', label: '고객종합정보' },
-  { group: '고객센터' },
-  { id: 'syContactMng',  label: '문의관리' },
-  { id: 'cmChattMng',  label: '채팅관리' },
-  { group: '커뮤니티' },
-  { id: 'syBbmMng',  label: '게시판관리' },
-  ],
-  settle:  [
-  { group: '기준정보' },
-  { id: 'stConfigMng',  label: '정산기준관리' },
-  { group: '수집원장' },
-  { id: 'stRawMng',  label: '정산수집원장' },
-  { group: '정산작업' },
-  { id: 'stSettleAdjMng',  label: '정산조정' },
-  { id: 'stSettleEtcAdjMng',  label: '정산기타조정' },
-  { id: 'stSettleCloseMng',  label: '정산마감' },
-  { id: 'stSettlePayMng',  label: '정산지급관리' },
-  { group: '정산현황' },
-  { id: 'stStatusMng',  label: '정산현황' },
-  { group: '대사관리' },
-  { id: 'stReconOrderMng',  label: '주문-정산 대사' },
-  { id: 'stReconPayMng',  label: '결제-정산 대사' },
-  { id: 'stReconClaimMng',  label: '클레임-정산 대사' },
-  { id: 'stReconVendorMng',  label: '업체-정산 대사' },
-  { group: 'ERP 연동' },
-  { id: 'stErpGenMng',  label: 'ERP 전표생성' },
-  { id: 'stErpViewMng',  label: 'ERP 전표조회' },
-  { id: 'stErpReconMng',  label: 'ERP 전표대사' },
-  ],
-  system:  [
-  { group: '기준정보' },
-  { id: 'sySiteMng',  label: '사이트관리' },
-  { id: 'syCodeMng',  label: '공통코드관리' },
-  { id: 'syBrandMng',  label: '브랜드관리' },
-  { id: 'syVendorMng',  label: '업체' },
-  { id: 'syVendorUserMng',  label: '업체사용자' },
-  { group: '공통업무' },
-  { id: 'cmNoticeMng',  label: '공지사항관리' },
-  { id: 'syBbmMng',  label: '게시판관리' },
-  { id: 'syBbsMng',  label: '게시글관리' },
-  { group: '시스템' },
-  { id: 'syAttachMng',  label: '첨부관리' },
-  { id: 'syTemplateMng', label: '템플릿관리' },
-  { id: 'syBatchMng',  label: '배치스케즐관리' },
-  { id: 'syAlarmMng',  label: '알림관리' },
-  { id: 'syPropMng',  label: '프로퍼티관리' },
-  { id: 'syPathMng',  label: '표시경로' },
-  { id: 'syI18nMng',  label: '다국어관리' },
-  { group: '조직' },
-  { id: 'syUserMng',  label: '사용자관리' },
-  { id: 'syDeptMng',  label: '부서관리' },
-  { group: '메뉴' },
-  { id: 'syMenuMng',  label: '메뉴관리' },
-  { id: 'syRoleMng',  label: '역할관리' },
-  { group: '이력조회' },
-  { id: 'syMemberLoginHist', label: '회원로그인이력' },
-  { id: 'syUserLoginHist',  label: '사용자로그인이력' },
-  { id: 'syApiLogMng',      label: 'API로그조회' },
-  { id: 'syPostman',  label: 'postman' },
-  ],
-  devtools:  [
-  { group: '스토어' },
-  { id: 'zdStore',  label: 'store정보관리' },
-  { id: 'zdLocalStorage',  label: 'localstorage정보관리' },
-  ],
+    member: [
+      { group: '회원' },
+      { id: 'mbMemberMng', label: '회원관리' },
+      { group: '등급·그룹' },
+      { id: 'mbMemGradeMng', label: '회원등급관리' },
+      { id: 'mbMemGroupMng', label: '회원그룹관리' },
+    ],
+    product: [
+      { group: '상품' },
+      { id: 'pdProdMng', label: '상품관리' },
+      { id: 'pdBundleMng', label: '묶음상품관리' },
+      { id: 'pdSetMng', label: '세트상품관리' },
+      { group: '카테고리' },
+      { id: 'pdCategoryMng', label: '카테고리관리' },
+      { id: 'pdCategoryProdMng', label: '카테고리상품관리' },
+      { group: '상품템플릿' },
+      { id: 'pdDlivTmpltMng', label: '배송템플릿관리' },
+      { group: '상품정보관리' },
+      { id: 'pdReviewMng', label: '상품리뷰관리' },
+      { id: 'pdQnaMng', label: '상품Q&A관리' },
+      { id: 'pdRestockNotiMng', label: '재입고알림' },
+      { id: 'pdTagMng', label: '태그관리' },
+    ],
+    order: [
+      { id: 'odOrderMng', label: '주문관리' },
+      { id: 'odClaimMng', label: '클레임관리' },
+      { id: 'odDlivMng', label: '배송관리' },
+      { id: 'odCartMng', label: '장바구니관리' },
+    ],
+    promotion: [
+      { group: '판촉' },
+      { id: 'pmCouponMng', label: '쿠폰관리' },
+      { id: 'pmCacheMng', label: '캐쉬관리' },
+      { id: 'pmDiscntMng', label: '할인관리' },
+      { id: 'pmSaveMng', label: '마일리지관리' },
+      { id: 'pmGiftMng', label: '사은품관리' },
+      { id: 'pmVoucherMng', label: '상품권관리' },
+      { group: '이벤트' },
+      { id: 'pmEventMng', label: '이벤트관리' },
+      { id: 'pmPlanMng', label: '기획전관리' },
+    ],
+    display: [
+      { group: '미리보기' },
+      { id: 'dpDispUiPreview', label: '전시UI미리보기' },
+      { id: 'dpDispAreaPreview', label: '전시영역미리보기' },
+      { id: 'dpDispPanelPreview', label: '전시패널미리보기' },
+      { id: 'dpDispWidgetPreview', label: '전시위젯미리보기' },
+      { id: 'dpDispWidgetLibPreview', label: '전시위젯Lib미리보기' },
+      { group: '전시관리' },
+      { id: 'dpDispUiMng', label: '전시UI관리' },
+      { id: 'dpDispAreaMng', label: '전시영역관리' },
+      { id: 'dpDispPanelMng', label: '전시패널관리' },
+      { group: '전시위젯관리' },
+      { id: 'dpDispWidgetMng', label: '전시위젯관리' },
+      { group: '전시리소스' },
+      { id: 'dpDispWidgetLibMng', label: '전시위젯Lib' },
+      { group: '개발지원' },
+      { id: 'dpDispUiSimul', label: '전시UI시뮬레이션' },
+      { id: 'dpDispRelationMng', label: '전시관계도' },
+    ],
+    customer: [
+      { group: '고객' },
+      { id: 'mbCustInfoMng', label: '고객종합정보' },
+      { group: '고객센터' },
+      { id: 'syContactMng', label: '문의관리' },
+      { id: 'cmChattMng', label: '채팅관리' },
+      { group: '커뮤니티' },
+      { id: 'syBbmMng', label: '게시판관리' },
+    ],
+    settle: [
+      { group: '기준정보' },
+      { id: 'stConfigMng', label: '정산기준관리' },
+      { group: '수집원장' },
+      { id: 'stRawMng', label: '정산수집원장' },
+      { group: '정산작업' },
+      { id: 'stSettleAdjMng', label: '정산조정' },
+      { id: 'stSettleEtcAdjMng', label: '정산기타조정' },
+      { id: 'stSettleCloseMng', label: '정산마감' },
+      { id: 'stSettlePayMng', label: '정산지급관리' },
+      { group: '정산현황' },
+      { id: 'stStatusMng', label: '정산현황' },
+      { group: '대사관리' },
+      { id: 'stReconOrderMng', label: '주문-정산 대사' },
+      { id: 'stReconPayMng', label: '결제-정산 대사' },
+      { id: 'stReconClaimMng', label: '클레임-정산 대사' },
+      { id: 'stReconVendorMng', label: '업체-정산 대사' },
+      { group: 'ERP 연동' },
+      { id: 'stErpGenMng', label: 'ERP 전표생성' },
+      { id: 'stErpViewMng', label: 'ERP 전표조회' },
+      { id: 'stErpReconMng', label: 'ERP 전표대사' },
+    ],
+    system: [
+      { group: '기준정보' },
+      { id: 'sySiteMng', label: '사이트관리' },
+      { id: 'syCodeMng', label: '공통코드관리' },
+      { id: 'syBrandMng', label: '브랜드관리' },
+      { id: 'syVendorMng', label: '업체' },
+      { id: 'syVendorUserMng', label: '업체사용자' },
+      { group: '공통업무' },
+      { id: 'cmNoticeMng', label: '공지사항관리' },
+      { id: 'syBbmMng', label: '게시판관리' },
+      { id: 'syBbsMng', label: '게시글관리' },
+      { group: '시스템' },
+      { id: 'syAttachMng', label: '첨부관리' },
+      { id: 'syTemplateMng', label: '템플릿관리' },
+      { id: 'syBatchMng', label: '배치스케즐관리' },
+      { id: 'syAlarmMng', label: '알림관리' },
+      { id: 'syPropMng', label: '프로퍼티관리' },
+      { id: 'syPathMng', label: '표시경로' },
+      { id: 'syI18nMng', label: '다국어관리' },
+      { group: '조직' },
+      { id: 'syUserMng', label: '사용자관리' },
+      { id: 'syDeptMng', label: '부서관리' },
+      { group: '메뉴' },
+      { id: 'syMenuMng', label: '메뉴관리' },
+      { id: 'syRoleMng', label: '역할관리' },
+      { group: '이력조회' },
+      { id: 'syMemberLoginHist', label: '회원로그인이력' },
+      { id: 'syUserLoginHist', label: '사용자로그인이력' },
+      { id: 'syApiLogMng', label: 'API로그조회' },
+      { id: 'syPostman', label: 'postman' },
+    ],
+    devtools: [
+      { group: '스토어' },
+      { id: 'zdStore', label: 'store정보관리' },
+      { id: 'zdLocalStorage', label: 'localstorage정보관리' },
+    ],
   };
 
   /* 페이지 → 상위메뉴 매핑 */
   const PAGE_TO_TOP = {};
-  const PAGE_LABELS  = {};
+  const PAGE_LABELS = {};
   Object.entries(LEFT_MENUS).forEach(([top, items]) => {
-  items.filter(item => item.id).forEach(item => {
-  PAGE_TO_TOP[item.id] = top;
-  PAGE_TO_TOP[item.id.replace('Mng', 'Dtl')] = top;
-  PAGE_LABELS[item.id] = item.label;
-  PAGE_LABELS[item.id.replace('Mng', 'Dtl')] = item.label + ' 상세';
-  });
+    items
+      .filter((item) => item.id)
+      .forEach((item) => {
+        PAGE_TO_TOP[item.id] = top;
+        PAGE_TO_TOP[item.id.replace('Mng', 'Dtl')] = top;
+        PAGE_LABELS[item.id] = item.label;
+        PAGE_LABELS[item.id.replace('Mng', 'Dtl')] = item.label + ' 상세';
+      });
   });
 
   /* 대시보드는 별도 페이지 */
   PAGE_LABELS['dashboard'] = '대시보드';
 
   const ALL_PAGES = [
-  'dashboard',
-  ...Object.values(LEFT_MENUS).flat().filter(p => p.id).map(p => p.id),
-  ...Object.values(LEFT_MENUS).flat().filter(p => p.id).map(p => p.id.replace('Mng', 'Dtl')),
+    'dashboard',
+    ...Object.values(LEFT_MENUS)
+      .flat()
+      .filter((p) => p.id)
+      .map((p) => p.id),
+    ...Object.values(LEFT_MENUS)
+      .flat()
+      .filter((p) => p.id)
+      .map((p) => p.id.replace('Mng', 'Dtl')),
   ];
 
   /* Mng 페이지의 탭 ID 반환 (Dtl → 부모 Mng) */
-  const toTabId = pg => pg.endsWith('Dtl') ? pg.replace('Dtl', 'Mng') : pg;
+  const toTabId = (pg) => (pg.endsWith('Dtl') ? pg.replace('Dtl', 'Mng') : pg);
 
   /* 인증방식 옵션 */
   const AUTH_METHODS = ['메인', 'SMS', 'OTP', 'Authenticator'];
 
   const app = createApp({
-  setup() {
-  /* ── App Init Data Store 초기화 ── */
+    setup() {
+      /* ── App Init Data Store 초기화 ── */
 
-  /* ── 페이지 & 라우팅 ── */
-  const page  = ref('dashboard');
-  const cfDashboardComp = 'DashboardBoEc' + (window.BO_SITE_NO || '01');
-  const errorMessage = ref('');
-  /* X- 헤더 배열을 압축 포맷으로 변환
+      /* ── 페이지 & 라우팅 ── */
+      const page = ref('dashboard');
+      const cfDashboardComp = 'DashboardBoEc' + (window.BO_SITE_NO || '01');
+      const errorMessage = ref('');
+      /* X- 헤더 배열을 압축 포맷으로 변환
   x-ui-nm: 사이트관리 | x-cmd-nm: 목록조회 | x-trace-id: 20260501_063729_0223
   x-site-type: BO | x-site-id: SITE_BO_01
   x-file-nm: SySiteMng.js | x-func-nm: onSearch | x-line-no: 42
   x-buyer-id: BUYER_001 | x-license-code: eyJz~ (64자 초과 시 앞 64자 + ~) */
-  const _fmtXHeaders = (headers) => {
-  if (!headers || headers.length === 0) return '';
-  const map = {};
-  headers.forEach(h => {
-  const idx = h.indexOf(': ');
-  if (idx > -1) map[h.slice(0, idx).toLowerCase()] = h.slice(idx + 2);
-  });
-
-  /* truncate */
-  const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
-  const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm', 'authorization'];
-
-  /* fmtVal */
-  const fmtVal = (k, v) => k === 'x-func-nm' ? v + '()' : NO_TRUNCATE.includes(k) ? v : truncate(v);
-
-  /* row */
-  const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${fmtVal(k, map[k])}`).join(' | ');
-  const lines = [
-  row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
-  row(['x-file-nm', 'x-func-nm', 'x-line-no']),
-  row(['x-trace-id', 'x-site-id', 'x-buyer-id', 'x-license-code', 'x-user-agent', 'authorization']),
-  ].filter(Boolean);
-  // 위 그룹에 포함되지 않은 나머지 x- 헤더
-  const known = ['x-site-type','x-ui-nm','x-cmd-nm','x-file-nm','x-func-nm','x-line-no','x-trace-id','x-site-id','x-buyer-id','x-license-code','x-user-agent','authorization'];
-  const rest = Object.entries(map).filter(([k]) => !known.includes(k)).map(([k,v]) => `${k}: ${truncate(v)}`).join(' | ');
-  if (rest) lines.push(rest);
-  return lines.join('\n');
-  };
-
-  /* API Validation 에러 → toast 출력 (boAxios 에서 window.dispatchEvent('api-validation-error')) */
-  window.addEventListener('api-validation-error', (ev) => {
-  const d = ev.detail || {};
-  let msg = d.message || '오류가 발생했습니다.';
-  if (d.method && d.url && d.status) {
-  let title = `${d.method} ${d.url} ${d.status}`;
-  if (d.uiLabel) title += `  [${d.uiLabel}]`;
-  msg = `${title}\n${msg}`;
-  }
-  // X- 헤더 정보를 errorDetails(펼침 영역)에 추가
-  let details = d.errorDetails || '';
-  const reqFmt = _fmtXHeaders(d.reqHeaders);
-  const resFmt = _fmtXHeaders(d.resHeaders);
-  if (reqFmt || resFmt) {
-  let headerInfo = '';
-  const _nd = new Date(); const _nts = _nd.getFullYear()+'-'+String(_nd.getMonth()+1).padStart(2,'0')+'-'+String(_nd.getDate()).padStart(2,'0')+' '+String(_nd.getHours()).padStart(2,'0')+':'+String(_nd.getMinutes()).padStart(2,'0')+':'+String(_nd.getSeconds()).padStart(2,'0');
-  if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
-  if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
-  details = details ? headerInfo + '\n\n' + details : headerInfo;
-  }
-  showToast(msg, 'error', 0, details);
-  });
-
-  /* API 성공 → 로그만 기록 (toast 미출력) */
-  window.addEventListener('api-success', () => {});
-
-  /* API 에러 → 오류 페이지 전환 (boAxios 에서 window.dispatchEvent('api-error')) */
-  window.addEventListener('api-error', (ev) => {
-  const d = ev.detail || {};
-  const st = d.status;
-  let label = '';
-  if (d.method && d.url) {
-  label = `${d.method} ${d.url} ${st}`;
-  if (d.uiLabel) label += `  [${d.uiLabel}]`;
-  }
-  let msg = label ? `${label}\n${d.message || ''}` : (d.message || '');
-  // 비 401/500 에러는 toast로 X- 헤더 정보 표시
-  if (st !== 401 && !(st >= 500 || st === 0)) {
-  let details = d.errorDetails || '';
-  const reqFmt = _fmtXHeaders(d.reqHeaders);
-  const resFmt = _fmtXHeaders(d.resHeaders);
-  if (reqFmt || resFmt) {
-  let headerInfo = '';
-  const _nd = new Date(); const _nts = _nd.getFullYear()+'-'+String(_nd.getMonth()+1).padStart(2,'0')+'-'+String(_nd.getDate()).padStart(2,'0')+' '+String(_nd.getHours()).padStart(2,'0')+':'+String(_nd.getMinutes()).padStart(2,'0')+':'+String(_nd.getSeconds()).padStart(2,'0');
-  if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
-  if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
-  details = details ? headerInfo + '\n\n' + details : headerInfo;
-  }
-  showToast(msg, 'error', 0, details);
-  return;
-  }
-  if (st === 401) {
-    errorMessage.value = msg;
-    page.value = 'error401';
-    // hash 동기화 — 미동기화 시 readHash 가 다시 원래 페이지로 복원하면서 무한 마운트 루프 발생
-    try { window.history.replaceState(null, '', '#page=error401'); } catch (_) {}
-  }
-  else if (st >= 500 || st === 0) {
-    errorMessage.value = msg;
-    page.value = 'error500';
-    try { window.history.replaceState(null, '', '#page=error500'); } catch (_) {}
-  }
-  });
-  const dtlId = ref(null);
-
-  /* ── 탭 관리 ── */
-  const openTabs = reactive([{ id: 'dashboard', label: '대시보드' }]);
-  const cfActiveTabId = computed(() => toTabId(page.value));
-  const refreshKeys = reactive({});  // pageId → 재마운트 카운터
-
-  /* ── 탭 고정 (keep-alive 시뮬레이션) ── */
-  const keptTabIds = reactive(new Set());
-
-  /* toggleKeep */
-  const toggleKeep = (tabId) => {
-  if (keptTabIds.has(tabId)) keptTabIds.delete(tabId);
-  else keptTabIds.add(tabId);
-  };
-  const PAGE_COMP_MAP = {
-  'dashboard':'dashboard-bo-ec'+(window.BO_SITE_NO||'01'), 'mbMemberMng':'mb-member-mng', 'mbMemberDtl':'mb-member-dtl',
-  'mbMemGradeMng':'mb-mem-grade-mng', 'mbMemGroupMng':'mb-mem-group-mng',
-  'pdProdMng':'pd-prod-mng', 'pdProdDtl':'pd-prod-dtl',
-  'pdDlivTmpltMng':'pd-dliv-tmplt-mng', 'pdBundleMng':'pd-bundle-mng', 'pdSetMng':'pd-set-mng',
-  'pdReviewMng':'pd-review-mng', 'pdQnaMng':'pd-qna-mng',
-  'pdRestockNotiMng':'pd-restock-noti-mng', 'pdTagMng':'pd-tag-mng',
-  'odOrderMng':'od-order-mng', 'odOrderDtl':'od-order-dtl',
-  'odClaimMng':'od-claim-mng', 'odClaimDtl':'od-claim-dtl',
-  'odDlivMng':'od-dliv-mng', 'odDlivDtl':'od-dliv-dtl',
-  'odCartMng':'od-cart-mng',
-  'pmCouponMng':'pm-coupon-mng', 'pmCouponDtl':'pm-coupon-dtl',
-  'pmCacheMng':'pm-cache-mng', 'pmCacheDtl':'pm-cache-dtl',
-  'dpDispPanelMng':'dp-disp-panel-mng', 'dpDispAreaPreview':'dp-disp-area-preview', 'dpDispAreaMng':'dp-disp-area-mng',
-  'dpDispUiPreview':'dp-disp-ui-preview', 'dpDispUiSimul':'dp-disp-ui-simul',
-  'dpDispPanelPreview':'dp-disp-panel-preview', 'dpDispWidgetPreview':'dp-disp-widget-preview',
-  'dpDispAreaDtl':'dp-disp-area-dtl',
-  'dpDispUiMng':'dp-disp-ui-mng', 'dpDispUiDtl':'dp-disp-ui-dtl',
-  'dpDispWidgetMng':'dp-disp-widget-mng', 'dpDispWidgetDtl':'dp-disp-widget-dtl',
-  'dpDispRelationMng':'dp-disp-relation-mng',
-  'dpDispPanelDtl':'dp-disp-panel-dtl',
-  'dpDispWidgetLibMng':'dp-disp-widget-lib-mng', 'dpDispWidgetLibDtl':'dp-disp-widget-lib-dtl',
-  'dpDispWidgetLibPreview':'dp-disp-widget-lib-preview',
-  'stConfigMng':'st-config-mng', 'stRawMng':'st-raw-mng',
-  'stSettleAdjMng':'st-settle-adj-mng', 'stSettleEtcAdjMng':'st-settle-etc-adj-mng',
-  'stSettleCloseMng':'st-settle-close-mng', 'stSettlePayMng':'st-settle-pay-mng',
-  'stStatusMng':'st-status-mng',
-  'stReconOrderMng':'st-recon-order-mng', 'stReconPayMng':'st-recon-pay-mng',
-  'stReconClaimMng':'st-recon-claim-mng', 'stReconVendorMng':'st-recon-vendor-mng',
-  'stErpGenMng':'st-erp-gen-mng', 'stErpViewMng':'st-erp-view-mng', 'stErpReconMng':'st-erp-recon-mng',
-  'pmEventMng':'pm-event-mng', 'pmEventDtl':'pm-event-dtl',
-  'pmPlanMng':'pm-plan-mng', 'pmPlanDtl':'pm-plan-dtl',
-  'pmDiscntMng':'pm-discnt-mng', 'pmSaveMng':'pm-save-mng', 'pmGiftMng':'pm-gift-mng',
-  'pmVoucherMng':'pm-voucher-mng', 'pmVoucherDtl':'pm-voucher-dtl',
-  'mbCustInfoMng':'mb-cust-info-mng',
-  'syContactMng':'sy-contact-mng', 'syContactDtl':'sy-contact-dtl',
-  'cmChattMng':'cm-chatt-mng', 'cmChattDtl':'cm-chatt-dtl',
-  'sySiteMng':'sy-site-mng', 'sySiteDtl':'sy-site-dtl',
-  'syCodeMng':'sy-code-mng', 'syCodeDtl':'sy-code-dtl',
-  'syBrandMng':'sy-brand-mng', 'syAttachMng':'sy-attach-mng',
-  'syTemplateMng':'sy-template-mng', 'syTemplateDtl':'sy-template-dtl',
-  'syVendorMng':'sy-vendor-mng', 'syVendorDtl':'sy-vendor-dtl', 'syBizMng':'sy-biz-mng', 'syVendorUserMng':'sy-vendor-user-mng',
-  'pdCategoryMng':'pd-category-mng', 'pdCategoryDtl':'pd-category-dtl', 'pdCategoryProdMng':'pd-category-prod-mng',
-  'syUserMng':'sy-user-mng', 'syUserDtl':'sy-user-dtl',
-  'syBatchMng':'sy-batch-mng', 'syBatchDtl':'sy-batch-dtl',
-  'syDeptMng':'sy-dept-mng', 'syMenuMng':'sy-menu-mng', 'syRoleMng':'sy-role-mng',
-  'cmNoticeMng':'cm-notice-mng', 'syAlarmMng':'sy-alarm-mng', 'syPropMng':'sy-prop-mng', 'syPathMng':'sy-path-mng', 'syI18nMng':'sy-i18n-mng',
-  'syBbmMng':'sy-bbm-mng', 'syBbsMng':'sy-bbs-mng',
-  'syMemberLoginHist':'sy-member-login-hist',
-  'syUserLoginHist':'sy-user-login-hist',
-  'syApiLogMng':'sy-api-log-mng',
-  'syPostman':'sy-postman',
-  'zdStore':'zd-store',
-  'zdLocalStorage':'zd-local-storage',
-  };
-
-  /* addTab */
-  const addTab = (mngId) => {
-  if (!openTabs.find(t => t.id === mngId)) {
-  openTabs.push({ id: mngId, label: PAGE_LABELS[mngId] || mngId });
-  }
-  };
-
-  /* closeTab */
-  const closeTab = (tabId, evt) => {
-  if (evt) evt.stopPropagation();
-  const idx = openTabs.findIndex(t => t.id === tabId);
-  if (idx === -1) return;
-  keptTabIds.delete(tabId);
-  openTabs.splice(idx, 1);
-  if (cfActiveTabId.value === tabId) {
-  const next = openTabs[Math.min(idx, openTabs.length - 1)];
-  if (next) navigate(next.id);
-  else { page.value = 'dashboard'; dtlId.value = null; }
-  }
-  };
-
-  /* ── 탭 컨텍스트 메뉴 ── */
-  const ctxMenu = reactive({ show: false, x: 0, y: 0, tabId: null });
-
-  /* showCtxMenu */
-  const showCtxMenu = (evt, tabId) => {
-  evt.preventDefault();
-  ctxMenu.show = true; ctxMenu.x = evt.clientX; ctxMenu.y = evt.clientY; ctxMenu.tabId = tabId;
-  };
-
-  /* closeCtxMenu */
-  const closeCtxMenu = () => { ctxMenu.show = false; };
-
-  /* ctxClose */
-  const ctxClose = () => { closeTab(ctxMenu.tabId); closeCtxMenu(); };
-
-  /* ctxCloseLeft */
-  const ctxCloseLeft = () => {
-  const idx = openTabs.findIndex(t => t.id === ctxMenu.tabId);
-  if (idx > 0) {
-  openTabs.splice(0, idx);
-  if (!openTabs.find(t => t.id === cfActiveTabId.value) && openTabs.length > 0) navigate(openTabs[0]?.id);
-  }
-  closeCtxMenu();
-  };
-
-  /* ctxCloseRight */
-  const ctxCloseRight = () => {
-  const idx = openTabs.findIndex(t => t.id === ctxMenu.tabId);
-  if (idx < openTabs.length - 1) {
-  openTabs.splice(idx + 1);
-  if (!openTabs.find(t => t.id === cfActiveTabId.value)) navigate(openTabs[idx].id);
-  }
-  closeCtxMenu();
-  };
-
-  /* ctxCloseAll */
-  const ctxCloseAll = () => {
-  const tab = openTabs.find(t => t.id === ctxMenu.tabId);
-  keptTabIds.clear();
-  openTabs.splice(0);
-  if (tab) { openTabs.push(tab); navigate(tab.id); }
-  closeCtxMenu();
-  };
-
-  /* ctxCloseOthers */
-  const ctxCloseOthers = () => {
-  const tab = openTabs.find(t => t.id === ctxMenu.tabId);
-  openTabs.forEach(t => { if (t.id !== ctxMenu.tabId) keptTabIds.delete(t.id); });
-  openTabs.splice(0);
-  if (tab) { openTabs.push(tab); navigate(tab.id); }
-  closeCtxMenu();
-  };
-
-  /* ctxNewWindow */
-  const ctxNewWindow = () => {
-  window.open(`${location.pathname}${location.search}#page=${ctxMenu.tabId}`, '_blank');
-  closeCtxMenu();
-  };
-
-  /* ctxRefresh */
-  const ctxRefresh = () => {
-  const id = ctxMenu.tabId;
-  closeCtxMenu();
-  if (keptTabIds.has(id)) {
-  keptTabIds.delete(id);
-  Vue.nextTick(() => keptTabIds.add(id));
-  } else {
-  refreshKeys[id] = (refreshKeys[id] || 0) + 1;
-  if (page.value !== id) navigate(id);
-  }
-  };
-
-  /* ── 새창 열기 ── */
-  const openNewWindow = (pgId) => {
-  window.open(`${location.pathname}${location.search}#page=${pgId}`, '_blank');
-  };
-
-  /* ── 열린 화면 목록 (가나다순) ── */
-  const cfOpenTabsWithGroup = computed(() =>
-  [...openTabs].map(tab => {
-  const topId = PAGE_TO_TOP[tab.id];
-  const topLabel = TOP_MENUS.find(t => t.id === topId)?.label || (tab.id === 'dashboard' ? '홈' : '');
-  return { ...tab, topLabel };
-  }).sort((a, b) => a.label.localeCompare(b.label, 'ko'))
-  );
-
-  /* ── 메뉴 상태 ── */
-  const activeTop  = ref('member');
-  const leftMenuOpen = ref(true);
-
-  /* setTopMenu */
-  const setTopMenu = (topId) => {
-  activeTop.value = topId;
-  leftMenuOpen.value = true;
-  const first = LEFT_MENUS[topId]?.find(p => p.id);
-  if (first) navigate(first.id);
-  };
-
-  /* ── Hash routing ── */
-  const readHash = (showNotification = false) => {
-  const raw = String(window.location.hash || '').replace(/^#/, '');
-  const p  = new URLSearchParams(raw);
-  const pg  = p.get('page');
-  if (pg && ALL_PAGES.includes(pg)) {
-  const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
-  if (!isLoggedIn && pg !== 'dashboard') {
-  if (showNotification) showToast('로그인이 필요합니다.', 'error');
-  if (page.value !== 'dashboard') page.value = 'dashboard';
-  return;
-  }
-  // 동일 값 set 으로 인한 reactive 무한 갱신 방지
-  if (page.value !== pg) page.value = pg;
-  const newTop = PAGE_TO_TOP[pg];
-  if (newTop && activeTop.value !== newTop) activeTop.value = newTop;
-  addTab(toTabId(pg));
-  }
-  const id = p.get('id');
-  const newDtlId = id !== null ? (isNaN(id) ? id : Number(id)) : null;
-  if (dtlId.value !== newDtlId) dtlId.value = newDtlId;
-  };
-  readHash(false);
-
-  /* navigate */
-  const navigate = (pg, opts = {}) => {
-  const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
-  if (!isLoggedIn && pg !== 'dashboard') {
-  showToast('로그인이 필요합니다.', 'error');
-  return;
-  }
-  page.value  = pg;
-  dtlId.value  = opts.id ?? null;
-  if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
-  addTab(toTabId(pg));
-  // 즐겨찾기 keep 설정이 있으면 자동으로 탭 고정
-  const tabId = toTabId(pg);
-  if (favKeepSet.has(tabId)) keptTabIds.add(tabId);
-  const p2 = new URLSearchParams();
-  p2.set('page', pg);
-  if (opts.id != null) p2.set('id', opts.id);
-  // 동일 hash 재설정 시 hashchange 이벤트 재발화로 인한 무한 마운트 루프 방지
-  const newHash = p2.toString();
-  const curHash = String(window.location.hash || '').replace(/^#/, '');
-  if (curHash !== newHash) {
-    window.location.hash = newHash;
-  }
-  window.scrollTo(0, 0);
-  };
-
-  /* readHashWithNotification */
-  const readHashWithNotification = () => readHash(true);
-  window.addEventListener('hashchange', readHashWithNotification);
-  onBeforeUnmount(() => window.removeEventListener('hashchange', readHashWithNotification));
-
-  /* ── Toast (누적 스택) ── */
-  const toasts  = reactive([]);
-  /* ── API Progress Overlay ── */
-  const isApiLoading = Vue.ref(false);
-  let _apiLoadingCount = 0;
-  let _hideTimer = null;
-  let _progressShowAt = 0;
-  const MIN_SHOW_MS = 300;
-  const HIDE_DELAY_MS = 50;
-  window._showProgress = (on) => {
-  _apiLoadingCount = Math.max(0, _apiLoadingCount + (on ? 1 : -1));
-  if (_apiLoadingCount > 0) {
-  if (_hideTimer) { clearTimeout(_hideTimer); _hideTimer = null; }
-  if (!isApiLoading.value) _progressShowAt = Date.now();
-  isApiLoading.value = true;
-  } else {
-  const elapsed = Date.now() - _progressShowAt;
-  const remain = Math.max(0, MIN_SHOW_MS - elapsed) + HIDE_DELAY_MS;
-  if (_hideTimer) clearTimeout(_hideTimer);
-  _hideTimer = setTimeout(() => {
-  if (_apiLoadingCount === 0) isApiLoading.value = false;
-  _hideTimer = null;
-  }, remain);
-  }
-  };
-
-  let _toastId  = 0;
-  const TOAST_DURATION = 3500;
-  const STATUS_HINT = {
-  400: '잘못된 요청 — 파라미터를 확인하세요.',
-  401: '인증 만료 — 다시 로그인하세요.',
-  403: '접근 거부 — 권한이 없거나 라이선스가 유효하지 않습니다.',
-  404: '리소스를 찾을 수 없습니다.',
-  405: '허용되지 않는 HTTP 메서드입니다.',
-  409: '데이터 충돌 — 이미 존재하는 항목입니다.',
-  422: '입력값 검증 실패 — 필드를 확인하세요.',
-  429: '요청이 너무 많습니다. 잠시 후 다시 시도하세요.',
-  500: '서버 내부 오류 — 관리자에게 문의하세요.',
-  502: '게이트웨이 오류 — 서버가 응답하지 않습니다.',
-  503: '서비스 일시 중단 — 잠시 후 다시 시도하세요.',
-  };
-
-  /* showToast */
-  const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '') => {
-  if (type === 'error') duration = 0;
-  const id = ++_toastId;
-  let msgTitle = msg;
-  let msgDetail = '';
-  let statusHint = '';
-
-  // 에러 메시지에서 METHOD URL STATUS를 분리
-  if (type === 'error' && msg.includes('\n')) {
-  const parts = msg.split('\n');
-  msgDetail = parts[0]; // METHOD URL STATUS
-  msgTitle = parts.slice(1).join('\n'); // 나머지 메시지
-  const stMatch = msgDetail.match(/\b([45]\d{2})\b/);
-  if (stMatch) statusHint = STATUS_HINT[parseInt(stMatch[1])] || ('HTTP ' + stMatch[1] + ' 오류');
-  }
-
-  toasts.push({ id, msgTitle, msgDetail, statusHint, msg, type, persistent: duration === 0, errorDetails, expanded: type === 'error' && toastShowDetail.value });
-  if (duration !== 0) {
-  setTimeout(() => {
-  const idx = toasts.findIndex(t => t.id === id);
-  if (idx !== -1) toasts.splice(idx, 1);
-  }, duration);
-  }
-  };
-  /* 전역 노출 (BaseModal 등에서 props 없이 호출) */
-  window.boToast = showToast;
-
-  /* closeToast */
-  const closeToast = (id) => {
-  const idx = toasts.findIndex(t => t.id === id);
-  if (idx !== -1) toasts.splice(idx, 1);
-  };
-
-  /* closeAllToasts */
-  const closeAllToasts = () => { toasts.splice(0, toasts.length); };
-  const TOAST_DETAIL_KEY = 'modu-bo-toast-isShowDetail';
-  const toastShowDetail = ref(localStorage.getItem(TOAST_DETAIL_KEY) !== 'false');
-
-  /* toggleToastDetail */
-  const toggleToastDetail = () => {
-  toastShowDetail.value = !toastShowDetail.value;
-  localStorage.setItem(TOAST_DETAIL_KEY, toastShowDetail.value);
-  toasts.forEach(t => { t.expanded = toastShowDetail.value; });
-  };
-
-  /* ── API 응답 패널 ── */
-  const apiResPanel = reactive({ show: false, res: null });
-
-  /* setApiRes */
-  const setApiRes = (res) => { apiResPanel.res = res; /* apiResPanel.show = true; */ };
-
-  /* closeApiResPanel */
-  const closeApiResPanel = () => { apiResPanel.show = false; };
-
-  /* ── Confirm ── */
-  const confirmState = reactive({ show: false, title: '', msg: '', details: null, btnOk: '확인', btnCancel: '취소', resolve: null });
-
-  /* showConfirm */
-  const showConfirm  = (title, msg, opts = {}) =>
-  new Promise(r => Object.assign(confirmState, {
-  show: true, title, msg,
-  details:  opts.details  || null,
-  btnOk:  opts.btnOk  || '확인',
-  btnCancel: opts.btnCancel || '취소',
-  resolve: r,
-  }));
-  /* 전역 노출 (BaseModal 등에서 props 없이 호출 가능) */
-  window.boConfirm = showConfirm;
-
-  /* closeConfirm */
-  const closeConfirm = v => { confirmState.show = false; confirmState.resolve?.(v); };
-
-  /* ── 참조 모달 ── */
-  const refModal = reactive({ show: false, type: '', id: null });
-
-  /* showRefModal */
-  const showRefModal = (type, id) => { refModal.type = type; refModal.id = id; refModal.show = true; };
-
-  /* closeRefModal */
-  const closeRefModal = () => { refModal.show = false; };
-
-  /* ── 전역 노출: 페이지 컴포넌트에서 props 없이 직접 접근 가능 ── */
-  window.boApp = {
-    navigate,
-    showToast,
-    showConfirm,
-    showRefModal,
-    setApiRes,
-  };
-
-  /* ── 도움말 모달 ── */
-  const helpModal = reactive({ show: false, topic: '' });
-
-  /* showHelp */
-  const showHelp = (topic = '') => { helpModal.topic = topic; helpModal.show = true; };
-  /* 전역 노출 — 어느 컴포넌트에서든 window.showBoHelp('prodOpt') 호출 가능 */
-  window.showBoHelp = showHelp;
-
-  /* ── 공통 필터 & 선택 모달 ── */
-  const rightPanelOpen = ref(true);
-  const commonFilter  = boCommonFilter;
-
-  /* 사이트 필터 default 적용: store(svBoSiteId)가 있으면 그 값을 commonFilter.siteId 기본으로 세팅 */
-  if (!commonFilter.siteId) {
-    const _appStore = window.sfGetBoAppStore?.();
-    commonFilter.siteId = _appStore?.svBoSiteId || '2604010000000001';
-  }
-
-  const selectModal  = reactive({ type: '', show: false });
-
-  /* openSelectModal */
-  const openSelectModal  = (type) => { selectModal.type = type; selectModal.show = true; };
-
-  /* closeSelectModal */
-  const closeSelectModal = () => { selectModal.show = false; selectModal.type = ''; };
-
-  /* onSelectItem */
-  const onSelectItem  = (type, item) => {
-  if  (type === 'site') {
-    commonFilter.siteId  = item?.siteId  ?? null;
-    /* boAppStore 의 svBoSiteId / svBoSiteNm 동기화 */
-    const _appStore = window.useBoAppStore?.();
-    if (_appStore && item) {
-      _appStore.saSetBoSiteId?.(item.siteId);
-      _appStore.saSetBoSiteNm?.(item.siteNm);
-    }
-  }
-  else if (type === 'vendor')  commonFilter.vendorId = item?.vendorId  ?? null;
-  else if (type === 'dlivVendor') commonFilter.dlivVendorId = item?.vendorId ?? null;
-  else if (type === 'boUser') commonFilter.userId  = item?.boUserId ?? null;
-  else if (type === 'member')  commonFilter.memberId = item?.memberId  ?? null;
-  else if (type === 'order')  commonFilter.orderId  = item?.orderId  ?? null;
-  selectModal.show = false;
-  };
-
-  /* clearFilter */
-  const clearFilter  = (type) => {
-  if  (type === 'site')  commonFilter.siteId  = null;   /* 사이트는 필수이지만 사용자가 직접 비우는 경우에만 */
-  else if (type === 'vendor')  commonFilter.vendorId = null;
-  else if (type === 'dlivVendor') commonFilter.dlivVendorId = null;
-  else if (type === 'boUser') commonFilter.userId  = null;
-  else if (type === 'member')  commonFilter.memberId = null;
-  else if (type === 'order')  commonFilter.orderId  = null;
-  };
-
-  /* 공통 필터 표시용 — _boCmSites 에서 siteId 매칭. 매칭 실패 시 boAppStore 의 svBoSiteId/svBoSiteNm fallback */
-  const filterSite = computed(() => {
-    if (!commonFilter.siteId) return null;
-    const sites = window._boCmSites || [];
-    const found = sites.find(s => s.siteId === commonFilter.siteId);
-    if (found) return found;
-    /* sites 가 아직 로드되지 않은 경우, store 값으로 임시 표시 */
-    const _appStore = window.sfGetBoAppStore?.();
-    if (_appStore && commonFilter.siteId === _appStore.svBoSiteId) {
-      return { siteId: _appStore.svBoSiteId, siteNm: _appStore.svBoSiteNm, siteCode: '' };
-    }
-    return { siteId: commonFilter.siteId, siteNm: '', siteCode: '' };
-  });
-  const filterVendor = null, cfFilterDlivVendor = null;
-  const cfFilterBoUser = null, filterMember = null, filterOrder = null;
-
-  /* ── API 로그 (최대 10건, localStorage 저장) ── */
-  const apiLogs = reactive([]);
-  const apiLogHoverDetail = ref(null);
-  const apiLogLockedDetail = ref(null);
-  const maxApiLogs = 15;
-
-  /* _loadApiLogsFromStorage */
-  const _loadApiLogsFromStorage = () => {
-  try {
-  const stored = localStorage.getItem('modu-bo-apiLog');
-  if (stored) {
-  const parsed = JSON.parse(stored);
-  if (Array.isArray(parsed)) {
-  apiLogs.push(...parsed);
-  }
-  }
-  } catch (_) {}
-  };
-
-  /* _saveApiLogsToStorage */
-  const _saveApiLogsToStorage = () => {
-  try {
-  localStorage.setItem('modu-bo-apiLog', JSON.stringify(apiLogs.slice(0, 10)));
-  } catch (_) {}
-  };
-
-  /* addApiLog */
-  const addApiLog = (method, url, status, duration, hasError = false, reqData = null, resData = null, reqHeaders = null) => {
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, '0');
-  const mm = String(now.getMinutes()).padStart(2, '0');
-  const ss = String(now.getSeconds()).padStart(2, '0');
-  const time = `${hh}:${mm}:${ss}s`;
-  let reqStr = '', resStr = '', headerStr = '', uiLabel = '';
-  try {
-  if (reqData) reqStr = JSON.stringify(typeof reqData === 'string' ? JSON.parse(reqData) : reqData, null, 2);
-  if (resData) resStr = JSON.stringify(typeof resData === 'string' ? JSON.parse(resData) : resData, null, 2);
-  if (reqHeaders) {
-  /* dec */
-  const dec = (v) => { try{ return v ? decodeURIComponent(v) : ''; }catch(_){ return v||''; } };
-
-  /* get */
-  const get = (h, k) => h[k] || h[k.toLowerCase()] || '';
-  const decUiNm  = dec(get(reqHeaders, 'X-UI-Nm'));
-  const decCmdNm = dec(get(reqHeaders, 'X-Cmd-Nm'));
-  if (decUiNm || decCmdNm) uiLabel = decCmdNm ? (decUiNm + ' > ' + decCmdNm) : decUiNm;
-
-  /* trunc */
-  const trunc = (v, n=60) => v && v.length > n ? v.slice(0,8)+'...'+v.slice(-6) : (v||'');
-
-  /* row */
-  const row = (...keys) => keys.map(k => { const v = dec(get(reqHeaders,k)); return v ? k.toLowerCase()+': '+v : ''; }).filter(Boolean).join(' | ');
-  const lines = [
-  row('x-site-type','X-UI-Nm','X-Cmd-Nm'),
-  row('X-File-Nm','X-Func-Nm','X-Line-No'),
-  [
-  dec(get(reqHeaders,'X-Trace-Id'))  ? 'x-trace-id: '+dec(get(reqHeaders,'X-Trace-Id'))  : '',
-  dec(get(reqHeaders,'X-Site-Id'))  ? 'x-site-id: '+dec(get(reqHeaders,'X-Site-Id'))  : '',
-  dec(get(reqHeaders,'X-Buyer-Id'))  ? 'x-buyer-id: '+dec(get(reqHeaders,'X-Buyer-Id'))  : '',
-  dec(get(reqHeaders,'X-License-Code'))? 'x-license-code: '+trunc(dec(get(reqHeaders,'X-License-Code')),16) : '',
-  dec(get(reqHeaders,'X-User-Agent'))  ? 'x-user-agent: '+trunc(dec(get(reqHeaders,'X-User-Agent')),18) : '',
-  get(reqHeaders,'Authorization')  ? 'authorization: '+trunc(get(reqHeaders,'Authorization'),20) : '',
-  ].filter(Boolean).join(' | '),
-  ].filter(Boolean);
-  headerStr = lines.join('\n');
-  }
-  } catch (_) {
-  reqStr = String(reqData || '');
-  resStr = String(resData || '');
-  }
-  apiLogs.unshift({ method, url, status, duration, time, hasError, uiLabel, reqData: reqStr, resData: resStr, headers: headerStr });
-  if (apiLogs.length > maxApiLogs) apiLogs.pop();
-  _saveApiLogsToStorage();
-  };
-
-  /* clearApiLogs */
-  const clearApiLogs = () => {
-  apiLogs.length = 0;
-  try { localStorage.removeItem('modu-bo-apiLog'); } catch (_) {}
-  showToast('API 로그가 초기화되었습니다.', 'success');
-  };
-
-  /* toggleApiLogLock */
-  const toggleApiLogLock = (log) => {
-  if (apiLogLockedDetail.value === log) {
-  apiLogLockedDetail.value = null;
-  } else {
-  apiLogLockedDetail.value = log;
-  }
-  };
-
-  /* onApiLogEnter */
-  const onApiLogEnter = (log) => { apiLogHoverDetail.value = log; };
-
-  /* onApiLogLeave */
-  const onApiLogLeave = (log) => { if (apiLogLockedDetail.value !== log) apiLogHoverDetail.value = null; };
-
-  /* formatJsonData */
-  const formatJsonData = (data) => {
-  try {
-  if (!data) return 'N/A';
-  if (typeof data === 'string') {
-  const parsed = JSON.parse(data);
-  return JSON.stringify(parsed, null, 2);
-  } else if (typeof data === 'object') {
-  return JSON.stringify(data, null, 2);
-  }
-  return String(data);
-  } catch (e) {
-  return String(data);
-  }
-  };
-
-  /* isWithin60Seconds */
-  const isWithin60Seconds = (timeStr) => {
-  try {
-  const [hh, mm, ss] = timeStr.replace('s', '').split(':').map(Number);
-  const logTime = hh * 3600 + mm * 60 + ss;
-  const now = new Date();
-  const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  const diff = Math.abs(currentTime - logTime);
-  return diff <= 60 || (diff > 86400 - 60 && diff < 86400);
-  } catch (_) {
-  return false;
-  }
-  };
-
-  /* getRelativeTime */
-  const getRelativeTime = (timeStr) => {
-  try {
-  const [hh, mm, ss] = timeStr.replace('s', '').split(':').map(Number);
-  const logTime = hh * 3600 + mm * 60 + ss;
-  const now = new Date();
-  const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  let diff = currentTime - logTime;
-
-  if (diff < 0) {
-  diff += 86400;
-  }
-
-  if (diff < 60) {
-  return `${diff}초전`;
-  } else if (diff < 3600) {
-  const minutes = Math.floor(diff / 60);
-  const seconds = diff % 60;
-  return `${minutes}분${seconds}초전`;
-  }
-  return timeStr;
-  } catch (_) {
-  return timeStr;
-  }
-  };
-
-  /* getApiStatusColor */
-  const getApiStatusColor = (status) => {
-  if (status >= 200 && status < 300) return '#10b981';
-  if (status >= 300 && status < 400) return '#3b82f6';
-  if (status >= 400 && status < 500) return '#f59e0b';
-  if (status >= 500) return '#ef4444';
-  return '#6b7280';
-  };
-
-  /* boApi 인터셉터로 로그 수집 */
-
-  /* ── 반응형: 화면 크기에 따라 사이드바 자동 열기/닫기 ── */
-  const checkWidth = () => { leftMenuOpen.value = window.innerWidth >= 920; };
-  onBeforeUnmount(() => window.removeEventListener('resize', checkWidth));
-
-  /* ── 탭바 좌우 스크롤 ── */
-  const tabBarRef = ref(null);
-
-  /* scrollTabs */
-  const scrollTabs = (dir) => {
-  if (tabBarRef.value) tabBarRef.value.scrollBy({ left: dir * 180, behavior: 'smooth' });
-  };
-
-  /* ── 로그인 상태 (localStorage 영속화) ── */
-  const _mkBoToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
-
-  /* _restoreBoUser */
-  const _restoreBoUser = () => {
-  try {
-  const tok = localStorage.getItem('modu-bo-accessToken');
-  if (!tok) return { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
-  const authUser = JSON.parse(localStorage.getItem('modu-bo-authUser') || 'null');
-  return authUser || { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
-  } catch(_) { return { userId: '', name: '', email: '', role: '', phone: '', dept: '' }; }
-  };
-
-  /* ── FO의 foAuth.state 패턴과 동일: Vue.reactive state + _sync() ── */
-  const _defaultBoAuthUser = () => ({ authId: '', authNm: '', userId: '', name: '', email: '', role: '', phone: '', dept: '', AppTypeCd: '', roleId: '', siteId: '', profileAttachId: null });
-  const currentAuthUser = reactive(_defaultBoAuthUser());
-  // store 인스턴스를 setup() 안에서 한 번만 가져와서 고정 — Pinia 컨텍스트 보장
-  const _boAuthStore = window.useBoAuthStore?.();
-
-  /* _syncCurrentAuthUser */
-  const _syncCurrentAuthUser = () => {
-  try {
-  const u = _boAuthStore?.svAuthUser;
-  const target = (u && u.authId) ? u : _defaultBoAuthUser();
-  // 동일 값 set 으로 인한 reactive 무한 갱신 방지 — 변경된 키만 set
-  for (const k in target) {
-  if (currentAuthUser[k] !== target[k]) currentAuthUser[k] = target[k];
-  }
-  } catch(e) {}
-  };
-
-  // 초기 복원 — 토큰 없으면 reset, 있으면 syncFromStorage (FO foAuth.init() 동일 패턴)
-  try {
-  const _initToken = localStorage.getItem('modu-bo-accessToken');
-  if (!_initToken) _boAuthStore?.saReset?.();
-  else _boAuthStore?.saSyncFromStorage?.();
-  } catch(_) {}
-  _syncCurrentAuthUser();
-
-  // F5 새로고침 시 토큰 유효성 검증 (FO: foAuth.init() 내 fetchFoAppInitData())
-  // boInitReady: 초기화 완료 전 컴포넌트 API 호출을 막기 위한 플래그
-  const boInitReady = ref(false);
-  window.boInitReady = false;
-  (async () => {
-  const store = _boAuthStore;
-  if (store?.svAccessToken) {
-  try {
-  await window.useBoAppInitStore?.()?.saFetchBoAppInitData?.();
-  _syncCurrentAuthUser();
-  } catch (e) {
-  if (e?.response?.status === 401) {
-  console.warn('[boApp] token invalid (401), reset session');
-  store.saReset();
-  _syncCurrentAuthUser();
-  } else {
-  console.warn('[boApp] fetchBoAppInitData error:', e?.response?.status || e.message);
-  }
-  }
-  }
-  boInitReady.value = true;
-  window.boInitReady = true;
-  })();
-  const activeRoleId = ref(null);
-  const cfIsLoggedIn = computed(() => !!(currentAuthUser?.authId));
-  const currentAuthUserRoles = reactive([]);
-  // getInitData 응답에 이미 사용자 역할 + 시스템 역할이 모두 들어있으므로
-  // 별도 API 호출 없이 store 데이터에서 사용자 역할만 매핑한다.
-  //   - 사용자 역할 ID 목록   : boAuthStore.svTempAuthInfo['authUser-roles']  (← syAuth.tempAuthInfo)
-  //   - 시스템 전체 역할 정보 : boRoleStore.svRoles                          (← syRoles)
-  const _rolesEqual = (a, b) => {
-  if (!a || !b || a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) if (a[i]?.roleId !== b[i]?.roleId) return false;
-  return true;
-  };
-
-  /* updateCurrentUserRoles */
-  const updateCurrentUserRoles = () => {
-  try {
-  if (!currentAuthUser?.authId) {
-  if (currentAuthUserRoles.length) currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
-  return;
-  }
-  const allRoles = window.sfGetBoRoleStore?.()?.svRoles || [];
-  const tempAuthInfo = window.useBoAuthStore?.()?.svTempAuthInfo || {};
-  const userRoleEntries = tempAuthInfo['authUser-roles'] || [];
-  const roleMap = Object.fromEntries(allRoles.map(r => [r?.roleId, r]));
-  const result = userRoleEntries.map(ur => roleMap[ur?.roleId]).filter(Boolean);
-  // 결과가 동일하면 splice 스킵 — reactive 무한 갱신 방지
-  if (!_rolesEqual(currentAuthUserRoles, result)) {
-  currentAuthUserRoles.splice(0, currentAuthUserRoles.length, ...result);
-  }
-  } catch (e) {
-  console.error('currentAuthUserRoles error:', e);
-  if (currentAuthUserRoles.length) currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
-  }
-  };
-  updateCurrentUserRoles();
-  // currentAuthUser 객체 deep watch 시 매번 fire → authId 변화에만 반응 (로그인 상태 변화 트래킹)
-  watch(() => currentAuthUser?.authId || '', updateCurrentUserRoles);
-  // getInitData 비동기 완료 시점에도 재계산 — store 데이터 도착 후 역할 매핑
-  watch(boInitReady, (v) => { if (v) updateCurrentUserRoles(); });
-
-  /* rolePath */
-  const rolePath = (r, uid) => {
-  try {
-  if (!r) return '';
-  const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
-  const m = Object.fromEntries((roles || []).map(x => [x?.roleId, x]));
-  const seg = []; let cur = r; let root = r;
-  while (cur) {
-  seg.unshift(cur?.roleNm || '');
-  root = cur;
-  cur = (cur?.parentId && m[cur.parentId]) ? m[cur.parentId] : null;
-  }
-  return seg.join(' > ');
-  } catch (e) {
-  console.error('rolePath error:', e);
-  return '';
-  }
-  };
-
-  /* onRoleChange */
-  const onRoleChange = () => { location.reload(); };
-
-  /* rolesOfUser */
-  const rolesOfUser = (uid) => {
-  try {
-  const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
-  const m = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
-  const userRoles = (currentAuthUserRoles || []).filter(ur => ur?.userId === uid || !uid);
-  const result = (userRoles || []).map(ur => m[ur?.roleId]).filter(Boolean);
-  return result || [];
-  } catch (e) {
-  console.error('rolesOfUser error:', e);
-  return [];
-  }
-  };
-
-  /* bizInfoOfUser */
-  const bizInfoOfUser = () => '';
-
-  onMounted(() => {
-  setTimeout(() => { window.useBoAppInitStore?.()?.saRestoreFromStorage?.(); }, 0);
-  _loadApiLogsFromStorage();
-  setTimeout(() => {
-  if (typeof boApi !== 'undefined' && boApi.raw) {
-  const inst = boApi.raw;
-  const startTime = {};
-  const reqData = {};
-  const reqHeaders = {};
-  inst.interceptors.request.use((cfg) => {
-  const key = cfg.url + cfg.method;
-  startTime[key] = Date.now();
-  reqData[key] = cfg.data || cfg.params || null;
-  reqHeaders[key] = cfg.headers || {};
-  return cfg;
-  });
-  inst.interceptors.response.use(
-  (res) => {
-  const key = res.config.url + res.config.method;
-  const duration = Date.now() - (startTime[key] || 0);
-  addApiLog(res.config.method.toUpperCase(), res.config.url, res.status, duration, false, reqData[key], res.data, reqHeaders[key]);
-  delete startTime[key]; delete reqData[key]; delete reqHeaders[key];
-  return res;
-  },
-  (err) => {
-  const cfg = err.config || {};
-  const key = cfg.url + cfg.method;
-  const duration = Date.now() - (startTime[key] || 0);
-  addApiLog(cfg.method.toUpperCase(), cfg.url, err.response?.status || 0, duration, true, reqData[key], err.response?.data, reqHeaders[key]);
-  delete startTime[key]; delete reqData[key]; delete reqHeaders[key];
-  return Promise.reject(err);
-  }
-  );
-  }
-  }, 100);
-  checkWidth(); window.addEventListener('resize', checkWidth);
-  const codeStore = window.sfGetBoCodeStore?.();
-  if (codeStore?.sgGetGrpCodes) {
-    const roles = codeStore.sgGetGrpCodes('USER_ROLE') || [];
-    userRoles.splice(0, userRoles.length, ...roles);
-  }
-  });
-  // currentAuthUser 객체 deep watch 시 매번 fire → userId 변화에만 반응
-  watch(() => currentAuthUser?.userId || '', (uid) => {
-  try {
-  if (uid) {
-  const roles = currentAuthUserRoles || [];
-  if (!roles.find(r => r?.roleId === activeRoleId.value)) {
-  const newRoleId = (roles && roles.length) ? roles[0]?.roleId : null;
-  if (activeRoleId.value !== newRoleId) activeRoleId.value = newRoleId;
-  }
-  } else {
-  if (activeRoleId.value !== null) activeRoleId.value = null;
-  }
-  } catch (e) {
-  console.error('watch currentAuthUser error:', e);
-  if (activeRoleId.value !== null) activeRoleId.value = null;
-  }
-  }, { immediate: true });
-  const loginModal  = reactive({ show: false, tab: 'login' });
-  const loginForm  = reactive({ loginId: '', loginPwd: '', authMethod: '메인' });
-  const QUICK_USERS = [
-  { loginId: 'super_admin',  loginPwd: 'demo1234', label: '슈퍼관리자',  userNm: '슈퍼관리자', role: 'SUPER',  icon: '👑' },
-  { loginId: 'admin1',       loginPwd: 'demo1234', label: '운영관리자',  userNm: '관리자1',   role: 'ADMIN',  icon: '🛡' },
-  { loginId: 'admin2',       loginPwd: 'demo1234', label: '일반관리자',  userNm: '관리자2',   role: 'ADMIN',  icon: '👤' },
-  { loginId: 'operator1',    loginPwd: 'demo1234', label: '운영자',      userNm: '운영자1',   role: 'OPR',    icon: '⚙️' },
-  { loginId: 'cs_agent1',    loginPwd: 'demo1234', label: 'CS상담원',   userNm: 'CS상담원1', role: 'CS',     icon: '🎧' },
-  { loginId: 'vendor1',      loginPwd: 'demo1234', label: '판매업체',    userNm: '판매업체1', role: 'VENDOR', icon: '🏪' },
-  ];
-
-  /* quickLogin */
-  const quickLogin = (u) => {
-  loginForm.loginId = u.loginId;
-  loginForm.loginPwd = u.loginPwd;
-  doLogin();
-  };
-  /* 사용자 선택 모달 */
-  const PAGE_SIZE = 20;
-  const userPickModal = reactive({ show: false, searchValue: '', pageNo: 1, loading: false, rows: [], total: 0, totalPage: 1, isApiMode: false });
-
-  /* _loadUserPickPage */
-  const _loadUserPickPage = async () => {
-  userPickModal.loading = true;
-  try {
-  const params = { pageNo: userPickModal.pageNo, pageSize: PAGE_SIZE };
-  if (userPickModal.searchValue) params.searchValue = userPickModal.searchValue; // 빈 문자열 미전송 → 전체 조회
-  const res = await window.coApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
-  const d = res.data?.data;
-  userPickModal.rows      = d?.pageList || d?.list || [];
-  userPickModal.total     = d?.pageTotalCount ?? d?.total ?? 0;
-  userPickModal.totalPage = d?.pageTotalPage  ?? d?.totalPage ?? Math.max(1, Math.ceil(userPickModal.total / PAGE_SIZE));
-  } catch(e) {
-  console.warn('[userPickModal] load error:', e);
-  userPickModal.rows = []; userPickModal.total = 0; userPickModal.totalPage = 1;
-  } finally { userPickModal.loading = false; }
-  };
-  /* 로컬(QUICK_USERS) 페이징 — 로그인 전 fallback */
-  const cfLocalFiltered = Vue.computed(() => {
-  const searchVal = (userPickModal.searchValue || '').toLowerCase();
-  return searchVal ? QUICK_USERS.filter(u =>
-    u.label.toLowerCase().includes(searchVal) || u.loginId.toLowerCase().includes(searchVal) || (u.userNm||'').toLowerCase().includes(searchVal)
-  ) : QUICK_USERS;
-  });
-  const cfLocalPage = Vue.computed(() => {
-  const start = (userPickModal.pageNo - 1) * PAGE_SIZE;
-  return cfLocalFiltered.value.slice(start, start + PAGE_SIZE);
-  });
-  const cfLocalTotalPage = Vue.computed(() => Math.max(1, Math.ceil(cfLocalFiltered.value.length / PAGE_SIZE)));
-  const cfPickRows     = Vue.computed(() => userPickModal.isApiMode ? userPickModal.rows     : cfLocalPage.value);
-  const cfPickTotal    = Vue.computed(() => userPickModal.isApiMode ? userPickModal.total    : cfLocalFiltered.value.length);
-  const cfPickTotalPage= Vue.computed(() => userPickModal.isApiMode ? userPickModal.totalPage: cfLocalTotalPage.value);
-
-  /* openUserPick */
-  const openUserPick = () => {
-  userPickModal.searchValue = ''; userPickModal.pageNo = 1;
-  userPickModal.isApiMode = true; // 항상 API 모드 (로그인 전/후 무관)
-  userPickModal.show = true;
-  _loadUserPickPage();
-  };
-
-  /* onUserPickSearch */
-  const onUserPickSearch = () => {
-  userPickModal.pageNo = 1;
-  _loadUserPickPage();
-  };
-
-  /* onUserPickPage */
-  const onUserPickPage = (p) => {
-  userPickModal.pageNo = p;
-  _loadUserPickPage();
-  };
-
-  /* onUserPick */
-  const onUserPick = (u) => {
-  userPickModal.show = false;
-  loginForm.loginId  = u.loginId || u.userId || '';
-  loginForm.loginPwd = '1111'; // 마스터 패스워드 — 서버에서 SHA256("1111") 무조건 통과
-  doLogin();
-  };
-  const regForm  = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
-  const userRoles  = reactive([]);
-  const loginError  = ref('');
-  const uiState = reactive({ userMenuShow: false, profileModalShow: false, pwModalShow: false, relatedSiteOpen: false });
-
-  /* 프로필 모달 */
-  const profileForm  = reactive({ name: '', phone: '', dept: '', email: '', profileAttachId: null });
-  const profileImg   = reactive({ attachId: null, cdnImgUrl: '' }); // 표시용 이미지 상태
-  const profileImgUploading = ref(false);
-
-  /* _loadProfileImg */
-  const _loadProfileImg = async (grpId) => {
-  if (!grpId) { profileImg.attachId = null; profileImg.cdnImgUrl = ''; return; }
-  try {
-  const res = await window.coApiSvc.cmAttach.getFiles(grpId);
-  const f = (res.data?.data || [])[0];
-  profileImg.attachId  = f?.attachId  || null;
-  profileImg.cdnImgUrl = f?.cdnImgUrl || '';
-  } catch(e) { profileImg.attachId = null; profileImg.cdnImgUrl = ''; }
-  };
-
-  /* openProfile */
-  const openProfile  = () => {
-  if (!currentAuthUser || !currentAuthUser.userId) return;
-  Object.assign(profileForm, {
-  name: currentAuthUser.name || '',
-  phone: currentAuthUser.phone || '',
-  dept: currentAuthUser.dept || '',
-  email: currentAuthUser.email || '',
-  profileAttachId: currentAuthUser.profileAttachId || null,
-  });
-  _loadProfileImg(profileForm.profileAttachId);
-  uiState.profileModalShow = true; uiState.userMenuShow = false;
-  };
-
-  /* saveProfile */
-  const saveProfile  = () => {
-  if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
-  if (!currentAuthUser) Object.assign(currentAuthUser, _defaultBoAuthUser());
-  currentAuthUser.name  = profileForm.name || '';
-  currentAuthUser.phone = profileForm.phone || '';
-  currentAuthUser.dept  = profileForm.dept || '';
-  currentAuthUser.profileAttachId = profileForm.profileAttachId || null;
-  uiState.profileModalShow = false;
-  showToast('프로필이 저장되었습니다.');
-  };
-
-  /* onProfileImgChange */
-  const onProfileImgChange = async (e) => {
-  const f = e.target.files?.[0]; e.target.value = '';
-  if (!f) return;
-  profileImgUploading.value = true;
-  try {
-  if (profileImg.attachId) {
-  await window.coApiSvc.cmAttach.deleteFile(profileImg.attachId);
-  profileImg.attachId = null; profileImg.cdnImgUrl = '';
-  }
-  const fd = new FormData();
-  fd.append('files', f);
-  fd.append('businessCode', 'USER_PROFILE');
-  fd.append('grpNm', '사용자 프로필');
-  if (profileForm.profileAttachId) fd.append('attachGrpId', profileForm.profileAttachId);
-  const res = await window.boApi.post('co/cm/upload/multi', fd, window.coUtil.cofApiHdr('프로필', '사진변경'));
-  const d = res.data?.data;
-  const uploaded = (d?.files || [])[0];
-  if (uploaded) { profileImg.attachId = uploaded.attachId; profileImg.cdnImgUrl = uploaded.cdnImgUrl || ''; }
-  if (!profileForm.profileAttachId && d?.attachGrpId) profileForm.profileAttachId = d.attachGrpId;
-  showToast('사진이 변경되었습니다.', 'success');
-  } catch (err) {
-  showToast(err.response?.data?.message || '업로드 중 오류가 발생했습니다.', 'error');
-  } finally { profileImgUploading.value = false; }
-  };
-
-  /* onProfileImgRemove */
-  const onProfileImgRemove = async () => {
-  if (!profileImg.attachId) { profileForm.profileAttachId = null; profileImg.cdnImgUrl = ''; return; }
-  try {
-  await window.coApiSvc.cmAttach.deleteFile(profileImg.attachId);
-  profileImg.attachId = null; profileImg.cdnImgUrl = '';
-  profileForm.profileAttachId = null;
-  showToast('사진이 삭제되었습니다.', 'success');
-  } catch(err) { showToast(err.response?.data?.message || '삭제 오류', 'error', 0); }
-  };
-
-  /* 비밀번호 변경 모달 */
-  const pwForm  = reactive({ current: '', next: '', confirm: '' });
-  const pwError  = ref('');
-
-  /* openPwChange */
-  const openPwChange = () => {
-  Object.assign(pwForm, { current: '', next: '', confirm: '' });
-  pwError.value = ''; uiState.pwModalShow = true; uiState.userMenuShow = false;
-  };
-
-  /* savePwChange */
-  const savePwChange = async () => {
-  pwError.value = '';
-  if (!pwForm.current || !pwForm.next || !pwForm.confirm) { pwError.value = '모든 항목을 입력하세요.'; return; }
-  if (pwForm.next.length < 6) { pwError.value = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
-  if (pwForm.next !== pwForm.confirm) { pwError.value = '새 비밀번호가 일치하지 않습니다.'; return; }
-  try {
-  const currentPwdHash = await coUtil.cofSha256(pwForm.current);
-  const newPwdHash  = await coUtil.cofSha256(pwForm.next);
-  await coApiSvc.boAuth.changePassword(
-  { currentPassword: currentPwdHash, newPassword: newPwdHash },
-  '비밀번호변경', '변경',
-  );
-  uiState.pwModalShow = false;
-  showToast('비밀번호가 변경되었습니다.');
-  } catch (e) {
-  pwError.value = e.response?.data?.message || '비밀번호 변경 실패';
-  }
-  };
-
-  /* openLogin */
-  const openLogin = (tab = 'login') => {
-  loginModal.tab = tab; loginModal.show = true; loginError.value = '';
-  };
-
-  /* closeLogin */
-  const closeLogin = () => { loginModal.show = false; loginError.value = ''; };
-
-  /* doLogin */
-  const doLogin = async () => {
-  loginError.value = '';
-  if (!loginForm.loginId || !loginForm.loginPwd) { loginError.value = '아이디와 비밀번호를 입력하세요.'; return; }
-  try {
-  if (!_boAuthStore) { loginError.value = '스토어 초기화 실패'; return; }
-
-  await _boAuthStore.saLogin(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
-  _syncCurrentAuthUser();
-
-  openTabs.splice(0);
-  loginForm.loginId = ''; loginForm.loginPwd = '';
-  closeLogin();
-  navigate('dashboard');
-  showToast(`${(currentAuthUser?.authNm || currentAuthUser?.name || '사용자')}님 환영합니다.`);
-  } catch (err) {
-  console.error('[catch-info]', err);
-  loginError.value = err?.response?.data?.message || err?.message || '로그인 실패';
-  }
-  };
-
-  /* doLogout */
-  const doLogout = async () => {
-  try {
-  const authStore = window.useBoAuthStore?.();
-  const configStore = window.useBoConfigStore?.();
-
-  if (authStore) {
-  await authStore.saLogout();
-  }
-  if (configStore) {
-  configStore.saReset();
-  }
-
-  uiState.userMenuShow = false;
-  openTabs.splice(0);
-  navigate('dashboard');
-  showToast('로그아웃되었습니다.');
-  } catch (e) {
-  console.error('doLogout error:', e);
-  uiState.userMenuShow = false;
-  }
-  };
-  /* 다른 탭 로그인/로그아웃 동기화 */
-  window.addEventListener('storage', (e) => {
-  if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser') {
-  _boAuthStore?.saSyncFromStorage?.();
-  _syncCurrentAuthUser();
-  }
-  });
-  /* 같은 탭 DevTools 변경 감지 — FO의 syncFromStorage + _sync() 패턴 동일 적용 (가드: 중복 setInterval 방지) */
-  if (!window._boAuthSyncTimer) {
-  window._boAuthSyncTimer = setInterval(() => {
-  _boAuthStore?.saSyncFromStorage?.();
-  _syncCurrentAuthUser();
-  }, 3000);
-  }
-
-  /* doRegister */
-  const doRegister = async () => {
-  loginError.value = '';
-  if (!regForm.name || !regForm.email || !regForm.password) { loginError.value = '필수 항목을 입력하세요.'; return; }
-  if (regForm.password !== regForm.confirmPw) { loginError.value = '비밀번호가 일치하지 않습니다.'; return; }
-  try {
-  await boApiSvc.syUser.create({
-  name: regForm.name,
-  email: regForm.email,
-  password: regForm.password,
-  phone: regForm.phone,
-  role: regForm.role,
-  }, '사용자등록', '저장');
-  Object.assign(regForm, { name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
-  loginModal.tab = 'login';
-  loginError.value = '';
-  showToast('가입이 완료되었습니다. 로그인해주세요.');
-  } catch (err) {
-  console.error('[catch-info]', err);
-  loginError.value = err.response?.data?.message || err.message || '가입 실패';
-  }
-  };
-
-  /* ── 연관사이트 레이어 ── */
-  const toggleRelatedSite = () => { uiState.relatedSiteOpen = !uiState.relatedSiteOpen; };
-
-  /* openRelatedLink */
-  const openRelatedLink = (url) => {
-  window.open(url, '_blank', 'noopener,noreferrer');
-  uiState.relatedSiteOpen = false;
-  };
-
-  /* goFoSite */
-  const goFoSite = (no) => {
-  try { localStorage.setItem('modu-fo-siteNo', no); } catch(_){}
-  window.open('index.html?SITE_NO=' + no, '_blank');
-  uiState.relatedSiteOpen = false;
-  };
-
-  /* goBoSite */
-  const goBoSite = (no) => {
-  try { localStorage.setItem('modu-bo-siteNo', no); } catch(_){}
-  window.open('bo.html?SITE_NO=' + no, '_blank');
-  uiState.relatedSiteOpen = false;
-  };
-  const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-siteNo')) || '01';
-  const currentBoSiteNo = window.BO_SITE_NO || '01';
-  const _boAppStore = window.useBoAppStore?.();
-  const cfBoActive = computed(() => _boAppStore?.svActive || '-');
-  const SITE_PAIR_MENU = [
-  { fo:'01',  bo:'01' },
-  { fo:'02',  bo:'02' },
-  { fo:'03',  bo:'03' },
-  { fo:'9999', bo:'9999' },
-  ];
-  const DISP_LINKS = [
-  { label: '통합 페이지', hash: '#page=dispUiPage', icon:'🌐' },
-  { label: 'UI 샘플 01',  hash: '#page=dispUi01',  icon:'1️⃣' },
-  { label: 'UI 샘플 02',  hash: '#page=dispUi02',  icon:'2️⃣' },
-  { label: 'UI 샘플 03',  hash: '#page=dispUi03',  icon:'3️⃣' },
-  { label: 'UI 샘플 04',  hash: '#page=dispUi04',  icon:'4️⃣' },
-  { label: 'UI 샘플 05',  hash: '#page=dispUi05',  icon:'5️⃣' },
-  { label: 'UI 샘플 06',  hash: '#page=dispUi06',  icon:'6️⃣' },
-  ];
-
-  /* ── 즐겨찾기 ── */
-  const favorites = reactive([]);
-  const favKeepSet = reactive(new Set()); // 즐겨찾기별 keep 설정
-  const sidebarTab = ref('open');
-
-  /* isFav */
-  const isFav = (pgId) => favorites.includes(pgId);
-
-  /* toggleFav */
-  const toggleFav = (pgId) => {
-  const idx = favorites.indexOf(pgId);
-  if (idx === -1) favorites.push(pgId);
-  else { favorites.splice(idx, 1); favKeepSet.delete(pgId); }
-  };
-
-  /* toggleFavKeep */
-  const toggleFavKeep = (pgId) => {
-  if (favKeepSet.has(pgId)) favKeepSet.delete(pgId);
-  else favKeepSet.add(pgId);
-  // 현재 열려있는 탭이면 keptTabIds에도 즉시 반영
-  if (openTabs.find(t => t.id === pgId)) {
-  if (favKeepSet.has(pgId)) keptTabIds.add(pgId);
-  else keptTabIds.delete(pgId);
-  }
-  };
-  const cfFavList = computed(() =>
-  favorites.map(pgId => {
-  const topId = PAGE_TO_TOP[pgId];
-  const topLabel = TOP_MENUS.find(t => t.id === topId)?.label || '';
-  return { id: pgId, label: PAGE_LABELS[pgId] || pgId, topLabel };
-  })
-  );
-
-  /* 루트 클릭 → 컨텍스트 메뉴·유저메뉴 닫기 */
-  const onRootClick = () => { closeCtxMenu(); uiState.userMenuShow = false; };
-
-  return {
-  isApiLoading,
-  page, dtlId, navigate, errorMessage, cfDashboardComp,
-  TOP_MENUS, LEFT_MENUS, AUTH_METHODS,
-  openTabs, closeTab, cfActiveTabId, refreshKeys, keptTabIds, toggleKeep, PAGE_COMP_MAP,
-  ctxMenu, showCtxMenu, closeCtxMenu,
-  ctxClose, ctxCloseLeft, ctxCloseRight, ctxCloseOthers, ctxCloseAll, ctxNewWindow, ctxRefresh,
-  openNewWindow, cfOpenTabsWithGroup,
-  activeTop, leftMenuOpen, setTopMenu,
-  toasts, showToast, closeToast, closeAllToasts, toastShowDetail, toggleToastDetail,
-  confirmState, showConfirm, closeConfirm,
-  refModal, showRefModal, closeRefModal,
-  helpModal, showHelp,
-  rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
-  filterSite, filterVendor, cfFilterDlivVendor, cfFilterBoUser, filterMember, filterOrder,
-  apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, onApiLogEnter, onApiLogLeave, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
-  tabBarRef, scrollTabs,
-  boInitReady, cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
-  loginModal, loginForm, regForm, loginError, uiState, userRoles,
-  openLogin, closeLogin, doLogin, doLogout, doRegister,
-  QUICK_USERS, quickLogin, userPickModal, openUserPick, onUserPick,
-  cfPickRows, cfPickTotal, cfPickTotalPage, onUserPickSearch, onUserPickPage,
-  profileForm, profileImg, profileImgUploading, openProfile, saveProfile, onProfileImgChange, onProfileImgRemove,
-  pwForm, pwError, openPwChange, savePwChange,
-  favorites, favKeepSet, sidebarTab, isFav, toggleFav, cfFavList, toggleFavKeep,
-  apiResPanel, setApiRes, closeApiResPanel,
-  onRootClick,
-  toggleRelatedSite, openRelatedLink,
-  goFoSite, goBoSite, currentFoSiteNo, currentBoSiteNo, cfBoActive, SITE_PAIR_MENU, DISP_LINKS,
-  safe: window.safeUtil,
-  };
-  },
-
-  template: /* html */`
+      const _fmtXHeaders = (headers) => {
+        if (!headers || headers.length === 0) return '';
+        const map = {};
+        headers.forEach((h) => {
+          const idx = h.indexOf(': ');
+          if (idx > -1) map[h.slice(0, idx).toLowerCase()] = h.slice(idx + 2);
+        });
+
+        /* truncate */
+        const truncate = (v) => (v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : v || '');
+        const NO_TRUNCATE = [
+          'x-trace-id',
+          'x-line-no',
+          'x-site-type',
+          'x-site-id',
+          'x-site-no',
+          'x-func-nm',
+          'x-file-nm',
+          'authorization',
+        ];
+
+        /* fmtVal */
+        const fmtVal = (k, v) => (k === 'x-func-nm' ? v + '()' : NO_TRUNCATE.includes(k) ? v : truncate(v));
+
+        /* row */
+        const row = (keys) =>
+          keys
+            .filter((k) => map[k])
+            .map((k) => `${k}: ${fmtVal(k, map[k])}`)
+            .join(' | ');
+        const lines = [
+          row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
+          row(['x-file-nm', 'x-func-nm', 'x-line-no']),
+          row(['x-trace-id', 'x-site-id', 'x-buyer-id', 'x-license-code', 'x-user-agent', 'authorization']),
+        ].filter(Boolean);
+        // 위 그룹에 포함되지 않은 나머지 x- 헤더
+        const known = [
+          'x-site-type',
+          'x-ui-nm',
+          'x-cmd-nm',
+          'x-file-nm',
+          'x-func-nm',
+          'x-line-no',
+          'x-trace-id',
+          'x-site-id',
+          'x-buyer-id',
+          'x-license-code',
+          'x-user-agent',
+          'authorization',
+        ];
+        const rest = Object.entries(map)
+          .filter(([k]) => !known.includes(k))
+          .map(([k, v]) => `${k}: ${truncate(v)}`)
+          .join(' | ');
+        if (rest) lines.push(rest);
+        return lines.join('\n');
+      };
+
+      /* API Validation 에러 → toast 출력 (boAxios 에서 window.dispatchEvent('api-validation-error')) */
+      window.addEventListener('api-validation-error', (ev) => {
+        const d = ev.detail || {};
+        let msg = d.message || '오류가 발생했습니다.';
+        if (d.method && d.url && d.status) {
+          let title = `${d.method} ${d.url} ${d.status}`;
+          if (d.uiLabel) title += `  [${d.uiLabel}]`;
+          msg = `${title}\n${msg}`;
+        }
+        // X- 헤더 정보를 errorDetails(펼침 영역)에 추가
+        let details = d.errorDetails || '';
+        const reqFmt = _fmtXHeaders(d.reqHeaders);
+        const resFmt = _fmtXHeaders(d.resHeaders);
+        if (reqFmt || resFmt) {
+          let headerInfo = '';
+          const _nd = new Date();
+          const _nts =
+            _nd.getFullYear() +
+            '-' +
+            String(_nd.getMonth() + 1).padStart(2, '0') +
+            '-' +
+            String(_nd.getDate()).padStart(2, '0') +
+            ' ' +
+            String(_nd.getHours()).padStart(2, '0') +
+            ':' +
+            String(_nd.getMinutes()).padStart(2, '0') +
+            ':' +
+            String(_nd.getSeconds()).padStart(2, '0');
+          if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
+          if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
+          details = details ? headerInfo + '\n\n' + details : headerInfo;
+        }
+        showToast(msg, 'error', 0, details);
+      });
+
+      /* API 성공 → 로그만 기록 (toast 미출력) */
+      window.addEventListener('api-success', () => {});
+
+      /* API 에러 → 오류 페이지 전환 (boAxios 에서 window.dispatchEvent('api-error')) */
+      window.addEventListener('api-error', (ev) => {
+        const d = ev.detail || {};
+        const st = d.status;
+        let label = '';
+        if (d.method && d.url) {
+          label = `${d.method} ${d.url} ${st}`;
+          if (d.uiLabel) label += `  [${d.uiLabel}]`;
+        }
+        let msg = label ? `${label}\n${d.message || ''}` : d.message || '';
+        // 비 401/500 에러는 toast로 X- 헤더 정보 표시
+        if (st !== 401 && !(st >= 500 || st === 0)) {
+          let details = d.errorDetails || '';
+          const reqFmt = _fmtXHeaders(d.reqHeaders);
+          const resFmt = _fmtXHeaders(d.resHeaders);
+          if (reqFmt || resFmt) {
+            let headerInfo = '';
+            const _nd = new Date();
+            const _nts =
+              _nd.getFullYear() +
+              '-' +
+              String(_nd.getMonth() + 1).padStart(2, '0') +
+              '-' +
+              String(_nd.getDate()).padStart(2, '0') +
+              ' ' +
+              String(_nd.getHours()).padStart(2, '0') +
+              ':' +
+              String(_nd.getMinutes()).padStart(2, '0') +
+              ':' +
+              String(_nd.getSeconds()).padStart(2, '0');
+            if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
+            if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
+            details = details ? headerInfo + '\n\n' + details : headerInfo;
+          }
+          showToast(msg, 'error', 0, details);
+          return;
+        }
+        if (st === 401) {
+          errorMessage.value = msg;
+          page.value = 'error401';
+          // hash 동기화 — 미동기화 시 readHash 가 다시 원래 페이지로 복원하면서 무한 마운트 루프 발생
+          try {
+            window.history.replaceState(null, '', '#page=error401');
+          } catch (_) {}
+        } else if (st >= 500 || st === 0) {
+          errorMessage.value = msg;
+          page.value = 'error500';
+          try {
+            window.history.replaceState(null, '', '#page=error500');
+          } catch (_) {}
+        }
+      });
+      const dtlId = ref(null);
+
+      /* ── 탭 관리 ── */
+      const openTabs = reactive([{ id: 'dashboard', label: '대시보드' }]);
+      const cfActiveTabId = computed(() => toTabId(page.value));
+      const refreshKeys = reactive({}); // pageId → 재마운트 카운터
+
+      /* ── 탭 고정 (keep-alive 시뮬레이션) ── */
+      const keptTabIds = reactive(new Set());
+
+      /* toggleKeep */
+      const toggleKeep = (tabId) => {
+        if (keptTabIds.has(tabId)) keptTabIds.delete(tabId);
+        else keptTabIds.add(tabId);
+      };
+      const PAGE_COMP_MAP = {
+        dashboard: 'dashboard-bo-ec' + (window.BO_SITE_NO || '01'),
+        mbMemberMng: 'mb-member-mng',
+        mbMemberDtl: 'mb-member-dtl',
+        mbMemGradeMng: 'mb-mem-grade-mng',
+        mbMemGroupMng: 'mb-mem-group-mng',
+        pdProdMng: 'pd-prod-mng',
+        pdProdDtl: 'pd-prod-dtl',
+        pdDlivTmpltMng: 'pd-dliv-tmplt-mng',
+        pdBundleMng: 'pd-bundle-mng',
+        pdSetMng: 'pd-set-mng',
+        pdReviewMng: 'pd-review-mng',
+        pdQnaMng: 'pd-qna-mng',
+        pdRestockNotiMng: 'pd-restock-noti-mng',
+        pdTagMng: 'pd-tag-mng',
+        odOrderMng: 'od-order-mng',
+        odOrderDtl: 'od-order-dtl',
+        odClaimMng: 'od-claim-mng',
+        odClaimDtl: 'od-claim-dtl',
+        odDlivMng: 'od-dliv-mng',
+        odDlivDtl: 'od-dliv-dtl',
+        odCartMng: 'od-cart-mng',
+        pmCouponMng: 'pm-coupon-mng',
+        pmCouponDtl: 'pm-coupon-dtl',
+        pmCacheMng: 'pm-cache-mng',
+        pmCacheDtl: 'pm-cache-dtl',
+        dpDispPanelMng: 'dp-disp-panel-mng',
+        dpDispAreaPreview: 'dp-disp-area-preview',
+        dpDispAreaMng: 'dp-disp-area-mng',
+        dpDispUiPreview: 'dp-disp-ui-preview',
+        dpDispUiSimul: 'dp-disp-ui-simul',
+        dpDispPanelPreview: 'dp-disp-panel-preview',
+        dpDispWidgetPreview: 'dp-disp-widget-preview',
+        dpDispAreaDtl: 'dp-disp-area-dtl',
+        dpDispUiMng: 'dp-disp-ui-mng',
+        dpDispUiDtl: 'dp-disp-ui-dtl',
+        dpDispWidgetMng: 'dp-disp-widget-mng',
+        dpDispWidgetDtl: 'dp-disp-widget-dtl',
+        dpDispRelationMng: 'dp-disp-relation-mng',
+        dpDispPanelDtl: 'dp-disp-panel-dtl',
+        dpDispWidgetLibMng: 'dp-disp-widget-lib-mng',
+        dpDispWidgetLibDtl: 'dp-disp-widget-lib-dtl',
+        dpDispWidgetLibPreview: 'dp-disp-widget-lib-preview',
+        stConfigMng: 'st-config-mng',
+        stRawMng: 'st-raw-mng',
+        stSettleAdjMng: 'st-settle-adj-mng',
+        stSettleEtcAdjMng: 'st-settle-etc-adj-mng',
+        stSettleCloseMng: 'st-settle-close-mng',
+        stSettlePayMng: 'st-settle-pay-mng',
+        stStatusMng: 'st-status-mng',
+        stReconOrderMng: 'st-recon-order-mng',
+        stReconPayMng: 'st-recon-pay-mng',
+        stReconClaimMng: 'st-recon-claim-mng',
+        stReconVendorMng: 'st-recon-vendor-mng',
+        stErpGenMng: 'st-erp-gen-mng',
+        stErpViewMng: 'st-erp-view-mng',
+        stErpReconMng: 'st-erp-recon-mng',
+        pmEventMng: 'pm-event-mng',
+        pmEventDtl: 'pm-event-dtl',
+        pmPlanMng: 'pm-plan-mng',
+        pmPlanDtl: 'pm-plan-dtl',
+        pmDiscntMng: 'pm-discnt-mng',
+        pmSaveMng: 'pm-save-mng',
+        pmGiftMng: 'pm-gift-mng',
+        pmVoucherMng: 'pm-voucher-mng',
+        pmVoucherDtl: 'pm-voucher-dtl',
+        mbCustInfoMng: 'mb-cust-info-mng',
+        syContactMng: 'sy-contact-mng',
+        syContactDtl: 'sy-contact-dtl',
+        cmChattMng: 'cm-chatt-mng',
+        cmChattDtl: 'cm-chatt-dtl',
+        sySiteMng: 'sy-site-mng',
+        sySiteDtl: 'sy-site-dtl',
+        syCodeMng: 'sy-code-mng',
+        syCodeDtl: 'sy-code-dtl',
+        syBrandMng: 'sy-brand-mng',
+        syAttachMng: 'sy-attach-mng',
+        syTemplateMng: 'sy-template-mng',
+        syTemplateDtl: 'sy-template-dtl',
+        syVendorMng: 'sy-vendor-mng',
+        syVendorDtl: 'sy-vendor-dtl',
+        syBizMng: 'sy-biz-mng',
+        syVendorUserMng: 'sy-vendor-user-mng',
+        pdCategoryMng: 'pd-category-mng',
+        pdCategoryDtl: 'pd-category-dtl',
+        pdCategoryProdMng: 'pd-category-prod-mng',
+        syUserMng: 'sy-user-mng',
+        syUserDtl: 'sy-user-dtl',
+        syBatchMng: 'sy-batch-mng',
+        syBatchDtl: 'sy-batch-dtl',
+        syDeptMng: 'sy-dept-mng',
+        syMenuMng: 'sy-menu-mng',
+        syRoleMng: 'sy-role-mng',
+        cmNoticeMng: 'cm-notice-mng',
+        syAlarmMng: 'sy-alarm-mng',
+        syPropMng: 'sy-prop-mng',
+        syPathMng: 'sy-path-mng',
+        syI18nMng: 'sy-i18n-mng',
+        syBbmMng: 'sy-bbm-mng',
+        syBbsMng: 'sy-bbs-mng',
+        syMemberLoginHist: 'sy-member-login-hist',
+        syUserLoginHist: 'sy-user-login-hist',
+        syApiLogMng: 'sy-api-log-mng',
+        syPostman: 'sy-postman',
+        zdStore: 'zd-store',
+        zdLocalStorage: 'zd-local-storage',
+      };
+
+      /* addTab */
+      const addTab = (mngId) => {
+        if (!openTabs.find((t) => t.id === mngId)) {
+          openTabs.push({ id: mngId, label: PAGE_LABELS[mngId] || mngId });
+        }
+      };
+
+      /* closeTab */
+      const closeTab = (tabId, evt) => {
+        if (evt) evt.stopPropagation();
+        const idx = openTabs.findIndex((t) => t.id === tabId);
+        if (idx === -1) return;
+        keptTabIds.delete(tabId);
+        openTabs.splice(idx, 1);
+        if (cfActiveTabId.value === tabId) {
+          const next = openTabs[Math.min(idx, openTabs.length - 1)];
+          if (next) navigate(next.id);
+          else {
+            page.value = 'dashboard';
+            dtlId.value = null;
+          }
+        }
+      };
+
+      /* ── 탭 컨텍스트 메뉴 ── */
+      const ctxMenu = reactive({ show: false, x: 0, y: 0, tabId: null });
+
+      /* showCtxMenu */
+      const showCtxMenu = (evt, tabId) => {
+        evt.preventDefault();
+        ctxMenu.show = true;
+        ctxMenu.x = evt.clientX;
+        ctxMenu.y = evt.clientY;
+        ctxMenu.tabId = tabId;
+      };
+
+      /* closeCtxMenu */
+      const closeCtxMenu = () => {
+        ctxMenu.show = false;
+      };
+
+      /* ctxClose */
+      const ctxClose = () => {
+        closeTab(ctxMenu.tabId);
+        closeCtxMenu();
+      };
+
+      /* ctxCloseLeft */
+      const ctxCloseLeft = () => {
+        const idx = openTabs.findIndex((t) => t.id === ctxMenu.tabId);
+        if (idx > 0) {
+          openTabs.splice(0, idx);
+          if (!openTabs.find((t) => t.id === cfActiveTabId.value) && openTabs.length > 0) navigate(openTabs[0]?.id);
+        }
+        closeCtxMenu();
+      };
+
+      /* ctxCloseRight */
+      const ctxCloseRight = () => {
+        const idx = openTabs.findIndex((t) => t.id === ctxMenu.tabId);
+        if (idx < openTabs.length - 1) {
+          openTabs.splice(idx + 1);
+          if (!openTabs.find((t) => t.id === cfActiveTabId.value)) navigate(openTabs[idx].id);
+        }
+        closeCtxMenu();
+      };
+
+      /* ctxCloseAll */
+      const ctxCloseAll = () => {
+        const tab = openTabs.find((t) => t.id === ctxMenu.tabId);
+        keptTabIds.clear();
+        openTabs.splice(0);
+        if (tab) {
+          openTabs.push(tab);
+          navigate(tab.id);
+        }
+        closeCtxMenu();
+      };
+
+      /* ctxCloseOthers */
+      const ctxCloseOthers = () => {
+        const tab = openTabs.find((t) => t.id === ctxMenu.tabId);
+        openTabs.forEach((t) => {
+          if (t.id !== ctxMenu.tabId) keptTabIds.delete(t.id);
+        });
+        openTabs.splice(0);
+        if (tab) {
+          openTabs.push(tab);
+          navigate(tab.id);
+        }
+        closeCtxMenu();
+      };
+
+      /* ctxNewWindow */
+      const ctxNewWindow = () => {
+        window.open(`${location.pathname}${location.search}#page=${ctxMenu.tabId}`, '_blank');
+        closeCtxMenu();
+      };
+
+      /* ctxRefresh */
+      const ctxRefresh = () => {
+        const id = ctxMenu.tabId;
+        closeCtxMenu();
+        if (keptTabIds.has(id)) {
+          keptTabIds.delete(id);
+          Vue.nextTick(() => keptTabIds.add(id));
+        } else {
+          refreshKeys[id] = (refreshKeys[id] || 0) + 1;
+          if (page.value !== id) navigate(id);
+        }
+      };
+
+      /* ── 새창 열기 ── */
+      const openNewWindow = (pgId) => {
+        window.open(`${location.pathname}${location.search}#page=${pgId}`, '_blank');
+      };
+
+      /* ── 열린 화면 목록 (가나다순) ── */
+      const cfOpenTabsWithGroup = computed(() =>
+        [...openTabs]
+          .map((tab) => {
+            const topId = PAGE_TO_TOP[tab.id];
+            const topLabel = TOP_MENUS.find((t) => t.id === topId)?.label || (tab.id === 'dashboard' ? '홈' : '');
+            return { ...tab, topLabel };
+          })
+          .sort((a, b) => a.label.localeCompare(b.label, 'ko')),
+      );
+
+      /* ── 메뉴 상태 ── */
+      const activeTop = ref('member');
+      const leftMenuOpen = ref(true);
+
+      /* setTopMenu */
+      const setTopMenu = (topId) => {
+        activeTop.value = topId;
+        leftMenuOpen.value = true;
+        const first = LEFT_MENUS[topId]?.find((p) => p.id);
+        if (first) navigate(first.id);
+      };
+
+      /* ── Hash routing ── */
+      const readHash = (showNotification = false) => {
+        const raw = String(window.location.hash || '').replace(/^#/, '');
+        const p = new URLSearchParams(raw);
+        const pg = p.get('page');
+        if (pg && ALL_PAGES.includes(pg)) {
+          const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
+          if (!isLoggedIn && pg !== 'dashboard') {
+            if (showNotification) showToast('로그인이 필요합니다.', 'error');
+            if (page.value !== 'dashboard') page.value = 'dashboard';
+            return;
+          }
+          // 동일 값 set 으로 인한 reactive 무한 갱신 방지
+          if (page.value !== pg) page.value = pg;
+          const newTop = PAGE_TO_TOP[pg];
+          if (newTop && activeTop.value !== newTop) activeTop.value = newTop;
+          addTab(toTabId(pg));
+        }
+        const id = p.get('id');
+        const newDtlId = id !== null ? (isNaN(id) ? id : Number(id)) : null;
+        if (dtlId.value !== newDtlId) dtlId.value = newDtlId;
+      };
+      readHash(false);
+
+      /* navigate */
+      const navigate = (pg, opts = {}) => {
+        const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
+        if (!isLoggedIn && pg !== 'dashboard') {
+          showToast('로그인이 필요합니다.', 'error');
+          return;
+        }
+        page.value = pg;
+        dtlId.value = opts.id ?? null;
+        if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
+        addTab(toTabId(pg));
+        // 즐겨찾기 keep 설정이 있으면 자동으로 탭 고정
+        const tabId = toTabId(pg);
+        if (favKeepSet.has(tabId)) keptTabIds.add(tabId);
+        const p2 = new URLSearchParams();
+        p2.set('page', pg);
+        if (opts.id != null) p2.set('id', opts.id);
+        // 동일 hash 재설정 시 hashchange 이벤트 재발화로 인한 무한 마운트 루프 방지
+        const newHash = p2.toString();
+        const curHash = String(window.location.hash || '').replace(/^#/, '');
+        if (curHash !== newHash) {
+          window.location.hash = newHash;
+        }
+        window.scrollTo(0, 0);
+      };
+
+      /* readHashWithNotification */
+      const readHashWithNotification = () => readHash(true);
+      window.addEventListener('hashchange', readHashWithNotification);
+      onBeforeUnmount(() => window.removeEventListener('hashchange', readHashWithNotification));
+
+      /* ── Toast (누적 스택) ── */
+      const toasts = reactive([]);
+      /* ── API Progress Overlay ── */
+      const isApiLoading = Vue.ref(false);
+      let _apiLoadingCount = 0;
+      let _hideTimer = null;
+      let _progressShowAt = 0;
+      const MIN_SHOW_MS = 300;
+      const HIDE_DELAY_MS = 50;
+      window._showProgress = (on) => {
+        _apiLoadingCount = Math.max(0, _apiLoadingCount + (on ? 1 : -1));
+        if (_apiLoadingCount > 0) {
+          if (_hideTimer) {
+            clearTimeout(_hideTimer);
+            _hideTimer = null;
+          }
+          if (!isApiLoading.value) _progressShowAt = Date.now();
+          isApiLoading.value = true;
+        } else {
+          const elapsed = Date.now() - _progressShowAt;
+          const remain = Math.max(0, MIN_SHOW_MS - elapsed) + HIDE_DELAY_MS;
+          if (_hideTimer) clearTimeout(_hideTimer);
+          _hideTimer = setTimeout(() => {
+            if (_apiLoadingCount === 0) isApiLoading.value = false;
+            _hideTimer = null;
+          }, remain);
+        }
+      };
+
+      let _toastId = 0;
+      const TOAST_DURATION = 3500;
+      const STATUS_HINT = {
+        400: '잘못된 요청 — 파라미터를 확인하세요.',
+        401: '인증 만료 — 다시 로그인하세요.',
+        403: '접근 거부 — 권한이 없거나 라이선스가 유효하지 않습니다.',
+        404: '리소스를 찾을 수 없습니다.',
+        405: '허용되지 않는 HTTP 메서드입니다.',
+        409: '데이터 충돌 — 이미 존재하는 항목입니다.',
+        422: '입력값 검증 실패 — 필드를 확인하세요.',
+        429: '요청이 너무 많습니다. 잠시 후 다시 시도하세요.',
+        500: '서버 내부 오류 — 관리자에게 문의하세요.',
+        502: '게이트웨이 오류 — 서버가 응답하지 않습니다.',
+        503: '서비스 일시 중단 — 잠시 후 다시 시도하세요.',
+      };
+
+      /* showToast */
+      const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '') => {
+        if (type === 'error') duration = 0;
+        const id = ++_toastId;
+        let msgTitle = msg;
+        let msgDetail = '';
+        let statusHint = '';
+
+        // 에러 메시지에서 METHOD URL STATUS를 분리
+        if (type === 'error' && msg.includes('\n')) {
+          const parts = msg.split('\n');
+          msgDetail = parts[0]; // METHOD URL STATUS
+          msgTitle = parts.slice(1).join('\n'); // 나머지 메시지
+          const stMatch = msgDetail.match(/\b([45]\d{2})\b/);
+          if (stMatch) statusHint = STATUS_HINT[parseInt(stMatch[1])] || 'HTTP ' + stMatch[1] + ' 오류';
+        }
+
+        toasts.push({
+          id,
+          msgTitle,
+          msgDetail,
+          statusHint,
+          msg,
+          type,
+          persistent: duration === 0,
+          errorDetails,
+          expanded: type === 'error' && toastShowDetail.value,
+        });
+        if (duration !== 0) {
+          setTimeout(() => {
+            const idx = toasts.findIndex((t) => t.id === id);
+            if (idx !== -1) toasts.splice(idx, 1);
+          }, duration);
+        }
+      };
+      /* 전역 노출 (BaseModal 등에서 props 없이 호출) */
+      window.boToast = showToast;
+
+      /* closeToast */
+      const closeToast = (id) => {
+        const idx = toasts.findIndex((t) => t.id === id);
+        if (idx !== -1) toasts.splice(idx, 1);
+      };
+
+      /* closeAllToasts */
+      const closeAllToasts = () => {
+        toasts.splice(0, toasts.length);
+      };
+      const TOAST_DETAIL_KEY = 'modu-bo-toast-isShowDetail';
+      const toastShowDetail = ref(localStorage.getItem(TOAST_DETAIL_KEY) !== 'false');
+
+      /* toggleToastDetail */
+      const toggleToastDetail = () => {
+        toastShowDetail.value = !toastShowDetail.value;
+        localStorage.setItem(TOAST_DETAIL_KEY, toastShowDetail.value);
+        toasts.forEach((t) => {
+          t.expanded = toastShowDetail.value;
+        });
+      };
+
+      /* ── API 응답 패널 ── */
+      const apiResPanel = reactive({ show: false, res: null });
+
+      /* setApiRes */
+      const setApiRes = (res) => {
+        apiResPanel.res = res; /* apiResPanel.show = true; */
+      };
+
+      /* closeApiResPanel */
+      const closeApiResPanel = () => {
+        apiResPanel.show = false;
+      };
+
+      /* ── Confirm ── */
+      const confirmState = reactive({
+        show: false,
+        title: '',
+        msg: '',
+        details: null,
+        btnOk: '확인',
+        btnCancel: '취소',
+        resolve: null,
+      });
+
+      /* showConfirm */
+      const showConfirm = (title, msg, opts = {}) =>
+        new Promise((r) =>
+          Object.assign(confirmState, {
+            show: true,
+            title,
+            msg,
+            details: opts.details || null,
+            btnOk: opts.btnOk || '확인',
+            btnCancel: opts.btnCancel || '취소',
+            resolve: r,
+          }),
+        );
+      /* 전역 노출 (BaseModal 등에서 props 없이 호출 가능) */
+      window.boConfirm = showConfirm;
+
+      /* closeConfirm */
+      const closeConfirm = (v) => {
+        confirmState.show = false;
+        confirmState.resolve?.(v);
+      };
+
+      /* ── 참조 모달 ── */
+      const refModal = reactive({ show: false, type: '', id: null });
+
+      /* showRefModal */
+      const showRefModal = (type, id) => {
+        refModal.type = type;
+        refModal.id = id;
+        refModal.show = true;
+      };
+
+      /* closeRefModal */
+      const closeRefModal = () => {
+        refModal.show = false;
+      };
+
+      /* ── 전역 노출: 페이지 컴포넌트에서 props 없이 직접 접근 가능 ── */
+      window.boApp = {
+        navigate,
+        showToast,
+        showConfirm,
+        showRefModal,
+        setApiRes,
+      };
+
+      /* ── 도움말 모달 ── */
+      const helpModal = reactive({ show: false, topic: '' });
+
+      /* showHelp */
+      const showHelp = (topic = '') => {
+        helpModal.topic = topic;
+        helpModal.show = true;
+      };
+      /* 전역 노출 — 어느 컴포넌트에서든 window.showBoHelp('prodOpt') 호출 가능 */
+      window.showBoHelp = showHelp;
+
+      /* ── 공통 필터 & 선택 모달 ── */
+      const rightPanelOpen = ref(true);
+      const commonFilter = boCommonFilter;
+
+      /* 사이트 필터 default 적용: store(svBoSiteId)가 있으면 그 값을 commonFilter.siteId 기본으로 세팅 */
+      if (!commonFilter.siteId) {
+        const _appStore = window.sfGetBoAppStore?.();
+        commonFilter.siteId = _appStore?.svBoSiteId || '2604010000000001';
+      }
+
+      const selectModal = reactive({ type: '', show: false });
+
+      /* openSelectModal */
+      const openSelectModal = (type) => {
+        selectModal.type = type;
+        selectModal.show = true;
+      };
+
+      /* closeSelectModal */
+      const closeSelectModal = () => {
+        selectModal.show = false;
+        selectModal.type = '';
+      };
+
+      /* onSelectItem */
+      const onSelectItem = (type, item) => {
+        if (type === 'site') {
+          commonFilter.siteId = item?.siteId ?? null;
+          /* boAppStore 의 svBoSiteId / svBoSiteNm 동기화 */
+          const _appStore = window.useBoAppStore?.();
+          if (_appStore && item) {
+            _appStore.saSetBoSiteId?.(item.siteId);
+            _appStore.saSetBoSiteNm?.(item.siteNm);
+          }
+        } else if (type === 'vendor') commonFilter.vendorId = item?.vendorId ?? null;
+        else if (type === 'dlivVendor') commonFilter.dlivVendorId = item?.vendorId ?? null;
+        else if (type === 'boUser') commonFilter.userId = item?.boUserId ?? null;
+        else if (type === 'member') commonFilter.memberId = item?.memberId ?? null;
+        else if (type === 'order') commonFilter.orderId = item?.orderId ?? null;
+        selectModal.show = false;
+      };
+
+      /* clearFilter */
+      const clearFilter = (type) => {
+        if (type === 'site') commonFilter.siteId = null; /* 사이트는 필수이지만 사용자가 직접 비우는 경우에만 */
+        else if (type === 'vendor') commonFilter.vendorId = null;
+        else if (type === 'dlivVendor') commonFilter.dlivVendorId = null;
+        else if (type === 'boUser') commonFilter.userId = null;
+        else if (type === 'member') commonFilter.memberId = null;
+        else if (type === 'order') commonFilter.orderId = null;
+      };
+
+      /* 공통 필터 표시용 — _boCmSites 에서 siteId 매칭. 매칭 실패 시 boAppStore 의 svBoSiteId/svBoSiteNm fallback */
+      const filterSite = computed(() => {
+        if (!commonFilter.siteId) return null;
+        const sites = window._boCmSites || [];
+        const found = sites.find((s) => s.siteId === commonFilter.siteId);
+        if (found) return found;
+        /* sites 가 아직 로드되지 않은 경우, store 값으로 임시 표시 */
+        const _appStore = window.sfGetBoAppStore?.();
+        if (_appStore && commonFilter.siteId === _appStore.svBoSiteId) {
+          return { siteId: _appStore.svBoSiteId, siteNm: _appStore.svBoSiteNm, siteCode: '' };
+        }
+        return { siteId: commonFilter.siteId, siteNm: '', siteCode: '' };
+      });
+      const filterVendor = null,
+        cfFilterDlivVendor = null;
+      const cfFilterBoUser = null,
+        filterMember = null,
+        filterOrder = null;
+
+      /* ── API 로그 (최대 10건, localStorage 저장) ── */
+      const apiLogs = reactive([]);
+      const apiLogHoverDetail = ref(null);
+      const apiLogLockedDetail = ref(null);
+      const maxApiLogs = 15;
+
+      /* _loadApiLogsFromStorage */
+      const _loadApiLogsFromStorage = () => {
+        try {
+          const stored = localStorage.getItem('modu-bo-apiLog');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              apiLogs.push(...parsed);
+            }
+          }
+        } catch (_) {}
+      };
+
+      /* _saveApiLogsToStorage */
+      const _saveApiLogsToStorage = () => {
+        try {
+          localStorage.setItem('modu-bo-apiLog', JSON.stringify(apiLogs.slice(0, 10)));
+        } catch (_) {}
+      };
+
+      /* addApiLog */
+      const addApiLog = (
+        method,
+        url,
+        status,
+        duration,
+        hasError = false,
+        reqData = null,
+        resData = null,
+        reqHeaders = null,
+      ) => {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const time = `${hh}:${mm}:${ss}s`;
+        let reqStr = '',
+          resStr = '',
+          headerStr = '',
+          uiLabel = '';
+        try {
+          if (reqData) reqStr = JSON.stringify(typeof reqData === 'string' ? JSON.parse(reqData) : reqData, null, 2);
+          if (resData) resStr = JSON.stringify(typeof resData === 'string' ? JSON.parse(resData) : resData, null, 2);
+          if (reqHeaders) {
+            /* dec */
+            const dec = (v) => {
+              try {
+                return v ? decodeURIComponent(v) : '';
+              } catch (_) {
+                return v || '';
+              }
+            };
+
+            /* get */
+            const get = (h, k) => h[k] || h[k.toLowerCase()] || '';
+            const decUiNm = dec(get(reqHeaders, 'X-UI-Nm'));
+            const decCmdNm = dec(get(reqHeaders, 'X-Cmd-Nm'));
+            if (decUiNm || decCmdNm) uiLabel = decCmdNm ? decUiNm + ' > ' + decCmdNm : decUiNm;
+
+            /* trunc */
+            const trunc = (v, n = 60) => (v && v.length > n ? v.slice(0, 8) + '...' + v.slice(-6) : v || '');
+
+            /* row */
+            const row = (...keys) =>
+              keys
+                .map((k) => {
+                  const v = dec(get(reqHeaders, k));
+                  return v ? k.toLowerCase() + ': ' + v : '';
+                })
+                .filter(Boolean)
+                .join(' | ');
+            const lines = [
+              row('x-site-type', 'X-UI-Nm', 'X-Cmd-Nm'),
+              row('X-File-Nm', 'X-Func-Nm', 'X-Line-No'),
+              [
+                dec(get(reqHeaders, 'X-Trace-Id')) ? 'x-trace-id: ' + dec(get(reqHeaders, 'X-Trace-Id')) : '',
+                dec(get(reqHeaders, 'X-Site-Id')) ? 'x-site-id: ' + dec(get(reqHeaders, 'X-Site-Id')) : '',
+                dec(get(reqHeaders, 'X-Buyer-Id')) ? 'x-buyer-id: ' + dec(get(reqHeaders, 'X-Buyer-Id')) : '',
+                dec(get(reqHeaders, 'X-License-Code'))
+                  ? 'x-license-code: ' + trunc(dec(get(reqHeaders, 'X-License-Code')), 16)
+                  : '',
+                dec(get(reqHeaders, 'X-User-Agent'))
+                  ? 'x-user-agent: ' + trunc(dec(get(reqHeaders, 'X-User-Agent')), 18)
+                  : '',
+                get(reqHeaders, 'Authorization') ? 'authorization: ' + trunc(get(reqHeaders, 'Authorization'), 20) : '',
+              ]
+                .filter(Boolean)
+                .join(' | '),
+            ].filter(Boolean);
+            headerStr = lines.join('\n');
+          }
+        } catch (_) {
+          reqStr = String(reqData || '');
+          resStr = String(resData || '');
+        }
+        apiLogs.unshift({
+          method,
+          url,
+          status,
+          duration,
+          time,
+          hasError,
+          uiLabel,
+          reqData: reqStr,
+          resData: resStr,
+          headers: headerStr,
+        });
+        if (apiLogs.length > maxApiLogs) apiLogs.pop();
+        _saveApiLogsToStorage();
+      };
+
+      /* clearApiLogs */
+      const clearApiLogs = () => {
+        apiLogs.length = 0;
+        try {
+          localStorage.removeItem('modu-bo-apiLog');
+        } catch (_) {}
+        showToast('API 로그가 초기화되었습니다.', 'success');
+      };
+
+      /* toggleApiLogLock */
+      const toggleApiLogLock = (log) => {
+        if (apiLogLockedDetail.value === log) {
+          apiLogLockedDetail.value = null;
+        } else {
+          apiLogLockedDetail.value = log;
+        }
+      };
+
+      /* onApiLogEnter */
+      const onApiLogEnter = (log) => {
+        apiLogHoverDetail.value = log;
+      };
+
+      /* onApiLogLeave */
+      const onApiLogLeave = (log) => {
+        if (apiLogLockedDetail.value !== log) apiLogHoverDetail.value = null;
+      };
+
+      /* formatJsonData */
+      const formatJsonData = (data) => {
+        try {
+          if (!data) return 'N/A';
+          if (typeof data === 'string') {
+            const parsed = JSON.parse(data);
+            return JSON.stringify(parsed, null, 2);
+          } else if (typeof data === 'object') {
+            return JSON.stringify(data, null, 2);
+          }
+          return String(data);
+        } catch (e) {
+          return String(data);
+        }
+      };
+
+      /* isWithin60Seconds */
+      const isWithin60Seconds = (timeStr) => {
+        try {
+          const [hh, mm, ss] = timeStr.replace('s', '').split(':').map(Number);
+          const logTime = hh * 3600 + mm * 60 + ss;
+          const now = new Date();
+          const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+          const diff = Math.abs(currentTime - logTime);
+          return diff <= 60 || (diff > 86400 - 60 && diff < 86400);
+        } catch (_) {
+          return false;
+        }
+      };
+
+      /* getRelativeTime */
+      const getRelativeTime = (timeStr) => {
+        try {
+          const [hh, mm, ss] = timeStr.replace('s', '').split(':').map(Number);
+          const logTime = hh * 3600 + mm * 60 + ss;
+          const now = new Date();
+          const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+          let diff = currentTime - logTime;
+
+          if (diff < 0) {
+            diff += 86400;
+          }
+
+          if (diff < 60) {
+            return `${diff}초전`;
+          } else if (diff < 3600) {
+            const minutes = Math.floor(diff / 60);
+            const seconds = diff % 60;
+            return `${minutes}분${seconds}초전`;
+          }
+          return timeStr;
+        } catch (_) {
+          return timeStr;
+        }
+      };
+
+      /* getApiStatusColor */
+      const getApiStatusColor = (status) => {
+        if (status >= 200 && status < 300) return '#10b981';
+        if (status >= 300 && status < 400) return '#3b82f6';
+        if (status >= 400 && status < 500) return '#f59e0b';
+        if (status >= 500) return '#ef4444';
+        return '#6b7280';
+      };
+
+      /* boApi 인터셉터로 로그 수집 */
+
+      /* ── 반응형: 화면 크기에 따라 사이드바 자동 열기/닫기 ── */
+      const checkWidth = () => {
+        leftMenuOpen.value = window.innerWidth >= 920;
+      };
+      onBeforeUnmount(() => window.removeEventListener('resize', checkWidth));
+
+      /* ── 탭바 좌우 스크롤 ── */
+      const tabBarRef = ref(null);
+
+      /* scrollTabs */
+      const scrollTabs = (dir) => {
+        if (tabBarRef.value) tabBarRef.value.scrollBy({ left: dir * 180, behavior: 'smooth' });
+      };
+
+      /* ── 로그인 상태 (localStorage 영속화) ── */
+      const _mkBoToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
+
+      /* _restoreBoUser */
+      const _restoreBoUser = () => {
+        try {
+          const tok = localStorage.getItem('modu-bo-accessToken');
+          if (!tok) return { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
+          const authUser = JSON.parse(localStorage.getItem('modu-bo-authUser') || 'null');
+          return authUser || { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
+        } catch (_) {
+          return { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
+        }
+      };
+
+      /* ── FO의 foAuth.state 패턴과 동일: Vue.reactive state + _sync() ── */
+      const _defaultBoAuthUser = () => ({
+        authId: '',
+        authNm: '',
+        userId: '',
+        name: '',
+        email: '',
+        role: '',
+        phone: '',
+        dept: '',
+        AppTypeCd: '',
+        roleId: '',
+        siteId: '',
+        profileAttachId: null,
+      });
+      const currentAuthUser = reactive(_defaultBoAuthUser());
+      // store 인스턴스를 setup() 안에서 한 번만 가져와서 고정 — Pinia 컨텍스트 보장
+      const _boAuthStore = window.useBoAuthStore?.();
+
+      /* _syncCurrentAuthUser */
+      const _syncCurrentAuthUser = () => {
+        try {
+          const u = _boAuthStore?.svAuthUser;
+          const target = u && u.authId ? u : _defaultBoAuthUser();
+          // 동일 값 set 으로 인한 reactive 무한 갱신 방지 — 변경된 키만 set
+          for (const k in target) {
+            if (currentAuthUser[k] !== target[k]) currentAuthUser[k] = target[k];
+          }
+        } catch (e) {}
+      };
+
+      // 초기 복원 — 토큰 없으면 reset, 있으면 syncFromStorage (FO foAuth.init() 동일 패턴)
+      try {
+        const _initToken = localStorage.getItem('modu-bo-accessToken');
+        if (!_initToken) _boAuthStore?.saReset?.();
+        else _boAuthStore?.saSyncFromStorage?.();
+      } catch (_) {}
+      _syncCurrentAuthUser();
+
+      // F5 새로고침 시 토큰 유효성 검증 (FO: foAuth.init() 내 fetchFoAppInitData())
+      // boInitReady: 초기화 완료 전 컴포넌트 API 호출을 막기 위한 플래그
+      const boInitReady = ref(false);
+      window.boInitReady = false;
+      (async () => {
+        const store = _boAuthStore;
+        if (store?.svAccessToken) {
+          try {
+            await window.useBoAppInitStore?.()?.saFetchBoAppInitData?.();
+            _syncCurrentAuthUser();
+          } catch (e) {
+            if (e?.response?.status === 401) {
+              console.warn('[boApp] token invalid (401), reset session');
+              store.saReset();
+              _syncCurrentAuthUser();
+            } else {
+              console.warn('[boApp] fetchBoAppInitData error:', e?.response?.status || e.message);
+            }
+          }
+        }
+        boInitReady.value = true;
+        window.boInitReady = true;
+      })();
+      const activeRoleId = ref(null);
+      const cfIsLoggedIn = computed(() => !!currentAuthUser?.authId);
+      const currentAuthUserRoles = reactive([]);
+      // getInitData 응답에 이미 사용자 역할 + 시스템 역할이 모두 들어있으므로
+      // 별도 API 호출 없이 store 데이터에서 사용자 역할만 매핑한다.
+      //   - 사용자 역할 ID 목록   : boAuthStore.svTempAuthInfo['authUser-roles']  (← syAuth.tempAuthInfo)
+      //   - 시스템 전체 역할 정보 : boRoleStore.svRoles                          (← syRoles)
+      const _rolesEqual = (a, b) => {
+        if (!a || !b || a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) if (a[i]?.roleId !== b[i]?.roleId) return false;
+        return true;
+      };
+
+      /* updateCurrentUserRoles */
+      const updateCurrentUserRoles = () => {
+        try {
+          if (!currentAuthUser?.authId) {
+            if (currentAuthUserRoles.length) currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
+            return;
+          }
+          const allRoles = window.sfGetBoRoleStore?.()?.svRoles || [];
+          const tempAuthInfo = window.useBoAuthStore?.()?.svTempAuthInfo || {};
+          const userRoleEntries = tempAuthInfo['authUser-roles'] || [];
+          const roleMap = Object.fromEntries(allRoles.map((r) => [r?.roleId, r]));
+          const result = userRoleEntries.map((ur) => roleMap[ur?.roleId]).filter(Boolean);
+          // 결과가 동일하면 splice 스킵 — reactive 무한 갱신 방지
+          if (!_rolesEqual(currentAuthUserRoles, result)) {
+            currentAuthUserRoles.splice(0, currentAuthUserRoles.length, ...result);
+          }
+        } catch (e) {
+          console.error('currentAuthUserRoles error:', e);
+          if (currentAuthUserRoles.length) currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
+        }
+      };
+      updateCurrentUserRoles();
+      // currentAuthUser 객체 deep watch 시 매번 fire → authId 변화에만 반응 (로그인 상태 변화 트래킹)
+      watch(() => currentAuthUser?.authId || '', updateCurrentUserRoles);
+      // getInitData 비동기 완료 시점에도 재계산 — store 데이터 도착 후 역할 매핑
+      watch(boInitReady, (v) => {
+        if (v) updateCurrentUserRoles();
+      });
+
+      /* rolePath */
+      const rolePath = (r, uid) => {
+        try {
+          if (!r) return '';
+          const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
+          const m = Object.fromEntries((roles || []).map((x) => [x?.roleId, x]));
+          const seg = [];
+          let cur = r;
+          let root = r;
+          while (cur) {
+            seg.unshift(cur?.roleNm || '');
+            root = cur;
+            cur = cur?.parentId && m[cur.parentId] ? m[cur.parentId] : null;
+          }
+          return seg.join(' > ');
+        } catch (e) {
+          console.error('rolePath error:', e);
+          return '';
+        }
+      };
+
+      /* onRoleChange */
+      const onRoleChange = () => {
+        location.reload();
+      };
+
+      /* rolesOfUser */
+      const rolesOfUser = (uid) => {
+        try {
+          const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
+          const m = Object.fromEntries((roles || []).map((r) => [r?.roleId, r]));
+          const userRoles = (currentAuthUserRoles || []).filter((ur) => ur?.userId === uid || !uid);
+          const result = (userRoles || []).map((ur) => m[ur?.roleId]).filter(Boolean);
+          return result || [];
+        } catch (e) {
+          console.error('rolesOfUser error:', e);
+          return [];
+        }
+      };
+
+      onMounted(() => {
+        setTimeout(() => {
+          window.useBoAppInitStore?.()?.saRestoreFromStorage?.();
+        }, 0);
+        _loadApiLogsFromStorage();
+        setTimeout(() => {
+          if (typeof boApi !== 'undefined' && boApi.raw) {
+            const inst = boApi.raw;
+            const startTime = {};
+            const reqData = {};
+            const reqHeaders = {};
+            inst.interceptors.request.use((cfg) => {
+              const key = cfg.url + cfg.method;
+              startTime[key] = Date.now();
+              reqData[key] = cfg.data || cfg.params || null;
+              reqHeaders[key] = cfg.headers || {};
+              return cfg;
+            });
+            inst.interceptors.response.use(
+              (res) => {
+                const key = res.config.url + res.config.method;
+                const duration = Date.now() - (startTime[key] || 0);
+                addApiLog(
+                  res.config.method.toUpperCase(),
+                  res.config.url,
+                  res.status,
+                  duration,
+                  false,
+                  reqData[key],
+                  res.data,
+                  reqHeaders[key],
+                );
+                delete startTime[key];
+                delete reqData[key];
+                delete reqHeaders[key];
+                return res;
+              },
+              (err) => {
+                const cfg = err.config || {};
+                const key = cfg.url + cfg.method;
+                const duration = Date.now() - (startTime[key] || 0);
+                addApiLog(
+                  cfg.method.toUpperCase(),
+                  cfg.url,
+                  err.response?.status || 0,
+                  duration,
+                  true,
+                  reqData[key],
+                  err.response?.data,
+                  reqHeaders[key],
+                );
+                delete startTime[key];
+                delete reqData[key];
+                delete reqHeaders[key];
+                return Promise.reject(err);
+              },
+            );
+          }
+        }, 100);
+        checkWidth();
+        window.addEventListener('resize', checkWidth);
+        const codeStore = window.sfGetBoCodeStore?.();
+        if (codeStore?.sgGetGrpCodes) {
+          const roles = codeStore.sgGetGrpCodes('USER_ROLE') || [];
+          userRoles.splice(0, userRoles.length, ...roles);
+        }
+      });
+      // currentAuthUser 객체 deep watch 시 매번 fire → userId 변화에만 반응
+      watch(
+        () => currentAuthUser?.userId || '',
+        (uid) => {
+          try {
+            if (uid) {
+              const roles = currentAuthUserRoles || [];
+              if (!roles.find((r) => r?.roleId === activeRoleId.value)) {
+                const newRoleId = roles && roles.length ? roles[0]?.roleId : null;
+                if (activeRoleId.value !== newRoleId) activeRoleId.value = newRoleId;
+              }
+            } else {
+              if (activeRoleId.value !== null) activeRoleId.value = null;
+            }
+          } catch (e) {
+            console.error('watch currentAuthUser error:', e);
+            if (activeRoleId.value !== null) activeRoleId.value = null;
+          }
+        },
+        { immediate: true },
+      );
+      const loginModal = reactive({ show: false, tab: 'login' });
+      const loginForm = reactive({ loginId: '', loginPwd: '', authMethod: '메인' });
+      const QUICK_USERS = [
+        {
+          loginId: 'super_admin',
+          loginPwd: 'demo1234',
+          label: '슈퍼관리자',
+          userNm: '슈퍼관리자',
+          role: 'SUPER',
+          icon: '👑',
+        },
+        { loginId: 'admin1', loginPwd: 'demo1234', label: '운영관리자', userNm: '관리자1', role: 'ADMIN', icon: '🛡' },
+        { loginId: 'admin2', loginPwd: 'demo1234', label: '일반관리자', userNm: '관리자2', role: 'ADMIN', icon: '👤' },
+        { loginId: 'operator1', loginPwd: 'demo1234', label: '운영자', userNm: '운영자1', role: 'OPR', icon: '⚙️' },
+        { loginId: 'cs_agent1', loginPwd: 'demo1234', label: 'CS상담원', userNm: 'CS상담원1', role: 'CS', icon: '🎧' },
+        {
+          loginId: 'vendor1',
+          loginPwd: 'demo1234',
+          label: '판매업체',
+          userNm: '판매업체1',
+          role: 'VENDOR',
+          icon: '🏪',
+        },
+      ];
+
+      /* quickLogin */
+      const quickLogin = (u) => {
+        loginForm.loginId = u.loginId;
+        loginForm.loginPwd = u.loginPwd;
+        doLogin();
+      };
+      /* 사용자 선택 모달 */
+      const PAGE_SIZE = 20;
+      const userPickModal = reactive({
+        show: false,
+        searchValue: '',
+        pageNo: 1,
+        loading: false,
+        rows: [],
+        total: 0,
+        totalPage: 1,
+        isApiMode: false,
+      });
+
+      /* _loadUserPickPage */
+      const _loadUserPickPage = async () => {
+        userPickModal.loading = true;
+        try {
+          const params = { pageNo: userPickModal.pageNo, pageSize: PAGE_SIZE };
+          if (userPickModal.searchValue) params.searchValue = userPickModal.searchValue; // 빈 문자열 미전송 → 전체 조회
+          const res = await window.coApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
+          const d = res.data?.data;
+          userPickModal.rows = d?.pageList || d?.list || [];
+          userPickModal.total = d?.pageTotalCount ?? d?.total ?? 0;
+          userPickModal.totalPage =
+            d?.pageTotalPage ?? d?.totalPage ?? Math.max(1, Math.ceil(userPickModal.total / PAGE_SIZE));
+        } catch (e) {
+          console.warn('[userPickModal] load error:', e);
+          userPickModal.rows = [];
+          userPickModal.total = 0;
+          userPickModal.totalPage = 1;
+        } finally {
+          userPickModal.loading = false;
+        }
+      };
+      /* 로컬(QUICK_USERS) 페이징 — 로그인 전 fallback */
+      const cfLocalFiltered = Vue.computed(() => {
+        const searchVal = (userPickModal.searchValue || '').toLowerCase();
+        return searchVal
+          ? QUICK_USERS.filter(
+              (u) =>
+                u.label.toLowerCase().includes(searchVal) ||
+                u.loginId.toLowerCase().includes(searchVal) ||
+                (u.userNm || '').toLowerCase().includes(searchVal),
+            )
+          : QUICK_USERS;
+      });
+      const cfLocalPage = Vue.computed(() => {
+        const start = (userPickModal.pageNo - 1) * PAGE_SIZE;
+        return cfLocalFiltered.value.slice(start, start + PAGE_SIZE);
+      });
+      const cfLocalTotalPage = Vue.computed(() => Math.max(1, Math.ceil(cfLocalFiltered.value.length / PAGE_SIZE)));
+      const cfPickRows = Vue.computed(() => (userPickModal.isApiMode ? userPickModal.rows : cfLocalPage.value));
+      const cfPickTotal = Vue.computed(() =>
+        userPickModal.isApiMode ? userPickModal.total : cfLocalFiltered.value.length,
+      );
+      const cfPickTotalPage = Vue.computed(() =>
+        userPickModal.isApiMode ? userPickModal.totalPage : cfLocalTotalPage.value,
+      );
+
+      /* openUserPick */
+      const openUserPick = () => {
+        userPickModal.searchValue = '';
+        userPickModal.pageNo = 1;
+        userPickModal.isApiMode = true; // 항상 API 모드 (로그인 전/후 무관)
+        userPickModal.show = true;
+        _loadUserPickPage();
+      };
+
+      /* onUserPickSearch */
+      const onUserPickSearch = () => {
+        userPickModal.pageNo = 1;
+        _loadUserPickPage();
+      };
+
+      /* onUserPickPage */
+      const onUserPickPage = (p) => {
+        userPickModal.pageNo = p;
+        _loadUserPickPage();
+      };
+
+      /* onUserPick */
+      const onUserPick = (u) => {
+        userPickModal.show = false;
+        loginForm.loginId = u.loginId || u.userId || '';
+        loginForm.loginPwd = '1111'; // 마스터 패스워드 — 서버에서 SHA256("1111") 무조건 통과
+        doLogin();
+      };
+      const regForm = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
+      const userRoles = reactive([]);
+      const loginError = ref('');
+      const uiState = reactive({
+        userMenuShow: false,
+        profileModalShow: false,
+        pwModalShow: false,
+        relatedSiteOpen: false,
+      });
+
+      /* 프로필 모달 */
+      const profileForm = reactive({ name: '', phone: '', dept: '', email: '', profileAttachId: null });
+      const profileImg = reactive({ attachId: null, cdnImgUrl: '' }); // 표시용 이미지 상태
+      const profileImgUploading = ref(false);
+
+      /* _loadProfileImg */
+      const _loadProfileImg = async (grpId) => {
+        if (!grpId) {
+          profileImg.attachId = null;
+          profileImg.cdnImgUrl = '';
+          return;
+        }
+        try {
+          const res = await window.coApiSvc.cmAttach.getFiles(grpId);
+          const f = (res.data?.data || [])[0];
+          profileImg.attachId = f?.attachId || null;
+          profileImg.cdnImgUrl = f?.cdnImgUrl || '';
+        } catch (e) {
+          profileImg.attachId = null;
+          profileImg.cdnImgUrl = '';
+        }
+      };
+
+      /* openProfile */
+      const openProfile = () => {
+        if (!currentAuthUser || !currentAuthUser.userId) return;
+        Object.assign(profileForm, {
+          name: currentAuthUser.name || '',
+          phone: currentAuthUser.phone || '',
+          dept: currentAuthUser.dept || '',
+          email: currentAuthUser.email || '',
+          profileAttachId: currentAuthUser.profileAttachId || null,
+        });
+        _loadProfileImg(profileForm.profileAttachId);
+        uiState.profileModalShow = true;
+        uiState.userMenuShow = false;
+      };
+
+      /* saveProfile */
+      const saveProfile = () => {
+        if (!profileForm.name) {
+          showToast('이름을 입력하세요.', 'error');
+          return;
+        }
+        if (!currentAuthUser) Object.assign(currentAuthUser, _defaultBoAuthUser());
+        currentAuthUser.name = profileForm.name || '';
+        currentAuthUser.phone = profileForm.phone || '';
+        currentAuthUser.dept = profileForm.dept || '';
+        currentAuthUser.profileAttachId = profileForm.profileAttachId || null;
+        uiState.profileModalShow = false;
+        showToast('프로필이 저장되었습니다.');
+      };
+
+      /* onProfileImgChange */
+      const onProfileImgChange = async (e) => {
+        const f = e.target.files?.[0];
+        e.target.value = '';
+        if (!f) return;
+        profileImgUploading.value = true;
+        try {
+          if (profileImg.attachId) {
+            await window.coApiSvc.cmAttach.deleteFile(profileImg.attachId);
+            profileImg.attachId = null;
+            profileImg.cdnImgUrl = '';
+          }
+          const fd = new FormData();
+          fd.append('files', f);
+          fd.append('businessCode', 'USER_PROFILE');
+          fd.append('grpNm', '사용자 프로필');
+          if (profileForm.profileAttachId) fd.append('attachGrpId', profileForm.profileAttachId);
+          const res = await window.boApi.post('co/cm/upload/multi', fd, window.coUtil.cofApiHdr('프로필', '사진변경'));
+          const d = res.data?.data;
+          const uploaded = (d?.files || [])[0];
+          if (uploaded) {
+            profileImg.attachId = uploaded.attachId;
+            profileImg.cdnImgUrl = uploaded.cdnImgUrl || '';
+          }
+          if (!profileForm.profileAttachId && d?.attachGrpId) profileForm.profileAttachId = d.attachGrpId;
+          showToast('사진이 변경되었습니다.', 'success');
+        } catch (err) {
+          showToast(err.response?.data?.message || '업로드 중 오류가 발생했습니다.', 'error');
+        } finally {
+          profileImgUploading.value = false;
+        }
+      };
+
+      /* onProfileImgRemove */
+      const onProfileImgRemove = async () => {
+        if (!profileImg.attachId) {
+          profileForm.profileAttachId = null;
+          profileImg.cdnImgUrl = '';
+          return;
+        }
+        try {
+          await window.coApiSvc.cmAttach.deleteFile(profileImg.attachId);
+          profileImg.attachId = null;
+          profileImg.cdnImgUrl = '';
+          profileForm.profileAttachId = null;
+          showToast('사진이 삭제되었습니다.', 'success');
+        } catch (err) {
+          showToast(err.response?.data?.message || '삭제 오류', 'error', 0);
+        }
+      };
+
+      /* 비밀번호 변경 모달 */
+      const pwForm = reactive({ current: '', next: '', confirm: '' });
+      const pwError = ref('');
+
+      /* openPwChange */
+      const openPwChange = () => {
+        Object.assign(pwForm, { current: '', next: '', confirm: '' });
+        pwError.value = '';
+        uiState.pwModalShow = true;
+        uiState.userMenuShow = false;
+      };
+
+      /* savePwChange */
+      const savePwChange = async () => {
+        pwError.value = '';
+        if (!pwForm.current || !pwForm.next || !pwForm.confirm) {
+          pwError.value = '모든 항목을 입력하세요.';
+          return;
+        }
+        if (pwForm.next.length < 6) {
+          pwError.value = '새 비밀번호는 6자 이상이어야 합니다.';
+          return;
+        }
+        if (pwForm.next !== pwForm.confirm) {
+          pwError.value = '새 비밀번호가 일치하지 않습니다.';
+          return;
+        }
+        try {
+          const currentPwdHash = await coUtil.cofSha256(pwForm.current);
+          const newPwdHash = await coUtil.cofSha256(pwForm.next);
+          await coApiSvc.boAuth.changePassword(
+            { currentPassword: currentPwdHash, newPassword: newPwdHash },
+            '비밀번호변경',
+            '변경',
+          );
+          uiState.pwModalShow = false;
+          showToast('비밀번호가 변경되었습니다.');
+        } catch (e) {
+          pwError.value = e.response?.data?.message || '비밀번호 변경 실패';
+        }
+      };
+
+      /* openLogin */
+      const openLogin = (tab = 'login') => {
+        loginModal.tab = tab;
+        loginModal.show = true;
+        loginError.value = '';
+      };
+
+      /* closeLogin */
+      const closeLogin = () => {
+        loginModal.show = false;
+        loginError.value = '';
+      };
+
+      /* doLogin */
+      const doLogin = async () => {
+        loginError.value = '';
+        if (!loginForm.loginId || !loginForm.loginPwd) {
+          loginError.value = '아이디와 비밀번호를 입력하세요.';
+          return;
+        }
+        try {
+          if (!_boAuthStore) {
+            loginError.value = '스토어 초기화 실패';
+            return;
+          }
+
+          await _boAuthStore.saLogin(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
+          _syncCurrentAuthUser();
+
+          openTabs.splice(0);
+          loginForm.loginId = '';
+          loginForm.loginPwd = '';
+          closeLogin();
+          navigate('dashboard');
+          showToast(`${currentAuthUser?.authNm || currentAuthUser?.name || '사용자'}님 환영합니다.`);
+        } catch (err) {
+          console.error('[catch-info]', err);
+          loginError.value = err?.response?.data?.message || err?.message || '로그인 실패';
+        }
+      };
+
+      /* doLogout */
+      const doLogout = async () => {
+        try {
+          const authStore = window.useBoAuthStore?.();
+          const configStore = window.useBoConfigStore?.();
+
+          if (authStore) {
+            await authStore.saLogout();
+          }
+          if (configStore) {
+            configStore.saReset();
+          }
+
+          uiState.userMenuShow = false;
+          openTabs.splice(0);
+          navigate('dashboard');
+          showToast('로그아웃되었습니다.');
+        } catch (e) {
+          console.error('doLogout error:', e);
+          uiState.userMenuShow = false;
+        }
+      };
+      /* 다른 탭 로그인/로그아웃 동기화 */
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser') {
+          _boAuthStore?.saSyncFromStorage?.();
+          _syncCurrentAuthUser();
+        }
+      });
+      /* 같은 탭 DevTools 변경 감지 — FO의 syncFromStorage + _sync() 패턴 동일 적용 (가드: 중복 setInterval 방지) */
+      if (!window._boAuthSyncTimer) {
+        window._boAuthSyncTimer = setInterval(() => {
+          _boAuthStore?.saSyncFromStorage?.();
+          _syncCurrentAuthUser();
+        }, 3000);
+      }
+
+      /* doRegister */
+      const doRegister = async () => {
+        loginError.value = '';
+        if (!regForm.name || !regForm.email || !regForm.password) {
+          loginError.value = '필수 항목을 입력하세요.';
+          return;
+        }
+        if (regForm.password !== regForm.confirmPw) {
+          loginError.value = '비밀번호가 일치하지 않습니다.';
+          return;
+        }
+        try {
+          await boApiSvc.syUser.create(
+            {
+              name: regForm.name,
+              email: regForm.email,
+              password: regForm.password,
+              phone: regForm.phone,
+              role: regForm.role,
+            },
+            '사용자등록',
+            '저장',
+          );
+          Object.assign(regForm, { name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
+          loginModal.tab = 'login';
+          loginError.value = '';
+          showToast('가입이 완료되었습니다. 로그인해주세요.');
+        } catch (err) {
+          console.error('[catch-info]', err);
+          loginError.value = err.response?.data?.message || err.message || '가입 실패';
+        }
+      };
+
+      /* ── 연관사이트 레이어 ── */
+      const toggleRelatedSite = () => {
+        uiState.relatedSiteOpen = !uiState.relatedSiteOpen;
+      };
+
+      /* openRelatedLink */
+      const openRelatedLink = (url) => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+        uiState.relatedSiteOpen = false;
+      };
+
+      /* goFoSite */
+      const goFoSite = (no) => {
+        try {
+          localStorage.setItem('modu-fo-siteNo', no);
+        } catch (_) {}
+        window.open('index.html?SITE_NO=' + no, '_blank');
+        uiState.relatedSiteOpen = false;
+      };
+
+      /* goBoSite */
+      const goBoSite = (no) => {
+        try {
+          localStorage.setItem('modu-bo-siteNo', no);
+        } catch (_) {}
+        window.open('bo.html?SITE_NO=' + no, '_blank');
+        uiState.relatedSiteOpen = false;
+      };
+      const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-siteNo')) || '01';
+      const currentBoSiteNo = window.BO_SITE_NO || '01';
+      const _boAppStore = window.useBoAppStore?.();
+      const cfBoActive = computed(() => _boAppStore?.svActive || '-');
+      const SITE_PAIR_MENU = [
+        { fo: '01', bo: '01' },
+        { fo: '02', bo: '02' },
+        { fo: '03', bo: '03' },
+        { fo: '9999', bo: '9999' },
+      ];
+      const DISP_LINKS = [
+        { label: '통합 페이지', hash: '#page=dispUiPage', icon: '🌐' },
+        { label: 'UI 샘플 01', hash: '#page=dispUi01', icon: '1️⃣' },
+        { label: 'UI 샘플 02', hash: '#page=dispUi02', icon: '2️⃣' },
+        { label: 'UI 샘플 03', hash: '#page=dispUi03', icon: '3️⃣' },
+        { label: 'UI 샘플 04', hash: '#page=dispUi04', icon: '4️⃣' },
+        { label: 'UI 샘플 05', hash: '#page=dispUi05', icon: '5️⃣' },
+        { label: 'UI 샘플 06', hash: '#page=dispUi06', icon: '6️⃣' },
+      ];
+
+      /* ── 즐겨찾기 ── */
+      const favorites = reactive([]);
+      const favKeepSet = reactive(new Set()); // 즐겨찾기별 keep 설정
+      const sidebarTab = ref('open');
+
+      /* isFav */
+      const isFav = (pgId) => favorites.includes(pgId);
+
+      /* toggleFav */
+      const toggleFav = (pgId) => {
+        const idx = favorites.indexOf(pgId);
+        if (idx === -1) favorites.push(pgId);
+        else {
+          favorites.splice(idx, 1);
+          favKeepSet.delete(pgId);
+        }
+      };
+
+      /* toggleFavKeep */
+      const toggleFavKeep = (pgId) => {
+        if (favKeepSet.has(pgId)) favKeepSet.delete(pgId);
+        else favKeepSet.add(pgId);
+        // 현재 열려있는 탭이면 keptTabIds에도 즉시 반영
+        if (openTabs.find((t) => t.id === pgId)) {
+          if (favKeepSet.has(pgId)) keptTabIds.add(pgId);
+          else keptTabIds.delete(pgId);
+        }
+      };
+      const cfFavList = computed(() =>
+        favorites.map((pgId) => {
+          const topId = PAGE_TO_TOP[pgId];
+          const topLabel = TOP_MENUS.find((t) => t.id === topId)?.label || '';
+          return { id: pgId, label: PAGE_LABELS[pgId] || pgId, topLabel };
+        }),
+      );
+
+      /* 루트 클릭 → 컨텍스트 메뉴·유저메뉴 닫기 */
+      const onRootClick = () => {
+        closeCtxMenu();
+        uiState.userMenuShow = false;
+      };
+
+      return {
+        isApiLoading,
+        page,
+        dtlId,
+        navigate,
+        errorMessage,
+        cfDashboardComp,
+        TOP_MENUS,
+        LEFT_MENUS,
+        AUTH_METHODS,
+        openTabs,
+        closeTab,
+        cfActiveTabId,
+        refreshKeys,
+        keptTabIds,
+        toggleKeep,
+        PAGE_COMP_MAP,
+        ctxMenu,
+        showCtxMenu,
+        closeCtxMenu,
+        ctxClose,
+        ctxCloseLeft,
+        ctxCloseRight,
+        ctxCloseOthers,
+        ctxCloseAll,
+        ctxNewWindow,
+        ctxRefresh,
+        openNewWindow,
+        cfOpenTabsWithGroup,
+        activeTop,
+        leftMenuOpen,
+        setTopMenu,
+        toasts,
+        showToast,
+        closeToast,
+        closeAllToasts,
+        toastShowDetail,
+        toggleToastDetail,
+        confirmState,
+        showConfirm,
+        closeConfirm,
+        refModal,
+        showRefModal,
+        closeRefModal,
+        helpModal,
+        showHelp,
+        rightPanelOpen,
+        commonFilter,
+        selectModal,
+        openSelectModal,
+        closeSelectModal,
+        onSelectItem,
+        clearFilter,
+        filterSite,
+        filterVendor,
+        cfFilterDlivVendor,
+        cfFilterBoUser,
+        filterMember,
+        filterOrder,
+        apiLogs,
+        apiLogHoverDetail,
+        apiLogLockedDetail,
+        clearApiLogs,
+        toggleApiLogLock,
+        onApiLogEnter,
+        onApiLogLeave,
+        getApiStatusColor,
+        formatJsonData,
+        isWithin60Seconds,
+        getRelativeTime,
+        tabBarRef,
+        scrollTabs,
+        boInitReady,
+        cfIsLoggedIn,
+        currentAuthUser,
+        currentAuthUserRoles,
+        activeRoleId,
+        rolePath,
+        onRoleChange,
+        rolesOfUser,
+        loginModal,
+        loginForm,
+        regForm,
+        loginError,
+        uiState,
+        userRoles,
+        openLogin,
+        closeLogin,
+        doLogin,
+        doLogout,
+        doRegister,
+        QUICK_USERS,
+        quickLogin,
+        userPickModal,
+        openUserPick,
+        onUserPick,
+        cfPickRows,
+        cfPickTotal,
+        cfPickTotalPage,
+        onUserPickSearch,
+        onUserPickPage,
+        profileForm,
+        profileImg,
+        profileImgUploading,
+        openProfile,
+        saveProfile,
+        onProfileImgChange,
+        onProfileImgRemove,
+        pwForm,
+        pwError,
+        openPwChange,
+        savePwChange,
+        favorites,
+        favKeepSet,
+        sidebarTab,
+        isFav,
+        toggleFav,
+        cfFavList,
+        toggleFavKeep,
+        apiResPanel,
+        setApiRes,
+        closeApiResPanel,
+        onRootClick,
+        toggleRelatedSite,
+        openRelatedLink,
+        goFoSite,
+        goBoSite,
+        currentFoSiteNo,
+        currentBoSiteNo,
+        cfBoActive,
+        SITE_PAIR_MENU,
+        DISP_LINKS,
+        safe: window.safeUtil,
+      };
+    },
+
+    template: /* html */ `
 <div @click="onRootClick">
   <!-- ① TOP NAV -->
   <nav class="bo-top-nav">
@@ -2428,214 +2937,216 @@
 </div>
 `,
   })
-  /* ── pages/base/ ── */
-  .component('BoError404',  window.boError404)
-  .component('BoError401',  window.boError401)
-  .component('BoError500',  window.boError500)
-  /* ── components/disp/ (전시 핵심 컴포넌트) ── */
-  .component('DispX01Ui',  window.DispX01Ui)
-  .component('DispX02Area',  window.DispX02Area)
-  .component('DispX03Panel',  window.DispX03Panel  || { template: '<div/>' })
-  .component('DispX04Widget',  window.DispX04Widget  || { template: '<div/>' })
-  .component('CoBarcodeWidget',  window.CoBarcodeWidget  || { template: '<div/>' })
-  .component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' })
-  /* ── components/comp/ (공통 컴포넌트) ── */
-  .component('BaseAttachGrp',  window.BaseAttachGrp)
-  .component('BaseAttachOne',  window.BaseAttachOne)
-  .component('BaseHtmlEditor', window.BaseHtmlEditor)
-  /* ── pages/bo/ (공통) ── */
-  .component('BoRefModal',  window.BoRefModal)
-  .component('BoCodeGrpModal',  window.BoCodeGrpModal)
-  .component('BoCodeGrpTreeNode',  window.BoCodeGrpTreeNode)
-  /* ── pages/bo/ec/ — 회원 ── */
-  .component('MbMemberMng',  window.MbMemberMng)
-  .component('MbMemberDtl',  window.MbMemberDtl)
-  .component('MbMemberHist',  window.MbMemberHist)
-  .component('MbMemGradeMng',  window.MbMemGradeMng)
-  .component('MbMemGroupMng',  window.MbMemGroupMng)
-  /* ── pages/bo/ec/ — 상품 ── */
-  .component('PdProdMng',  window.PdProdMng)
-  .component('PdProdDtl',  window.PdProdDtl)
-  .component('PdProdHist',  window.PdProdHist)
-  .component('PdDlivTmpltMng', window.PdDlivTmpltMng)
-  .component('PdBundleMng',  window.PdBundleMng)
-  .component('PdSetMng',  window.PdSetMng)
-  .component('PdReviewMng',  window.PdReviewMng)
-  .component('PdQnaMng',  window.PdQnaMng)
-  .component('PdRestockNotiMng', window.PdRestockNotiMng)
-  .component('PdTagMng',  window.PdTagMng)
-  /* ── pages/bo/ec/ — 주문 ── */
-  .component('OdOrderMng',  window.OdOrderMng)
-  .component('OdOrderDtl',  window.OdOrderDtl)
-  .component('OdOrderHist',  window.OdOrderHist)
-  /* ── pages/bo/ec/ — 클레임 ── */
-  .component('OdClaimMng',  window.OdClaimMng)
-  .component('OdClaimDtl',  window.OdClaimDtl)
-  .component('OdClaimHist',  window.OdClaimHist)
-  /* ── pages/bo/ec/ — 배송 ── */
-  .component('OdDlivMng',  window.OdDlivMng)
-  .component('OdDlivDtl',  window.OdDlivDtl)
-  .component('OdDlivHist',  window.OdDlivHist)
-  .component('OdCartMng',  window.OdCartMng)
-  /* ── pages/bo/ec/ — 쿠폰/캐쉬 ── */
-  .component('PmCouponMng',  window.PmCouponMng)
-  .component('PmCouponDtl',  window.PmCouponDtl)
-  .component('PmCacheMng',  window.PmCacheMng)
-  .component('PmCacheDtl',  window.PmCacheDtl)
-  /* ── pages/bo/ec/ — 전시관리 ── */
-  .component('DpDispPanelMng',  window.DpDispPanelMng)
-  .component('DpDispPanelDtl',  window.DpDispPanelDtl)
-  .component('DpDispAreaMng',  window.DpDispAreaMng)
-  .component('DpDispAreaDtl',  window.DpDispAreaDtl)
-  .component('DpDispUiMng',  window.DpDispUiMng)
-  .component('DpDispUiDtl',  window.DpDispUiDtl)
-  .component('DpDispWidgetMng',  window.DpDispWidgetMng)
-  .component('DpDispWidgetDtl',  window.DpDispWidgetDtl)
-  .component('DpDispUiPreview',  window.DpDispUiPreview)
-  .component('DpDispUiSimul',  window.DpDispUiSimul)
-  .component('DpDispPanelPreview',  window.DpDispPanelPreview)
-  .component('DpDispWidgetPreview',  window.DpDispWidgetPreview)
-  .component('DpDispAreaPreview',  window.DpDispAreaPreview)
-  .component('DpDispWidgetLibMng',  window.DpDispWidgetLibMng)
-  .component('DpDispWidgetLibDtl',  window.DpDispWidgetLibDtl)
-  .component('DpDispWidgetLibPreview',window.DpDispWidgetLibPreview)
-  .component('DpDispRelationMng',  window.DpDispRelationMng)
-  /* ── pages/bo/ec/ — 카테고리 ── */
-  .component('PdCategoryMng',  window.PdCategoryMng)
-  .component('PdCategoryDtl',  window.PdCategoryDtl)
-  .component('PdCategoryProdMng', window.PdCategoryProdMng)
-  /* ── pages/bo/ec/ — 이벤트/공지 ── */
-  .component('PmEventMng',  window.PmEventMng)
-  .component('PmEventDtl',  window.PmEventDtl)
-  .component('PmPlanMng',  window.PmPlanMng)
-  .component('PmPlanDtl',  window.PmPlanDtl)
-  .component('PmDiscntMng',  window.PmDiscntMng)
-  .component('PmDiscntDtl',  window.PmDiscntDtl)
-  .component('PmSaveMng',  window.PmSaveMng)
-  .component('PmSaveDtl',  window.PmSaveDtl)
-  .component('PmGiftMng',  window.PmGiftMng)
-  .component('PmGiftDtl',  window.PmGiftDtl)
-  .component('PmVoucherMng',  window.PmVoucherMng)
-  .component('PmVoucherDtl',  window.PmVoucherDtl)
-  /* ── pages/bo/ec/st/ — 정산관리 ── */
-  .component('StConfigMng',  window.StConfigMng)
-  .component('StRawMng',  window.StRawMng)
-  .component('StSettleAdjMng',  window.StSettleAdjMng)
-  .component('StSettleEtcAdjMng', window.StSettleEtcAdjMng)
-  .component('StSettleCloseMng',  window.StSettleCloseMng)
-  .component('StSettlePayMng',  window.StSettlePayMng)
-  .component('StStatusMng',  window.StStatusMng)
-  .component('StReconOrderMng',  window.StReconOrderMng)
-  .component('StReconPayMng',  window.StReconPayMng)
-  .component('StReconClaimMng',  window.StReconClaimMng)
-  .component('StReconVendorMng',  window.StReconVendorMng)
-  .component('StErpGenMng',  window.StErpGenMng)
-  .component('StErpViewMng',  window.StErpViewMng)
-  .component('StErpReconMng',  window.StErpReconMng)
-  .component('CmNoticeMng',  window.CmNoticeMng)
-  .component('CmNoticeDtl',  window.CmNoticeDtl)
-  /* ── pages/bo/ec/ — 채팅/고객 ── */
-  .component('CmChattMng',  window.CmChattMng)
-  .component('CmChattDtl',  window.CmChattDtl)
-  .component('MbCustInfoMng',  window.MbCustInfoMng)
-  /* ── pages/bo/sy/ — 대시보드 ── */
-  .component('SyDashboardMng', window.SyDashboardMng)
-  .component('DashboardBoEc01', window.DashboardBoEc01)
-  .component('DashboardBoEc02', window.DashboardBoEc02)
-  .component('DashboardBoEc03', window.DashboardBoEc03)
-  /* ── pages/bo/sy/ — 사용자/권한/조직 ── */
-  .component('SyUserMng',  window.SyUserMng)
-  .component('SyUserDtl',  window.SyUserDtl)
-  .component('SyDeptMng',  window.SyDeptMng)
-  .component('SyMenuMng',  window.SyMenuMng)
-  .component('SyRoleMng',  window.SyRoleMng)
-  /* ── pages/bo/sy/ — 사이트/코드/브랜드 ── */
-  .component('SySiteMng',  window.SySiteMng)
-  .component('SySiteDtl',  window.SySiteDtl)
-  .component('SyCodeMng',  window.SyCodeMng)
-  .component('SyCodeDtl',  window.SyCodeDtl)
-  .component('SyBrandMng',  window.SyBrandMng)
-  /* ── pages/bo/sy/ — 템플릿/업체/첨부 ── */
-  .component('SyTemplateMng',  window.SyTemplateMng)
-  .component('SyTemplateDtl',  window.SyTemplateDtl)
-  .component('SyVendorMng',  window.SyVendorMng)
-  .component('SyVendorUserMng', window.SyVendorUserMng)
-  .component('SyVendorDtl',  window.SyVendorDtl)
-  .component('SyAttachMng',  window.SyAttachMng)
-  /* ── pages/bo/sy/ — 배치 ── */
-  .component('SyBatchMng',  window.SyBatchMng)
-  .component('SyBatchDtl',  window.SyBatchDtl)
-  .component('SyBatchHist',  window.SyBatchHist)
-  /* ── pages/bo/sy/ — 알림/게시판/문의 ── */
-  .component('SyAlarmMng',  window.SyAlarmMng)
-  .component('SyPropMng',  window.SyPropMng)
-  .component('SyPathMng',  window.SyPathMng)
-  .component('SyI18nMng',  window.SyI18nMng)
-  .component('BoPager',  window.BoPager)
-  .component('BoPathTree',  window.BoPathTree)
-  .component('BoPathTreeNode',  window.BoPathTreeNode)
-  .component('BoCategoryTree',  window.BoCategoryTree)
-  .component('BoMultiCheckSelect', window.BoMultiCheckSelect)
-  .component('BoDateTimePicker', window.BoDateTimePicker)
-  .component('BoPathParentSelector',  window.BoPathParentSelector)
-  .component('PathPickModal',  window.PathPickModal)
-  .component('BizPickModal',  window.BizPickModal)
-  .component('SimpleUserPickModal', window.SimpleUserPickModal)
-  .component('PathPickTreeNode', window.PathPickTreeNode)
-  .component('PropTreeNode',  window.PropTreeNode)
-  .component('SyAlarmDtl',  window.SyAlarmDtl)
-  .component('SyBbmMng',  window.SyBbmMng)
-  .component('SyBbmDtl',  window.SyBbmDtl)
-  .component('SyBbsMng',  window.SyBbsMng)
-  .component('SyBbsDtl',  window.SyBbsDtl)
-  .component('SyContactMng',  window.SyContactMng)
-  .component('SyContactDtl',  window.SyContactDtl)
-  .component('CmBlogMng',  window.CmBlogMng)
-  /* ── components/modals/ — 도움말 모달 ── */
-  .component('HelpBoModal',  window.HelpBoModal)
-  /* ── components/modals/ — 선택 모달 ── */
-  .component('BoUserSelectModal', window.BoUserSelectModal)
-  .component('BbmSelectModal',  window.BbmSelectModal)
-  .component('MemberSelectModal',  window.MemberSelectModal)
-  .component('OrderSelectModal',  window.OrderSelectModal)
-  .component('SiteSelectModal',  window.SiteSelectModal)
-  .component('VendorSelectModal',  window.VendorSelectModal)
-  /* ── components/modals/ — 트리 모달 ── */
-  .component('CategoryTreeModal',  window.CategoryTreeModal)
-  .component('DeptTreeModal',  window.DeptTreeModal)
-  .component('DeptTreeNode',  window.DeptTreeNode)
-  .component('MenuTreeModal',  window.MenuTreeModal)
-  .component('RoleTreeModal',  window.RoleTreeModal)
-  /* ── components/modals/ — 미리보기/전송 모달 ── */
-  .component('DispPreviewModal',  window.DispPreviewModal || { template: '<div/>' })
-  .component('DispUiModal',  window.DispUiModal  || { template: '<div/>' })
-  .component('WidgetLibPickModal',  window.WidgetLibPickModal || { template: '<div/>' })
-  .component('PanelPickModal',  window.PanelPickModal || { template: '<div/>' })
-  .component('AreaPickModal',  window.AreaPickModal || { template: '<div/>' })
-  .component('RowPickModal',  window.RowPickModal || { template: '<div/>' })
-  .component('TemplatePreviewModal',  window.TemplatePreviewModal)
-  .component('TemplateSendModal',  window.TemplateSendModal)
-  .component('SyMemberLoginHist',  window.SyMemberLoginHist)
-  .component('SyUserLoginHist',  window.SyUserLoginHist)
-  .component('SyApiLogMng',      window.SyApiLogMng)
-  .component('SyPostman',  window.SyPostman)
-  /* ── pages/bo/zd/ — 개발도구 ── */
-  .component('ZdStore',  window.ZdStore)
-  .component('ZdLocalStorage',  window.ZdLocalStorage)
-  .use(Pinia.createPinia())
-  .mount('#app');
+    /* ── pages/base/ ── */
+    .component('BoError404', window.boError404)
+    .component('BoError401', window.boError401)
+    .component('BoError500', window.boError500)
+    /* ── components/disp/ (전시 핵심 컴포넌트) ── */
+    .component('DispX01Ui', window.DispX01Ui)
+    .component('DispX02Area', window.DispX02Area)
+    .component('DispX03Panel', window.DispX03Panel || { template: '<div/>' })
+    .component('DispX04Widget', window.DispX04Widget || { template: '<div/>' })
+    .component('CoBarcodeWidget', window.CoBarcodeWidget || { template: '<div/>' })
+    .component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' })
+    /* ── components/comp/ (공통 컴포넌트) ── */
+    .component('BaseAttachGrp', window.BaseAttachGrp)
+    .component('BaseAttachOne', window.BaseAttachOne)
+    .component('BaseHtmlEditor', window.BaseHtmlEditor)
+    /* ── pages/bo/ (공통) ── */
+    .component('BoRefModal', window.BoRefModal)
+    .component('BoCodeGrpModal', window.BoCodeGrpModal)
+    .component('BoCodeGrpTreeNode', window.BoCodeGrpTreeNode)
+    /* ── pages/bo/ec/ — 회원 ── */
+    .component('MbMemberMng', window.MbMemberMng)
+    .component('MbMemberDtl', window.MbMemberDtl)
+    .component('MbMemberHist', window.MbMemberHist)
+    .component('MbMemGradeMng', window.MbMemGradeMng)
+    .component('MbMemGroupMng', window.MbMemGroupMng)
+    /* ── pages/bo/ec/ — 상품 ── */
+    .component('PdProdMng', window.PdProdMng)
+    .component('PdProdDtl', window.PdProdDtl)
+    .component('PdProdHist', window.PdProdHist)
+    .component('PdDlivTmpltMng', window.PdDlivTmpltMng)
+    .component('PdBundleMng', window.PdBundleMng)
+    .component('PdSetMng', window.PdSetMng)
+    .component('PdReviewMng', window.PdReviewMng)
+    .component('PdQnaMng', window.PdQnaMng)
+    .component('PdRestockNotiMng', window.PdRestockNotiMng)
+    .component('PdTagMng', window.PdTagMng)
+    /* ── pages/bo/ec/ — 주문 ── */
+    .component('OdOrderMng', window.OdOrderMng)
+    .component('OdOrderDtl', window.OdOrderDtl)
+    .component('OdOrderHist', window.OdOrderHist)
+    /* ── pages/bo/ec/ — 클레임 ── */
+    .component('OdClaimMng', window.OdClaimMng)
+    .component('OdClaimDtl', window.OdClaimDtl)
+    .component('OdClaimHist', window.OdClaimHist)
+    /* ── pages/bo/ec/ — 배송 ── */
+    .component('OdDlivMng', window.OdDlivMng)
+    .component('OdDlivDtl', window.OdDlivDtl)
+    .component('OdDlivHist', window.OdDlivHist)
+    .component('OdCartMng', window.OdCartMng)
+    /* ── pages/bo/ec/ — 쿠폰/캐쉬 ── */
+    .component('PmCouponMng', window.PmCouponMng)
+    .component('PmCouponDtl', window.PmCouponDtl)
+    .component('PmCacheMng', window.PmCacheMng)
+    .component('PmCacheDtl', window.PmCacheDtl)
+    /* ── pages/bo/ec/ — 전시관리 ── */
+    .component('DpDispPanelMng', window.DpDispPanelMng)
+    .component('DpDispPanelDtl', window.DpDispPanelDtl)
+    .component('DpDispAreaMng', window.DpDispAreaMng)
+    .component('DpDispAreaDtl', window.DpDispAreaDtl)
+    .component('DpDispUiMng', window.DpDispUiMng)
+    .component('DpDispUiDtl', window.DpDispUiDtl)
+    .component('DpDispWidgetMng', window.DpDispWidgetMng)
+    .component('DpDispWidgetDtl', window.DpDispWidgetDtl)
+    .component('DpDispUiPreview', window.DpDispUiPreview)
+    .component('DpDispUiSimul', window.DpDispUiSimul)
+    .component('DpDispPanelPreview', window.DpDispPanelPreview)
+    .component('DpDispWidgetPreview', window.DpDispWidgetPreview)
+    .component('DpDispAreaPreview', window.DpDispAreaPreview)
+    .component('DpDispWidgetLibMng', window.DpDispWidgetLibMng)
+    .component('DpDispWidgetLibDtl', window.DpDispWidgetLibDtl)
+    .component('DpDispWidgetLibPreview', window.DpDispWidgetLibPreview)
+    .component('DpDispRelationMng', window.DpDispRelationMng)
+    /* ── pages/bo/ec/ — 카테고리 ── */
+    .component('PdCategoryMng', window.PdCategoryMng)
+    .component('PdCategoryDtl', window.PdCategoryDtl)
+    .component('PdCategoryProdMng', window.PdCategoryProdMng)
+    /* ── pages/bo/ec/ — 이벤트/공지 ── */
+    .component('PmEventMng', window.PmEventMng)
+    .component('PmEventDtl', window.PmEventDtl)
+    .component('PmPlanMng', window.PmPlanMng)
+    .component('PmPlanDtl', window.PmPlanDtl)
+    .component('PmDiscntMng', window.PmDiscntMng)
+    .component('PmDiscntDtl', window.PmDiscntDtl)
+    .component('PmSaveMng', window.PmSaveMng)
+    .component('PmSaveDtl', window.PmSaveDtl)
+    .component('PmGiftMng', window.PmGiftMng)
+    .component('PmGiftDtl', window.PmGiftDtl)
+    .component('PmVoucherMng', window.PmVoucherMng)
+    .component('PmVoucherDtl', window.PmVoucherDtl)
+    /* ── pages/bo/ec/st/ — 정산관리 ── */
+    .component('StConfigMng', window.StConfigMng)
+    .component('StRawMng', window.StRawMng)
+    .component('StSettleAdjMng', window.StSettleAdjMng)
+    .component('StSettleEtcAdjMng', window.StSettleEtcAdjMng)
+    .component('StSettleCloseMng', window.StSettleCloseMng)
+    .component('StSettlePayMng', window.StSettlePayMng)
+    .component('StStatusMng', window.StStatusMng)
+    .component('StReconOrderMng', window.StReconOrderMng)
+    .component('StReconPayMng', window.StReconPayMng)
+    .component('StReconClaimMng', window.StReconClaimMng)
+    .component('StReconVendorMng', window.StReconVendorMng)
+    .component('StErpGenMng', window.StErpGenMng)
+    .component('StErpViewMng', window.StErpViewMng)
+    .component('StErpReconMng', window.StErpReconMng)
+    .component('CmNoticeMng', window.CmNoticeMng)
+    .component('CmNoticeDtl', window.CmNoticeDtl)
+    /* ── pages/bo/ec/ — 채팅/고객 ── */
+    .component('CmChattMng', window.CmChattMng)
+    .component('CmChattDtl', window.CmChattDtl)
+    .component('MbCustInfoMng', window.MbCustInfoMng)
+    /* ── pages/bo/sy/ — 대시보드 ── */
+    .component('SyDashboardMng', window.SyDashboardMng)
+    .component('DashboardBoEc01', window.DashboardBoEc01)
+    .component('DashboardBoEc02', window.DashboardBoEc02)
+    .component('DashboardBoEc03', window.DashboardBoEc03)
+    /* ── pages/bo/sy/ — 사용자/권한/조직 ── */
+    .component('SyUserMng', window.SyUserMng)
+    .component('SyUserDtl', window.SyUserDtl)
+    .component('SyDeptMng', window.SyDeptMng)
+    .component('SyMenuMng', window.SyMenuMng)
+    .component('SyRoleMng', window.SyRoleMng)
+    /* ── pages/bo/sy/ — 사이트/코드/브랜드 ── */
+    .component('SySiteMng', window.SySiteMng)
+    .component('SySiteDtl', window.SySiteDtl)
+    .component('SyCodeMng', window.SyCodeMng)
+    .component('SyCodeDtl', window.SyCodeDtl)
+    .component('SyBrandMng', window.SyBrandMng)
+    /* ── pages/bo/sy/ — 템플릿/업체/첨부 ── */
+    .component('SyTemplateMng', window.SyTemplateMng)
+    .component('SyTemplateDtl', window.SyTemplateDtl)
+    .component('SyVendorMng', window.SyVendorMng)
+    .component('SyVendorUserMng', window.SyVendorUserMng)
+    .component('SyVendorDtl', window.SyVendorDtl)
+    .component('SyAttachMng', window.SyAttachMng)
+    /* ── pages/bo/sy/ — 배치 ── */
+    .component('SyBatchMng', window.SyBatchMng)
+    .component('SyBatchDtl', window.SyBatchDtl)
+    .component('SyBatchHist', window.SyBatchHist)
+    /* ── pages/bo/sy/ — 알림/게시판/문의 ── */
+    .component('SyAlarmMng', window.SyAlarmMng)
+    .component('SyPropMng', window.SyPropMng)
+    .component('SyPathMng', window.SyPathMng)
+    .component('SyI18nMng', window.SyI18nMng)
+    .component('BoPager', window.BoPager)
+    .component('BoPathTree', window.BoPathTree)
+    .component('BoPathTreeNode', window.BoPathTreeNode)
+    .component('BoCategoryTree', window.BoCategoryTree)
+    .component('BoMultiCheckSelect', window.BoMultiCheckSelect)
+    .component('BoDateTimePicker', window.BoDateTimePicker)
+    .component('BoPathParentSelector', window.BoPathParentSelector)
+    .component('PathPickModal', window.PathPickModal)
+    .component('BizPickModal', window.BizPickModal)
+    .component('SimpleUserPickModal', window.SimpleUserPickModal)
+    .component('PathPickTreeNode', window.PathPickTreeNode)
+    .component('PropTreeNode', window.PropTreeNode)
+    .component('SyAlarmDtl', window.SyAlarmDtl)
+    .component('SyBbmMng', window.SyBbmMng)
+    .component('SyBbmDtl', window.SyBbmDtl)
+    .component('SyBbsMng', window.SyBbsMng)
+    .component('SyBbsDtl', window.SyBbsDtl)
+    .component('SyContactMng', window.SyContactMng)
+    .component('SyContactDtl', window.SyContactDtl)
+    .component('CmBlogMng', window.CmBlogMng)
+    /* ── components/modals/ — 도움말 모달 ── */
+    .component('HelpBoModal', window.HelpBoModal)
+    /* ── components/modals/ — 선택 모달 ── */
+    .component('BoUserSelectModal', window.BoUserSelectModal)
+    .component('BbmSelectModal', window.BbmSelectModal)
+    .component('MemberSelectModal', window.MemberSelectModal)
+    .component('OrderSelectModal', window.OrderSelectModal)
+    .component('SiteSelectModal', window.SiteSelectModal)
+    .component('VendorSelectModal', window.VendorSelectModal)
+    /* ── components/modals/ — 트리 모달 ── */
+    .component('CategoryTreeModal', window.CategoryTreeModal)
+    .component('DeptTreeModal', window.DeptTreeModal)
+    .component('DeptTreeNode', window.DeptTreeNode)
+    .component('MenuTreeModal', window.MenuTreeModal)
+    .component('RoleTreeModal', window.RoleTreeModal)
+    /* ── components/modals/ — 미리보기/전송 모달 ── */
+    .component('DispPreviewModal', window.DispPreviewModal || { template: '<div/>' })
+    .component('DispUiModal', window.DispUiModal || { template: '<div/>' })
+    .component('WidgetLibPickModal', window.WidgetLibPickModal || { template: '<div/>' })
+    .component('PanelPickModal', window.PanelPickModal || { template: '<div/>' })
+    .component('AreaPickModal', window.AreaPickModal || { template: '<div/>' })
+    .component('RowPickModal', window.RowPickModal || { template: '<div/>' })
+    .component('TemplatePreviewModal', window.TemplatePreviewModal)
+    .component('TemplateSendModal', window.TemplateSendModal)
+    .component('SyMemberLoginHist', window.SyMemberLoginHist)
+    .component('SyUserLoginHist', window.SyUserLoginHist)
+    .component('SyApiLogMng', window.SyApiLogMng)
+    .component('SyPostman', window.SyPostman)
+    /* ── pages/bo/zd/ — 개발도구 ── */
+    .component('ZdStore', window.ZdStore)
+    .component('ZdLocalStorage', window.ZdLocalStorage)
+    .use(Pinia.createPinia())
+    .mount('#app');
 
   /* 성능 측정 */
   window.perfUtil?.start('BO 앱 시작');
   const recordVueMount = window.perfUtil?.recordVueMount();
   setTimeout(() => {
-  recordVueMount?.();
-  window.perfUtil?.end('BO 앱 시작');
+    recordVueMount?.();
+    window.perfUtil?.end('BO 앱 시작');
   }, 100);
 
   const loadingEl = document.getElementById('_boot_loading');
   if (loadingEl) {
-  loadingEl.classList.add('done');
-  setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 350);
+    loadingEl.classList.add('done');
+    setTimeout(() => {
+      if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl);
+    }, 350);
   }
 })();

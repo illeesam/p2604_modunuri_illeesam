@@ -31,10 +31,19 @@ window.foAppFooter = {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?SITE_NO=' + target;
       } else if (root === 'foOnly') {
         /* target = FO 번호만, index.html 이동 */
-        try { localStorage.setItem('modu-fo-siteNo', target); } catch(_){}
+        const foSiteId = 'SITE' + String(target).padStart(6, '0');
+        try {
+          localStorage.setItem('modu-fo-siteNo', target);
+          localStorage.setItem('modu-fo-siteId', foSiteId);
+        } catch(_){}
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?SITE_NO=' + target;
       } else if (root === 'boOnly') {
         /* target = BO 번호만, bo.html 새창 오픈 — URL 파라미터로 전달, FO localStorage 접근 금지 */
+        const boSiteId = 'SITE' + String(target).padStart(6, '0');
+        try {
+          localStorage.setItem('modu-bo-siteNo', target);
+          localStorage.setItem('modu-bo-siteId', boSiteId);
+        } catch(_){}
         window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + '?SITE_NO=' + target, '_blank');
       }
       uiState.menuOpen = false;
@@ -86,11 +95,13 @@ window.foAppFooter = {
       { id:'03',   label:'FO_SITE_NO=03' },
       { id:'9999', label:'FO_SITE_NO=9999' },
     ];
+    /* site_no → site_id: 'SITE' + 6자리 0 패딩 (coUtil.siteNoToSiteId 와 동일 규칙) */
+    const toSiteId = (no) => 'SITE' + String(no).padStart(6, '0');
     const SITE_PAIR_MENU = [
-      { fo:'01',   bo:'01' },
-      { fo:'02',   bo:'02' },
-      { fo:'03',   bo:'03' },
-      { fo:'9999', bo:'9999' },
+      { fo:'01',   bo:'01',   siteId: toSiteId('01')   },
+      { fo:'02',   bo:'02',   siteId: toSiteId('02')   },
+      { fo:'03',   bo:'03',   siteId: toSiteId('03')   },
+      { fo:'9999', bo:'9999', siteId: toSiteId('9999') },
     ];
     return { uiState, codes, toggleMenu, closeMenu, goItem, currentFoSiteNo, currentBoSiteNo, FO_MENU, BO_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
   },
@@ -189,6 +200,9 @@ window.foAppFooter = {
               <div style="display:flex;flex-direction:column;gap:4px;">
                 <div v-for="p in SITE_PAIR_MENU" :key="p.fo+'_'+p.bo"
                   style="display:flex;gap:6px;align-items:center;">
+                  <!-- site_id 표시 -->
+                  <span :style="{flexShrink:0,minWidth:'112px',fontSize:'11px',fontFamily:'monospace',fontWeight:700,color: (currentFoSiteNo===p.fo||currentBoSiteNo===p.bo)?'#2e7d6b':'#999'}"
+                    :title="'적용 site_id: '+p.siteId">site_id={{ p.siteId }}</span>
                   <!-- FO 링크 -->
                   <button type="button" @click="goItem('foOnly', p.fo)"
                     :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFoSiteNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentFoSiteNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentFoSiteNo===p.fo?'#2e7d6b':'#444',fontWeight: currentFoSiteNo===p.fo?700:500,transition:'all .12s'}"

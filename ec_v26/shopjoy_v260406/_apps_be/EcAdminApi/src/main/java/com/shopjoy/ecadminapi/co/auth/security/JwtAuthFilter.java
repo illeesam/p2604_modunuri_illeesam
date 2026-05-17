@@ -147,7 +147,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         }
 
                         // MDC — 로그에 인증 사용자 정보 삽입
-                        MDC.put("siteId",   CmUtil.nvl(siteId, "-"));
+                        // siteId 는 "-" 같은 가짜 디폴트로 채우지 않는다 (값 있을 때만)
+                        if (siteId != null && !siteId.isBlank()) MDC.put("siteId", siteId);
                         MDC.put("authId",   authId);
                         MDC.put("appTypeCd", CmUtil.nvl(appTypeCd, "-"));
                         MDC.put("roleId",   CmUtil.nvl(roleId, "-"));
@@ -192,7 +193,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     /** mdcAnonymous */
     private static void mdcAnonymous(HttpServletRequest request) {
-        MDC.put("siteId",   "-");
+        // siteId 는 "-" 같은 가짜 디폴트로 채우지 않는다 (미인증 시 MDC 미설정)
         MDC.put("authId",   "-");
         // 비로그인 상태에서도 X-App-Type-Cd 헤더로 호출 컨텍스트 추정 가능
         String headerAppTypeCd = request.getHeader("X-App-Type-Cd");
