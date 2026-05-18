@@ -267,19 +267,34 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* -- 피커 목록 -- */
     const cfCurrentBundleId = computed(() => uiState.dtlMode === 'edit' ? uiState.editBundleId : -1);
+    /* 피커 상품 서버검색 — 검색어/검색대상을 pdProd.getPage 에 전달(상위 50건).
+       이미 담긴 항목·자기자신은 서버결과에서 클라이언트 제외(소량). 모달열기/Enter/[조회] 시점에만 호출. */
+    const pickerResults = reactive([]);
+    const onPickerSearch = async () => {
+      try {
+        const params = { pageNo: 1, pageSize: 50 };
+        const sv = (uiState.pickerSearch || '').trim();
+        if (sv) {
+          params.searchValue = sv;
+          if (uiState.pickerSearchType) params.searchType = uiState.pickerSearchType;
+        }
+        const res = await boApiSvc.pdProd.getPage(params, '상품번들관리', '상품검색');
+        const list = (res.data?.data?.pageList || res.data?.data?.list || [])
+          .map(p => ({ ...p, productId: p.prodId ?? p.productId }));
+        pickerResults.splice(0, pickerResults.length, ...list);
+      } catch (e) {
+        console.error('[onPickerSearch]', e);
+        pickerResults.splice(0, pickerResults.length);
+      }
+    };
+    const openPicker = () => {
+      uiState.pickerOpen = true; uiState.pickerSearchType = ''; uiState.pickerSearch = '';
+      onPickerSearch();
+    };
+    /* 서버결과에서 이미 담긴 항목·자기자신 제외 */
     const cfPickerList = computed(() => {
-      const q    = (uiState.pickerSearch || '').trim().toLowerCase();
-      const used = dtlItems.map(d => d.itemProdId);
-      const types = uiState.pickerSearchType || 'prodId,prodNm';
-      return (products || []).filter(p => {
-        if (p.productId === cfCurrentBundleId.value) return false;
-        if (used.includes(p.productId)) return false;
-        if (!q) return true;
-        const hits = [];
-        if (types.includes('prodId')) hits.push(String(p.productId).includes(q));
-        if (types.includes('prodNm')) hits.push((p.prodNm || '').toLowerCase().includes(q));
-        return hits.some(Boolean);
-      });
+      const used = new Set(dtlItems.map(d => d.itemProdId));
+      return pickerResults.filter(p => p.productId !== cfCurrentBundleId.value && !used.has(p.productId));
     });
 
     /* addItem */
@@ -427,7 +442,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       dtlItems, cfDtlRateSum, cfDtlRateOk, cfDtlRateDiff, cfDtlProdNm, cfDtlBundleId,
       openNew, openDtl, closeDtl, handleSave, handleDelete,
       addItem, removeItem,
-      cfPickerList,
+      cfPickerList, pickerResults, onPickerSearch, openPicker,
       onDragStart, onDragOver, onDrop, onSizeChange };
   },
 
@@ -700,7 +715,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     <!-- -- 구성품 추가 / 안분율 안내 ---------------------------------------------- -->
     <div style="margin-top:12px;display:flex;align-items:flex-start;gap:12px">
-      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="uiState.pickerOpen=true;uiState.pickerSearchType='';uiState.pickerSearch=''">
+      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="openPicker()">
         + 구성품 추가
       </button>
       <div v-if="dtlItems.length" style="flex:1;padding:7px 14px;border-radius:6px;font-size:12px"
@@ -733,8 +748,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           placeholder="검색대상 전체"
           all-label="전체 선택"
           min-width="100%" />
-        <input class="form-control" v-model="uiState.pickerSearch"
-               placeholder="검색어 입력" style="margin:8px 0 12px 0;">
+        <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
+          <input class="form-control" v-model="uiState.pickerSearch"
+                 placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
+                 @keyup.enter="onPickerSearch">
+          <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
+        </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <table class="bo-table" style="margin:0">
             <thead><tr>

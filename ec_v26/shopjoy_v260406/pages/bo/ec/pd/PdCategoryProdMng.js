@@ -278,23 +278,38 @@ window.PdCategoryProdMng = {
       if (showToast) showToast('상품이 추가되었습니다.', 'success');
     };
 
-    /* -- 피커 검색 -- */
-    const cfPickerList = computed(() => {
-      const q = pickerSearch.value.toLowerCase();
-      if (!q) return products.slice(0, 50);
-      const types = pickerSearchType.value || 'prodNm,prodId,cateNm';
-      return products.filter(p => {
-        const hits = [];
-        if (types.includes('prodNm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
-        if (types.includes('prodId'))  hits.push(String(p.prodId || '').includes(q));
-        if (types.includes('cateNm')) hits.push((p.cateNm || '').toLowerCase().includes(q));
-        return hits.some(Boolean);
-      }).slice(0, 50);
-    });
-
+    /* -- 피커 검색 (서버 조회) -- */
+    const pickerResults = reactive([]);
     const pickerOpen = ref(false);
     const pickerSearchType = ref('');
     const pickerSearch = ref('');
+
+    /* 피커 상품 서버검색 — 검색어/검색대상을 pdProd.getPage 에 전달 (상위 50건).
+       검색대상은 백엔드 지원범위(prodNm/prodId)만 사용. [조회]/Enter/모달열기 시점에만 호출. */
+    const onPickerSearch = async () => {
+      try {
+        const params = { pageNo: 1, pageSize: 50 };
+        const sv = pickerSearch.value.trim();
+        if (sv) {
+          params.searchValue = sv;
+          if (pickerSearchType.value) params.searchType = pickerSearchType.value;
+        }
+        const res = await boApiSvc.pdProd.getPage(params, '카테고리상품관리', '상품검색');
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        pickerResults.splice(0, pickerResults.length, ...list);
+      } catch (e) {
+        console.error('[onPickerSearch]', e);
+        pickerResults.splice(0, pickerResults.length);
+      }
+    };
+
+    /* 피커 열기 — 초기 목록 서버 조회 */
+    const openPicker = () => {
+      pickerSearchType.value = '';
+      pickerSearch.value = '';
+      pickerOpen.value = true;
+      onPickerSearch();
+    };
 
     /* 카테고리-상품 매핑 저장 */
     const onSave = async () => {
@@ -320,7 +335,7 @@ window.PdCategoryProdMng = {
       defaultDispStartDate, defaultDispEndDate,
       searchParam, onSearch, onReset,
       pager,
-      cfPickerList,
+      pickerResults, onPickerSearch, openPicker,
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
       fnDepthColor, fnDepthBullet, totalProdCount, cfTypeCountMap,
       dragoverIdx, onDragStart, onDragOver, onDrop,
@@ -379,7 +394,7 @@ window.PdCategoryProdMng = {
             <span v-if="!cfIsLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">(하위 포함)</span>
           </span>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-secondary btn-sm" @click="pickerOpen=true;pickerSearchType='';pickerSearch=''">+ 상품추가</button>
+            <button class="btn btn-secondary btn-sm" @click="openPicker()">+ 상품추가</button>
             <button class="btn btn-primary btn-sm" @click="onSave">저장</button>
           </div>
         </div>
@@ -595,13 +610,16 @@ window.PdCategoryProdMng = {
           :options="[
             { value: 'prodNm', label: '상품명' },
             { value: 'prodId', label: 'ID' },
-            { value: 'cateNm', label: '카테고리' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"
           min-width="100%" />
-        <input class="form-control" v-model="pickerSearch"
-               placeholder="검색어 입력" style="margin:8px 0 12px 0;">
+        <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
+          <input class="form-control" v-model="pickerSearch"
+                 placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
+                 @keyup.enter="onPickerSearch">
+          <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
+        </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <table class="bo-table" style="margin:0">
             <thead><tr>
@@ -613,7 +631,7 @@ window.PdCategoryProdMng = {
               <th style="width:56px;text-align:center">추가</th>
             </tr></thead>
             <tbody>
-              <tr v-for="p in cfPickerList" :key="(p && p.prodId)">
+              <tr v-for="p in pickerResults" :key="(p && p.prodId)">
                 <td style="color:#aaa;font-size:12px">{{ p.prodId }}</td>
                 <td>{{ p.prodNm }}</td>
                 <td style="text-align:center;font-size:12px;color:#888">{{ p.cateNm || '-' }}</td>
@@ -623,7 +641,7 @@ window.PdCategoryProdMng = {
                   <button class="btn btn-blue btn-xs" @click="addProd(p)">추가</button>
                 </td>
               </tr>
-              <tr v-if="!cfPickerList.length">
+              <tr v-if="!pickerResults.length">
                 <td colspan="6" style="text-align:center;padding:24px;color:#aaa">검색 결과가 없습니다.</td>
               </tr>
             </tbody>
