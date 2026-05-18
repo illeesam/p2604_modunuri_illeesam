@@ -85,8 +85,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) return;
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      if (typeof handleLoadDetail === 'function') await handleLoadDetail();
-      else if (typeof handleSearchDetail === 'function') await handleSearchDetail();
+      await handleSearchDetail();
     });
 
     /* 같은 회원의 캐쉬 내역 */

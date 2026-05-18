@@ -96,8 +96,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) return;
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      if (typeof handleLoadDetail === 'function') await handleLoadDetail();
-      else if (typeof handleSearchDetail === 'function') await handleSearchDetail();
+      await handleSearchDetail();
     });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());

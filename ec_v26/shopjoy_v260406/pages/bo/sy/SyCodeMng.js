@@ -17,7 +17,7 @@ window.SyCodeMng = {
     const uiState     = reactive({
       checkAll: false, dragMoved: false, loading: false,
       isPageCodeLoad: false, selectedGrp: '', grpSelectedPath: '',
-      focusedIdx: null, selectedCodeId: null, dragSrc: null, activeCodeTab: '일반',
+      focusedIdx: null, selectedCodeId: null, codeReloadTrigger: 0, dragSrc: null, activeCodeTab: '일반',
       isTreeType: false,
       grpDirtyCount: 0,
       grpSortKey: '', grpSortDir: 'asc',
@@ -508,7 +508,7 @@ window.SyCodeMng = {
     };
 
     /* 상세조회 */
-    const handleLoadDetail = (codeId) => { uiState.selectedCodeId = codeId; };
+    const handleLoadDetail = (codeId) => { uiState.selectedCodeId = codeId; uiState.codeReloadTrigger++; };
 
     /* closeDetail */
     const closeDetail       = () => { uiState.selectedCodeId = null; };
@@ -948,6 +948,7 @@ window.SyCodeMng = {
       :show-confirm="showConfirm" 
       :set-api-res="() => {}" 
       :on-list-reload="handleSearchList"
+      :reload-trigger="uiState.codeReloadTrigger"
       :dtl-id="uiState.selectedCodeId"
       :dtl-mode="uiState.selectedCodeId ? 'edit' : 'new'" />
   </div>

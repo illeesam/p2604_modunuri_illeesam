@@ -100,7 +100,7 @@ window.OdClaimDtl = {
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) return;
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      await handleLoadDetail();
+      await handleSearchDetail();
     });
 
     /* 클레임(취소/반품/교환) 저장 */

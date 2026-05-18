@@ -24,6 +24,7 @@ window.MbMemberMng = {
       show: false,
       isNew: false,
       dtlId: null,
+      reloadTrigger: 0, // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
       form: { memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: '', memberMemo: '' }
     });
 
@@ -109,6 +110,7 @@ window.MbMemberMng = {
       detailModal.dtlId = row.memberId;
       detailModal.isNew = false;
       detailModal.show = true;
+      detailModal.reloadTrigger++;
       fnApplyForm(row); // 목록 row 데이터로 먼저 표시
       try {
         const res = await boApiSvc.mbMember.getById(row.memberId, '회원관리', '상세조회');
@@ -125,6 +127,7 @@ window.MbMemberMng = {
       detailModal.dtlId = '__new__';
       detailModal.isNew = true;
       detailModal.show = true;
+      detailModal.reloadTrigger++;
     };
 
     /* 회원 closeDetail */
@@ -299,7 +302,8 @@ window.MbMemberMng = {
     </table>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-  <mb-member-dtl :detail-modal="detailModal" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail" 
+  <mb-member-dtl :detail-modal="detailModal" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
+  :reload-trigger="detailModal.reloadTrigger"
   :on-list-reload="handleSearchList"
 />
 </div>

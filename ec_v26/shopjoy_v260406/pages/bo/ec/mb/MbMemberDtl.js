@@ -28,12 +28,18 @@ window.MbMemberDtl = {
       codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
       codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
     });
-    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    /* policy: parent Mng increments reloadTrigger → 상세 재조회.
+       MbMember 은 부모 Mng 의 openDetail() 에서 직접 getById 로 detailModal.form 을
+       채우는 패턴이므로, reloadTrigger 신호 수신 시 dtlId 기준으로 재조회한다. */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) return;
-      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      if (typeof handleLoadDetail === 'function') await handleLoadDetail();
-      else if (typeof handleSearchDetail === 'function') await handleSearchDetail();
+      const id = props.detailModal && props.detailModal.dtlId;
+      if (!id || id === '__new__') return;
+      try {
+        const res = await window.boApiSvc.mbMember.getById(id, '회원관리', '상세조회');
+        const d = res.data?.data || res.data;
+        if (d && props.detailModal && props.detailModal.form) Object.assign(props.detailModal.form, d);
+      } catch (err) { console.error('[MbMemberDtl reloadTrigger]', err); }
     });
 
     return { currentId, codes };
