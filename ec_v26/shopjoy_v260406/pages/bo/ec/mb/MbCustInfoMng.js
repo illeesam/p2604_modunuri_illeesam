@@ -401,7 +401,7 @@
           </div>
           <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 18px;text-align:center;min-width:110px;">
             <div style="font-size:11px;color:#f57f17;font-weight:600;margin-bottom:2px;">총 구매액</div>
-            <div style="font-size:17px;font-weight:700;color:#f57f17;">{{ (customer.totalPurchase||0).toLocaleString() }}</div>
+            <div style="font-size:17px;font-weight:700;color:#f57f17;">{{ (uiState.customer.totalPurchase||0).toLocaleString() }}</div>
             <div style="font-size:10px;color:#90a4ae;">원</div>
           </div>
           <div style="background:#f3e5f5;border:1px solid #ce93d8;border-radius:8px;padding:10px 18px;text-align:center;min-width:100px;">
