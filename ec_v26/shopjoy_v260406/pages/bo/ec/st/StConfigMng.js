@@ -163,7 +163,18 @@ window.StConfigMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, configs, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
+    const gridColumns = [
+      { key: 'siteNm',             label: '사이트' },
+      { key: 'categoryNm',         label: '카테고리' },
+      { key: 'commissionRate',     label: '수수료율' },
+      { key: 'settleCycleCd',      label: '정산주기' },
+      { key: 'settleDay',          label: '정산일' },
+      { key: 'minSettleAmt',       label: '최소정산금' },
+      { key: 'useYn',              label: '사용여부' },
+      { key: 'settleConfigRemark', label: '비고' },
+    ];
+
+    return { uiState, configs, gridColumns, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
   },
   template: /* html */`
 <div>
@@ -182,26 +193,23 @@ window.StConfigMng = {
       <span class="list-count">총 {{ configs.length }}건</span>
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기준 추가</button></div>
     </div>
-    <table class="bo-table">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>사이트</th><th>카테고리</th><th>수수료율</th><th>정산주기</th><th>정산일</th><th>최소정산금</th><th>사용여부</th><th>비고</th><th>액션</th></tr></thead>
-      <tbody>
-        <tr v-for="(c, idx) in configs" :key="c?.settleConfigId" :class="{selected: uiState.selectedId===c.settleConfigId}">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-          <td>{{ c.siteNm }}</td>
-          <td><strong>{{ c.categoryNm || c.vendorNm || '-' }}</strong></td>
-          <td><strong>{{ c.commissionRate }}%</strong></td>
-          <td><span class="badge" :class="fnCycleBadge(c.settleCycleCd)">{{ fnCycleCdToLabel(c.settleCycleCd) }}</span></td>
-          <td>매월 {{ c.settleDay }}일</td>
-          <td>{{ Number(c.minSettleAmt || 0).toLocaleString() }}원</td>
-          <td><span class="badge" :class="c.useYn==='Y'?'badge-green':'badge-gray'">{{ c.useYn==='Y'?'사용':'미사용' }}</span></td>
-          <td style="color:#888;font-size:12px">{{ c.settleConfigRemark }}</td>
-          <td class="actions">
-            <button class="btn btn-sm btn-primary" @click="openEdit(c)">수정</button>
-            <button class="btn btn-sm btn-danger"  @click="handleDelete(c)">삭제</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid
+      :columns="gridColumns" :rows="configs" row-key="settleConfigId"
+      list-title="목록" :count-text="configs.length + '건'" :row-actions="true"
+      :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
+      <template #head-actions>액션</template>
+      <template #cell-categoryNm="{ row: c }"><td><strong>{{ c.categoryNm || c.vendorNm || '-' }}</strong></td></template>
+      <template #cell-commissionRate="{ row: c }"><td><strong>{{ c.commissionRate }}%</strong></td></template>
+      <template #cell-settleCycleCd="{ row: c }"><td><span class="badge" :class="fnCycleBadge(c.settleCycleCd)">{{ fnCycleCdToLabel(c.settleCycleCd) }}</span></td></template>
+      <template #cell-settleDay="{ row: c }"><td>매월 {{ c.settleDay }}일</td></template>
+      <template #cell-minSettleAmt="{ row: c }"><td>{{ Number(c.minSettleAmt || 0).toLocaleString() }}원</td></template>
+      <template #cell-useYn="{ row: c }"><td><span class="badge" :class="c.useYn==='Y'?'badge-green':'badge-gray'">{{ c.useYn==='Y'?'사용':'미사용' }}</span></td></template>
+      <template #cell-settleConfigRemark="{ row: c }"><td style="color:#888;font-size:12px">{{ c.settleConfigRemark }}</td></template>
+      <template #row-actions="{ row: c }">
+        <button class="btn btn-sm btn-primary" @click="openEdit(c)">수정</button>
+        <button class="btn btn-sm btn-danger"  @click="handleDelete(c)">삭제</button>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 편집 폼 ----------------------------------------------------------- -->

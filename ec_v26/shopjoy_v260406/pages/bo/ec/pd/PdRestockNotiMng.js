@@ -124,7 +124,17 @@ window.PdRestockNotiMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { restockNotis, uiState, searchParam, pager, setPage, onSearch, onReset,
+    const gridColumns = [
+      { key: '_chk',     label: '' },
+      { key: 'prodId',   label: '상품명' },
+      { key: 'skuId',    label: 'SKU' },
+      { key: 'memberId', label: '신청회원' },
+      { key: 'notiYn',   label: '발송여부' },
+      { key: 'notiDate', label: '발송일시' },
+      { key: 'regDate',  label: '신청일' },
+    ];
+
+    return { restockNotis, uiState, searchParam, pager, gridColumns, setPage, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,
              codes };
   },
@@ -149,29 +159,25 @@ window.PdRestockNotiMng = {
           📣 알림발송 ({{ checkedCount }}건)
         </button>
       </div>
-      <table class="bo-table">
-        <thead><tr>
+      <bo-grid
+        :columns="gridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
+        list-title="목록" :count-text="pager.pageTotalCount + '건'"
+        @set-page="setPage" @size-change="onSizeChange">
+        <template #head>
           <th style="width:36px"><input type="checkbox" :checked="allChecked" @change="toggleAll"></th>
-          <th style="width:36px;text-align:center;">번호</th><th>상품명</th><th style="width:100px">SKU</th><th style="width:100px">신청회원</th>
+          <th>상품명</th><th style="width:100px">SKU</th><th style="width:100px">신청회원</th>
           <th style="width:80px;text-align:center">발송여부</th>
           <th style="width:140px">발송일시</th>
           <th style="width:140px">신청일</th>
-        </tr></thead>
-        <tbody>
-          <tr v-for="(row, idx) in restockNotis" :key="(row && row.restockNotiId)">
-            <td><input type="checkbox" :checked="checkedIds.has(row.restockNotiId)" @change="toggleOne(row.restockNotiId)"></td>
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td>{{ getProdNm(row.prodId) }}</td>
-            <td style="font-size:12px;color:#888">{{ row.skuId || '-' }}</td>
-            <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
-            <td style="text-align:center"><span :class="['badge',fnYnBadge(row.notiYn)]">{{ row.notiYn==='Y'?'발송완료':'미발송' }}</span></td>
-            <td style="font-size:12px;color:#888">{{ row.notiDate || '-' }}</td>
-            <td style="font-size:12px">{{ row.regDate }}</td>
-          </tr>
-          <tr v-if="!restockNotis.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
-        </tbody>
-      </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+        </template>
+        <template #cell-_chk="{ row }"><td><input type="checkbox" :checked="checkedIds.has(row.restockNotiId)" @change="toggleOne(row.restockNotiId)"></td></template>
+        <template #cell-prodId="{ row }"><td>{{ getProdNm(row.prodId) }}</td></template>
+        <template #cell-skuId="{ row }"><td style="font-size:12px;color:#888">{{ row.skuId || '-' }}</td></template>
+        <template #cell-memberId="{ row }"><td style="font-size:12px">{{ getMemNm(row.memberId) }}</td></template>
+        <template #cell-notiYn="{ row }"><td style="text-align:center"><span :class="['badge',fnYnBadge(row.notiYn)]">{{ row.notiYn==='Y'?'발송완료':'미발송' }}</span></td></template>
+        <template #cell-notiDate="{ row }"><td style="font-size:12px;color:#888">{{ row.notiDate || '-' }}</td></template>
+        <template #cell-regDate="{ row }"><td style="font-size:12px">{{ row.regDate }}</td></template>
+      </bo-grid>
     </div>
 </div>`
 };

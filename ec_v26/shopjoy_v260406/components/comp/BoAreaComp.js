@@ -179,6 +179,7 @@ window.BoGrid = {
     rowActions: { type: Boolean, default: false },               // 우측 행액션 컬럼 노출
     loading:    { type: Boolean, default: false },
     emptyText:  { type: String, default: '데이터가 없습니다.' },
+    bare:       { type: Boolean, default: false },               // true=card/toolbar/pager 없이 <table>만 (뷰토글·공용페이저·인라인Dtl 화면용)
   },
   emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder'],
   setup(props, { emit }) {
@@ -225,8 +226,8 @@ window.BoGrid = {
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan };
   },
   template: /* html */`
-<div class="card">
-  <div class="toolbar">
+<div :class="bare ? '' : 'card'">
+  <div v-if="!bare" class="toolbar">
     <span class="list-title">{{ listTitle }} <span class="list-count">{{ countText != null ? countText : ('총 ' + cfTotal + '건') }}</span></span>
     <div style="margin-left:auto;display:flex;gap:6px;">
       <slot name="toolbar-actions"></slot>
@@ -300,7 +301,7 @@ window.BoGrid = {
     </tbody>
   </table>
 
-  <bo-pager v-if="pager" :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg" />
+  <bo-pager v-if="pager && !bare" :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg" />
 </div>`,
 };
 

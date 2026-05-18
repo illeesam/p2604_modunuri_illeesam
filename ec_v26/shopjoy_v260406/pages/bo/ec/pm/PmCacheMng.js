@@ -179,7 +179,17 @@ window.PmCacheMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    const gridColumns = [
+      { key: 'memberNm',    label: '회원' },
+      { key: 'cacheDate',   label: '일시', sortKey: 'reg' },
+      { key: 'cacheTypeCd', label: '유형' },
+      { key: 'cacheAmt',    label: '금액' },
+      { key: 'balanceAmt',  label: '잔액' },
+      { key: 'cacheDesc',   label: '내용' },
+      { key: 'siteNm',      label: '사이트명' },
+    ];
+
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },
@@ -217,26 +227,26 @@ window.PmCacheMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="bo-table" v-if="tabMode==='list'">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>회원</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">일시 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
-      <tbody>
-        <tr v-if="caches.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(c, idx) in caches" :key="c?.cacheId" :style="selectedId===c.cacheId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
-          <td>{{ c.cacheDate }}</td>
-          <td><span class="badge" :class="fnTypeBadge(c.cacheTypeCd)">{{ c.cacheTypeCd }}</span></td>
-          <td :style="(c.cacheAmt||0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600'">{{ (c.cacheAmt||0) > 0 ? '+' : '' }}{{ (c.cacheAmt||0).toLocaleString() }}원</td>
-          <td>{{ (c.balanceAmt||0).toLocaleString() }}원</td>
-          <td><span class="title-link" @click="handleLoadDetail(c.cacheId)" :style="selectedId===c.cacheId?'color:#e8587a;font-weight:700;':''">{{ c.cacheDesc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.cacheId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid v-if="tabMode==='list'" :bare="true"
+      :columns="gridColumns" :rows="caches" :pager="pager" row-key="cacheId"
+      :row-actions="true"
+      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :row-style="(c) => selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
+      @sort="onSort">
+      <template #head-actions>관리</template>
+      <template #cell-memberNm="{ row: c }"><td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td></template>
+      <template #cell-cacheTypeCd="{ row: c }"><td><span class="badge" :class="fnTypeBadge(c.cacheTypeCd)">{{ c.cacheTypeCd }}</span></td></template>
+      <template #cell-cacheAmt="{ row: c }"><td :style="(c.cacheAmt||0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600'">{{ (c.cacheAmt||0) > 0 ? '+' : '' }}{{ (c.cacheAmt||0).toLocaleString() }}원</td></template>
+      <template #cell-balanceAmt="{ row: c }"><td>{{ (c.balanceAmt||0).toLocaleString() }}원</td></template>
+      <template #cell-cacheDesc="{ row: c }"><td><span class="title-link" @click="handleLoadDetail(c.cacheId)" :style="selectedId===c.cacheId?'color:#e8587a;font-weight:700;':''">{{ c.cacheDesc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
+      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
+      <template #row-actions="{ row: c }">
+        <div class="actions">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.cacheId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
+        </div>
+      </template>
+    </bo-grid>
 
     <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">

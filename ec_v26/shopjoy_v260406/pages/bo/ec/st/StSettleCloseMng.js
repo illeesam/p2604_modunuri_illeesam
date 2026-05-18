@@ -156,7 +156,20 @@ window.StSettleCloseMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, closeList, cfFilteredClose, searchType, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
+    const gridColumns = [
+      { key: 'closeMon',  label: '정산월' },
+      { key: 'sales',     label: '매출액' },
+      { key: 'refund',    label: '환불액' },
+      { key: 'net',       label: '순매출' },
+      { key: 'comm',      label: '수수료' },
+      { key: 'promo',     label: '프로모션비' },
+      { key: 'settle',    label: '정산액' },
+      { key: 'closeDate', label: '마감일' },
+      { key: 'status',    label: '상태' },
+      { key: 'regUserNm', label: '담당자' },
+    ];
+
+    return { uiState, closeList, cfFilteredClose, gridColumns, searchType, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
   },
   template: /* html */`
 <div>
@@ -223,29 +236,22 @@ window.StSettleCloseMng = {
         <option v-for="c in codes.settle_close_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </bo-search-area>
-    <div class="toolbar"><span class="list-title">정산마감 이력</span><span class="list-count">총 {{ cfFilteredClose.length }}건</span></div>
-    <table class="bo-table">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>정산월</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료</th><th>프로모션비</th><th>정산액</th><th>마감일</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in cfFilteredClose" :key="r?.closeId">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-          <td><strong>{{ r.closeMon }}</strong></td>
-          <td>{{ fmtW(r.sales) }}</td>
-          <td style="color:#e74c3c">{{ fmtW(r.refund) }}</td>
-          <td>{{ fmtW(r.net) }}</td>
-          <td style="color:#e67e22">{{ fmtW(r.comm) }}</td>
-          <td style="color:#9b59b6">{{ fmtW(r.promo) }}</td>
-          <td style="color:#27ae60;font-weight:700">{{ fmtW(r.settle) }}</td>
-          <td>{{ r.closeDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
-          <td>{{ r.regUserNm }}</td>
-          <td class="actions">
-            <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="doReopen(r)">마감취소</button>
-          </td>
-        </tr>
-        <tr v-if="!closeList.length"><td colspan="12" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
+    <bo-grid
+      :columns="gridColumns" :rows="cfFilteredClose" row-key="closeId"
+      list-title="정산마감 이력" :count-text="cfFilteredClose.length + '건'" :row-actions="true">
+      <template #head-actions>액션</template>
+      <template #cell-closeMon="{ row: r }"><td><strong>{{ r.closeMon }}</strong></td></template>
+      <template #cell-sales="{ row: r }"><td>{{ fmtW(r.sales) }}</td></template>
+      <template #cell-refund="{ row: r }"><td style="color:#e74c3c">{{ fmtW(r.refund) }}</td></template>
+      <template #cell-net="{ row: r }"><td>{{ fmtW(r.net) }}</td></template>
+      <template #cell-comm="{ row: r }"><td style="color:#e67e22">{{ fmtW(r.comm) }}</td></template>
+      <template #cell-promo="{ row: r }"><td style="color:#9b59b6">{{ fmtW(r.promo) }}</td></template>
+      <template #cell-settle="{ row: r }"><td style="color:#27ae60;font-weight:700">{{ fmtW(r.settle) }}</td></template>
+      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
+      <template #row-actions="{ row: r }">
+        <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="doReopen(r)">마감취소</button>
+      </template>
+    </bo-grid>
   </div>
 </div>
 `,

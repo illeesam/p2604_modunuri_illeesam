@@ -65,6 +65,15 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     const gridRows   = reactive([]);
     let   _tempId    = -1;
 
+    const gridColumns = [
+      { key: 'tagNm',    label: '태그명' },
+      { key: 'tagDesc',  label: '설명' },
+      { key: 'useCount', label: '사용수', style: 'width:80px;text-align:right;' },
+      { key: 'sortOrd',  label: '정렬',   style: 'width:80px;text-align:right;' },
+      { key: 'useYn',    label: '사용',   style: 'width:70px;text-align:center;' },
+      { key: '_act',     label: '삭제',   style: 'width:60px;text-align:center;' },
+    ];
+
     watch(tags, (list) => { gridRows.splice(0, gridRows.length, ...list.map(t => ({ ...t, _row_status: null }))); }, { immediate: true });
 
     /* 태그 addRow */
@@ -136,7 +145,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     // -- return ---------------------------------------------------------------
 
     return { tags, uiState, codes, searchParam, pager, setPage, onSearch, onReset,
-             gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge, onSizeChange };
+             gridRows, gridColumns, addRow, onCellChange, deleteRow, saveAll, fnYnBadge, onSizeChange };
   },
   template: `
 <div>
@@ -152,43 +161,39 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
         </select>
       </bo-search-area>
     </div>
-    <div class="card">
-      <div class="toolbar">
-        <span class="list-title">태그 목록</span>
-        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-        <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
-          <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
-        </div>
-      </div>
-      <table class="bo-table">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th>태그명</th><th>설명</th>
-          <th style="width:80px;text-align:right">사용수</th>
-          <th style="width:80px;text-align:right">정렬</th>
-          <th style="width:70px;text-align:center">사용</th>
-          <th style="width:60px;text-align:center">삭제</th>
-        </tr></thead>
-        <tbody>
-          <tr v-for="(row,idx) in gridRows" :key="(row && row.tagId)" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td><input v-if="row._row_status" class="form-control" v-model="row.tagNm" @input="onCellChange(idx)"><span v-else><span class="badge badge-blue">#</span> {{ row.tagNm }}</span></td>
-            <td><input v-if="row._row_status" class="form-control" v-model="row.tagDesc" @input="onCellChange(idx)"><span v-else style="color:#888;font-size:12px">{{ row.tagDesc }}</span></td>
-            <td style="text-align:right">{{ (row.useCount||0) }}</td>
-            <td style="text-align:right"><input v-if="row._row_status" class="form-control" style="text-align:right" type="number" v-model.number="row.sortOrd" @input="onCellChange(idx)"><span v-else>{{ row.sortOrd }}</span></td>
-            <td style="text-align:center">
-              <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)">
-                <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-              </select>
-              <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
-            </td>
-            <td style="text-align:center"><button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button></td>
-          </tr>
-          <tr v-if="!gridRows.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
-        </tbody>
-      </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-    </div>
+    <bo-grid
+      :columns="gridColumns" :rows="gridRows" :pager="pager" row-key="tagId"
+      list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-row-new' : (row._row_status==='U' ? 'table-row-mod' : '')"
+      @set-page="setPage" @size-change="onSizeChange">
+
+      <template #toolbar-actions>
+        <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
+        <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
+      </template>
+
+      <template #cell-tagNm="{ row, idx }">
+        <td><input v-if="row._row_status" class="form-control" v-model="row.tagNm" @input="onCellChange(idx)"><span v-else><span class="badge badge-blue">#</span> {{ row.tagNm }}</span></td>
+      </template>
+      <template #cell-tagDesc="{ row, idx }">
+        <td><input v-if="row._row_status" class="form-control" v-model="row.tagDesc" @input="onCellChange(idx)"><span v-else style="color:#888;font-size:12px">{{ row.tagDesc }}</span></td>
+      </template>
+      <template #cell-useCount="{ row }">
+        <td style="text-align:right">{{ (row.useCount||0) }}</td>
+      </template>
+      <template #cell-sortOrd="{ row, idx }">
+        <td style="text-align:right"><input v-if="row._row_status" class="form-control" style="text-align:right" type="number" v-model.number="row.sortOrd" @input="onCellChange(idx)"><span v-else>{{ row.sortOrd }}</span></td>
+      </template>
+      <template #cell-useYn="{ row, idx }">
+        <td style="text-align:center">
+          <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)">
+            <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          </select>
+          <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
+        </td>
+      </template>
+      <template #cell-_act="{ idx }">
+        <td style="text-align:center"><button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button></td>
+      </template>
+    </bo-grid>
 </div>`
 };

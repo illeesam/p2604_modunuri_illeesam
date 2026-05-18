@@ -105,7 +105,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, handleDateRangeChange, codes, pager, rows, cfSummary, fnDiffBadge, fnPayBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    const gridColumns = [
+      { key: 'orderId',    label: '주문ID' },
+      { key: 'txDate',     label: '거래일' },
+      { key: 'payMethod',  label: '결제수단' },
+      { key: 'payAmt',     label: '주문금액' },
+      { key: 'pgAmt',      label: 'PG정산액' },
+      { key: 'settleAmt',  label: '정산기준액' },
+      { key: 'diff',       label: '차이금액' },
+      { key: 'diffStatus', label: '대사결과' },
+    ];
+
+    return { uiState, handleDateRangeChange, codes, pager, rows, gridColumns, cfSummary, fnDiffBadge, fnPayBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -136,24 +147,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">결제부족</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa"><div style="font-size:11px;color:#888">차이금액 합계</div><div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div></div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
-    <table class="bo-table">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>주문ID</th><th>거래일</th><th>결제수단</th><th>주문금액</th><th>PG정산액</th><th>정산기준액</th><th>차이금액</th><th>대사결과</th></tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in rows" :key="r?.orderId">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td>{{ r.orderId }}</td><td>{{ r.txDate }}</td>
-          <td><span class="badge" :class="fnPayBadge(r.payMethod)">{{ r.payMethod }}</span></td>
-          <td>{{ fmtW(r.payAmt) }}</td>
-          <td>{{ fmtW(r.pgAmt) }}</td>
-          <td>{{ fmtW(r.settleAmt) }}</td>
-          <td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td>
-          <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
-        </tr>
-        <tr v-if="!rows.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-grid
+      :columns="gridColumns" :rows="rows" :pager="pager" row-key="orderId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'"
+      @set-page="setPage" @size-change="onSizeChange">
+      <template #cell-payMethod="{ row: r }"><td><span class="badge" :class="fnPayBadge(r.payMethod)">{{ r.payMethod }}</span></td></template>
+      <template #cell-payAmt="{ row: r }"><td>{{ fmtW(r.payAmt) }}</td></template>
+      <template #cell-pgAmt="{ row: r }"><td>{{ fmtW(r.pgAmt) }}</td></template>
+      <template #cell-settleAmt="{ row: r }"><td>{{ fmtW(r.settleAmt) }}</td></template>
+      <template #cell-diff="{ row: r }"><td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td></template>
+      <template #cell-diffStatus="{ row: r }"><td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td></template>
+    </bo-grid>
   </div>
 </div>
 `,

@@ -184,7 +184,19 @@ window.PmCouponMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    const gridColumns = [
+      { key: 'couponNm',       label: '쿠폰명', sortKey: 'nm' },
+      { key: 'couponCd',       label: '코드' },
+      { key: 'discount',       label: '할인' },
+      { key: 'minOrderAmt',    label: '최소주문' },
+      { key: 'targetTypeCdNm', label: '발급대상' },
+      { key: 'issue',          label: '발급/사용' },
+      { key: 'validTo',        label: '만료일', sortKey: 'reg' },
+      { key: 'couponStatusCd', label: '상태' },
+      { key: 'siteNm',         label: '사이트명' },
+    ];
+
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },
@@ -221,28 +233,28 @@ window.PmCouponMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="bo-table" v-if="tabMode==='list'">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">쿠폰명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>코드</th><th>할인</th><th>최소주문</th><th>발급대상</th><th>발급/사용</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">만료일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
-      <tbody>
-        <tr v-if="coupons.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(c, idx) in coupons" :key="c?.couponId" :style="selectedId===c.couponId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?'color:#e8587a;font-weight:700;':''">{{ c.couponNm }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;">{{ c.couponCd }}</code></td>
-          <td>{{ discountLabel(c) }}</td>
-          <td>{{ c.minOrderAmt ? c.minOrderAmt.toLocaleString()+'원↑' : '-' }}</td>
-          <td>{{ c.targetTypeCdNm || '-' }}</td>
-          <td>{{ c.issueCnt || 0 }} / {{ c.issueLimit || 0 }}</td>
-          <td>{{ c.validTo }}</td>
-          <td><span class="badge" :class="fnStatusBadge(c.couponStatusCdNm || c.couponStatusCd)">{{ c.couponStatusCdNm || c.couponStatusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.couponId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid v-if="tabMode==='list'" :bare="true"
+      :columns="gridColumns" :rows="coupons" :pager="pager" row-key="couponId"
+      :row-actions="true"
+      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"
+      @sort="onSort">
+      <template #head-actions>관리</template>
+      <template #cell-couponNm="{ row: c }"><td><span class="title-link" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?'color:#e8587a;font-weight:700;':''">{{ c.couponNm }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
+      <template #cell-couponCd="{ row: c }"><td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;">{{ c.couponCd }}</code></td></template>
+      <template #cell-discount="{ row: c }"><td>{{ discountLabel(c) }}</td></template>
+      <template #cell-minOrderAmt="{ row: c }"><td>{{ c.minOrderAmt ? c.minOrderAmt.toLocaleString()+'원↑' : '-' }}</td></template>
+      <template #cell-targetTypeCdNm="{ row: c }"><td>{{ c.targetTypeCdNm || '-' }}</td></template>
+      <template #cell-issue="{ row: c }"><td>{{ c.issueCnt || 0 }} / {{ c.issueLimit || 0 }}</td></template>
+      <template #cell-couponStatusCd="{ row: c }"><td><span class="badge" :class="fnStatusBadge(c.couponStatusCdNm || c.couponStatusCd)">{{ c.couponStatusCdNm || c.couponStatusCd }}</span></td></template>
+      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
+      <template #row-actions="{ row: c }">
+        <div class="actions">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.couponId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
+        </div>
+      </template>
+    </bo-grid>
 
     <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">

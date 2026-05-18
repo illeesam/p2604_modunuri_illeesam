@@ -173,7 +173,18 @@ window.PdDlivTmpltMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, searchParam,
+    const gridColumns = [
+      { key: 'dlivTmpltNm',   label: '템플릿명', sortKey: 'nm' },
+      { key: 'dlivMethodCd',  label: '배송방법',   style: 'width:90px;' },
+      { key: 'dlivPayTypeCd', label: '결제유형',   style: 'width:80px;' },
+      { key: 'dlivCost',      label: '기본배송비', style: 'width:100px;text-align:right;' },
+      { key: 'freeDlivMinAmt',label: '무료배송조건',style: 'width:120px;text-align:right;' },
+      { key: 'returnCost',    label: '반품배송비', style: 'width:100px;text-align:right;' },
+      { key: 'baseDlivYn',    label: '기본',       style: 'width:70px;text-align:center;' },
+      { key: 'useYn',         label: '사용',       style: 'width:60px;text-align:center;' },
+    ];
+
+    return { uiState, codes, searchParam, gridColumns,
              pager, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
              fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS, onSizeChange, dlivTmplts, onSort, sortIcon};
@@ -212,33 +223,21 @@ window.PdDlivTmpltMng = {
         <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
         <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
       </div>
-      <table class="bo-table">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">템플릿명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th>
-          <th style="width:90px">배송방법</th>
-          <th style="width:80px">결제유형</th>
-          <th style="width:100px;text-align:right">기본배송비</th>
-          <th style="width:120px;text-align:right">무료배송조건</th>
-          <th style="width:100px;text-align:right">반품배송비</th>
-          <th style="width:70px;text-align:center">기본</th>
-          <th style="width:60px;text-align:center">사용</th>
-        </tr></thead>
-        <tbody>
-          <tr v-for="(row, idx) in dlivTmplts" :key="(row && row.dlivTmpltId)" :class="{active:uiState.selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td><span class="title-link">{{ row.dlivTmpltNm }}</span></td>
-            <td><span :class="['badge',fnMethodBadge(row.dlivMethodCd)]">{{ row.dlivMethodCd }}</span></td>
-            <td><span class="badge badge-gray">{{ row.dlivPayTypeCd }}</span></td>
-            <td style="text-align:right">{{ (row.dlivCost||0).toLocaleString() }}원</td>
-            <td style="text-align:right">{{ row.freeDlivMinAmt ? (row.freeDlivMinAmt).toLocaleString()+'원 이상' : '무조건 유료' }}</td>
-            <td style="text-align:right">{{ (row.returnCost||0).toLocaleString() }}원</td>
-            <td style="text-align:center"><span :class="['badge',row.baseDlivYn==='Y'?'badge-orange':'badge-gray']">{{ row.baseDlivYn }}</span></td>
-            <td style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span></td>
-          </tr>
-          <tr v-if="!dlivTmplts.length"><td colspan="9" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
-        </tbody>
-      </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+      <bo-grid
+        :columns="gridColumns" :rows="dlivTmplts" :pager="pager" row-key="dlivTmpltId"
+        list-title="목록" :count-text="pager.pageTotalCount + '건'"
+        :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+        :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
+        @sort="onSort" @row-click="openDetail" @set-page="setPage" @size-change="onSizeChange">
+        <template #cell-dlivTmpltNm="{ row }"><td><span class="title-link">{{ row.dlivTmpltNm }}</span></td></template>
+        <template #cell-dlivMethodCd="{ row }"><td><span :class="['badge',fnMethodBadge(row.dlivMethodCd)]">{{ row.dlivMethodCd }}</span></td></template>
+        <template #cell-dlivPayTypeCd="{ row }"><td><span class="badge badge-gray">{{ row.dlivPayTypeCd }}</span></td></template>
+        <template #cell-dlivCost="{ row }"><td style="text-align:right">{{ (row.dlivCost||0).toLocaleString() }}원</td></template>
+        <template #cell-freeDlivMinAmt="{ row }"><td style="text-align:right">{{ row.freeDlivMinAmt ? (row.freeDlivMinAmt).toLocaleString()+'원 이상' : '무조건 유료' }}</td></template>
+        <template #cell-returnCost="{ row }"><td style="text-align:right">{{ (row.returnCost||0).toLocaleString() }}원</td></template>
+        <template #cell-baseDlivYn="{ row }"><td style="text-align:center"><span :class="['badge',row.baseDlivYn==='Y'?'badge-orange':'badge-gray']">{{ row.baseDlivYn }}</span></td></template>
+        <template #cell-useYn="{ row }"><td style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span></td></template>
+      </bo-grid>
     </div>
     <!-- -- 상세 폼 --------------------------------------------------------- -->
     <div class="card" v-if="uiState.selectedId">

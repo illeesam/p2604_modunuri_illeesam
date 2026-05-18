@@ -205,7 +205,18 @@ window.PdProdMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel, onSort, sortIcon };
+    const gridColumns = [
+      { key: 'prodNm',       label: '상품명', sortKey: 'nm' },
+      { key: 'cateNm',       label: '카테고리' },
+      { key: 'listPrice',    label: '가격' },
+      { key: 'prodStock',    label: '재고' },
+      { key: 'brandNm',      label: '브랜드' },
+      { key: 'prodStatusCd', label: '상태' },
+      { key: 'regDate',      label: '등록일', sortKey: 'reg' },
+      { key: 'siteNm',       label: '사이트명' },
+    ];
+
+    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, gridColumns, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -247,31 +258,28 @@ window.PdProdMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">상품명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>카테고리</th><th>가격</th><th>재고</th><th>브랜드</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="products.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(p, idx) in products" :key="p?.prodId" :style="selectedId===p.prodId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(p.prodId)" :style="selectedId===p.prodId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.prodId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ p.cateNm }}</td>
-          <td>{{ (p.listPrice||0).toLocaleString() }}원</td>
-          <td>{{ p.prodStock }}개</td>
-          <td>{{ p.brandNm }}</td>
-          <td><span class="badge" :class="fnStatusBadge(p.prodStatusCd)">{{ p.prodStatusCdNm || p.prodStatusCd }}</span></td>
-          <td>{{ p.regDate }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.prodId)">👁</button>
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.prodId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(p)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-grid
+      :columns="gridColumns" :rows="products" :pager="pager" row-key="prodId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
+      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :row-style="(p) => selectedId===p.prodId ? 'background:#fff8f9;' : ''"
+      @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+      <template #head-actions>관리</template>
+      <template #cell-prodNm="{ row: p }">
+        <td><span class="title-link" @click="handleLoadDetail(p.prodId)" :style="selectedId===p.prodId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.prodId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+      </template>
+      <template #cell-listPrice="{ row: p }"><td>{{ (p.listPrice||0).toLocaleString() }}원</td></template>
+      <template #cell-prodStock="{ row: p }"><td>{{ p.prodStock }}개</td></template>
+      <template #cell-prodStatusCd="{ row: p }"><td><span class="badge" :class="fnStatusBadge(p.prodStatusCd)">{{ p.prodStatusCdNm || p.prodStatusCd }}</span></td></template>
+      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
+      <template #row-actions="{ row: p }">
+        <div class="actions">
+          <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.prodId)">👁</button>
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.prodId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(p)">삭제</button>
+        </div>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 카테고리 선택 모달 ----------------------------------------------------- -->

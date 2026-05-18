@@ -173,7 +173,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, handleDateRangeChange, codes, pager, etcAdjList, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    const gridColumns = [
+      { key: 'adjId',        label: '조정ID' },
+      { key: 'adjDate',      label: '조정일자' },
+      { key: 'vendorNm',     label: '업체명' },
+      { key: 'adjType',      label: '유형' },
+      { key: 'adjAmt',       label: '조정금액' },
+      { key: 'reason',       label: '사유' },
+      { key: 'aprvStatusCd', label: '승인상태' },
+      { key: 'regUserNm',    label: '등록자' },
+    ];
+
+    return { uiState, handleDateRangeChange, codes, pager, etcAdjList, gridColumns, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -217,26 +228,21 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기타조정 추가</button></div>
     </div>
-    <table class="bo-table">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>조정ID</th><th>조정일자</th><th>업체명</th><th>유형</th><th>조정금액</th><th>사유</th><th>승인상태</th><th>등록자</th><th>액션</th></tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in etcAdjList" :key="r?.adjId" :class="{selected: uiState.selectedId===r.adjId}">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td>{{ r.adjId }}</td><td>{{ r.adjDate }}</td><td>{{ r.vendorNm }}</td>
-          <td><span class="badge" :class="fnTypeBadge(r.adjType)">{{ r.adjType }}</span></td>
-          <td :style="r.adjAmt<0?'color:#e74c3c;font-weight:700':'color:#27ae60;font-weight:700'">{{ fmtW(r.adjAmt) }}</td>
-          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.reason }}</td>
-          <td><span class="badge" :class="fnAprvBadge(r.aprvStatusCd)">{{ r.aprvStatusCd }}</span></td>
-          <td>{{ r.regUserNm }}</td>
-          <td class="actions">
-            <button class="btn btn-sm btn-primary" @click="openEdit(r)">수정</button>
-            <button class="btn btn-sm btn-danger"  @click="handleDelete(r)">삭제</button>
-          </td>
-        </tr>
-        <tr v-if="!etcAdjList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-grid
+      :columns="gridColumns" :rows="etcAdjList" :pager="pager" row-key="adjId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
+      :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
+      @set-page="setPage" @size-change="onSizeChange">
+      <template #head-actions>액션</template>
+      <template #cell-adjType="{ row: r }"><td><span class="badge" :class="fnTypeBadge(r.adjType)">{{ r.adjType }}</span></td></template>
+      <template #cell-adjAmt="{ row: r }"><td :style="r.adjAmt<0?'color:#e74c3c;font-weight:700':'color:#27ae60;font-weight:700'">{{ fmtW(r.adjAmt) }}</td></template>
+      <template #cell-reason="{ row: r }"><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.reason }}</td></template>
+      <template #cell-aprvStatusCd="{ row: r }"><td><span class="badge" :class="fnAprvBadge(r.aprvStatusCd)">{{ r.aprvStatusCd }}</span></td></template>
+      <template #row-actions="{ row: r }">
+        <button class="btn btn-sm btn-primary" @click="openEdit(r)">수정</button>
+        <button class="btn btn-sm btn-danger"  @click="handleDelete(r)">삭제</button>
+      </template>
+    </bo-grid>
   </div>
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}</div>

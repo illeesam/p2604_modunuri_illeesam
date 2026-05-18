@@ -118,7 +118,19 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, handleDateRangeChange, codes, pager, reconList, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    const gridColumns = [
+      { key: 'reconId',    label: '대사ID' },
+      { key: 'reconDate',  label: '대사일자' },
+      { key: 'slipId',     label: '전표ID' },
+      { key: 'slipType',   label: '유형' },
+      { key: 'sysAmt',     label: '시스템금액' },
+      { key: 'erpAmt',     label: 'ERP금액' },
+      { key: 'diff',       label: '차이금액' },
+      { key: 'diffStatus', label: '대사결과' },
+      { key: 'remark',     label: '비고' },
+    ];
+
+    return { uiState, handleDateRangeChange, codes, pager, reconList, gridColumns, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -153,29 +165,22 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">미반영</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.noReflect }}건</div></div>
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa"><div style="font-size:11px;color:#888">차이금액 합계</div><div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div></div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
-    <table class="bo-table">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>대사ID</th><th>대사일자</th><th>전표ID</th><th>유형</th><th>시스템금액</th><th>ERP금액</th><th>차이금액</th><th>대사결과</th><th>비고</th><th>액션</th></tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in reconList" :key="r?.reconId">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td>{{ r.reconId }}</td>
-          <td>{{ r.reconDate }}</td>
-          <td style="font-size:11px">{{ r.slipId }}</td>
-          <td><span class="badge" :class="fnTypeBadge(r.slipType)">{{ r.slipType }}</span></td>
-          <td style="font-weight:700">{{ fmtW(r.sysAmt) }}</td>
-          <td>{{ r.erpAmt > 0 ? fmtW(r.erpAmt) : '-' }}</td>
-          <td :style="r.diff>0?'color:#e74c3c;font-weight:700':''">{{ r.diff > 0 ? fmtW(r.diff) : '-' }}</td>
-          <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
-          <td style="font-size:11px;color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.remark }}</td>
-          <td class="actions">
-            <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="doFix(r)">조정</button>
-          </td>
-        </tr>
-        <tr v-if="!reconList.length"><td colspan="11" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-grid
+      :columns="gridColumns" :rows="reconList" :pager="pager" row-key="reconId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
+      @set-page="setPage" @size-change="onSizeChange">
+      <template #head-actions>액션</template>
+      <template #cell-slipId="{ row: r }"><td style="font-size:11px">{{ r.slipId }}</td></template>
+      <template #cell-slipType="{ row: r }"><td><span class="badge" :class="fnTypeBadge(r.slipType)">{{ r.slipType }}</span></td></template>
+      <template #cell-sysAmt="{ row: r }"><td style="font-weight:700">{{ fmtW(r.sysAmt) }}</td></template>
+      <template #cell-erpAmt="{ row: r }"><td>{{ r.erpAmt > 0 ? fmtW(r.erpAmt) : '-' }}</td></template>
+      <template #cell-diff="{ row: r }"><td :style="r.diff>0?'color:#e74c3c;font-weight:700':''">{{ r.diff > 0 ? fmtW(r.diff) : '-' }}</td></template>
+      <template #cell-diffStatus="{ row: r }"><td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td></template>
+      <template #cell-remark="{ row: r }"><td style="font-size:11px;color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.remark }}</td></template>
+      <template #row-actions="{ row: r }">
+        <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="doFix(r)">조정</button>
+      </template>
+    </bo-grid>
   </div>
 </div>
 `,

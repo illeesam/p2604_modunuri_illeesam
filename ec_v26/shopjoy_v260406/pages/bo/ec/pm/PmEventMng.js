@@ -172,7 +172,18 @@ window.PmEventMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, tabMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
+    const gridColumns = [
+      { key: 'eventTitle',     label: '이벤트 제목', sortKey: 'nm' },
+      { key: 'targetProducts', label: '대상상품' },
+      { key: 'authRequired',   label: '인증필요' },
+      { key: 'startDate',      label: '시작일' },
+      { key: 'endDate',        label: '종료일' },
+      { key: 'eventStatusCd',  label: '상태' },
+      { key: 'regDate',        label: '등록일', sortKey: 'reg' },
+      { key: 'siteNm',         label: '사이트명' },
+    ];
+
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, tabMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -199,27 +210,26 @@ window.PmEventMng = {
       </div>
     </div>
     <!-- -- 리스트 뷰 -------------------------------------------------------- -->
-    <table class="bo-table" v-if="tabMode==='list'">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">이벤트 제목 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>대상상품</th><th>인증필요</th><th>시작일</th><th>종료일</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
-      <tbody>
-        <tr v-if="events.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(e, idx) in events" :key="e?.eventId" :style="uiStateDetail.selectedId===e.eventId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(e.eventId)" :style="uiStateDetail.selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.eventTitle }}<span v-if="uiStateDetail.selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ (e.targetProducts||[]).length }}개 상품</td>
-          <td><span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'">{{ e.authRequired ? '필요' : '불필요' }}</span></td>
-          <td>{{ e.startDate }}</td><td>{{ e.endDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(e.eventStatusCd)">{{ e.eventStatusCd }}</span></td>
-          <td>{{ e.regDate }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions" style="display:flex;gap:6px;align-items:center;">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(e.eventId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(e)">삭제</button>
-            <span style="font-size:11px;color:#999;margin-left:auto;">#{{ e.eventId }}</span>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid v-if="tabMode==='list'" :bare="true"
+      :columns="gridColumns" :rows="events" :pager="pager" row-key="eventId"
+      :row-actions="true"
+      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :row-style="(e) => uiStateDetail.selectedId===e.eventId ? 'background:#fff8f9;' : ''"
+      @sort="onSort">
+      <template #head-actions>관리</template>
+      <template #cell-eventTitle="{ row: e }"><td><span class="title-link" @click="handleLoadDetail(e.eventId)" :style="uiStateDetail.selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.eventTitle }}<span v-if="uiStateDetail.selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
+      <template #cell-targetProducts="{ row: e }"><td>{{ (e.targetProducts||[]).length }}개 상품</td></template>
+      <template #cell-authRequired="{ row: e }"><td><span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'">{{ e.authRequired ? '필요' : '불필요' }}</span></td></template>
+      <template #cell-eventStatusCd="{ row: e }"><td><span class="badge" :class="fnStatusBadge(e.eventStatusCd)">{{ e.eventStatusCd }}</span></td></template>
+      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
+      <template #row-actions="{ row: e }">
+        <div class="actions" style="display:flex;gap:6px;align-items:center;">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(e.eventId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(e)">삭제</button>
+          <span style="font-size:11px;color:#999;margin-left:auto;">#{{ e.eventId }}</span>
+        </div>
+      </template>
+    </bo-grid>
 
     <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">

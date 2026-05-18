@@ -114,7 +114,16 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
 
     // -- return ---------------------------------------------------------------
 
-    return { qnas, uiState, codes, pager, searchParam,
+    const gridColumns = [
+      { key: 'siteNm',   label: '사이트' },
+      { key: 'prodId',   label: '상품명' },
+      { key: 'qnaTitle', label: '제목' },
+      { key: 'memberId', label: '작성자' },
+      { key: 'answYn',   label: '상태' },
+      { key: 'regDate',  label: '등록일', sortKey: 'reg' },
+    ];
+
+    return { qnas, uiState, codes, pager, searchParam, gridColumns,
       onSearch, onReset, setPage, onSizeChange, getProdNm, getMemNm, fnStatusBadge, fnAnswLabel, cfSiteNm, onSort, sortIcon };
   },
   template: /* html */`
@@ -144,24 +153,20 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
         </select>
       </div>
     </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th>번호</th><th>사이트</th><th>상품명</th><th>제목</th><th>작성자</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
-        <tr v-else-if="!qnas.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-        <tr v-for="q in qnas" :key="q?.qnaId">
-          <td>{{ q.qnaId }}</td>
-          <td>{{ cfSiteNm }}</td>
-          <td>{{ getProdNm(q.prodId) }}</td>
-          <td class="title-link" @click="">{{ q.qnaTitle }}</td>
-          <td>{{ getMemNm(q.memberId) }}</td>
-          <td><span :class="['badge',fnStatusBadge(q.answYn)]">{{ fnAnswLabel(q.answYn) }}</span></td>
-          <td>{{ (q.regDate||'').slice(0,10) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid
+      :columns="gridColumns" :rows="qnas" :pager="pager" row-key="qnaId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'"
+      :loading="uiState.loading"
+      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      empty-text="조회된 데이터가 없습니다."
+      @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+      <template #cell-siteNm><td>{{ cfSiteNm }}</td></template>
+      <template #cell-prodId="{ row: q }"><td>{{ getProdNm(q.prodId) }}</td></template>
+      <template #cell-qnaTitle="{ row: q }"><td class="title-link">{{ q.qnaTitle }}</td></template>
+      <template #cell-memberId="{ row: q }"><td>{{ getMemNm(q.memberId) }}</td></template>
+      <template #cell-answYn="{ row: q }"><td><span :class="['badge',fnStatusBadge(q.answYn)]">{{ fnAnswLabel(q.answYn) }}</span></td></template>
+      <template #cell-regDate="{ row: q }"><td>{{ (q.regDate||'').slice(0,10) }}</td></template>
+    </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 </div>`

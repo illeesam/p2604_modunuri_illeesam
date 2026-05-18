@@ -120,7 +120,21 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, handleDateRangeChange, pager, payList, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    const gridColumns = [
+      { key: 'payId',      label: '지급ID' },
+      { key: 'payDate',    label: '지급일' },
+      { key: 'vendorNm',   label: '업체명' },
+      { key: 'closeMon',   label: '정산월' },
+      { key: 'settleAmt',  label: '정산액' },
+      { key: 'payAmt',     label: '지급액' },
+      { key: 'bankNm',     label: '은행' },
+      { key: 'bankAccount',label: '계좌번호' },
+      { key: 'bankHolder', label: '예금주' },
+      { key: 'payStatus',  label: '상태' },
+      { key: 'regUserNm',  label: '담당자' },
+    ];
+
+    return { uiState, codes, handleDateRangeChange, pager, payList, gridColumns, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -170,31 +184,20 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#3498db">{{ fmtW(cfSummary.pending) }}</div>
       </div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
-    <table class="bo-table">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>지급ID</th><th>지급일</th><th>업체명</th><th>정산월</th><th>정산액</th><th>지급액</th><th>은행</th><th>계좌번호</th><th>예금주</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in payList" :key="r?.payId">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td>{{ r.payId }}</td>
-          <td>{{ r.payDate }}</td>
-          <td><strong>{{ r.vendorNm }}</strong></td>
-          <td>{{ r.closeMon }}</td>
-          <td style="font-weight:700">{{ fmtW(r.settleAmt) }}</td>
-          <td :style="r.payAmt>0?'color:#27ae60;font-weight:700':'color:#999'">{{ r.payAmt > 0 ? fmtW(r.payAmt) : '-' }}</td>
-          <td>{{ r.bankNm }}</td>
-          <td style="font-size:12px;color:#666">{{ r.bankAccount }}</td>
-          <td>{{ r.bankHolder }}</td>
-          <td><span class="badge" :class="fnStatusBadge(r.payStatus)">{{ r.payStatus }}</span></td>
-          <td>{{ r.regUserNm }}</td>
-          <td class="actions">
-            <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="doPay(r)">지급처리</button>
-          </td>
-        </tr>
-        <tr v-if="!payList.length"><td colspan="13" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-grid
+      :columns="gridColumns" :rows="payList" :pager="pager" row-key="payId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
+      @set-page="setPage" @size-change="onSizeChange">
+      <template #head-actions>액션</template>
+      <template #cell-vendorNm="{ row: r }"><td><strong>{{ r.vendorNm }}</strong></td></template>
+      <template #cell-settleAmt="{ row: r }"><td style="font-weight:700">{{ fmtW(r.settleAmt) }}</td></template>
+      <template #cell-payAmt="{ row: r }"><td :style="r.payAmt>0?'color:#27ae60;font-weight:700':'color:#999'">{{ r.payAmt > 0 ? fmtW(r.payAmt) : '-' }}</td></template>
+      <template #cell-bankAccount="{ row: r }"><td style="font-size:12px;color:#666">{{ r.bankAccount }}</td></template>
+      <template #cell-payStatus="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.payStatus)">{{ r.payStatus }}</span></td></template>
+      <template #row-actions="{ row: r }">
+        <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="doPay(r)">지급처리</button>
+      </template>
+    </bo-grid>
   </div>
 </div>
 `,

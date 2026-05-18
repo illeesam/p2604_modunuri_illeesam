@@ -99,7 +99,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, handleDateRangeChange, codes, pager, rows, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    const gridColumns = [
+      { key: 'vendorNm',   label: '업체명' },
+      { key: 'orderCnt',   label: '주문건수' },
+      { key: 'sysAmt',     label: '시스템 정산액' },
+      { key: 'vendorAmt',  label: '업체 청구액' },
+      { key: 'diff',       label: '차이금액' },
+      { key: 'diffStatus', label: '대사결과' },
+    ];
+
+    return { uiState, handleDateRangeChange, codes, pager, rows, gridColumns, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -129,23 +138,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">시스템과다</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div></div>
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">업체과다</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}개 업체</span></div>
-    <table class="bo-table">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>업체명</th><th>주문건수</th><th>시스템 정산액</th><th>업체 청구액</th><th>차이금액</th><th>대사결과</th></tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in rows" :key="r?.vendorId">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><strong>{{ r.vendorNm }}</strong></td>
-          <td>{{ r.orderCnt }}건</td>
-          <td>{{ fmtW(r.sysAmt) }}</td>
-          <td>{{ fmtW(r.vendorAmt) }}</td>
-          <td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td>
-          <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
-        </tr>
-        <tr v-if="!rows.length"><td colspan="7" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-grid
+      :columns="gridColumns" :rows="rows" :pager="pager" row-key="vendorId"
+      list-title="목록" :count-text="pager.pageTotalCount + '개 업체'"
+      @set-page="setPage" @size-change="onSizeChange">
+      <template #cell-vendorNm="{ row: r }"><td><strong>{{ r.vendorNm }}</strong></td></template>
+      <template #cell-orderCnt="{ row: r }"><td>{{ r.orderCnt }}건</td></template>
+      <template #cell-sysAmt="{ row: r }"><td>{{ fmtW(r.sysAmt) }}</td></template>
+      <template #cell-vendorAmt="{ row: r }"><td>{{ fmtW(r.vendorAmt) }}</td></template>
+      <template #cell-diff="{ row: r }"><td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td></template>
+      <template #cell-diffStatus="{ row: r }"><td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td></template>
+    </bo-grid>
   </div>
 </div>
 `,

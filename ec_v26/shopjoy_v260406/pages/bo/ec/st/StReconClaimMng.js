@@ -106,7 +106,19 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, handleDateRangeChange, codes, pager, rows, cfSummary, fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    const gridColumns = [
+      { key: 'claimId',    label: '클레임ID' },
+      { key: 'reqDate',    label: '요청일' },
+      { key: 'type',       label: '유형' },
+      { key: 'refundAmt',  label: '환불액' },
+      { key: 'settleAdj',  label: '정산조정기준' },
+      { key: 'reconAdj',   label: '실반영액' },
+      { key: 'diff',       label: '차이' },
+      { key: 'status',     label: '처리상태' },
+      { key: 'diffStatus', label: '대사결과' },
+    ];
+
+    return { uiState, handleDateRangeChange, codes, pager, rows, gridColumns, cfSummary, fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -136,25 +148,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">조정과다</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div></div>
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">조정부족</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
-    <table class="bo-table">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>클레임ID</th><th>요청일</th><th>유형</th><th>환불액</th><th>정산조정기준</th><th>실반영액</th><th>차이</th><th>처리상태</th><th>대사결과</th></tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in rows" :key="r?.claimId">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td>{{ r.claimId }}</td><td>{{ r.reqDate }}</td>
-          <td><span class="badge" :class="fnTypeBadge(r.type)">{{ r.type }}</span></td>
-          <td>{{ r.refundAmt > 0 ? fmtW(r.refundAmt) : '-' }}</td>
-          <td :style="r.settleAdj<0?'color:#e74c3c':''">{{ r.settleAdj !== 0 ? fmtW(r.settleAdj) : '-' }}</td>
-          <td :style="r.reconAdj<0?'color:#e74c3c':''">{{ r.reconAdj !== 0 ? fmtW(r.reconAdj) : '-' }}</td>
-          <td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td>
-          <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
-          <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
-        </tr>
-        <tr v-if="!rows.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-grid
+      :columns="gridColumns" :rows="rows" :pager="pager" row-key="claimId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'"
+      @set-page="setPage" @size-change="onSizeChange">
+      <template #cell-type="{ row: r }"><td><span class="badge" :class="fnTypeBadge(r.type)">{{ r.type }}</span></td></template>
+      <template #cell-refundAmt="{ row: r }"><td>{{ r.refundAmt > 0 ? fmtW(r.refundAmt) : '-' }}</td></template>
+      <template #cell-settleAdj="{ row: r }"><td :style="r.settleAdj<0?'color:#e74c3c':''">{{ r.settleAdj !== 0 ? fmtW(r.settleAdj) : '-' }}</td></template>
+      <template #cell-reconAdj="{ row: r }"><td :style="r.reconAdj<0?'color:#e74c3c':''">{{ r.reconAdj !== 0 ? fmtW(r.reconAdj) : '-' }}</td></template>
+      <template #cell-diff="{ row: r }"><td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td></template>
+      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
+      <template #cell-diffStatus="{ row: r }"><td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td></template>
+    </bo-grid>
   </div>
 </div>
 `,
