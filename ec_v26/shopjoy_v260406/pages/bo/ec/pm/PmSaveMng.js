@@ -182,7 +182,19 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), saves, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    const gridColumns = [
+      { key: 'saveNm',     label: '마일리지명', sortKey: 'nm' },
+      { key: 'saveType',   label: '유형' },
+      { key: 'saveVal',    label: '적립값' },
+      { key: 'saveUnit',   label: '단위' },
+      { key: 'expireDay',  label: '유효기간' },
+      { key: 'startDate',  label: '시작일', sortKey: 'reg' },
+      { key: 'endDate',    label: '종료일' },
+      { key: 'saveStatus', label: '상태' },
+      { key: 'siteNm',     label: '사이트' },
+    ];
+
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), saves, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
   template: /* html */`
@@ -219,28 +231,27 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="bo-table" v-if="tabMode==='list'">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">마일리지명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>유형</th><th>적립값</th><th>단위</th><th>유효기간</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">시작일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
-      <tbody>
-        <tr v-if="saves.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(s, idx) in saves" :key="s?.saveId" :style="selectedId===s.saveId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(s.saveId)" :style="selectedId===s.saveId?'color:#e8587a;font-weight:700;':''">{{ s.saveNm }}<span v-if="selectedId===s.saveId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="badge" :class="fnTypeBadge(s.saveType)">{{ s.saveType }}</span></td>
-          <td>{{ (s.saveVal||0).toLocaleString() }}</td>
-          <td style="font-size:12px;color:#555;">{{ s.saveUnit || '원' }}</td>
-          <td style="font-size:12px;color:#555;">{{ s.expireDay || 365 }}일</td>
-          <td>{{ s.startDate }}</td>
-          <td>{{ s.endDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(s.saveStatus)">{{ s.saveStatus }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(s.saveId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(s)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid v-if="tabMode==='list'" :bare="true"
+      :columns="gridColumns" :rows="saves" :pager="pager" row-key="saveId"
+      :row-actions="true"
+      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :row-style="(s) => selectedId===s.saveId ? 'background:#fff8f9;' : ''"
+      @sort="onSort">
+      <template #head-actions>관리</template>
+      <template #cell-saveNm="{ row: s }"><td><span class="title-link" @click="handleLoadDetail(s.saveId)" :style="selectedId===s.saveId?'color:#e8587a;font-weight:700;':''">{{ s.saveNm }}<span v-if="selectedId===s.saveId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
+      <template #cell-saveType="{ row: s }"><td><span class="badge" :class="fnTypeBadge(s.saveType)">{{ s.saveType }}</span></td></template>
+      <template #cell-saveVal="{ row: s }"><td>{{ (s.saveVal||0).toLocaleString() }}</td></template>
+      <template #cell-saveUnit="{ row: s }"><td style="font-size:12px;color:#555;">{{ s.saveUnit || '원' }}</td></template>
+      <template #cell-expireDay="{ row: s }"><td style="font-size:12px;color:#555;">{{ s.expireDay || 365 }}일</td></template>
+      <template #cell-saveStatus="{ row: s }"><td><span class="badge" :class="fnStatusBadge(s.saveStatus)">{{ s.saveStatus }}</span></td></template>
+      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
+      <template #row-actions="{ row: s }">
+        <div class="actions">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(s.saveId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(s)">삭제</button>
+        </div>
+      </template>
+    </bo-grid>
 
     <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">

@@ -181,7 +181,19 @@ const CATEGORIES = [
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    const gridColumns = [
+      { key: 'planNm',       label: '기획전명', sortKey: 'nm' },
+      { key: 'category',     label: '카테고리' },
+      { key: 'theme',        label: '테마' },
+      { key: 'productIds',   label: '상품수' },
+      { key: 'planStatusCd', label: '상태' },
+      { key: 'viewCount',    label: '조회수' },
+      { key: 'period',       label: '기간' },
+      { key: 'regDate',      label: '등록일', sortKey: 'reg' },
+      { key: 'siteNm',       label: '사이트명' },
+    ];
+
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
   template: /* html */`
@@ -210,29 +222,28 @@ const CATEGORIES = [
       </div>
     </div>
     <!-- -- 리스트 뷰 -------------------------------------------------------- -->
-    <table class="bo-table" v-if="tabMode==='list'">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">기획전명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>카테고리</th><th>테마</th><th>상품수</th><th>상태</th><th>조회수</th><th>기간</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
-      <tbody>
-        <tr v-if="plans.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(p, idx) in plans" :key="p?.planId" :style="selectedId===p.planId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?'color:#e8587a;font-weight:700;':''">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span style="font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:2px 8px;">{{ p.category }}</span></td>
-          <td>{{ p.theme }}</td>
-          <td>{{ (p.productIds||[]).length }}개</td>
-          <td><span class="badge" :class="fnStatusBadge(p.planStatusCd)">{{ p.planStatusCd }}</span></td>
-          <td>{{ (p.viewCount||0).toLocaleString() }}</td>
-          <td style="font-size:11px;color:#666;">{{ p.startDate }} ~ {{ p.endDate }}</td>
-          <td>{{ p.regDate }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions" style="display:flex;gap:6px;align-items:center;">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.planId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(p)">삭제</button>
-            <span style="font-size:11px;color:#999;margin-left:auto;">#{{ p.planId }}</span>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid v-if="tabMode==='list'" :bare="true"
+      :columns="gridColumns" :rows="plans" :pager="pager" row-key="planId"
+      :row-actions="true"
+      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :row-style="(p) => selectedId===p.planId ? 'background:#fff8f9;' : ''"
+      @sort="onSort">
+      <template #head-actions>관리</template>
+      <template #cell-planNm="{ row: p }"><td><span class="title-link" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?'color:#e8587a;font-weight:700;':''">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
+      <template #cell-category="{ row: p }"><td><span style="font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:2px 8px;">{{ p.category }}</span></td></template>
+      <template #cell-productIds="{ row: p }"><td>{{ (p.productIds||[]).length }}개</td></template>
+      <template #cell-planStatusCd="{ row: p }"><td><span class="badge" :class="fnStatusBadge(p.planStatusCd)">{{ p.planStatusCd }}</span></td></template>
+      <template #cell-viewCount="{ row: p }"><td>{{ (p.viewCount||0).toLocaleString() }}</td></template>
+      <template #cell-period="{ row: p }"><td style="font-size:11px;color:#666;">{{ p.startDate }} ~ {{ p.endDate }}</td></template>
+      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
+      <template #row-actions="{ row: p }">
+        <div class="actions" style="display:flex;gap:6px;align-items:center;">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.planId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(p)">삭제</button>
+          <span style="font-size:11px;color:#999;margin-left:auto;">#{{ p.planId }}</span>
+        </div>
+      </template>
+    </bo-grid>
 
     <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
