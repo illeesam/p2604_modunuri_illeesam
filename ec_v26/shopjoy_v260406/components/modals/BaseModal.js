@@ -161,9 +161,9 @@ window.OrderDetailModal = {
       <!-- 상품 목록 -->
       <div>
         <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:8px;">주문 상품</div>
-        <div v-for="(item, i) in order.items" :key="i"
+        <div v-for="(item, i) in order.orderItems" :key="i"
           style="display:flex;align-items:center;gap:10px;padding:8px 0;"
-          :style="i < order.items.length-1 ? 'border-bottom:1px dashed var(--border);' : ''">
+          :style="i < order.orderItems.length-1 ? 'border-bottom:1px dashed var(--border);' : ''">
           <span style="font-size:1.4rem;flex-shrink:0;">{{ item.emoji }}</span>
           <div style="flex:1;min-width:0;">
             <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.prodNm }}</div>

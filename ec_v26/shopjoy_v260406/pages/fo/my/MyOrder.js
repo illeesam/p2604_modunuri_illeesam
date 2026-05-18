@@ -108,7 +108,7 @@ window.MyOrder = {
     });
     const cfClaimModalProduct = computed(() => {
       if (!claimModal.order) return null;
-      const name = claimModal.order.items[claimModal.exchangeItemIdx]?.prodNm;
+      const name = claimModal.order.orderItems[claimModal.exchangeItemIdx]?.prodNm;
       return window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
     });
 
@@ -187,7 +187,7 @@ window.MyOrder = {
       reviews[key] = { rating: reviewModal.rating, text: reviewModal.text, date: new Date().toISOString().slice(0, 10), files: reviewModal.files.map(f => f.name) };
       const order = orders.value.find(o => o.orderId === reviewModal.orderId);
       if (order && order.status === '배송완료') {
-        const allReviewed = order.items.every((_, idx) => reviews[`${reviewModal.orderId}_${idx}`]);
+        const allReviewed = order.orderItems.every((_, idx) => reviews[`${reviewModal.orderId}_${idx}`]);
         if (allReviewed) myStore.setOrderStatus(reviewModal.orderId, '구매확정');
       }
       reviewModal.show = false;
@@ -444,7 +444,7 @@ window.MyOrder = {
     </template>
 
     <!-- -- 상품 목록 -------------------------------------------------------- -->
-    <div v-for="(item, iix) in o.items" :key="iix">
+    <div v-for="(item, iix) in o.orderItems" :key="iix">
       <div style="display:flex;align-items:center;gap:10px;padding:6px 0;">
         <span style="font-size:1.4rem;">{{ item.emoji }}</span>
         <div style="flex:1;">
@@ -699,10 +699,10 @@ window.MyOrder = {
           <textarea v-model="claimModal.reasonDetail" rows="2" placeholder="상세 내용을 입력해 주세요."
             style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.8rem;resize:none;box-sizing:border-box;outline:none;"></textarea>
         </div>
-        <div v-if="claimModal.type==='exchange' && claimModal.order && claimModal.order.items.length > 1">
+        <div v-if="claimModal.type==='exchange' && claimModal.order && claimModal.order.orderItems.length > 1">
           <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">교환 상품 선택 <span style="color:#ef4444;">*</span></div>
           <div style="display:flex;flex-direction:column;gap:6px;">
-            <button v-for="(item, idx) in claimModal.order.items" :key="idx" @click="claimModal.exchangeItemIdx=idx; claimModal.exchangeSize=''; claimModal.exchangeColor=''"
+            <button v-for="(item, idx) in claimModal.order.orderItems" :key="idx" @click="claimModal.exchangeItemIdx=idx; claimModal.exchangeSize=''; claimModal.exchangeColor=''"
               style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;text-align:left;width:100%;"
               :style="claimModal.exchangeItemIdx===idx ? 'background:var(--blue-dim);border:1.5px solid var(--blue);' : 'background:var(--bg-base);border:1.5px solid var(--border);'">
               <span style="font-size:1.2rem;">{{ item.emoji }}</span>

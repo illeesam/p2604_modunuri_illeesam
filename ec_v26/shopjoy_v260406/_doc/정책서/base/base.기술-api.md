@@ -454,6 +454,40 @@ if (param.containsKey("pageSize")) {
 
 ---
 
+### 7.4 DTO 연관 목록(중첩 컬렉션) 필드 네이밍 ⭐
+
+부모 DTO 의 `Item` 안에 자식 DTO 리스트(연관정보)를 담을 때, 필드명은 **`{부모도메인}{자식엔터티복수}`** 형태로 짓는다. 자식 엔터티의 타입(`OdOrderItemDto.Item`)만 보고도 어떤 부모에 속한 어떤 목록인지 한눈에 드러나야 하며, `items`·`pays`·`list` 처럼 부모 맥락이 없는 단어는 금지한다.
+
+```java
+// ✅ 표준 — 부모(order) 접두어 + 자식 복수형
+public static class Item {
+    private List<OdOrderItemDto.Item>   orderItems;   // 주문상품 목록
+    private List<OdPayDto.Item>         orderPays;    // 결제 목록
+    private List<OdDlivDto.Item>        orderDlivs;   // 배송 목록
+    private List<OdOrderDiscntDto.Item> orderDiscnts; // 주문할인 목록
+}
+
+// ❌ 금지 — 부모 맥락 없는 단어
+private List<OdOrderItemDto.Item>   items;     // 어느 도메인의 items 인지 불명확
+private List<OdPayDto.Item>         pays;
+private List<OdOrderDiscntDto.Item> discnts;
+```
+
+**기존 준수 사례** (이미 컨벤션을 따르는 DTO — 신규 작성 시 참고):
+
+| 부모 DTO | 연관 필드 | 자식 타입 |
+|---|---|---|
+| `OdOrderDto` | `orderItems` / `orderPays` / `orderDlivs` / `orderDiscnts` | `OdOrderItemDto` / `OdPayDto` / `OdDlivDto` / `OdOrderDiscntDto` |
+| `OdClaimDto` | `claimItems` | `OdClaimItemDto` |
+| `OdDlivDto` | `dlivItems` | `OdDlivItemDto` |
+| `PdProdDto` | `prodOptItems` | `PdProdOptItemDto` |
+| `PmEventDto` | `eventItems` | `PmEventItemDto` |
+| `DpPanelDto` | `panelItems` | `DpPanelItemDto` |
+
+**프론트엔드 동기화**: DTO 는 JSON 으로 직렬화되어 화면에 그대로 전달되므로, 이 필드명을 변경하면 해당 응답을 소비하는 프론트 코드(`order.orderItems` 등)도 같은 이름으로 수정해야 한다. Service 의 `setXxx()` 채움 로직 → 프론트 소비처 순으로 일괄 정렬한다.
+
+---
+
 ## 관련 정책
 - `base.인증-admin.md` — 관리자 인증/토큰 정책
 - `base.인증-front.md` — 사용자 인증/토큰 정책

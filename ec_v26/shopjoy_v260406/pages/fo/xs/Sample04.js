@@ -148,7 +148,7 @@ window.XsSample04 = {
     /* -- 데모 데이터 -- */
     const demoOrder = {
       orderId: 'ORD-2026-00123', orderDate: '2026-04-10', status: '배송중',
-      items: [
+      orderItems: [
         { emoji: '👕', prodNm: '프리미엄 코튼 티셔츠', color: '화이트', size: 'M',   qty: 2, price: 58000,
           productCoupon: { name: '상품10%할인', discount: 5800 } },
         { emoji: '👟', prodNm: '에어맥스 스니커즈',    color: '블랙',   size: '270', qty: 1, price: 129000 },

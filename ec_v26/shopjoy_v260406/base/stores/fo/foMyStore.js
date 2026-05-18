@@ -189,7 +189,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const getCouponUsedOrderItems = c => {
     if (!c.used || !c.usedOrderId) return null;
     const o = orders.find(x => x.orderId === c.usedOrderId);
-    return o ? o.items : null;
+    return o ? o.orderItems : null;
   };
 
   /* ── 탭 카운트 (cartCount는 외부 주입) ── */

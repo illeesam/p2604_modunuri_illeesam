@@ -64,7 +64,7 @@ public class BoOdOrderService {
         return res;
     }
 
-    /** _itemFillRelations — 단건 연관조회 (items/pays/dlivs/discnts 채우기) */
+    /** _itemFillRelations — 단건 연관조회 (orderItems/orderPays/orderDlivs/orderDiscnts 채우기) */
     private void _itemFillRelations(OdOrderDto.Item order) {
         if (order == null) return;
         String orderId = order.getOrderId();
@@ -72,26 +72,26 @@ public class BoOdOrderService {
         // 하위 주문상품 목록 조회 (orderId 기준)
         OdOrderItemDto.Request itemReq = new OdOrderItemDto.Request();
         itemReq.setOrderId(orderId);
-        order.setItems(odOrderItemService.getList(itemReq)); // 주문상품목록
+        order.setOrderItems(odOrderItemService.getList(itemReq)); // 주문상품목록
 
         // 하위 결제 목록 조회 (orderId 기준)
         OdPayDto.Request payReq = new OdPayDto.Request();
         payReq.setOrderId(orderId);
-        order.setPays(odPayService.getList(payReq)); // 결제목록
+        order.setOrderPays(odPayService.getList(payReq)); // 결제목록
 
         // 하위 배송 목록 조회 (orderId 기준)
         OdDlivDto.Request dlivReq = new OdDlivDto.Request();
         dlivReq.setOrderId(orderId);
-        order.setDlivs(odDlivService.getList(dlivReq)); // 배송목록
+        order.setOrderDlivs(odDlivService.getList(dlivReq)); // 배송목록
 
         // 하위 주문할인 목록 조회 (orderId 기준)
         OdOrderDiscntDto.Request dscReq = new OdOrderDiscntDto.Request();
         dscReq.setOrderId(orderId);
-        order.setDiscnts(odOrderDiscntService.getList(dscReq)); // 주문할인목록
+        order.setOrderDiscnts(odOrderDiscntService.getList(dscReq)); // 주문할인목록
     }
 
     /**
-     * _listFillRelations — 목록 일괄 연관조회 (items/pays/dlivs/discnts 를 각각 한 번의 쿼리로 조회 후 분배)
+     * _listFillRelations — 목록 일괄 연관조회 (orderItems/orderPays/orderDlivs/orderDiscnts 를 각각 한 번의 쿼리로 조회 후 분배)
      * 행마다 쿼리하는 _itemFillRelations 와 달리, N개 행이라도 item 1회 + pay 1회 + dliv 1회 + discnt 1회만 조회한다.
      */
     private void _listFillRelations(List<OdOrderDto.Item> list) {
@@ -132,10 +132,10 @@ public class BoOdOrderService {
         // 각 항목에 분배
         for (OdOrderDto.Item order : list) {
             String oid = order.getOrderId();
-            order.setItems(itemMap.getOrDefault(oid, List.of())); // 주문상품목록
-            order.setPays(payMap.getOrDefault(oid, List.of())); // 결제목록
-            order.setDlivs(dlivMap.getOrDefault(oid, List.of())); // 배송목록
-            order.setDiscnts(dscMap.getOrDefault(oid, List.of())); // 주문할인목록
+            order.setOrderItems(itemMap.getOrDefault(oid, List.of())); // 주문상품목록
+            order.setOrderPays(payMap.getOrDefault(oid, List.of())); // 결제목록
+            order.setOrderDlivs(dlivMap.getOrDefault(oid, List.of())); // 배송목록
+            order.setOrderDiscnts(dscMap.getOrDefault(oid, List.of())); // 주문할인목록
         }
     }
 

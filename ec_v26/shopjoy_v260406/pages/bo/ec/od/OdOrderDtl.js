@@ -53,8 +53,8 @@ window.OdOrderDtl = {
         vendors.splice(0, vendors.length, ...(vendorsRes.data?.data?.pageList || vendorsRes.data?.data?.list || []));
         deliveries.splice(0, deliveries.length, ...(deliveriesRes.data?.data?.pageList || deliveriesRes.data?.data?.list || []));
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
-        // getById 응답에 임베드된 결제내역(pays) 사용
-        payments.splice(0, payments.length, ...((o.pays || []).map(p => ({
+        // getById 응답에 임베드된 결제내역(orderPays) 사용
+        payments.splice(0, payments.length, ...((o.orderPays || []).map(p => ({
           payMethod: p.payMethodCd || '-',
           payStatus: p.payStatusCd || '-',
           amount: p.payAmt || 0,
@@ -62,8 +62,8 @@ window.OdOrderDtl = {
           apprNo: p.pgTransactionId || '-',
           issuer: p.refundAmt ? ('환불 ' + p.refundAmt) : '-',
         }))));
-        // getById 응답에 임베드된 주문항목(items) 사용
-        orderItems.splice(0, orderItems.length, ...((o.items || []).map(it => ({
+        // getById 응답에 임베드된 주문항목(orderItems) 사용
+        orderItems.splice(0, orderItems.length, ...((o.orderItems || []).map(it => ({
           ...it,
           prodNm: it.prodNm,
           color: it.optItemId1 || '',
