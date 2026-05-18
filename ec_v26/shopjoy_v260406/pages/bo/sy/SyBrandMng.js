@@ -52,26 +52,8 @@ window.SyBrandMng = {
       }
     };
 
-    /* -- 표시경로 선택 모달 (sy_path) -- */
-    const pathPickModal = reactive({ show: false, row: null });
-
-    /* 브랜드 openPathPick */
-    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
-
-    /* 브랜드 closePathPick */
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
-
-    /* 브랜드 onPathPicked */
-    const onPathPicked = (pathId) => {
-      const row = pathPickModal.row;
-      if (row) {
-        row.pathId = pathId;
-        if (row._row_status === 'N') row._row_status = 'U';
-      }
-    };
-
-    /* 브랜드 pathLabel */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
+    /* 표시경로 선택 → bo-path-pick-field 컴포넌트 내장. 변경 추적만 보존 */
+    const onPathChange = (row) => { if (row && row._row_status === 'N') row._row_status = 'U'; };
 
 
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
@@ -299,7 +281,7 @@ window.SyBrandMng = {
     ];
     const fnColTitle = (col) => cfIsLocalMode.value ? col.label : '';
 
-    return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { brands, uiState, codes, onPathChange,
       searchParam, handleDateRangeChange,
       gridRows, gridColumns, fnColTitle,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
@@ -370,15 +352,7 @@ window.SyBrandMng = {
     </template>
 
     <template #cell-pathId="{ row }">
-      <td>
-        <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
-          <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
-          <button type="button" @click.stop="openPathPick(row)" title="표시경로 선택"
-            :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
-            @mouseover="$event.currentTarget.style.background='#eef2ff'"
-            @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
-        </div>
-      </td>
+      <bo-path-pick-field biz-cd="sy_brand" :row="row" @change="onPathChange(row)" />
     </template>
 
     <template #cell-logoUrl="{ row }">
@@ -396,20 +370,14 @@ window.SyBrandMng = {
       </td>
     </template>
 
-    <template #row-cancel="{ row, idx }">
+    <template #row-actions="{ row, idx }">
       <button v-if="['U','I','D'].includes(row._row_status)"
         class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-    </template>
-    <template #row-delete="{ row, idx }">
       <button v-if="['N','U'].includes(row._row_status)"
         class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
     </template>
   </bo-grid-crud>
   </div><!-- -- /grid 25/75 ------------------------------------------------------ -->
-
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_brand"
-    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-    @select="onPathPicked" @close="closePathPick" />
 </div>
 `,
 };

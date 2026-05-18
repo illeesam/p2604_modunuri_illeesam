@@ -730,3 +730,79 @@ window.BoDateTimePicker = {
           style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">✕ 지움</button>
 </div>`,
 };
+
+/* ── BoPathPickField — 표시경로(sy_path) 선택 필드 (PathPickModal 내장) ───────
+ * sy 화면 그리드 셀에 반복되던 "경로라벨 + 🔍선택버튼 + hover + PathPickModal"
+ * 보일러플레이트를 1줄로 대체. bizCd 만 바꾸면 화면별 다른 트리가 자동 동작
+ * (PathPickModal 이 boUtil.bofBuildPathTree(bizCd) 로 트리를 자급자족 구성).
+ *
+ * 화면에서 제거 가능해지는 보일러플레이트:
+ *   pathPickModal reactive / openPathPick / closePathPick / onPathPicked / pathLabel
+ *
+ * props:
+ *   bizCd       — string 필수. 경로 트리 업무코드 (sy_code_grp / sy_brand / sy_bbm …)
+ *   row         — object 필수. pathId 를 보유한 행객체 (직접 in-place 갱신)
+ *   pathField   — string. row 의 경로 ID 필드명 (기본 'pathId')
+ *   disabled    — boolean. 선택 버튼 비활성 (기본 false. row._row_status==='D' 등)
+ *   modalTitle  — string. 모달 제목 (기본 '표시경로 선택')
+ *   placeholder — string. 미선택 시 표시 (기본 '경로 선택...')
+ *   bare        — boolean. true 면 <td> 래퍼 없이 내부 div 만 (기본 false → <td> 포함)
+ * emit:
+ *   change(pathId)  — 선택 완료 (row 는 이미 갱신됨. 부모 추적 훅용)
+ * ──────────────────────────────────────────────────────────────────────── */
+window.BoPathPickField = {
+  name: 'BoPathPickField',
+  /* path-pick-modal 은 boApp.js 가 전역 등록 → 로컬 components 불필요
+   * (BoComp.js 가 BaseModal.js 보다 먼저 로드되므로 직접 참조 금지) */
+  props: {
+    bizCd:       { type: String,  required: true },
+    row:         { type: Object,  required: true },
+    pathField:   { type: String,  default: 'pathId' },
+    disabled:    { type: Boolean, default: false },
+    modalTitle:  { type: String,  default: '표시경로 선택' },
+    placeholder: { type: String,  default: '경로 선택...' },
+    bare:        { type: Boolean, default: false },
+  },
+  emits: ['change'],
+  setup(props, { emit }) {
+    const show = Vue.ref(false);
+    const cfLabel = Vue.computed(() => {
+      const id = props.row ? props.row[props.pathField] : null;
+      return (window.boUtil && window.boUtil.bofGetPathLabel(id)) || '';
+    });
+    const cfHasVal = Vue.computed(() =>
+      props.row != null && props.row[props.pathField] != null);
+    const onOpen  = () => { if (!props.disabled) show.value = true; };
+    const onClose = () => { show.value = false; };
+    const onPicked = (pathId) => {
+      if (props.row) props.row[props.pathField] = pathId;
+      show.value = false;
+      emit('change', pathId);
+    };
+    const onHover = (e) => {
+      if (props.disabled || !e || !e.currentTarget) return;
+      e.currentTarget.style.background = '#eef2ff';
+    };
+    const onLeave = (e) => { if (e && e.currentTarget) e.currentTarget.style.background = '#fff'; };
+    return { show, cfLabel, cfHasVal, onOpen, onClose, onPicked, onHover, onLeave };
+  },
+  template: /* html */`
+<component :is="bare ? 'div' : 'td'">
+  <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',
+                background:'#f5f5f7',
+                color: cfHasVal ? '#374151' : '#9ca3af',
+                fontWeight: cfHasVal ? 600 : 400,
+                display:'flex',alignItems:'center',gap:'6px'}">
+    <span style="flex:1;">{{ cfLabel || placeholder }}</span>
+    <button type="button" :disabled="disabled"
+      @click.stop="onOpen" @dblclick.stop="onOpen"
+      :title="modalTitle"
+      :style="{cursor: disabled ? 'not-allowed' : 'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: disabled ? 0.4 : 1}"
+      @mouseover="onHover($event)" @mouseout="onLeave($event)">🔍</button>
+  </div>
+  <path-pick-modal v-if="show" :biz-cd="bizCd"
+    :value="row ? row[pathField] : null"
+    :title="modalTitle"
+    @select="onPicked" @close="onClose" />
+</component>`,
+};

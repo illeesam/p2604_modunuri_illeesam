@@ -18,6 +18,15 @@ window.MbMemGradeMng = {
 
     const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
+    const gridColumns = [
+      { key: 'gradeCd',        label: '등급코드' },
+      { key: 'gradeNm',        label: '등급명' },
+      { key: 'gradeRank',      label: '순위' },
+      { key: 'minPurchaseAmt', label: '최소구매금액' },
+      { key: 'saveRate',       label: '적립률(%)' },
+      { key: 'useYn',          label: '사용여부' },
+    ];
+
     /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -174,7 +183,7 @@ window.MbMemGradeMng = {
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     return {
-      uiState, codes, searchParam, gridRows,
+      uiState, codes, searchParam, gridRows, gridColumns,
       onSearch, onReset, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, toggleCheckAll,
       handleSave, fnStatusClass, cfVisibleCount,
@@ -185,7 +194,7 @@ window.MbMemGradeMng = {
   <div class="page-title">회원등급관리</div>
 
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <label class="search-label">등급명/코드</label>
       <bo-multi-check-select
         v-model="searchParam.searchType"
@@ -202,101 +211,76 @@ window.MbMemGradeMng = {
         <option value="">전체</option>
         <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
-        회원등급 목록
-        <span class="list-count">{{ cfVisibleCount }}건</span>
-      </span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
-      </div>
-    </div>
+  <bo-grid-crud
+    :columns="gridColumns" :rows="gridRows" row-key="memberGradeId"
+    list-title="회원등급 목록"
+    :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
+    v-model:focusedIdx="uiState.focusedIdx"
+    v-model:checkAll="uiState.checkAll"
+    @add="addRow" @save="handleSave"
+    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+    @cell-change="onCellChange">
 
-    <div style="max-height:480px;overflow-y:auto;">
-      <table class="bo-table crud-grid">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th class="col-id">ID</th>
-          <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll"></th>
-          <th style="width:130px;">등급코드</th>
-          <th style="min-width:150px;">등급명</th>
-          <th style="width:80px;text-align:right;">순위</th>
-          <th style="width:150px;text-align:right;">최소구매금액</th>
-          <th style="width:110px;text-align:right;">적립률(%)</th>
-          <th style="width:90px;text-align:center;">사용여부</th>
-          <th class="col-act-cancel"></th>
-          <th class="col-act-delete"></th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="uiState.loading">
-            <td colspan="12" style="text-align:center;padding:30px;color:#aaa;">로딩중...</td>
-          </tr>
-          <tr v-else-if="!gridRows.length">
-            <td colspan="12" style="text-align:center;padding:30px;color:#aaa;">데이터가 없습니다.</td>
-          </tr>
-          <tr v-else v-for="(row, idx) in gridRows" :key="row.memberGradeId"
-              class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
-              @click="setFocused(idx)">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-            <td class="col-id-val">{{ row.memberGradeId > 0 ? row.memberGradeId : 'NEW' }}</td>
-            <td class="col-status-val">
-              <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
-            </td>
-            <td class="col-check-val"><input type="checkbox" v-model="row._row_check"></td>
-            <td>
-              <select class="grid-select" v-model="row.gradeCd"
-                :disabled="row._row_status==='D'" @change="onCellChange(row)">
-                <option value="">선택</option>
-                <option v-for="c in codes.member_grades" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-              </select>
-            </td>
-            <td>
-              <input class="grid-input" v-model="row.gradeNm"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="등급명">
-            </td>
-            <td>
-              <input class="grid-input grid-num" type="number" v-model.number="row.gradeRank"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)">
-            </td>
-            <td>
-              <input class="grid-input grid-num" type="number" v-model.number="row.minPurchaseAmt"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)">
-            </td>
-            <td>
-              <input class="grid-input grid-num" type="number" step="0.01" v-model.number="row.saveRate"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)">
-            </td>
-            <td>
-              <select class="grid-select" v-model="row.useYn"
-                :disabled="row._row_status==='D'" @change="onCellChange(row)">
-                <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-              </select>
-            </td>
-            <td class="col-act-cancel-val">
-              <button v-if="['U','I','D'].includes(row._row_status)"
-                class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-            </td>
-            <td class="col-act-delete-val">
-              <button v-if="['N','U'].includes(row._row_status)"
-                class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <template #head>
+      <th style="width:130px;">등급코드</th>
+      <th style="min-width:150px;">등급명</th>
+      <th style="width:80px;text-align:right;">순위</th>
+      <th style="width:150px;text-align:right;">최소구매금액</th>
+      <th style="width:110px;text-align:right;">적립률(%)</th>
+      <th style="width:90px;text-align:center;">사용여부</th>
+    </template>
+
+    <template #cell-gradeCd="{ row }">
+      <td>
+        <select class="grid-select" v-model="row.gradeCd"
+          :disabled="row._row_status==='D'" @change="onCellChange(row)">
+          <option value="">선택</option>
+          <option v-for="c in codes.member_grades" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+      </td>
+    </template>
+    <template #cell-gradeNm="{ row }">
+      <td>
+        <input class="grid-input" v-model="row.gradeNm"
+          :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="등급명">
+      </td>
+    </template>
+    <template #cell-gradeRank="{ row }">
+      <td>
+        <input class="grid-input grid-num" type="number" v-model.number="row.gradeRank"
+          :disabled="row._row_status==='D'" @input="onCellChange(row)">
+      </td>
+    </template>
+    <template #cell-minPurchaseAmt="{ row }">
+      <td>
+        <input class="grid-input grid-num" type="number" v-model.number="row.minPurchaseAmt"
+          :disabled="row._row_status==='D'" @input="onCellChange(row)">
+      </td>
+    </template>
+    <template #cell-saveRate="{ row }">
+      <td>
+        <input class="grid-input grid-num" type="number" step="0.01" v-model.number="row.saveRate"
+          :disabled="row._row_status==='D'" @input="onCellChange(row)">
+      </td>
+    </template>
+    <template #cell-useYn="{ row }">
+      <td>
+        <select class="grid-select" v-model="row.useYn"
+          :disabled="row._row_status==='D'" @change="onCellChange(row)">
+          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+      </td>
+    </template>
+
+    <template #row-actions="{ row, idx }">
+      <button v-if="['U','I','D'].includes(row._row_status)"
+        class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+      <button v-if="['N','U'].includes(row._row_status)"
+        class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+    </template>
+  </bo-grid-crud>
 </div>`
 };

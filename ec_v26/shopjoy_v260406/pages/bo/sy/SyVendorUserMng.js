@@ -487,7 +487,6 @@ window.SyVendorUserMng = {
       { key: 'vendorUserMobile',   label: '휴대전화' },
       { key: 'vendorUserEmail',    label: '이메일' },
       { key: 'vendorUserStatusCd', label: '상태', style: 'width:80px;text-align:center;' },
-      { key: '_act',               label: '관리', style: 'width:70px;text-align:right;' },
     ];
     const fnVendorRowStyle = (v) => 'cursor:pointer;' + (uiState.searchVendorId === v.vendorId ? 'background:#fff0f4;' : '');
     const fnUserRowStyle   = (u) => 'cursor:pointer;' + (formData.vendorUserId === u.vendorUserId ? 'background:#fff0f4;' : '');
@@ -582,7 +581,7 @@ window.SyVendorUserMng = {
   <bo-grid-readonly v-if="uiState.searchVendorId != null" style="margin-top:16px;"
     :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
     list-title="사용자목록" :count-text="vendorUsers.length + '건'"
-    :row-style="fnUserRowStyle" :loading="uiState.loading"
+    :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true"
     @set-page="setPage" @size-change="onSizeChange" @row-click="openEdit">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규등록</button>
@@ -607,10 +606,8 @@ window.SyVendorUserMng = {
         <span class="badge" :class="fnStatusBadge(row.vendorUserStatusCd)">{{ fnStatusLabel(row.vendorUserStatusCd) }}</span>
       </td>
     </template>
-    <template #cell-_act="{ row }">
-      <td style="text-align:right;">
-        <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(row)">삭제</button>
-      </td>
+    <template #row-actions="{ row }">
+      <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(row)">삭제</button>
     </template>
   </bo-grid-readonly>
   <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">

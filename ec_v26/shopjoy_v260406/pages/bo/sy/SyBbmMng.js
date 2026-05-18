@@ -60,19 +60,7 @@ window.SyBbmMng = {
       handleSearchList('DEFAULT');
     });
 
-    const pathPickModal = reactive({ show: false, row: null });
-
-    /* 게시판 마스터 openPathPick */
-    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
-
-    /* 게시판 마스터 closePathPick */
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
-
-    /* 게시판 마스터 onPathPicked */
-    const onPathPicked = (pathId) => { if (pathPickModal.row) pathPickModal.row.pathId = pathId; };
-
-    /* 게시판 마스터 pathLabel */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
+    /* 표시경로 선택 → bo-path-pick-field 컴포넌트 내장 (보일러플레이트 제거) */
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* 게시판 마스터 _initSearchParam */
@@ -190,7 +178,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     return { bbms, uiState, codes, cfSiteNm, searchParam, pager, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       selectNode,
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel, gridColumns, fnRowStyle };
+      gridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
@@ -237,12 +225,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <template #head-actions><th style="text-align:right">관리</th></template>
 
         <template #cell-pathId="{ row }">
-          <td>
-            <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row.pathId!=null?'#374151':'#9ca3af',fontWeight:row.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
-              <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
-              <button type="button" @click.stop="openPathPick(row)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
-            </div>
-          </td>
+          <bo-path-pick-field biz-cd="sy_bbm" :row="row" />
         </template>
         <template #cell-bbmCode="{ row }">
           <td><code style="font-size:11px;color:#555;">{{ row.bbmCode }}</code></td>
@@ -303,11 +286,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </div>
     </div>
   </div>
-
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
-    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-    title="게시판 표시경로 선택"
-    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

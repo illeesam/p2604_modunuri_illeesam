@@ -114,6 +114,9 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .col-row-actions { width: 80px; }
 .col-act-cancel, .col-act-cancel-val { width: 46px; text-align: center; white-space: nowrap; }
 .col-act-delete, .col-act-delete-val { width: 46px; text-align: center; white-space: nowrap; }
+.col-act { width: 130px; }
+.col-act-val { width: 130px; text-align: center; }
+.col-act-box { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; align-items: center; }
 .row-actions { display: flex; gap: 3px; justify-content: flex-end; white-space: nowrap; }
 .btn-xs { padding: 2px 7px !important; font-size: 11px !important; }
 

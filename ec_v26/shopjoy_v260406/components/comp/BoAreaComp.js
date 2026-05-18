@@ -19,17 +19,21 @@
  *                      <input v-model="searchParam.searchValue" @keyup.enter="onSearch" />
  *                    </bo-search-area>
  *
- * BoGridReadonly — 조회전용 그리드 (서버 페이징 + BoPager + 정렬 + 행클릭 Dtl 진입)
- *                  유형①: "조회전용 / 버튼 있는 경우"
- *                  props: columns, rows, pager, sortState, listTitle …
- *                  emit:  search(by), set-page(n), size-change, sort(key), row-click(row)
- *                  슬롯: #toolbar-actions(우측 버튼), #head, #cell-{key}, #row-actions
- *
- * BoGridEdit     — 일부 에디트 그리드 (서버 페이징 + 인라인 input/select + 일괄저장)
- *                  유형②: "일부 에디트 있는 경우"
- *                  columns 의 edit:true 인 셀은 v-model="row[key]" 자동 바인딩
- *                  드래그 정렬(draggable) 옵션 내장
- *                  emit:  search, set-page, size-change, save, row-remove(row), reorder
+ * BoGrid         — 서버 페이징 그리드 통합 컴포넌트 (구 BoGridReadonly + BoGridEdit)
+ *                  유형①(조회전용) + 유형②(일부 에디트)를 옵션으로 통합.
+ *                  · sortState 전달 → 헤더 클릭 정렬 활성 (구 Readonly)
+ *                  · col.edit('text'|'number'|'date'|'select') → 인라인 입력 (구 Edit)
+ *                  · draggable → 행 드래그 정렬 + reorder emit
+ *                  · showSave → 툴바 [저장] 버튼 + save emit
+ *                  · rowActions → 우측 행액션 컬럼(#row-actions 슬롯) 노출
+ *                  props: columns, rows, pager, sortState, listTitle, rowClass,
+ *                         rowStyle, draggable, showSave, rowActions, isExpanded …
+ *                  emit:  set-page(n), size-change, sort(key), row-click(row),
+ *                         save, row-remove(row), reorder
+ *                  슬롯: #toolbar-actions, #head, #head-actions, #cell-{key},
+ *                        #row-actions, #row-expand
+ *                  ※ window.BoGridReadonly / window.BoGridEdit 는 BoGrid 의 별칭
+ *                    (기존 화면 <bo-grid-readonly> / <bo-grid-edit> 무수정 호환)
  *
  * BoGridCrud     — CRUD 그리드 (전체 로드 / 페이징 없음 / 스크롤 480px / 행상태 N·I·U·D)
  *                  유형③: SyRole·SyBrand·SyBatch·SyDept·SyMenu·SyProp 류
@@ -39,7 +43,10 @@
  *                               / showRowCheck (체크OFF 시 행삭제·취소 버튼도 숨김)
  *                               / showAdd / showSave  ← 모두 기본 true
  *                  emit:  add, save, cancel-checked, delete-checked, reorder
- *                  슬롯: #toolbar-actions, #head, #cell-{key}
+ *                  슬롯: #toolbar-actions, #head, #cell-{key},
+ *                        #row-actions(우측 행액션 1컬럼 — 취소·삭제·설정 등 한 셀에)
+ *                        ※ 구 #row-cancel / #row-delete 는 #row-actions 없을 때
+ *                          폴백 지원(기존 화면 무수정 호환)
  *
  * BoPathTreeCard — 좌측 트리 카드 래퍼 (card + 📂제목 + #bizCd + 전체보기 + 스크롤 + BoPathTree)
  *                  ~10개 sy 화면의 반복 트리 카드를 1줄로 대체. BoPathTree(API 자급자족)를 내장
@@ -138,23 +145,37 @@ window._boAreaCompUtil = {
   },
 };
 
-/* ── BoGridReadonly — 유형① 조회전용(버튼 있음) ──────────────────────────── */
-window.BoGridReadonly = {
-  name: 'BoGridReadonly',
+/* ── BoGrid — 서버 페이징 그리드 통합(구 BoGridReadonly + BoGridEdit) ──────────
+ * 옵션 조합으로 두 유형을 모두 커버:
+ *   · sortState 전달  → 헤더 클릭 정렬 (구 Readonly)
+ *   · col.edit 지정   → 인라인 input/select (구 Edit)
+ *   · draggable=true  → 행 드래그 정렬 + reorder emit
+ *   · showSave=true   → 툴바 [저장] 버튼 + save emit
+ *   · rowActions=true → 우측 행액션 컬럼(#row-actions 슬롯, 기본 ✕ 삭제) 노출
+ * 기본값은 구 BoGridReadonly 동작과 동일(정렬 off·입력 off·드래그 off·저장 off·
+ * 행액션 off) → <bo-grid-readonly> 사용 화면 무수정 호환.
+ * ──────────────────────────────────────────────────────────────────────── */
+window.BoGrid = {
+  name: 'BoGrid',
   props: {
-    columns:   { type: Array,  required: true },               // 컬럼 정의
-    rows:      { type: Array,  default: () => [] },             // 목록(서버 페이징 결과)
-    pager:     { type: Object, default: null },                 // BoPager 호환 reactive
-    sortState: { type: Object, default: null },                 // { sortKey, sortDir } reactive (선택)
-    listTitle: { type: String, default: '목록' },               // toolbar 좌측 제목
-    rowKey:    { type: String, default: null },                 // :key 필드 (없으면 idx)
-    rowStyle:  { type: Function, default: null },               // (row,idx)=>style 문자열/객체 (행 강조 등 고유 UX 보존)
-    countText: { type: String,  default: null },                // 건수 표시 커스텀 ('총 N건' 대신 원본 텍스트). null=기본
-    isExpanded:{ type: Function, default: null },               // (row,idx)=>bool. 펼침 여부 판별 (행펼침 UX 보존)
-    loading:   { type: Boolean, default: false },
-    emptyText: { type: String, default: '데이터가 없습니다.' },
+    columns:    { type: Array,  required: true },               // 컬럼 정의
+    rows:       { type: Array,  default: () => [] },             // 목록(서버 페이징 결과)
+    pager:      { type: Object, default: null },                 // BoPager 호환 reactive
+    sortState:  { type: Object, default: null },                 // { sortKey, sortDir } reactive (지정 시 정렬 활성)
+    listTitle:  { type: String, default: '목록' },               // toolbar 좌측 제목
+    rowKey:     { type: String, default: null },                 // :key 필드 (없으면 idx)
+    rowStyle:   { type: Function, default: null },               // (row,idx)=>style (행 강조 등 고유 UX 보존)
+    rowClass:   { type: Function, default: null },               // (row,idx)=>class (행 상태 강조)
+    countText:  { type: String,  default: null },                // 건수 커스텀 ('총 N건' 대신). null=기본
+    isExpanded: { type: Function, default: null },               // (row,idx)=>bool. 행펼침 여부
+    draggable:  { type: Boolean, default: false },               // 행 드래그 정렬
+    showSave:   { type: Boolean, default: false },               // 툴바 [저장] 버튼
+    saveLabel:  { type: String,  default: '저장' },              // 저장 버튼 라벨
+    rowActions: { type: Boolean, default: false },               // 우측 행액션 컬럼 노출
+    loading:    { type: Boolean, default: false },
+    emptyText:  { type: String, default: '데이터가 없습니다.' },
   },
-  emits: ['set-page', 'size-change', 'sort', 'row-click'],
+  emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
     const cfTotal = Vue.computed(() => props.pager ? (props.pager.pageTotalCount || 0) : props.rows.length);
@@ -172,94 +193,6 @@ window.BoGridReadonly = {
     };
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
 
-    const onRowClick = (row) => emit('row-click', row);
-    const onSetPage  = (n) => emit('set-page', n);
-    const onSizeChg  = () => emit('size-change');
-    const fnRowStyle = (row, idx) => (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : 'cursor:pointer');
-    const fnIsExpanded = (row, idx) => (typeof props.isExpanded === 'function' ? !!props.isExpanded(row, idx) : false);
-    const cfColspan = Vue.computed(() => props.columns.length + 1);
-
-    return { U, cfTotal, rowNo, onSort, sortIcon, sortActive, onRowClick, onSetPage, onSizeChg,
-             fnRowStyle, fnIsExpanded, cfColspan };
-  },
-  template: /* html */`
-<div class="card">
-  <div class="toolbar">
-    <span class="list-title">{{ listTitle }} <span class="list-count">{{ countText != null ? countText : ('총 ' + cfTotal + '건') }}</span></span>
-    <span style="margin-left:auto"></span>
-    <slot name="toolbar-actions"></slot>
-  </div>
-
-  <table class="bo-table">
-    <thead>
-      <tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <slot name="head">
-          <th v-for="col in columns" :key="col.key"
-              :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
-              @click="onSort(col)">
-            {{ col.label }}
-            <span v-if="col.sortKey"
-                  :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">{{ sortIcon(col) }}</span>
-          </th>
-        </slot>
-        <slot name="head-actions"></slot>
-      </tr>
-    </thead>
-    <tbody>
-      <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
-        <tr :style="fnRowStyle(row, idx)">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ rowNo(idx) }}</td>
-          <template v-for="col in columns" :key="col.key">
-            <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-              <td :style="U.tdStyle(col)">
-                <span v-if="col.link" class="title-link" @click="onRowClick(row)">{{ U.cellText(col, row) }}</span>
-                <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
-                <template v-else>{{ U.cellText(col, row) }}</template>
-              </td>
-            </slot>
-          </template>
-          <slot name="row-actions" :row="row" :idx="idx"></slot>
-        </tr>
-        <tr v-if="fnIsExpanded(row, idx)" class="bo-grid-expand-row">
-          <slot name="row-expand" :row="row" :idx="idx" :colspan="cfColspan">
-            <td :colspan="cfColspan"></td>
-          </slot>
-        </tr>
-      </template>
-      <tr v-if="!rows.length">
-        <td :colspan="columns.length + 2" style="text-align:center;padding:30px;color:#aaa">{{ emptyText }}</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <bo-pager v-if="pager" :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg" />
-</div>`,
-};
-
-/* ── BoGridEdit — 유형② 일부 에디트(서버 페이징 + 인라인 입력 + 일괄저장) ── */
-window.BoGridEdit = {
-  name: 'BoGridEdit',
-  props: {
-    columns:   { type: Array,  required: true },
-    rows:      { type: Array,  default: () => [] },
-    pager:     { type: Object, default: null },
-    listTitle: { type: String, default: '목록' },
-    countText: { type: String,  default: null },               // 건수 커스텀 ('총 N건' 대신). null=기본
-    rowKey:    { type: String, default: null },
-    rowClass:  { type: Function, default: null },               // (row,idx)=>class (행 상태 강조 보존)
-    draggable: { type: Boolean, default: false },              // 행 드래그 정렬
-    loading:   { type: Boolean, default: false },
-    emptyText: { type: String, default: '데이터가 없습니다.' },
-  },
-  emits: ['set-page', 'size-change', 'save', 'row-remove', 'reorder'],
-  setup(props, { emit }) {
-    const U = window._boAreaCompUtil;
-    const cfTotal = Vue.computed(() => props.pager ? (props.pager.pageTotalCount || 0) : props.rows.length);
-    const rowNo = (idx) => props.pager
-      ? (props.pager.pageNo - 1) * props.pager.pageSize + idx + 1
-      : idx + 1;
-
     /* 드래그 정렬 — rows 를 in-place splice 후 reorder emit */
     const dragSrc = Vue.ref(null);
     const onDragStart = (idx) => { if (props.draggable) dragSrc.value = idx; };
@@ -272,13 +205,19 @@ window.BoGridEdit = {
     };
     const onDragEnd = () => { if (dragSrc.value !== null) { dragSrc.value = null; emit('reorder'); } };
 
-    const onSave   = () => emit('save');
-    const onRemove = (row) => emit('row-remove', row);
-    const onSetPage = (n) => emit('set-page', n);
-    const onSizeChg = () => emit('size-change');
+    const onRowClick = (row) => emit('row-click', row);
+    const onSave     = () => emit('save');
+    const onRemove   = (row) => emit('row-remove', row);
+    const onSetPage  = (n) => emit('set-page', n);
+    const onSizeChg  = () => emit('size-change');
+    const fnRowStyle = (row, idx) => (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : 'cursor:pointer');
     const fnRowClass = (row, idx) => (typeof props.rowClass === 'function' ? props.rowClass(row, idx) : (row._isNew ? 'status-I' : ''));
+    const fnIsExpanded = (row, idx) => (typeof props.isExpanded === 'function' ? !!props.isExpanded(row, idx) : false);
+    const cfColspan = Vue.computed(() => props.columns.length + 1);
 
-    return { U, cfTotal, rowNo, onDragStart, onDragOver, onDragEnd, onSave, onRemove, onSetPage, onSizeChg, fnRowClass };
+    return { U, cfTotal, rowNo, onSort, sortIcon, sortActive, onDragStart, onDragOver, onDragEnd,
+             onRowClick, onSave, onRemove, onSetPage, onSizeChg,
+             fnRowStyle, fnRowClass, fnIsExpanded, cfColspan };
   },
   template: /* html */`
 <div class="card">
@@ -286,56 +225,72 @@ window.BoGridEdit = {
     <span class="list-title">{{ listTitle }} <span class="list-count">{{ countText != null ? countText : ('총 ' + cfTotal + '건') }}</span></span>
     <div style="margin-left:auto;display:flex;gap:6px;">
       <slot name="toolbar-actions"></slot>
-      <button class="btn btn-primary btn-sm" @click="onSave">저장</button>
+      <button v-if="showSave" class="btn btn-primary btn-sm" @click="onSave">{{ saveLabel }}</button>
     </div>
   </div>
 
-  <table class="bo-table crud-grid">
+  <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
     <thead>
       <tr>
         <th v-if="draggable" style="width:28px"></th>
         <th style="width:36px;text-align:center;">번호</th>
         <slot name="head">
-          <th v-for="col in columns" :key="col.key" :style="U.thStyle(col)">{{ col.label }}</th>
+          <th v-for="col in columns" :key="col.key"
+              :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
+              @click="onSort(col)">
+            {{ col.label }}
+            <span v-if="col.sortKey"
+                  :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">{{ sortIcon(col) }}</span>
+          </th>
         </slot>
-        <th style="width:40px;text-align:center;"><slot name="head-actions">삭제</slot></th>
+        <th v-if="rowActions" style="width:40px;text-align:center;"><slot name="head-actions">관리</slot></th>
+        <slot v-else name="head-actions"></slot>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx"
-          class="crud-row" :class="fnRowClass(row, idx)"
-          :draggable="draggable"
-          @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
-        <td v-if="draggable" style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
-        <td style="text-align:center;font-size:11px;color:#999;">{{ rowNo(idx) }}</td>
-        <template v-for="col in columns" :key="col.key">
-          <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-            <td :style="U.tdStyle(col)">
-              <!-- 인라인 편집 셀 -->
-              <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
-                     :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;" />
-              <input v-else-if="col.edit==='number'" type="number" class="form-control" v-model.number="row[col.key]"
-                     style="padding:2px 6px;font-size:12px;width:80px;text-align:right;" />
-              <input v-else-if="col.edit==='date'" type="date" class="form-control" v-model="row[col.key]"
-                     style="padding:2px 4px;font-size:11px;width:130px;text-align:center;" />
-              <select v-else-if="col.edit==='select'" class="form-control" v-model="row[col.key]"
-                      style="padding:2px 4px;font-size:12px;">
-                <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
-              </select>
-              <!-- 표시 셀 -->
-              <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
-              <template v-else>{{ U.cellText(col, row) }}</template>
-            </td>
+      <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
+        <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
+            :draggable="draggable"
+            @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
+          <td v-if="draggable" style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
+          <td style="text-align:center;font-size:11px;color:#999;">{{ rowNo(idx) }}</td>
+          <template v-for="col in columns" :key="col.key">
+            <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
+              <td :style="U.tdStyle(col)">
+                <!-- 인라인 편집 셀 -->
+                <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
+                       :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;" />
+                <input v-else-if="col.edit==='number'" type="number" class="form-control" v-model.number="row[col.key]"
+                       style="padding:2px 6px;font-size:12px;width:80px;text-align:right;" />
+                <input v-else-if="col.edit==='date'" type="date" class="form-control" v-model="row[col.key]"
+                       style="padding:2px 4px;font-size:11px;width:130px;text-align:center;" />
+                <select v-else-if="col.edit==='select'" class="form-control" v-model="row[col.key]"
+                        style="padding:2px 4px;font-size:12px;">
+                  <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+                </select>
+                <!-- 표시 셀 -->
+                <span v-else-if="col.link" class="title-link" @click="onRowClick(row)">{{ U.cellText(col, row) }}</span>
+                <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
+                <template v-else>{{ U.cellText(col, row) }}</template>
+              </td>
+            </slot>
+          </template>
+          <td v-if="rowActions" style="text-align:center">
+            <slot name="row-actions" :row="row" :idx="idx">
+              <button class="btn btn-danger btn-xs" @click="onRemove(row)">✕</button>
+            </slot>
+          </td>
+          <slot v-else name="row-actions" :row="row" :idx="idx"></slot>
+        </tr>
+        <tr v-if="fnIsExpanded(row, idx)" class="bo-grid-expand-row">
+          <slot name="row-expand" :row="row" :idx="idx" :colspan="cfColspan">
+            <td :colspan="cfColspan"></td>
           </slot>
-        </template>
-        <td style="text-align:center">
-          <slot name="row-actions" :row="row" :idx="idx">
-            <button class="btn btn-danger btn-xs" @click="onRemove(row)">✕</button>
-          </slot>
-        </td>
-      </tr>
+        </tr>
+      </template>
       <tr v-if="!rows.length">
-        <td :colspan="columns.length + (draggable ? 3 : 2)" style="text-align:center;padding:30px;color:#aaa">{{ emptyText }}</td>
+        <td :colspan="columns.length + (draggable ? 1 : 0) + (rowActions ? 1 : 0) + 2"
+            style="text-align:center;padding:30px;color:#aaa">{{ emptyText }}</td>
       </tr>
     </tbody>
   </table>
@@ -343,6 +298,17 @@ window.BoGridEdit = {
   <bo-pager v-if="pager" :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg" />
 </div>`,
 };
+
+/* ── 하위호환 별칭 — 기존 화면 <bo-grid-readonly> / <bo-grid-edit> 무수정 ───── */
+window.BoGridReadonly = window.BoGrid;
+window.BoGridEdit = Object.assign({}, window.BoGrid, {
+  name: 'BoGridEdit',
+  /* 구 BoGridEdit 기본 동작 보존: 저장 버튼·행삭제 컬럼 기본 노출 */
+  props: Object.assign({}, window.BoGrid.props, {
+    showSave:   { type: Boolean, default: true },
+    rowActions: { type: Boolean, default: true },
+  }),
+});
 
 /* ── BoGridCrud — 유형③ CRUD 그리드(전체 로드 / 행상태 N·I·U·D) ──────────── */
 window.BoGridCrud = {
@@ -365,37 +331,71 @@ window.BoGridCrud = {
     showSave:      { type: Boolean, default: true },           // [저장] 버튼 표시
     cellTitle:  { type: Function, default: null },             // (col)=>title 문자열 (local 모드 컬럼 hint)
     emptyText:  { type: String, default: '데이터가 없습니다.' },
+    /* ── 트리 모드 ─ flatRows + rowAccessor 둘 다 주면 트리 분기 ─────────────
+     *  flatRows    : 화면이 평탄화한 래퍼 배열 (예: [{node,depth},...])
+     *  rowAccessor : (flatItem)=>실제 행객체(_row_status/_row_check 보유)
+     *  treeRowKey  : (flatItem,idx)=>:key (없으면 idx)
+     *  트리 모드는 번호/ID/드래그 컬럼 자동 비활성(개념 없음),
+     *  셀은 전부 #cell-{key} 슬롯 위임. slot props: { node, row, idx } */
+    flatRows:    { type: Array,    default: null },
+    rowAccessor: { type: Function, default: null },
+    treeRowKey:  { type: Function, default: null },
   },
   emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
           'update:checkAll', 'update:focusedIdx', 'export'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
 
+    /* 트리 모드 = flatRows + rowAccessor 둘 다 제공된 경우만 */
+    const cfTreeMode = Vue.computed(() =>
+      Array.isArray(props.flatRows) && typeof props.rowAccessor === 'function');
+    /* 화면이 순회할 표시 행 목록 (트리: flatRows / 일반: rows) */
+    const cfDispRows = Vue.computed(() => cfTreeMode.value ? props.flatRows : props.rows);
+    /* flatItem → 실제 행객체 (_row_status/_row_check 보유). 일반 모드는 자기 자신 */
+    const fnRow = (item) => (cfTreeMode.value ? props.rowAccessor(item) : item);
+    const fnRowKey = (item, idx) => {
+      if (cfTreeMode.value) return typeof props.treeRowKey === 'function' ? props.treeRowKey(item, idx) : idx;
+      return item[props.rowKey];
+    };
+    /* 트리 모드에서 자동 비활성화되는 고정컬럼 */
+    const cfShowDrag = Vue.computed(() => props.draggable  && !cfTreeMode.value);
+    const cfShowNo   = Vue.computed(() => props.showRowNo  && !cfTreeMode.value);
+    const cfShowId   = Vue.computed(() => props.showRowId  && !cfTreeMode.value);
+
     const cfVisibleCount = Vue.computed(() =>
       props.rows.filter(r => r._row_status !== 'D').length);
 
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const onSetFocused = (idx) => { if (props.focusedIdx !== idx) emit('update:focusedIdx', idx); };
+    /* 일반: 순회 idx 그대로. 트리: rows(원본 gridRows) 기준 인덱스로 변환 emit
+     * (부모 addRow 등이 focusedIdx 를 원본 배열 삽입기준으로 쓰는 계약 보존) */
+    const onSetFocused = (idx) => {
+      const out = cfTreeMode.value
+        ? props.rows.indexOf(props.rowAccessor(props.flatRows[idx]))
+        : idx;
+      if (props.focusedIdx !== out) emit('update:focusedIdx', out);
+    };
     const fnColTitle = (col) => (typeof props.cellTitle === 'function' ? props.cellTitle(col) : '');
 
-    /* 빈 행 colspan = 데이터컬럼 + 표시중인 고정컬럼(drag/번호/ID/상태/체크) + 액션 2(취소/삭제) */
+    /* 빈 행 colspan = 데이터컬럼 + 표시중인 고정컬럼(drag/번호/ID/상태/체크) + 액션 1(row-actions) */
     const cfEmptyColspan = Vue.computed(() => {
-      let n = props.columns.length + 2;            // 데이터 + 취소/삭제
-      if (props.draggable)     n += 1;
-      if (props.showRowNo)     n += 1;
-      if (props.showRowId)     n += 1;
+      let n = props.columns.length + 1;            // 데이터 + 액션
+      if (cfShowDrag.value)    n += 1;
+      if (cfShowNo.value)      n += 1;
+      if (cfShowId.value)      n += 1;
       if (props.showRowStatus) n += 1;
       if (props.showRowCheck)  n += 1;
       return n;
     });
 
-    const _allChecked = Vue.ref(props.checkAll);
-    Vue.watch(() => props.checkAll, v => { _allChecked.value = v; });
+    const allChecked = Vue.ref(props.checkAll);
+    Vue.watch(() => props.checkAll, v => { allChecked.value = v; });
     const onToggleCheckAll = () => {
-      const v = !_allChecked.value;
-      _allChecked.value = v;
-      props.rows.forEach(r => { r._row_check = v; });
+      const v = !allChecked.value;
+      allChecked.value = v;
+      /* 트리 모드: 화면에 펼쳐진 행(flatRows→accessor)만 토글 */
+      if (cfTreeMode.value) props.flatRows.forEach(it => { props.rowAccessor(it)._row_check = v; });
+      else props.rows.forEach(r => { r._row_check = v; });
       emit('update:checkAll', v);
     };
 
@@ -432,9 +432,10 @@ window.BoGridCrud = {
     const onDeleteChecked = () => emit('delete-checked');
     const onExport        = () => emit('export');
 
-    return { U, cfVisibleCount, fnStatusClass, _allChecked, onToggleCheckAll, onCellChange,
+    return { U, cfVisibleCount, fnStatusClass, allChecked, onToggleCheckAll, onCellChange,
              onDragStart, onDragOver, onDragEnd, onAdd, onSave, onCancelChecked, onDeleteChecked,
-             onExport, onSetFocused, fnColTitle, cfEmptyColspan };
+             onExport, onSetFocused, fnColTitle, cfEmptyColspan,
+             cfTreeMode, cfDispRows, fnRow, fnRowKey, cfShowDrag, cfShowNo, cfShowId };
   },
   template: /* html */`
 <div class="card">
@@ -457,65 +458,66 @@ window.BoGridCrud = {
     <table class="bo-table crud-grid">
       <thead>
         <tr>
-          <th v-if="draggable" class="col-drag"></th>
-          <th v-if="showRowNo" style="width:36px;text-align:center;">번호</th>
-          <th v-if="showRowId" class="col-id">ID</th>
+          <th v-if="cfShowDrag" class="col-drag"></th>
+          <th v-if="cfShowNo" style="width:36px;text-align:center;">번호</th>
+          <th v-if="cfShowId" class="col-id">ID</th>
           <th v-if="showRowStatus" class="col-status">상태</th>
           <th v-if="showRowCheck" class="col-check">
-            <input type="checkbox" :checked="_allChecked" @change="onToggleCheckAll" />
+            <input type="checkbox" :checked="allChecked" @change="onToggleCheckAll" />
           </th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :style="U.thStyle(col)" :title="fnColTitle(col)">{{ col.label }}</th>
           </slot>
-          <th class="col-act-cancel"></th>
-          <th class="col-act-delete"></th>
+          <th class="col-act"></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-if="!rows.length">
+        <tr v-if="!cfDispRows.length">
           <td :colspan="cfEmptyColspan" style="text-align:center;color:#999;padding:30px;">{{ emptyText }}</td>
         </tr>
-        <tr v-else v-for="(row, idx) in rows" :key="row[rowKey]"
-            class="crud-row" :class="[ 'status-' + row._row_status, focusedIdx===idx ? 'focused' : '' ]"
-            :draggable="draggable"
+        <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)"
+            class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '' ]"
+            :draggable="cfShowDrag"
             @click="onSetFocused(idx)"
             @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
-          <td v-if="draggable" class="drag-handle" title="드래그로 순서 변경">⠿</td>
-          <td v-if="showRowNo" style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-          <td v-if="showRowId" class="col-id-val">{{ row[rowKey] > 0 ? row[rowKey] : 'NEW' }}</td>
+          <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경">⠿</td>
+          <td v-if="cfShowNo" style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
+          <td v-if="cfShowId" class="col-id-val">{{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}</td>
           <td v-if="showRowStatus" class="col-status-val">
-            <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
+            <span class="badge badge-xs" :class="fnStatusClass(fnRow(item)._row_status)">{{ fnRow(item)._row_status }}</span>
           </td>
           <td v-if="showRowCheck" class="col-check-val">
-            <input type="checkbox" v-model="row._row_check" />
+            <input type="checkbox" v-model="fnRow(item)._row_check" />
           </td>
           <template v-for="col in columns" :key="col.key">
-            <slot :name="'cell-' + col.key" :row="row" :idx="idx">
+            <slot :name="'cell-' + col.key" :row="fnRow(item)" :idx="idx" :node="item">
               <td :style="U.tdStyle(col)">
                 <input v-if="col.edit==='text'" class="grid-input" :class="{ 'grid-mono': col.mono }"
-                       v-model="row[col.key]" :disabled="row._row_status==='D'"
-                       :placeholder="col.placeholder" @input="onCellChange(row)" />
+                       v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                       :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" />
                 <input v-else-if="col.edit==='number'" type="number" class="grid-input grid-num"
-                       v-model.number="row[col.key]" :disabled="row._row_status==='D'"
-                       @input="onCellChange(row)" />
+                       v-model.number="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                       @input="onCellChange(fnRow(item))" />
                 <input v-else-if="col.edit==='date'" type="date" class="grid-input"
-                       v-model="row[col.key]" :disabled="row._row_status==='D'"
-                       @input="onCellChange(row)" />
+                       v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                       @input="onCellChange(fnRow(item))" />
                 <select v-else-if="col.edit==='select'" class="grid-select"
-                        v-model="row[col.key]" :disabled="row._row_status==='D'"
-                        @change="onCellChange(row)">
+                        v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                        @change="onCellChange(fnRow(item))">
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
-                <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
-                <template v-else>{{ U.cellText(col, row) }}</template>
+                <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, fnRow(item))">{{ U.cellText(col, fnRow(item)) }}</span>
+                <template v-else>{{ U.cellText(col, fnRow(item)) }}</template>
               </td>
             </slot>
           </template>
-          <td class="col-act-cancel-val">
-            <slot name="row-cancel" :row="row" :idx="idx"></slot>
-          </td>
-          <td class="col-act-delete-val">
-            <slot name="row-delete" :row="row" :idx="idx"></slot>
+          <td class="col-act-val">
+            <div class="col-act-box">
+              <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item">
+                <slot name="row-cancel" :row="fnRow(item)" :idx="idx" :node="item"></slot>
+                <slot name="row-delete" :row="fnRow(item)" :idx="idx" :node="item"></slot>
+              </slot>
+            </div>
           </td>
         </tr>
       </tbody>

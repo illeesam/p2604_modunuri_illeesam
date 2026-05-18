@@ -60,26 +60,8 @@ window.SyVendorMng = {
         uiState.loading = false;
       }
     };
-    /* -- 표시경로 선택 모달 (sy_path) -- */
-    const pathPickModal = reactive({ show: false, row: null });
-
-    /* 업체(판매자) openPathPick */
-    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
-
-    /* 업체(판매자) closePathPick */
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
-
-    /* 업체(판매자) onPathPicked */
-    const onPathPicked = (pathId) => {
-      const row = pathPickModal.row;
-      if (row) {
-        row.pathId = pathId;
-        if (row._row_status === 'N') row._row_status = 'U';
-      }
-    };
-
-    /* 업체(판매자) pathLabel */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
+    /* 표시경로 선택 → bo-path-pick-field 컴포넌트 내장. 변경 추적만 보존 */
+    const onPathChange = (row) => { if (row && row._row_status === 'N') row._row_status = 'U'; };
 
 
     /* -- 좌측 표시경로 트리 -- */
@@ -205,7 +187,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vendors, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vendors, uiState, codes, onPathChange,
       selectNode, codes, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       gridColumns, fnRowStyle };
   },
@@ -258,7 +240,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <template #head-actions><th style="text-align:right">관리</th></template>
 
         <template #cell-pathId="{ row }">
-          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row.pathId!=null?'#374151':'#9ca3af',fontWeight:row.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span><button type="button" @click.stop="openPathPick(row)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
+          <bo-path-pick-field biz-cd="sy_vendor" :row="row" @change="onPathChange(row)" />
         </template>
         <template #cell-vendorId="{ row }">
           <td>{{ row.vendorId }}</td>
@@ -309,10 +291,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     />
   </div>
 </div></div>
-
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_vendor"
-    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

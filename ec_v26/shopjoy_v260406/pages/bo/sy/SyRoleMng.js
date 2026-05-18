@@ -694,13 +694,11 @@ window.SyRoleMng = {
       <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
     </template>
 
-    <template #row-cancel="{ row, idx }">
+    <template #row-actions="{ row, idx }">
       <button v-if="['U','I','D'].includes(row._row_status)"
         class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-    </template>
-    <template #row-delete="{ row, idx }">
       <button v-if="row.roleId > 0 && row._row_status !== 'D'"
-        class="btn btn-blue btn-xs" style="margin-right:4px;"
+        class="btn btn-blue btn-xs"
         :style="{ fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
                   outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
         @click.stop="onOpenSetting(idx)"

@@ -422,10 +422,8 @@ window.SyBatchMng = {
       </td>
     </template>
 
-    <template #row-cancel="{ row, idx }">
+    <template #row-actions="{ row, idx }">
       <button v-if="['U','I','D'].includes(row._row_status)" class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-    </template>
-    <template #row-delete="{ row, idx }">
       <button v-if="['N','U'].includes(row._row_status)" class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
     </template>
   </bo-grid-crud>

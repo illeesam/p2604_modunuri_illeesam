@@ -24,26 +24,7 @@ window.SyPropMng = {
 
     const cfSiteId = computed(() => boCommonFilter?.siteId || null);
 
-    /* -- 표시경로 선택 모달 (sy_path) -- */
-    const pathPickModal = reactive({ show: false, row: null });
-
-    /* 시스템 속성 openPathPick */
-    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
-
-    /* 시스템 속성 closePathPick */
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
-
-    /* 시스템 속성 onPathPicked */
-    const onPathPicked = (pathId) => {
-      const row = pathPickModal.row;
-      if (row) {
-        row.pathId = pathId;
-        onCellChange(row);
-      }
-    };
-
-    /* 시스템 속성 pathLabel */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
+    /* 표시경로 선택 → bo-path-pick-field 컴포넌트 내장 (@change=onCellChange) */
 
     /* -- 검색 -- */
     const searchParam = reactive({ searchType: '', searchValue: '', useFlt: '', typeFlt: '' });
@@ -200,7 +181,6 @@ window.SyPropMng = {
 
     return {
       uiState, codes,
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam,
       selectNode, rows, gridColumns,
       fetchData,
@@ -268,18 +248,10 @@ window.SyPropMng = {
       </template>
 
       <template #cell-pathId="{ row }">
-        <td>
-          <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
-            <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
-            <button type="button" @click.stop="openPathPick(row)" title="표시경로 선택"
-              :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
-              @mouseover="$event.currentTarget.style.background='#eef2ff'"
-              @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
-          </div>
-        </td>
+        <bo-path-pick-field biz-cd="sy_prop" :row="row" @change="onCellChange(row)" />
       </template>
 
-      <template #row-delete="{ row }">
+      <template #row-actions="{ row }">
         <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="row._row_status='D'">삭제</button>
         <button v-else-if="row._row_status==='D'" class="btn btn-xs btn-secondary" @click.stop="row._row_status = row._row_org ? 'N' : 'I'">복원</button>
       </template>

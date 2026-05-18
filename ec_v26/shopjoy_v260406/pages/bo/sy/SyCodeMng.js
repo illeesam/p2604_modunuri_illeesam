@@ -40,7 +40,6 @@ window.SyCodeMng = {
 
     const searchParam    = reactive(_initSearchParam());
     const searchParamOrg = reactive(_initSearchParam());
-    const pathPickModal  = reactive({ show: false, row: null });
     const treeExpanded   = reactive(new Set());
     const parentOpts     = reactive([]);
     const flatTree       = reactive([]);
@@ -55,6 +54,12 @@ window.SyCodeMng = {
 
     /* codeTotal */
     const codeTotal = () => uiState.gridRows.filter(r => r._row_status !== 'D').length;
+
+    /* fnCodeListTitle: 코드목록 제목에 선택 그룹코드/경로 표기 부착 */
+    const fnCodeListTitle = () => {
+      const tag = uiState.selectedGrp || uiState.grpSelectedPath || '';
+      return tag ? `코드목록  [ ${tag} ]` : '코드목록';
+    };
 
     /* grpCount */
     const grpCount  = () => uiState.grpRows.filter(r => r._row_status !== 'D').length;
@@ -175,10 +180,9 @@ window.SyCodeMng = {
     /* onGrpRowClick */
     const onGrpRowClick = () => {};
 
-    /* onPathPicked */
-    const onPathPicked = (pathId) => {
-      const row = pathPickModal.row;
-      if (row) { row.pathId = pathId; if (row._row_status === 'N') { row._row_status = 'U'; syncGrpDirty(); } }
+    /* 표시경로 변경 → bo-path-pick-field 가 row.pathId 갱신. 변경 추적만 보존 */
+    const onPathChange = (row) => {
+      if (row && row._row_status === 'N') { row._row_status = 'U'; syncGrpDirty(); }
     };
 
     /* onDragStart */
@@ -460,11 +464,6 @@ window.SyCodeMng = {
       }
     };
 
-    /* openPathPick */
-    const openPathPick  = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
-
-    /* closePathPick */
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
     /* openGrpSetting */
     const openGrpSetting = (g, e) => {
@@ -524,20 +523,6 @@ window.SyCodeMng = {
       '공통코드목록.csv'
     );
 
-    /* pathLabel */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
-
-    /* PathPick 버튼 hover 효과 — 인라인 할당식 회피 */
-    const onPathBtnHover = (g, evt) => {
-      if (g._row_status === 'D' || !evt || !evt.currentTarget) return;
-      evt.currentTarget.style.background = '#eef2ff';
-    };
-
-    /* onPathBtnLeave */
-    const onPathBtnLeave = (evt) => {
-      if (evt && evt.currentTarget) evt.currentTarget.style.background = '#fff';
-    };
-
     /* BoGridCrud 컬럼 정의 (코드목록 일반 탭 / 특수셀은 cell/head 슬롯 override) */
     const codeGridColumns = [
       { key: 'codeGrp',         label: '코드그룹',          edit: 'text' },
@@ -552,6 +537,21 @@ window.SyCodeMng = {
       { key: 'siteNm',          label: '사이트명',          style: 'width:80px;' },
     ];
 
+    /* 트리 탭 그리드 — 전 셀 #cell-* 슬롯 override (트리 들여쓰기 UI 보존).
+     * BoGridCrud 트리 모드: flat-rows=flatTree, row-accessor=it=>it.node.code */
+    const treeGridColumns = [
+      { key: 'codeLabel',       label: '코드라벨',          style: 'min-width:220px;' },
+      { key: 'codeValue',       label: '코드값' },
+      { key: 'parentCodeValue', label: '상위코드값',        style: 'width:140px;' },
+      { key: 'sortOrd',         label: '순서',             cls: 'col-ord' },
+      { key: 'useYn',           label: '사용여부',          cls: 'col-use' },
+      { key: 'codeOpt1',        label: '스타일 (code_opt1)', style: 'width:140px;' },
+      { key: 'codeRemark',      label: '비고' },
+      { key: 'siteNm',          label: '사이트명',          style: 'width:80px;' },
+    ];
+    const treeRowAccessor = (it) => it.node.code;
+    const treeRowKeyFn    = (it) => it.node.value;
+
     /* 코드그룹 그리드 — 전 셀 #cell-* 슬롯(onGrpChange 추적 보존), 헤더는 #head 슬롯 */
     const grpGridColumns = [
       { key: 'pathId',      label: '표시경로' },
@@ -560,26 +560,24 @@ window.SyCodeMng = {
       { key: 'type',        label: '유형',  style: 'width:70px;' },
       { key: 'description', label: '설명' },
       { key: 'useYn',       label: '사용',  cls: 'col-use' },
-      { key: '_setting',    label: '',     style: 'width:44px;' },
     ];
 
     // -- return ----------------------------------------------------------------
 
     return {
       uiState, pageCodes, siteNm,
-      codeGridColumns, grpGridColumns,
-      codeTotal, grpCount,
+      codeGridColumns, grpGridColumns, treeGridColumns, treeRowAccessor, treeRowKeyFn,
+      codeTotal, grpCount, fnCodeListTitle,
       searchParam, handleDateRangeChange,
       onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd, toggleCheckAll, statusBadgeCls, exportExcel,
       addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
       grpSelectNode, onGrpRowClick, onGrpSort, grpSortIcon,
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+      onPathChange,
       openGrpSetting,
       treeExpanded, codeToggleNode, codeExpandAll, codeCollapseAll, flatTree, parentOpts,
       handleLoadDetail, closeDetail, setFocused,
-      onPathBtnHover, onPathBtnLeave,
     };
   },
   template: /* html */`
@@ -644,25 +642,11 @@ window.SyCodeMng = {
           설명 <span :style="uiState.grpSortKey==='description' ? {color:'#e8587a',fontWeight:'bold'} : {color:'#bbb'}">{{ grpSortIcon('description') }}</span>
         </th>
         <th class="col-use">사용</th>
-        <th style="width:44px;"></th>
       </template>
 
       <template #cell-pathId="{ row: g }">
-        <td>
-          <div :style="{padding:'5px 6px 5px 10px', border:'1px solid #e5e7eb', borderRadius:'5px', fontSize:'12px', minHeight:'26px',
-                        background:'#f5f5f7',
-                        color: g.pathId != null ? '#374151' : '#9ca3af',
-                        fontWeight: g.pathId != null ? 600 : 400,
-                        display:'flex',alignItems:'center',gap:'6px'}">
-            <span style="flex:1;">{{ pathLabel(g.pathId) || '경로 선택...' }}</span>
-            <button type="button" :disabled="g._row_status==='D'"
-              @click.stop="openPathPick(g)" @dblclick.stop="openPathPick(g)"
-              title="표시경로 선택"
-              :style="{cursor: g._row_status==='D' ? 'not-allowed' : 'pointer', display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: g._row_status==='D' ? 0.4 : 1}"
-              @mouseover="onPathBtnHover(g, $event)"
-              @mouseout="onPathBtnLeave($event)">🔍</button>
-          </div>
-        </td>
+        <bo-path-pick-field biz-cd="sy_code_grp" :row="g"
+          :disabled="g._row_status==='D'" @change="onPathChange(g)" />
       </template>
       <template #cell-codeGrp="{ row: g }">
         <td><input class="grid-input grid-mono" v-model="g.codeGrp" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
@@ -695,18 +679,11 @@ window.SyCodeMng = {
           </select>
         </td>
       </template>
-      <template #cell-_setting="{ row: g }">
-        <td style="text-align:center;padding:2px 3px;">
-          <button class="btn btn-xs" @click.stop="openGrpSetting(g, $event)"
-            style="background:#f0f4ff;border:1px solid #c7d2fe;color:#4338ca;font-weight:600;"
-            title="코드관리">코드관리</button>
-        </td>
-      </template>
-
-      <template #row-cancel="{ idx }">
+      <template #row-actions="{ row: g, idx }">
+        <button v-if="g._row_status !== 'D'" class="btn btn-xs" @click.stop="openGrpSetting(g, $event)"
+          style="background:#f0f4ff;border:1px solid #c7d2fe;color:#4338ca;font-weight:600;"
+          title="코드관리">코드관리</button>
         <button v-if="['U','I','D'].includes(uiState.grpRows[idx]._row_status)" class="btn btn-secondary btn-xs" @click.stop="cancelGrp(idx)">취소</button>
-      </template>
-      <template #row-delete="{ idx }">
         <button v-if="['N','U'].includes(uiState.grpRows[idx]._row_status)" class="btn btn-danger btn-xs" @click.stop="handleDeleteGrp(idx)">삭제</button>
       </template>
     </bo-grid-crud>
@@ -714,28 +691,6 @@ window.SyCodeMng = {
 
   <!-- -- 코드 목록 영역 ---------------------------------------------------- -->
   <div class="card">
-    <div class="toolbar">
-      <span class="list-title" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;">
-        <span style="color:#e8587a;font-size:8px;vertical-align:middle;">●</span>코드목록
-        <span class="list-count">{{ codeTotal() }}건</span>
-        <span v-if="uiState.selectedGrp"
-          style="font-family:monospace;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fff0f4;border:1px solid #fbb;color:#c0173a;">
-          {{ uiState.selectedGrp }}
-        </span>
-        <span v-else-if="uiState.grpSelectedPath"
-          style="font-family:monospace;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f3f4f6;border:1px solid #e5e7eb;color:#6b7280;">
-          {{ uiState.grpSelectedPath }}
-        </span>
-      </span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
-      </div>
-    </div>
-
     <!-- -- 일반/트리 탭 ---------------------------------------------------- -->
     <div style="display:flex;gap:8px;padding:12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
       <button @click="uiState.activeCodeTab='일반'"
@@ -750,7 +705,7 @@ window.SyCodeMng = {
     <div v-if="uiState.activeCodeTab==='일반'">
       <bo-grid-crud
         :columns="codeGridColumns" :rows="uiState.gridRows" row-key="codeId"
-        list-title="코드목록" :show-export="true" :draggable="true"
+        :list-title="fnCodeListTitle()" :show-export="true" :draggable="true"
         max-height="400px"
         :empty-text="uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.'"
         v-model:focusedIdx="uiState.focusedIdx"
@@ -813,24 +768,29 @@ window.SyCodeMng = {
           <td style="font-size:11px;color:#2563eb;text-align:center;" @dblclick="handleLoadDetail(row.codeId)">{{ siteNm }}</td>
         </template>
 
-        <template #row-cancel="{ row, idx }">
+        <template #row-actions="{ row, idx }">
           <button v-if="['U','I','D'].includes(row._row_status)"
             class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-        </template>
-        <template #row-delete="{ row, idx }">
           <button v-if="['N','U'].includes(row._row_status)"
             class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
         </template>
       </bo-grid-crud>
     </div>
 
-    <!-- -- 트리 탭 ---------------------------------------------------------- -->
+    <!-- -- 트리 탭 (BoGridCrud 트리 모드) ----------------------------------- -->
     <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
-      <div class="toolbar" style="background:#f9fafb;padding:12px;border-bottom:1px solid #e5e7eb;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="list-title">트리 형식 편집</span>
-          <!-- 전체펼치기 / 전체접기 토글 -->
-          <div style="display:inline-flex;border:1px solid #d1d5db;border-radius:4px;overflow:hidden;">
+      <bo-grid-crud
+        :columns="treeGridColumns"
+        :rows="uiState.gridRows" row-key="codeId"
+        :flat-rows="flatTree" :row-accessor="treeRowAccessor" :tree-row-key="treeRowKeyFn"
+        list-title="트리 형식 편집" max-height="400px"
+        @add="addRow" @save="handleSave"
+        @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+        v-model:checkAll="uiState.checkAll" v-model:focusedIdx="uiState.focusedIdx"
+        @cell-change="onCellChange">
+
+        <template #toolbar-actions>
+          <div style="display:inline-flex;border:1px solid #d1d5db;border-radius:4px;overflow:hidden;align-self:center;">
             <button type="button" @click="codeExpandAll"
               style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;border-right:1px solid #d1d5db;"
               title="모든 노드 펼치기">▼ 전체펼치기</button>
@@ -838,106 +798,75 @@ window.SyCodeMng = {
               style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;"
               title="모든 노드 접기">▶ 전체접기</button>
           </div>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-          <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-          <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
-        </div>
-      </div>
-      <div style="overflow-y:auto;max-height:400px;border:1px solid #e5e7eb;">
-        <table class="bo-table crud-grid" style="margin-top:0;">
-        <thead style="position:sticky;top:0;background:#f5f5f5;z-index:10;box-shadow:inset 0 -1px 0 #e5e7eb;">
-          <tr>
-            <th class="col-status">상태</th>
-            <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
-            <th style="min-width:220px;">코드라벨</th>
-            <th>코드값</th>
-            <th style="width:140px;">상위코드값</th>
-            <th class="col-ord">순서</th>
-            <th class="col-use">사용여부</th>
-            <th style="width:140px;">스타일 (code_opt1)</th>
-            <th>비고</th>
-            <th style="width:80px;">사이트명</th>
-            <th class="col-act-cancel"></th>
-            <th class="col-act-delete"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="flatTree.length===0">
-            <td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-          </tr>
-          <tr v-for="(row, idx) in flatTree" :key="row.node.value"
-            class="crud-row" :class="['status-'+row.node.code._row_status]"
-            style="user-select:none;"
-            @click="setFocused(uiState.gridRows.indexOf(row.node.code))">
-            <td class="col-status-val">
-              <span class="badge badge-xs" :class="statusBadgeCls(row.node.code._row_status)">{{ row.node.code._row_status }}</span>
-            </td>
-            <td class="col-check-val"><input type="checkbox" v-model="row.node.code._row_check" /></td>
-            <td style="padding-left:0;">
-              <div style="display:flex;align-items:center;gap:4px;">
-                <span :style="{ minWidth: (row.depth * 20 + 4) + 'px', flexShrink: 0 }"></span>
-                <span v-if="row.node.children.length > 0"
-                  @click.stop="codeToggleNode(row.node.value)"
-                  style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;color:#6b7280;font-size:12px;flex-shrink:0;">
-                  {{ treeExpanded.has(row.node.value) ? '▼' : '▶' }}
-                </span>
-                <span v-else style="width:20px;flex-shrink:0;"></span>
-                <span v-if="row.depth > 0" style="color:#bfdbfe;margin-right:2px;font-weight:300;font-size:11px;">├</span>
-                <!-- 레벨 뱃지 -->
-                <span :style="'flex-shrink:0;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;'+
-                  (row.depth===0?'background:#dbeafe;color:#1e40af;':row.depth===1?'background:#dcfce7;color:#166534;':'background:#fef3c7;color:#92400e;')"
-                  :title="'레벨 ' + (row.depth+1)">L{{ row.depth+1 }}</span>
-                <input class="grid-input" style="flex:1;" v-model="row.node.code.codeLabel" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" />
-                <!-- 자식 개수 -->
-                <span v-if="row.node.children.length > 0" style="flex-shrink:0;font-size:10px;color:#6b7280;background:#f3f4f6;padding:1px 5px;border-radius:3px;"
-                  :title="'직속 자식 ' + row.node.children.length + '개'">↳ {{ row.node.children.length }}</span>
-              </div>
-            </td>
-            <td><input class="grid-input grid-mono" v-model="row.node.code.codeValue" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
-            <td>
-              <select class="grid-select" style="font-size:12px;" v-model="row.node.code.parentCodeValue" :disabled="row.node.code._row_status==='D'" @change="onCellChange(row.node.code)">
-                <option :value="null">-- 없음 --</option>
-                <option v-for="opt in parentOpts" :key="opt.value" :value="opt.value">{{ opt.displayLabel }}</option>
-              </select>
-            </td>
-            <td><input class="grid-input grid-num" type="number" v-model.number="row.node.code.sortOrd" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
-            <td>
-              <select class="grid-select" v-model="row.node.code.useYn" :disabled="row.node.code._row_status==='D'" @change="onCellChange(row.node.code)">
-                <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-              </select>
-            </td>
-            <td>
-              <div style="display:flex;gap:4px;align-items:center;">
-                <span v-if="row.node.code.codeOpt1 && row.node.code.codeOpt1.startsWith('#')"
-                  :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+row.node.code.codeOpt1+';'"></span>
-                <input class="grid-input grid-mono" v-model="row.node.code.codeOpt1" placeholder="#000000 / fa-icon"
-                  :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" />
-              </div>
-            </td>
-            <td><input class="grid-input" v-model="row.node.code.codeRemark" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
-            <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
-            <td class="col-act-cancel-val">
-              <button v-if="['U','I','D'].includes(row.node.code._row_status)"
-                class="btn btn-secondary btn-xs" @click.stop="cancelRow(uiState.gridRows.indexOf(row.node.code))">취소</button>
-            </td>
-            <td class="col-act-delete-val">
-              <button v-if="['N','U'].includes(row.node.code._row_status)"
-                class="btn btn-danger btn-xs" @click.stop="deleteRow(uiState.gridRows.indexOf(row.node.code))">삭제</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      </div>
+        </template>
+
+        <template #cell-codeLabel="{ row, node }">
+          <td style="padding-left:0;">
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span :style="{ minWidth: (node.depth * 20 + 4) + 'px', flexShrink: 0 }"></span>
+              <span v-if="node.node.children.length > 0"
+                @click.stop="codeToggleNode(node.node.value)"
+                style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;color:#6b7280;font-size:12px;flex-shrink:0;">
+                {{ treeExpanded.has(node.node.value) ? '▼' : '▶' }}
+              </span>
+              <span v-else style="width:20px;flex-shrink:0;"></span>
+              <span v-if="node.depth > 0" style="color:#bfdbfe;margin-right:2px;font-weight:300;font-size:11px;">├</span>
+              <span :style="'flex-shrink:0;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;'+
+                (node.depth===0?'background:#dbeafe;color:#1e40af;':node.depth===1?'background:#dcfce7;color:#166534;':'background:#fef3c7;color:#92400e;')"
+                :title="'레벨 ' + (node.depth+1)">L{{ node.depth+1 }}</span>
+              <input class="grid-input" style="flex:1;" v-model="row.codeLabel" :disabled="row._row_status==='D'" @input="onCellChange(row)" />
+              <span v-if="node.node.children.length > 0" style="flex-shrink:0;font-size:10px;color:#6b7280;background:#f3f4f6;padding:1px 5px;border-radius:3px;"
+                :title="'직속 자식 ' + node.node.children.length + '개'">↳ {{ node.node.children.length }}</span>
+            </div>
+          </td>
+        </template>
+        <template #cell-codeValue="{ row }">
+          <td><input class="grid-input grid-mono" v-model="row.codeValue" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+        </template>
+        <template #cell-parentCodeValue="{ row }">
+          <td>
+            <select class="grid-select" style="font-size:12px;" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+              <option :value="null">-- 없음 --</option>
+              <option v-for="opt in parentOpts" :key="opt.value" :value="opt.value">{{ opt.displayLabel }}</option>
+            </select>
+          </td>
+        </template>
+        <template #cell-sortOrd="{ row }">
+          <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+        </template>
+        <template #cell-useYn="{ row }">
+          <td>
+            <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+              <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+            </select>
+          </td>
+        </template>
+        <template #cell-codeOpt1="{ row }">
+          <td>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <span v-if="row.codeOpt1 && row.codeOpt1.startsWith('#')"
+                :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+row.codeOpt1+';'"></span>
+              <input class="grid-input grid-mono" v-model="row.codeOpt1" placeholder="#000000 / fa-icon"
+                :disabled="row._row_status==='D'" @input="onCellChange(row)" />
+            </div>
+          </td>
+        </template>
+        <template #cell-codeRemark="{ row }">
+          <td><input class="grid-input" v-model="row.codeRemark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+        </template>
+        <template #cell-siteNm>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+        </template>
+
+        <template #row-actions="{ row }">
+          <button v-if="['U','I','D'].includes(row._row_status)"
+            class="btn btn-secondary btn-xs" @click.stop="cancelRow(uiState.gridRows.indexOf(row))">취소</button>
+          <button v-if="['N','U'].includes(row._row_status)"
+            class="btn btn-danger btn-xs" @click.stop="deleteRow(uiState.gridRows.indexOf(row))">삭제</button>
+        </template>
+      </bo-grid-crud>
     </div>
   </div>
-
-  <!-- -- 표시경로 선택 모달 ---------------------------------------------- -->
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_code_grp"
-    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-    title="공통코드그룹 표시경로 선택"
-    @select="onPathPicked" @close="closePathPick" />
 
   <!-- -- 코드 상세 패널 (인라인 임베드) --------------------------------- -->
   <div v-if="uiState.selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
