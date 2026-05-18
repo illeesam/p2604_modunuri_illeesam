@@ -16,6 +16,10 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCacheRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattRoomRepository;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
+import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
@@ -43,6 +47,8 @@ public class FoMyPageService {
     private final OdClaimRepository      claimRepository;
     private final PmCouponRepository     couponRepository;
     private final PmCacheRepository      cacheRepository;
+    private final SyContactRepository    contactRepository;
+    private final CmChattRoomRepository  chattRoomRepository;
     private final PasswordEncoder        passwordEncoder;
     @PersistenceContext
     private EntityManager em;
@@ -162,5 +168,19 @@ public class FoMyPageService {
         if (req == null) req = new PmCacheDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         return cacheRepository.selectList(req);
+    }
+
+    /** getMyInquiries — 조회 (내 1:1 문의 목록, 기간/상태 검색은 req 로 위임) */
+    public List<SyContactDto.Item> getMyInquiries(SyContactDto.Request req) {
+        if (req == null) req = new SyContactDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return contactRepository.selectList(req);
+    }
+
+    /** getMyChats — 조회 (내 채팅방 목록, 기간 검색은 req 로 위임) */
+    public List<CmChattRoomDto.Item> getMyChats(CmChattRoomDto.Request req) {
+        if (req == null) req = new CmChattRoomDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return chattRoomRepository.selectList(req);
     }
 }

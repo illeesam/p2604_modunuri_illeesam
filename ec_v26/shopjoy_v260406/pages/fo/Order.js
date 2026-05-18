@@ -108,7 +108,7 @@ window.Order = {
     /* -- 캐쉬 -- */
     const handleLoadCash = async () => {
       try {
-        const res = await foApiSvc.myCash.getInfo('주문', '캐시조회');
+        const res = await foApiSvc.myCash.getInfo({}, '주문', '캐시조회');
         uiState.cashBalance = res.data?.data?.balance || 0;
       } catch (e) {}
     };

@@ -30,7 +30,7 @@ window.MyClaim = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
-    const { inRange, onDateSearch } = window.myDateFilterHelper();
+    const { dateRange, onDateSearch } = window.myDateFilterHelper();
     const claimStatusFilter = reactive([]);
 
     /* toggleClaimStatus */
@@ -39,8 +39,9 @@ window.MyClaim = {
       if (idx === -1) claimStatusFilter.push(step);
       else claimStatusFilter.splice(idx, 1);
     };
+    // 날짜/기간 필터는 서버(API)가 처리 — claims 는 이미 조회기간 내 결과.
+    // 클레임상태 토글만 클라이언트에서 즉시 좁힘 (검색정책 예외: 토글 UX).
     const cfDateFilteredClaims = computed(() => filteredClaims.value
-      .filter(c => inRange(c.requestDate))
       .filter(c => !claimStatusFilter.length || claimStatusFilter.includes(c.status))
     );
 
@@ -94,16 +95,17 @@ window.MyClaim = {
       showToast('신청이 취소되었습니다.', 'info');
     };
 
-    /* 목록조회 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
-      await myStore.handleLoadClaims();
+    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (requestDate=request_date 기준) */
+    const handleSearchData = async () => {
+      const params = { dateType: 'request_date', dateStart: dateRange.start, dateEnd: dateRange.end };
+      await myStore.handleLoadClaims(params);
       myStore.handleLoadOrders();
     };
 
-    /* 목록조회 */
+    /* 목록조회 — [조회]/기간 변경 시에만 API 호출 (검색정책 준수) */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleSearchData('DEFAULT');
+      await handleSearchData();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회

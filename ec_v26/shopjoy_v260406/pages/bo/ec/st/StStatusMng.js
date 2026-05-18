@@ -72,12 +72,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* 목록조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
+        // 기간(uiState.dateStart~dateEnd)을 서버 검색 파라미터로 전달.
+        // 빈 값이면 날짜조건 미전달(전체). 클라이언트 inRange 는 집계 정합성 위해 유지(서버가 거른 데이터에 동일조건 재적용 → 결과 불변).
+        const dS = uiState.dateStart, dE = uiState.dateEnd;
+        const dateP = (dateType) => (dS || dE) ? { dateType, dateStart: dS, dateEnd: dE } : {};
+        const PG = { pageNo: 1, pageSize: 10000 };
         const [resO, resC, resV, resCp, resCa] = await Promise.all([
-          boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
-          boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
-          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
-          boApiSvc.pmCoupon.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
-          boApiSvc.pmCache.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
+          boApiSvc.odOrder.getPage({ ...PG, ...dateP('order_date') }, '정산상태관리', '목록조회'),
+          boApiSvc.odClaim.getPage({ ...PG, ...dateP('request_date') }, '정산상태관리', '목록조회'),
+          boApiSvc.syVendor.getPage(PG, '정산상태관리', '목록조회'),
+          boApiSvc.pmCoupon.getPage(PG, '정산상태관리', '목록조회'),
+          boApiSvc.pmCache.getPage({ ...PG, ...dateP('reg_date') }, '정산상태관리', '목록조회'),
         ]);
         orderList.splice(0, orderList.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
         claimList.splice(0, claimList.length, ...(resC.data?.data?.pageList || resC.data?.data?.list || []));

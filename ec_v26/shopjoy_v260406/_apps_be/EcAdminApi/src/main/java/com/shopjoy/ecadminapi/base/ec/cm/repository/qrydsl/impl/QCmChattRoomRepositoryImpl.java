@@ -102,6 +102,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
         if (StringUtils.hasText(s.getSiteId()))      w.and(r.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getChattRoomId())) w.and(r.chattRoomId.eq(s.getChattRoomId()));
+        if (StringUtils.hasText(s.getMemberId()))    w.and(r.memberId.eq(s.getMemberId()));
 
         // searchValue + searchType (memberNm | subject)
         if (StringUtils.hasText(s.getSearchValue())) {

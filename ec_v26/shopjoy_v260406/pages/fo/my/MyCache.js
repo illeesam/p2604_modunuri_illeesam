@@ -28,8 +28,9 @@ window.MyCache = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
-    const { inRange, onDateSearch } = window.myDateFilterHelper();
-    const cfDateFilteredHistory = computed(() => cashHistory.value.filter(h => inRange(h.date)));
+    const { dateRange, onDateSearch } = window.myDateFilterHelper();
+    // 날짜/기간 필터는 서버(API)가 처리 — cashHistory 는 이미 조회기간 내 결과.
+    const cfDateFilteredHistory = computed(() => cashHistory.value);
 
     /* addCash */
     const addCash = () => {
@@ -51,16 +52,17 @@ window.MyCache = {
       if (!ok) showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
 
-    /* 목록조회 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
-      await myStore.handleLoadCash();
+    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (reg_date 기준) */
+    const handleSearchData = async () => {
+      const params = { dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end };
+      await myStore.handleLoadCash(params);
       myStore.handleLoadOrders();
     };
 
-    /* 목록조회 */
+    /* 목록조회 — [조회]/기간 변경 시에만 API 호출 (검색정책 준수) */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleSearchData('DEFAULT');
+      await handleSearchData();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회

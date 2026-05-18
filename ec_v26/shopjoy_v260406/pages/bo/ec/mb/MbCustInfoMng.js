@@ -113,18 +113,23 @@
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
+        // 기간(period) → 서버 검색 파라미터. period='all' 이면 날짜조건 미전달(전체).
+        const from = calcFrom(searchParam.period, searchParam.customFrom);
+        const to   = searchParam.period === 'custom' ? searchParam.customTo : today();
+        const dateP = (dateType) => from ? { dateType, dateStart: from, dateEnd: to } : {};
+        const PG = { pageNo: 1, pageSize: 10000 };
         const [resCust, resLogin, resCoupon, resSend, resMember, resOrder, resClaim, resDliv, resCache, resContact, resChatt] = await Promise.all([
-          boApiSvc.mbCustInfo.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
-          boApiSvc.syUserLoginLog.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
-          boApiSvc.pmCouponUsage.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
-          boApiSvc.syAlarm.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
-          boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '회원조회'),
-          boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '주문조회'),
-          boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '클레임조회'),
-          boApiSvc.odDliv.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '배송조회'),
-          boApiSvc.pmCache.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '캐쉬조회'),
-          boApiSvc.syContact.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '문의조회'),
-          boApiSvc.cmChatt.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '채팅조회'),
+          boApiSvc.mbCustInfo.getPage(PG, '고객종합정보', '조회'),
+          boApiSvc.syUserLoginLog.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '조회'),
+          boApiSvc.pmCouponUsage.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '조회'),
+          boApiSvc.syAlarm.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '조회'),
+          boApiSvc.mbMember.getPage(PG, '고객종합정보', '회원조회'),
+          boApiSvc.odOrder.getPage({ ...PG, ...dateP('order_date') }, '고객종합정보', '주문조회'),
+          boApiSvc.odClaim.getPage({ ...PG, ...dateP('request_date') }, '고객종합정보', '클레임조회'),
+          boApiSvc.odDliv.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '배송조회'),
+          boApiSvc.pmCache.getPage(PG, '고객종합정보', '캐쉬조회'),
+          boApiSvc.syContact.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '문의조회'),
+          boApiSvc.cmChatt.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '채팅조회'),
         ]);
         custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.pageList || []));
         loginHistory.splice(0, loginHistory.length, ...(resLogin.data?.data?.pageList || []));
@@ -188,8 +193,11 @@
 
       /* -- 현재 고객 -- */
       
-      /* 날짜 필터 헬퍼 */
-      const filtered = (list, dateField) =>
+      /* 날짜 필터 헬퍼
+         - filtered: 기간 필터는 서버(API)가 처리하므로 클라이언트 재필터 없이 그대로 통과.
+         - filteredLocal: 캐쉬는 잔액 정확성 위해 전체 로드 → 목록만 클라이언트 기간 필터. */
+      const filtered = (list /* , dateField */) => list;
+      const filteredLocal = (list, dateField) =>
         list.filter(r => inRange(r[dateField], cfDateFrom.value, cfDateTo.value));
 
       /* -- 파생 데이터 (computed) -- */
@@ -206,7 +214,7 @@
           deliveries.filter(d => d.userId === uiState.customer.userId), 'regDate')
       );
       const cfCustCache = computed(() =>
-        !uiState.customer ? [] : filtered(
+        !uiState.customer ? [] : filteredLocal(
           cacheList.filter(c => c.userId === uiState.customer.userId), 'date')
       );
       const cfCustContacts = computed(() =>

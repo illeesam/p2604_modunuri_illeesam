@@ -41,8 +41,8 @@
 
   /* ── my: 캐시 ───────────────────────────────────────────────── */
   foApiSvc.myCash = {
-    getInfo(uiNm, cmdNm) {
-      return global.foApi.get('/fo/my/cash/info', hdr(uiNm, cmdNm));
+    getInfo(params, uiNm, cmdNm) {
+      return global.foApi.get('/fo/my/cash/info', { params: params || {}, ...hdr(uiNm, cmdNm) });
     },
   };
 

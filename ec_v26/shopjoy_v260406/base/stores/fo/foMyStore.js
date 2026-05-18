@@ -42,11 +42,13 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   /* ── 주문 ── */
   const orders = reactive([]);
 
-  /* handleLoadOrders */
-  const handleLoadOrders = async () => {
-    if (!Array.isArray(orders) || !orders.length) {
-      if (!Array.isArray(orders)) Object.assign(orders, []);
-      try { const res = await foApiSvc.myOrder.getList({}, '마이주문', '목록조회'); orders.splice(0, orders.length, ...(res.data?.data || [])); }
+  /* handleLoadOrders
+     - params: 서버 검색 조건(dateStart/dateEnd/dateType/orderStatusCd 등). 전달 시 항상 재조회.
+     - 무인자 호출은 기존 동작(미로드 시 1회 조회) 유지하여 호환. */
+  const handleLoadOrders = async (params) => {
+    if (!Array.isArray(orders)) Object.assign(orders, []);
+    if (params || !orders.length) {
+      try { const res = await foApiSvc.myOrder.getList(params || {}, '마이주문', '목록조회'); orders.splice(0, orders.length, ...(res.data?.data || [])); }
       catch (e) { orders.splice(0, orders.length); }
     }
   };
@@ -61,11 +63,11 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const claims = reactive([]);
   const claimFilter = ref('전체');
 
-  /* handleLoadClaims */
-  const handleLoadClaims = async () => {
-    if (!Array.isArray(claims) || !claims.length) {
-      if (!Array.isArray(claims)) Object.assign(claims, []);
-      try { const res = await foApiSvc.myClaim.getList({}, '마이클레임', '목록조회'); claims.splice(0, claims.length, ...(res.data?.data || [])); }
+  /* handleLoadClaims — params 전달 시 항상 재조회(서버 기간검색), 무인자는 기존 캐시 동작 */
+  const handleLoadClaims = async (params) => {
+    if (!Array.isArray(claims)) Object.assign(claims, []);
+    if (params || !claims.length) {
+      try { const res = await foApiSvc.myClaim.getList(params || {}, '마이클레임', '목록조회'); claims.splice(0, claims.length, ...(res.data?.data || [])); }
       catch (e) { claims.splice(0, claims.length); }
     }
   };
@@ -89,11 +91,11 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const coupons = reactive([]);
   const couponCode = ref('');
 
-  /* handleLoadCoupons */
-  const handleLoadCoupons = async () => {
-    if (!Array.isArray(coupons) || !coupons.length) {
-      if (!Array.isArray(coupons)) Object.assign(coupons, []);
-      try { const res = await foApiSvc.myCoupon.getList({}, '마이쿠폰', '목록조회'); coupons.splice(0, coupons.length, ...(res.data?.data || [])); }
+  /* handleLoadCoupons — params 전달 시 항상 재조회(서버 기간검색), 무인자는 기존 캐시 동작 */
+  const handleLoadCoupons = async (params) => {
+    if (!Array.isArray(coupons)) Object.assign(coupons, []);
+    if (params || !coupons.length) {
+      try { const res = await foApiSvc.myCoupon.getList(params || {}, '마이쿠폰', '목록조회'); coupons.splice(0, coupons.length, ...(res.data?.data || [])); }
       catch (e) { coupons.splice(0, coupons.length); }
     }
   };
@@ -108,12 +110,12 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const cashHistory = reactive([]);
   const chargeAmount = ref('');
 
-  /* handleLoadCash */
-  const handleLoadCash = async () => {
-    if (!Array.isArray(cashHistory) || !cashHistory.length) {
-      if (!Array.isArray(cashHistory)) Object.assign(cashHistory, []);
+  /* handleLoadCash — params 전달 시 항상 재조회(서버 기간검색), 무인자는 기존 캐시 동작 */
+  const handleLoadCash = async (params) => {
+    if (!Array.isArray(cashHistory)) Object.assign(cashHistory, []);
+    if (params || !cashHistory.length) {
       try {
-        const res = await foApiSvc.myCash.getInfo('마이캐시', '조회');
+        const res = await foApiSvc.myCash.getInfo(params || {}, '마이캐시', '조회');
         cashBalance.value = res.data?.data?.balance || 0;
         cashHistory.splice(0, cashHistory.length, ...(res.data?.data?.history || []));
       } catch (e) {}
@@ -124,11 +126,11 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const inquiries = reactive([]);
   const expandedInquiry = ref(null);
 
-  /* loadInquiries */
-  const loadInquiries = async () => {
-    if (!Array.isArray(inquiries) || !inquiries.length) {
-      if (!Array.isArray(inquiries)) Object.assign(inquiries, []);
-      try { const res = await foApiSvc.myInquiry.getList({}, '마이문의', '목록조회'); inquiries.splice(0, inquiries.length, ...(res.data?.data || [])); }
+  /* loadInquiries — params 전달 시 항상 재조회(서버 기간검색), 무인자는 기존 캐시 동작 */
+  const loadInquiries = async (params) => {
+    if (!Array.isArray(inquiries)) Object.assign(inquiries, []);
+    if (params || !inquiries.length) {
+      try { const res = await foApiSvc.myInquiry.getList(params || {}, '마이문의', '목록조회'); inquiries.splice(0, inquiries.length, ...(res.data?.data || [])); }
       catch (e) { inquiries.splice(0, inquiries.length); }
     }
   };
@@ -140,11 +142,11 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const chats = reactive([]);
   const expandedChat = ref(null);
 
-  /* loadChats */
-  const loadChats = async () => {
-    if (!Array.isArray(chats) || !chats.length) {
-      if (!Array.isArray(chats)) Object.assign(chats, []);
-      try { const res = await foApiSvc.myChat.getList({}, '마이채팅', '목록조회'); chats.splice(0, chats.length, ...(res.data?.data || [])); }
+  /* loadChats — params 전달 시 항상 재조회(서버 기간검색), 무인자는 기존 캐시 동작 */
+  const loadChats = async (params) => {
+    if (!Array.isArray(chats)) Object.assign(chats, []);
+    if (params || !chats.length) {
+      try { const res = await foApiSvc.myChat.getList(params || {}, '마이채팅', '목록조회'); chats.splice(0, chats.length, ...(res.data?.data || [])); }
       catch (e) { chats.splice(0, chats.length); }
     }
   };

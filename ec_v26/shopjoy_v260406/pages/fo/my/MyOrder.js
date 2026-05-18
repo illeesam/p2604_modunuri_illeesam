@@ -197,7 +197,7 @@ window.MyOrder = {
     /* getReview */
     const getReview = (orderId, itemIdx) => reviews[`${orderId}_${itemIdx}`] || null;
 
-    const { inRange, onDateSearch } = window.myDateFilterHelper();
+    const { dateRange, onDateSearch } = window.myDateFilterHelper();
     const flowStatusFilter = reactive([]);
 
     /* toggleFlowStatus */
@@ -206,22 +206,28 @@ window.MyOrder = {
       if (idx === -1) flowStatusFilter.push(status);
       else flowStatusFilter.splice(idx, 1);
     };
+    // 날짜/기간 필터는 서버(API)가 처리 — orders.value 는 이미 조회기간 내 결과.
+    // 주문흐름(상태) 토글만 클라이언트에서 즉시 좁힘 (검색정책 예외: 토글 UX).
     const cfDateFilteredOrders = computed(() => orders.value
-      .filter(o => inRange(o.orderDate))
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
 
-    /* 목록조회 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
-      await myStore.handleLoadOrders();
+    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (orderDate 기준) */
+    const handleSearchData = async () => {
+      const params = {
+        dateType:  'order_date',
+        dateStart: dateRange.start,
+        dateEnd:   dateRange.end,
+      };
+      await myStore.handleLoadOrders(params);
       myStore.handleLoadClaims();
       myStore.handleLoadCoupons();
     };
 
-    /* 목록조회 */
+    /* 목록조회 — [조회] 버튼/기간 변경 시에만 API 호출 (검색정책 준수) */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleSearchData('DEFAULT');
+      await handleSearchData();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회

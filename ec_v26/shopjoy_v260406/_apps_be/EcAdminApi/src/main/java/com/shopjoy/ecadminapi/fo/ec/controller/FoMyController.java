@@ -4,6 +4,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.fo.ec.service.FoMyPageService;
 import lombok.RequiredArgsConstructor;
@@ -51,25 +53,25 @@ public class FoMyController {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCoupons(req)));
     }
 
-    /** getCashInfo — 조회 */
+    /** getCashInfo — 조회 (history 는 기간 검색 지원: dateType/dateStart/dateEnd) */
     @GetMapping("/cash/info")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getCashInfo() {
-        List<PmCacheDto.Item> history = foMyPageService.getMyCacheHistory(new PmCacheDto.Request());
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCashInfo(@jakarta.validation.Valid @ModelAttribute PmCacheDto.Request req) {
+        List<PmCacheDto.Item> history = foMyPageService.getMyCacheHistory(req);
         Map<String, Object> cashInfo = new HashMap<>();
         cashInfo.put("balance", 0);
         cashInfo.put("history", history);
         return ResponseEntity.ok(ApiResponse.ok(cashInfo));
     }
 
-    /** getInquiries — 조회 */
+    /** getInquiries — 조회 (내 1:1 문의 목록, 기간/상태 검색 지원) */
     @GetMapping("/inquiry/list")
-    public ResponseEntity<ApiResponse<List<Object>>> getInquiries() {
-        return ResponseEntity.ok(ApiResponse.ok(List.of()));
+    public ResponseEntity<ApiResponse<List<SyContactDto.Item>>> getInquiries(@jakarta.validation.Valid @ModelAttribute SyContactDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyInquiries(req)));
     }
 
-    /** getChats — 조회 */
+    /** getChats — 조회 (내 채팅방 목록, 기간 검색 지원) */
     @GetMapping("/chat/list")
-    public ResponseEntity<ApiResponse<List<Object>>> getChats() {
-        return ResponseEntity.ok(ApiResponse.ok(List.of()));
+    public ResponseEntity<ApiResponse<List<CmChattRoomDto.Item>>> getChats(@jakarta.validation.Valid @ModelAttribute CmChattRoomDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyChats(req)));
     }
 }

@@ -15,6 +15,7 @@ public class CmChattRoomDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String chattRoomId;
+        @Size(max = 21) private String memberId;
     }
 
     @Getter @Setter @NoArgsConstructor

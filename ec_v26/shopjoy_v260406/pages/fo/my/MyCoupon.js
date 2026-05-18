@@ -31,14 +31,13 @@ window.MyCoupon = {
     /* -- 탭: 미사용 | 사용 -- */
      // 'unused' | 'used'
 
-    /* -- 날짜 필터 -- */
-    const { inRange, onDateSearch } = window.myDateFilterHelper();
+    /* -- 날짜 필터 (서버 처리) -- */
+    const { dateRange, onDateSearch } = window.myDateFilterHelper();
 
-    /* -- 탭 + 날짜 필터 적용 목록 -- */
+    /* -- 탭 필터만 클라이언트 (날짜는 서버가 처리) -- */
     const cfDateFilteredCoupons = computed(() =>
       coupons.value
         .filter(c => uiState.activeTab === 'unused' ? !c.used : c.used)
-        .filter(c => inRange(c.regDate))
     );
 
     const cfUnusedCount = computed(() => coupons.value.filter(c => !c.used).length);
@@ -62,16 +61,17 @@ window.MyCoupon = {
     /* onTabChange */
     const onTabChange = tab => { uiState.activeTab = tab; pager.page = 1; };
 
-    /* 목록조회 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
-      await myStore.handleLoadCoupons();
+    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (regDate=reg_date 기준) */
+    const handleSearchData = async () => {
+      const params = { dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end };
+      await myStore.handleLoadCoupons(params);
       myStore.handleLoadOrders();
     };
 
-    /* 목록조회 */
+    /* 목록조회 — [조회]/기간 변경 시에만 API 호출 (검색정책 준수) */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleSearchData('DEFAULT');
+      await handleSearchData();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회

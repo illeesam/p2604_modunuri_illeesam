@@ -18,7 +18,7 @@ window.MyContact = {
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        myStore.loadInquiries();
+        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -31,8 +31,9 @@ window.MyContact = {
     const inquiryPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
-    const { inRange, onDateSearch } = window.myDateFilterHelper();
-    const cfDateFilteredInquiries = computed(() => inquiries.value.filter(q => inRange(q.date)));
+    const { dateRange, onDateSearch } = window.myDateFilterHelper();
+    // 날짜/기간 필터는 서버(API)가 처리 — inquiries 는 이미 조회기간 내 결과.
+    const cfDateFilteredInquiries = computed(() => inquiries.value);
 
     /* cancelInquiry */
     const cancelInquiry = async id => {
@@ -43,10 +44,16 @@ window.MyContact = {
       showToast('문의가 취소되었습니다.', 'success');
     };
 
-    /* 목록조회 */
+    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (reg_date 기준) */
+    const handleSearchData = async () => {
+      const params = { dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end };
+      await myStore.loadInquiries(params);
+    };
+
+    /* 목록조회 — [조회]/기간 변경 시에만 API 호출 (검색정책 준수) */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await myStore.loadInquiries();
+      await handleSearchData();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
