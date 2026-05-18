@@ -218,6 +218,39 @@ window.SyApiLogMng = {
     /* fnDecode */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
+    /* BoGridReadonly 컬럼 정의 (전 셀 #cell-* 슬롯 override, 행펼침 #row-expand) */
+    const accessColumns = [
+      { key: '_exp',       label: '',          style: 'width:20px' },
+      { key: 'reqMethod',  label: '메서드' },
+      { key: 'reqPath',    label: 'API 경로' },
+      { key: 'respStatus', label: '상태',      style: 'text-align:center;' },
+      { key: 'respTimeMs', label: 'ms',        style: 'text-align:right;' },
+      { key: 'reqIp',      label: 'IP' },
+      { key: 'userId',     label: '사용자ID' },
+      { key: 'uiNm',       label: '화면 > 기능' },
+      { key: 'traceId',    label: 'Trace ID' },
+      { key: 'regDate',    label: '등록일시' },
+    ];
+    const errorColumns = [
+      { key: '_exp',       label: '',          style: 'width:20px' },
+      { key: 'reqMethod',  label: '메서드' },
+      { key: 'reqPath',    label: 'API 경로' },
+      { key: 'errorType',  label: '오류유형' },
+      { key: 'errorMsg',   label: '오류메시지' },
+      { key: 'reqIp',      label: 'IP' },
+      { key: 'userId',     label: '사용자ID' },
+      { key: 'uiNm',       label: '화면 > 기능' },
+      { key: 'traceId',    label: 'Trace ID' },
+      { key: 'regDate',    label: '등록일시' },
+    ];
+    /* BoGridReadonly isExpanded prop 래퍼 (row,idx)=>bool */
+    const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
+    const fnRowClickStyle = (r, idx) => {
+      const exp = isExpanded(r.logId || idx);
+      const bg = uiState.activeTab === 'access' ? '#fafbff' : '#fff8f8';
+      return 'cursor:pointer;' + (exp ? ('background:' + bg + ';') : '');
+    };
+
     // -- return ---------------------------------------------------------------
 
     return {
@@ -226,6 +259,7 @@ window.SyApiLogMng = {
       fnMethodBadge, fnStatusBadge, fnDecode,
       expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded, handleClearLog,
       showRefModal,
+      accessColumns, errorColumns, fnRowExpanded, fnRowClickStyle,
     };
   },
   template: /* html */`
@@ -242,7 +276,7 @@ window.SyApiLogMng = {
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area @search="onSearch" @reset="onReset">
       <span class="search-label">등록기간</span>
       <input type="date" v-model="uiState.dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
@@ -266,12 +300,10 @@ window.SyApiLogMng = {
         all-label="전체 선택"
         min-width="140px" />
       <input v-model="uiState.searchValue" placeholder="검색어 입력" style="width:150px" @keyup.enter="onSearch" />
-      <div class="search-actions" style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0;">
+      <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+      </template>
+    </bo-search-area>
     <div v-if="uiState.srchOpen" class="search-bar" style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;">
       <input v-model="uiState.searchStatus" placeholder="상태코드 (예: 500)" style="width:150px" @keyup.enter="onSearch" />
       <select v-model="uiState.searchAppTypeCd" style="width:120px">
@@ -285,204 +317,199 @@ window.SyApiLogMng = {
   </div>
 
   <!-- -- 탭 + 목록 --------------------------------------------------------- -->
-  <div class="card">
-    <div class="tab-nav" style="margin-bottom:16px">
-      <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">📋 API요청로그 <span class="tab-count">{{ tabCounts.access }}</span></button>
-      <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="onTabChange('error')">🚨 API오류로그 <span class="tab-count">{{ tabCounts.error }}</span></button>
-    </div>
-    <div class="toolbar">
-      <span class="list-title">
-        {{ uiState.activeTab === 'access' ? 'API요청로그' : 'API오류로그' }}
-        <span class="list-count">{{ pager.pageTotalCount }}건</span>
-      </span>
+  <div class="tab-nav" style="margin-bottom:16px">
+    <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">📋 API요청로그 <span class="tab-count">{{ tabCounts.access }}</span></button>
+    <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="onTabChange('error')">🚨 API오류로그 <span class="tab-count">{{ tabCounts.error }}</span></button>
+  </div>
+
+  <!-- -- API요청로그 탭 -------------------------------------------------- -->
+  <bo-grid-readonly v-if="uiState.activeTab==='access'"
+    :columns="accessColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded"
+    @set-page="setPage" @size-change="onSizeChange">
+
+    <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
         <button class="btn btn-secondary btn-xs" @click="toggleExpandAll">{{ allExpanded.value ? '전체닫기' : '전체펼치기' }}</button>
         <button class="btn btn-danger btn-xs" @click="handleClearLog">로그비우기</button>
       </div>
-    </div>
+    </template>
 
-    <!-- -- API요청로그 탭 -------------------------------------------------- -->
-    <div v-if="uiState.activeTab==='access'">
-      <table class="bo-table">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th style="width:20px"></th>
-          <th>메서드</th>
-          <th>API 경로</th>
-          <th style="text-align:center;">상태</th>
-          <th style="text-align:right;">ms</th>
-          <th>IP</th>
-          <th>사용자ID</th>
-          <th>화면 > 기능</th>
-          <th>Trace ID</th>
-          <th>등록일시</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="cfCurrentList.length===0">
-            <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-          </tr>
-          <template v-else v-for="(r, idx) in cfCurrentList" :key="r.logId || idx">
-            <tr style="cursor:pointer;" :style="isExpanded(r.logId||idx)?'background:#fafbff;':''" @click="toggleRow(r.logId||idx)">
-              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-              <td style="text-align:center;color:#bbb;font-size:11px;user-select:none;">{{ isExpanded(r.logId||idx) ? '▲' : '▼' }}</td>
-              <td><span class="badge" :class="fnMethodBadge(r.reqMethod)">{{ r.reqMethod || '-' }}</span></td>
-              <td style="font-family:monospace;font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.reqPath">{{ r.reqPath || '-' }}</td>
-              <td style="text-align:center;"><span class="badge" :class="fnStatusBadge(r.respStatus)">{{ r.respStatus || '-' }}</span></td>
-              <td style="text-align:right;font-family:monospace;font-size:12px;" :style="r.respTimeMs>1000?'color:#e74c3c;font-weight:700':''">{{ r.respTimeMs != null ? r.respTimeMs : '-' }}</td>
-              <td style="font-family:monospace;font-size:12px;">{{ r.reqIp || '-' }}</td>
-              <td style="font-size:12px;color:#555;">{{ r.userId || '-' }}</td>
-              <td style="font-size:12px;color:#555;">
-                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(r.uiNm) }}</span>
-                <span v-if="r.uiNm && r.cmdNm" style="color:#aaa;"> > </span>
-                <span v-if="r.cmdNm">{{ fnDecode(r.cmdNm) }}</span>
-                <span v-if="!r.uiNm && !r.cmdNm" style="color:#ccc;">-</span>
-              </td>
-              <td style="font-family:monospace;font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.traceId">{{ r.traceId || '-' }}</td>
-              <td style="font-size:12px;white-space:nowrap;">{{ String(r.regDate || '').slice(0, 19) }}</td>
-            </tr>
-            <!-- 펼치기 상세 행 -->
-            <tr v-if="isExpanded(r.logId||idx)">
-              <td colspan="11" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
-                  <!-- 요청 정보 -->
-                  <div>
-                    <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px;">📡 요청 정보</div>
-                    <table style="width:100%;border-collapse:collapse;">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td><td style="font-family:monospace;word-break:break-all;">{{ r.reqPath }}{{ r.reqQuery ? '?'+r.reqQuery : '' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td><td><span class="badge" :class="fnMethodBadge(r.reqMethod)">{{ r.reqMethod }}</span></td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">상태코드</td><td><span class="badge" :class="fnStatusBadge(r.respStatus)">{{ r.respStatus }}</span></td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td><td :style="r.respTimeMs>1000?'color:#e74c3c;font-weight:700':''">{{ r.respTimeMs != null ? r.respTimeMs+'ms' : '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td><td style="font-family:monospace;">{{ r.reqIp || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">Host</td><td style="font-family:monospace;">{{ r.reqHost || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">UA</td><td style="font-size:11px;color:#666;word-break:break-all;">{{ r.reqUa || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td><td>{{ String(r.regDate||'').slice(0,19) }}</td></tr>
-                    </table>
-                  </div>
-                  <!-- x-헤더 (호출 추적) -->
-                  <div>
-                    <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">🏷 X-헤더 (호출 추적)</div>
-                    <table style="width:100%;border-collapse:collapse;">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ fnDecode(r.uiNm) || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ fnDecode(r.cmdNm) || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td><td style="font-family:monospace;font-size:11px;">{{ r.fileNm || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td><td style="font-family:monospace;font-size:11px;">{{ r.funcNm || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td><td style="font-family:monospace;">{{ r.lineNo || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ r.traceId || '-' }}</td></tr>
-                    </table>
-                  </div>
-                  <!-- 인증·서버 정보 -->
-                  <div>
-                    <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px;">🔐 인증 · 서버</div>
-                    <table style="width:100%;border-collapse:collapse;">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td><td>{{ r.userId || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td><td>{{ r.appTypeCd || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">역할ID</td><td>{{ r.roleId || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">부서ID</td><td>{{ r.deptId || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">업체ID</td><td>{{ r.vendorId || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td><td style="font-family:monospace;font-size:11px;">{{ r.serverNm || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td><td><span v-if="r.profile" class="badge badge-blue" style="font-size:10px;">{{ r.profile }}</span><span v-else>-</span></td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ r.threadNm || '-' }}</td></tr>
-                    </table>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </div>
+    <template #cell-_exp="{ row, idx }">
+      <td style="text-align:center;color:#bbb;font-size:11px;user-select:none;cursor:pointer;" @click="toggleRow(row.logId||idx)">{{ isExpanded(row.logId||idx) ? '▲' : '▼' }}</td>
+    </template>
+    <template #cell-reqMethod="{ row }">
+      <td style="cursor:pointer;" @click="toggleRow(row.logId)"><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod || '-' }}</span></td>
+    </template>
+    <template #cell-reqPath="{ row }">
+      <td style="font-family:monospace;font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.reqPath" @click="toggleRow(row.logId)">{{ row.reqPath || '-' }}</td>
+    </template>
+    <template #cell-respStatus="{ row }">
+      <td style="text-align:center;cursor:pointer;" @click="toggleRow(row.logId)"><span class="badge" :class="fnStatusBadge(row.respStatus)">{{ row.respStatus || '-' }}</span></td>
+    </template>
+    <template #cell-respTimeMs="{ row }">
+      <td style="text-align:right;font-family:monospace;font-size:12px;cursor:pointer;" :style="row.respTimeMs>1000?'color:#e74c3c;font-weight:700':''" @click="toggleRow(row.logId)">{{ row.respTimeMs != null ? row.respTimeMs : '-' }}</td>
+    </template>
+    <template #cell-reqIp="{ row }">
+      <td style="font-family:monospace;font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.reqIp || '-' }}</td>
+    </template>
+    <template #cell-userId="{ row }">
+      <td style="font-size:12px;color:#555;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.userId || '-' }}</td>
+    </template>
+    <template #cell-uiNm="{ row }">
+      <td style="font-size:12px;color:#555;cursor:pointer;" @click="toggleRow(row.logId)">
+        <span v-if="row.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) }}</span>
+        <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa;"> &gt; </span>
+        <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
+        <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc;">-</span>
+      </td>
+    </template>
+    <template #cell-traceId="{ row }">
+      <td style="font-family:monospace;font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.traceId" @click="toggleRow(row.logId)">{{ row.traceId || '-' }}</td>
+    </template>
+    <template #cell-regDate="{ row }">
+      <td style="font-size:12px;white-space:nowrap;cursor:pointer;" @click="toggleRow(row.logId)">{{ String(row.regDate || '').slice(0, 19) }}</td>
+    </template>
 
-    <!-- -- API오류로그 탭 -------------------------------------------------- -->
-    <div v-if="uiState.activeTab==='error'">
-      <table class="bo-table">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th style="width:20px"></th>
-          <th>메서드</th>
-          <th>API 경로</th>
-          <th>오류유형</th>
-          <th>오류메시지</th>
-          <th>IP</th>
-          <th>사용자ID</th>
-          <th>화면 > 기능</th>
-          <th>Trace ID</th>
-          <th>등록일시</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="cfCurrentList.length===0">
-            <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-          </tr>
-          <template v-else v-for="(r, idx) in cfCurrentList" :key="r.logId || idx">
-            <tr style="cursor:pointer;" :style="isExpanded(r.logId||idx)?'background:#fff8f8;':''" @click="toggleRow(r.logId||idx)">
-              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-              <td style="text-align:center;color:#bbb;font-size:11px;user-select:none;">{{ isExpanded(r.logId||idx) ? '▲' : '▼' }}</td>
-              <td><span class="badge" :class="fnMethodBadge(r.reqMethod)">{{ r.reqMethod || '-' }}</span></td>
-              <td style="font-family:monospace;font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.reqPath">{{ r.reqPath || '-' }}</td>
-              <td style="font-size:12px;color:#e74c3c;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.errorType">{{ r.errorType || '-' }}</td>
-              <td style="font-size:12px;color:#555;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.errorMsg">{{ r.errorMsg || '-' }}</td>
-              <td style="font-family:monospace;font-size:12px;">{{ r.reqIp || '-' }}</td>
-              <td style="font-size:12px;color:#555;">{{ r.userId || '-' }}</td>
-              <td style="font-size:12px;color:#555;">
-                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(r.uiNm) }}</span>
-                <span v-if="r.uiNm && r.cmdNm" style="color:#aaa;"> > </span>
-                <span v-if="r.cmdNm">{{ fnDecode(r.cmdNm) }}</span>
-                <span v-if="!r.uiNm && !r.cmdNm" style="color:#ccc;">-</span>
-              </td>
-              <td style="font-family:monospace;font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.traceId">{{ r.traceId || '-' }}</td>
-              <td style="font-size:12px;white-space:nowrap;">{{ String(r.regDate || '').slice(0, 19) }}</td>
-            </tr>
-            <!-- 펼치기 상세 행 -->
-            <tr v-if="isExpanded(r.logId||idx)">
-              <td colspan="11" style="background:#fff8f8;padding:16px 20px;border-top:none;">
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
-                  <!-- 오류 정보 -->
-                  <div>
-                    <div style="font-weight:700;color:#e74c3c;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">🚨 오류 정보</div>
-                    <table style="width:100%;border-collapse:collapse;">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td><td style="font-family:monospace;word-break:break-all;">{{ r.reqPath }}{{ r.reqQuery ? '?'+r.reqQuery : '' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td><td><span class="badge" :class="fnMethodBadge(r.reqMethod)">{{ r.reqMethod }}</span></td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td><td>{{ r.respTimeMs != null ? r.respTimeMs+'ms' : '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td><td style="font-family:monospace;">{{ r.reqIp || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td><td>{{ r.userId || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td><td>{{ r.appTypeCd || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">오류유형</td><td style="color:#e74c3c;font-weight:600;word-break:break-all;">{{ r.errorType || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">오류메시지</td><td style="color:#c0392b;word-break:break-all;">{{ r.errorMsg || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td><td style="font-family:monospace;font-size:11px;">{{ r.serverNm || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td><td><span v-if="r.profile" class="badge badge-blue" style="font-size:10px;">{{ r.profile }}</span><span v-else>-</span></td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td><td>{{ String(r.regDate||'').slice(0,19) }}</td></tr>
-                    </table>
-                  </div>
-                  <!-- x-헤더 (호출 추적) -->
-                  <div>
-                    <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">🏷 X-헤더 (호출 추적)</div>
-                    <table style="width:100%;border-collapse:collapse;">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ fnDecode(r.uiNm) || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ fnDecode(r.cmdNm) || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td><td style="font-family:monospace;font-size:11px;">{{ r.fileNm || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td><td style="font-family:monospace;font-size:11px;">{{ r.funcNm || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td><td style="font-family:monospace;">{{ r.lineNo || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ r.traceId || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">로거</td><td style="font-size:11px;word-break:break-all;">{{ r.loggerNm || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ r.threadNm || '-' }}</td></tr>
-                    </table>
-                  </div>
-                  <!-- 스택트레이스 -->
-                  <div>
-                    <div style="font-weight:700;color:#c0392b;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">📋 스택트레이스</div>
-                    <div v-if="r.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">{{ r.stackTrace }}</div>
-                    <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">스택트레이스 없음</div>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </div>
+    <template #row-expand="{ row, colspan }">
+      <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
+          <div>
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px;">📡 요청 정보</div>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td><td style="font-family:monospace;word-break:break-all;">{{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td><td><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod }}</span></td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">상태코드</td><td><span class="badge" :class="fnStatusBadge(row.respStatus)">{{ row.respStatus }}</span></td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td><td :style="row.respTimeMs>1000?'color:#e74c3c;font-weight:700':''">{{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td><td style="font-family:monospace;">{{ row.reqIp || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">Host</td><td style="font-family:monospace;">{{ row.reqHost || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">UA</td><td style="font-size:11px;color:#666;word-break:break-all;">{{ row.reqUa || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td><td>{{ String(row.regDate||'').slice(0,19) }}</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">🏷 X-헤더 (호출 추적)</div>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ fnDecode(row.cmdNm) || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td><td style="font-family:monospace;font-size:11px;">{{ row.fileNm || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td><td style="font-family:monospace;font-size:11px;">{{ row.funcNm || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td><td style="font-family:monospace;">{{ row.lineNo || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.traceId || '-' }}</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px;">🔐 인증 · 서버</div>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td><td>{{ row.userId || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td><td>{{ row.appTypeCd || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">역할ID</td><td>{{ row.roleId || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">부서ID</td><td>{{ row.deptId || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">업체ID</td><td>{{ row.vendorId || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td><td style="font-family:monospace;font-size:11px;">{{ row.serverNm || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td><td><span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">{{ row.profile }}</span><span v-else>-</span></td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.threadNm || '-' }}</td></tr>
+            </table>
+          </div>
+        </div>
+      </td>
+    </template>
+  </bo-grid-readonly>
 
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+  <!-- -- API오류로그 탭 -------------------------------------------------- -->
+  <bo-grid-readonly v-if="uiState.activeTab==='error'"
+    :columns="errorColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded"
+    @set-page="setPage" @size-change="onSizeChange">
+
+    <template #toolbar-actions>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
+        <button class="btn btn-secondary btn-xs" @click="toggleExpandAll">{{ allExpanded.value ? '전체닫기' : '전체펼치기' }}</button>
+        <button class="btn btn-danger btn-xs" @click="handleClearLog">로그비우기</button>
+      </div>
+    </template>
+
+    <template #cell-_exp="{ row, idx }">
+      <td style="text-align:center;color:#bbb;font-size:11px;user-select:none;cursor:pointer;" @click="toggleRow(row.logId||idx)">{{ isExpanded(row.logId||idx) ? '▲' : '▼' }}</td>
+    </template>
+    <template #cell-reqMethod="{ row }">
+      <td style="cursor:pointer;" @click="toggleRow(row.logId)"><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod || '-' }}</span></td>
+    </template>
+    <template #cell-reqPath="{ row }">
+      <td style="font-family:monospace;font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.reqPath" @click="toggleRow(row.logId)">{{ row.reqPath || '-' }}</td>
+    </template>
+    <template #cell-errorType="{ row }">
+      <td style="font-size:12px;color:#e74c3c;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.errorType" @click="toggleRow(row.logId)">{{ row.errorType || '-' }}</td>
+    </template>
+    <template #cell-errorMsg="{ row }">
+      <td style="font-size:12px;color:#555;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.errorMsg" @click="toggleRow(row.logId)">{{ row.errorMsg || '-' }}</td>
+    </template>
+    <template #cell-reqIp="{ row }">
+      <td style="font-family:monospace;font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.reqIp || '-' }}</td>
+    </template>
+    <template #cell-userId="{ row }">
+      <td style="font-size:12px;color:#555;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.userId || '-' }}</td>
+    </template>
+    <template #cell-uiNm="{ row }">
+      <td style="font-size:12px;color:#555;cursor:pointer;" @click="toggleRow(row.logId)">
+        <span v-if="row.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) }}</span>
+        <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa;"> &gt; </span>
+        <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
+        <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc;">-</span>
+      </td>
+    </template>
+    <template #cell-traceId="{ row }">
+      <td style="font-family:monospace;font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.traceId" @click="toggleRow(row.logId)">{{ row.traceId || '-' }}</td>
+    </template>
+    <template #cell-regDate="{ row }">
+      <td style="font-size:12px;white-space:nowrap;cursor:pointer;" @click="toggleRow(row.logId)">{{ String(row.regDate || '').slice(0, 19) }}</td>
+    </template>
+
+    <template #row-expand="{ row, colspan }">
+      <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
+          <div>
+            <div style="font-weight:700;color:#e74c3c;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">🚨 오류 정보</div>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td><td style="font-family:monospace;word-break:break-all;">{{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td><td><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod }}</span></td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td><td>{{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td><td style="font-family:monospace;">{{ row.reqIp || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td><td>{{ row.userId || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td><td>{{ row.appTypeCd || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">오류유형</td><td style="color:#e74c3c;font-weight:600;word-break:break-all;">{{ row.errorType || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">오류메시지</td><td style="color:#c0392b;word-break:break-all;">{{ row.errorMsg || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td><td style="font-family:monospace;font-size:11px;">{{ row.serverNm || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td><td><span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">{{ row.profile }}</span><span v-else>-</span></td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td><td>{{ String(row.regDate||'').slice(0,19) }}</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">🏷 X-헤더 (호출 추적)</div>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ fnDecode(row.cmdNm) || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td><td style="font-family:monospace;font-size:11px;">{{ row.fileNm || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td><td style="font-family:monospace;font-size:11px;">{{ row.funcNm || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td><td style="font-family:monospace;">{{ row.lineNo || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.traceId || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">로거</td><td style="font-size:11px;word-break:break-all;">{{ row.loggerNm || '-' }}</td></tr>
+              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.threadNm || '-' }}</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-weight:700;color:#c0392b;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">📋 스택트레이스</div>
+            <div v-if="row.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">{{ row.stackTrace }}</div>
+            <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">스택트레이스 없음</div>
+          </div>
+        </div>
+      </td>
+    </template>
+  </bo-grid-readonly>
 </div>
 `,
 };

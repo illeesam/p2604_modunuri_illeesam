@@ -223,126 +223,24 @@ window.SyBatchMng = {
       }, 1500);
     };
 
-    /* -- Cron 프리셋 / 편집 모달 -- */
-    const CRON_PRESETS = [
-      { label: '매일 자정',       value: '0 0 * * *'   },
-      { label: '매일 01:00',     value: '0 1 * * *'   },
-      { label: '매일 02:00',     value: '0 2 * * *'   },
-      { label: '매시간',          value: '0 * * * *'   },
-      { label: '2시간마다',       value: '0 */2 * * *' },
-      { label: '매주 일요일 자정', value: '0 0 * * 0'   },
-      { label: '매월 1일 08:00', value: '0 8 1 * *'   },
-    ];
-    const CRON_FIELDS = [
-      { key: 'minute',  label: '분',   placeholder: '0', hint: '0-59, */n' },
-      { key: 'hour',    label: '시',   placeholder: '0', hint: '0-23, */n' },
-      { key: 'day',     label: '일',   placeholder: '*', hint: '1-31, *'   },
-      { key: 'month',   label: '월',   placeholder: '*', hint: '1-12, *'   },
-      { key: 'weekday', label: '요일', placeholder: '*', hint: '0-6 (일=0)' },
-    ];
+    /* -- Cron 편집 모달 (BoCronModal 컴포넌트로 위임) -- */
+    const cronModal = reactive({ show: false, rowIdx: null, value: '0 0 * * *' });
 
-    const cronPicker = reactive({
-      show: false, rowIdx: null,
-      minute: '0', hour: '0', day: '*', month: '*', weekday: '*',
-      preview: '0 0 * * *',
-    });
-
-    /* 배치 updateCronPreview */
-    const updateCronPreview = () => {
-      cronPicker.preview = `${cronPicker.minute} ${cronPicker.hour} ${cronPicker.day} ${cronPicker.month} ${cronPicker.weekday}`;
-    };
-
-    const cfCronPresetLabel = computed(() => {
-      const m = CRON_PRESETS.find(p => p.value === cronPicker.preview);
-      return m ? m.label : '';
-    });
-
-    /* -- Cron → 한국어 설명 -- */
-    const cronToKorean = (expr) => {
-      if (!expr) return '';
-      const pts = expr.trim().split(/\s+/);
-      if (pts.length !== 5) return '';
-      const [min, hour, day, month, weekday] = pts;
-      const WD = ['일', '월', '화', '수', '목', '금', '토'];
-
-      /* 배치 t */
-      const t = (h, m) => {
-        if (h === '*') return '';
-        const hh = String(h).padStart(2, '0');
-        const mm = (m === '*' ? '00' : String(m).padStart(2, '0'));
-        return ` ${hh}:${mm}`;
-      };
-      // 매분
-      if (min === '*' && hour === '*' && day === '*' && month === '*' && weekday === '*') return '매분 실행';
-      // N분마다
-      const minN = min.match(/^\*\/(\d+)$/);
-      if (minN && hour === '*' && day === '*' && month === '*' && weekday === '*') return `${minN[1]}분마다 실행`;
-      // 매시간 (on specific minute)
-      if (hour === '*' && day === '*' && month === '*' && weekday === '*') {
-        return min === '0' ? '매시간 실행' : `매시간 ${min}분에 실행`;
-      }
-      // N시간마다
-      const hourN = hour.match(/^\*\/(\d+)$/);
-      if (hourN && day === '*' && month === '*' && weekday === '*') {
-        return `${hourN[1]}시간마다 실행${min !== '0' && min !== '*' ? ` (${min}분)` : ''}`;
-      }
-      // 매년 Mo월 D일 H:M
-      if (month !== '*' && day !== '*' && weekday === '*') {
-        const mo = month.match(/^\*\/(\d+)$/) ? `${month.match(/^\*\/(\d+)$/)[1]}개월마다` : `${month}월`;
-        return `매년 ${mo} ${day}일${t(hour, min)} 실행`;
-      }
-      // 매주 요일 H:M
-      if (day === '*' && month === '*' && weekday !== '*') {
-        const wds = weekday.split(',').map(w => {
-          const n = parseInt(w);
-          return isNaN(n) ? w : (WD[n % 7] + '요일');
-        }).join(', ');
-        return `매주 ${wds}${t(hour, min)} 실행`;
-      }
-      // 매월 D일 H:M
-      if (month === '*' && weekday === '*' && day !== '*') {
-        const ds = day.match(/^\*\/(\d+)$/) ? `${day.match(/^\*\/(\d+)$/)[1]}일마다` : `${day}일`;
-        return `매월 ${ds}${t(hour, min)} 실행`;
-      }
-      // 매일 H:M
-      if (day === '*' && month === '*' && weekday === '*') {
-        return `매일${t(hour, min)} 실행`;
-      }
-      return '';
-    };
-
-    const cfCronDesc = computed(() => cronToKorean(cronPicker.preview));
-
-    /* 배치 openCronPicker */
+    /* 배치 openCronPicker — 행의 cronExpr 로 모달 오픈 */
     const openCronPicker = (realIdx) => {
       const row = gridRows[realIdx];
       if (!row || row._row_status === 'D') return;
-      cronPicker.rowIdx = realIdx;
-      const pts = (row.cronExpr || '0 0 * * *').split(' ');
-      cronPicker.minute  = pts[0] || '*';
-      cronPicker.hour    = pts[1] || '*';
-      cronPicker.day     = pts[2] || '*';
-      cronPicker.month   = pts[3] || '*';
-      cronPicker.weekday = pts[4] || '*';
-      cronPicker.preview = row.cronExpr || '0 0 * * *';
-      cronPicker.show = true;
+      cronModal.rowIdx = realIdx;
+      cronModal.value  = row.cronExpr || '0 0 * * *';
+      cronModal.show   = true;
     };
 
-    /* 배치 applyCronPreset */
-    const applyCronPreset = (value) => {
-      const pts = value.split(' ');
-      cronPicker.minute = pts[0]; cronPicker.hour = pts[1];
-      cronPicker.day = pts[2]; cronPicker.month = pts[3]; cronPicker.weekday = pts[4];
-      cronPicker.preview = value;
-    };
-
-    /* 배치 applyCron */
-    const applyCron = () => {
-      if (cronPicker.rowIdx !== null) {
-        const row = gridRows[cronPicker.rowIdx];
-        if (row) { row.cronExpr = cronPicker.preview; onCellChange(row); }
+    /* 배치 onCronApply — BoCronModal @apply(cronExpr) */
+    const onCronApply = (cronExpr) => {
+      if (cronModal.rowIdx !== null) {
+        const row = gridRows[cronModal.rowIdx];
+        if (row) { row.cronExpr = cronExpr; onCellChange(row); }
       }
-      cronPicker.show = false;
     };
 
     /* -- 드래그 -- */
@@ -385,15 +283,29 @@ window.SyBatchMng = {
 
 
 
+    /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+    const gridColumns = [
+      { key: 'pathId',        label: '표시경로',     style: 'min-width:140px;' },
+      { key: 'batchNm',       label: '배치명',       style: 'min-width:120px;', edit: 'text', placeholder: '배치명' },
+      { key: 'batchCode',     label: '배치코드',     style: 'min-width:160px;', edit: 'text', mono: true, placeholder: 'BATCH_CODE' },
+      { key: 'cronExpr',      label: 'Cron 표현식',  style: 'min-width:170px;' },
+      { key: 'batchStatusCd', label: '활성',         style: 'width:62px;' },
+      { key: 'batchDesc',     label: '설명',         style: 'min-width:130px;', edit: 'text', placeholder: '설명' },
+      { key: 'batchLastRun',  label: '최근실행',     style: 'width:110px;' },
+      { key: 'batchRunStatus',label: '실행상태',     style: 'width:72px;' },
+      { key: 'siteNm',        label: '사이트',       style: 'width:55px;' },
+      { key: 'runNow',        label: '',             style: 'width:36px;' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectNode,
+      selectNode, gridColumns,
       cfSiteNm, searchParam, handleDateRangeChange,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
-      CRON_PRESETS, CRON_FIELDS, cronPicker, openCronPicker, applyCronPreset, applyCron, updateCronPreview, cfCronPresetLabel, cfCronDesc,
+      cronModal, openCronPicker, onCronApply,
       onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, fnRunBadge, fnStatusClass,
       exportExcel,
@@ -403,7 +315,7 @@ window.SyBatchMng = {
 <div>
   <div class="page-title">배치스케즐관리</div>  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -430,11 +342,7 @@ window.SyBatchMng = {
         <option value="">옵션선택</option>
         <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   
@@ -444,171 +352,87 @@ window.SyBatchMng = {
 
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_batch</span></span>
-        <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
-      </div>
-      <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="sy_batch" :selected="uiState.selectedPath" @select="selectNode" />
-      </div>
-    </div>
+    <bo-path-tree-card biz-cd="sy_batch" title="표시경로" :show-biz-cd="true"
+      :selected="uiState.selectedPath" @select="selectNode" />
     <div>
 <!-- -- CRUD 그리드 --------------------------------------------------------- -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배치목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
-      </div>
-    </div>
+  <bo-grid-crud
+    :columns="gridColumns" :rows="gridRows" row-key="batchId"
+    list-title="배치목록" :show-export="true"
+    v-model:focusedIdx="uiState.focusedIdx"
+    v-model:checkAll="uiState.checkAll"
+    @add="addRow" @save="handleSave"
+    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+    @cell-change="onCellChange" @export="exportExcel">
 
-    <div style="overflow-x:auto;max-height:480px;overflow-y:auto;">
-    <table class="bo-table crud-grid" style="min-width:1000px;">
-      <thead>
-        <tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th style="min-width:140px;">표시경로</th>
-          <th class="col-drag"></th>
-          <th class="col-id">ID</th>
-          <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
-          <th style="min-width:120px;">배치명</th>
-          <th style="min-width:160px;">배치코드</th>
-          <th style="min-width:170px;">Cron 표현식</th>
-          <th style="width:62px;">활성</th>
-          <th style="min-width:130px;">설명</th>
-          <th style="width:110px;">최근실행</th>
-          <th style="width:72px;">실행상태</th>
-          <th style="width:55px;">사이트</th>
-          <th style="width:36px;"></th>
-          <th class="col-act-cancel"></th>
-          <th class="col-act-delete"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="gridRows.length===0">
-          <td colspan="17" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-        </tr>
-        <tr v-else v-for="(row, idx) in gridRows" :key="row.batchId"
-          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
-          draggable="true"
-          @click="setFocused(idx)"
-          @dragstart="onDragStart(idx)"
-          @dragover="onDragOver($event, idx)"
-          @dragend="onDragEnd">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-          <td>
-              <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
-                <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
-                <button type="button" @click="openPathPick(row)" title="표시경로 선택"
-                  :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
-                  @mouseover="$event.currentTarget.style.background='#eef2ff'"
-                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
-              </div>
-            </td>
-          <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
-          <td class="col-id-val">{{ row.batchId > 0 ? row.batchId : 'NEW' }}</td>
-          <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
-          <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
-          <td><input class="grid-input" v-model="row.batchNm" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="배치명" /></td>
-          <td><input class="grid-input grid-mono" v-model="row.batchCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="BATCH_CODE" style="text-transform:uppercase;" /></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:3px;">
-              <input class="grid-input grid-mono" v-model="row.cronExpr" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
-              <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs" style="flex-shrink:0;padding:2px 5px;font-size:11px;" title="Cron 편집" @click.stop="openCronPicker(idx)">🕐</button>
-            </div>
-          </td>
-          <td>
-            <select class="grid-select" v-model="row.batchStatusCd" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px;">
-              <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-            </select>
-          </td>
-          <td><input class="grid-input" v-model="row.batchDesc" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="설명" /></td>
-          <td style="font-size:11px;color:#555;text-align:center;white-space:nowrap;">{{ row.batchLastRun }}</td>
-          <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(row.batchRunStatus)">{{ row.batchRunStatus }}</span></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
-          <td style="text-align:center;">
-            <button v-if="row._row_status!=='I' && row._row_status!=='D'" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
-          </td>
-          <td class="col-act-cancel-val">
-            <button v-if="['U','I','D'].includes(row._row_status)" class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-          </td>
-          <td class="col-act-delete-val">
-            <button v-if="['N','U'].includes(row._row_status)" class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
+    <template #head>
+      <th style="min-width:140px;">표시경로</th>
+      <th style="min-width:120px;">배치명</th>
+      <th style="min-width:160px;">배치코드</th>
+      <th style="min-width:170px;">Cron 표현식</th>
+      <th style="width:62px;">활성</th>
+      <th style="min-width:130px;">설명</th>
+      <th style="width:110px;">최근실행</th>
+      <th style="width:72px;">실행상태</th>
+      <th style="width:55px;">사이트</th>
+      <th style="width:36px;"></th>
+    </template>
 
-  <!-- -- Cron 편집 모달 (position:fixed, grid 위치 무관) -- -->
-  <div v-if="cronPicker && cronPicker.show"
-    style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;"
-    @click.self="cronPicker.show=false">
-    <div style="background:#fff;border-radius:16px;width:500px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,.28),0 2px 8px rgba(0,0,0,.08);overflow:hidden;border:1px solid rgba(255,255,255,.6);">
-
-      <!-- -- 헤더 --------------------------------------------------------- -->
-      <div style="padding:14px 20px;border-bottom:1px solid #ffc9d6;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);">
-        <div style="font-weight:800;font-size:15px;color:#9f2946;letter-spacing:-0.2px;"><span style="color:#e8587a;font-size:9px;margin-right:8px;vertical-align:middle;">●</span>🕐 Cron 표현식 설정</div>
-        <button @click="cronPicker.show=false" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.6);border:none;font-size:13px;line-height:1;cursor:pointer;color:#9f2946;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='#e8587a';this.style.color='#fff';this.style.transform='rotate(90deg)';" onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='#9f2946';this.style.transform='';">✕</button>
-      </div>
-
-      <!-- -- 본문 --------------------------------------------------------- -->
-      <div style="padding:20px;">
-
-        <!-- -- 프리셋 7개 --------------------------------------------------- -->
-        <div style="margin-bottom:18px;">
-          <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">⚡ 프리셋</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <button v-for="p in CRON_PRESETS" :key="p.value"
-              class="btn btn-sm"
-              :style="cronPicker.preview===p.value
-                ? 'border:1.5px solid #e8587a;color:#e8587a;background:#fff5f7;font-weight:600;'
-                : 'border:1px solid #d9d9d9;color:#555;background:#fff;'"
-              style="font-size:11px;padding:5px 10px;text-align:left;line-height:1.5;"
-              @click="applyCronPreset(p.value)">
-              <div>{{ p.label }}</div>
-              <code style="font-size:10px;opacity:.65;letter-spacing:.5px;">{{ p.value }}</code>
-            </button>
-          </div>
+    <template #cell-pathId="{ row }">
+      <td>
+        <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
+          <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
+          <button type="button" @click.stop="openPathPick(row)" title="표시경로 선택"
+            :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
+            @mouseover="$event.currentTarget.style.background='#eef2ff'"
+            @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
         </div>
+      </td>
+    </template>
 
-        <!-- -- 수동 설정 ---------------------------------------------------- -->
-        <div style="margin-bottom:18px;">
-          <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">🔧 수동 설정</div>
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
-            <div v-for="f in CRON_FIELDS" :key="f.key" style="text-align:center;">
-              <div style="font-size:10px;color:#888;margin-bottom:4px;font-weight:600;">{{ f.label }}</div>
-              <input class="form-control"
-                style="text-align:center;font-family:monospace;font-size:13px;padding:5px 4px;"
-                :placeholder="f.placeholder" :title="f.hint"
-                v-model="cronPicker[f.key]" @input="updateCronPreview" />
-              <div style="font-size:9px;color:#bbb;margin-top:3px;">{{ f.hint }}</div>
-            </div>
-          </div>
+    <template #cell-cronExpr="{ row, idx }">
+      <td>
+        <div style="display:flex;align-items:center;gap:3px;">
+          <input class="grid-input grid-mono" v-model="row.cronExpr" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
+          <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs" style="flex-shrink:0;padding:2px 5px;font-size:11px;" title="Cron 편집" @click.stop="openCronPicker(idx)">🕐</button>
         </div>
+      </td>
+    </template>
 
-        <!-- -- 미리보기 ----------------------------------------------------- -->
-        <div style="background:#f0f8ff;border:1px solid #dbeafe;border-radius:6px;padding:10px 16px;display:flex;align-items:center;gap:12px;">
-          <span style="font-size:11px;color:#888;flex-shrink:0;">결과</span>
-          <code style="font-size:16px;color:#2563eb;font-weight:700;letter-spacing:2px;">{{ cronPicker.preview }}</code>
-          <span v-if="cfCronDesc" style="font-size:11px;color:#e8587a;margin-left:auto;font-weight:600;">{{ cfCronDesc }}</span>
-        </div>
-      </div>
+    <template #cell-batchStatusCd="{ row }">
+      <td>
+        <select class="grid-select" v-model="row.batchStatusCd" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px;">
+          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+      </td>
+    </template>
 
-      <!-- -- 푸터 --------------------------------------------------------- -->
-      <div style="padding:12px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px;background:#fafafa;">
-        <button class="btn btn-secondary" @click="cronPicker.show=false">취소</button>
-        <button class="btn btn-primary" @click="applyCron">적용</button>
-      </div>
-    </div>
-  </div>
+    <template #cell-batchLastRun="{ row }">
+      <td style="font-size:11px;color:#555;text-align:center;white-space:nowrap;">{{ row.batchLastRun }}</td>
+    </template>
+    <template #cell-batchRunStatus="{ row }">
+      <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(row.batchRunStatus)">{{ row.batchRunStatus }}</span></td>
+    </template>
+    <template #cell-siteNm>
+      <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
+    </template>
+    <template #cell-runNow="{ row }">
+      <td style="text-align:center;">
+        <button v-if="row._row_status!=='I' && row._row_status!=='D'" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
+      </td>
+    </template>
+
+    <template #row-cancel="{ row, idx }">
+      <button v-if="['U','I','D'].includes(row._row_status)" class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+    </template>
+    <template #row-delete="{ row, idx }">
+      <button v-if="['N','U'].includes(row._row_status)" class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+    </template>
+  </bo-grid-crud>
+
+  <!-- -- Cron 편집 모달 (BoCronModal 컴포넌트) -- -->
+  <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
+    @apply="onCronApply" @close="cronModal.show=false" />
 </div>
 
   <!-- -- 배치 실행이력 (grid 직접 자식 → 전체 폭) -- -->

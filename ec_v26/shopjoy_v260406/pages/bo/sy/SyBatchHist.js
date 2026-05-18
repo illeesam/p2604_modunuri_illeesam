@@ -120,131 +120,133 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       handleSearchData().then(() => { onExpandAll(); });
     });
 
+    /* BoGridReadonly 컬럼 정의 (전 셀 #cell-* 슬롯, 행펼침 #row-expand) */
+    const histColumns = [
+      { key: 'batchLogId', label: '로그ID',  style: 'width:46px;' },
+      { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;' },
+      { key: 'batchCode',  label: '배치코드', style: 'min-width:150px;' },
+      { key: 'runAt',      label: '실행일시', style: 'width:128px;' },
+      { key: 'durationMs', label: '소요시간', style: 'width:66px;text-align:center;' },
+      { key: 'runStatus',  label: '결과',    style: 'width:66px;text-align:center;' },
+      { key: 'message',    label: '메시지',  style: 'width:auto;' },
+      { key: '_exp',       label: '',        style: 'width:32px;' },
+    ];
+    const fnRowExpanded = (log) => isExpanded(log.batchLogId);
+    const fnHistRowStyle = (log) =>
+      log.runStatus === '실패' ? 'background:#fff5f5;' : log.runStatus === '실행중' ? 'background:#f0f8ff;' : '';
+
     return { batches, batchLogs, uiState, cfBatchOptions,
       pager,
       setPage, onSizeChange, onSearch,
       isExpanded, toggleExpand, onExpandAll, onCollapseAll,
       fnRunBadge, fnFmtDuration,
       codes,
+      histColumns, fnRowExpanded, fnHistRowStyle,
     };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:0 0 10px;border-bottom:2px solid #f0f0f0;margin-bottom:12px;">
-    <div style="font-size:13px;font-weight:700;color:#555;">
-      <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
-      배치 실행이력
-      <span class="list-count" style="margin-left:4px;">{{ pager.pageTotalCount }}건</span>
-    </div>
-    <div style="display:flex;gap:6px;align-items:center;">
-      <button class="btn btn-secondary btn-sm" @click="onExpandAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">▼ 전체펼치기</button>
-      <button class="btn btn-secondary btn-sm" @click="onCollapseAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">▲ 전체접기</button>
-      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
-        <option value="">배치 전체</option>
-        <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">{{ b.label }}</option>
-      </select>
-      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus">
-        <option value="">상태 전체</option>
-        <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <button class="btn btn-primary btn-sm" @click="onSearch" style="height:30px;font-size:12px;padding:2px 12px;">조회</button>
-    </div>
-  </div>
+  <bo-grid-readonly
+    :columns="histColumns" :rows="batchLogs" :pager="pager" row-key="batchLogId"
+    list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"
+    :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded"
+    empty-text="실행이력이 없습니다."
+    @set-page="setPage" @size-change="onSizeChange">
 
-  <table class="bo-table" style="font-size:12px;">
-    <thead>
-      <tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <th style="width:46px;">로그ID</th>
-        <th style="min-width:120px;">배치명</th>
-        <th style="min-width:150px;">배치코드</th>
-        <th style="width:128px;">실행일시</th>
-        <th style="width:66px;text-align:center;">소요시간</th>
-        <th style="width:66px;text-align:center;">결과</th>
-        <th style="width:auto;">메시지</th>
-        <th style="width:32px;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-if="batchLogs.length===0">
-        <td colspan="9" style="text-align:center;color:#aaa;padding:24px;">실행이력이 없습니다.</td>
-      </tr>
+    <template #toolbar-actions>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="btn btn-secondary btn-sm" @click="onExpandAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">▼ 전체펼치기</button>
+        <button class="btn btn-secondary btn-sm" @click="onCollapseAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">▲ 전체접기</button>
+        <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
+          <option value="">배치 전체</option>
+          <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">{{ b.label }}</option>
+        </select>
+        <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus">
+          <option value="">상태 전체</option>
+          <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+        <button class="btn btn-primary btn-sm" @click="onSearch" style="height:30px;font-size:12px;padding:2px 12px;">조회</button>
+      </div>
+    </template>
 
-      <template v-for="(log, idx) in batchLogs" :key="log.batchLogId">
-        <!-- ── 데이터 행 ──────────────────────────────────────────────────── -->
-        <tr :style="log.runStatus==='실패' ? 'background:#fff5f5;' : log.runStatus==='실행중' ? 'background:#f0f8ff;' : ''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td style="color:#aaa;">{{ log.batchLogId }}</td>
-          <td style="font-weight:500;">{{ log.batchNm }}</td>
-          <td><code style="font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ log.batchCode }}</code></td>
-          <td style="color:#555;font-family:monospace;font-size:11px;">{{ log.runAt }}</td>
-          <td style="text-align:center;color:#666;">{{ fnFmtDuration(log.durationMs) }}</td>
-          <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(log.runStatus)">{{ log.runStatus }}</span></td>
-          <td style="font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;"
-            :style="log.runStatus==='실패' ? 'color:#dc2626;' : 'color:#555;'">
-            {{ log.message }}
-          </td>
-          <td style="text-align:center;padding:0 4px;">
-            <button
-              @click="toggleExpand(log.batchLogId)"
-              :title="isExpanded(log.batchLogId) ? '접기' : '상세 펼치기'"
-              style="background:none;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;padding:2px 5px;font-size:11px;color:#888;line-height:1;transition:all .15s;"
-              :style="isExpanded(log.batchLogId) ? 'background:#f0f8ff;border-color:#2563eb;color:#2563eb;' : ''">
-              {{ isExpanded(log.batchLogId) ? '▲' : '▼' }}
-            </button>
-          </td>
-        </tr>
+    <template #cell-batchLogId="{ row }">
+      <td style="color:#aaa;" @click="toggleExpand(row.batchLogId)">{{ row.batchLogId }}</td>
+    </template>
+    <template #cell-batchNm="{ row }">
+      <td style="font-weight:500;" @click="toggleExpand(row.batchLogId)">{{ row.batchNm }}</td>
+    </template>
+    <template #cell-batchCode="{ row }">
+      <td @click="toggleExpand(row.batchLogId)"><code style="font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.batchCode }}</code></td>
+    </template>
+    <template #cell-runAt="{ row }">
+      <td style="color:#555;font-family:monospace;font-size:11px;" @click="toggleExpand(row.batchLogId)">{{ row.runAt }}</td>
+    </template>
+    <template #cell-durationMs="{ row }">
+      <td style="text-align:center;color:#666;" @click="toggleExpand(row.batchLogId)">{{ fnFmtDuration(row.durationMs) }}</td>
+    </template>
+    <template #cell-runStatus="{ row }">
+      <td style="text-align:center;" @click="toggleExpand(row.batchLogId)"><span class="badge badge-xs" :class="fnRunBadge(row.runStatus)">{{ row.runStatus }}</span></td>
+    </template>
+    <template #cell-message="{ row }">
+      <td style="font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;cursor:pointer;"
+        :style="row.runStatus==='실패' ? 'color:#dc2626;' : 'color:#555;'" @click="toggleExpand(row.batchLogId)">
+        {{ row.message }}
+      </td>
+    </template>
+    <template #cell-_exp="{ row }">
+      <td style="text-align:center;padding:0 4px;">
+        <button
+          @click="toggleExpand(row.batchLogId)"
+          :title="isExpanded(row.batchLogId) ? '접기' : '상세 펼치기'"
+          style="background:none;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;padding:2px 5px;font-size:11px;color:#888;line-height:1;transition:all .15s;"
+          :style="isExpanded(row.batchLogId) ? 'background:#f0f8ff;border-color:#2563eb;color:#2563eb;' : ''">
+          {{ isExpanded(row.batchLogId) ? '▲' : '▼' }}
+        </button>
+      </td>
+    </template>
 
-        <!-- ── 상세 펼침 행 ────────────────────────────────────────────────── -->
-        <tr v-if="isExpanded(log.batchLogId)"
-          :style="log.runStatus==='실패' ? 'background:#fff0f0;' : 'background:#f8faff;'">
-          <td colspan="8" style="padding:0;">
-            <div style="padding:12px 16px 14px;border-top:1px dashed #e0e0e0;">
-              <!-- ── 요약 메타 ────────────────────────────────────────────── -->
-              <div style="display:flex;gap:24px;margin-bottom:10px;flex-wrap:wrap;">
-                <div>
-                  <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">배치명</span>
-                  <span style="font-size:12px;font-weight:600;color:#333;">{{ log.batchNm }}</span>
-                </div>
-                <div>
-                  <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">배치코드</span>
-                  <code style="font-size:12px;color:#2563eb;">{{ log.batchCode }}</code>
-                </div>
-                <div>
-                  <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">실행일시</span>
-                  <span style="font-size:12px;font-family:monospace;color:#555;">{{ log.runAt }}</span>
-                </div>
-                <div>
-                  <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">소요시간</span>
-                  <span style="font-size:12px;color:#555;">{{ fnFmtDuration(log.durationMs) }}</span>
-                </div>
-                <div>
-                  <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">실행결과</span>
-                  <span class="badge badge-xs" :class="fnRunBadge(log.runStatus)">{{ log.runStatus }}</span>
-                </div>
-              </div>
-              <!-- ── 메시지 전체 ───────────────────────────────────────────── -->
-              <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:4px;">메시지</div>
-              <div style="font-size:12px;padding:8px 12px;border-radius:5px;line-height:1.7;white-space:pre-wrap;word-break:break-all;"
-                :style="log.runStatus==='실패'
-                  ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
-                  : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">{{ log.message }}</div>
-              <!-- ── 상세 내용 (detail 있을 때만) ─────────────────────────────── -->
-              <template v-if="log.detail">
-                <div style="font-size:11px;font-weight:600;color:#888;margin:10px 0 4px;">상세 내용</div>
-                <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"
-                  :style="log.runStatus==='실패'
-                    ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
-                    : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ log.detail }}</pre>
-              </template>
+    <template #row-expand="{ row, colspan }">
+      <td :colspan="colspan" style="padding:0;"
+        :style="row.runStatus==='실패' ? 'background:#fff0f0;' : 'background:#f8faff;'">
+        <div style="padding:12px 16px 14px;border-top:1px dashed #e0e0e0;">
+          <div style="display:flex;gap:24px;margin-bottom:10px;flex-wrap:wrap;">
+            <div>
+              <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">배치명</span>
+              <span style="font-size:12px;font-weight:600;color:#333;">{{ row.batchNm }}</span>
             </div>
-          </td>
-        </tr>
-      </template>
-    </tbody>
-  </table>
-
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+            <div>
+              <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">배치코드</span>
+              <code style="font-size:12px;color:#2563eb;">{{ row.batchCode }}</code>
+            </div>
+            <div>
+              <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">실행일시</span>
+              <span style="font-size:12px;font-family:monospace;color:#555;">{{ row.runAt }}</span>
+            </div>
+            <div>
+              <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">소요시간</span>
+              <span style="font-size:12px;color:#555;">{{ fnFmtDuration(row.durationMs) }}</span>
+            </div>
+            <div>
+              <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">실행결과</span>
+              <span class="badge badge-xs" :class="fnRunBadge(row.runStatus)">{{ row.runStatus }}</span>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:4px;">메시지</div>
+          <div style="font-size:12px;padding:8px 12px;border-radius:5px;line-height:1.7;white-space:pre-wrap;word-break:break-all;"
+            :style="row.runStatus==='실패'
+              ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
+              : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">{{ row.message }}</div>
+          <template v-if="row.detail">
+            <div style="font-size:11px;font-weight:600;color:#888;margin:10px 0 4px;">상세 내용</div>
+            <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"
+              :style="row.runStatus==='실패'
+                ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
+                : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ row.detail }}</pre>
+          </template>
+        </div>
+      </td>
+    </template>
+  </bo-grid-readonly>
 </div>
 `,
 };

@@ -188,15 +188,31 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
 
+    const gridColumns = [
+      { key: 'pathId',        label: '표시경로' },
+      { key: 'vendorId',      label: 'ID' },
+      { key: 'vendorType',    label: '업체유형' },
+      { key: 'vendorNm',      label: '업체명', sortKey: 'nm' },
+      { key: 'ceoNm',         label: '대표자' },
+      { key: 'vendorNo',      label: '사업자번호' },
+      { key: 'vendorPhone',   label: '전화번호' },
+      { key: 'vendorEmail',   label: '이메일' },
+      { key: 'contractDate',  label: '계약일', sortKey: 'reg' },
+      { key: 'vendorStatusCd', label: '상태' },
+      { key: 'siteNm',        label: '사이트명' },
+    ];
+    const fnRowStyle = (v) => uiStateDetail.selectedId === v.vendorId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+
     // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vendors, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectNode, codes, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
+      selectNode, codes, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+      gridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
   <div class="page-title">업체정보</div>  <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -216,11 +232,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <option v-for="c in codes.vendor_status" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   
 
@@ -228,53 +240,63 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_vendor</span></span>
-        <span v-if="selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
-      </div>
-      <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="sy_vendor" :selected="selectedPath" @select="selectNode" />
-      </div>
-    </div>
+    <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="true"
+      :selected="selectedPath" @select="selectNode" />
     <div>
-<div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>거래처목록 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-      </div>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th style="min-width:140px;">표시경로</th>
-        <th>ID</th><th>업체유형</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">업체명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>대표자</th><th>사업자번호</th><th>전화번호</th><th>이메일</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">계약일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="vendors.length===0"><td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(v, idx) in vendors" :key="v.vendorId" :style="selectedId===v.vendorId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:v.pathId!=null?'#374151':'#9ca3af',fontWeight:v.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(v.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(v)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
-          <td>{{ v.vendorId }}</td>
-          <td><span class="badge" :class="fnTypeBadge(v.vendorType)">{{ v.vendorType }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(v.vendorId)" :style="selectedId===v.vendorId?'color:#e8587a;font-weight:700;':''">{{ v.vendorNm }}<span v-if="selectedId===v.vendorId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ v.ceoNm }}</td>
-          <td>{{ v.vendorNo }}</td>
-          <td>{{ v.vendorPhone }}</td>
-          <td style="font-size:12px;">{{ v.vendorEmail }}</td>
-          <td>{{ v.contractDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(v.vendorStatusCd)">{{ v.vendorStatusCd }}</span></td>
+      <bo-grid-readonly
+        :columns="gridColumns" :rows="vendors" :pager="pager" row-key="vendorId"
+        list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
+        :sort-state="uiState" :row-style="fnRowStyle"
+        @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+
+        <template #toolbar-actions>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+            <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+          </div>
+        </template>
+        <template #head-actions><th style="text-align:right">관리</th></template>
+
+        <template #cell-pathId="{ row }">
+          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row.pathId!=null?'#374151':'#9ca3af',fontWeight:row.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span><button type="button" @click.stop="openPathPick(row)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
+        </template>
+        <template #cell-vendorId="{ row }">
+          <td>{{ row.vendorId }}</td>
+        </template>
+        <template #cell-vendorType="{ row }">
+          <td><span class="badge" :class="fnTypeBadge(row.vendorType)">{{ row.vendorType }}</span></td>
+        </template>
+        <template #cell-vendorNm="{ row }">
+          <td><span class="title-link" @click="handleLoadDetail(row.vendorId)" :style="selectedId===row.vendorId?'color:#e8587a;font-weight:700;':''">{{ row.vendorNm }}<span v-if="selectedId===row.vendorId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+        </template>
+        <template #cell-ceoNm="{ row }">
+          <td>{{ row.ceoNm }}</td>
+        </template>
+        <template #cell-vendorNo="{ row }">
+          <td>{{ row.vendorNo }}</td>
+        </template>
+        <template #cell-vendorPhone="{ row }">
+          <td>{{ row.vendorPhone }}</td>
+        </template>
+        <template #cell-vendorEmail="{ row }">
+          <td style="font-size:12px;">{{ row.vendorEmail }}</td>
+        </template>
+        <template #cell-contractDate="{ row }">
+          <td>{{ row.contractDate }}</td>
+        </template>
+        <template #cell-vendorStatusCd="{ row }">
+          <td><span class="badge" :class="fnStatusBadge(row.vendorStatusCd)">{{ row.vendorStatusCd }}</span></td>
+        </template>
+        <template #cell-siteNm>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+        </template>
+        <template #row-actions="{ row }">
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(v.vendorId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(v)">삭제</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.vendorId)">수정</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
           </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+        </template>
+      </bo-grid-readonly>
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

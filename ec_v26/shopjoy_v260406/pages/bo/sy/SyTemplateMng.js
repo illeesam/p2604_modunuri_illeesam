@@ -213,15 +213,29 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
 
+    const gridColumns = [
+      { key: 'pathId',         label: '표시경로' },
+      { key: 'templateId',     label: 'ID' },
+      { key: 'templateTypeCd', label: '템플릿유형' },
+      { key: 'templateCode',   label: '템플릿코드' },
+      { key: 'templateNm',     label: '템플릿명', sortKey: 'nm' },
+      { key: 'templateSubject', label: '제목(Subject)' },
+      { key: 'useYn',          label: '사용여부' },
+      { key: 'regDate',        label: '등록일', sortKey: 'reg' },
+      { key: 'siteNm',         label: '사이트명' },
+    ];
+    const fnRowStyle = (t) => uiStateDetail.selectedId === t.templateId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+
     // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), templates, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectNode, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel, onSort, sortIcon };
+      selectNode, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel, onSort, sortIcon,
+      gridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
   <div class="page-title">템플릿관리</div>  <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -240,11 +254,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <option value="">사용여부 전체</option><option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
 
@@ -252,53 +262,59 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_template</span></span>
-        <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
-      </div>
-      <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="sy_template" :selected="uiState.selectedPath" @select="selectNode" />
-      </div>
-    </div>
+    <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="true"
+      :selected="uiState.selectedPath" @select="selectNode" />
     <div>
-<div class="card">
-    <div class="toolbar">
-      <span class="list-title">템플릿목록 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-      </div>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th style="min-width:140px;">표시경로</th>
-        <th>ID</th><th>템플릿유형</th><th>템플릿코드</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">템플릿명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>제목(Subject)</th><th>사용여부</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="templates.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(t, idx) in templates" :key="t.templateId" :style="selectedId===t.templateId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:t.pathId!=null?'#374151':'#9ca3af',fontWeight:t.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(t.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(t)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
-          <td>{{ t.templateId }}</td>
-          <td><span class="badge" :class="fnTypeBadge(t.templateTypeCd)">{{ t.templateTypeCd }}</span></td>
-          <td><code style="font-size:11px;color:#555;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ t.templateCode || '-' }}</code></td>
-          <td><span class="title-link" @click="handleLoadDetail(t.templateId)" :style="selectedId===t.templateId?'color:#e8587a;font-weight:700;':''">{{ t.templateNm }}<span v-if="selectedId===t.templateId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="font-size:12px;color:#555;">{{ t.templateSubject || '-' }}</td>
-          <td><span class="badge" :class="fnUseYnBadge(t.useYn)">{{ t.useYn === 'Y' ? '사용' : '미사용' }}</span></td>
-          <td>{{ t.regDate }}</td>
+      <bo-grid-readonly
+        :columns="gridColumns" :rows="templates" :pager="pager" row-key="templateId"
+        list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
+        :sort-state="uiState" :row-style="fnRowStyle"
+        @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+
+        <template #toolbar-actions>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+            <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+          </div>
+        </template>
+        <template #head-actions><th style="text-align:right">관리</th></template>
+
+        <template #cell-pathId="{ row }">
+          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row.pathId!=null?'#374151':'#9ca3af',fontWeight:row.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span><button type="button" @click.stop="openPathPick(row)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
+        </template>
+        <template #cell-templateId="{ row }">
+          <td>{{ row.templateId }}</td>
+        </template>
+        <template #cell-templateTypeCd="{ row }">
+          <td><span class="badge" :class="fnTypeBadge(row.templateTypeCd)">{{ row.templateTypeCd }}</span></td>
+        </template>
+        <template #cell-templateCode="{ row }">
+          <td><code style="font-size:11px;color:#555;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.templateCode || '-' }}</code></td>
+        </template>
+        <template #cell-templateNm="{ row }">
+          <td><span class="title-link" @click="handleLoadDetail(row.templateId)" :style="selectedId===row.templateId?'color:#e8587a;font-weight:700;':''">{{ row.templateNm }}<span v-if="selectedId===row.templateId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+        </template>
+        <template #cell-templateSubject="{ row }">
+          <td style="font-size:12px;color:#555;">{{ row.templateSubject || '-' }}</td>
+        </template>
+        <template #cell-useYn="{ row }">
+          <td><span class="badge" :class="fnUseYnBadge(row.useYn)">{{ row.useYn === 'Y' ? '사용' : '미사용' }}</span></td>
+        </template>
+        <template #cell-regDate="{ row }">
+          <td>{{ row.regDate }}</td>
+        </template>
+        <template #cell-siteNm>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+        </template>
+        <template #row-actions="{ row }">
           <td><div class="actions">
-            <button class="btn btn-secondary btn-sm" @click="showPreview(t)">미리보기</button>
-            <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="openSend(t)">발송</button>
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(t.templateId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(t)">삭제</button>
+            <button class="btn btn-secondary btn-sm" @click="showPreview(row)">미리보기</button>
+            <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="openSend(row)">발송</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.templateId)">수정</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
           </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+        </template>
+      </bo-grid-readonly>
 
   <!-- -- 미리보기/발송 모달 (position:fixed) ---------------------------------- -->
   <template-preview-modal v-if="previewModal && previewModal.show"

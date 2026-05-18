@@ -257,10 +257,23 @@ window.SyPathMng = {
       return allPaths.find(r => r.pathId === pathId)?.pathLabel || String(pathId);
     };
 
+    /* BoGridEdit 컬럼 정의 — 전 셀 슬롯 (기존 onCellChange 변경추적 보존) */
+    const gridColumns = [
+      { key: 'rowStatus',    label: '상태',     style: 'width:60px;text-align:center;' },
+      { key: 'pathId',       label: 'ID',       style: 'width:60px;text-align:center;' },
+      { key: 'bizCd',        label: '업무코드', style: 'width:120px;' },
+      { key: 'parentPathId', label: '부모경로', style: 'width:160px;' },
+      { key: 'pathLabel',    label: '경로 라벨' },
+      { key: 'sortOrd',      label: '정렬',     style: 'width:60px;text-align:center;' },
+      { key: 'useYn',        label: '사용',     style: 'width:70px;text-align:center;' },
+      { key: 'pathRemark',   label: '비고',     style: 'width:160px;' },
+    ];
+    const fnRowClass = (r) => 'status-' + (r._status || '');
+
     return {
       uiState, searchParam, codes,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      gridRows, cfDirtyRows, pager, setPage, onSizeChange,
+      gridRows, cfDirtyRows, pager, setPage, onSizeChange, gridColumns, fnRowClass,
       onSearch, onReset, onCellChange, addRow, cancelRow, deleteRow, handleSave,
       parentModal, cfParentTree, openParentModal, closeParentModal, toggleParentNode, selectParent, getParentLabel,
     };
@@ -272,7 +285,7 @@ window.SyPathMng = {
 
   <!-- -- 검색 -- -->
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area @search="onSearch" @reset="onReset">
       <label class="search-label">업무코드</label>
       <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:180px" @keyup.enter="onSearch">
       <label class="search-label">라벨/비고</label>
@@ -291,138 +304,88 @@ window.SyPathMng = {
         <option value="">전체</option>
         <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   <!-- -- 좌 트리 + 우 그리드 -- -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
 
     <!-- 트리 -->
-    <div class="card" style="padding:12px;position:sticky;top:0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:600;color:#555">📂 경로 트리 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_path</span></span>
-        <div v-if="uiState.selectedPathId != null" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectNode(null)">전체보기</div>
-      </div>
-      <div style="display:flex;gap:4px;margin-bottom:8px">
-        <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>
-        <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
-      </div>
-      <div style="max-height:65vh;overflow:auto">
-        <bo-path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
-          :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
-      </div>
-    </div>
+    <bo-local-tree-card title="경로 트리" biz-cd="sy_path" :sticky="true"
+      :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
+      :on-toggle="toggleNode"
+      @select="selectNode" @expand-all="expandAll" @collapse-all="collapseAll" />
 
-    <!-- 그리드 -->
-    <div class="card">
-      <div class="toolbar">
-        <span class="list-title">
-          경로 목록
-          <span v-if="uiState.selectedPathId != null" style="font-size:12px;color:#1677ff;margin-left:6px">
-            — {{ getParentLabel(uiState.selectedPathId) }} 하위
+    <!-- 그리드 (BoGridEdit) -->
+    <bo-grid-edit
+      :columns="gridColumns" :rows="gridRows" :pager="pager" row-key="pathId"
+      list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
+      :row-class="fnRowClass"
+      @save="handleSave" @set-page="setPage" @size-change="onSizeChange">
+
+      <template #toolbar-actions>
+        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
+      </template>
+      <template #head-actions>관리</template>
+
+      <template #cell-rowStatus="{ row }">
+        <td style="text-align:center">
+          <span class="badge badge-xs"
+            :class="{ 'badge-green': row._status==='N', 'badge-orange': row._status==='U', 'badge-gray': !row._status }">
+            {{ row._status || 'N' }}
           </span>
-          <span class="list-count">{{ pager.pageTotalCount }}건</span>
-        </span>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-          <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
-        </div>
-      </div>
-
-      <table class="bo-table" style="table-layout:fixed">
-        <colgroup>
-          <col style="width:40px">
-          <col style="width:60px">
-          <col style="width:120px">
-          <col style="width:160px">
-          <col>
-          <col style="width:60px">
-          <col style="width:70px">
-          <col style="width:160px">
-          <col style="width:50px">
-        </colgroup>
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th>상태</th>
-          <th>ID</th>
-          <th>업무코드</th>
-          <th>부모경로</th>
-          <th>경로 라벨</th>
-          <th style="text-align:center">정렬</th>
-          <th style="text-align:center">사용</th>
-          <th>비고</th>
-          <th></th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!gridRows.length">
-            <td colspan="10" style="text-align:center;color:#aaa;padding:30px">데이터가 없습니다.</td>
-          </tr>
-          <tr v-else v-for="(r, idx) in gridRows" :key="r.pathId" :class="'status-' + (r._status || '')">
-            <td style="text-align:center;font-size:11px;color:#999">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td style="text-align:center">
-              <span class="badge badge-xs"
-                :class="{ 'badge-green': r._status==='N', 'badge-orange': r._status==='U', 'badge-gray': !r._status }">
-                {{ r._status || 'N' }}
-              </span>
-            </td>
-            <td style="text-align:center;font-size:11px;color:#999">{{ r.pathId > 0 ? r.pathId : 'NEW' }}</td>
-            <td style="padding:3px 6px">
-              <input class="grid-input" :value="r.bizCd" @input="onCellChange(r,'bizCd',$event.target.value)" placeholder="biz_cd">
-            </td>
-            <td style="padding:3px 6px">
-              <button class="btn btn-secondary btn-xs" style="font-size:11px;width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                @click.stop="openParentModal(r)">
-                {{ getParentLabel(r.parentPathId) }} ▼
-              </button>
-            </td>
-            <td style="padding:3px 6px">
-              <input class="grid-input" :value="r.pathLabel" @input="onCellChange(r,'pathLabel',$event.target.value)" placeholder="경로 라벨">
-            </td>
-            <td style="padding:3px 4px">
-              <input class="grid-input grid-num" type="number" :value="r.sortOrd" @input="onCellChange(r,'sortOrd',Number($event.target.value))" style="text-align:center">
-            </td>
-            <td style="padding:3px 4px;text-align:center">
-              <select class="grid-select" :value="r.useYn" @change="onCellChange(r,'useYn',$event.target.value)" style="width:52px">
-                <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-              </select>
-            </td>
-            <td style="padding:3px 6px">
-              <input class="grid-input" :value="r.pathRemark" @input="onCellChange(r,'pathRemark',$event.target.value)" placeholder="비고">
-            </td>
-            <td style="text-align:center;padding:2px">
-              <button v-if="r._status==='N'" class="btn btn-secondary btn-xs" @click.stop="cancelRow(r)">취소</button>
-              <button v-else class="btn btn-danger btn-xs" @click.stop="deleteRow(r)">삭제</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-    </div>
+        </td>
+      </template>
+      <template #cell-pathId="{ row }">
+        <td style="text-align:center;font-size:11px;color:#999">{{ row.pathId > 0 ? row.pathId : 'NEW' }}</td>
+      </template>
+      <template #cell-bizCd="{ row }">
+        <td style="padding:3px 6px">
+          <input class="grid-input" :value="row.bizCd" @input="onCellChange(row,'bizCd',$event.target.value)" placeholder="biz_cd">
+        </td>
+      </template>
+      <template #cell-parentPathId="{ row }">
+        <td style="padding:3px 6px">
+          <button class="btn btn-secondary btn-xs" style="font-size:11px;width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+            @click.stop="openParentModal(row)">
+            {{ getParentLabel(row.parentPathId) }} ▼
+          </button>
+        </td>
+      </template>
+      <template #cell-pathLabel="{ row }">
+        <td style="padding:3px 6px">
+          <input class="grid-input" :value="row.pathLabel" @input="onCellChange(row,'pathLabel',$event.target.value)" placeholder="경로 라벨">
+        </td>
+      </template>
+      <template #cell-sortOrd="{ row }">
+        <td style="padding:3px 4px">
+          <input class="grid-input grid-num" type="number" :value="row.sortOrd" @input="onCellChange(row,'sortOrd',Number($event.target.value))" style="text-align:center">
+        </td>
+      </template>
+      <template #cell-useYn="{ row }">
+        <td style="padding:3px 4px;text-align:center">
+          <select class="grid-select" :value="row.useYn" @change="onCellChange(row,'useYn',$event.target.value)" style="width:52px">
+            <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+          </select>
+        </td>
+      </template>
+      <template #cell-pathRemark="{ row }">
+        <td style="padding:3px 6px">
+          <input class="grid-input" :value="row.pathRemark" @input="onCellChange(row,'pathRemark',$event.target.value)" placeholder="비고">
+        </td>
+      </template>
+      <template #row-actions="{ row }">
+        <button v-if="row._status==='N'" class="btn btn-secondary btn-xs" @click.stop="cancelRow(row)">취소</button>
+        <button v-else class="btn btn-danger btn-xs" @click.stop="deleteRow(row)">삭제</button>
+      </template>
+    </bo-grid-edit>
   </div>
 
-  <!-- -- 부모경로 선택 모달 -- -->
-  <teleport to="body" v-if="parentModal.show">
-    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-         @click.self="closeParentModal">
-      <div style="background:#fff;border-radius:14px;padding:22px;width:420px;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.22)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <strong style="font-size:15px">부모경로 선택</strong>
-          <button class="btn btn-secondary btn-xs" @click="closeParentModal">닫기</button>
-        </div>
-        <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
-               @click="selectParent(null)">(루트 — 상위없음)</div>
-          <bo-path-parent-selector :node="cfParentTree" :expanded="parentModal.expanded"
-            :on-toggle="toggleParentNode" :on-select="selectParent" :depth="0" />
-        </div>
-      </div>
-    </div>
-  </teleport>
+  <!-- -- 부모경로 선택 모달 (BoTreeSelectorModal) -- -->
+  <bo-tree-selector-modal :show="parentModal.show" title="부모경로 선택"
+    :node="cfParentTree" :expanded="parentModal.expanded" :on-toggle="toggleParentNode"
+    root-label="(루트 — 상위없음)"
+    @select="selectParent" @close="closeParentModal" />
 </div>`,
 };
 

@@ -208,17 +208,29 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const exportExcel = () => coUtil.cofExportCsv(alarms, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channelCd'},{label:'제목',key:'alarmTitle'},{label:'메시지',key:'alarmMsg'},{label:'상태',key:'alarmStatusCd'},{label:'발송일',key:'alarmSendDate'}], '알림목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
-
+    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    const gridColumns = [
+      { key: 'pathId',        label: '표시경로' },
+      { key: 'alarmTypeCd',   label: '유형' },
+      { key: 'alarmTitle',    label: '제목', sortKey: 'nm' },
+      { key: 'alarmMsg',      label: '메시지' },
+      { key: 'targetTypeCd',  label: '대상' },
+      { key: 'alarmSendDate', label: '발송일' },
+      { key: 'alarmStatusCd', label: '상태' },
+      { key: 'siteNm',        label: '사이트명' },
+      { key: 'regDate',       label: '등록일', sortKey: 'reg' },
+    ];
+    const fnRowStyle = (a) => detailModal.dtlId === a.alarmId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
     // -- return ---------------------------------------------------------------
 
     return { alarms, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectNode, codes, cfSiteNm, searchParam, handleDateRangeChange, pager, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
+      selectNode, codes, cfSiteNm, searchParam, handleDateRangeChange, pager, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, gridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
   <div class="page-title">알림관리</div>  <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -240,11 +252,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <span class="search-label">발송일</span>
       <input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   
 
@@ -252,49 +260,57 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_alarm</span></span>
-        <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
-      </div>
-      <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="sy_alarm" :selected="uiState.selectedPath" @select="selectNode" />
-      </div>
-    </div>
+    <bo-path-tree-card biz-cd="sy_alarm" title="표시경로" :show-biz-cd="true"
+      :selected="uiState.selectedPath" @select="selectNode" />
     <div>
-<div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>알림목록 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
+  <bo-grid-readonly
+    :columns="gridColumns" :rows="alarms" :pager="pager" row-key="alarmId"
+    list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
+    :sort-state="uiState" :row-style="fnRowStyle"
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+
+    <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th style="min-width:140px;">표시경로</th><th>유형</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">제목 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>메시지</th><th>대상</th><th>발송일</th><th>상태</th><th>사이트명</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th style="text-align:right">관리</th></tr></thead>
-      <tbody>
-        <tr v-if="alarms.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(a, idx) in alarms" :key="a.alarmId" :style="detailModal.dtlId===a.alarmId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:a.pathId!=null?'#374151':'#9ca3af',fontWeight:a.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(a.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(a)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
-          <td><span class="badge" :class="fnTypeBadge(a.alarmTypeCd)">{{ a.alarmTypeCd }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(a.alarmId)" :style="detailModal.dtlId===a.alarmId?'color:#e8587a;font-weight:700;':''">{{ a.alarmTitle }}<span v-if="detailModal.dtlId===a.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.alarmMsg }}</td>
-          <td><span class="badge" :class="fnTargetBadge(a.targetTypeCd)">{{ a.targetTypeCd }}</span></td>
-          <td>{{ a.alarmSendDate || '-' }}</td>
-          <td><span class="badge" :class="fnStatusBadge(a.alarmStatusCd)">{{ a.alarmStatusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td>{{ a.regDate }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(a.alarmId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(a)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+    </template>
+    <template #head-actions><th style="text-align:right">관리</th></template>
+
+    <template #cell-pathId="{ row }">
+      <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row.pathId!=null?'#374151':'#9ca3af',fontWeight:row.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(row)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
+    </template>
+    <template #cell-alarmTypeCd="{ row }">
+      <td><span class="badge" :class="fnTypeBadge(row.alarmTypeCd)">{{ row.alarmTypeCd }}</span></td>
+    </template>
+    <template #cell-alarmTitle="{ row }">
+      <td><span class="title-link" @click="handleLoadDetail(row.alarmId)" :style="detailModal.dtlId===row.alarmId?'color:#e8587a;font-weight:700;':''">{{ row.alarmTitle }}<span v-if="detailModal.dtlId===row.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+    </template>
+    <template #cell-alarmMsg="{ row }">
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row.alarmMsg }}</td>
+    </template>
+    <template #cell-targetTypeCd="{ row }">
+      <td><span class="badge" :class="fnTargetBadge(row.targetTypeCd)">{{ row.targetTypeCd }}</span></td>
+    </template>
+    <template #cell-alarmSendDate="{ row }">
+      <td>{{ row.alarmSendDate || '-' }}</td>
+    </template>
+    <template #cell-alarmStatusCd="{ row }">
+      <td><span class="badge" :class="fnStatusBadge(row.alarmStatusCd)">{{ row.alarmStatusCd }}</span></td>
+    </template>
+    <template #cell-siteNm>
+      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+    </template>
+    <template #cell-regDate="{ row }">
+      <td>{{ row.regDate }}</td>
+    </template>
+    <template #row-actions="{ row }">
+      <td><div class="actions">
+        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.alarmId)">수정</button>
+        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+      </div></td>
+    </template>
+  </bo-grid-readonly>
 </div>
 
   <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->

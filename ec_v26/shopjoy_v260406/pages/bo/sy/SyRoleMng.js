@@ -555,10 +555,22 @@ window.SyRoleMng = {
     const onTreeCatChange = () => { handleSearchList(); };
 
 
+    /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+    const gridColumns = [
+      { key: 'roleCode',     label: '역할코드', style: 'width:120px;',    edit: 'text', mono: true },
+      { key: 'roleNm',       label: '역할명',   style: 'min-width:150px;' },
+      { key: 'parentRoleId', label: '상위역할', style: 'min-width:120px;' },
+      { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
+      { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: codes.use_yn },
+      { key: 'roleCat',      label: '역할구분', style: 'width:100px;' },
+      { key: 'roleRemark',   label: '비고',     edit: 'text' },
+      { key: 'siteNm',       label: '사이트명', style: 'width:80px;' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return {
-      uiState, codes,
+      uiState, codes, gridColumns,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
@@ -579,7 +591,7 @@ window.SyRoleMng = {
 <div>
   <div class="page-title">역할관리</div>  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -598,11 +610,7 @@ window.SyRoleMng = {
         <option value="">사용여부 전체</option>
         <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   
@@ -612,133 +620,95 @@ window.SyRoleMng = {
 
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할</span></div>
-      <select v-model="searchParam.treeCatFilter" @change="onTreeCatChange" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
-        <option value="">역할구분 전체</option>
-        <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
-      </select>
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
-      </div>
-      <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
-      </div>
-    </div>
+    <bo-local-tree-card title="역할"
+      :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
+      :on-toggle="toggleNode"
+      @select="selectNode" @expand-all="expandAll" @collapse-all="collapseAll">
+      <template #filter>
+        <select v-model="searchParam.treeCatFilter" @change="onTreeCatChange" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
+          <option value="">역할구분 전체</option>
+          <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
+        </select>
+      </template>
+    </bo-local-tree-card>
     <div>
 <!-- -- CRUD 그리드 --------------------------------------------------------- -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
-      </div>
-    </div>
+  <bo-grid-crud
+    :columns="gridColumns" :rows="gridRows" row-key="roleId"
+    list-title="역할목록" :show-export="true" :draggable="false"
+    v-model:focusedIdx="uiState.focusedIdx"
+    v-model:checkAll="uiState.checkAll"
+    @add="addRow" @save="handleSave"
+    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+    @cell-change="onCellChange" @export="exportExcel">
 
-    <div style="max-height:480px;overflow-y:auto;">
-    <table class="bo-table crud-grid">
-      <thead>
-        <tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th class="col-id">ID</th>
-          <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
-          <th style="width:120px;">역할코드</th>
-          <th style="min-width:150px;">역할명</th>
-          <th style="min-width:120px;">상위역할</th>
-          <th class="col-ord">순서</th>
-          <th class="col-use">사용여부</th>
-          <th style="width:100px;">역할구분</th>
-          <th>비고</th>
-          <th style="width:80px;">사이트명</th>
-          <th class="col-act-cancel"></th>
-          <th class="col-act-setting" style="width:48px;"></th>
-          <th class="col-act-delete"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="gridRows.length===0">
-          <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-        </tr>
-        <tr v-else v-for="(row, idx) in gridRows" :key="row.roleId"
-          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
-          @click="setFocused(idx)">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-          <td class="col-id-val">{{ row.roleId > 0 ? row.roleId : 'NEW' }}</td>
-          <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
-          <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
-          <td><input class="grid-input grid-mono" v-model="row.roleCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+    <template #head>
+      <th style="width:120px;">역할코드</th>
+      <th style="min-width:150px;">역할명</th>
+      <th style="min-width:120px;">상위역할</th>
+      <th class="col-ord">순서</th>
+      <th class="col-use">사용여부</th>
+      <th style="width:100px;">역할구분</th>
+      <th>비고</th>
+      <th style="width:80px;">사이트명</th>
+    </template>
 
-          <!-- -- 역할명 (블릿 트리) -------------------------------------------- -->
-          <td style="padding:3px 6px;">
-            <div style="display:flex;align-items:center;">
-              <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                              fontSize: row._depth===0?'7px':'12px', flexShrink:0,
-                              color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-              <input class="grid-input" v-model="row.roleNm" :disabled="row._row_status==='D'"
-                @input="onCellChange(row)" style="flex:1;" />
-            </div>
-          </td>
+    <template #cell-roleNm="{ row }">
+      <td style="padding:3px 6px;">
+        <div style="display:flex;align-items:center;">
+          <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
+                          fontSize: row._depth===0?'7px':'12px', flexShrink:0,
+                          color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
+          <input class="grid-input" v-model="row.roleNm" :disabled="row._row_status==='D'"
+            @input="onCellChange(row)" style="flex:1;" />
+        </div>
+      </td>
+    </template>
 
-          <!-- -- 상위역할 --------------------------------------------------- -->
-          <td style="padding:3px 8px;">
-            <div style="display:flex;align-items:center;gap:5px;">
-              <span v-if="row.parentRoleId"
-                style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentNm(row.parentRoleId)">{{ parentNm(row.parentRoleId) }}</span>
-              <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
-              <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위역할 선택"
-                @click.stop="openParentModal(row)">🔍</button>
-            </div>
-          </td>
+    <template #cell-parentRoleId="{ row }">
+      <td style="padding:3px 8px;">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span v-if="row.parentRoleId"
+            style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+            :title="parentNm(row.parentRoleId)">{{ parentNm(row.parentRoleId) }}</span>
+          <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
+          <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
+            style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위역할 선택"
+            @click.stop="openParentModal(row)">🔍</button>
+        </div>
+      </td>
+    </template>
 
-          <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td>
-            <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-            </select>
-          </td>
-          <td style="padding:3px 6px;">
-            <select class="grid-select" :value="(effectiveRoleCat(row)[0] || '')" :disabled="row._row_status==='D'"
-              @change="$event.target.value ? (row.roleCat=[$event.target.value], onCellChange(row)) : (row.roleCat=[], onCellChange(row))"
-              :style="{color: ROLE_CAT_COLOR[effectiveRoleCat(row)[0]] || '#9ca3af', fontWeight: effectiveRoleCat(row).length ? 700 : 400}">
-              <option value="">-</option>
-              <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
-            </select>
-          </td>
-          <td><input class="grid-input" v-model="row.roleRemark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
-          <td class="col-act-cancel-val">
-            <button v-if="['U','I','D'].includes(row._row_status)"
-              class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-          </td>
-          <td style="text-align:center;">
-            <button v-if="row.roleId > 0 && row._row_status !== 'D'"
-              class="btn btn-blue btn-xs"
-              :style="{ fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
-                        outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
-              @click.stop="onOpenSetting(idx)"
-              title="하단 메뉴접근권한 / 대상사용자 설정">설정</button>
-          </td>
-          <td class="col-act-delete-val">
-            <button v-if="row.roleId > 0 && row._row_status !== 'D'"
-              class="btn btn-blue btn-xs" style="margin-right:4px;"
-              @click.stop="onOpenSetting(idx)"
-              title="하단 메뉴접근권한 / 대상사용자 설정">상세</button>
-            <button v-if="['N','U'].includes(row._row_status)"
-              class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
+    <template #cell-roleCat="{ row }">
+      <td style="padding:3px 6px;">
+        <select class="grid-select" :value="(effectiveRoleCat(row)[0] || '')" :disabled="row._row_status==='D'"
+          @change="$event.target.value ? (row.roleCat=[$event.target.value], onCellChange(row)) : (row.roleCat=[], onCellChange(row))"
+          :style="{color: ROLE_CAT_COLOR[effectiveRoleCat(row)[0]] || '#9ca3af', fontWeight: effectiveRoleCat(row).length ? 700 : 400}">
+          <option value="">-</option>
+          <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
+        </select>
+      </td>
+    </template>
+
+    <template #cell-siteNm>
+      <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
+    </template>
+
+    <template #row-cancel="{ row, idx }">
+      <button v-if="['U','I','D'].includes(row._row_status)"
+        class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+    </template>
+    <template #row-delete="{ row, idx }">
+      <button v-if="row.roleId > 0 && row._row_status !== 'D'"
+        class="btn btn-blue btn-xs" style="margin-right:4px;"
+        :style="{ fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
+                  outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
+        @click.stop="onOpenSetting(idx)"
+        title="하단 메뉴접근권한 / 대상사용자 설정">설정</button>
+      <button v-if="['N','U'].includes(row._row_status)"
+        class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+    </template>
+  </bo-grid-crud>
 
   <!-- -- 하단: 메뉴 배분 + 사용자 배분 --------------------------------------------- -->
   <div id="role-config-panel" style="display:flex;gap:16px;align-items:flex-start;">

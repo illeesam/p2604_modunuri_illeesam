@@ -232,16 +232,30 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 사용자(관리자) exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(users, [{label:'ID',key:'userId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'userNm'},{label:'이메일',key:'userEmail'},{label:'연락처',key:'userPhone'},{label:'권한',key:'roleNm'},{label:'부서',key:'deptNm'},{label:'상태',key:'userStatusCd'},{label:'최종로그인',key:'lastLoginDate'}], '사용자목록.csv');
 
+    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    const gridColumns = [
+      { key: 'loginId',      label: '로그인ID' },
+      { key: 'userNm',       label: '이름', sortKey: 'nm' },
+      { key: 'userEmail',    label: '이메일' },
+      { key: 'userPhone',    label: '연락처' },
+      { key: 'roleNm',       label: '권한' },
+      { key: 'deptNm',       label: '부서' },
+      { key: 'userStatusCd', label: '상태' },
+      { key: 'lastLoginDate',label: '최근로그인', sortKey: 'reg' },
+      { key: 'siteNm',       label: '사이트명' },
+    ];
+    const fnRowStyle = (u) => uiStateDetail.selectedId === u.userId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), users, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, handleDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), users, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, handleDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, gridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
   <div class="page-title">사용자관리</div>
 
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -265,11 +279,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <select v-model="searchParam.dateType">
         <option v-for="c in codes.user_date_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
@@ -284,40 +294,51 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </div>
     </div>
     <div>
-<div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+  <bo-grid-readonly
+    :columns="gridColumns" :rows="users" :pager="pager" row-key="userId"
+    list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
+    :sort-state="uiState" :row-style="fnRowStyle"
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+
+    <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>로그인ID</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">이름 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>이메일</th><th>연락처</th><th>권한</th><th>부서</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">최근로그인 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="users.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(u, idx) in users" :key="u.userId" :style="uiStateDetail.selectedId===u.userId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ u.loginId }}</code></td>
-          <td><span class="title-link" @click="handleLoadDetail(u.userId)" :style="uiStateDetail.selectedId===u.userId?'color:#e8587a;font-weight:700;':''">{{ u.userNm }}<span v-if="uiStateDetail.selectedId===u.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="font-size:12px;">{{ u.userEmail }}</td>
-          <td>{{ u.userPhone }}</td>
-          <td><span class="badge" :class="fnRoleBadge(u.roleNm)">{{ u.roleNm }}</span></td>
-          <td style="font-size:12px;color:#666;">{{ u.deptNm }}</td>
-          <td><span class="badge" :class="fnStatusBadge(u.userStatusCd)">{{ u.userStatusCd }}</span></td>
-          <td style="font-size:12px;color:#888;">{{ u.lastLoginDate ? u.lastLoginDate.substring(0,10) : '-' }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(u.userId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(u)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+    </template>
+    <template #head-actions><th style="text-align:right">관리</th></template>
+
+    <template #cell-loginId="{ row }">
+      <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.loginId }}</code></td>
+    </template>
+    <template #cell-userNm="{ row }">
+      <td><span class="title-link" @click="handleLoadDetail(row.userId)" :style="uiStateDetail.selectedId===row.userId?'color:#e8587a;font-weight:700;':''">{{ row.userNm }}<span v-if="uiStateDetail.selectedId===row.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+    </template>
+    <template #cell-userEmail="{ row }">
+      <td style="font-size:12px;">{{ row.userEmail }}</td>
+    </template>
+    <template #cell-roleNm="{ row }">
+      <td><span class="badge" :class="fnRoleBadge(row.roleNm)">{{ row.roleNm }}</span></td>
+    </template>
+    <template #cell-deptNm="{ row }">
+      <td style="font-size:12px;color:#666;">{{ row.deptNm }}</td>
+    </template>
+    <template #cell-userStatusCd="{ row }">
+      <td><span class="badge" :class="fnStatusBadge(row.userStatusCd)">{{ row.userStatusCd }}</span></td>
+    </template>
+    <template #cell-lastLoginDate="{ row }">
+      <td style="font-size:12px;color:#888;">{{ row.lastLoginDate ? row.lastLoginDate.substring(0,10) : '-' }}</td>
+    </template>
+    <template #cell-siteNm>
+      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+    </template>
+    <template #row-actions="{ row }">
+      <td><div class="actions">
+        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.userId)">수정</button>
+        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+      </div></td>
+    </template>
+  </bo-grid-readonly>
 </div>
 </div>
 <!-- 사용자 수정: 2열 그리드 밖 → 좌측 부서트리 영역까지 전체폭 사용 -->

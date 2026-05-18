@@ -140,17 +140,30 @@ window.SyI18nMng = {
       handleSearchData('DEFAULT');
     });
 
+    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    const gridColumns = [
+      { key: 'i18nKey',     label: '키 (i18n_key)' },
+      { key: 'i18nDesc',    label: '설명' },
+      { key: 'i18nScopeCd', label: '범위' },
+      { key: 'i18nCategory',label: '카테고리' },
+      { key: 'msgKo',       label: 'ko' },
+      { key: 'msgEn',       label: 'en' },
+      { key: 'msgJa',       label: 'ja' },
+      { key: 'useYn',       label: '사용' },
+    ];
+    const fnRowStyle = (row) => selectedId.value === row.i18nId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+
     // -- return ---------------------------------------------------------------
 
     return { uiState, codes, searchParam, pager, setPage, onSearch, onReset,
              i18nKeys, i18nMsgs, selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
-             LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange };
+             LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange, gridColumns, fnRowStyle };
   },
   template: `
 <div>
   <div class="page-title">다국어관리</div>
     <div class="card">
-      <div class="search-bar">
+      <bo-search-area @search="onSearch" @reset="onReset">
         <label class="search-label">키/설명</label>
         <bo-multi-check-select
           v-model="searchParam.searchType"
@@ -168,44 +181,39 @@ window.SyI18nMng = {
         </select>
         <label class="search-label">사용여부</label>
         <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-        <div class="search-actions">
-          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-          <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-        </div>
-      </div>
+      </bo-search-area>
     </div>
-    <div class="card">
-      <div class="toolbar">
-        <span class="list-title">다국어 키 목록</span>
-        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-      </div>
-      <table class="bo-table">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th>키 (i18n_key)</th><th>설명</th>
-          <th style="width:80px;text-align:center">범위</th>
-          <th style="width:80px">카테고리</th>
-          <th style="width:70px;text-align:center">ko</th>
-          <th style="width:70px;text-align:center">en</th>
-          <th style="width:70px;text-align:center">ja</th>
-          <th style="width:60px;text-align:center">사용</th>
-        </tr></thead>
-        <tbody>
-          <tr v-for="(row, idx) in i18nKeys" :key="row.i18nId" :class="{active:selectedId===row.i18nId}" @click="openDetail(row)" style="cursor:pointer">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td><code style="font-size:12px;color:#7c3aed">{{ row.i18nKey }}</code></td>
-            <td style="color:#666;font-size:12px">{{ row.i18nDesc }}</td>
-            <td style="text-align:center"><span :class="['badge',fnScopeBadge(row.i18nScopeCd)]">{{ row.i18nScopeCd }}</span></td>
-            <td style="font-size:12px;color:#888">{{ row.i18nCategory }}</td>
-            <td style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'ko') }}</td>
-            <td style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'en') }}</td>
-            <td style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'ja') }}</td>
-            <td style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span></td>
-          </tr>
-          <tr v-if="!i18nKeys.length"><td colspan="9" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
-        </tbody>
-      </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-    </div>
+    <bo-grid-readonly
+      :columns="gridColumns" :rows="i18nKeys" :pager="pager" row-key="i18nId"
+      list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
+      :row-style="fnRowStyle"
+      @set-page="setPage" @size-change="onSizeChange">
+
+      <template #cell-i18nKey="{ row }">
+        <td @click="openDetail(row)"><code style="font-size:12px;color:#7c3aed">{{ row.i18nKey }}</code></td>
+      </template>
+      <template #cell-i18nDesc="{ row }">
+        <td @click="openDetail(row)" style="color:#666;font-size:12px">{{ row.i18nDesc }}</td>
+      </template>
+      <template #cell-i18nScopeCd="{ row }">
+        <td @click="openDetail(row)" style="text-align:center"><span :class="['badge',fnScopeBadge(row.i18nScopeCd)]">{{ row.i18nScopeCd }}</span></td>
+      </template>
+      <template #cell-i18nCategory="{ row }">
+        <td @click="openDetail(row)" style="font-size:12px;color:#888">{{ row.i18nCategory }}</td>
+      </template>
+      <template #cell-msgKo="{ row }">
+        <td @click="openDetail(row)" style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'ko') }}</td>
+      </template>
+      <template #cell-msgEn="{ row }">
+        <td @click="openDetail(row)" style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'en') }}</td>
+      </template>
+      <template #cell-msgJa="{ row }">
+        <td @click="openDetail(row)" style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'ja') }}</td>
+      </template>
+      <template #cell-useYn="{ row }">
+        <td @click="openDetail(row)" style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span></td>
+      </template>
+    </bo-grid-readonly>
     <!-- -- 번역 편집 패널 ----------------------------------------------------- -->
     <div class="card" v-if="cfSelectedKey">
       <div class="toolbar">

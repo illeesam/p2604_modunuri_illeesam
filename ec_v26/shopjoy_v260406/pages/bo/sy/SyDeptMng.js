@@ -302,11 +302,23 @@ window.SyDeptMng = {
       '부서목록.csv'
     );
 
+    /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+    const gridColumns = [
+      { key: 'deptCode',     label: '부서코드', style: 'width:110px;',    edit: 'text', mono: true },
+      { key: 'deptNm',       label: '부서명',   style: 'min-width:190px;' },
+      { key: 'parentDeptId', label: '상위부서', style: 'min-width:150px;' },
+      { key: 'deptTypeCd',   label: '유형',     style: 'width:90px;',     edit: 'select', options: codes.dept_types.map(t => ({ value: t, label: t })) },
+      { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
+      { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: codes.use_yn },
+      { key: 'deptRemark',   label: '비고',     edit: 'text' },
+      { key: 'siteNm',       label: '사이트명', style: 'width:80px;' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, cfTypeOptions,
-      cfSiteNm,
+      cfSiteNm, gridColumns,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -321,7 +333,7 @@ window.SyDeptMng = {
   <div class="page-title">부서관리</div>
 
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -340,11 +352,7 @@ window.SyDeptMng = {
         <option value="">사용여부 전체</option>
         <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
@@ -360,102 +368,65 @@ window.SyDeptMng = {
     </div>
     <div>
 
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>부서목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
-      </div>
-    </div>
+  <bo-grid-crud
+    :columns="gridColumns" :rows="gridRows" row-key="deptId"
+    list-title="부서목록" :show-export="true" :draggable="false"
+    v-model:focusedIdx="uiState.focusedIdx"
+    v-model:checkAll="uiState.checkAll"
+    @add="addRow" @save="handleSave"
+    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+    @cell-change="onCellChange" @export="exportExcel">
 
-    <div style="max-height:480px;overflow-y:auto;">
-    <table class="bo-table crud-grid">
-      <thead>
-        <tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th class="col-id">ID</th>
-          <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
-          <th style="width:110px;">부서코드</th>
-          <th style="min-width:190px;">부서명</th>
-          <th style="min-width:150px;">상위부서</th>
-          <th style="width:90px;">유형</th>
-          <th class="col-ord">순서</th>
-          <th class="col-use">사용여부</th>
-          <th>비고</th>
-          <th style="width:80px;">사이트명</th>
-          <th class="col-act-cancel"></th>
-          <th class="col-act-delete"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="gridRows.length===0">
-          <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-        </tr>
-        <tr v-else v-for="(row, idx) in gridRows" :key="row.deptId"
-          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
-          @click="setFocused(idx)">
+    <template #head>
+      <th style="width:110px;">부서코드</th>
+      <th style="min-width:190px;">부서명</th>
+      <th style="min-width:150px;">상위부서</th>
+      <th style="width:90px;">유형</th>
+      <th class="col-ord">순서</th>
+      <th class="col-use">사용여부</th>
+      <th>비고</th>
+      <th style="width:80px;">사이트명</th>
+    </template>
 
-          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-          <td class="col-id-val">{{ row.deptId > 0 ? row.deptId : 'NEW' }}</td>
-          <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
-          <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
-          <td><input class="grid-input grid-mono" v-model="row.deptCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+    <template #cell-deptNm="{ row }">
+      <td style="padding:3px 6px;">
+        <div style="display:flex;align-items:center;">
+          <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
+                          fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
+                          color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
+          <input class="grid-input" v-model="row.deptNm" :disabled="row._row_status==='D'"
+            @input="onCellChange(row)" style="flex:1;" />
+        </div>
+      </td>
+    </template>
 
-          <!-- -- 부서명 (불릿 트리) -------------------------------------------- -->
-          <td style="padding:3px 6px;">
-            <div style="display:flex;align-items:center;">
-              <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                              fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
-                              color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-              <input class="grid-input" v-model="row.deptNm" :disabled="row._row_status==='D'"
-                @input="onCellChange(row)" style="flex:1;" />
-            </div>
-          </td>
+    <template #cell-parentDeptId="{ row }">
+      <td style="padding:3px 8px;">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span v-if="row.parentDeptId"
+            style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+            :title="parentNm(row.parentDeptId)">{{ parentNm(row.parentDeptId) }}</span>
+          <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
+          <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
+            style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위부서 선택"
+            @click.stop="openParentModal(row)">🔍</button>
+        </div>
+      </td>
+    </template>
 
-          <!-- -- 상위부서 --------------------------------------------------- -->
-          <td style="padding:3px 8px;">
-            <div style="display:flex;align-items:center;gap:5px;">
-              <span v-if="row.parentDeptId"
-                style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentNm(row.parentDeptId)">{{ parentNm(row.parentDeptId) }}</span>
-              <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
-              <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위부서 선택"
-                @click.stop="openParentModal(row)">🔍</button>
-            </div>
-          </td>
+    <template #cell-siteNm>
+      <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
+    </template>
 
-          <td>
-            <select class="grid-select" v-model="row.deptTypeCd" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option v-for="t in codes.dept_types" :key="t">{{ t }}</option>
-            </select>
-          </td>
-          <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td>
-            <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-            </select>
-          </td>
-          <td><input class="grid-input" v-model="row.deptRemark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
-          <td class="col-act-cancel-val">
-            <button v-if="['U','I','D'].includes(row._row_status)"
-              class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-          </td>
-          <td class="col-act-delete-val">
-            <button v-if="row._row_status == null || ['N','U'].includes(row._row_status)"
-              class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
+    <template #row-cancel="{ row, idx }">
+      <button v-if="['U','I','D'].includes(row._row_status)"
+        class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+    </template>
+    <template #row-delete="{ row, idx }">
+      <button v-if="row._row_status == null || ['N','U'].includes(row._row_status)"
+        class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+    </template>
+  </bo-grid-crud>
 
   <dept-tree-modal
     v-if="deptTreeModal && deptTreeModal.show" :exclude-id="deptTreeModal.targetRow && deptTreeModal.targetRow.deptId > 0 ? deptTreeModal.targetRow.deptId : null"

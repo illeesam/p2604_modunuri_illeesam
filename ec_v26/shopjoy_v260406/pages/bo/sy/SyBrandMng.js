@@ -287,9 +287,21 @@ window.SyBrandMng = {
 
     // -- return ---------------------------------------------------------------
 
+    /* BoGridCrud 호환 — 컬럼 정의 + local 모드 컬럼 hint */
+    const gridColumns = [
+      { key: 'pathId',      label: '표시경로', style: 'min-width:140px;' },
+      { key: 'brandCode',   label: '브랜드코드', style: 'min-width:110px;', edit: 'text', mono: true, placeholder: 'BRAND_CODE' },
+      { key: 'brandNm',     label: '브랜드명',  style: 'min-width:130px;', edit: 'text', placeholder: '브랜드명' },
+      { key: 'brandEnNm',   label: '영문명',    style: 'min-width:130px;', edit: 'text', placeholder: 'Brand Name' },
+      { key: 'logoUrl',     label: '로고 URL',  style: 'min-width:200px;' },
+      { key: 'sortOrd',     label: '순서',      cls: 'col-ord', edit: 'number' },
+      { key: 'useYn',       label: '사용여부',  cls: 'col-use', edit: 'select', options: codes.use_yn },
+    ];
+    const fnColTitle = (col) => cfIsLocalMode.value ? col.label : '';
+
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, handleDateRangeChange,
-      gridRows,
+      gridRows, gridColumns, fnColTitle,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -302,7 +314,7 @@ window.SyBrandMng = {
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <label class="search-label">업무코드</label>
       <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:160px" @keyup.enter="onSearch">
       <bo-multi-check-select
@@ -328,143 +340,71 @@ window.SyBrandMng = {
         <option value="">옵션선택</option>
         <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_brand</span></span>
-        <span v-if="uiState.selectedPath != null" @click="onPathSelect(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
-      </div>
-      <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="sy_brand" :show-biz-cd="true" :selected="uiState.selectedPath" @select="onPathSelect" />
-      </div>
-    </div>
+    <bo-path-tree-card biz-cd="sy_brand" title="표시경로" :show-biz-cd="true"
+      :selected="uiState.selectedPath" @select="onPathSelect" />
 
   <!-- -- CRUD 그리드 ------------------------------------------------------- -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
-        브랜드목록
-        <span v-if="uiState.selectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span>
-        <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span>
-      </span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
-      </div>
-    </div>
+  <bo-grid-crud
+    :columns="gridColumns" :rows="gridRows" row-key="brandId"
+    list-title="브랜드목록" :show-export="true"
+    v-model:focusedIdx="uiState.focusedIdx"
+    v-model:checkAll="uiState.checkAll"
+    :cell-title="fnColTitle"
+    @add="addRow" @save="handleSave"
+    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+    @cell-change="onCellChange" @export="exportExcel">
 
-    <div style="max-height:480px;overflow-y:auto;">
-    <table class="bo-table crud-grid">
-      <thead>
-        <tr>
-          <th class="col-drag"></th>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th class="col-id" :title="cfIsLocalMode ? 'ID' : ''">ID</th>
-          <th class="col-status" :title="cfIsLocalMode ? '상태' : ''">상태</th>
-          <th class="col-check" :title="cfIsLocalMode ? '체크' : ''"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
-          <th style="min-width:140px;" :title="cfIsLocalMode ? '표시경로' : ''"​>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
-          <th style="min-width:110px;" :title="cfIsLocalMode ? '브랜드코드' : ''">브랜드코드</th>
-          <th style="min-width:130px;" :title="cfIsLocalMode ? '브랜드명' : ''">브랜드명</th>
-          <th style="min-width:130px;" :title="cfIsLocalMode ? '영문명' : ''">영문명</th>
-          <th style="min-width:200px;" :title="cfIsLocalMode ? '로고 URL' : ''">로고 URL</th>
-          <th class="col-ord" :title="cfIsLocalMode ? '순서' : ''">순서</th>
-          <th class="col-use" :title="cfIsLocalMode ? '사용여부' : ''">사용여부</th>
-          <th class="col-act-cancel"></th>
-          <th class="col-act-delete"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="gridRows.length===0">
-          <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-        </tr>
-        <tr v-else v-for="(row, idx) in gridRows" :key="row.brandId"
-          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
-          draggable="true"
-          @click="setFocused(idx)"
-          @dragstart="onDragStart(idx)"
-          @dragover="onDragOver($event, idx)"
-          @dragend="onDragEnd">
+    <template #head>
+      <th style="min-width:140px;" :title="fnColTitle({label:'표시경로'})">표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
+      <th style="min-width:110px;" :title="fnColTitle({label:'브랜드코드'})">브랜드코드</th>
+      <th style="min-width:130px;" :title="fnColTitle({label:'브랜드명'})">브랜드명</th>
+      <th style="min-width:130px;" :title="fnColTitle({label:'영문명'})">영문명</th>
+      <th style="min-width:200px;" :title="fnColTitle({label:'로고 URL'})">로고 URL</th>
+      <th class="col-ord" :title="fnColTitle({label:'순서'})">순서</th>
+      <th class="col-use" :title="fnColTitle({label:'사용여부'})">사용여부</th>
+    </template>
 
-          <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
-          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-          <td class="col-id-val">{{ row.brandId > 0 ? row.brandId : 'NEW' }}</td>
-          <td class="col-status-val">
-            <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
-          </td>
-          <td class="col-check-val">
-            <input type="checkbox" v-model="row._row_check" />
-          </td>
-          <td>
-              <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
-                <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
-                <button type="button" @click="openPathPick(row)" title="표시경로 선택"
-                  :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
-                  @mouseover="$event.currentTarget.style.background='#eef2ff'"
-                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
-              </div>
-            </td>
-          <td>
-            <input class="grid-input grid-mono" v-model="row.brandCode"
-              :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="BRAND_CODE" :title="cfIsLocalMode ? '브랜드코드' : ''" />
-          </td>
-          <td>
-            <input class="grid-input" v-model="row.brandNm"
-              :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="브랜드명" :title="cfIsLocalMode ? '브랜드명' : ''" />
-          </td>
-          <td>
-            <input class="grid-input" v-model="row.brandEnNm"
-              :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="Brand Name" :title="cfIsLocalMode ? '영문명' : ''" />
-          </td>
-          <td>
-            <div style="display:flex;align-items:center;gap:4px;">
-              <input class="grid-input grid-mono" v-model="row.logoUrl"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)"
-                placeholder="/images/brand/logo.png" style="flex:1;" :title="cfIsLocalMode ? '로고 URL' : ''" />
-              <img v-if="row.logoUrl"
-                :src="row.logoUrl"
-                style="height:22px;max-width:44px;object-fit:contain;border-radius:3px;border:1px solid #e8e8e8;"
-                @error="$event.target.style.display='none'"
-                @load="$event.target.style.display=''" />
-            </div>
-          </td>
-          <td>
-            <input class="grid-input grid-num" type="number" v-model.number="row.sortOrd"
-              :disabled="row._row_status==='D'" @input="onCellChange(row)" :title="cfIsLocalMode ? '순서' : ''" />
-          </td>
-          <td>
-            <select class="grid-select" v-model="row.useYn"
-              :disabled="row._row_status==='D'" @change="onCellChange(row)" :title="cfIsLocalMode ? '사용여부' : ''">
-              <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-            </select>
-          </td>
-          <td class="col-act-cancel-val">
-            <button v-if="['U','I','D'].includes(row._row_status)"
-              class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-          </td>
-          <td class="col-act-delete-val">
-            <button v-if="['N','U'].includes(row._row_status)"
-              class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
+    <template #cell-pathId="{ row }">
+      <td>
+        <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
+          <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
+          <button type="button" @click.stop="openPathPick(row)" title="표시경로 선택"
+            :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
+            @mouseover="$event.currentTarget.style.background='#eef2ff'"
+            @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+        </div>
+      </td>
+    </template>
+
+    <template #cell-logoUrl="{ row }">
+      <td>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input class="grid-input grid-mono" v-model="row.logoUrl"
+            :disabled="row._row_status==='D'" @input="onCellChange(row)"
+            placeholder="/images/brand/logo.png" style="flex:1;" :title="fnColTitle({label:'로고 URL'})" />
+          <img v-if="row.logoUrl"
+            :src="row.logoUrl"
+            style="height:22px;max-width:44px;object-fit:contain;border-radius:3px;border:1px solid #e8e8e8;"
+            @error="$event.target.style.display='none'"
+            @load="$event.target.style.display=''" />
+        </div>
+      </td>
+    </template>
+
+    <template #row-cancel="{ row, idx }">
+      <button v-if="['U','I','D'].includes(row._row_status)"
+        class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+    </template>
+    <template #row-delete="{ row, idx }">
+      <button v-if="['N','U'].includes(row._row_status)"
+        class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+    </template>
+  </bo-grid-crud>
   </div><!-- -- /grid 25/75 ------------------------------------------------------ -->
 
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_brand"

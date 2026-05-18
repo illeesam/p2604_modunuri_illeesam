@@ -471,9 +471,31 @@ window.SyVendorUserMng = {
 
     // -- return ---------------------------------------------------------------
 
+    /* BoGridReadonly 컬럼 정의 (특수셀 #cell-* 슬롯 override) */
+    const vendorGridColumns = [
+      { key: 'vendorTypeCd', label: '업체유형' },
+      { key: 'vendorNm',     label: '업체명' },
+      { key: 'bizNo',        label: '사업자번호' },
+      { key: 'ceo',          label: '대표자' },
+      { key: 'phone',        label: '전화' },
+      { key: '_pick',        label: '선택', style: 'text-align:right;' },
+    ];
+    const userGridColumns = [
+      { key: 'memberNm',           label: '이름' },
+      { key: 'positionCd',         label: '직위' },
+      { key: 'vendorUserDeptNm',   label: '부서' },
+      { key: 'vendorUserMobile',   label: '휴대전화' },
+      { key: 'vendorUserEmail',    label: '이메일' },
+      { key: 'vendorUserStatusCd', label: '상태', style: 'width:80px;text-align:center;' },
+      { key: '_act',               label: '관리', style: 'width:70px;text-align:right;' },
+    ];
+    const fnVendorRowStyle = (v) => 'cursor:pointer;' + (uiState.searchVendorId === v.vendorId ? 'background:#fff0f4;' : '');
+    const fnUserRowStyle   = (u) => 'cursor:pointer;' + (formData.vendorUserId === u.vendorUserId ? 'background:#fff0f4;' : '');
+
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
+      vendorGridColumns, userGridColumns, fnVendorRowStyle, fnUserRowStyle,
       vendors, bizPager, setBizPage,
       onSearch, onReset,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
@@ -503,7 +525,7 @@ window.SyVendorUserMng = {
 
   <!-- -- 업체 검색 ---------------------------------------------------------- -->
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <span class="search-label">업체</span>
       <div :style="{display:'flex',alignItems:'center',gap:'8px',flex:1,maxWidth:'480px',padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',background:'#f5f5f7',color:uiState.searchVendorId!=null?'#374151':'#9ca3af',fontWeight:uiState.searchVendorId!=null?600:400,fontSize:'12px'}">
         <span style="flex:1;">{{ uiState.searchVendorId != null ? fnVendorSummary(uiState.searchVendorId) : '업체 선택...' }}</span>
@@ -525,83 +547,72 @@ window.SyVendorUserMng = {
         <option value="">업체유형 전체</option>
         <option v-for="v in codes.vendor_types" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   <!-- -- 업체 목록 ---------------------------------------------------------- -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ vendors.length }}건</span></span>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>업체유형</th><th>업체명</th><th>사업자번호</th><th>대표자</th><th>전화</th><th style="text-align:right;">선택</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="!(bizPager.pageList||[]).length"><td colspan="7" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(v, bidx) in bizPager.pageList" :key="v.vendorId"
-          :style="{cursor:'pointer',background:uiState.searchVendorId===v.vendorId?'#fff0f4':'transparent'}"
-          @click="pickVendorRow(v)">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (bizPager.pageNo - 1) * bizPager.pageSize + bidx + 1 }}</td>
-          <td><span class="badge" :class="fnVendorTypeBadge(v.vendorTypeCd)" style="font-size:10px;">{{ fnVendorTypeLabel(v.vendorTypeCd) }}</span></td>
-          <td style="font-weight:600;">{{ v.vendorNm }}</td>
-          <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ v.bizNo }}</code></td>
-          <td>{{ v.ceo }}</td>
-          <td style="font-size:11.5px;">{{ v.phone }}</td>
-          <td style="text-align:right;">
-            <button class="btn btn-primary btn-xs" @click.stop="pickVendorRow(v)">{{ uiState.searchVendorId===v.vendorId ? '선택됨' : '선택' }}</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="bizPager" :on-set-page="setBizPage" />
-  </div>
+  <bo-grid-readonly
+    :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
+    list-title="업체목록" :count-text="vendors.length + '건'"
+    :row-style="fnVendorRowStyle"
+    @set-page="setBizPage" @row-click="pickVendorRow">
+    <template #cell-vendorTypeCd="{ row }">
+      <td @click="pickVendorRow(row)"><span class="badge" :class="fnVendorTypeBadge(row.vendorTypeCd)" style="font-size:10px;">{{ fnVendorTypeLabel(row.vendorTypeCd) }}</span></td>
+    </template>
+    <template #cell-vendorNm="{ row }">
+      <td style="font-weight:600;" @click="pickVendorRow(row)">{{ row.vendorNm }}</td>
+    </template>
+    <template #cell-bizNo="{ row }">
+      <td @click="pickVendorRow(row)"><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ row.bizNo }}</code></td>
+    </template>
+    <template #cell-ceo="{ row }">
+      <td @click="pickVendorRow(row)">{{ row.ceo }}</td>
+    </template>
+    <template #cell-phone="{ row }">
+      <td style="font-size:11.5px;" @click="pickVendorRow(row)">{{ row.phone }}</td>
+    </template>
+    <template #cell-_pick="{ row }">
+      <td style="text-align:right;">
+        <button class="btn btn-primary btn-xs" @click.stop="pickVendorRow(row)">{{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}</button>
+      </td>
+    </template>
+  </bo-grid-readonly>
 
   <!-- -- 사용자 목록 ------------------------------------------------------- -->
-  <div v-if="uiState.searchVendorId != null" class="card" style="margin-top:16px;">
-    <div class="toolbar">
-      <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
-        사용자목록
-        <span class="list-count">{{ vendorUsers.length }}건</span>
-      </span>
+  <bo-grid-readonly v-if="uiState.searchVendorId != null" style="margin-top:16px;"
+    :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
+    list-title="사용자목록" :count-text="vendorUsers.length + '건'"
+    :row-style="fnUserRowStyle" :loading="uiState.loading"
+    @set-page="setPage" @size-change="onSizeChange" @row-click="openEdit">
+    <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규등록</button>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <th>이름</th><th>직위</th><th>부서</th>
-        <th>휴대전화</th><th>이메일</th>
-        <th style="width:80px;text-align:center;">상태</th>
-        <th style="width:70px;text-align:right;">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="uiState.loading"><td colspan="8" style="text-align:center;padding:20px;color:#aaa;">로딩중...</td></tr>
-        <tr v-else-if="!(pager.pageList||[]).length"><td colspan="8" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(u, uidx) in (pager.pageList||[])" :key="u.vendorUserId"
-          :style="{cursor:'pointer',background:formData.vendorUserId===u.vendorUserId?'#fff0f4':'transparent'}"
-          @click="openEdit(u)">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo-1)*pager.pageSize + uidx + 1 }}</td>
-          <td style="font-weight:600;">{{ u.memberNm }}</td>
-          <td style="font-size:12px;color:#666;">{{ u.positionCd }}</td>
-          <td style="font-size:12px;color:#666;">{{ u.vendorUserDeptNm }}</td>
-          <td style="font-size:12px;">{{ u.vendorUserMobile }}</td>
-          <td style="font-size:12px;">{{ u.vendorUserEmail }}</td>
-          <td style="text-align:center;">
-            <span class="badge" :class="fnStatusBadge(u.vendorUserStatusCd)">{{ fnStatusLabel(u.vendorUserStatusCd) }}</span>
-          </td>
-          <td style="text-align:right;">
-            <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(u)">삭제</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+    </template>
+    <template #cell-memberNm="{ row }">
+      <td style="font-weight:600;" @click="openEdit(row)">{{ row.memberNm }}</td>
+    </template>
+    <template #cell-positionCd="{ row }">
+      <td style="font-size:12px;color:#666;" @click="openEdit(row)">{{ row.positionCd }}</td>
+    </template>
+    <template #cell-vendorUserDeptNm="{ row }">
+      <td style="font-size:12px;color:#666;" @click="openEdit(row)">{{ row.vendorUserDeptNm }}</td>
+    </template>
+    <template #cell-vendorUserMobile="{ row }">
+      <td style="font-size:12px;" @click="openEdit(row)">{{ row.vendorUserMobile }}</td>
+    </template>
+    <template #cell-vendorUserEmail="{ row }">
+      <td style="font-size:12px;" @click="openEdit(row)">{{ row.vendorUserEmail }}</td>
+    </template>
+    <template #cell-vendorUserStatusCd="{ row }">
+      <td style="text-align:center;" @click="openEdit(row)">
+        <span class="badge" :class="fnStatusBadge(row.vendorUserStatusCd)">{{ fnStatusLabel(row.vendorUserStatusCd) }}</span>
+      </td>
+    </template>
+    <template #cell-_act="{ row }">
+      <td style="text-align:right;">
+        <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(row)">삭제</button>
+      </td>
+    </template>
+  </bo-grid-readonly>
   <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">
     상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
   </div>
@@ -700,96 +711,80 @@ window.SyVendorUserMng = {
     </div>
   </div>
 
-  <!-- -- 역할 선택 모달 ------------------------------------------------------- -->
-  <div v-if="uiState.roleModalOpen" class="modal-overlay" @click.self="closeRoleModal">
-    <div style="background:#fff;border-radius:16px;width:min(1000px,95vw);height:min(720px,90vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 60%,#bfdbfe 100%);border-bottom:1px solid #bfdbfe;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-weight:800;font-size:16px;color:#1f2937;">🎭 역할 선택</span>
-          <span v-if="cfFormAllowedRootCode"
-            :style="{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:'10px',background:'#fff',border:'1px solid #93c5fd',fontWeight:700,fontSize:'11px',color:cfFormAllowedRootCode==='SITE_MGR_ROOT'?'#16a34a':'#d97706'}">
-            {{ cfFormAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
-          </span>
+  <!-- -- 역할 선택 모달 (BoRoleSelectModal) ----------------------------------- -->
+  <bo-role-select-modal :show="uiState.roleModalOpen" title="🎭 역할 선택"
+    :confirm-disabled="!uiState.roleModalTemp"
+    @close="closeRoleModal" @confirm="confirmRoleModal">
+    <template #header-extra>
+      <span v-if="cfFormAllowedRootCode"
+        :style="{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:'10px',background:'#fff',border:'1px solid #93c5fd',fontWeight:700,fontSize:'11px',color:cfFormAllowedRootCode==='SITE_MGR_ROOT'?'#16a34a':'#d97706'}">
+        {{ cfFormAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
+      </span>
+    </template>
+
+    <template #tree>
+      <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">📂 역할 트리</div>
+      <div v-if="!cfFormAllowedRootCode" style="padding:10px;font-size:11px;color:#dc2626;background:#fef2f2;border-radius:6px;">선택한 업체의 업체유형이 없어 역할을 선택할 수 없습니다.</div>
+      <template v-for="root in cfFormRoleTree" :key="root.roleId">
+        <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px',
+          color:root.roleCode===cfFormAllowedRootCode?'#1e40af':'#cbd5e1'}"
+          @click="toggleRoleNode(root.roleId)"
+          @mouseover="onRoleRootHover(root, $event)"
+          @mouseout="$event.currentTarget.style.background='transparent'">
+          <span style="width:12px;font-size:10px;color:#9ca3af;">{{ roleTreeExpanded.has(root.roleId)?'▾':'▸' }}</span>
+          <span>📁 {{ root.roleNm }}</span>
         </div>
-        <span @click="closeRoleModal"
-          style="cursor:pointer;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:16px;color:#6b7280;"
-          @mouseover="$event.currentTarget.style.background='#dbeafe';$event.currentTarget.style.color='#2563eb'"
-          @mouseout="$event.currentTarget.style.background='transparent';$event.currentTarget.style.color='#6b7280'">✕</span>
-      </div>
-      <div style="display:grid;grid-template-columns:300px 1fr;flex:1;overflow:hidden;background:#fafbfc;">
-        <!-- -- 좌: 역할 트리 ------------------------------------------------- -->
-        <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;">
-          <div style="position:sticky;top:0;background:#fff;padding:12px 14px 8px;border-bottom:1px solid #f3f4f6;font-size:12px;font-weight:700;color:#374151;">📂 역할 트리</div>
-          <div style="padding:6px 8px;">
-            <div v-if="!cfFormAllowedRootCode" style="padding:10px;font-size:11px;color:#dc2626;background:#fef2f2;border-radius:6px;">선택한 업체의 업체유형이 없어 역할을 선택할 수 없습니다.</div>
-            <template v-for="root in cfFormRoleTree" :key="root.roleId">
-              <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px',
-                color:root.roleCode===cfFormAllowedRootCode?'#1e40af':'#cbd5e1'}"
-                @click="toggleRoleNode(root.roleId)"
-                @mouseover="onRoleRootHover(root, $event)"
-                @mouseout="$event.currentTarget.style.background='transparent'">
-                <span style="width:12px;font-size:10px;color:#9ca3af;">{{ roleTreeExpanded.has(root.roleId)?'▾':'▸' }}</span>
-                <span>📁 {{ root.roleNm }}</span>
-              </div>
-              <div v-if="roleTreeExpanded.has(root.roleId)" style="padding-left:14px;margin-bottom:6px;">
-                <div v-for="ch in root.children" :key="ch.roleId"
-                  @click="pickRoleInModal(ch)"
-                  :style="{padding:'7px 10px',fontSize:'12.5px',cursor:ch.allowed?'pointer':'not-allowed',
-                    color:ch.allowed?(uiState.roleModalTemp===ch.roleCode?'#fff':'#374151'):'#d1d5db',
-                    background:uiState.roleModalTemp===ch.roleCode?'linear-gradient(135deg,#3b82f6,#2563eb)':'transparent',
-                    borderRadius:'6px',fontWeight:uiState.roleModalTemp===ch.roleCode?700:500,marginBottom:'2px',
-                    display:'flex',alignItems:'center',gap:'6px',transition:'all .1s'}"
-                  @mouseover="onRoleChildHover(ch, $event)"
-                  @mouseout="onRoleChildLeave(ch, $event)">
-                  <span style="font-size:9px;">●</span>
-                  <span>{{ ch.roleNm }}</span>
-                </div>
-              </div>
-            </template>
+        <div v-if="roleTreeExpanded.has(root.roleId)" style="padding-left:14px;margin-bottom:6px;">
+          <div v-for="ch in root.children" :key="ch.roleId"
+            @click="pickRoleInModal(ch)"
+            :style="{padding:'7px 10px',fontSize:'12.5px',cursor:ch.allowed?'pointer':'not-allowed',
+              color:ch.allowed?(uiState.roleModalTemp===ch.roleCode?'#fff':'#374151'):'#d1d5db',
+              background:uiState.roleModalTemp===ch.roleCode?'linear-gradient(135deg,#3b82f6,#2563eb)':'transparent',
+              borderRadius:'6px',fontWeight:uiState.roleModalTemp===ch.roleCode?700:500,marginBottom:'2px',
+              display:'flex',alignItems:'center',gap:'6px',transition:'all .1s'}"
+            @mouseover="onRoleChildHover(ch, $event)"
+            @mouseout="onRoleChildLeave(ch, $event)">
+            <span style="font-size:9px;">●</span>
+            <span>{{ ch.roleNm }}</span>
           </div>
         </div>
-        <!-- -- 우: 메뉴 접근권한 ----------------------------------------------- -->
-        <div style="overflow:auto;background:#fff;">
-          <div style="position:sticky;top:0;background:#fff;padding:12px 16px 8px;border-bottom:1px solid #f3f4f6;">
-            <div style="font-size:12px;font-weight:700;color:#374151;">🔐 메뉴 접근권한
-              <span v-if="cfSelectedModalRole" style="color:#2563eb;margin-left:8px;">— {{ cfSelectedModalRole.roleNm }}</span>
-            </div>
-          </div>
-          <div v-if="!cfSelectedModalRole" style="padding:60px 20px;text-align:center;font-size:13px;color:#9ca3af;">
-            <div style="font-size:28px;margin-bottom:8px;">👈</div>좌측에서 역할을 선택하세요
-          </div>
-          <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
-            <thead><tr style="background:#f9fafb;">
-              <th style="text-align:left;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;">메뉴</th>
-              <th style="text-align:center;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;width:80px;">권한</th>
-            </tr></thead>
-            <tbody>
-              <tr v-for="(m,i) in cfModalMenuList" :key="m.menuId" :style="{background:i%2===0?'#fff':'#fafbfc'}">
-                <td :style="{padding:'6px 12px 6px '+(12+m._depth*16)+'px',fontWeight:m.menuType==='폴더'?700:400,borderBottom:'1px solid #f3f4f6'}">
-                  <span v-if="m.menuType==='폴더'" style="color:#f59e0b;margin-right:4px;">📁</span>
-                  <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">·</span>{{ m.menuNm }}
-                </td>
-                <td style="text-align:center;padding:6px 12px;border-bottom:1px solid #f3f4f6;">
-                  <span v-if="m._perm!=='없음'" :style="{background:fnPermBadgeColor(m._perm),color:'#fff',fontSize:'10px',padding:'2px 8px',borderRadius:'9px',fontWeight:700}">{{ m._perm }}</span>
-                  <span v-else style="color:#d1d5db;font-size:11px;">—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      </template>
+    </template>
+
+    <template #perm>
+      <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">🔐 메뉴 접근권한
+        <span v-if="cfSelectedModalRole" style="color:#2563eb;margin-left:8px;">— {{ cfSelectedModalRole.roleNm }}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-top:1px solid #eef0f3;background:#fafbfc;">
-        <div style="font-size:11px;color:#6b7280;">
-          <span v-if="uiState.roleModalTemp">선택: <b style="color:#2563eb;">{{ roleNmByCode(uiState.roleModalTemp) }}</b></span>
-          <span v-else style="color:#9ca3af;">역할을 선택해주세요</span>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-secondary btn-sm" @click="closeRoleModal">취소</button>
-          <button class="btn btn-primary btn-sm" @click="confirmRoleModal" :disabled="!uiState.roleModalTemp">✔ 역할 부여</button>
-        </div>
+      <div v-if="!cfSelectedModalRole" style="padding:60px 20px;text-align:center;font-size:13px;color:#9ca3af;">
+        <div style="font-size:28px;margin-bottom:8px;">👈</div>좌측에서 역할을 선택하세요
       </div>
-    </div>
-  </div>
+      <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:#f9fafb;">
+          <th style="text-align:left;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;">메뉴</th>
+          <th style="text-align:center;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;width:80px;">권한</th>
+        </tr></thead>
+        <tbody>
+          <tr v-for="(m,i) in cfModalMenuList" :key="m.menuId" :style="{background:i%2===0?'#fff':'#fafbfc'}">
+            <td :style="{padding:'6px 12px 6px '+(12+m._depth*16)+'px',fontWeight:m.menuType==='폴더'?700:400,borderBottom:'1px solid #f3f4f6'}">
+              <span v-if="m.menuType==='폴더'" style="color:#f59e0b;margin-right:4px;">📁</span>
+              <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">·</span>{{ m.menuNm }}
+            </td>
+            <td style="text-align:center;padding:6px 12px;border-bottom:1px solid #f3f4f6;">
+              <span v-if="m._perm!=='없음'" :style="{background:fnPermBadgeColor(m._perm),color:'#fff',fontSize:'10px',padding:'2px 8px',borderRadius:'9px',fontWeight:700}">{{ m._perm }}</span>
+              <span v-else style="color:#d1d5db;font-size:11px;">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </template>
+
+    <template #footer-extra>
+      <span style="font-size:11px;color:#6b7280;">
+        <span v-if="uiState.roleModalTemp">선택: <b style="color:#2563eb;">{{ roleNmByCode(uiState.roleModalTemp) }}</b></span>
+        <span v-else style="color:#9ca3af;">역할을 선택해주세요</span>
+      </span>
+    </template>
+  </bo-role-select-modal>
 </div>
 `,
 };

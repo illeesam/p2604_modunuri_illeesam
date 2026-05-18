@@ -38,7 +38,7 @@ window.SyPropMng = {
       const row = pathPickModal.row;
       if (row) {
         row.pathId = pathId;
-        if (row._row_status === 'N') row._row_status = 'U';
+        onCellChange(row);
       }
     };
 
@@ -48,13 +48,22 @@ window.SyPropMng = {
     /* -- 검색 -- */
     const searchParam = reactive({ searchType: '', searchValue: '', useFlt: '', typeFlt: '' });
 
-    /* -- 데이터 (작업 상태 포함) -- */
-    const rows = reactive([]);
-    const _rawProps = reactive([]); // 원본 데이터 (cancelRow 복원용)
+    /* -- 데이터 (BoGridCrud 규약: _row_status N/I/U/D, _row_check, _row_org) -- */
+    const rows = reactive([]);                 // = gridRows
+    const _rawProps = reactive([]);            // 원본 (reload 복원용)
+    const EDIT_FIELDS = ['pathId', 'propKey', 'propValue', 'propLabel', 'propTypeCd', 'sortOrd', 'useYn', 'propRemark'];
+
+    /* makeRow — 원본 → 그리드행 (BoGridCrud 규약) */
+    const makeRow = (p) => ({
+      ...p,
+      _row_status: 'N',
+      _row_check:  false,
+      _row_org: EDIT_FIELDS.reduce((acc, f) => { acc[f] = p[f]; return acc; }, {}),
+    });
 
     /* 시스템 속성 reload */
     const reload = () => {
-      rows.splice(0, rows.length, ..._rawProps.map(p => ({ ...p, _status: '' })));
+      rows.splice(0, rows.length, ..._rawProps.map(makeRow));
     };
 
     // 검색/조회 함수
@@ -92,19 +101,16 @@ window.SyPropMng = {
     /* -- 선택 노드 -- */
     const selectNode = (path) => { uiState.selectedPath = path; fetchData('DEFAULT'); };
 
-    /* -- 그리드에 표시할 행: 삭제 표시 제외 -- */
-    const cfGridRows = computed(() => rows.filter(r => r._status !== 'D'));
-
-
-    /* -- 행 변경 추적 -- */
-    const onChange = (row, field, val) => {
-      row[field] = val;
-      if (row._status === '') row._status = 'U';
+    /* 시스템 속성 onCellChange — BoGridCrud 규약 (N↔U, _row_org 비교) */
+    const onCellChange = (row) => {
+      if (row._row_status === 'I' || row._row_status === 'D') return;
+      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
+      row._row_status = changed ? 'U' : 'N';
     };
 
-    /* 시스템 속성 addRow */
+    /* 시스템 속성 addRow (BoGridCrud @add) */
     const addRow = () => {
-      const newRow = reactive({
+      rows.push({
         propId: uiState._newId--,
         siteId: cfSiteId.value || 1,
         pathId: uiState.selectedPath || 'new.prop',
@@ -115,43 +121,38 @@ window.SyPropMng = {
         sortOrd: 99,
         useYn: 'Y',
         propRemark: '',
-        _status: 'I',
+        _row_status: 'I', _row_check: false, _row_org: null,
       });
-      rows.push(newRow);
     };
 
-    /* 시스템 속성 delRow */
-    const delRow = (row) => {
-      if (row._status === 'I') {
-        const idx = rows.findIndex(r => r.propId === row.propId); if (idx !== -1) rows.splice(idx, 1);
-      } else {
-        row._status = row._status === 'D' ? '' : 'D';
+    /* 시스템 속성 deleteChecked (BoGridCrud @delete-checked) */
+    const deleteChecked = () => {
+      for (let i = rows.length - 1; i >= 0; i--) {
+        if (!rows[i]._row_check) continue;
+        if (rows[i]._row_status === 'I') rows.splice(i, 1);
+        else rows[i]._row_status = 'D';
       }
     };
 
-    /* 시스템 속성 cancelRow */
-    const cancelRow = (row) => {
-      if (row._status === 'I') {
-        const idx = rows.findIndex(r => r.propId === row.propId); if (idx !== -1) rows.splice(idx, 1);
-      } else {
-        // 원본으로 복원 (간단 구현: reload 권장)
-        const orig = _rawProps.find(p => p.propId === row.propId);
-        if (orig) Object.assign(row, orig, { _status: '' });
+    /* 시스템 속성 cancelChecked (BoGridCrud @cancel-checked) */
+    const cancelChecked = () => {
+      const checked = rows.filter(r => r._row_check);
+      if (!checked.length) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      for (let i = rows.length - 1; i >= 0; i--) {
+        const row = rows[i];
+        if (!row._row_check || row._row_status === 'N') continue;
+        if (row._row_status === 'I') { rows.splice(i, 1); }
+        else if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
     };
-    const cfDirtyRows = computed(() =>
-      rows.filter(r => r._status === 'I' || r._status === 'U' || r._status === 'D')
-    );
 
-    /* 시스템 속성 저장 */
+    /* 시스템 속성 저장 (BoGridCrud @save) */
     const handleSave = async () => {
-      if (cfDirtyRows.value.length === 0) {
-        showToast('변경된 행이 없습니다.', 'warning');
-        return;
-      }
-      const ok = await showConfirm('저장', `${cfDirtyRows.value.length}건의 변경사항을 저장하시겠습니까?`);
+      const dirty = rows.filter(r => ['I', 'U', 'D'].includes(r._row_status));
+      if (dirty.length === 0) { showToast('변경된 행이 없습니다.', 'warning'); return; }
+      const ok = await showConfirm('저장', `${dirty.length}건의 변경사항을 저장하시겠습니까?`);
       if (!ok) return;
-      const saveRows = cfDirtyRows.value.map(r => ({ ...r, rowStatus: r._status }));
+      const saveRows = dirty.map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.syProp.saveList(saveRows, '속성관리', '저장');
         showToast('저장되었습니다.', 'success');
@@ -172,7 +173,7 @@ window.SyPropMng = {
     const exportCsv = () => {
       const header = ['ID','표시경로','키','값','라벨','타입','정렬','사용','비고'];
       const lines = [header.join(',')];
-      cfGridRows.value.forEach(r => {
+      rows.filter(r => r._row_status !== 'D').forEach(r => {
         lines.push([r.propId, r.pathId, r.propKey, r.propValue, r.propLabel, r.propTypeCd, r.sortOrd, r.useYn, r.propRemark || '']
           .map(c => '"' + String(c).replace(/"/g,'""') + '"').join(','));
       });
@@ -185,13 +186,25 @@ window.SyPropMng = {
 
     // -- return ---------------------------------------------------------------
 
+    /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+    const gridColumns = [
+      { key: 'pathId',     label: '표시경로',  style: 'min-width:160px;' },
+      { key: 'propKey',    label: '키',        edit: 'text', mono: true },
+      { key: 'propValue',  label: '값',        edit: 'text' },
+      { key: 'propLabel',  label: '라벨',      edit: 'text' },
+      { key: 'propTypeCd', label: '타입',      cls: 'col-id', edit: 'select', options: codes.prop_types.map(t => ({ value: t, label: t })) },
+      { key: 'sortOrd',    label: '정렬',      cls: 'col-ord', edit: 'number' },
+      { key: 'useYn',      label: '사용',      cls: 'col-use', edit: 'select', options: codes.use_yn },
+      { key: 'propRemark', label: '비고',      edit: 'text' },
+    ];
+
     return {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam,
-      selectNode, cfGridRows, cfDirtyRows,
+      selectNode, rows, gridColumns,
       fetchData,
-      onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,
+      onCellChange, addRow, deleteChecked, cancelChecked, handleSave, onReset, exportCsv,
     };
   },
 
@@ -201,7 +214,7 @@ window.SyPropMng = {
 
   <!-- -- 검색 바 ----------------------------------------------------------- -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
-    <div class="search-bar">
+    <bo-search-area @search="fetchData" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -222,105 +235,55 @@ window.SyPropMng = {
         <option value="">사용여부 전체</option>
         <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="fetchData">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+      <template #actions-after>
         <button class="btn btn-sm" @click="exportCsv">📥 엑셀</button>
-      </div>
-    </div>
+      </template>
+    </bo-search-area>
   </div>
 
   <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:flex-start;">
 
     <!-- -- 트리 ----------------------------------------------------------- -->
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_prop</span></span>
-        <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
-      </div>
-      <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="sy_prop" :selected="uiState.selectedPath" @select="selectNode" />
-      </div>
-    </div>
+    <bo-path-tree-card biz-cd="sy_prop" title="표시경로" :show-biz-cd="true"
+      :selected="uiState.selectedPath" @select="selectNode" />
 
-    <!-- -- 그리드 ---------------------------------------------------------- -->
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:10px;">
-        <div class="list-title">
-          <span v-if="uiState.selectedPath" style="color:#e8587a;font-family:monospace;">{{ uiState.selectedPath }}</span>
-          <span v-else>전체</span>
-          <span class="list-count">{{ cfGridRows.length }}건</span>
-        </div>
-        <div style="display:flex;gap:4px;">
-          <button class="btn btn-blue btn-sm" @click="addRow">+ 행추가</button>
-          <button class="btn btn-sm" @click="handleSave" :disabled="cfDirtyRows.length===0"
-            :style="cfDirtyRows.length>0 ? 'background:#e8587a;color:#fff;' : ''">
-            저장 <span v-if="cfDirtyRows.length>0">({{ cfDirtyRows.length }})</span>
-          </button>
-        </div>
-      </div>
-      <div style="max-height:480px;overflow-y:auto;">
-      <table class="bo-table crud-grid">
-        <thead>
-          <tr>
-            <th style="width:36px;text-align:center;">번호</th>
-            <th class="col-status">상태</th>
-            <th>표시경로</th>
-            <th>키</th>
-            <th>값</th>
-            <th>라벨</th>
-            <th class="col-id">타입</th>
-            <th class="col-ord">정렬</th>
-            <th class="col-use">사용</th>
-            <th>비고</th>
-            <th class="col-act-delete">삭제</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="cfGridRows.length===0">
-            <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-          </tr>
-          <tr v-for="(r, idx) in cfGridRows" :key="r.propId" class="crud-row" :class="'status-' + (r._status || '')">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-            <td class="col-status-val">
-              <span v-if="r._status==='I'" class="badge badge-green badge-xs">신규</span>
-              <span v-else-if="r._status==='U'" class="badge badge-orange badge-xs">수정</span>
-              <span v-else-if="r._status==='D'" class="badge badge-red badge-xs">삭제</span>
-              <span v-else class="badge badge-gray badge-xs">{{ r.propId }}</span>
-            </td>
-            <td>
-              <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: r.pathId != null ? '#374151' : '#9ca3af',fontWeight: r.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
-                <span style="flex:1;">{{ pathLabel(r.pathId) || '경로 선택...' }}</span>
-                <button type="button" @click="openPathPick(r)" title="표시경로 선택"
-                  :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
-                  @mouseover="$event.currentTarget.style.background='#eef2ff'"
-                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
-              </div>
-            </td>
-            <td><input class="grid-input grid-mono" :value="r.propKey" @input="onChange(r,'propKey',$event.target.value)"></td>
-            <td><input class="grid-input" :value="r.propValue" @input="onChange(r,'propValue',$event.target.value)"></td>
-            <td><input class="grid-input" :value="r.propLabel" @input="onChange(r,'propLabel',$event.target.value)"></td>
-            <td>
-              <select class="grid-select" :value="r.propTypeCd" @change="onChange(r,'propTypeCd',$event.target.value)">
-                <option v-for="t in codes.prop_types" :key="t" :value="t">{{ t }}</option>
-              </select>
-            </td>
-            <td><input class="grid-input grid-num" type="number" :value="r.sortOrd" @input="onChange(r,'sortOrd',Number($event.target.value))"></td>
-            <td>
-              <select class="grid-select" :value="r.useYn" @change="onChange(r,'useYn',$event.target.value)">
-                <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-              </select>
-            </td>
-            <td><input class="grid-input" :value="r.propRemark" @input="onChange(r,'propRemark',$event.target.value)"></td>
-            <td class="col-act-delete-val">
-              <button class="btn btn-xs btn-danger" @click="delRow(r)">{{ r._status==='D' ? '복원' : '삭제' }}</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      </div>
-    </div>
+    <!-- -- 그리드 (BoGridCrud) -------------------------------------------- -->
+    <bo-grid-crud
+      :columns="gridColumns" :rows="rows" row-key="propId"
+      list-title="프로퍼티목록" :draggable="false"
+      @add="addRow" @save="handleSave"
+      @delete-checked="deleteChecked" @cancel-checked="cancelChecked"
+      @cell-change="onCellChange">
+
+      <template #head>
+        <th style="min-width:160px;">표시경로</th>
+        <th>키</th>
+        <th>값</th>
+        <th>라벨</th>
+        <th class="col-id">타입</th>
+        <th class="col-ord">정렬</th>
+        <th class="col-use">사용</th>
+        <th>비고</th>
+      </template>
+
+      <template #cell-pathId="{ row }">
+        <td>
+          <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
+            <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
+            <button type="button" @click.stop="openPathPick(row)" title="표시경로 선택"
+              :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
+              @mouseover="$event.currentTarget.style.background='#eef2ff'"
+              @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+          </div>
+        </td>
+      </template>
+
+      <template #row-delete="{ row }">
+        <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="row._row_status='D'">삭제</button>
+        <button v-else-if="row._row_status==='D'" class="btn btn-xs btn-secondary" @click.stop="row._row_status = row._row_org ? 'N' : 'I'">복원</button>
+      </template>
+    </bo-grid-crud>
   </div>
 </div>
 `,

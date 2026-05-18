@@ -224,17 +224,29 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const exportExcel = () => coUtil.cofExportCsv(bbss, [{label:'ID',key:'bbsId'},{label:'제목',key:'bbsTitle'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'bbsStatusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
-
+    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    const gridColumns = [
+      { key: 'bbmId',        label: '게시판' },
+      { key: 'bbsTitle',     label: '제목', sortKey: 'nm' },
+      { key: 'authorNm',     label: '작성자' },
+      { key: 'viewCount',    label: '조회수' },
+      { key: 'commentCount', label: '댓글' },
+      { key: 'attachGrpId',  label: '첨부그룹' },
+      { key: 'bbsStatusCd',  label: '상태' },
+      { key: 'siteNm',       label: '사이트명' },
+      { key: 'regDate',      label: '등록일', sortKey: 'reg' },
+    ];
+    const fnRowStyle = (b) => detailModal.dtlId === b.bbsId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
     // -- return ---------------------------------------------------------------
 
     return { bbss, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, codes, cfSiteNm, searchParam, handleDateRangeChange, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel, onSort, sortIcon };
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, codes, cfSiteNm, searchParam, handleDateRangeChange, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel, onSort, sortIcon, gridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
   <div class="page-title">게시글관리</div>  <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -253,49 +265,57 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <span class="search-label">등록일</span>
       <input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   
 
 
 
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
+  <bo-grid-readonly
+    :columns="gridColumns" :rows="bbss" :pager="pager" row-key="bbsId"
+    list-title="게시글목록" :count-text="pager.pageTotalCount + '건' + (uiState.selectedPath != null ? '  #' + uiState.selectedPath : '')"
+    :sort-state="uiState" :row-style="fnRowStyle"
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+
+    <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th>게시판</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">제목 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th style="text-align:right">관리</th></tr></thead>
-      <tbody>
-        <tr v-if="bbss.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(b, idx) in bbss" :key="b.bbsId" :style="detailModal.dtlId===b.bbsId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="badge badge-gray">{{ bbmNm(b.bbmId) }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(b.bbsId)" :style="detailModal.dtlId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.bbsTitle }}<span v-if="detailModal.dtlId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ b.authorNm }}</td>
-          <td style="text-align:center;">{{ b.viewCount }}</td>
-          <td style="text-align:center;">{{ b.commentCount }}</td>
-          <td style="font-size:11px;color:#888;">{{ b.attachGrpId || '-' }}</td>
-          <td><span class="badge" :class="fnStatusBadge(b.bbsStatusCd)">{{ b.bbsStatusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td>{{ String(b.regDate||'').slice(0,10) }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(b.bbsId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(b)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+    </template>
+    <template #head-actions><th style="text-align:right">관리</th></template>
+
+    <template #cell-bbmId="{ row }">
+      <td><span class="badge badge-gray">{{ bbmNm(row.bbmId) }}</span></td>
+    </template>
+    <template #cell-bbsTitle="{ row }">
+      <td><span class="title-link" @click="handleLoadDetail(row.bbsId)" :style="detailModal.dtlId===row.bbsId?'color:#e8587a;font-weight:700;':''">{{ row.bbsTitle }}<span v-if="detailModal.dtlId===row.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+    </template>
+    <template #cell-viewCount="{ row }">
+      <td style="text-align:center;">{{ row.viewCount }}</td>
+    </template>
+    <template #cell-commentCount="{ row }">
+      <td style="text-align:center;">{{ row.commentCount }}</td>
+    </template>
+    <template #cell-attachGrpId="{ row }">
+      <td style="font-size:11px;color:#888;">{{ row.attachGrpId || '-' }}</td>
+    </template>
+    <template #cell-bbsStatusCd="{ row }">
+      <td><span class="badge" :class="fnStatusBadge(row.bbsStatusCd)">{{ row.bbsStatusCd }}</span></td>
+    </template>
+    <template #cell-siteNm>
+      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+    </template>
+    <template #cell-regDate="{ row }">
+      <td>{{ String(row.regDate||'').slice(0,10) }}</td>
+    </template>
+    <template #row-actions="{ row }">
+      <td><div class="actions">
+        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.bbsId)">수정</button>
+        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+      </div></td>
+    </template>
+  </bo-grid-readonly>
   <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

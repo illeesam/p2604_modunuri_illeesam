@@ -166,15 +166,26 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     /* 문의 exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(contacts, [{label:'ID',key:'contactId'},{label:'회원명',key:'memberNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'contactTitle'},{label:'상태',key:'contactStatusCd'},{label:'등록일',key:'contactDate'}], '문의목록.csv');
 
+    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    const gridColumns = [
+      { key: 'memberNm',        label: '회원' },
+      { key: 'categoryCd',      label: '카테고리' },
+      { key: 'contactTitle',    label: '제목' },
+      { key: 'contactStatusCd', label: '상태' },
+      { key: 'regDate',         label: '등록일', sortKey: 'reg' },
+      { key: 'siteNm',          label: '사이트명' },
+    ];
+    const fnRowStyle = (c) => detailModal.dtlId === c.contactId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+
     // -- return ---------------------------------------------------------------
 
-    return { contacts, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
+    return { contacts, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, gridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
   <div class="page-title">문의관리</div>
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -194,43 +205,47 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
         <option v-for="c in codes.contact_status" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">문의목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+  <bo-grid-readonly
+    :columns="gridColumns" :rows="contacts" :pager="pager" row-key="contactId"
+    list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
+    :sort-state="uiState" :row-style="fnRowStyle"
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+
+    <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>회원</th><th>카테고리</th><th>제목</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="contacts.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(c, idx) in contacts" :key="c.contactId" :style="detailModal.dtlId===c.contactId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
-          <td><span class="tag">{{ c.categoryCd }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(c.contactId)" :style="detailModal.dtlId===c.contactId?'color:#e8587a;font-weight:700;':''">{{ c.contactTitle }}<span v-if="detailModal.dtlId===c.contactId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="badge" :class="fnStatusBadge(c.contactStatusCd)">{{ c.contactStatusCd }}</span></td>
-          <td>{{ String(c.regDate||c.contactDate||'').slice(0,10) }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.contactId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+    </template>
+    <template #head-actions><th style="text-align:right">관리</th></template>
+
+    <template #cell-memberNm="{ row }">
+      <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm }}</span></td>
+    </template>
+    <template #cell-categoryCd="{ row }">
+      <td><span class="tag">{{ row.categoryCd }}</span></td>
+    </template>
+    <template #cell-contactTitle="{ row }">
+      <td><span class="title-link" @click="handleLoadDetail(row.contactId)" :style="detailModal.dtlId===row.contactId?'color:#e8587a;font-weight:700;':''">{{ row.contactTitle }}<span v-if="detailModal.dtlId===row.contactId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+    </template>
+    <template #cell-contactStatusCd="{ row }">
+      <td><span class="badge" :class="fnStatusBadge(row.contactStatusCd)">{{ row.contactStatusCd }}</span></td>
+    </template>
+    <template #cell-regDate="{ row }">
+      <td>{{ String(row.regDate||row.contactDate||'').slice(0,10) }}</td>
+    </template>
+    <template #cell-siteNm>
+      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+    </template>
+    <template #row-actions="{ row }">
+      <td><div class="actions">
+        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.contactId)">수정</button>
+        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+      </div></td>
+    </template>
+  </bo-grid-readonly>
 
   <!-- -- 하단 상세: ContactDtl 임베드 ------------------------------------------ -->
   <div v-if="detailModal.show" style="margin-top:4px;">
