@@ -165,8 +165,15 @@ window.MbMemGroupMng = {
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
+    const gridColumns = [
+      { key: 'groupNm',   label: '그룹명',   style: 'min-width:180px;' },
+      { key: 'groupMemo', label: '메모',     style: 'min-width:260px;' },
+      { key: 'memberCnt', label: '회원수',   style: 'width:90px;text-align:right;' },
+      { key: 'useYn',     label: '사용여부', style: 'width:90px;text-align:center;' },
+    ];
+
     return {
-      uiState, codes, searchParam, gridRows,
+      uiState, codes, searchParam, gridRows, gridColumns,
       onSearch, onReset, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, toggleCheckAll,
       handleSave, fnStatusClass, cfVisibleCount,
@@ -177,7 +184,7 @@ window.MbMemGroupMng = {
   <div class="page-title">회원그룹관리</div>
 
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <label class="search-label">그룹명</label>
       <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="그룹명 검색">
       <label class="search-label">사용여부</label>
@@ -185,85 +192,50 @@ window.MbMemGroupMng = {
         <option value="">전체</option>
         <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
-        회원그룹 목록
-        <span class="list-count">{{ cfVisibleCount }}건</span>
-      </span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
-      </div>
-    </div>
+  <bo-grid-crud
+    :columns="gridColumns" :rows="gridRows" row-key="memberGroupId"
+    list-title="회원그룹 목록"
+    :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
+    v-model:focusedIdx="uiState.focusedIdx"
+    v-model:checkAll="uiState.checkAll"
+    @add="addRow" @save="handleSave"
+    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+    @cell-change="onCellChange">
 
-    <div style="max-height:480px;overflow-y:auto;">
-      <table class="bo-table crud-grid">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th class="col-id">ID</th>
-          <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll"></th>
-          <th style="min-width:180px;">그룹명</th>
-          <th style="min-width:260px;">메모</th>
-          <th style="width:90px;text-align:right;">회원수</th>
-          <th style="width:90px;text-align:center;">사용여부</th>
-          <th class="col-act-cancel"></th>
-          <th class="col-act-delete"></th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="uiState.loading">
-            <td colspan="10" style="text-align:center;padding:30px;color:#aaa;">로딩중...</td>
-          </tr>
-          <tr v-else-if="!gridRows.length">
-            <td colspan="10" style="text-align:center;padding:30px;color:#aaa;">데이터가 없습니다.</td>
-          </tr>
-          <tr v-else v-for="(row, idx) in gridRows" :key="row.memberGroupId"
-              class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
-              @click="setFocused(idx)">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-            <td class="col-id-val">{{ row.memberGroupId > 0 ? row.memberGroupId : 'NEW' }}</td>
-            <td class="col-status-val">
-              <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
-            </td>
-            <td class="col-check-val"><input type="checkbox" v-model="row._row_check"></td>
-            <td>
-              <input class="grid-input" v-model="row.groupNm"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="그룹명">
-            </td>
-            <td>
-              <input class="grid-input" v-model="row.groupMemo"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="메모">
-            </td>
-            <td style="text-align:right;padding-right:10px;">{{ (row.memberCnt || 0).toLocaleString() }}</td>
-            <td>
-              <select class="grid-select" v-model="row.useYn"
-                :disabled="row._row_status==='D'" @change="onCellChange(row)">
-                <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-              </select>
-            </td>
-            <td class="col-act-cancel-val">
-              <button v-if="['U','I','D'].includes(row._row_status)"
-                class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-            </td>
-            <td class="col-act-delete-val">
-              <button v-if="['N','U'].includes(row._row_status)"
-                class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+
+    <template #cell-groupNm="{ row }">
+      <td>
+        <input class="grid-input" v-model="row.groupNm"
+          :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="그룹명">
+      </td>
+    </template>
+    <template #cell-groupMemo="{ row }">
+      <td>
+        <input class="grid-input" v-model="row.groupMemo"
+          :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="메모">
+      </td>
+    </template>
+    <template #cell-memberCnt="{ row }">
+      <td style="text-align:right;padding-right:10px;">{{ (row.memberCnt || 0).toLocaleString() }}</td>
+    </template>
+    <template #cell-useYn="{ row }">
+      <td>
+        <select class="grid-select" v-model="row.useYn"
+          :disabled="row._row_status==='D'" @change="onCellChange(row)">
+          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+      </td>
+    </template>
+
+    <template #row-actions="{ row, idx }">
+      <button v-if="['U','I','D'].includes(row._row_status)"
+        class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+      <button v-if="['N','U'].includes(row._row_status)"
+        class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+    </template>
+  </bo-grid-crud>
 </div>`
 };

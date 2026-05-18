@@ -132,18 +132,14 @@ window.PdRestockNotiMng = {
 <div>
   <div class="page-title">재입고알림관리</div>
     <div class="card">
-      <div class="search-bar">
+      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
         <label class="search-label">상품명</label>
         <input v-model="searchParam.prod" @keyup.enter="() => onSearch?.()" placeholder="상품명 검색">
         <label class="search-label">알림발송</label>
         <select v-model="searchParam.noti">
           <option value="">전체</option><option v-for="o in codes.send_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
-        <div class="search-actions">
-          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-          <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-        </div>
-      </div>
+      </bo-search-area>
     </div>
     <div class="card">
       <div class="toolbar">

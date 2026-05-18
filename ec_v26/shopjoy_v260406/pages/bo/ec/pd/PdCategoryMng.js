@@ -403,7 +403,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <label class="search-label">사이트 <span style="color:#e8587a">*</span></label>
       <select class="form-control" v-model="searchParam.siteId" @change="onSiteChange" style="width:160px">
         <option v-for="s in sites" :key="s.siteId" :value="s.siteId">{{ s.siteId }} {{ s.siteNm }}</option>
@@ -420,11 +420,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         <option value="">전체</option>
         <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->

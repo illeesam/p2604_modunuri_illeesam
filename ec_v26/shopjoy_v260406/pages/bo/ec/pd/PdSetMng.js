@@ -422,15 +422,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <label class="search-label">세트상품명</label>
       <input class="form-control" v-model="searchParam.nm" @keyup.enter="() => onSearch?.()"
              placeholder="세트상품명 검색" style="max-width:320px">
-      <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   <!-- -- 목록 ------------------------------------------------------------- -->

@@ -242,7 +242,7 @@ window.MbMemberMng = {
 <div>
   <div class="page-title">회원관리</div>
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <label class="search-label">이름/이메일/ID</label>
       <bo-multi-check-select
         v-model="searchParam.searchType"
@@ -264,11 +264,7 @@ window.MbMemberMng = {
         <option value="">전체</option>
         <option v-for="c in codes.member_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   <div class="card">
     <div class="toolbar">

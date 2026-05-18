@@ -119,7 +119,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 • 차이 발생 건은 원인 파악 후 조정(StSettleAdjMng)으로 처리하거나 수동 대사 확인합니다.</div>
   </div>
   <div class="card">
-    <div class="search-bar" style="flex-wrap:wrap;gap:8px">
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset">
       <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
         <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
@@ -138,11 +138,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         all-label="전체 선택"
         min-width="160px" />
       <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:180px" @keyup.enter="() => onSearch?.()" />
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">

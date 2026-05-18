@@ -19,12 +19,12 @@ window.MbMemGradeMng = {
     const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
     const gridColumns = [
-      { key: 'gradeCd',        label: '등급코드' },
-      { key: 'gradeNm',        label: '등급명' },
-      { key: 'gradeRank',      label: '순위' },
-      { key: 'minPurchaseAmt', label: '최소구매금액' },
-      { key: 'saveRate',       label: '적립률(%)' },
-      { key: 'useYn',          label: '사용여부' },
+      { key: 'gradeCd',        label: '등급코드',     style: 'width:130px;' },
+      { key: 'gradeNm',        label: '등급명',       style: 'min-width:150px;' },
+      { key: 'gradeRank',      label: '순위',         style: 'width:80px;text-align:right;' },
+      { key: 'minPurchaseAmt', label: '최소구매금액', style: 'width:150px;text-align:right;' },
+      { key: 'saveRate',       label: '적립률(%)',    style: 'width:110px;text-align:right;' },
+      { key: 'useYn',          label: '사용여부',     style: 'width:90px;text-align:center;' },
     ];
 
     /* fnLoadCodes */
@@ -224,14 +224,6 @@ window.MbMemGradeMng = {
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @cell-change="onCellChange">
 
-    <template #head>
-      <th style="width:130px;">등급코드</th>
-      <th style="min-width:150px;">등급명</th>
-      <th style="width:80px;text-align:right;">순위</th>
-      <th style="width:150px;text-align:right;">최소구매금액</th>
-      <th style="width:110px;text-align:right;">적립률(%)</th>
-      <th style="width:90px;text-align:center;">사용여부</th>
-    </template>
 
     <template #cell-gradeCd="{ row }">
       <td>

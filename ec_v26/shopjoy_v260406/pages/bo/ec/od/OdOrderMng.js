@@ -388,7 +388,7 @@ window.OdOrderMng = {
 <div>
   <div class="page-title">주문관리</div>
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select v-model="searchParam.searchType" :options="[
           { value: 'orderId',   label: '주문ID' },
           { value: 'memberNm',  label: '회원명' },
@@ -410,11 +410,7 @@ window.OdOrderMng = {
         <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.dateType"><option v-for="c in codes.order_date_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   <div class="card">
     <div class="toolbar">

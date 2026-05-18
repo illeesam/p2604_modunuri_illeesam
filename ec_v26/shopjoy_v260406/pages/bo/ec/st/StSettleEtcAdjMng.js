@@ -187,7 +187,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 • 승인 상태: 대기 / 승인 / 반려</div>
   </div>
   <div class="card">
-    <div class="search-bar" style="flex-wrap:wrap;gap:8px">
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset">
       <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
         <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
@@ -210,11 +210,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         all-label="전체 선택"
         min-width="160px" />
       <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:180px" @keyup.enter="() => onSearch?.()" />
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   <div class="card" style="margin-top:12px">
     <div class="toolbar">

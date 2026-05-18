@@ -223,7 +223,7 @@ window.OdCartMng = {
 
   <!-- 검색 -->
   <div class="card" style="margin-bottom:14px;">
-    <div class="search-bar" style="flex-wrap:wrap;gap:8px 16px;">
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px 16px;" @search="onSearch" @reset="onReset">
 
       <label class="search-label">사이트</label>
       <select v-model="search.siteId" class="form-control" style="width:150px;">
@@ -257,12 +257,7 @@ window.OdCartMng = {
       <input v-model="search.dateStart" type="date" class="form-control" style="width:136px;" />
       <span style="margin:0 2px;color:#999;">~</span>
       <input v-model="search.dateEnd" type="date" class="form-control" style="width:136px;" />
-
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   <!-- 목록 -->

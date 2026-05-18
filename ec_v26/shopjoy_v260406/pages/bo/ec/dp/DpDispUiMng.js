@@ -162,7 +162,7 @@ window.DpDispUiMng = {
 <div>
   <div class="page-title">전시 UI 관리</div>
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset">
       <label class="search-label">키워드</label>
       <input class="form-control" v-model="searchParam.searchValue" placeholder="UI명 검색" @keyup.enter="onSearch" style="width:200px;" />
       <label class="search-label">사용여부</label>
@@ -170,11 +170,7 @@ window.DpDispUiMng = {
         <option value="">전체</option>
         <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">🔍 조회</button>
-        <button class="btn btn-secondary" @click="onReset">↺ 초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">

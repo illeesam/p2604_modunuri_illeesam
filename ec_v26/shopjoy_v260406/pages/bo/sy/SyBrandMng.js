@@ -271,7 +271,7 @@ window.SyBrandMng = {
 
     /* BoGridCrud 호환 — 컬럼 정의 + local 모드 컬럼 hint */
     const gridColumns = [
-      { key: 'pathId',      label: '표시경로', style: 'min-width:140px;' },
+      { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', style: 'min-width:140px;' },
       { key: 'brandCode',   label: '브랜드코드', style: 'min-width:110px;', edit: 'text', mono: true, placeholder: 'BRAND_CODE' },
       { key: 'brandNm',     label: '브랜드명',  style: 'min-width:130px;', edit: 'text', placeholder: '브랜드명' },
       { key: 'brandEnNm',   label: '영문명',    style: 'min-width:130px;', edit: 'text', placeholder: 'Brand Name' },
@@ -341,15 +341,6 @@ window.SyBrandMng = {
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @cell-change="onCellChange" @export="exportExcel">
 
-    <template #head>
-      <th style="min-width:140px;" :title="fnColTitle({label:'표시경로'})">표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
-      <th style="min-width:110px;" :title="fnColTitle({label:'브랜드코드'})">브랜드코드</th>
-      <th style="min-width:130px;" :title="fnColTitle({label:'브랜드명'})">브랜드명</th>
-      <th style="min-width:130px;" :title="fnColTitle({label:'영문명'})">영문명</th>
-      <th style="min-width:200px;" :title="fnColTitle({label:'로고 URL'})">로고 URL</th>
-      <th class="col-ord" :title="fnColTitle({label:'순서'})">순서</th>
-      <th class="col-use" :title="fnColTitle({label:'사용여부'})">사용여부</th>
-    </template>
 
     <template #cell-pathId="{ row }">
       <bo-path-pick-field biz-cd="sy_brand" :row="row" @change="onPathChange(row)" />

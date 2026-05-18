@@ -523,19 +523,27 @@ window.SyCodeMng = {
       '공통코드목록.csv'
     );
 
-    /* BoGridCrud 컬럼 정의 (코드목록 일반 탭 / 특수셀은 cell/head 슬롯 override) */
-    const codeGridColumns = [
-      { key: 'codeGrp',         label: '코드그룹',          edit: 'text' },
-      { key: 'type',            label: '유형',             style: 'width:60px;' },
-      { key: 'codeLabel',       label: '코드라벨',          edit: 'text' },
-      { key: 'codeValue',       label: '코드값',           edit: 'text', mono: true },
-      { key: 'parentCodeValue', label: '상위코드값',        style: 'width:140px;' },
-      { key: 'sortOrd',         label: '순서',             cls: 'col-ord', edit: 'number' },
-      { key: 'useYn',           label: '사용여부',          cls: 'col-use' },
-      { key: 'codeOpt1',        label: '스타일 (code_opt1)', style: 'width:140px;' },
-      { key: 'codeRemark',      label: '비고',             edit: 'text' },
-      { key: 'siteNm',          label: '사이트명',          style: 'width:80px;' },
-    ];
+    /* BoGridCrud 컬럼 정의 (코드목록 일반 탭 / 특수셀은 #cell-{key} 슬롯 override)
+       parentCodeValue 는 트리타입에서만 노출 → 헤더·셀 정합 위해 columns 자체를 동적 구성 */
+    const fnCodeGridColumns = () => {
+      const cols = [
+        { key: 'codeGrp',    label: '코드그룹',          edit: 'text' },
+        { key: 'type',       label: '유형',             style: 'width:60px;' },
+        { key: 'codeLabel',  label: '코드라벨',          edit: 'text' },
+        { key: 'codeValue',  label: '코드값',           edit: 'text', mono: true },
+      ];
+      if (uiState.isTreeType) {
+        cols.push({ key: 'parentCodeValue', label: '상위코드값', style: 'width:140px;' });
+      }
+      cols.push(
+        { key: 'sortOrd',    label: '순서',             cls: 'col-ord', edit: 'number' },
+        { key: 'useYn',      label: '사용여부',          cls: 'col-use' },
+        { key: 'codeOpt1',   label: '스타일 (code_opt1)', style: 'width:140px;' },
+        { key: 'codeRemark', label: '비고',             edit: 'text' },
+        { key: 'siteNm',     label: '사이트명',          style: 'width:80px;' },
+      );
+      return cols;
+    };
 
     /* 트리 탭 그리드 — 전 셀 #cell-* 슬롯 override (트리 들여쓰기 UI 보존).
      * BoGridCrud 트리 모드: flat-rows=flatTree, row-accessor=it=>it.node.code */
@@ -552,13 +560,13 @@ window.SyCodeMng = {
     const treeRowAccessor = (it) => it.node.code;
     const treeRowKeyFn    = (it) => it.node.value;
 
-    /* 코드그룹 그리드 — 전 셀 #cell-* 슬롯(onGrpChange 추적 보존), 헤더는 #head 슬롯 */
+    /* 코드그룹 그리드 — 전 셀 #cell-* 슬롯(onGrpChange 추적 보존), 헤더는 columns 자동생성(sortKey 포함) */
     const grpGridColumns = [
-      { key: 'pathId',      label: '표시경로' },
-      { key: 'codeGrp',     label: '코드그룹' },
-      { key: 'grpNm',       label: '그룹명' },
+      { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)' },
+      { key: 'codeGrp',     label: '코드그룹', sortKey: 'codeGrp' },
+      { key: 'grpNm',       label: '그룹명',   sortKey: 'grpNm' },
       { key: 'type',        label: '유형',  style: 'width:70px;' },
-      { key: 'description', label: '설명' },
+      { key: 'description', label: '설명',   sortKey: 'description' },
       { key: 'useYn',       label: '사용',  cls: 'col-use' },
     ];
 
@@ -566,7 +574,7 @@ window.SyCodeMng = {
 
     return {
       uiState, pageCodes, siteNm,
-      codeGridColumns, grpGridColumns, treeGridColumns, treeRowAccessor, treeRowKeyFn,
+      fnCodeGridColumns, grpGridColumns, treeGridColumns, treeRowAccessor, treeRowKeyFn,
       codeTotal, grpCount, fnCodeListTitle,
       searchParam, handleDateRangeChange,
       onSearch, onReset, onCellChange,
@@ -622,26 +630,13 @@ window.SyCodeMng = {
       :columns="grpGridColumns" :rows="uiState.grpRows" row-key="codeGrp"
       list-title="공통코드그룹관리"
       :show-row-id="false" :show-row-check="false" :draggable="false"
-      :show-add="false" :show-save="false">
+      :show-add="false" :show-save="false"
+      :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"
+      @sort="onGrpSort">
 
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="addGrp">+ 행추가</button>
         <button class="btn btn-primary btn-sm" @click="handleSaveGrp" :disabled="!uiState.grpDirtyCount">저장 <span v-if="uiState.grpDirtyCount">({{ uiState.grpDirtyCount }})</span></button>
-      </template>
-
-      <template #head>
-        <th>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
-        <th @click="onGrpSort('codeGrp')" style="cursor:pointer;user-select:none;white-space:nowrap;">
-          코드그룹 <span :style="uiState.grpSortKey==='codeGrp' ? {color:'#e8587a',fontWeight:'bold'} : {color:'#bbb'}">{{ grpSortIcon('codeGrp') }}</span>
-        </th>
-        <th @click="onGrpSort('grpNm')" style="cursor:pointer;user-select:none;white-space:nowrap;">
-          그룹명 <span :style="uiState.grpSortKey==='grpNm' ? {color:'#e8587a',fontWeight:'bold'} : {color:'#bbb'}">{{ grpSortIcon('grpNm') }}</span>
-        </th>
-        <th style="width:70px;">유형</th>
-        <th @click="onGrpSort('description')" style="cursor:pointer;user-select:none;white-space:nowrap;">
-          설명 <span :style="uiState.grpSortKey==='description' ? {color:'#e8587a',fontWeight:'bold'} : {color:'#bbb'}">{{ grpSortIcon('description') }}</span>
-        </th>
-        <th class="col-use">사용</th>
       </template>
 
       <template #cell-pathId="{ row: g }">
@@ -704,7 +699,7 @@ window.SyCodeMng = {
     <!-- -- 일반 탭 ---------------------------------------------------------- -->
     <div v-if="uiState.activeCodeTab==='일반'">
       <bo-grid-crud
-        :columns="codeGridColumns" :rows="uiState.gridRows" row-key="codeId"
+        :columns="fnCodeGridColumns()" :rows="uiState.gridRows" row-key="codeId"
         :list-title="fnCodeListTitle()" :show-export="true" :draggable="true"
         max-height="400px"
         :empty-text="uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.'"
@@ -713,19 +708,6 @@ window.SyCodeMng = {
         @add="addRow" @save="handleSave"
         @delete-checked="deleteRows" @cancel-checked="cancelChecked"
         @cell-change="onCellChange" @export="exportExcel" @reorder="onDragEnd">
-
-        <template #head>
-          <th>코드그룹</th>
-          <th style="width:60px;">유형</th>
-          <th>코드라벨</th>
-          <th>코드값</th>
-          <th v-if="uiState.isTreeType" style="width:140px;">상위코드값</th>
-          <th class="col-ord">순서</th>
-          <th class="col-use">사용여부</th>
-          <th style="width:140px;">스타일 (code_opt1)</th>
-          <th>비고</th>
-          <th style="width:80px;">사이트명</th>
-        </template>
 
         <template #cell-type="{ row }">
           <td style="text-align:center;" @dblclick="handleLoadDetail(row.codeId)">
@@ -737,7 +719,7 @@ window.SyCodeMng = {
         </template>
 
         <template #cell-parentCodeValue="{ row }">
-          <td v-if="uiState.isTreeType" @dblclick="handleLoadDetail(row.codeId)">
+          <td @dblclick="handleLoadDetail(row.codeId)">
             <select class="grid-select" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
               <option :value="null">-- 없음 --</option>
               <option v-for="opt in parentOpts" :key="opt.value" :value="opt.value">{{ opt.label }}</option>

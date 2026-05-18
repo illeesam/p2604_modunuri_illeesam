@@ -207,7 +207,7 @@ window.StSettleCloseMng = {
 
   <!-- -- 마감 이력 ---------------------------------------------------------- -->
   <div class="card" style="margin-top:12px">
-    <div class="search-bar" style="margin-bottom:12px">
+    <bo-search-area :loading="uiState.loading" bar-style="margin-bottom:12px" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchType"
         :options="[
@@ -222,11 +222,7 @@ window.StSettleCloseMng = {
         <option value="">상태 전체</option>
         <option v-for="c in codes.settle_close_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
     <div class="toolbar"><span class="list-title">정산마감 이력</span><span class="list-count">총 {{ cfFilteredClose.length }}건</span></div>
     <table class="bo-table">
       <thead><tr><th style="width:36px;text-align:center;">번호</th><th>정산월</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료</th><th>프로모션비</th><th>정산액</th><th>마감일</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>

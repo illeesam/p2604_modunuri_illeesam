@@ -476,7 +476,7 @@ window.DpDispPanelMng = {
 <div>
   <div class="page-title">전시패널관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 전시패널 관리</span></div>
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -494,13 +494,8 @@ window.DpDispPanelMng = {
       </select>
       <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
-    <!-- -- 2행: 전시일·노출조건·인증 ---------------------------------------------- -->
-    <div class="search-bar" style="margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
+      <!-- -- 2행: 전시일·노출조건·인증 ---------------------------------------------- -->
+      <div class="search-bar" style="flex-basis:100%;margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
       <span class="search-label">전시일시</span>
       <bo-date-time-picker v-model:date="searchParam.dispDate" v-model:time="searchParam.dispTime"
         :show-clear="false" input-class="date-range-input" date-width="145px" time-width="145px" />
@@ -515,7 +510,8 @@ window.DpDispPanelMng = {
         <option value="">전체</option>
         <option v-for="o in codes.layout_types" :key="o?.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
-    </div>
+      </div>
+    </bo-search-area>
   </div>
   <!-- -- 본문: 좌측 트리 + 우측 목록 ---------------------------------------------- -->
   <div style="display:flex;gap:12px;align-items:flex-start;">

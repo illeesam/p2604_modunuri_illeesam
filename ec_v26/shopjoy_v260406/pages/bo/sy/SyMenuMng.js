@@ -322,17 +322,6 @@ window.SyMenuMng = {
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @cell-change="onCellChange" @export="exportExcel">
 
-    <template #head>
-      <th style="width:110px;">메뉴코드</th>
-      <th style="min-width:180px;">메뉴명</th>
-      <th style="min-width:140px;">상위메뉴</th>
-      <th style="min-width:160px;">메뉴URL</th>
-      <th style="width:80px;">유형</th>
-      <th class="col-ord">순서</th>
-      <th class="col-use">사용여부</th>
-      <th>비고</th>
-      <th style="width:80px;">사이트명</th>
-    </template>
 
     <template #cell-menuNm="{ row }">
       <td style="padding:3px 6px;">

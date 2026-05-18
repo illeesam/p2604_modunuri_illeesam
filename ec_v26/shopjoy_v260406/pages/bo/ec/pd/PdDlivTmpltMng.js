@@ -192,7 +192,7 @@ window.PdDlivTmpltMng = {
     </div>
   </div>
   <div class="card">
-      <div class="search-bar">
+      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
         <label class="search-label">템플릿명</label>
         <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="템플릿명 검색">
         <label class="search-label">배송방법</label>
@@ -204,11 +204,7 @@ window.PdDlivTmpltMng = {
           <option value="">전체</option>
           <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
-        <div class="search-actions">
-          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-          <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-        </div>
-      </div>
+      </bo-search-area>
     </div>
     <div class="card">
       <div class="toolbar">

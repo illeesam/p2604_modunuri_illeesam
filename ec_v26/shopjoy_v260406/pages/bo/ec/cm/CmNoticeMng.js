@@ -217,7 +217,7 @@ window.CmNoticeMng = {
 
   <!-- -- 검색 영역 ------------------------------------------------------- -->
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
       <input v-model="searchParam.searchValue" placeholder="제목 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
@@ -235,11 +235,7 @@ window.CmNoticeMng = {
         <option value="">옵션선택</option>
         <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
 
   <!-- -- 목록 영역 ------------------------------------------------------- -->

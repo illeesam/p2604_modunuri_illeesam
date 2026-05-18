@@ -212,7 +212,7 @@ window.DpDispWidgetLibMng = {
   <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}</style>
   <div class="page-title">위젯라이브러리관리</div>
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" :show-actions="false" @search="onSearch" @reset="onReset">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
@@ -238,7 +238,7 @@ window.DpDispWidgetLibMng = {
           :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);animation:pulse 1.2s ease-in-out infinite;' : ''">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
-    </div>
+    </bo-search-area>
   </div>
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">

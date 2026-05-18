@@ -365,18 +365,6 @@ window.SyBatchMng = {
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @cell-change="onCellChange" @export="exportExcel">
 
-    <template #head>
-      <th style="min-width:140px;">표시경로</th>
-      <th style="min-width:120px;">배치명</th>
-      <th style="min-width:160px;">배치코드</th>
-      <th style="min-width:170px;">Cron 표현식</th>
-      <th style="width:62px;">활성</th>
-      <th style="min-width:130px;">설명</th>
-      <th style="width:110px;">최근실행</th>
-      <th style="width:72px;">실행상태</th>
-      <th style="width:55px;">사이트</th>
-      <th style="width:36px;"></th>
-    </template>
 
     <template #cell-pathId="{ row }">
       <td>

@@ -121,7 +121,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
 <div>
   <div class="page-title">상품 Q&A 관리</div>
   <div class="card">
-    <div class="search-bar">
+    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset">
       <label class="search-label">키워드</label>
       <input class="form-control" v-model="searchParam.searchValue" placeholder="제목 검색" @keyup.enter="onSearch" style="width:200px;" />
       <label class="search-label">상태</label>
@@ -129,11 +129,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
         <option value="">전체</option>
         <option v-for="c in codes.qna_statuses" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">🔍 조회</button>
-        <button class="btn btn-secondary" @click="onReset">↺ 초기화</button>
-      </div>
-    </div>
+    </bo-search-area>
   </div>
   <div class="card">
     <div class="toolbar">

@@ -167,7 +167,7 @@ window.SyPropMng = {
 
     // -- return ---------------------------------------------------------------
 
-    /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+    /* BoGridCrud 컬럼 정의 (헤더는 label/style/cls 로 자동 생성, 특수셀은 #cell-{key} 슬롯 override) */
     const gridColumns = [
       { key: 'pathId',     label: '표시경로',  style: 'min-width:160px;' },
       { key: 'propKey',    label: '키',        edit: 'text', mono: true },
@@ -235,17 +235,6 @@ window.SyPropMng = {
       @add="addRow" @save="handleSave"
       @delete-checked="deleteChecked" @cancel-checked="cancelChecked"
       @cell-change="onCellChange">
-
-      <template #head>
-        <th style="min-width:160px;">표시경로</th>
-        <th>키</th>
-        <th>값</th>
-        <th>라벨</th>
-        <th class="col-id">타입</th>
-        <th class="col-ord">정렬</th>
-        <th class="col-use">사용</th>
-        <th>비고</th>
-      </template>
 
       <template #cell-pathId="{ row }">
         <bo-path-pick-field biz-cd="sy_prop" :row="row" @change="onCellChange(row)" />

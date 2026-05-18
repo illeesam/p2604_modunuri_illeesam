@@ -212,7 +212,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
 <div>
   <div class="page-title">게시판(블로그)관리</div>
     <div class="card">
-      <div class="search-bar">
+      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
         <label class="search-label">제목/작성자</label>
         <bo-multi-check-select
           v-model="searchParam.searchType"
@@ -234,11 +234,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
           <option value="">전체</option>
           <option v-for="o in codes.notice_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
-        <div class="search-actions">
-          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-          <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-        </div>
-      </div>
+      </bo-search-area>
     </div>
     <div class="card">
       <div class="toolbar">

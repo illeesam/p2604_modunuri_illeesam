@@ -43,6 +43,10 @@
  *                               / showRowCheck (체크OFF 시 행삭제·취소 버튼도 숨김)
  *                               / showAdd / showSave  ← 모두 기본 true
  *                  emit:  add, save, cancel-checked, delete-checked, reorder
+ *                  헤더: #head 슬롯 없으면 columns 로 자동 생성.
+ *                        col.label(표시명) / col.style(인라인) / col.cls(클래스
+ *                        예 col-id·col-ord·col-use) / col.noHead(라벨 숨김, th 유지)
+ *                        정렬클릭·조건부 컬럼 등 동적 헤더만 #head 슬롯 사용
  *                  슬롯: #toolbar-actions, #head, #cell-{key},
  *                        #row-actions(우측 행액션 1컬럼 — 취소·삭제·설정 등 한 셀에)
  *                        ※ 구 #row-cancel / #row-delete 는 #row-actions 없을 때
@@ -85,6 +89,7 @@ window.BoSearchArea = {
     searchLabel: { type: String,  default: '조회' },
     resetLabel:  { type: String,  default: '초기화' },
     loading:     { type: Boolean, default: false },
+    barStyle:    { type: String,  default: '' },     // search-bar 인라인 style 보존용
   },
   emits: ['search', 'reset'],
   setup(props, { emit }) {
@@ -93,7 +98,7 @@ window.BoSearchArea = {
     return { onSearch, onReset };
   },
   template: /* html */`
-<div class="search-bar" @keyup.enter="onSearch">
+<div class="search-bar" :style="barStyle" @keyup.enter="onSearch">
   <slot></slot>
   <div v-if="showActions" class="search-actions">
     <slot name="actions-before"></slot>
@@ -235,10 +240,10 @@ window.BoGrid = {
         <th v-if="draggable" style="width:28px"></th>
         <th style="width:36px;text-align:center;">번호</th>
         <slot name="head">
-          <th v-for="col in columns" :key="col.key"
+          <th v-for="col in columns" :key="col.key" :class="col.cls"
               :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
               @click="onSort(col)">
-            {{ col.label }}
+            {{ col.noHead ? '' : col.label }}
             <span v-if="col.sortKey"
                   :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">{{ sortIcon(col) }}</span>
           </th>
@@ -330,6 +335,7 @@ window.BoGridCrud = {
     showAdd:       { type: Boolean, default: true },           // [+ 행추가] 버튼 표시
     showSave:      { type: Boolean, default: true },           // [저장] 버튼 표시
     cellTitle:  { type: Function, default: null },             // (col)=>title 문자열 (local 모드 컬럼 hint)
+    sortState:  { type: Object, default: null },               // { sortKey, sortDir } reactive — 지정 시 col.sortKey 헤더 클릭 정렬
     emptyText:  { type: String, default: '데이터가 없습니다.' },
     /* ── 트리 모드 ─ flatRows + rowAccessor 둘 다 주면 트리 분기 ─────────────
      *  flatRows    : 화면이 평탄화한 래퍼 배열 (예: [{node,depth},...])
@@ -342,7 +348,7 @@ window.BoGridCrud = {
     treeRowKey:  { type: Function, default: null },
   },
   emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
-          'update:checkAll', 'update:focusedIdx', 'export'],
+          'update:checkAll', 'update:focusedIdx', 'export', 'sort'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
 
@@ -432,9 +438,19 @@ window.BoGridCrud = {
     const onDeleteChecked = () => emit('delete-checked');
     const onExport        = () => emit('export');
 
+    /* 헤더 클릭 정렬 — col.sortKey 가 있고 sortState 전달 시 활성 */
+    const onSort = (col) => { if (col.sortKey) emit('sort', col.sortKey); };
+    const sortIcon = (col) => {
+      const st = props.sortState;
+      if (!col.sortKey || !st) return '';
+      if (st.sortKey !== col.sortKey) return '⇅';
+      return st.sortDir === 'asc' ? '↑' : '↓';
+    };
+    const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
+
     return { U, cfVisibleCount, fnStatusClass, allChecked, onToggleCheckAll, onCellChange,
              onDragStart, onDragOver, onDragEnd, onAdd, onSave, onCancelChecked, onDeleteChecked,
-             onExport, onSetFocused, fnColTitle, cfEmptyColspan,
+             onExport, onSetFocused, fnColTitle, cfEmptyColspan, onSort, sortIcon, sortActive,
              cfTreeMode, cfDispRows, fnRow, fnRowKey, cfShowDrag, cfShowNo, cfShowId };
   },
   template: /* html */`
@@ -466,7 +482,13 @@ window.BoGridCrud = {
             <input type="checkbox" :checked="allChecked" @change="onToggleCheckAll" />
           </th>
           <slot name="head">
-            <th v-for="col in columns" :key="col.key" :style="U.thStyle(col)" :title="fnColTitle(col)">{{ col.label }}</th>
+            <th v-for="col in columns" :key="col.key" :class="col.cls"
+                :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
+                :title="fnColTitle(col)" @click="onSort(col)">
+              {{ col.noHead ? '' : col.label }}
+              <span v-if="col.sortKey"
+                    :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">{{ sortIcon(col) }}</span>
+            </th>
           </slot>
           <th class="col-act"></th>
         </tr>
