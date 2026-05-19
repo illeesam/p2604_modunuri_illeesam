@@ -55,6 +55,25 @@ window.MbMemberHist = {
       return sampleClaims[props.memberId] || [];
     });
 
+    // -- 그리드 컬럼 정의 ------------------------------------------------------
+    const orderCols = [
+      { key: 'orderId', label: '주문ID' },
+      { key: 'orderDate', label: '주문일' },
+      { key: 'prodNm', label: '상품' },
+      { key: 'totalPrice', label: '금액', fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'statusCd', label: '상태' },
+      { key: '_act', label: '관리' },
+    ];
+    const claimCols = [
+      { key: 'claimId', label: '클레임ID' },
+      { key: 'orderId', label: '주문ID' },
+      { key: 'type', label: '유형' },
+      { key: 'statusCd', label: '상태' },
+      { key: 'reasonCd', label: '사유' },
+      { key: 'requestDate', label: '신청일', fmt: (v) => (v ? v.slice(0, 10) : '') },
+      { key: '_act', label: '관리' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return {
@@ -64,6 +83,8 @@ window.MbMemberHist = {
       showTab,
       tab,
       tabMode2,
+      orderCols,
+      claimCols,
       navigate: props.navigate,
       showRefModal: showRefModal
     };
@@ -89,40 +110,30 @@ window.MbMemberHist = {
   <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfMemberOrders.length }}</span></div>
-    <table class="bo-table" v-if="cfMemberOrders.length">
-      <thead><tr><th>주문ID</th><th>주문일</th><th>상품</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
-      <tbody>
-        <tr v-for="o in cfMemberOrders" :key="o?.orderId">
-          <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
-          <td>{{ o.orderDate }}</td>
-          <td>{{ o.prodNm }}</td>
-          <td>{{ (o.totalPrice||0).toLocaleString() }}원</td>
-          <td>{{ o.statusCd }}</td>
-          <td><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:o.orderId})">상세</button></td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">주문 내역이 없습니다.</div>
+    <bo-grid bare :columns="orderCols" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다.">
+      <template #cell-orderId="{ row }">
+        <td><span class="ref-link" @click="showRefModal('order', row.orderId)">{{ row.orderId }}</span></td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button></td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 연관 클레임 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfMemberClaims.length }}</span></div>
-    <table class="bo-table" v-if="cfMemberClaims.length">
-      <thead><tr><th>클레임ID</th><th>주문ID</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
-      <tbody>
-        <tr v-for="c in cfMemberClaims" :key="c?.claimId">
-          <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('order', c.orderId)">{{ c.orderId }}</span></td>
-          <td>{{ c.type }}</td>
-          <td>{{ c.statusCd }}</td>
-          <td>{{ c.reasonCd }}</td>
-          <td>{{ c.requestDate.slice(0,10) }}</td>
-          <td><button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:c.claimId})">상세</button></td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">클레임 내역이 없습니다.</div>
+    <bo-grid bare :columns="claimCols" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다.">
+      <template #cell-claimId="{ row }">
+        <td><span class="ref-link" @click="showRefModal('claim', row.claimId)">{{ row.claimId }}</span></td>
+      </template>
+      <template #cell-orderId="{ row }">
+        <td><span class="ref-link" @click="showRefModal('order', row.orderId)">{{ row.orderId }}</span></td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td><button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button></td>
+      </template>
+    </bo-grid>
   </div>
   </div>
 </div>
