@@ -180,8 +180,13 @@ window.BoGrid = {
     loading:    { type: Boolean, default: false },
     emptyText:  { type: String, default: '데이터가 없습니다.' },
     bare:       { type: Boolean, default: false },               // true=card/toolbar/pager 없이 <table>만 (뷰토글·공용페이저·인라인Dtl 화면용)
+    selectable: { type: Boolean, default: false },               // true=좌측 체크박스 컬럼 + 헤더 전체선택 (일괄작업 목록용). 기본 off → 기존 화면 무영향
+    checkedKey: { type: String,  default: null },                // 체크 식별 필드 (없으면 rowKey 사용). isChecked/toggleCheck 가 받는 값
+    isChecked:  { type: Function, default: null },                // (key)=>bool. 행 체크 여부 (부모 Set 기반)
+    allChecked: { type: Boolean, default: false },               // 헤더 전체선택 체크 상태 (부모 computed 미러)
   },
-  emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder'],
+  emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder',
+          'toggle-check', 'toggle-check-all'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
     const cfTotal = Vue.computed(() => props.pager ? (props.pager.pageTotalCount || 0) : props.rows.length);
@@ -219,11 +224,21 @@ window.BoGrid = {
     const fnRowStyle = (row, idx) => (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : 'cursor:pointer');
     const fnRowClass = (row, idx) => (typeof props.rowClass === 'function' ? props.rowClass(row, idx) : (row._isNew ? 'status-I' : ''));
     const fnIsExpanded = (row, idx) => (typeof props.isExpanded === 'function' ? !!props.isExpanded(row, idx) : false);
-    const cfColspan = Vue.computed(() => props.columns.length + 1);
+
+    /* 체크박스 — 부모 Set 기반. checkedKey(없으면 rowKey) 필드값을 식별자로 emit */
+    const fnRowChkVal = (row) => row[props.checkedKey || props.rowKey];
+    const fnRowChecked = (row) => (typeof props.isChecked === 'function' ? !!props.isChecked(fnRowChkVal(row)) : false);
+    const onToggleCheck = (row) => emit('toggle-check', fnRowChkVal(row));
+    const onToggleCheckAll = () => emit('toggle-check-all');
+
+    /* 빈행 colspan = 데이터컬럼 + 번호 + (체크/드래그/행액션) */
+    const cfColspan = Vue.computed(() => props.columns.length + 1
+      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
 
     return { U, cfTotal, rowNo, onSort, sortIcon, sortActive, onDragStart, onDragOver, onDragEnd,
              onRowClick, onSave, onRemove, onSetPage, onSizeChg,
-             fnRowStyle, fnRowClass, fnIsExpanded, cfColspan };
+             fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
+             fnRowChecked, onToggleCheck, onToggleCheckAll };
   },
   template: /* html */`
 <div :class="bare ? '' : 'card'">
@@ -238,6 +253,9 @@ window.BoGrid = {
   <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
     <thead>
       <tr>
+        <th v-if="selectable" style="width:36px;text-align:center;">
+          <input type="checkbox" :checked="allChecked" @change="onToggleCheckAll" />
+        </th>
         <th v-if="draggable" style="width:28px"></th>
         <th style="width:36px;text-align:center;">번호</th>
         <slot name="head">
@@ -258,6 +276,9 @@ window.BoGrid = {
         <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
             :draggable="draggable"
             @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
+          <td v-if="selectable" style="text-align:center;" @click.stop>
+            <input type="checkbox" :checked="fnRowChecked(row)" @change="onToggleCheck(row)" />
+          </td>
           <td v-if="draggable" style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
           <td style="text-align:center;font-size:11px;color:#999;">{{ rowNo(idx) }}</td>
           <template v-for="col in columns" :key="col.key">
@@ -295,7 +316,7 @@ window.BoGrid = {
         </tr>
       </template>
       <tr v-if="!rows.length">
-        <td :colspan="columns.length + (draggable ? 1 : 0) + (rowActions ? 1 : 0) + 2"
+        <td :colspan="cfColspan"
             style="text-align:center;padding:30px;color:#aaa">{{ emptyText }}</td>
       </tr>
     </tbody>

@@ -380,9 +380,27 @@ window.OdOrderMng = {
     /* 주문 onClearMember */
     const onClearMember = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
 
+    /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
+    const listColumns = [
+      { key: 'orderId',       label: '주문ID' },
+      { key: 'memberNm',      label: '회원' },
+      { key: 'orderDate',     label: '주문일시', sortKey: 'reg', style: 'white-space:nowrap;' },
+      { key: 'prodNm',        label: '상품' },
+      { key: 'payAmt',        label: '결제금액' },
+      { key: 'payMethodCd',   label: '결제수단' },
+      { key: '_payStatus',    label: '결제상태' },
+      { key: 'orderStatusCd', label: '주문상태' },
+      { key: '_claim',        label: '클레임상태' },
+      { key: '_site',         label: '사이트명' },
+      { key: '_act',          label: '관리', style: 'text-align:right;' },
+    ];
+    const fnGridRowStyle = (o) =>
+      (uiStateDetail.selectedId === o.orderId ? 'background:#fff8f9;' : '')
+      + (isChecked(o.orderId) ? 'background:#eef6fd;' : '');
+
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, listColumns, fnGridRowStyle };
   },
   template: /* html */`
 <div>
@@ -423,60 +441,68 @@ window.OdOrderMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
-        <th style="width:36px;text-align:center;">번호</th><th>주문ID</th><th>회원</th>
-        <th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">주문일시 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-        <th>상품</th><th>결제금액</th><th>결제수단</th><th>결제상태</th><th>주문상태</th><th>클레임상태</th><th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="orders.length===0"><td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(o, idx) in orders" :key="o?.orderId"
-          :style="(selectedId===o.orderId?'background:#fff8f9;':'') + (isChecked(o.orderId)?'background:#eef6fd;':'')">
-          <td style="text-align:center;"><input type="checkbox" :checked="isChecked(o.orderId)" @change="toggleCheck(o.orderId)" /></td>
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(o.orderId)" :style="selectedId===o.orderId?'color:#e8587a;font-weight:700;':''">{{ o.orderId }}<span v-if="selectedId===o.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="ref-link" @click="showRefModal('member', o.memberId)">{{ o.memberNm }}</span></td>
-          <td>{{ o.orderDate }}</td>
-          <td>
-            {{ o.prodNm }}
-            <span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:#e5e7eb;color:#555;font-weight:700;margin-left:4px;vertical-align:middle;">{{ getItemCount(o) }}개</span>
-          </td>
-          <td>{{ (o.payAmt||0).toLocaleString() }}원</td>
-          <td>
+    <bo-grid bare selectable :columns="listColumns" :rows="orders" :pager="pager" row-key="orderId"
+      :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
+      :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
+      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll">
+      <template #cell-orderId="{ row }">
+        <td><span class="title-link" @click="handleLoadDetail(row.orderId)" :style="selectedId===row.orderId?'color:#e8587a;font-weight:700;':''">{{ row.orderId }}<span v-if="selectedId===row.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+      </template>
+      <template #cell-memberNm="{ row }">
+        <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm }}</span></td>
+      </template>
+      <template #cell-prodNm="{ row }">
+        <td>
+          {{ row.prodNm }}
+          <span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:#e5e7eb;color:#555;font-weight:700;margin-left:4px;vertical-align:middle;">{{ getItemCount(row) }}개</span>
+        </td>
+      </template>
+      <template #cell-payAmt="{ row }">
+        <td>{{ (row.payAmt||0).toLocaleString() }}원</td>
+      </template>
+      <template #cell-payMethodCd="{ row }">
+        <td>
+          <span :style="{
+            fontSize:'11px',padding:'2px 8px',borderRadius:'10px',fontWeight:600,
+            background: row.payMethodCd==='계좌이체'?'#e3f2fd':row.payMethodCd==='카드결제'?'#f3e5f5':row.payMethodCd==='캐쉬'?'#fff3e0':'#e8f5e9',
+            color: row.payMethodCd==='계좌이체'?'#1565c0':row.payMethodCd==='카드결제'?'#6a1b9a':row.payMethodCd==='캐쉬'?'#e65100':'#2e7d32',
+          }">{{ row.payMethodCdNm || row.payMethodCd || '-' }}</span>
+        </td>
+      </template>
+      <template #cell-_payStatus="{ row }">
+        <td>
+          <span class="badge" :class="fnPayStatusBadge(row.orderStatusCd==='취소'||row.orderStatusCd==='자동취소'?'환불완료':row.orderStatusCd==='입금대기'?'미결제':'결제완료')">
+            {{ row.orderStatusCd==='취소'||row.orderStatusCd==='자동취소'?'환불완료':row.orderStatusCd==='입금대기'?'미결제':'결제완료' }}
+          </span>
+        </td>
+      </template>
+      <template #cell-orderStatusCd="{ row }">
+        <td><span class="badge" :class="fnStatusBadge(row.orderStatusCd)">{{ row.orderStatusCdNm || row.orderStatusCd }}</span></td>
+      </template>
+      <template #cell-_claim="{ row }">
+        <td>
+          <span v-if="claimByOrder(row.orderId)" style="display:inline-flex;align-items:center;gap:3px;">
             <span :style="{
-              fontSize:'11px',padding:'2px 8px',borderRadius:'10px',fontWeight:600,
-              background: o.payMethodCd==='계좌이체'?'#e3f2fd':o.payMethodCd==='카드결제'?'#f3e5f5':o.payMethodCd==='캐쉬'?'#fff3e0':'#e8f5e9',
-              color: o.payMethodCd==='계좌이체'?'#1565c0':o.payMethodCd==='카드결제'?'#6a1b9a':o.payMethodCd==='캐쉬'?'#e65100':'#2e7d32',
-            }">{{ o.payMethodCdNm || o.payMethodCd || '-' }}</span>
-          </td>
-          <td>
-            <span class="badge" :class="fnPayStatusBadge(o.orderStatusCd==='취소'||o.orderStatusCd==='자동취소'?'환불완료':o.orderStatusCd==='입금대기'?'미결제':'결제완료')">
-              {{ o.orderStatusCd==='취소'||o.orderStatusCd==='자동취소'?'환불완료':o.orderStatusCd==='입금대기'?'미결제':'결제완료' }}
+              fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,
+              background: fnClaimTypeColor(claimByOrder(row.orderId).claimTypeCd)
+            }">{{ claimByOrder(row.orderId).claimTypeCd }}</span>
+            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">
+              {{ claimByOrder(row.orderId).claimStatusCdNm || claimByOrder(row.orderId).claimStatusCd }}
             </span>
-          </td>
-          <td><span class="badge" :class="fnStatusBadge(o.orderStatusCd)">{{ o.orderStatusCdNm || o.orderStatusCd }}</span></td>
-          <td>
-            <span v-if="claimByOrder(o.orderId)" style="display:inline-flex;align-items:center;gap:3px;">
-              <span :style="{
-                fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,
-                background: fnClaimTypeColor(claimByOrder(o.orderId).claimTypeCd)
-              }">{{ claimByOrder(o.orderId).claimTypeCd }}</span>
-              <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">
-                {{ claimByOrder(o.orderId).claimStatusCdNm || claimByOrder(o.orderId).claimStatusCd }}
-              </span>
-            </span>
-            <span v-else style="font-size:11px;color:#ccc;">-</span>
-          </td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(o.orderId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(o)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
+          </span>
+          <span v-else style="font-size:11px;color:#ccc;">-</span>
+        </td>
+      </template>
+      <template #cell-_site="{ row }">
+        <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td><div class="actions">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.orderId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+        </div></td>
+      </template>
+    </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 

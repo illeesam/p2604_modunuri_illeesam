@@ -402,9 +402,26 @@ window.OdDlivMng = {
     /* 배송 onClearMember */
     const onClearMember = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
 
+    /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
+    const listColumns = [
+      { key: 'dlivId',           label: '배송ID' },
+      { key: 'orderId',          label: '주문ID' },
+      { key: 'memberNm',         label: '회원' },
+      { key: 'recvNm',           label: '수령인' },
+      { key: '_courier',         label: '택배사' },
+      { key: 'outboundTrackingNo', label: '운송장번호' },
+      { key: 'recvAddr',         label: '배송지' },
+      { key: '_dlivStatus',      label: '상태', sortKey: 'reg', style: 'white-space:nowrap;' },
+      { key: '_site',            label: '사이트명' },
+      { key: '_act',             label: '관리', style: 'text-align:right;' },
+    ];
+    const fnGridRowStyle = (d) =>
+      (uiStateDetail.selectedId === d.dlivId ? 'background:#fff8f9;' : '')
+      + (isChecked(d.dlivId) ? 'background:#eef6fd;' : '');
+
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, listColumns, fnGridRowStyle };
   },
   template: /* html */`
 <div>
@@ -446,39 +463,48 @@ window.OdDlivMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
-        <th style="width:36px;text-align:center;">번호</th><th>배송ID</th><th>주문ID</th><th>회원</th><th>수령인</th><th>택배사</th><th>운송장번호</th><th>배송지</th>
-        <th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">상태 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-        <th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="deliveries.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(d, idx) in deliveries" :key="d?.dlivId"
-          :style="(selectedId===d.dlivId?'background:#fff8f9;':'') + (isChecked(d.dlivId)?'background:#eef6fd;':'')">
-          <td style="text-align:center;"><input type="checkbox" :checked="isChecked(d.dlivId)" @change="toggleCheck(d.dlivId)" /></td>
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td>
-            <span class="title-link" @click="handleLoadDetail(d.dlivId)" :style="selectedId===d.dlivId?'color:#e8587a;font-weight:700;':''">
-              {{ d.dlivId }}<span v-if="selectedId===d.dlivId" style="font-size:10px;margin-left:3px;">▼</span>
-            </span>
-          </td>
-          <td><span class="ref-link" @click="showRefModal('order', d.orderId)">{{ d.orderId }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('member', d.memberId)">{{ d.memberNm }}</span></td>
-          <td>{{ d.recvNm }}</td>
-          <td>{{ d.outboundCourierCdNm || d.outboundCourierCd }}</td>
-          <td>{{ d.outboundTrackingNo || '-' }}</td>
-          <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ d.recvAddr }}</td>
-          <td><span class="badge" :class="fnStatusBadge(d.dlivStatusCd)">{{ d.dlivStatusCdNm || d.dlivStatusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.dlivId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(d)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid bare selectable :columns="listColumns" :rows="deliveries" :pager="pager" row-key="dlivId"
+      :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
+      :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
+      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll">
+      <template #cell-dlivId="{ row }">
+        <td>
+          <span class="title-link" @click="handleLoadDetail(row.dlivId)" :style="selectedId===row.dlivId?'color:#e8587a;font-weight:700;':''">
+            {{ row.dlivId }}<span v-if="selectedId===row.dlivId" style="font-size:10px;margin-left:3px;">▼</span>
+          </span>
+        </td>
+      </template>
+      <template #cell-orderId="{ row }">
+        <td><span class="ref-link" @click="showRefModal('order', row.orderId)">{{ row.orderId }}</span></td>
+      </template>
+      <template #cell-memberNm="{ row }">
+        <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm }}</span></td>
+      </template>
+      <template #cell-recvNm="{ row }">
+        <td>{{ row.recvNm }}</td>
+      </template>
+      <template #cell-_courier="{ row }">
+        <td>{{ row.outboundCourierCdNm || row.outboundCourierCd }}</td>
+      </template>
+      <template #cell-outboundTrackingNo="{ row }">
+        <td>{{ row.outboundTrackingNo || '-' }}</td>
+      </template>
+      <template #cell-recvAddr="{ row }">
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row.recvAddr }}</td>
+      </template>
+      <template #cell-_dlivStatus="{ row }">
+        <td><span class="badge" :class="fnStatusBadge(row.dlivStatusCd)">{{ row.dlivStatusCdNm || row.dlivStatusCd }}</span></td>
+      </template>
+      <template #cell-_site="{ row }">
+        <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td><div class="actions">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.dlivId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+        </div></td>
+      </template>
+    </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 

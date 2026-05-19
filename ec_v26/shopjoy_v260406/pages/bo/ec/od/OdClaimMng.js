@@ -426,9 +426,25 @@ window.OdClaimMng = {
     /* 클레임(취소/반품/교환) onClearMember */
     const onClearMember = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
 
+    /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
+    const listColumns = [
+      { key: 'claimId',       label: '클레임ID' },
+      { key: 'memberNm',      label: '회원' },
+      { key: 'orderId',       label: '주문ID' },
+      { key: 'prodNm',        label: '상품' },
+      { key: 'reasonDetail',  label: '사유' },
+      { key: '_claimStatus',  label: '클레임상태' },
+      { key: 'requestDate',   label: '신청일', sortKey: 'reg', style: 'white-space:nowrap;' },
+      { key: '_site',         label: '사이트명' },
+      { key: '_act',          label: '관리', style: 'text-align:right;' },
+    ];
+    const fnGridRowStyle = (c) =>
+      (uiStateDetail.selectedId === c.claimId ? 'background:#fff8f9;' : '')
+      + (isChecked(c.claimId) ? 'background:#eef6fd;' : '');
+
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, listColumns, fnGridRowStyle };
   },
   template: /* html */`
 <div>
@@ -473,42 +489,49 @@ window.OdClaimMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
-        <th style="width:36px;text-align:center;">번호</th><th>클레임ID</th><th>회원</th><th>주문ID</th><th>상품</th><th>사유</th><th>클레임상태</th>
-        <th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">신청일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-        <th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="claims.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(c, idx) in claims" :key="c?.claimId"
-          :style="(selectedId===c.claimId?'background:#fff8f9;':'') + (isChecked(c.claimId)?'background:#eef6fd;':'')">
-          <td style="text-align:center;"><input type="checkbox" :checked="isChecked(c.claimId)" @change="toggleCheck(c.claimId)" /></td>
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(c.claimId)" :style="selectedId===c.claimId?'color:#e8587a;font-weight:700;':''">{{ c.claimId }}<span v-if="selectedId===c.claimId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('order', c.orderId)">{{ c.orderId }}</span></td>
-          <td>{{ c.prodNm }}</td>
-          <td>{{ c.reasonDetail }}</td>
-          <td>
-            <span style="display:inline-flex;align-items:center;gap:3px;">
-              <span :style="{
-                fontSize:'10px',padding:'2px 8px',borderRadius:'10px',color:'#fff',fontWeight:700,
-                background: c.claimTypeCd==='취소' ? '#ef4444' : c.claimTypeCd==='반품' ? '#FFBB00' : '#3b82f6',
-              }">{{ c.claimTypeCdNm || c.claimTypeCd }}</span>
-              <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ c.claimStatusCdNm || c.claimStatusCd }}</span>
-            </span>
-          </td>
-          <td>{{ (c.requestDate||'').slice(0,10) }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.claimId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid bare selectable :columns="listColumns" :rows="claims" :pager="pager" row-key="claimId"
+      :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
+      :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
+      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll">
+      <template #cell-claimId="{ row }">
+        <td><span class="title-link" @click="handleLoadDetail(row.claimId)" :style="selectedId===row.claimId?'color:#e8587a;font-weight:700;':''">{{ row.claimId }}<span v-if="selectedId===row.claimId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+      </template>
+      <template #cell-memberNm="{ row }">
+        <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm }}</span></td>
+      </template>
+      <template #cell-orderId="{ row }">
+        <td><span class="ref-link" @click="showRefModal('order', row.orderId)">{{ row.orderId }}</span></td>
+      </template>
+      <template #cell-prodNm="{ row }">
+        <td>{{ row.prodNm }}</td>
+      </template>
+      <template #cell-reasonDetail="{ row }">
+        <td>{{ row.reasonDetail }}</td>
+      </template>
+      <template #cell-_claimStatus="{ row }">
+        <td>
+          <span style="display:inline-flex;align-items:center;gap:3px;">
+            <span :style="{
+              fontSize:'10px',padding:'2px 8px',borderRadius:'10px',color:'#fff',fontWeight:700,
+              background: row.claimTypeCd==='취소' ? '#ef4444' : row.claimTypeCd==='반품' ? '#FFBB00' : '#3b82f6',
+            }">{{ row.claimTypeCdNm || row.claimTypeCd }}</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ row.claimStatusCdNm || row.claimStatusCd }}</span>
+          </span>
+        </td>
+      </template>
+      <template #cell-requestDate="{ row }">
+        <td>{{ (row.requestDate||'').slice(0,10) }}</td>
+      </template>
+      <template #cell-_site="{ row }">
+        <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td><div class="actions">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.claimId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+        </div></td>
+      </template>
+    </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
