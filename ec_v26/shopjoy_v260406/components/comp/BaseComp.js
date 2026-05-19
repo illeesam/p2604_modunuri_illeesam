@@ -1,4 +1,15 @@
-/* ShopJoy - 공통 컴포넌트 모음 */
+/* ShopJoy - 공통 컴포넌트 모음
+ * ─────────────────────────────────────────────────────────────────────────
+ * 정의된 컴포넌트 (3개) — FO/BO 공용. 태그는 kebab-case (예: <base-attach-grp>)
+ *
+ *   BaseAttachGrp   — 첨부파일 그룹 (다중, attachGrpId v-model, 업로드/삭제/썸네일)
+ *   BaseAttachOne   — 단일 첨부파일 (이미지 1개 등)
+ *   BaseHtmlEditor  — Quill 기반 리치텍스트 에디터
+ *
+ * 부가:
+ *   window.BaseComp — 컴포넌트가 아닌 별칭 레지스트리
+ *                     ({ 'attach_grp': BaseAttachGrp, 'attach_one': BaseAttachOne })
+ * ───────────────────────────────────────────────────────────────────────── */
 
 /* ─────────────────────────────────────────
    attach_grp : 첨부파일 그룹 컴포넌트

@@ -3,29 +3,25 @@
  *
  * ※ BoComp.js 컴포넌트는 모두 'Bo' prefix / 'bo-' 태그를 사용한다.
  *
- * BoPathTree           — bizCd 기반 경로 트리 컨테이너 (API 조회 + 상태 관리 자급자족)
- *                        bizCd별 캐시 관리, 전체펼치기/닫기 슬롯 포함
- *                        emit: select(pathId)
- *                        사용: <bo-path-tree biz-cd="sy_brand" :show-biz-cd="true" @select="fn" />
+ * ─────────────────────────────────────────────────────────────────────────
+ * 정의된 컴포넌트 (8개)
  *
- * BoPathTreeNode       — sy_path 트리 재귀 노드 (BoPathTree 내부 + 직접 사용 가능)
- *                        showBizCd prop으로 #bizCd 표시 제어
+ *   BoPathTree           — bizCd 기반 경로 트리 컨테이너 (API 조회 + 상태 자급자족,
+ *                          bizCd별 캐시, 전체펼치기/닫기 슬롯). emit: select(pathId)
+ *   BoPathTreeNode       — sy_path 트리 재귀 노드 (BoPathTree 내부 + 직접 사용 가능)
+ *   BoCategoryTree       — 카테고리 트리 패널 & 피커 모달 (mode="tree" | "picker")
+ *   BoPager              — 관리자 공통 페이지네이션
+ *   BoPathParentSelector — 부모경로 선택 모달용 재귀 노드
+ *   BoMultiCheckSelect   — 다중 선택 드롭다운 (체크박스 + ',' 구분 String v-model)
+ *   BoDateTimePicker     — 일자 + 시분 선택 (date input + time input + 현재 버튼,
+ *                          v-model = 'YYYY-MM-DDTHH:mm')
+ *   BoPathPickField      — 경로 선택 필드 (path-pick-modal 연동, bizCd 필수)
+ * ─────────────────────────────────────────────────────────────────────────
  *
- * BoPathParentSelector — 부모경로 선택 모달용 재귀 노드
- *
- * BoCategoryTree       — 카테고리 트리 패널 & 피커 모달 (mode="tree" | "picker")
- *
- * BoPager              — 관리자 공통 페이지네이션
- *
- * BoMultiCheckSelect   — 다중 선택 드롭다운 (체크박스 + ',' 구분 String v-model)
- *                        v-model 은 토큰 콤마결합 문자열 (예: "memberId,memberNm")
- *                        options: [{value, label}, ...] 또는 [{codeValue, codeLabel}, ...]
- *                        사용: <bo-multi-check-select v-model="searchType" :options="opts" placeholder="전체" />
- *
- * BoDateTimePicker     — 일자 + 시분 선택 공통 컴포넌트 (date input + time input + 현재 버튼)
- *                        v-model 은 단일 datetime 문자열 'YYYY-MM-DDTHH:mm' (기존 datetime-local 호환)
- *                        사용: <bo-date-time-picker v-model="form.sendDate" />
- *                              <bo-date-time-picker v-model="form.saleStartDate" :readonly="ro" placeholder-date="즉시" />
+ * 주요 사용 예:
+ *   <bo-path-tree biz-cd="sy_brand" :show-biz-cd="true" @select="fn" />
+ *   <bo-multi-check-select v-model="searchType" :options="opts" placeholder="전체" />
+ *   <bo-date-time-picker v-model="form.sendDate" />
  */
 
 /* ── BoPathTree 컨테이너 ──────────────────────────────────────────────────

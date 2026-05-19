@@ -2,9 +2,10 @@
    -----------------------------------------------------------------------
    여기에 등록하는 모달은 어디서든 <bo-xxx-modal /> 태그로 사용 가능.
 
-   현재 등록된 모달:
-     - BoRefModal      — 회원/상품/주문/클레임/쿠폰 참조 상세 (showRefModal 헬퍼가 호출)
-     - BoCodeGrpModal  — 공통코드 그룹 미리보기 (codeGrp 으로 코드 항목 조회)
+   정의된 컴포넌트 (3개) — 태그는 kebab-case (예: <bo-ref-modal>)
+     - BoRefModal         — 회원/상품/주문/클레임/쿠폰 참조 상세 (showRefModal 헬퍼가 호출)
+     - BoCodeGrpModal     — 공통코드 그룹 미리보기 (codeGrp 으로 코드 항목 조회, 목록/트리 탭)
+     - BoCodeGrpTreeNode  — 코드 그룹 트리 재귀 노드 (BoCodeGrpModal 내부에서 사용)
 
    추가 시: 파일 끝에 window.BoXxxModal 등록 + bo.html 에 본 파일이 로드되면 됨.
    -----------------------------------------------------------------------

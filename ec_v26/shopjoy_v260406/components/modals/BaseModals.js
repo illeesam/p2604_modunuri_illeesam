@@ -3,6 +3,47 @@
    My.js 의 components 블록에 등록하여 사용합니다.
 
    ───────────────────────────────────────────────────────────────────────
+   정의된 컴포넌트 (26개) — 태그는 kebab-case (예: <order-detail-modal>)
+
+   [상세 보기]
+     OrderDetailModal       — 주문 상세
+     ProductModal           — 상품 상세
+     CustomerModal          — 회원(고객) 상세
+
+   [선택/피커 모달]
+     SiteSelectModal        — 사이트 선택
+     VendorSelectModal      — 판매업체 선택
+     BoUserSelectModal      — 사용자 선택 (부서트리 + 멀티)
+     MemberSelectModal      — 회원 선택
+     OrderSelectModal       — 주문 선택
+     BbmSelectModal         — 게시판 선택
+     CategorySelectModal    — 카테고리 선택
+     RowPickModal           — 위젯 행(row) 선택
+     AreaPickModal          — 전시 Area 선택
+     PanelPickModal         — 전시 Panel 선택
+     WidgetLibPickModal     — 위젯 라이브러리 선택
+     PathPickModal          — 표시경로 선택  (+ PathPickTreeNode 재귀 노드)
+     BizPickModal           — 업체 선택
+     SimpleUserPickModal    — 간단 사용자 선택
+
+   [트리 모달]
+     RoleTreeModal          — 역할 트리
+     MenuTreeModal          — 메뉴 트리
+     DeptTreeModal          — 부서 트리
+     CategoryTreeModal      — 카테고리 트리
+
+   [템플릿]
+     TemplatePreviewModal   — 템플릿 미리보기
+     TemplateSendModal      — 템플릿 발송
+
+   [전시 미리보기]
+     DispPreviewModal       — 전시 미리보기
+     DispUiModal            — 전시 UI 미리보기
+
+   (재귀 노드: PathPickTreeNode — PathPickModal 내부 + 직접 사용 가능)
+   ───────────────────────────────────────────────────────────────────────
+
+   ───────────────────────────────────────────────────────────────────────
    [공통 props: reloadTrigger]
    ───────────────────────────────────────────────────────────────────────
    목적: 모달이 열려있는 상태에서 부모가 외부 변화에 따라

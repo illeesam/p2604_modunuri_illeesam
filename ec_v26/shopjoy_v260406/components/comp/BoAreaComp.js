@@ -704,14 +704,25 @@ window.BoLocalTreeCard = {
  *   maxHeight  — string. 박스 max-height (기본 '90vh')
  *   zIndex     — number. 오버레이 z-index (기본 9000)
  *   bodyPad    — string. 본문 padding (기본 '20px')
- *   closeOnBackdrop — boolean. 배경 클릭 시 close emit (기본 true)
+ *   closeOnBackdrop — boolean. 배경 클릭 시 close (기본 true)
  *   teleport   — boolean. body 로 teleport (기본 true)
+ *   onCloseCb   — Function|null. 닫기 시 호출되는 콜백 (emit('close')와 병행)
+ *   onConfirmCb — Function|null. 확인 시 호출되는 콜백 (emit('confirm')와 병행)
  * emit:
- *   close      — 닫기 버튼 / 배경 클릭
+ *   close      — 닫기 버튼 / 배경 클릭 / onClose
+ *   confirm    — onConfirm 호출 시 (footer 슬롯의 confirm() 등)
  * 슬롯:
  *   default / #body  — 본문
- *   #footer          — 푸터 (있을 때만 렌더)
+ *   #footer          — 푸터 (있을 때만 렌더). 슬롯 prop { confirm, close } 제공
+ *                      예: <template #footer="{ confirm, close }">
+ *                            <button @click="close">취소</button>
+ *                            <button @click="confirm">확인</button>
+ *                          </template>
  *   #header-extra    — 제목 우측 추가 영역 (badge 등)
+ *
+ * callback 사용 예 (함수 prop 직접 전달):
+ *   <bo-modal :show="m.show" :on-close-cb="() => m.show=false"
+ *             :on-confirm-cb="handleSave">
  * ──────────────────────────────────────────────────────────────────────── */
 window.BoModal = {
   name: 'BoModal',
@@ -726,11 +737,14 @@ window.BoModal = {
     bodyPad:         { type: String,  default: '20px' },
     closeOnBackdrop: { type: Boolean, default: true },
     teleport:        { type: Boolean, default: true },
+    onCloseCb:       { type: Function, default: null },  // 닫기 시 호출되는 콜백 (emit('close')와 병행)
+    onConfirmCb:     { type: Function, default: null },  // 확인 시 호출되는 콜백 (#footer 슬롯 prop 'confirm' + emit('confirm'))
   },
-  emits: ['close'],
+  emits: ['close', 'confirm'],
   setup(props, { emit }) {
-    const onClose    = () => emit('close');
-    const onBackdrop = () => { if (props.closeOnBackdrop) emit('close'); };
+    const onClose    = () => { emit('close'); if (typeof props.onCloseCb === 'function') props.onCloseCb(); };
+    const onConfirm  = () => { emit('confirm'); if (typeof props.onConfirmCb === 'function') props.onConfirmCb(); };
+    const onBackdrop = () => { if (props.closeOnBackdrop) onClose(); };
     const cfOverlayStyle = Vue.computed(() =>
       'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;'
       + 'background:rgba(18,24,40,0.55);z-index:' + props.zIndex + ';');
@@ -738,7 +752,7 @@ window.BoModal = {
       'background:#fff;width:' + props.width + ';max-width:' + props.maxWidth + ';'
       + 'height:' + props.height + ';max-height:' + props.maxHeight + ';'
       + 'display:flex;flex-direction:column;padding:20px;overflow:hidden;');
-    return { onClose, onBackdrop, cfOverlayStyle, cfBoxStyle };
+    return { onClose, onConfirm, onBackdrop, cfOverlayStyle, cfBoxStyle };
   },
   template: /* html */`
 <teleport to="body" :disabled="!teleport">
@@ -757,7 +771,7 @@ window.BoModal = {
         </div>
       </div>
       <div v-if="$slots.footer" class="modal-footer" style="flex-shrink:0;display:flex;justify-content:flex-end;gap:8px;padding:12px 0 0;border-top:1px solid #f0f0f0;margin-top:14px;">
-        <slot name="footer"></slot>
+        <slot name="footer" :confirm="onConfirm" :close="onClose"></slot>
       </div>
     </div>
   </div>

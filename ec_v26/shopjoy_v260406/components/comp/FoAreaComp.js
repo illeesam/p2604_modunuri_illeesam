@@ -41,9 +41,11 @@
  *
  * FoModal        — 공통 모달 껍데기 (FO .modal-overlay / .modal-box 재사용)
  *                  props: show, title, width, maxWidth, height, maxHeight,
- *                         zIndex, bodyPad, closeOnBackdrop, teleport
- *                  emit:  close
- *                  슬롯: default/#body, #footer, #header-extra
+ *                         zIndex, bodyPad, closeOnBackdrop, teleport,
+ *                         onCloseCb(fn), onConfirmCb(fn)  ← 콜백 함수 직접 전달
+ *                  emit:  close, confirm
+ *                  슬롯: default/#body, #header-extra,
+ *                        #footer (슬롯 prop { confirm, close } 제공)
  *
  * ─ columns 배열 스펙 (FoGrid / FoGridCrud 공통) ──────────────────────────
  *   { key, label, width, align('left'|'center'|'right'),
@@ -594,11 +596,14 @@ window.FoModal = {
     bodyPad:         { type: String,  default: '0' },
     closeOnBackdrop: { type: Boolean, default: true },
     teleport:        { type: Boolean, default: true },
+    onCloseCb:       { type: Function, default: null },  // 닫기 시 호출되는 콜백 (emit('close')와 병행)
+    onConfirmCb:     { type: Function, default: null },  // 확인 시 호출되는 콜백 (#footer 슬롯 prop 'confirm' + emit('confirm'))
   },
-  emits: ['close'],
+  emits: ['close', 'confirm'],
   setup(props, { emit }) {
-    const onClose    = () => emit('close');
-    const onBackdrop = () => { if (props.closeOnBackdrop) emit('close'); };
+    const onClose    = () => { emit('close'); if (typeof props.onCloseCb === 'function') props.onCloseCb(); };
+    const onConfirm  = () => { emit('confirm'); if (typeof props.onConfirmCb === 'function') props.onConfirmCb(); };
+    const onBackdrop = () => { if (props.closeOnBackdrop) onClose(); };
     const cfOverlayStyle = Vue.computed(() => 'z-index:' + props.zIndex + ';');
     const cfBoxStyle = Vue.computed(() =>
       'width:' + props.width + ';max-width:' + props.maxWidth + ';'
@@ -606,7 +611,7 @@ window.FoModal = {
       + 'text-align:left;padding:24px;');
     const cfBodyStyle = Vue.computed(() =>
       'flex:1;overflow-y:auto;' + (props.bodyPad !== '0' ? ('padding:' + props.bodyPad + ';') : ''));
-    return { onClose, onBackdrop, cfOverlayStyle, cfBoxStyle, cfBodyStyle };
+    return { onClose, onConfirm, onBackdrop, cfOverlayStyle, cfBoxStyle, cfBodyStyle };
   },
   template: /* html */`
 <teleport to="body" :disabled="!teleport">
@@ -623,7 +628,7 @@ window.FoModal = {
         <slot name="body"><slot></slot></slot>
       </div>
       <div v-if="$slots.footer" class="fo-modal-footer">
-        <slot name="footer"></slot>
+        <slot name="footer" :confirm="onConfirm" :close="onClose"></slot>
       </div>
     </div>
   </div>
