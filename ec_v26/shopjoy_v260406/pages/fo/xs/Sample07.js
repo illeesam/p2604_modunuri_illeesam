@@ -531,6 +531,23 @@ window.XsSample07 = {
       if (Array.isArray(d?.list)) return d.list;
       return [];
     });
+    /* fo-grid 컬럼 정의 — 동적 응답 키를 컬럼 def 로 매핑 */
+    const cfResColDefs = computed(() =>
+      cfResGridCols.value.map(c => ({ key: c, label: c, mono: false })));
+
+    /* 전송이력 fo-grid 컬럼 (특수셀은 #cell 슬롯) */
+    const historyCols = [
+      { key: '_seq',    label: '#',     width: '32px', align: 'center' },
+      { key: 'method',  label: '메서드', width: '68px', align: 'center' },
+      { key: 'tabLabel', label: '탭명',  width: '110px' },
+      { key: 'url',     label: 'URL',   mono: true },
+      { key: 'status',  label: '상태',  width: '50px', align: 'center' },
+      { key: 'time',    label: '응답시간', width: '64px', align: 'center', fmt: v => v + 'ms' },
+      { key: 'ts',      label: '요청시간', width: '68px', align: 'center' },
+    ];
+    /* 행 클릭 → selectHistory(h, idx). 행 강조 = histSelIdx 행 배경 */
+    const onHistClick = (h) => selectHistory(h, history.indexOf(h));
+    const fnHistRowStyle = (h) => (history.indexOf(h) === uiState.histSelIdx ? 'background:#e8f0fe;' : '');
 
     /* ===== Quick Run ===== */
     const quickRun = (node, evt) => {
@@ -586,7 +603,8 @@ window.XsSample07 = {
       uiState, hostUrl, token, defHeaders, lsItems, refreshLs,
       toasts, closeToast,
       doSend, history, histSelIdx, histModal, histModalTab, editReq, histResJson, histResStatus, histResTime, histResTs, histResProgress, selectHistory, closeHistModal, resendHist,
-      cfResGridCols, cfResGridRows,
+      cfResGridCols, cfResGridRows, cfResColDefs,
+      historyCols, onHistClick, fnHistRowStyle,
       addRow, removeRow, fnMethodStyle, fnStatusStyle, fnMethodDot, quickRun,
       // 자동실행
       autoPopupTabId, autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
@@ -920,22 +938,9 @@ window.XsSample07 = {
                 <span style="font-size:22px;">📊</span>
                 <span style="font-size:12px;">{{ cfActiveTab.resData ? 'Array 데이터가 없습니다' : '응답이 여기에 표시됩니다' }}</span>
               </div>
-              <div v-else style="overflow-x:auto;">
+              <div v-else>
                 <div style="font-size:10px;color:#aaa;margin-bottom:5px;">총 {{ cfResGridRows.length }}건</div>
-                <table style="width:100%;border-collapse:collapse;font-size:11px;">
-                  <thead>
-                    <tr style="background:#f8f9fa;border-bottom:2px solid #e0e0e0;">
-                      <th style="padding:4px 6px;text-align:center;width:30px;color:#ccc;font-size:10px;font-weight:400;">#</th>
-                      <th v-for="col in cfResGridCols" :key="col" style="padding:4px 8px;text-align:left;font-weight:600;color:#555;white-space:nowrap;font-size:11px;">{{ col }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(row,i) in cfResGridRows" :key="i" style="border-bottom:1px solid #f5f5f5;">
-                      <td style="text-align:center;padding:3px 6px;color:#ddd;font-size:10px;">{{ i+1 }}</td>
-                      <td v-for="col in cfResGridCols" :key="col" style="padding:3px 8px;color:#333;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;" :title="String(row[col])">{{ row[col] }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <fo-grid bare :columns="cfResColDefs" :rows="cfResGridRows" min-width="100%" />
               </div>
             </template>
           </div>
@@ -952,45 +957,33 @@ window.XsSample07 = {
         <button @click="history.splice(0);histSelIdx=null;" style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#888;">전체 삭제</button>
       </div>
       <div style="max-height:228px;overflow-y:auto;">
-        <table style="width:100%;border-collapse:collapse;font-size:11px;">
-          <thead style="position:sticky;top:0;background:#f8f9fa;z-index:1;">
-            <tr style="border-bottom:1px solid #e0e0e0;">
-              <th style="padding:3px 6px;width:32px;text-align:center;font-weight:600;color:#bbb;font-size:10px;">#</th>
-              <th style="padding:3px 8px;width:68px;text-align:center;font-weight:600;color:#666;">메서드</th>
-              <th style="padding:3px 8px;width:110px;text-align:left;font-weight:600;color:#666;">탭명</th>
-              <th style="padding:3px 8px;text-align:left;font-weight:600;color:#666;">URL</th>
-              <th style="padding:3px 8px;width:50px;text-align:center;font-weight:600;color:#666;">상태</th>
-              <th style="padding:3px 8px;width:64px;text-align:center;font-weight:600;color:#666;">응답시간</th>
-              <th style="padding:3px 8px;width:68px;text-align:center;font-weight:600;color:#666;">요청시간</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="!history.length"><td colspan="7" style="text-align:center;padding:12px;color:#ccc;">전송 이력이 없습니다</td></tr>
-            <tr v-for="(h,i) in history" :key="h.id"
-              @click="selectHistory(h,i)"
-              style="cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
-              :style="histSelIdx===i?'background:#e8f0fe;':''"
-              @mouseenter="e=>{ if(histSelIdx!==i) e.currentTarget.style.background='#f5f5f5'; }"
-              @mouseleave="e=>{ e.currentTarget.style.background=histSelIdx===i?'#e8f0fe':''; }">
-              <!-- -- 번호 + 상태 원 ------------------------------------------ -->
-              <td style="text-align:center;padding:2px 6px;">
-                <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#999;">
-                  <span v-if="h.status && h.status<300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#22c55e;"></span>
-                  <span v-else-if="h.status && h.status>=300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#ef4444;"></span>
-                  {{ history.length - i }}
-                </span>
-              </td>
-              <td style="text-align:center;padding:2px 8px;">
-                <span style="font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;" :style="fnMethodStyle(h.method)">{{ h.method }}</span>
-              </td>
-              <td style="padding:2px 8px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;font-size:10px;" :title="h.tabLabel">{{ h.tabLabel }}</td>
-              <td style="padding:2px 8px;font-family:monospace;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;">{{ h.url }}</td>
-              <td style="text-align:center;padding:2px 8px;" :style="fnStatusStyle(h.status)">{{ h.status||'-' }}</td>
-              <td style="text-align:center;padding:2px 8px;color:#888;">{{ h.time }}ms</td>
-              <td style="text-align:center;padding:2px 8px;color:#aaa;">{{ h.ts }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <fo-grid bare :columns="historyCols" :rows="history" row-key="id"
+          :show-row-no="false" empty-text="전송 이력이 없습니다"
+          :row-click="onHistClick" :row-style="fnHistRowStyle">
+          <template #cell-_seq="{ row, idx }">
+            <td style="text-align:center;padding:2px 6px;">
+              <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#999;">
+                <span v-if="row.status && row.status<300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#22c55e;"></span>
+                <span v-else-if="row.status && row.status>=300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#ef4444;"></span>
+                {{ history.length - idx }}
+              </span>
+            </td>
+          </template>
+          <template #cell-method="{ row }">
+            <td style="text-align:center;">
+              <span style="font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;" :style="fnMethodStyle(row.method)">{{ row.method }}</span>
+            </td>
+          </template>
+          <template #cell-tabLabel="{ row }">
+            <td style="color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;font-size:10px;" :title="row.tabLabel">{{ row.tabLabel }}</td>
+          </template>
+          <template #cell-url="{ row }">
+            <td style="font-family:monospace;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;">{{ row.url }}</td>
+          </template>
+          <template #cell-status="{ row }">
+            <td style="text-align:center;" :style="fnStatusStyle(row.status)">{{ row.status||'-' }}</td>
+          </template>
+        </fo-grid>
       </div>
     </div>
 

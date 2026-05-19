@@ -173,10 +173,25 @@ window.XsSample09 = {
 
     // -- return ---------------------------------------------------------------
 
+    /* fo-grid-crud 컬럼 */
+    const gridCols = [
+      { key: 'question', label: '질문',   edit: 'text' },
+      { key: 'category', label: '카테고리', edit: 'select', width: '80px', align: 'center',
+        options: codes.contact_cat_opts },
+      { key: 'author',   label: '작성자', edit: 'text', width: '90px' },
+      { key: 'viewCnt',  label: '조회수', width: '60px', align: 'right' },
+      { key: 'status',   label: '공개여부', edit: 'select', width: '80px', align: 'center',
+        options: codes.open_opts },
+      { key: 'regDate',  label: '등록일', width: '100px', align: 'center' },
+    ];
+    const onReorder = () => showToast('정렬이 변경되었습니다.');
+    const onRowCancel = (row) => cancelRow(gridRows.indexOf(row));
+    const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
+
     return {
       toast, searchParam, onSearch, onReset,
-      gridRows, pager, setPage, getRealIdx,
-      setFocused, onCellChange,
+      gridRows, gridCols, pager, setPage, getRealIdx,
+      setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, rowBg,
@@ -211,82 +226,23 @@ window.XsSample09 = {
       <button @click="onReset"  style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;">초기화</button>
     </div>
   </div>
-  <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f0f0;">
-      <span style="font-size:12px;font-weight:700;">FAQ 목록 <span style="color:#e8587a;margin-left:4px;">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span></span>
-      <div style="display:flex;gap:5px;">
-        <button @click="addRow"        style="font-size:11px;padding:4px 10px;border:1px solid #34a853;border-radius:5px;background:#e6f4ea;color:#1e7e34;cursor:pointer;font-weight:600;">+ 행추가</button>
-        <button @click="deleteRows"    style="font-size:11px;padding:4px 10px;border:1px solid #fca5a5;border-radius:5px;background:#fee2e2;color:#991b1b;cursor:pointer;">행삭제</button>
-        <button @click="cancelChecked" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:5px;background:#fff;color:#555;cursor:pointer;">취소</button>
-        <button @click="handleSave"        style="font-size:11px;padding:4px 10px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">저장</button>
-      </div>
-    </div>
-    <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:780px;">
-        <thead>
-          <tr style="background:#f8f9fa;border-bottom:2px solid #e0e0e0;">
-            <th style="width:28px;padding:7px 4px;text-align:center;color:#ccc;font-weight:400;">⠿</th>
-            <th style="width:50px;padding:7px;text-align:center;font-weight:600;color:#555;font-size:11px;">ID</th>
-            <th style="width:36px;padding:7px;text-align:center;font-weight:600;color:#555;font-size:11px;">상태</th>
-            <th style="width:28px;padding:7px;text-align:center;"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
-            <th style="padding:7px;text-align:left;font-weight:600;color:#555;">질문</th>
-            <th style="width:72px;padding:7px;text-align:center;font-weight:600;color:#555;">카테고리</th>
-            <th style="width:90px;padding:7px;text-align:left;font-weight:600;color:#555;">작성자</th>
-            <th style="width:60px;padding:7px;text-align:right;font-weight:600;color:#555;">조회수</th>
-            <th style="width:72px;padding:7px;text-align:center;font-weight:600;color:#555;">공개여부</th>
-            <th style="width:96px;padding:7px;text-align:center;font-weight:600;color:#555;">등록일</th>
-            <th style="width:48px;"></th><th style="width:48px;"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="gridRows.length===0"><td colspan="12" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">데이터가 없습니다.</td></tr>
-          <tr v-for="(row,idx) in pager.pageList" :key="row.faqId"
-            draggable="true" @click="setFocused(getRealIdx(idx))"
-            @dragstart="onDragStart(getRealIdx(idx))" @dragover="onDragOver($event,getRealIdx(idx))" @dragend="onDragEnd"
-            style="cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
-            :style="rowBg(row._row_status)+(focusedIdx===getRealIdx(idx)?'outline:2px solid #93c5fd inset;':'')">
-            <td style="text-align:center;color:#ccc;cursor:grab;font-size:14px;">⠿</td>
-            <td style="text-align:center;color:#999;font-size:11px;">{{ row.faqId > 0 ? row.faqId : 'NEW' }}</td>
-            <td style="text-align:center;"><span style="font-size:9px;padding:2px 5px;border-radius:8px;font-weight:700;" :style="fnStatusBadge(row._row_status)">{{ row._row_status }}</span></td>
-            <td style="text-align:center;"><input type="checkbox" v-model="row._row_check" @click.stop /></td>
-            <td><input v-model="row.question" :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              style="width:100%;border:1px solid transparent;background:transparent;padding:3px 5px;font-size:12px;border-radius:3px;outline:none;"
-              @focus="e=>e.target.style.border='1px solid #93c5fd'" @blur="e=>e.target.style.border='1px solid transparent'" /></td>
-            <td style="text-align:center;">
-              <select v-model="row.category" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option v-for="o in codes.contact_cat_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-              </select>
-            </td>
-            <td><input v-model="row.author" :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              style="width:100%;border:1px solid transparent;background:transparent;padding:3px 5px;font-size:12px;border-radius:3px;outline:none;"
-              @focus="e=>e.target.style.border='1px solid #93c5fd'" @blur="e=>e.target.style.border='1px solid transparent'" /></td>
-            <td style="text-align:right;padding:3px 8px;color:#666;font-size:11px;">{{ row.viewCnt }}</td>
-            <td style="text-align:center;">
-              <select v-model="row.status" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option v-for="o in codes.open_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-              </select>
-            </td>
-            <td style="text-align:center;color:#999;font-size:11px;">{{ row.regDate }}</td>
-            <td style="text-align:center;"><button v-if="['U','I','D'].includes(row._row_status)" @click.stop="cancelRow(getRealIdx(idx))" style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">취소</button></td>
-            <td style="text-align:center;"><button v-if="['N','U'].includes(row._row_status)" @click.stop="deleteRow(getRealIdx(idx))" style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">삭제</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid #f0f0f0;">
-      <div style="font-size:11px;color:#aaa;">총 {{ gridRows.filter(r => r._row_status !== 'D').length }}건</div>
-      <div style="display:flex;gap:3px;">
-        <button :disabled="pager.pageNo===1" @click="setPage(1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">«</button>
-        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">‹</button>
-        <button v-for="n in pager.pageNums" :key="n" @click="setPage(n)" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:4px;cursor:pointer;" :style="pager.pageNo===n?'background:#e8587a;color:#fff;border-color:#e8587a;':'background:#fff;'">{{ n }}</button>
-        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">›</button>
-        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">»</button>
-      </div>
-      <select v-model.number="pager.pageSize" @change="()=>{pager.pageNo=1;fnBuildPagerNums();}" style="font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;">
-        <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-      </select>
-    </div>
-  </div>
+  <fo-grid-crud
+    list-title="FAQ 목록" row-key="faqId"
+    :columns="gridCols" :rows="gridRows"
+    v-model:checkAll="uiState.checkAll"
+    v-model:focusedIdx="uiState.focusedIdx"
+    @add="addRow" @save="handleSave"
+    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+    @reorder="onReorder" @cell-change="onCellChange">
+    <template #row-cancel="{ row }">
+      <button v-if="['U','I','D'].includes(row._row_status)" @click.stop="onRowCancel(row)"
+        style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">취소</button>
+    </template>
+    <template #row-delete="{ row }">
+      <button v-if="['N','U'].includes(row._row_status)" @click.stop="onRowDelete(row)"
+        style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">삭제</button>
+    </template>
+  </fo-grid-crud>
 </div>
   `,
 };

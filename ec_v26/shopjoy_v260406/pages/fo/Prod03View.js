@@ -189,6 +189,20 @@ window.Prod03View = {
       ['XL', '44', '102','68'],
       ['XXL','46', '108','70'],
     ];
+    /* fo-grid 컬럼 — sizeGuideRows 는 위치배열 → fmt 로 인덱스 접근 */
+    const sizeGuideCols = [
+      { key: 's0', label: '사이즈',  align: 'center', fmt: (v, r) => r[0] },
+      { key: 's1', label: '어깨 (cm)', align: 'center', fmt: (v, r) => r[1] },
+      { key: 's2', label: '가슴 (cm)', align: 'center', fmt: (v, r) => r[2] },
+      { key: 's3', label: '총장 (cm)', align: 'center', fmt: (v, r) => r[3] },
+    ];
+    /* 모달용 — 컴팩트 헤더(단위 생략) */
+    const sizeGuideColsShort = [
+      { key: 's0', label: '사이즈', align: 'center', fmt: (v, r) => r[0] },
+      { key: 's1', label: '어깨',   align: 'center', fmt: (v, r) => r[1] },
+      { key: 's2', label: '가슴',   align: 'center', fmt: (v, r) => r[2] },
+      { key: 's3', label: '총장',   align: 'center', fmt: (v, r) => r[3] },
+    ];
 
     /* -- 스타일 추천 -- */
     const styleItems = [
@@ -739,7 +753,7 @@ window.Prod03View = {
       svContents, svRels, svReviews, svReviewSummary, svReviewImages, svQna, svPromotions,
       cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
       openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
-      sizeGuideRows, styleItems,
+      sizeGuideRows, sizeGuideCols, sizeGuideColsShort, styleItems,
       cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,
       cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
       TABS, tabBarRef, sizeSecRef, reviewSecRef, qnaSecRef, styleSecRef,
@@ -1103,26 +1117,8 @@ window.Prod03View = {
         <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">사이즈</div>
         <div class="card" style="padding:28px;">
           <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">📏 사이즈 가이드</div>
-          <div style="overflow-x:auto;">
-            <table style="width:100%;border-collapse:collapse;font-size:0.82rem;min-width:320px;">
-              <thead>
-                <tr style="background:var(--blue-dim);">
-                  <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--blue);">사이즈</th>
-                  <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--blue);">어깨 (cm)</th>
-                  <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--blue);">가슴 (cm)</th>
-                  <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--blue);">총장 (cm)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(row,i) in sizeGuideRows" :key="i" :style="{background:i%2===0?'transparent':'var(--bg-base)'}">
-                  <td style="padding:10px 16px;text-align:center;font-weight:700;color:var(--text-primary);">{{ row[0] }}</td>
-                  <td style="padding:10px 16px;text-align:center;color:var(--text-secondary);">{{ row[1] }}</td>
-                  <td style="padding:10px 16px;text-align:center;color:var(--text-secondary);">{{ row[2] }}</td>
-                  <td style="padding:10px 16px;text-align:center;color:var(--text-secondary);">{{ row[3] }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <fo-grid bare :columns="sizeGuideCols" :rows="sizeGuideRows"
+            :show-row-no="false" min-width="320px" />
           <p style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
         </div>
       </div>
@@ -1395,37 +1391,12 @@ window.Prod03View = {
   </teleport>
 
   <!-- -- ══ 사이즈 가이드 모달 ══ ----------------------------------------------- -->
-  <teleport to="body">
-  <div v-if="uiState.showSizeGuide" class="modal-overlay" style="z-index:1500;" @click.self="uiState.showSizeGuide=false">
-    <div class="modal-box" style="max-width:480px;text-align:left;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <span style="font-weight:800;font-size:1rem;color:var(--text-primary);">📏 사이즈 가이드</span>
-        <button @click="uiState.showSizeGuide=false" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);">✕</button>
-      </div>
-      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
-        <thead>
-          <tr style="background:var(--blue-dim);">
-            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">사이즈</th>
-            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">어깨</th>
-            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">가슴</th>
-            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">총장</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(row,i) in sizeGuideRows" :key="i" :style="{background:i%2===0?'transparent':'var(--bg-base)'}">
-            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--text-primary);">{{ row[0] }}</td>
-            <td style="padding:8px 12px;text-align:center;color:var(--text-secondary);">{{ row[1] }}</td>
-            <td style="padding:8px 12px;text-align:center;color:var(--text-secondary);">{{ row[2] }}</td>
-            <td style="padding:8px 12px;text-align:center;color:var(--text-secondary);">{{ row[3] }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
-      <button class="btn-blue" @click="uiState.showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
-    </div>
-  </div>
-
-  </teleport>
+  <fo-modal :show="uiState.showSizeGuide" title="📏 사이즈 가이드" width="480px"
+    @close="uiState.showSizeGuide=false">
+    <fo-grid bare :columns="sizeGuideColsShort" :rows="sizeGuideRows" :show-row-no="false" />
+    <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
+    <button class="btn-blue" @click="uiState.showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
+  </fo-modal>
 
   <!-- -- ══ 고정 하단 바 ══ -------------------------------------------------- -->
   <div v-if="prod && uiState.showBottomBar"

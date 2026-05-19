@@ -109,6 +109,21 @@ window.XsSample04 = {
       '탈퇴': 'background:#fee2e2;color:#991b1b;',
     }[s] || '');
 
+    /* fo-grid 컬럼 — 회원 목록(3행 데모). 배지/금액/액션은 #cell 슬롯 override */
+    const sample04Cols = [
+      { key: 'memberId', label: 'ID', width: '42px', align: 'center' },
+      { key: 'name',     label: '이름', width: '76px' },
+      { key: 'email',    label: '이메일', mono: true },
+      { key: 'phone',    label: '연락처', width: '110px', align: 'center' },
+      { key: 'grade',    label: '등급', width: '56px', align: 'center' },
+      { key: 'status',   label: '상태', width: '50px', align: 'center' },
+      { key: 'orders',   label: '주문', width: '56px', align: 'right' },
+      { key: 'totalAmt', label: '총구매액', width: '110px', align: 'right' },
+      { key: 'joinDate', label: '가입일', width: '86px', align: 'center' },
+      { key: '_act',     label: '', width: '48px', align: 'center' },
+    ];
+    const sample04Top3 = Vue.computed(() => members.slice(0, 3));
+
     /* fnAlertMeta */
     const fnAlertMeta = v => ({
       info:    { icon: 'ℹ️',  label: '안내',  bg: '#3b82f6', bar: '#3b82f6' },
@@ -213,6 +228,7 @@ window.XsSample04 = {
 
     return {
       uiState, members, form, formErrors, CATALOG,
+      sample04Cols, sample04Top3,
       openModal, closeModal, doConfirm, loadingDemo, submitForm, openEditConfirm,
       fnGradeBadge, fnStatusBadge, fnAlertMeta,
       /* BaseModal */
@@ -366,52 +382,30 @@ window.XsSample04 = {
       <span style="font-size:12px;font-weight:700;color:#e8587a;">{{ members.length }}명 중 3행</span>
       <span style="font-size:11px;color:#aaa;margin-left:4px;">— 행 클릭 → 상세보기 모달</span>
     </div>
-    <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:680px;">
-        <thead>
-          <tr style="background:#f8f9fa;border-bottom:2px solid #e0e0e0;">
-            <th style="padding:7px 8px;text-align:center;font-weight:600;color:#888;font-size:10px;width:42px;">ID</th>
-            <th style="padding:7px 8px;text-align:left;font-weight:600;color:#555;width:76px;">이름</th>
-            <th style="padding:7px 8px;text-align:left;font-weight:600;color:#555;">이메일</th>
-            <th style="padding:7px 8px;text-align:center;font-weight:600;color:#555;width:110px;">연락처</th>
-            <th style="padding:7px 8px;text-align:center;font-weight:600;color:#555;width:56px;">등급</th>
-            <th style="padding:7px 8px;text-align:center;font-weight:600;color:#555;width:50px;">상태</th>
-            <th style="padding:7px 8px;text-align:right;font-weight:600;color:#555;width:56px;">주문</th>
-            <th style="padding:7px 8px;text-align:right;font-weight:600;color:#555;width:110px;">총구매액</th>
-            <th style="padding:7px 8px;text-align:center;font-weight:600;color:#555;width:86px;">가입일</th>
-            <th style="padding:7px 8px;width:48px;"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="!members.length">
-            <td colspan="10" style="text-align:center;padding:30px;color:#ccc;">데이터 로딩 중…</td>
-          </tr>
-          <tr v-for="m in members.slice(0,3)" :key="m.memberId"
-            @click="openModal('detail',{data:m})"
-            style="cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
-            @mouseenter="e=>e.currentTarget.style.background='#f5f7ff'"
-            @mouseleave="e=>e.currentTarget.style.background=''">
-            <td style="text-align:center;padding:6px 8px;color:#ccc;font-size:10px;">{{ m.memberId }}</td>
-            <td style="padding:6px 8px;font-weight:700;color:#222;">{{ m.name }}</td>
-            <td style="padding:6px 8px;color:#555;font-family:monospace;font-size:11px;">{{ m.email }}</td>
-            <td style="text-align:center;padding:6px 8px;color:#666;font-size:11px;">{{ m.phone }}</td>
-            <td style="text-align:center;padding:6px 4px;">
-              <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(m.grade)">{{ m.grade }}</span>
-            </td>
-            <td style="text-align:center;padding:6px 4px;">
-              <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="fnStatusBadge(m.status)">{{ m.status }}</span>
-            </td>
-            <td style="text-align:right;padding:6px 8px;color:#555;">{{ m.orders }}</td>
-            <td style="text-align:right;padding:6px 8px;color:#333;font-weight:700;">{{ m.totalAmt.toLocaleString() }}원</td>
-            <td style="text-align:center;padding:6px 8px;color:#aaa;font-size:11px;">{{ m.joinDate }}</td>
-            <td style="text-align:center;padding:6px 4px;">
-              <button @click.stop="openModal('detail',{data:m})"
-                style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:4px;background:#f8f9fa;cursor:pointer;color:#555;">상세</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <fo-grid bare :columns="sample04Cols" :rows="sample04Top3"
+      row-key="memberId" :show-row-no="false" min-width="680px"
+      empty-text="데이터 로딩 중…"
+      :row-click="m => openModal('detail',{data:m})">
+      <template #cell-grade="{ row }">
+        <td style="text-align:center;">
+          <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(row.grade)">{{ row.grade }}</span>
+        </td>
+      </template>
+      <template #cell-status="{ row }">
+        <td style="text-align:center;">
+          <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="fnStatusBadge(row.status)">{{ row.status }}</span>
+        </td>
+      </template>
+      <template #cell-totalAmt="{ row }">
+        <td style="text-align:right;color:var(--text-primary);font-weight:700;">{{ row.totalAmt.toLocaleString() }}원</td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td style="text-align:center;">
+          <button @click.stop="openModal('detail',{data:row})"
+            style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:4px;background:#f8f9fa;cursor:pointer;color:#555;">상세</button>
+        </td>
+      </template>
+    </fo-grid>
   </div>
 
   <!-- -- ━━━━━━ MODALS ━━━━━━ ------------------------------------------- -->

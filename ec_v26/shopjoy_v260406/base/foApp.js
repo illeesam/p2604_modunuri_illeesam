@@ -1156,6 +1156,13 @@
   .component('CoBarcodeWidget',  window.CoBarcodeWidget  || { template: '<div/>' })
   .component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' })
   .component('BaseAttachGrp', window.BaseAttachGrp)
+  /* ── components/comp/FoAreaComp.js — 공통 영역(검색/그리드/모달) ── */
+  .component('FoSearchArea', window.FoSearchArea)
+  .component('FoGrid',       window.FoGrid)
+  .component('FoGridReadonly', window.FoGridReadonly)
+  .component('FoGridEdit',   window.FoGridEdit)
+  .component('FoGridCrud',   window.FoGridCrud)
+  .component('FoModal',      window.FoModal)
   /* ── components/modals/ — 상세 모달 ── */
   .component('CustomerModal',        window.CustomerModal)
   .component('OrderDetailModal',     window.OrderDetailModal)
