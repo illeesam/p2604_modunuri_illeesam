@@ -188,6 +188,22 @@ window.CmChattDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    /* BoGrid 컬럼 정의 */
+    const memberChatColumns = [
+      { key: 'subject', label: '제목' },
+      { key: '_status', label: '상태' },
+      { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
+      { key: 'regDate', label: '일시' },
+      { key: '_act', label: '관리' },
+    ];
+    const userChatColumns = [
+      { key: 'subject', label: '제목' },
+      { key: '_status', label: '상태' },
+      { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
+      { key: 'regDate', label: '일시' },
+      { key: '_act', label: '보기' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return { cfIsNew, tab, cfDtlMode, tabMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
@@ -195,6 +211,7 @@ window.CmChattDtl = {
       form, errors, handleSave, onUserChange,
       searchUserId, cfUserChats,
       cfMemberChats, codes,
+      memberChatColumns, userChatColumns,
     };
   },
   template: /* html */`
@@ -269,19 +286,14 @@ window.CmChattDtl = {
           <span class="ref-link" @click="showRefModal('member', chat.memberId)">{{ chat.memberNm }}</span> 의 다른 채팅
         </span>
       </div>
-      <table class="bo-table" v-if="cfMemberChats.length">
-        <thead><tr><th>제목</th><th>상태</th><th>최근 메시지</th><th>일시</th><th>관리</th></tr></thead>
-        <tbody>
-          <tr v-for="c in cfMemberChats" :key="c?.chattRoomId">
-            <td>{{ c.subject }}</td>
-            <td><span class="badge" :class="c.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ c.chattStatusCd }}</span></td>
-            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.lastMsgDate || '-' }}</td>
-            <td>{{ c.regDate }}</td>
-            <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:c.chattRoomId})">상세</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">다른 채팅 이력이 없습니다.</div>
+      <bo-grid bare :columns="memberChatColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다.">
+        <template #cell-_status="{ row }">
+          <td><span class="badge" :class="row.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ row.chattStatusCd }}</span></td>
+        </template>
+        <template #cell-_act="{ row }">
+          <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">상세</button></td>
+        </template>
+      </bo-grid>
     </div>
     </div>
   </div>
@@ -332,22 +344,14 @@ window.CmChattDtl = {
         <div style="display:flex;gap:8px;margin-bottom:14px;">
           <input class="form-control" style="max-width:200px;" v-model="searchUserId" placeholder="회원 ID 입력" />
         </div>
-        <div v-if="cfUserChats.length">
-          <table class="bo-table">
-            <thead><tr><th>제목</th><th>상태</th><th>최근 메시지</th><th>일시</th><th>보기</th></tr></thead>
-            <tbody>
-              <tr v-for="c in cfUserChats" :key="c?.chattRoomId">
-                <td>{{ c.subject }}</td>
-                <td><span class="badge" :class="c.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ c.chattStatusCd }}</span></td>
-                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.lastMsgDate || '-' }}</td>
-                <td>{{ c.regDate }}</td>
-                <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:c.chattRoomId})">보기</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else-if="searchUserId" style="color:#aaa;font-size:13px;padding:20px;text-align:center;">해당 회원을 찾을 수 없습니다.</div>
-        <div v-else style="color:#aaa;font-size:13px;padding:20px;text-align:center;">회원 ID를 입력하세요.</div>
+        <bo-grid bare :columns="userChatColumns" :rows="cfUserChats" row-key="chattRoomId" :empty-text="searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'">
+          <template #cell-_status="{ row }">
+            <td><span class="badge" :class="row.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ row.chattStatusCd }}</span></td>
+          </template>
+          <template #cell-_act="{ row }">
+            <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">보기</button></td>
+          </template>
+        </bo-grid>
       </div>
     </div>
   </template>
