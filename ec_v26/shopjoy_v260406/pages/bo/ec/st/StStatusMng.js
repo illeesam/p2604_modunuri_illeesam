@@ -359,10 +359,66 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       showToast && showToast(`${tab.label} 데이터를 Excel로 내보냅니다.`, 'info');
     };
 
+    /* BoGrid 컬럼 정의 — 특수셀은 #cell- 슬롯 override */
+    const vendorColumns = [
+      { key: 'vendorNm',  label: '업체명' },
+      { key: 'orderCnt',  label: '주문건수' },
+      { key: 'sales',     label: '매출액' },
+      { key: 'refund',    label: '환불액' },
+      { key: 'netSales',  label: '순매출' },
+      { key: 'comm',      label: '수수료(10%)' },
+      { key: 'settle',    label: '정산예정액' },
+    ];
+    const orderColumns = [
+      { key: 'orderId',    label: '주문ID' },
+      { key: 'orderDate',  label: '주문일시' },
+      { key: 'userNm',     label: '고객명' },
+      { key: 'vendorNm',   label: '업체' },
+      { key: 'prodNm',     label: '상품명' },
+      { key: 'totalPrice', label: '결제금액' },
+      { key: 'comm',       label: '수수료' },
+      { key: 'settle',     label: '정산액' },
+      { key: 'status',     label: '상태' },
+    ];
+    const claimColumns = [
+      { key: 'claimId',      label: '클레임ID' },
+      { key: 'requestDate',  label: '요청일시' },
+      { key: 'userNm',       label: '고객명' },
+      { key: 'orderId',      label: '주문ID' },
+      { key: 'prodNm',       label: '상품명' },
+      { key: 'type',         label: '유형' },
+      { key: 'reason',       label: '사유' },
+      { key: 'refundAmount', label: '환불액' },
+      { key: 'settleImpact', label: '정산차감' },
+      { key: 'status',       label: '상태' },
+    ];
+    const promoColumns = [
+      { key: 'promoId',     label: 'ID' },
+      { key: 'promoType',   label: '유형' },
+      { key: 'promoNm',     label: '프로모션명' },
+      { key: 'issueCnt',    label: '발급/충전수' },
+      { key: 'useCnt',      label: '사용건수' },
+      { key: 'discountAmt', label: '할인/지원액' },
+      { key: 'period',      label: '기간' },
+      { key: 'status',      label: '상태' },
+    ];
+    const settleColumns = [
+      { key: 'month',     label: '정산월' },
+      { key: 'orderCnt',  label: '주문건수' },
+      { key: 'sales',     label: '매출액' },
+      { key: 'refund',    label: '환불액' },
+      { key: 'net',       label: '순매출' },
+      { key: 'comm',      label: '수수료(10%)' },
+      { key: 'promo',     label: '프로모션비(3%)' },
+      { key: 'settle',    label: '순정산액' },
+      { key: 'statusCd',  label: '상태' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return {
       uiState, TABS,
+      vendorColumns, orderColumns, claimColumns, promoColumns, settleColumns,
       onDateRangeChange,
       /* vendor */ vendorPager, cfVendorRows, cfVendorTotal, cfVendorPages, cfVendorPageList, cfVendorSummary,
       /* order  */ orderPager, cfOrderRows, cfOrderTotal, cfOrderPages, cfOrderPageList, cfOrderSummary,
@@ -391,7 +447,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
   <!-- -- 공통 날짜 필터 ------------------------------------------------------- -->
   <div class="card" style="margin-bottom:12px">
-    <div class="search-bar" style="flex-wrap:wrap;gap:8px">
+    <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'" @search="onSearch" @reset="onReset">
       <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
         <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
@@ -399,12 +455,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <input type="date" v-model="uiState.dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
       <input type="date" v-model="uiState.dateEnd"   style="width:140px" />
-      <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary" @click="onReset">초기화</button>
+      <template #actions-after>
         <button class="btn btn-secondary" @click="exportTab">📥 Excel</button>
-      </div>
-    </div>
+      </template>
+    </bo-search-area>
   </div>
 
   <!-- -- 탭 -------------------------------------------------------------- -->
@@ -436,30 +490,28 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </div>
     </div>
     <!-- -- 검색 ----------------------------------------------------------- -->
-    <div class="search-bar" style="margin-bottom:12px">
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
       <input v-model="uiState.vendorSearchValue" placeholder="업체명 검색" style="width:200px" @keyup.enter="() => onSearch?.()" />
-    </div>
+    </bo-search-area>
     <!-- -- 테이블 ---------------------------------------------------------- -->
-    <div class="toolbar"><span class="list-count">총 {{ cfVendorTotal }}개 업체</span></div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>업체명</th><th>주문건수</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료(10%)</th><th>정산예정액</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in cfVendorPageList" :key="r?.vendorId">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (vendorPager.page - 1) * vendorPager.size + idx + 1 }}</td>
-          <td><strong>{{ r.vendorNm }}</strong></td>
-          <td>{{ r.orderCnt }}건</td>
-          <td>{{ fmtW(r.sales) }}</td>
-          <td style="color:#e74c3c">{{ r.refund > 0 ? '-'+fmtW(r.refund) : '-' }}</td>
-          <td><strong>{{ fmtW(r.netSales) }}</strong></td>
-          <td style="color:#e67e22">{{ fmtW(r.comm) }}</td>
-          <td style="color:#27ae60;font-weight:700">{{ fmtW(r.settle) }}</td>
-        </tr>
-        <tr v-if="!cfVendorPageList.length"><td colspan="8" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-grid
+      :columns="vendorColumns"
+      :rows="cfVendorPageList"
+      :pager="vendorPager"
+      row-key="vendorId"
+      list-title="업체별현황"
+      :count-text="'총 ' + cfVendorTotal + '개 업체'"
+      empty-text="데이터가 없습니다."
+      @set-page="setVendorPage"
+      @size-change="onVendorSizeChange">
+      <template #cell-vendorNm="{ row: r }"><td><strong>{{ r.vendorNm }}</strong></td></template>
+      <template #cell-orderCnt="{ row: r }"><td>{{ r.orderCnt }}건</td></template>
+      <template #cell-sales="{ row: r }"><td>{{ fmtW(r.sales) }}</td></template>
+      <template #cell-refund="{ row: r }"><td style="color:#e74c3c">{{ r.refund > 0 ? '-'+fmtW(r.refund) : '-' }}</td></template>
+      <template #cell-netSales="{ row: r }"><td><strong>{{ fmtW(r.netSales) }}</strong></td></template>
+      <template #cell-comm="{ row: r }"><td style="color:#e67e22">{{ fmtW(r.comm) }}</td></template>
+      <template #cell-settle="{ row: r }"><td style="color:#27ae60;font-weight:700">{{ fmtW(r.settle) }}</td></template>
+    </bo-grid>
   </div>
 
   <!-- -- ══ 2. 주문별현황 ══ ------------------------------------------------- -->
@@ -482,35 +534,34 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfOrderSummary.settle) }}</div>
       </div>
     </div>
-    <div class="search-bar" style="margin-bottom:12px">
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
       <input v-model="uiState.orderSearchValue" placeholder="주문ID / 고객명 / 상품명" style="width:220px" @keyup.enter="() => onSearch?.()" />
       <select v-model="uiState.orderSearchStatus" style="width:130px">
         <option value="">상태 전체</option>
         <option v-for="c in codes.st_order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-    </div>
-    <div class="toolbar"><span class="list-count">총 {{ cfOrderTotal }}건</span></div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>주문ID</th><th>주문일시</th><th>고객명</th><th>업체</th><th>상품명</th><th>결제금액</th><th>수수료</th><th>정산액</th><th>상태</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in cfOrderPageList" :key="r?.orderId" :style="r.isCancelled ? 'color:#bbb' : ''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (orderPager.page - 1) * orderPager.size + idx + 1 }}</td>
-          <td>{{ r.orderId }}</td>
-          <td>{{ r.orderDate }}</td>
-          <td>{{ r.userNm }}</td>
-          <td>{{ r.vendorNm }}</td>
-          <td>{{ r.prodNm }}</td>
-          <td>{{ fmtW(r.totalPrice) }}</td>
-          <td style="color:#e67e22">{{ r.isCancelled ? '-' : fmtW(r.comm) }}</td>
-          <td style="font-weight:700" :style="r.isCancelled ? 'color:#bbb' : 'color:#27ae60'">{{ r.isCancelled ? '-' : fmtW(r.settle) }}</td>
-          <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
-        </tr>
-        <tr v-if="!cfOrderPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    </bo-search-area>
+    <bo-grid
+      :columns="orderColumns"
+      :rows="cfOrderPageList"
+      :pager="orderPager"
+      row-key="orderId"
+      list-title="주문별현황"
+      :count-text="'총 ' + cfOrderTotal + '건'"
+      :row-style="(r) => r.isCancelled ? 'color:#bbb' : ''"
+      empty-text="데이터가 없습니다."
+      @set-page="setOrderPage"
+      @size-change="onOrderSizeChange">
+      <template #cell-orderId="{ row: r }"><td>{{ r.orderId }}</td></template>
+      <template #cell-orderDate="{ row: r }"><td>{{ r.orderDate }}</td></template>
+      <template #cell-userNm="{ row: r }"><td>{{ r.userNm }}</td></template>
+      <template #cell-vendorNm="{ row: r }"><td>{{ r.vendorNm }}</td></template>
+      <template #cell-prodNm="{ row: r }"><td>{{ r.prodNm }}</td></template>
+      <template #cell-totalPrice="{ row: r }"><td>{{ fmtW(r.totalPrice) }}</td></template>
+      <template #cell-comm="{ row: r }"><td style="color:#e67e22">{{ r.isCancelled ? '-' : fmtW(r.comm) }}</td></template>
+      <template #cell-settle="{ row: r }"><td style="font-weight:700" :style="r.isCancelled ? 'color:#bbb' : 'color:#27ae60'">{{ r.isCancelled ? '-' : fmtW(r.settle) }}</td></template>
+      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
+    </bo-grid>
   </div>
 
   <!-- -- ══ 3. 클레임별현황 ══ ------------------------------------------------ -->
@@ -534,7 +585,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#3498db">{{ cfClaimSummary.cnt > 0 ? Math.round(cfClaimRows.filter(r=>r.isCompleted).length / cfClaimSummary.cnt * 100) : 0 }}%</div>
       </div>
     </div>
-    <div class="search-bar" style="margin-bottom:12px">
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
       <select v-model="uiState.claimSearchType" style="width:120px">
         <option value="">유형 전체</option><option v-for="c in codes.claim_types_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
@@ -542,29 +593,28 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <option value="">상태 전체</option>
         <option v-for="c in codes.claim_statuses_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-    </div>
-    <div class="toolbar"><span class="list-count">총 {{ cfClaimTotal }}건</span></div>
-    <table class="bo-table">
-      <thead><tr>
-        <th>클레임ID</th><th>요청일시</th><th>고객명</th><th>주문ID</th><th>상품명</th><th>유형</th><th>사유</th><th>환불액</th><th>정산차감</th><th>상태</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="r in cfClaimPageList" :key="r?.claimId">
-          <td>{{ r.claimId }}</td>
-          <td>{{ r.requestDate }}</td>
-          <td>{{ r.userNm }}</td>
-          <td>{{ r.orderId }}</td>
-          <td>{{ r.prodNm }}</td>
-          <td><span class="badge" :class="fnTypeBadge(r.type)">{{ r.type }}</span></td>
-          <td>{{ r.reason }}</td>
-          <td>{{ r.refundAmount > 0 ? fmtW(r.refundAmount) : '-' }}</td>
-          <td style="color:#e74c3c;font-weight:700">{{ r.settleImpact < 0 ? '-'+fmtW(Math.abs(r.settleImpact)) : '-' }}</td>
-          <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
-        </tr>
-        <tr v-if="!cfClaimPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    </bo-search-area>
+    <bo-grid
+      :columns="claimColumns"
+      :rows="cfClaimPageList"
+      :pager="claimPager"
+      row-key="claimId"
+      list-title="클레임별현황"
+      :count-text="'총 ' + cfClaimTotal + '건'"
+      empty-text="데이터가 없습니다."
+      @set-page="setClaimPage"
+      @size-change="onClaimSizeChange">
+      <template #cell-claimId="{ row: r }"><td>{{ r.claimId }}</td></template>
+      <template #cell-requestDate="{ row: r }"><td>{{ r.requestDate }}</td></template>
+      <template #cell-userNm="{ row: r }"><td>{{ r.userNm }}</td></template>
+      <template #cell-orderId="{ row: r }"><td>{{ r.orderId }}</td></template>
+      <template #cell-prodNm="{ row: r }"><td>{{ r.prodNm }}</td></template>
+      <template #cell-type="{ row: r }"><td><span class="badge" :class="fnTypeBadge(r.type)">{{ r.type }}</span></td></template>
+      <template #cell-reason="{ row: r }"><td>{{ r.reason }}</td></template>
+      <template #cell-refundAmount="{ row: r }"><td>{{ r.refundAmount > 0 ? fmtW(r.refundAmount) : '-' }}</td></template>
+      <template #cell-settleImpact="{ row: r }"><td style="color:#e74c3c;font-weight:700">{{ r.settleImpact < 0 ? '-'+fmtW(Math.abs(r.settleImpact)) : '-' }}</td></template>
+      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
+    </bo-grid>
   </div>
 
   <!-- -- ══ 4. 프로모션별현황 ══ ----------------------------------------------- -->
@@ -583,33 +633,32 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#e74c3c">{{ fmtW(cfPromoSummary.totalDiscount) }}</div>
       </div>
     </div>
-    <div class="search-bar" style="margin-bottom:12px">
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
       <select v-model="uiState.promoSearchType" style="width:110px">
         <option value="">유형 전체</option>
         <option v-for="c in codes.promo_types_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.promoSearchValue" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
-    </div>
-    <div class="toolbar"><span class="list-count">총 {{ cfPromoTotal }}개</span></div>
-    <table class="bo-table">
-      <thead><tr>
-        <th>ID</th><th>유형</th><th>프로모션명</th><th>발급/충전수</th><th>사용건수</th><th>할인/지원액</th><th>기간</th><th>상태</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="r in cfPromoPageList" :key="r?.promoId">
-          <td>{{ r.promoId }}</td>
-          <td><span class="badge badge-blue">{{ r.promoType }}</span></td>
-          <td>{{ r.promoNm }}</td>
-          <td>{{ fmt(r.issueCnt) }}</td>
-          <td>{{ fmt(r.useCnt) }}</td>
-          <td style="color:#e74c3c;font-weight:700">{{ fmtW(r.discountAmt) }}</td>
-          <td style="font-size:12px;color:#888">{{ r.period }}</td>
-          <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
-        </tr>
-        <tr v-if="!cfPromoPageList.length"><td colspan="8" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    </bo-search-area>
+    <bo-grid
+      :columns="promoColumns"
+      :rows="cfPromoPageList"
+      :pager="promoPager"
+      row-key="promoId"
+      list-title="프로모션별현황"
+      :count-text="'총 ' + cfPromoTotal + '개'"
+      empty-text="데이터가 없습니다."
+      @set-page="setPromoPage"
+      @size-change="onPromoSizeChange">
+      <template #cell-promoId="{ row: r }"><td>{{ r.promoId }}</td></template>
+      <template #cell-promoType="{ row: r }"><td><span class="badge badge-blue">{{ r.promoType }}</span></td></template>
+      <template #cell-promoNm="{ row: r }"><td>{{ r.promoNm }}</td></template>
+      <template #cell-issueCnt="{ row: r }"><td>{{ fmt(r.issueCnt) }}</td></template>
+      <template #cell-useCnt="{ row: r }"><td>{{ fmt(r.useCnt) }}</td></template>
+      <template #cell-discountAmt="{ row: r }"><td style="color:#e74c3c;font-weight:700">{{ fmtW(r.discountAmt) }}</td></template>
+      <template #cell-period="{ row: r }"><td style="font-size:12px;color:#888">{{ r.period }}</td></template>
+      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
+    </bo-grid>
   </div>
 
   <!-- -- ══ 5. 정산별현황 ══ ------------------------------------------------- -->
@@ -632,30 +681,29 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfSettleSummary.settle) }}</div>
       </div>
     </div>
-    <div class="search-bar" style="margin-bottom:12px">
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
       <input v-model="uiState.settleSearchMonth" placeholder="월 검색 (예: 2026-04)" style="width:180px" @keyup.enter="() => onSearch?.()" />
-    </div>
-    <div class="toolbar"><span class="list-count">총 {{ cfSettleTotal }}개월</span></div>
-    <table class="bo-table">
-      <thead><tr>
-        <th>정산월</th><th>주문건수</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료(10%)</th><th>프로모션비(3%)</th><th>순정산액</th><th>상태</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="r in cfSettlePageList" :key="r?.month">
-          <td><strong>{{ r.month }}</strong></td>
-          <td>{{ r.orderCnt }}건</td>
-          <td>{{ fmtW(r.sales) }}</td>
-          <td style="color:#e74c3c">{{ r.refund > 0 ? '-'+fmtW(r.refund) : '-' }}</td>
-          <td><strong>{{ fmtW(r.net) }}</strong></td>
-          <td style="color:#e67e22">{{ fmtW(r.comm) }}</td>
-          <td style="color:#9b59b6">{{ fmtW(r.promo) }}</td>
-          <td style="font-weight:700" :style="r.settle >= 0 ? 'color:#27ae60' : 'color:#e74c3c'">{{ fmtW(r.settle) }}</td>
-          <td><span class="badge" :class="fnStatusBadge(r.statusCd)">{{ r.statusCd }}</span></td>
-        </tr>
-        <tr v-if="!cfSettlePageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    </bo-search-area>
+    <bo-grid
+      :columns="settleColumns"
+      :rows="cfSettlePageList"
+      :pager="settlePager"
+      row-key="month"
+      list-title="정산별현황"
+      :count-text="'총 ' + cfSettleTotal + '개월'"
+      empty-text="데이터가 없습니다."
+      @set-page="setSettlePage"
+      @size-change="onSettleSizeChange">
+      <template #cell-month="{ row: r }"><td><strong>{{ r.month }}</strong></td></template>
+      <template #cell-orderCnt="{ row: r }"><td>{{ r.orderCnt }}건</td></template>
+      <template #cell-sales="{ row: r }"><td>{{ fmtW(r.sales) }}</td></template>
+      <template #cell-refund="{ row: r }"><td style="color:#e74c3c">{{ r.refund > 0 ? '-'+fmtW(r.refund) : '-' }}</td></template>
+      <template #cell-net="{ row: r }"><td><strong>{{ fmtW(r.net) }}</strong></td></template>
+      <template #cell-comm="{ row: r }"><td style="color:#e67e22">{{ fmtW(r.comm) }}</td></template>
+      <template #cell-promo="{ row: r }"><td style="color:#9b59b6">{{ fmtW(r.promo) }}</td></template>
+      <template #cell-settle="{ row: r }"><td style="font-weight:700" :style="r.settle >= 0 ? 'color:#27ae60' : 'color:#e74c3c'">{{ fmtW(r.settle) }}</td></template>
+      <template #cell-statusCd="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.statusCd)">{{ r.statusCd }}</span></td></template>
+    </bo-grid>
   </div>
 </div>
 `,

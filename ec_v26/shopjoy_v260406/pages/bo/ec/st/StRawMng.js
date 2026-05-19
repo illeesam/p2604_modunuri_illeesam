@@ -145,6 +145,24 @@ const rawList = reactive([]);
     /* fmtPct */
     const fmtPct = n => Number(n || 0).toLocaleString() + '%';
 
+    /* rawColumns — BoGrid 컬럼 정의 (특수셀은 #cell- 슬롯 override) */
+    const rawColumns = [
+      { key: 'expand',         label: '',         style: 'width:30px' },
+      { key: 'settleRawId',    label: '원장ID' },
+      { key: 'orderDate',      label: '거래일자' },
+      { key: 'rawTypeCd',      label: '유형' },
+      { key: 'orderId',        label: '소스ID' },
+      { key: 'vendorNm',       label: '업체' },
+      { key: 'prodNm',         label: '상품명' },
+      { key: 'orderQty',       label: '수량',         style: 'text-align:right' },
+      { key: 'settleTargetAmt', label: '정산대상금액', style: 'text-align:right' },
+      { key: 'settleFeeAmt',   label: '수수료',       style: 'text-align:right' },
+      { key: 'settleAmt',      label: '정산금액',     style: 'text-align:right' },
+      { key: 'rawStatusCd',    label: '수집상태' },
+      { key: 'closeYn',        label: '마감' },
+      { key: 'erpSendYn',      label: 'ERP' },
+    ];
+
     /* doCollect */
     const doCollect = async () => {
       const ok = await showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
@@ -168,7 +186,7 @@ const rawList = reactive([]);
       setPage, onSizeChange, onSearch, onReset,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
-      fmtW, fmtPct, doCollect, codes,
+      fmtW, fmtPct, doCollect, codes, rawColumns,
     };
   },
   template: /* html */`
@@ -185,78 +203,78 @@ const rawList = reactive([]);
 
   <!-- -- 검색 카드 -- -->
   <div class="card">
-    <!-- -- 1행: 기간 + 기본 필터 ----------------------------------------------- -->
-    <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
-      <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
-        <option value="">기간 선택</option>
-        <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
-      </select>
-      <input type="date" v-model="uiState.dateStart" style="width:140px" />
-      <span style="line-height:32px">~</span>
-      <input type="date" v-model="uiState.dateEnd" style="width:140px" />
-      <select v-model="searchParam.type" style="width:100px">
-        <option value="">유형 전체</option><option v-for="c in codes.raw_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.status" style="width:110px">
-        <option value="">수집상태 전체</option>
-        <option v-for="c in codes.raw_collect_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'rawId',    label: '원장ID' },
-          { value: 'srcId',    label: '소스ID' },
-          { value: 'vendorNm', label: '업체명' },
-          { value: 'prodNm',   label: '상품명' },
-          { value: 'brandNm',  label: '브랜드' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:230px" @keyup.enter="() => onSearch?.()" />
-    </div>
-    <!-- -- 2행: 추가 필터 ---------------------------------------------------- -->
-    <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
-      <select v-model="searchParam.vendorType" style="width:110px">
-        <option value="">업체구분 전체</option>
-        <option v-for="c in codes.raw_vendor_divs" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.payMethod" style="width:120px">
-        <option value="">결제수단 전체</option>
-        <option v-for="c in codes.pay_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.buyConfirm" style="width:110px">
-        <option value="">구매확정 전체</option>
-        <option v-for="o in codes.confirm_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.closeYn" style="width:110px">
-        <option value="">마감여부 전체</option>
-        <option v-for="o in codes.close_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.erpSend" style="width:110px">
-        <option value="">ERP전송 전체</option>
-        <option v-for="o in codes.send_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-      <input v-model="searchParam.period" placeholder="정산기간(YYYY-MM)" style="width:150px" maxlength="7" />
-      <div class="search-actions" style="margin-left:auto">
-        <button class="btn btn-primary" @click="onSearch">조회</button>
-        <button class="btn btn-secondary" @click="onReset">초기화</button>
+    <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'" @search="onSearch" @reset="onReset">
+      <!-- -- 1행: 기간 + 기본 필터 ----------------------------------------------- -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-bottom:8px">
+        <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
+          <option value="">기간 선택</option>
+          <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
+        </select>
+        <input type="date" v-model="uiState.dateStart" style="width:140px" />
+        <span style="line-height:32px">~</span>
+        <input type="date" v-model="uiState.dateEnd" style="width:140px" />
+        <select v-model="searchParam.type" style="width:100px">
+          <option value="">유형 전체</option><option v-for="c in codes.raw_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+        <select v-model="searchParam.status" style="width:110px">
+          <option value="">수집상태 전체</option>
+          <option v-for="c in codes.raw_collect_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+        <bo-multi-check-select
+          v-model="searchParam.searchType"
+          :options="[
+            { value: 'rawId',    label: '원장ID' },
+            { value: 'srcId',    label: '소스ID' },
+            { value: 'vendorNm', label: '업체명' },
+            { value: 'prodNm',   label: '상품명' },
+            { value: 'brandNm',  label: '브랜드' },
+          ]"
+          placeholder="검색대상 전체"
+          all-label="전체 선택"
+          min-width="160px" />
+        <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:230px" @keyup.enter="() => onSearch?.()" />
+      </div>
+      <!-- -- 2행: 추가 필터 ---------------------------------------------------- -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-bottom:8px">
+        <select v-model="searchParam.vendorType" style="width:110px">
+          <option value="">업체구분 전체</option>
+          <option v-for="c in codes.raw_vendor_divs" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+        <select v-model="searchParam.payMethod" style="width:120px">
+          <option value="">결제수단 전체</option>
+          <option v-for="c in codes.pay_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+        <select v-model="searchParam.buyConfirm" style="width:110px">
+          <option value="">구매확정 전체</option>
+          <option v-for="o in codes.confirm_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+        </select>
+        <select v-model="searchParam.closeYn" style="width:110px">
+          <option value="">마감여부 전체</option>
+          <option v-for="o in codes.close_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+        </select>
+        <select v-model="searchParam.erpSend" style="width:110px">
+          <option value="">ERP전송 전체</option>
+          <option v-for="o in codes.send_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+        </select>
+        <input v-model="searchParam.period" placeholder="정산기간(YYYY-MM)" style="width:150px" maxlength="7" />
+      </div>
+      <!-- -- 3행: 상세검색 펼치기 ------------------------------------------------- -->
+      <div v-if="uiState.searchMoreOpen" style="display:flex;flex-wrap:wrap;gap:8px;width:100%;padding-top:8px;border-top:1px solid #f0f0f0">
+        <select v-model="searchParam.orderStatus" style="width:120px">
+          <option value="">주문상태 전체</option>
+          <option v-for="c in codes.order_statuses_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+        <span style="line-height:32px;font-size:12px;color:#888">수집금액</span>
+        <input v-model="searchParam.amtFrom" type="number" placeholder="최솟값(원)" style="width:120px" />
+        <span style="line-height:32px">~</span>
+        <input v-model="searchParam.amtTo" type="number" placeholder="최댓값(원)" style="width:120px" />
+      </div>
+      <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="uiState.searchMoreOpen=!uiState.searchMoreOpen" style="min-width:70px">
           {{ uiState.searchMoreOpen ? '▲ 접기' : '▼ 상세검색' }}
         </button>
-      </div>
-    </div>
-    <!-- -- 3행: 상세검색 펼치기 ------------------------------------------------- -->
-    <div v-if="uiState.searchMoreOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid #f0f0f0">
-      <select v-model="searchParam.orderStatus" style="width:120px">
-        <option value="">주문상태 전체</option>
-        <option v-for="c in codes.order_statuses_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <span style="line-height:32px;font-size:12px;color:#888">수집금액</span>
-      <input v-model="searchParam.amtFrom" type="number" placeholder="최솟값(원)" style="width:120px" />
-      <span style="line-height:32px">~</span>
-      <input v-model="searchParam.amtTo" type="number" placeholder="최댓값(원)" style="width:120px" />
-    </div>
+      </template>
+    </bo-search-area>
   </div>
 
   <!-- -- 집계 카드 -- -->
@@ -292,66 +310,70 @@ const rawList = reactive([]);
   </div>
 
   <!-- -- 목록 카드 -- -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-count">총 {{ pager.pageTotalCount.toLocaleString() }}건</span>
-      <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▼ 전체펼치기</button>
-        <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▲ 전체접기</button>
-        <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
-      </div>
-    </div>
-    <table class="bo-table">
-      <thead>
-        <tr>
-          <th style="width:30px"></th>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th>원장ID</th>
-          <th>거래일자</th>
-          <th>유형</th>
-          <th>소스ID</th>
-          <th>업체</th>
-          <th>상품명</th>
-          <th style="text-align:right">수량</th>
-          <th style="text-align:right">정산대상금액</th>
-          <th style="text-align:right">수수료</th>
-          <th style="text-align:right">정산금액</th>
-          <th>수집상태</th>
-          <th>마감</th>
-          <th>ERP</th>
-        </tr>
-      </thead>
-      <tbody>
-        <template v-for="(r, idx) in rawList" :key="r?.settleRawId">
-          <!-- -- 기본 행 --------------------------------------------------- -->
-          <tr :style="isExpanded(r.settleRawId) ? 'background:#fafbff' : ''" style="cursor:pointer" @click="toggleRow(r.settleRawId)">
-            <td style="text-align:center;color:#aaa;font-size:11px;user-select:none">
-              {{ isExpanded(r.settleRawId) ? '▲' : '▼' }}
-            </td>
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td style="font-size:12px;color:#555">{{ r.settleRawId }}</td>
-            <td>{{ r.orderDate }}</td>
-            <td><span class="badge" :class="r.rawTypeCd==='ORDER'?'badge-blue':'badge-orange'">{{ r.rawTypeCd }}</span></td>
-            <td style="font-size:12px;color:#555">{{ r.orderId }}</td>
-            <td>
-              <div>{{ r.vendorNm }}</div>
-              <div style="font-size:11px;color:#aaa">{{ vendorTypeLabel(r.vendorTypeCd) }}</div>
-            </td>
-            <td>
-              <div style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.prodNm }}</div>
-              <div style="font-size:11px;color:#aaa">{{ r.brandNm }}</div>
-            </td>
-            <td style="text-align:right">{{ (r.orderQty||0).toLocaleString() }}</td>
-            <td style="text-align:right;font-weight:600" :style="r.settleTargetAmt<0?'color:#e74c3c':''">{{ fmtW(r.settleTargetAmt) }}</td>
-            <td style="text-align:right;color:#e74c3c">{{ fmtW(r.settleFeeAmt) }}</td>
-            <td style="text-align:right;font-weight:700" :style="r.settleAmt<0?'color:#e74c3c':'color:#2980b9'">{{ fmtW(r.settleAmt) }}</td>
-            <td><span class="badge" :class="fnRawStatusBadge(r.rawStatusCd)">{{ rawStatusLabel(r.rawStatusCd) }}</span></td>
-            <td><span class="badge" :class="r.closeYn==='Y'?'badge-purple':'badge-gray'">{{ r.closeYn==='Y'?'마감':'미마감' }}</span></td>
-            <td><span class="badge" :class="r.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ r.erpSendYn==='Y'?'전송':'미전송' }}</span></td>
-          </tr>
-          <!-- -- 펼침 상세 행 ------------------------------------------------ -->
-          <tr v-if="isExpanded(r.settleRawId)">
-            <td colspan="14" style="background:#f4f6fb;padding:12px 20px;border-top:none">
+  <bo-grid
+    :columns="rawColumns"
+    :rows="rawList"
+    :pager="pager"
+    row-key="settleRawId"
+    list-title="정산수집원장"
+    :is-expanded="(r) => isExpanded(r.settleRawId)"
+    empty-text="데이터가 없습니다."
+    @set-page="setPage"
+    @size-change="onSizeChange">
+    <template #toolbar-actions>
+      <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▼ 전체펼치기</button>
+      <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▲ 전체접기</button>
+      <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
+    </template>
+    <template #cell-expand="{ row }">
+      <td style="text-align:center;color:#aaa;font-size:11px;user-select:none;cursor:pointer" @click="toggleRow(row.settleRawId)">
+        {{ isExpanded(row.settleRawId) ? '▲' : '▼' }}
+      </td>
+    </template>
+    <template #cell-settleRawId="{ row }">
+      <td style="font-size:12px;color:#555;cursor:pointer" @click="toggleRow(row.settleRawId)">{{ row.settleRawId }}</td>
+    </template>
+    <template #cell-rawTypeCd="{ row }">
+      <td><span class="badge" :class="row.rawTypeCd==='ORDER'?'badge-blue':'badge-orange'">{{ row.rawTypeCd }}</span></td>
+    </template>
+    <template #cell-orderId="{ row }">
+      <td style="font-size:12px;color:#555">{{ row.orderId }}</td>
+    </template>
+    <template #cell-vendorNm="{ row }">
+      <td>
+        <div>{{ row.vendorNm }}</div>
+        <div style="font-size:11px;color:#aaa">{{ vendorTypeLabel(row.vendorTypeCd) }}</div>
+      </td>
+    </template>
+    <template #cell-prodNm="{ row }">
+      <td>
+        <div style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.prodNm }}</div>
+        <div style="font-size:11px;color:#aaa">{{ row.brandNm }}</div>
+      </td>
+    </template>
+    <template #cell-orderQty="{ row }">
+      <td style="text-align:right">{{ (row.orderQty||0).toLocaleString() }}</td>
+    </template>
+    <template #cell-settleTargetAmt="{ row }">
+      <td style="text-align:right;font-weight:600" :style="row.settleTargetAmt<0?'color:#e74c3c':''">{{ fmtW(row.settleTargetAmt) }}</td>
+    </template>
+    <template #cell-settleFeeAmt="{ row }">
+      <td style="text-align:right;color:#e74c3c">{{ fmtW(row.settleFeeAmt) }}</td>
+    </template>
+    <template #cell-settleAmt="{ row }">
+      <td style="text-align:right;font-weight:700" :style="row.settleAmt<0?'color:#e74c3c':'color:#2980b9'">{{ fmtW(row.settleAmt) }}</td>
+    </template>
+    <template #cell-rawStatusCd="{ row }">
+      <td><span class="badge" :class="fnRawStatusBadge(row.rawStatusCd)">{{ rawStatusLabel(row.rawStatusCd) }}</span></td>
+    </template>
+    <template #cell-closeYn="{ row }">
+      <td><span class="badge" :class="row.closeYn==='Y'?'badge-purple':'badge-gray'">{{ row.closeYn==='Y'?'마감':'미마감' }}</span></td>
+    </template>
+    <template #cell-erpSendYn="{ row }">
+      <td><span class="badge" :class="row.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ row.erpSendYn==='Y'?'전송':'미전송' }}</span></td>
+    </template>
+    <template #row-expand="{ row: r, colspan }">
+            <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px">
                 <!-- -- 주문정보 --------------------------------------------- -->
                 <div>
@@ -418,13 +440,8 @@ const rawList = reactive([]);
                 </div>
               </div>
             </td>
-          </tr>
-        </template>
-        <tr v-if="!rawList.length"><td colspan="15" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+    </template>
+  </bo-grid>
 </div>
 `,
 };
