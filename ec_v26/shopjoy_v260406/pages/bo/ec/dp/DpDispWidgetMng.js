@@ -182,6 +182,19 @@ window.DpDispWidgetMng = {
     /* contentSummary */
     const contentSummary = (d) => d?.widgetLibDesc || d?.contents || d?.desc || '';
 
+    /* 적용 필터 없음 여부 (template 속성값 && 금지 회피용) */
+    const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
+
+    /* 선택 행 강조 + 행 높이 (기존 :style 보존) */
+    const fnRowStyle = (row) => (uiStateDetail.selectedId === row.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;cursor:pointer;';
+
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
+    const listColumns = [
+      { key: 'widgetId',   label: 'ID',       style: 'width:56px;' },
+      { key: 'widgetInfo', label: '위젯 정보', sortKey: 'reg' },
+      { key: '_act',       label: '관리',     style: 'width:120px;text-align:right;' },
+    ];
+
     /* setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
 
@@ -217,6 +230,7 @@ window.DpDispWidgetMng = {
       cfDetailEditId, cfDetailKey,
       selectNode,
       fnStatusCls, fnStatusLabel, contentSummary, handleDelete, onSort, sortIcon,
+      listColumns, cfNoFilter, fnRowStyle,
     };
   },
   template: /* html */`
@@ -283,79 +297,62 @@ window.DpDispWidgetMng = {
   <!-- -- 우측 목록 ---------------------------------------------------------- -->
   <div style="flex:1;min-width:0;width:100%;">
   <!-- -- 목록 ------------------------------------------------------------- -->
-  <div class="card" style="padding:0;">
-    <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <span style="font-size:13px;color:#555;">총 <b>{{ pager.pageTotalCount }}</b>건</span>
-      <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;">#{{ uiState.selectedPath }}</span>
-      <!-- 적용 중인 필터 뱃지 -->
+  <bo-grid :columns="listColumns" :rows="widgets" :pager="pager" row-key="widgetId"
+    :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
+    :count-text="pager.pageTotalCount + '건'"
+    empty-text="등록된 위젯이 없습니다."
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => handleLoadDetail(r.widgetId)">
+    <template #toolbar-actions>
+      <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
       <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
-        <span v-if="!applied.searchValue && !applied.type && !applied.status" style="color:#bbb;">필터 없음</span>
+        <span v-if="cfNoFilter" style="color:#bbb;">필터 없음</span>
         <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">검색: {{ applied.searchValue }}</span>
         <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">유형: {{ wTypeLabel(applied.type) }}</span>
         <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}</span>
       </div>
-      <button @click="openNew" class="btn btn-primary btn-sm" style="margin-left:auto;height:30px;padding:0 14px;">+ 신규등록</button>
-    </div>
-
-    <table class="bo-table" style="table-layout:fixed;width:100%;">
-      <colgroup>
-        <col style="width:56px;">
-        <col>
-        <col style="width:120px;">
-      </colgroup>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">위젯 정보 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-          <th style="text-align:right;">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="widgets.length===0">
-          <td colspan="3" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯이 없습니다.</td>
-        </tr>
-        <tr v-else v-for="(d, idx) in widgets" :key="d?.widgetId"
-          :style="(selectedId===d.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;'">
-          <td style="color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;width:56px;font-family:monospace;">{{ d.widgetId ? '#'+String(d.widgetId).slice(-6) : '-' }}</td>
-          <td style="padding:10px 12px;vertical-align:top;">
-            <div style="margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              <span style="font-size:15px;margin-right:4px;">{{ wIcon(d.widgetTypeCd) }}</span>
-              <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ wTypeLabel(d.widgetTypeCd) }}</span>
-              <span class="title-link" @click="handleLoadDetail(d.widgetId)"
-                :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===d.widgetId?'color:#e8587a;':'color:#222;')">{{ d.widgetNm }}</span>
-              <span class="badge" :class="fnStatusCls(d.useYn)" style="font-size:11px;margin-left:8px;">{{ fnStatusLabel(d.useYn) }}</span>
-            </div>
-            <div style="display:flex;flex-wrap:nowrap;gap:14px;font-size:11px;color:#555;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              <span style="flex-shrink:0;overflow:hidden;text-overflow:ellipsis;max-width:240px;"><b style="color:#888;">타이틀:</b> {{ d.widgetTitle || '-' }}</span>
-              <span style="flex-shrink:0;overflow:hidden;text-overflow:ellipsis;max-width:280px;"><b style="color:#888;">설명:</b> {{ d.widgetDesc || '-' }}</span>
-              <span style="flex-shrink:0;"><b style="color:#888;">라이브러리:</b>
-                <span v-if="d.widgetLibRefYn === 'Y'" style="display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;font-family:monospace;">{{ d.widgetLibNm || ('#'+String(d.widgetLibId||'').slice(-6)) }}</span>
-                <span v-else style="color:#999;font-size:11px;">직접 작성</span>
-              </span>
-              <span style="flex-shrink:0;"><b style="color:#888;">정렬:</b>
-                <span style="background:#dbeafe;color:#1d4ed8;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:3px;">{{ d.sortOrd || 0 }}</span>
-              </span>
-              <span style="flex-shrink:0;"><b style="color:#888;">환경:</b>
-                <span style="font-family:monospace;font-size:10px;color:#666;">{{ d.dispEnv || '^PROD^' }}</span>
-              </span>
-              <span style="flex-shrink:0;"><b style="color:#888;">등록일:</b> {{ d.regDate ? String(d.regDate).slice(0,10) : '-' }}</span>
-              <span style="flex-shrink:0;"><b style="color:#888;">사이트:</b>
-                <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ cfSiteNm }}</span>
-              </span>
-            </div>
-          </td>
-          <td style="vertical-align:top;padding-top:10px;width:120px;">
-            <div class="actions" style="justify-content:flex-end;">
-              <button @click.stop="handleLoadDetail(d.widgetId)" class="btn btn-blue btn-sm">수정</button>
-              <button @click.stop="handleDelete(d)" class="btn btn-danger btn-sm">삭제</button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+      <button @click="openNew" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">+ 신규등록</button>
+    </template>
+    <template #cell-widgetId="{ row }">
+      <td style="color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;width:56px;font-family:monospace;cursor:pointer;" @click="handleLoadDetail(row.widgetId)">{{ row.widgetId ? '#'+String(row.widgetId).slice(-6) : '-' }}</td>
+    </template>
+    <template #cell-widgetInfo="{ row }">
+      <td style="padding:10px 12px;vertical-align:top;">
+        <div style="margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          <span style="font-size:15px;margin-right:4px;">{{ wIcon(row.widgetTypeCd) }}</span>
+          <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ wTypeLabel(row.widgetTypeCd) }}</span>
+          <span class="title-link" @click="handleLoadDetail(row.widgetId)"
+            :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===row.widgetId?'color:#e8587a;':'color:#222;')">{{ row.widgetNm }}</span>
+          <span class="badge" :class="fnStatusCls(row.useYn)" style="font-size:11px;margin-left:8px;">{{ fnStatusLabel(row.useYn) }}</span>
+        </div>
+        <div style="display:flex;flex-wrap:nowrap;gap:14px;font-size:11px;color:#555;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          <span style="flex-shrink:0;overflow:hidden;text-overflow:ellipsis;max-width:240px;"><b style="color:#888;">타이틀:</b> {{ row.widgetTitle || '-' }}</span>
+          <span style="flex-shrink:0;overflow:hidden;text-overflow:ellipsis;max-width:280px;"><b style="color:#888;">설명:</b> {{ row.widgetDesc || '-' }}</span>
+          <span style="flex-shrink:0;"><b style="color:#888;">라이브러리:</b>
+            <span v-if="row.widgetLibRefYn === 'Y'" style="display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;font-family:monospace;">{{ row.widgetLibNm || ('#'+String(row.widgetLibId||'').slice(-6)) }}</span>
+            <span v-else style="color:#999;font-size:11px;">직접 작성</span>
+          </span>
+          <span style="flex-shrink:0;"><b style="color:#888;">정렬:</b>
+            <span style="background:#dbeafe;color:#1d4ed8;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:3px;">{{ row.sortOrd || 0 }}</span>
+          </span>
+          <span style="flex-shrink:0;"><b style="color:#888;">환경:</b>
+            <span style="font-family:monospace;font-size:10px;color:#666;">{{ row.dispEnv || '^PROD^' }}</span>
+          </span>
+          <span style="flex-shrink:0;"><b style="color:#888;">등록일:</b> {{ row.regDate ? String(row.regDate).slice(0,10) : '-' }}</span>
+          <span style="flex-shrink:0;"><b style="color:#888;">사이트:</b>
+            <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ cfSiteNm }}</span>
+          </span>
+        </div>
+      </td>
+    </template>
+    <template #cell-_act="{ row }">
+      <td style="vertical-align:top;padding-top:10px;width:120px;" @click.stop>
+        <div class="actions" style="justify-content:flex-end;">
+          <button @click.stop="handleLoadDetail(row.widgetId)" class="btn btn-blue btn-sm">수정</button>
+          <button @click.stop="handleDelete(row)" class="btn btn-danger btn-sm">삭제</button>
+        </div>
+      </td>
+    </template>
+  </bo-grid>
 
   </div><!-- -- /우측 목록 ----------------------------------------------------------- -->
   </div><!-- -- /본문 flex --------------------------------------------------------- -->

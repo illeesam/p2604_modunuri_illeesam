@@ -138,6 +138,15 @@ window.DpDispUiMng = {
     /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+    const listColumns = [
+      { key: 'uiNm',         label: 'UI명',     sortKey: 'nm' },
+      { key: 'deviceTypeCd', label: '유형' },
+      { key: 'useYn',        label: '사용여부' },
+      { key: 'regDate',      label: '등록일',   sortKey: 'reg' },
+      { key: '_act',         label: '액션' },
+    ];
+
     /* 목록조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
@@ -156,7 +165,7 @@ window.DpDispUiMng = {
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
       selectNode, pathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
-      onSort, sortIcon };
+      onSort, sortIcon, listColumns };
   },
   template: /* html */`
 <div>
@@ -182,33 +191,34 @@ window.DpDispUiMng = {
         <bo-path-tree biz-cd="ec_disp_ui" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
-    <div class="card">
-      <div class="toolbar">
-        <span class="list-count">총 {{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span>
+    <bo-grid :columns="listColumns" :rows="displays" :pager="pager" row-key="uiId"
+      :sort-state="uiState" list-title="전시 UI 목록"
+      :count-text="'총 ' + pager.pageTotalCount + '건'"
+      empty-text="조회된 데이터가 없습니다."
+      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => loadView(r.uiId)">
+      <template #toolbar-actions>
+        <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
-      </div>
-      <table class="bo-table">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">UI명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>유형</th><th>사용여부</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>액션</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="uiState.loading"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
-          <tr v-else-if="!displays.length"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-          <tr v-for="(d, idx) in displays" :key="d?.uiId">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td class="title-link" @click="loadView(d.uiId)">{{ d.uiNm }}</td>
-            <td>{{ d.deviceTypeCd }}</td>
-            <td><span :class="'badge '+(d.useYn==='Y'?'badge-green':'badge-gray')">{{ d.useYn==='Y'?'사용':'미사용' }}</span></td>
-            <td>{{ (d.regDate||'').slice(0,10) }}</td>
-            <td class="actions">
-              <button class="btn btn-sm btn-secondary" @click="loadView(d.uiId)">상세</button>
-              <button class="btn btn-sm btn-primary" @click="handleLoadDetail(d.uiId)">수정</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-    </div>
+      </template>
+      <template #cell-uiNm="{ row }">
+        <td class="title-link" @click="loadView(row.uiId)">{{ row.uiNm }}</td>
+      </template>
+      <template #cell-deviceTypeCd="{ row }">
+        <td @click="loadView(row.uiId)" style="cursor:pointer">{{ row.deviceTypeCd }}</td>
+      </template>
+      <template #cell-useYn="{ row }">
+        <td @click="loadView(row.uiId)" style="cursor:pointer"><span :class="'badge '+(row.useYn==='Y'?'badge-green':'badge-gray')">{{ row.useYn==='Y'?'사용':'미사용' }}</span></td>
+      </template>
+      <template #cell-regDate="{ row }">
+        <td @click="loadView(row.uiId)" style="cursor:pointer">{{ (row.regDate||'').slice(0,10) }}</td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td class="actions" @click.stop>
+          <button class="btn btn-sm btn-secondary" @click="loadView(row.uiId)">상세</button>
+          <button class="btn btn-sm btn-primary" @click="handleLoadDetail(row.uiId)">수정</button>
+        </td>
+      </template>
+    </bo-grid>
   </div>
   <div v-if="uiStateDetail.selectedId" class="card" style="margin-top:10px;">
     <dp-disp-ui-dtl

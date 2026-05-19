@@ -149,13 +149,23 @@ const searchParam = reactive(_initSearchParam());
     /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+    const listColumns = [
+      { key: 'areaCd',     label: '영역코드' },
+      { key: 'areaNm',     label: '영역명',   sortKey: 'nm' },
+      { key: 'areaTypeCd', label: '유형' },
+      { key: 'useYn',      label: '사용여부' },
+      { key: 'regDate',    label: '등록일',   sortKey: 'reg' },
+      { key: '_act',       label: '액션' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return { areas, uiState, codes, pager, searchParam,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
       selectNode, fnPathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
-      onSort, sortIcon };
+      onSort, sortIcon, listColumns };
   },
   template: /* html */`
 <div>
@@ -190,34 +200,37 @@ const searchParam = reactive(_initSearchParam());
         <bo-path-tree biz-cd="ec_disp_area" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
-    <div class="card">
-      <div class="toolbar">
-        <span class="list-count">총 {{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span>
+    <bo-grid :columns="listColumns" :rows="areas" :pager="pager" row-key="areaId"
+      :sort-state="uiState" list-title="전시 영역 목록"
+      :count-text="'총 ' + pager.pageTotalCount + '건'"
+      empty-text="조회된 데이터가 없습니다."
+      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => loadView(r.areaId)">
+      <template #toolbar-actions>
+        <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
-      </div>
-      <table class="bo-table">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th>영역코드</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">영역명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>유형</th><th>사용여부</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>액션</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
-          <tr v-else-if="!areas.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-          <tr v-for="(a, idx) in areas" :key="a?.areaId">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td><code style="font-size:11px;">{{ a.areaCd }}</code></td>
-            <td class="title-link" @click="loadView(a.areaId)">{{ a.areaNm }}</td>
-            <td>{{ a.areaTypeCd }}</td>
-            <td><span :class="'badge '+(a.useYn==='Y'?'badge-green':'badge-gray')">{{ a.useYn==='Y'?'사용':'미사용' }}</span></td>
-            <td>{{ (a.regDate||'').slice(0,10) }}</td>
-            <td class="actions">
-              <button class="btn btn-sm btn-secondary" @click="loadView(a.areaId)">상세</button>
-              <button class="btn btn-sm btn-primary" @click="handleLoadDetail(a.areaId)">수정</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-    </div>
+      </template>
+      <template #cell-areaCd="{ row }">
+        <td @click="loadView(row.areaId)" style="cursor:pointer"><code style="font-size:11px;">{{ row.areaCd }}</code></td>
+      </template>
+      <template #cell-areaNm="{ row }">
+        <td class="title-link" @click="loadView(row.areaId)">{{ row.areaNm }}</td>
+      </template>
+      <template #cell-areaTypeCd="{ row }">
+        <td @click="loadView(row.areaId)" style="cursor:pointer">{{ row.areaTypeCd }}</td>
+      </template>
+      <template #cell-useYn="{ row }">
+        <td @click="loadView(row.areaId)" style="cursor:pointer"><span :class="'badge '+(row.useYn==='Y'?'badge-green':'badge-gray')">{{ row.useYn==='Y'?'사용':'미사용' }}</span></td>
+      </template>
+      <template #cell-regDate="{ row }">
+        <td @click="loadView(row.areaId)" style="cursor:pointer">{{ (row.regDate||'').slice(0,10) }}</td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td class="actions" @click.stop>
+          <button class="btn btn-sm btn-secondary" @click="loadView(row.areaId)">상세</button>
+          <button class="btn btn-sm btn-primary" @click="handleLoadDetail(row.areaId)">수정</button>
+        </td>
+      </template>
+    </bo-grid>
   </div>
   <div v-if="uiStateDetail.selectedId" class="card" style="margin-top:10px;">
     <dp-disp-area-dtl

@@ -180,6 +180,17 @@ window.DpDispWidgetLibMng = {
     /* fnStatusLabel */
     const fnStatusLabel = (v) => v === 'Y' ? '활성' : '비활성';
 
+    /* 적용 필터 없음 여부 (template 속성값 && 금지 회피용) */
+    const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
+
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm' 와 sortKey 일치) */
+    const listColumns = [
+      { key: 'widgetNm',    label: '이름', sortKey: 'nm' },
+      { key: 'widgetTypeCd', label: '타입' },
+      { key: 'useYn',        label: '상태' },
+      { key: '_act',         label: '관리', style: 'text-align:right;' },
+    ];
+
     /* 삭제 */
     const handleDelete = async (lib) => {
       const ok = await showConfirm('삭제', `[${lib.widgetNm}]을 삭제하시겠습니까?`);
@@ -205,7 +216,7 @@ window.DpDispWidgetLibMng = {
       fnBuildPagerNums,
       wIcon, wTypeLabel,
       uiStateDetail, cfDetailEditId, cfDetailKey, handleLoadDetail, openNew, closeDetail, inlineNavigate,
-      handleDelete, fnStatusCls, fnStatusLabel, onSort, sortIcon };
+      handleDelete, fnStatusCls, fnStatusLabel, onSort, sortIcon, listColumns, cfNoFilter };
   },
   template: /* html */`
 <div>
@@ -251,36 +262,37 @@ window.DpDispWidgetLibMng = {
       </div>
     </div>
     <div>
-      <div class="card">
-        <div class="toolbar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="list-title">위젯라이브러리 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
-          <!-- -- 적용 중인 필터 표시 ------------------------------------------- -->
+      <bo-grid :columns="listColumns" :rows="widgetLibs" :pager="pager" row-key="widgetLibId"
+        :sort-state="uiState" list-title="위젯라이브러리"
+        :count-text="pager.pageTotalCount + '건'"
+        empty-text="데이터가 없습니다."
+        @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => handleLoadDetail(r.widgetLibId)">
+        <template #toolbar-actions>
+          <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
           <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
-            <span v-if="!applied.searchValue && !applied.type && !applied.status" style="color:#999;">필터 없음</span>
+            <span v-if="cfNoFilter" style="color:#999;">필터 없음</span>
             <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">검색: {{ applied.searchValue }}</span>
             <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">유형: {{ wTypeLabel(applied.type) }}</span>
             <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}</span>
           </div>
-          <button class="btn btn-primary btn-sm" style="margin-left:auto;" @click="openNew">+ 신규</button>
-        </div>
-        <table class="bo-table">
-          <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">이름 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>타입</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
-          <tbody>
-            <tr v-if="widgetLibs.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-else v-for="(lib, idx) in widgetLibs" :key="lib.widgetLibId">
-              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-              <td><span class="title-link" @click="handleLoadDetail(lib.widgetLibId)">{{ wIcon(lib.widgetTypeCd) }} {{ lib.widgetNm }}</span></td>
-              <td><span class="tag">{{ wTypeLabel(lib.widgetTypeCd) }}</span></td>
-              <td><span class="badge" :class="fnStatusCls(lib.useYn)">{{ fnStatusLabel(lib.useYn) }}</span></td>
-              <td><div class="actions">
-                <button class="btn btn-blue btn-sm" @click="handleLoadDetail(lib.widgetLibId)">수정</button>
-                <button class="btn btn-danger btn-sm" @click="handleDelete(lib)">삭제</button>
-              </div></td>
-            </tr>
-          </tbody>
-        </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-      </div>
+          <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+        </template>
+        <template #cell-widgetNm="{ row }">
+          <td><span class="title-link" @click="handleLoadDetail(row.widgetLibId)">{{ wIcon(row.widgetTypeCd) }} {{ row.widgetNm }}</span></td>
+        </template>
+        <template #cell-widgetTypeCd="{ row }">
+          <td @click="handleLoadDetail(row.widgetLibId)" style="cursor:pointer"><span class="tag">{{ wTypeLabel(row.widgetTypeCd) }}</span></td>
+        </template>
+        <template #cell-useYn="{ row }">
+          <td @click="handleLoadDetail(row.widgetLibId)" style="cursor:pointer"><span class="badge" :class="fnStatusCls(row.useYn)">{{ fnStatusLabel(row.useYn) }}</span></td>
+        </template>
+        <template #cell-_act="{ row }">
+          <td style="text-align:right" @click.stop><div class="actions">
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.widgetLibId)">수정</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+          </div></td>
+        </template>
+      </bo-grid>
     </div>
   </div>
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
