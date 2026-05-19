@@ -81,9 +81,38 @@ window.OdOrderHist = {
 
     const botTab = Vue.toRef(uiState, 'botTab');
 
+    /* BoGrid(bare) 컬럼 정의 — 탭별 보조 테이블 */
+    const itemColumns = [
+      { key: 'no',         label: 'No',     style: 'width:40px;text-align:center;' },
+      { key: 'prodNm',     label: '상품명' },
+      { key: 'optionNm',   label: '옵션' },
+      { key: 'qty',        label: '수량',   style: 'width:56px;text-align:center;' },
+      { key: 'unitPrice',  label: '단가',   style: 'width:90px;text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'totalPrice', label: '금액',   style: 'width:100px;text-align:right;' },
+      { key: 'statusCd',   label: '상태',   style: 'width:90px;' },
+      { key: '_act',       label: '관리',   style: 'width:60px;text-align:center;' },
+    ];
+    const dlivHistColumns = [
+      { key: 'date',     label: '일시',  style: 'width:120px;' },
+      { key: 'status',   label: '상태',  style: 'width:90px;' },
+      { key: 'location', label: '위치' },
+      { key: 'memo',     label: '메모' },
+    ];
+    const claimColumns = [
+      { key: 'claimId',       label: '클레임ID', style: 'width:120px;' },
+      { key: 'memberNm',      label: '회원' },
+      { key: 'claimTypeCd',   label: '유형',   fmt: (v, r) => r.claimTypeCdNm || r.claimTypeCd },
+      { key: 'claimStatusCd', label: '상태',   fmt: (v, r) => r.claimStatusCdNm || r.claimStatusCd },
+      { key: 'reasonCd',      label: '사유' },
+      { key: 'requestDate',   label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
+      { key: '_act',          label: '관리',   style: 'width:60px;text-align:center;' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { orders, uiState, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, showTab, claims, deliveries };
+    return { orders, uiState, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, showTab, claims, deliveries,
+             itemColumns, dlivHistColumns, claimColumns, showRefModal, orderId: props.orderId, navigate: props.navigate,
+             botTab, tabMode2 };
   },
   template: /* html */`
 <div>
@@ -100,22 +129,15 @@ window.OdOrderHist = {
   <!-- -- 구성 상품 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('products')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
-    <table class="bo-table" v-if="orderItems.length">
-      <thead><tr><th>No</th><th>상품명</th><th>옵션</th><th>수량</th><th>단가</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
-      <tbody>
-        <tr v-for="item in orderItems" :key="item?.no">
-          <td>{{ item.no }}</td>
-          <td>{{ item.prodNm }}</td>
-          <td>{{ item.optionNm }}</td>
-          <td>{{ item.qty }}</td>
-          <td>{{ (item.unitPrice||0).toLocaleString() }}원</td>
-          <td style="font-weight:600;">{{ (item.totalPrice||0).toLocaleString() }}원</td>
-          <td>{{ item.statusCd }}</td>
-          <td><button class="btn btn-secondary btn-sm" @click="showRefModal('order', orderId)">보기</button></td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">구성 상품 정보가 없습니다.</div>
+    <bo-grid bare :columns="itemColumns" :rows="orderItems" row-key="no"
+             empty-text="구성 상품 정보가 없습니다.">
+      <template #cell-totalPrice="{ row }">
+        <td style="text-align:right;font-weight:600;">{{ (row.totalPrice||0).toLocaleString() }}원</td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td style="text-align:center;"><button class="btn btn-secondary btn-sm" @click="showRefModal('order', orderId)">보기</button></td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 배송 이력 ---------------------------------------------------------- -->
@@ -130,18 +152,12 @@ window.OdOrderHist = {
         </div>
         <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:cfRelatedDliv.dlivId})">배송 수정</button>
       </div>
-      <table class="bo-table" v-if="cfDlivHistory.length">
-        <thead><tr><th>일시</th><th>상태</th><th>위치</th><th>메모</th></tr></thead>
-        <tbody>
-          <tr v-for="(h, i) in cfDlivHistory" :key="Math.random()">
-            <td>{{ h.date }}</td>
-            <td><span class="badge badge-blue">{{ h.status }}</span></td>
-            <td>{{ h.location }}</td>
-            <td>{{ h.memo }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-else style="text-align:center;color:#aaa;padding:20px;font-size:13px;">배송 이력이 없습니다.</div>
+      <bo-grid bare :columns="dlivHistColumns" :rows="cfDlivHistory"
+               empty-text="배송 이력이 없습니다.">
+        <template #cell-status="{ row }">
+          <td><span class="badge badge-blue">{{ row.status }}</span></td>
+        </template>
+      </bo-grid>
     </template>
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">배송 정보가 없습니다.</div>
   </div>
@@ -149,21 +165,18 @@ window.OdOrderHist = {
   <!-- -- 연관 클레임 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
-    <table class="bo-table" v-if="cfRelatedClaims.length">
-      <thead><tr><th>클레임ID</th><th>회원</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
-      <tbody>
-        <tr v-for="c in cfRelatedClaims" :key="c?.claimId">
-          <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
-          <td>{{ c.claimTypeCdNm || c.claimTypeCd }}</td>
-          <td>{{ c.claimStatusCdNm || c.claimStatusCd }}</td>
-          <td>{{ c.reasonCd }}</td>
-          <td>{{ (c.requestDate||'').slice(0,10) }}</td>
-          <td><button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:c.claimId})">상세</button></td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 클레임이 없습니다.</div>
+    <bo-grid bare :columns="claimColumns" :rows="cfRelatedClaims" row-key="claimId"
+             empty-text="연관 클레임이 없습니다.">
+      <template #cell-claimId="{ row }">
+        <td><span class="ref-link" @click="showRefModal('claim', row.claimId)">{{ row.claimId }}</span></td>
+      </template>
+      <template #cell-memberNm="{ row }">
+        <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm }}</span></td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td style="text-align:center;"><button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button></td>
+      </template>
+    </bo-grid>
   </div>
   </div>
 </div>

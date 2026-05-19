@@ -218,9 +218,27 @@ window.OdDlivDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    /* 결제정보 컬럼 */
+    const paymentCols = [
+      { key: 'orderId',   label: '주문ID' },
+      { key: 'dlivFee',   label: '배송비',   style: 'text-align:right;' },
+      { key: 'payMethod', label: '결제수단' },
+      { key: 'payStatus', label: '결제상태' },
+      { key: 'payDate',   label: '결제일시' },
+    ];
+
+    /* 정보수정이력 컬럼 */
+    const editHistCols = [
+      { key: 'date',   label: '수정일시', style: 'width:140px;' },
+      { key: 'user',   label: '수정자',   style: 'width:100px;' },
+      { key: 'field',  label: '항목',     style: 'width:120px;' },
+      { key: 'before', label: '변경 전' },
+      { key: 'after',  label: '변경 후' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes };
+    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes, paymentCols, editHistCols };
   },
   template: /* html */`
 <div>
@@ -455,23 +473,17 @@ window.OdDlivDtl = {
   <!-- -- 결제정보 탭 --------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
-    <table class="bo-table" v-if="cfPaymentList.length">
-      <thead><tr>
-        <th style="width:40px;text-align:center;">No.</th>
-        <th>주문ID</th><th style="text-align:right;">배송비</th><th>결제수단</th><th>결제상태</th><th>결제일시</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="(p,i) in cfPaymentList" :key="Math.random()">
-          <td style="text-align:center;color:#aaa;">{{ i+1 }}</td>
-          <td><span class="ref-link" @click="showRefModal('order', p.orderId)">{{ p.orderId }}</span></td>
-          <td style="text-align:right;font-weight:700;">{{ fmt(p.dlivFee) }}</td>
-          <td>{{ p.payMethod }}</td>
-          <td><span class="badge badge-blue">{{ p.payStatus }}</span></td>
-          <td>{{ p.payDate }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#bbb;padding:30px;">결제정보가 없습니다.</div>
+    <bo-grid bare :columns="paymentCols" :rows="cfPaymentList" empty-text="결제정보가 없습니다.">
+      <template #cell-orderId="{ row }">
+        <td><span class="ref-link" @click="showRefModal('order', row.orderId)">{{ row.orderId }}</span></td>
+      </template>
+      <template #cell-dlivFee="{ row }">
+        <td style="text-align:right;font-weight:700;">{{ fmt(row.dlivFee) }}</td>
+      </template>
+      <template #cell-payStatus="{ row }">
+        <td><span class="badge badge-blue">{{ row.payStatus }}</span></td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 배송상태변경이력 탭 ----------------------------------------------------- -->
@@ -483,19 +495,14 @@ window.OdDlivDtl = {
   <!-- -- 정보수정이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
-    <table class="bo-table" v-if="cfEditHistList.length">
-      <thead><tr>
-        <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="(h,i) in cfEditHistList" :key="Math.random()">
-          <td>{{ h.date }}</td><td>{{ h.user }}</td><td>{{ h.field }}</td>
-          <td style="color:#888;">{{ h.before }}</td>
-          <td style="color:#e8587a;font-weight:600;">{{ h.after }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#bbb;padding:30px;">정보 수정 이력이 없습니다.</div>
+    <bo-grid bare :columns="editHistCols" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
+      <template #cell-before="{ row }">
+        <td style="color:#888;">{{ row.before }}</td>
+      </template>
+      <template #cell-after="{ row }">
+        <td style="color:#e8587a;font-weight:600;">{{ row.after }}</td>
+      </template>
+    </bo-grid>
   </div>
   </div>
 </div>

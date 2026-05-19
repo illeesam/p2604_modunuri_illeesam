@@ -56,9 +56,20 @@ window.OdDlivHist = {
     onMounted(() => {
       handleSearchList();
     });
+    /* BoGrid(bare) 컬럼 — 연관 클레임 */
+    const claimColumns = [
+      { key: 'claimId',     label: '클레임ID', style: 'width:120px;' },
+      { key: 'type',        label: '유형',   style: 'width:70px;' },
+      { key: 'statusCd',    label: '상태',   style: 'width:90px;' },
+      { key: 'reasonCd',    label: '사유' },
+      { key: 'requestDate', label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
+      { key: '_act',        label: '관리',   style: 'width:60px;text-align:center;' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { deliveries, uiState, cfRelatedOrder, cfRelatedClaims, showTab };
+    return { deliveries, uiState, cfRelatedOrder, cfRelatedClaims, showTab, claimColumns,
+             botTab, tabMode2, showRefModal, navigate: props.navigate };
   },
   template: /* html */`
 <div>
@@ -90,18 +101,15 @@ window.OdDlivHist = {
   <!-- -- 연관 클레임 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
-    <table class="bo-table" v-if="cfRelatedClaims.length">
-      <thead><tr><th>클레임ID</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
-      <tbody>
-        <tr v-for="c in cfRelatedClaims" :key="c?.claimId">
-          <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
-          <td>{{ c.type }}</td><td>{{ c.statusCd }}</td><td>{{ c.reasonCd }}</td>
-          <td>{{ c.requestDate.slice(0,10) }}</td>
-          <td><button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:c.claimId})">상세</button></td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 클레임이 없습니다.</div>
+    <bo-grid bare :columns="claimColumns" :rows="cfRelatedClaims" row-key="claimId"
+             empty-text="연관 클레임이 없습니다.">
+      <template #cell-claimId="{ row }">
+        <td><span class="ref-link" @click="showRefModal('claim', row.claimId)">{{ row.claimId }}</span></td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td style="text-align:center;"><button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button></td>
+      </template>
+    </bo-grid>
   </div>
   </div>
 </div>
