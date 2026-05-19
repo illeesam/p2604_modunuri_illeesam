@@ -1122,9 +1122,9 @@ window.PdProdDtl = {
     // -- bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) ----------------------------
     const fnNoCursor = () => '';
     const mdUserCols = [
-      { key: 'userNm', label: '이름' },
+      { key: 'userNm', label: '이름' },  // ✔ 선택표시 KEEP
       { key: 'deptId', label: '부서' },
-      { key: 'roleId', label: '역할' },
+      { key: 'roleId', label: '역할', badge: () => 'badge-gray', cellStyle: 'font-size:11px;' },
     ];
     const fnMdRowStyle = (u) => 'cursor:pointer;' + (form.mdUserId === u.userId ? 'background:#fff0f4;font-weight:700;' : '');
     const prodPickerCols = [
@@ -1135,7 +1135,7 @@ window.PdProdDtl = {
         fmt: (v, row) => ((row.price || 0).toLocaleString() + '원') },
       { key: 'stock',     label: '재고',     style: 'width:60px;text-align:right;', align: 'right',
         fmt: (v, row) => (row.stock + '개') },
-      { key: 'status',    label: '상태',     style: 'width:60px;' },
+      { key: 'status',    label: '상태',     style: 'width:60px;', badge: row => row.status==='판매중' ? 'badge-green' : 'badge-gray', cellStyle: 'font-size:10px;' },
     ];
     const remainSkuCols = [
       { key: '_nm1',     label: '1단 옵션', badge: () => 'badge-gray', fmt: (v, row) => (row._nm1 || '-') },
@@ -1158,14 +1158,14 @@ window.PdProdDtl = {
     const relProdCols = [
       { key: '_id2',     label: 'ID',     style: 'width:46px;text-align:center;', align: 'center',
         cellStyle: 'color:#888;', fmt: (v, row) => (row.relProdId || row.prodId) },
-      { key: 'prodNm',   label: '상품명' },
+      { key: 'prodNm',   label: '상품명' },  // ref-link KEEP (navigate)
       { key: '_relType', label: '유형',   style: 'width:80px;', fmt: (v, row) => (row.prodRelTypeCdNm || row.prodRelTypeCd) },
       { key: '_act',     label: '관리',   style: 'width:54px;text-align:center;' },
     ];
     /* BoGrid 컬럼 — 코디상품 (pd_prod_rel · CODY_PROD) */
     const codeProdCols = [
       { key: 'productId', label: 'ID',     style: 'width:46px;text-align:center;', align: 'center', cellStyle: 'color:#888;' },
-      { key: 'prodNm',    label: '상품명' },
+      { key: 'prodNm',    label: '상품명' },  // ref-link KEEP (navigate)
       { key: 'category',  label: '카테고리', style: 'width:80px;' },
       { key: '_price',    label: '가격',   style: 'width:90px;text-align:right;', align: 'right',
         fmt: (v, row) => ((row.price || 0).toLocaleString() + '원') },
@@ -1386,9 +1386,6 @@ window.PdProdDtl = {
                     {{ row.userNm }}
                   </span>
                 </td>
-              </template>
-              <template #cell-roleId="{ row }">
-                <td><span class="badge badge-gray" style="font-size:11px;">{{ row.roleId }}</span></td>
               </template>
             </bo-grid>
           </div>
@@ -2045,9 +2042,6 @@ window.PdProdDtl = {
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
             <bo-grid bare :columns="prodPickerCols" :rows="cfProdPickerList" row-key="productId"
               empty-text="검색 결과가 없습니다." row-clickable @row-click="selectProdItem">
-              <template #cell-status="{ row }">
-                <td><span class="badge" :class="row.status==='판매중'?'badge-green':'badge-gray'" style="font-size:10px;">{{ row.status }}</span></td>
-              </template>
             </bo-grid>
           </div>
           <!-- -- 푸터 ----------------------------------------------------- -->

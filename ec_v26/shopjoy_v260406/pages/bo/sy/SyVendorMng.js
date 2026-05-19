@@ -181,7 +181,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'vendorEmail',   label: '이메일' },
       { key: 'contractDate',  label: '계약일', sortKey: 'reg' },
       { key: 'vendorStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.vendorStatusCd) },
-      { key: 'siteNm',        label: '사이트명' },
+      { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
     const fnRowStyle = (v) => uiStateDetail.selectedId === v.vendorId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
@@ -244,9 +244,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </template>
         <template #cell-vendorNm="{ row }">
           <td><span class="title-link" @click="handleLoadDetail(row.vendorId)" :style="selectedId===row.vendorId?'color:#e8587a;font-weight:700;':''">{{ row.vendorNm }}<span v-if="selectedId===row.vendorId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-        </template>
-        <template #cell-siteNm>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
         </template>
         <template #row-actions="{ row }">
           <td><div class="actions">

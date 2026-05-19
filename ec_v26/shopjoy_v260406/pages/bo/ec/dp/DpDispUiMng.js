@@ -140,7 +140,7 @@ window.DpDispUiMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
     const listColumns = [
-      { key: 'uiNm',         label: 'UI명',     sortKey: 'nm' },
+      { key: 'uiNm',         label: 'UI명',     sortKey: 'nm', link: true },
       { key: 'deviceTypeCd', label: '유형' },
       { key: 'useYn',        label: '사용여부',
         badge: row => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
@@ -202,9 +202,6 @@ window.DpDispUiMng = {
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
-      </template>
-      <template #cell-uiNm="{ row }">
-        <td class="title-link" @click="loadView(row.uiId)">{{ row.uiNm }}</td>
       </template>
       <template #cell-_act="{ row }">
         <td class="actions" @click.stop>

@@ -152,7 +152,7 @@ const searchParam = reactive(_initSearchParam());
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
     const listColumns = [
       { key: 'areaCd',     label: '영역코드' },
-      { key: 'areaNm',     label: '영역명',   sortKey: 'nm' },
+      { key: 'areaNm',     label: '영역명',   sortKey: 'nm', link: true },
       { key: 'areaTypeCd', label: '유형' },
       { key: 'useYn',      label: '사용여부',
         badge: row => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
@@ -215,9 +215,7 @@ const searchParam = reactive(_initSearchParam());
       <template #cell-areaCd="{ row }">
         <td><code style="font-size:11px;">{{ row.areaCd }}</code></td>
       </template>
-      <template #cell-areaNm="{ row }">
-        <td class="title-link" @click="loadView(row.areaId)">{{ row.areaNm }}</td>
-      </template>
+
       <template #cell-_act="{ row }">
         <td class="actions" @click.stop>
           <button class="btn btn-sm btn-secondary" @click="loadView(row.areaId)">상세</button>

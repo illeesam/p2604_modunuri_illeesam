@@ -197,6 +197,16 @@ window._foAreaCompUtil = {
       ? (col.cellClass(row ? row[col.key] : undefined, row) || '')
       : col.cellClass;
   },
+  /* AG-Grid 식 tooltipValueGetter 대응: cellTitle — true(=cellText) | string | (v,row)=>string */
+  cellTitle(col, row) {
+    if (col.cellTitle == null) return null;
+    if (col.cellTitle === true) return String(this.cellText(col, row) || '');
+    if (typeof col.cellTitle === 'function') {
+      const v = col.cellTitle(row ? row[col.key] : undefined, row);
+      return v == null ? null : String(v);
+    }
+    return String(col.cellTitle);
+  },
   /* 페이저 호환 — BO식(pageNo/pageSize/pageTotalCount) / FO식(page/size) 모두 수용 */
   pgNo(p)    { return p ? (p.pageNo != null ? p.pageNo : (p.page != null ? p.page : 1)) : 1; },
   pgSize(p)  { return p ? (p.pageSize != null ? p.pageSize : (p.size != null ? p.size : 20)) : 20; },
@@ -350,7 +360,7 @@ window.FoGrid = {
             <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">{{ rowNo(idx) }}</td>
             <template v-for="col in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)">
+                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                   <input v-if="col.edit==='text'" class="fo-grid-input" v-model="row[col.key]"
                          :placeholder="col.placeholder" />
                   <input v-else-if="col.edit==='number'" type="number" class="fo-grid-input fo-grid-num"
@@ -565,7 +575,7 @@ window.FoGridCrud = {
           </td>
           <template v-for="col in columns" :key="col.key">
             <slot :name="'cell-' + col.key" :row="row" :idx="idx">
-              <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)">
+              <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                 <input v-if="col.edit==='text'" class="fo-grid-input" :class="{ 'fo-grid-mono': col.mono }"
                        v-model="row[col.key]" :disabled="row._row_status==='D'"
                        :placeholder="col.placeholder" @input="onCellChange(row)" />

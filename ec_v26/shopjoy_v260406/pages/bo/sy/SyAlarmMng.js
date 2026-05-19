@@ -283,9 +283,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <template #cell-alarmTitle="{ row }">
       <td><span class="title-link" @click="handleLoadDetail(row.alarmId)" :style="detailModal.dtlId===row.alarmId?'color:#e8587a;font-weight:700;':''">{{ row.alarmTitle }}<span v-if="detailModal.dtlId===row.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
     </template>
-    <template #cell-siteNm>
-      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-    </template>
     <template #row-actions="{ row }">
       <td><div class="actions">
         <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.alarmId)">수정</button>

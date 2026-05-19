@@ -243,7 +243,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'userStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.userStatusCd) },
       { key: 'lastLoginDate',label: '최근로그인', sortKey: 'reg', cellStyle: 'color:#888',
         fmt: (v) => v ? v.substring(0, 10) : '-' },
-      { key: 'siteNm',       label: '사이트명' },
+      { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
     const fnRowStyle = (u) => uiStateDetail.selectedId === u.userId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
@@ -314,9 +314,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </template>
     <template #cell-userNm="{ row }">
       <td><span class="title-link" @click="handleLoadDetail(row.userId)" :style="uiStateDetail.selectedId===row.userId?'color:#e8587a;font-weight:700;':''">{{ row.userNm }}<span v-if="uiStateDetail.selectedId===row.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-    </template>
-    <template #cell-siteNm>
-      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
     </template>
     <template #row-actions="{ row }">
       <td><div class="actions">

@@ -346,9 +346,6 @@ window.CmChattDtl = {
           <input class="form-control" style="max-width:200px;" v-model="searchUserId" placeholder="회원 ID 입력" />
         </div>
         <bo-grid bare :columns="userChatColumns" :rows="cfUserChats" row-key="chattRoomId" :empty-text="searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'">
-          <template #cell-_status="{ row }">
-            <td><span class="badge" :class="row.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ row.chattStatusCd }}</span></td>
-          </template>
           <template #cell-_act="{ row }">
             <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">보기</button></td>
           </template>

@@ -416,7 +416,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       { key: 'itemNm',     label: '표시명 (item_nm) *',       style: 'width:180px' },
       { key: 'itemProdId', label: '연결상품 (item_prod_id)' },
       { key: 'itemQty',    label: '수량',        style: 'width:80px;text-align:center' },
-      { key: 'itemDesc',   label: '구성품 설명' },
+      { key: 'itemDesc',   label: '구성품 설명', edit: 'text', placeholder: '소재·용량·색상 등 부가 설명' },
       { key: 'useYn',      label: '사용',        style: 'width:60px;text-align:center' },
     ];
     const fnSetItemRowStyle = (item, idx) => uiState.dragoverIdx === idx ? 'background:#e6f4ff' : (item.useYn === 'N' ? 'opacity:0.55' : '');
@@ -649,12 +649,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <td style="text-align:center">
           <input type="number" class="form-control" v-model.number="row.itemQty"
                  min="1" style="width:60px;text-align:center;margin:0 auto;padding:3px 6px">
-        </td>
-      </template>
-      <template #cell-itemDesc="{ row }">
-        <td>
-          <input class="form-control" v-model="row.itemDesc"
-                 placeholder="소재·용량·색상 등 부가 설명" style="font-size:12px">
         </td>
       </template>
       <template #cell-useYn="{ row }">

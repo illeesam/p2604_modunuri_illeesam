@@ -233,7 +233,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'commentCount', label: '댓글', align: 'center' },
       { key: 'attachGrpId',  label: '첨부그룹', cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'bbsStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.bbsStatusCd) },
-      { key: 'siteNm',       label: '사이트명' },
+      { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: 'regDate',      label: '등록일', sortKey: 'reg', fmt: (v) => String(v || '').slice(0, 10) },
     ];
     const fnRowStyle = (b) => detailModal.dtlId === b.bbsId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
@@ -287,9 +287,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     <template #cell-bbsTitle="{ row }">
       <td><span class="title-link" @click="handleLoadDetail(row.bbsId)" :style="detailModal.dtlId===row.bbsId?'color:#e8587a;font-weight:700;':''">{{ row.bbsTitle }}<span v-if="detailModal.dtlId===row.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-    </template>
-    <template #cell-siteNm>
-      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
     </template>
     <template #row-actions="{ row }">
       <td><div class="actions">
