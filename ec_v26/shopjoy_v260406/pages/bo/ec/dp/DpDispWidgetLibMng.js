@@ -186,8 +186,11 @@ window.DpDispWidgetLibMng = {
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm' 와 sortKey 일치) */
     const listColumns = [
       { key: 'widgetNm',    label: '이름', sortKey: 'nm' },
-      { key: 'widgetTypeCd', label: '타입' },
-      { key: 'useYn',        label: '상태' },
+      { key: 'widgetTypeCd', label: '타입',
+        fmt: v => wTypeLabel(v) },
+      { key: 'useYn',        label: '상태',
+        badge: row => fnStatusCls(row.useYn),
+        fmt:   v   => fnStatusLabel(v) },
       { key: '_act',         label: '관리', style: 'text-align:right;' },
     ];
 
@@ -265,7 +268,7 @@ window.DpDispWidgetLibMng = {
       <bo-grid :columns="listColumns" :rows="widgetLibs" :pager="pager" row-key="widgetLibId"
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"
-        empty-text="데이터가 없습니다."
+        empty-text="데이터가 없습니다." row-clickable
         @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => handleLoadDetail(r.widgetLibId)">
         <template #toolbar-actions>
           <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
@@ -278,13 +281,7 @@ window.DpDispWidgetLibMng = {
           <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
         </template>
         <template #cell-widgetNm="{ row }">
-          <td><span class="title-link" @click="handleLoadDetail(row.widgetLibId)">{{ wIcon(row.widgetTypeCd) }} {{ row.widgetNm }}</span></td>
-        </template>
-        <template #cell-widgetTypeCd="{ row }">
-          <td @click="handleLoadDetail(row.widgetLibId)" style="cursor:pointer"><span class="tag">{{ wTypeLabel(row.widgetTypeCd) }}</span></td>
-        </template>
-        <template #cell-useYn="{ row }">
-          <td @click="handleLoadDetail(row.widgetLibId)" style="cursor:pointer"><span class="badge" :class="fnStatusCls(row.useYn)">{{ fnStatusLabel(row.useYn) }}</span></td>
+          <td><span class="title-link">{{ wIcon(row.widgetTypeCd) }} {{ row.widgetNm }}</span></td>
         </template>
         <template #cell-_act="{ row }">
           <td style="text-align:right" @click.stop><div class="actions">

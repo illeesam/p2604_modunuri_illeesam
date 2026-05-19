@@ -482,6 +482,94 @@ const loadColumnSettings = () => {
 };
 ```
 
+### 4.6 BoGrid 컬럼 속성화 표준 (AG-Grid colDef 식)
+
+**목적**: 단순 셀(텍스트·배지·조건부색상·포맷)은 `#cell-{key}` 슬롯 대신 `gridColumns`
+객체의 속성으로 선언하여 보일러플레이트를 줄이고 컬럼 정의만 봐도 그리드 모양을 파악
+가능하게 한다. AG-Grid 의 `valueFormatter`/`cellStyle`/`cellClass` 와 동일한 패턴.
+
+**전제 (#head 슬롯 금지)**: `<template #head>` 슬롯은 전면 금지. 헤더는 columns 의
+`label`/`style`/`cls`/`noHead`/`sortKey` 로만 정의. (관련 [[bogrid_auto_header]])
+
+#### 지원 속성 (components/comp/BoAreaComp.js `_boAreaCompUtil`)
+
+| 속성 | 타입 | 동작 | AG-Grid 대응 |
+|---|---|---|---|
+| `label` | string | 헤더 표시명 | `headerName` |
+| `style` | string | th 인라인 스타일(width/text-align) | `headerStyle` |
+| `cls` | string | th class | `headerClass` |
+| `noHead` | boolean | 헤더 라벨 숨김(th 유지) | - |
+| `sortKey` | string | 헤더 클릭 정렬(+ `:sort-state`+`@sort`) | `sortable` |
+| `align` | `'left'\|'center'\|'right'` | td text-align (style 은 th 용 — td 정렬은 align 필수) | - |
+| `mono` | boolean | td monospace 폰트 | - |
+| `fmt` | `(v,row)=>string` | 셀 표시값 변환. 조건부 포맷 가능 | `valueFormatter` |
+| `badge` | `(row)=>'badge-xxx'` | `<span class="badge">` 자동 렌더. 텍스트는 fmt(없으면 row[key]) | `cellRenderer` |
+| `link` | boolean | `title-link` + `@row-click` emit | `cellRenderer` |
+| `cellStyle` | `string \| (v,row)=>string` | td 인라인 스타일 합성 (조건부 색상·ellipsis 등) | `cellStyle` |
+| `cellClass` | `string \| (v,row)=>string` | td class | `cellClass` |
+| `edit` | `'text'\|'number'\|'date'\|'select'` | BoGridCrud 인라인 입력 자동 렌더 | `editable`+`cellEditor` |
+| `options` | `[] \| ()=>[]` | edit='select' 옵션. **함수형 지원**(codes 지연 로드 대응) | `cellEditorParams` |
+
+#### 변환 규칙 (#cell- 슬롯 → columns 속성)
+
+| 현재 슬롯 패턴 | columns 속성 |
+|---|---|
+| `<td>{{ row.x }}</td>` 단순 | 슬롯 삭제(기본 렌더) |
+| `<td>{{ fn(row.x) }}</td>` / 접미사 | `fmt: (v) => ...` |
+| `<td>{{ x>0 ? fmtW(x) : '-' }}</td>` 조건부 | `fmt: (v) => v>0 ? fmtW(v) : '-'` |
+| `<td style="color:#xxx">` 고정 색상 | `cellStyle: 'color:#xxx'` |
+| `<td :style="조건?a:b">` 조건부 색상 | `cellStyle: (v,row) => 조건?a:b` |
+| `<td style="text-align:right">` | `align: 'right'` (td 정렬은 col.style 무시, **align 필수**) |
+| `<td style="max-width;ellipsis">` | `cellStyle: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'` |
+| `<span class="badge" :class="fnB(row.x)">{{x}}</span>` | `badge: (row) => fnB(row.x)` (텍스트=row[key]면 fmt 불필요) |
+| 인라인 input/select (`@input/@change=onCellChange` + `:disabled=_row_status==='D'`) | `edit: 'text'\|'number'\|'select'` + `options: ()=>codes.xxx` |
+
+#### 주의사항
+
+1. **`font-size:12px` 금지**: `tdStyle` 기본값이 `font-size:12px;` 라 cellStyle 에
+   `font-size:12px` 를 넣으면 중복. font-size 11px/10px 등 의도적 오버라이드만 허용.
+2. **하위호환**: cellStyle/cellClass 둘 다 opt-in. 미지정 컬럼은 기존 동작 100% 동일.
+3. **속성값 `&&`/`&` 금지** (CLAUDE.md §3): badge/cellStyle 함수는 setup 정의·삼항만,
+   템플릿 속성값에 신규 `&&` 도입 금지.
+4. **helper 함수**: setup return 에 포함된 함수만 columns 속성 클로저에서 참조 가능.
+5. **함수형 `options`**: `options: ()=>codes.xxx` 는 렌더 시점 호출 → codes 지연 로드 안전.
+
+#### KEEP 패턴 (슬롯 유지 — 변환 금지)
+
+다음 케이스는 columns 속성으로 표현 불가하므로 `#cell-` 슬롯 유지:
+
+1. **행클릭/토글 인터랙션**: 셀별 `@click="loadView/openDetail/toggleRow"`. BoGrid 의
+   `@row-click` 은 `link` 컬럼 클릭에서만 emit 이라 셀별 @click 이 실제 동작 메커니즘.
+2. **참조 모달**: `class="ref-link" @click="showRefModal('member', row.x)"`
+3. **`<code>` / 박스형 인라인 배지**: `<span style="background;border-radius;padding">`
+   는 td 전체 cellStyle 과 모양이 다름. cellStyle 로 td 배경을 주면 칸 전체가 채워짐.
+4. **동적 `:title="row.x"`** : columns 로 동적 title 속성 불가
+5. **복합 셀**: v-if 다중 분기, v-for, 이미지+텍스트 복합, 2줄 div 중첩
+6. **버튼 다수 / `_act`**: 수정/삭제/이동 등 액션 버튼 묶음 (`#row-actions` 활용도 가능)
+7. **외부값 참조**: fmt 는 `v=row[col.key]` 만 받음. row 외 값(cfSiteNm 등) 참조는
+   `fmt: () => 외부값` 또는 KEEP. 그러나 fmt 클로저로 외부 reactive 캡처 시 정상 동작.
+8. **커스텀 입력**: BoGridCrud 의 default `edit` 자동 렌더와 다른 동작(3-arg
+   onCellChange, 조건부 표시/숨김 등)은 KEEP.
+
+#### 적용 사례 (BO 전 도메인 전수 적용 완료 — 2026-05-20)
+
+| 도메인 | 파일수 | 결과 |
+|---|---|---|
+| st | 14 | 132 속성화 / 5 KEEP (전부 StRawMng 행토글·중첩) |
+| pm | 8 Mng | 5~6/파일 속성화 |
+| sy | 24 | 조회그리드 9 + CRUD 7 + Dtl/Path/Attach + 이력 4(전셀 toggleRow KEEP) |
+| cm | 4 | CmBlogMng 전셀 @click → 전체 KEEP |
+| mb | 5 | MbCustInfoMng 9탭 26 속성화, Grade/Group는 edit 속성으로 인라인입력 대체 |
+| dp | 5 | 전체 KEEP (전셀 @click="loadView" 행클릭 구조) |
+| pd | 10 | 72 속성화 / 59 KEEP (PdReviewMng 전체 KEEP) |
+| od | 9 | Mng/Hist/Dtl 부분 속성화. 회원 picker 는 OD 정책 KEEP |
+| **합계** | **약 84** | **~790 → 393 슬롯** (약 50% 속성화), `node --check` 0 실패 |
+
+**FoAreaComp 동일 보강**: `_foAreaCompUtil` 에 동일 cellStyle/cellClass/normOptions
+함수형 지원 추가 — FO 신규 화면도 같은 패턴으로 작성.
+
+---
+
 ## 5. 상세화면 ID 표시 정책
 
 ### 5.1 목적

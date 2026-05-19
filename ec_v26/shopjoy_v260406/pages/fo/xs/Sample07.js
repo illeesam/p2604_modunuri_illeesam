@@ -540,7 +540,8 @@ window.XsSample07 = {
       { key: '_seq',    label: '#',     width: '32px', align: 'center' },
       { key: 'method',  label: '메서드', width: '68px', align: 'center' },
       { key: 'tabLabel', label: '탭명',  width: '110px' },
-      { key: 'url',     label: 'URL',   mono: true },
+      { key: 'url',     label: 'URL',   mono: true,
+        cellStyle: 'color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;' },
       { key: 'status',  label: '상태',  width: '50px', align: 'center' },
       { key: 'time',    label: '응답시간', width: '64px', align: 'center', fmt: v => v + 'ms' },
       { key: 'ts',      label: '요청시간', width: '68px', align: 'center' },
@@ -976,9 +977,6 @@ window.XsSample07 = {
           </template>
           <template #cell-tabLabel="{ row }">
             <td style="color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;font-size:10px;" :title="row.tabLabel">{{ row.tabLabel }}</td>
-          </template>
-          <template #cell-url="{ row }">
-            <td style="font-family:monospace;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;">{{ row.url }}</td>
           </template>
           <template #cell-status="{ row }">
             <td style="text-align:center;" :style="fnStatusStyle(row.status)">{{ row.status||'-' }}</td>

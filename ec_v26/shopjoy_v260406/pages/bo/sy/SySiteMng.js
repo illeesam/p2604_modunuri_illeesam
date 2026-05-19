@@ -205,14 +205,14 @@ const detailModal = reactive({
     const gridColumns = [
       { key: 'pathId',        label: '표시경로' },
       { key: 'siteCode',      label: '사이트코드' },
-      { key: 'siteTypeCd',    label: '유형' },
+      { key: 'siteTypeCd',    label: '유형', badge: (row) => fnTypeBadge(row.siteTypeCd) },
       { key: 'siteNm',        label: '사이트명', sortKey: 'nm' },
-      { key: 'siteDomain',    label: '도메인' },
+      { key: 'siteDomain',    label: '도메인', cellStyle: 'color:#2563eb' },
       { key: 'siteEmail',     label: '대표이메일' },
       { key: 'sitePhone',     label: '대표전화' },
       { key: 'siteCeo',       label: '대표자' },
       { key: 'regDate',       label: '등록일', sortKey: 'reg' },
-      { key: 'siteStatusCd',  label: '상태' },
+      { key: 'siteStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.siteStatusCd) },
     ];
     const fnRowStyle = (s) => detailModal.dtlId === s.siteId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
@@ -285,9 +285,6 @@ const detailModal = reactive({
         <template #cell-siteCode="{ row }">
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ row.siteCode }}</code></td>
         </template>
-        <template #cell-siteTypeCd="{ row }">
-          <td><span class="badge" :class="fnTypeBadge(row.siteTypeCd)" style="font-size:10px;">{{ row.siteTypeCd }}</span></td>
-        </template>
         <template #cell-siteNm="{ row }">
           <td>
             <span class="title-link" @click="handleLoadDetail(row.siteId)" :style="detailModal.dtlId===row.siteId?'color:#e8587a;font-weight:700;':''">
@@ -295,24 +292,6 @@ const detailModal = reactive({
             </span>
             <div style="font-size:11px;color:#888;margin-top:2px;">{{ row.description }}</div>
           </td>
-        </template>
-        <template #cell-siteDomain="{ row }">
-          <td style="font-size:12px;color:#2563eb;">{{ row.siteDomain }}</td>
-        </template>
-        <template #cell-siteEmail="{ row }">
-          <td style="font-size:12px;">{{ row.siteEmail }}</td>
-        </template>
-        <template #cell-sitePhone="{ row }">
-          <td style="font-size:12px;">{{ row.sitePhone }}</td>
-        </template>
-        <template #cell-siteCeo="{ row }">
-          <td style="font-size:12px;">{{ row.siteCeo }}</td>
-        </template>
-        <template #cell-regDate="{ row }">
-          <td style="font-size:12px;">{{ row.regDate }}</td>
-        </template>
-        <template #cell-siteStatusCd="{ row }">
-          <td><span class="badge" :class="fnStatusBadge(row.siteStatusCd)">{{ row.siteStatusCd }}</span></td>
         </template>
         <template #row-actions="{ row }">
           <td><div class="actions">

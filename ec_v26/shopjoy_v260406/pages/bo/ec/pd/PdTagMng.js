@@ -68,7 +68,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     const gridColumns = [
       { key: 'tagNm',    label: '태그명' },
       { key: 'tagDesc',  label: '설명' },
-      { key: 'useCount', label: '사용수', style: 'width:80px;text-align:right;' },
+      { key: 'useCount', label: '사용수', style: 'width:80px;text-align:right;', align: 'right', fmt: (v) => (v || 0) },
       { key: 'sortOrd',  label: '정렬',   style: 'width:80px;text-align:right;' },
       { key: 'useYn',    label: '사용',   style: 'width:70px;text-align:center;' },
       { key: '_act',     label: '삭제',   style: 'width:60px;text-align:center;' },
@@ -176,9 +176,6 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
       </template>
       <template #cell-tagDesc="{ row, idx }">
         <td><input v-if="row._row_status" class="form-control" v-model="row.tagDesc" @input="onCellChange(idx)"><span v-else style="color:#888;font-size:12px">{{ row.tagDesc }}</span></td>
-      </template>
-      <template #cell-useCount="{ row }">
-        <td style="text-align:right">{{ (row.useCount||0) }}</td>
       </template>
       <template #cell-sortOrd="{ row, idx }">
         <td style="text-align:right"><input v-if="row._row_status" class="form-control" style="text-align:right" type="number" v-model.number="row.sortOrd" @input="onCellChange(idx)"><span v-else>{{ row.sortOrd }}</span></td>

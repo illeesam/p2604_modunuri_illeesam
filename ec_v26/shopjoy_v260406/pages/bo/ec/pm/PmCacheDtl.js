@@ -148,8 +148,10 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
     /* BoGrid(bare) 컬럼 정의 — 회원 캐쉬 내역 */
     const cacheHistColumns = [
       { key: 'cacheDate',  label: '일시' },
-      { key: 'cacheTypeCd', label: '유형' },
-      { key: 'cacheAmt',   label: '금액' },
+      { key: 'cacheTypeCd', label: '유형', badge: row => fnTypeBadge(row.cacheTypeCd) },
+      { key: 'cacheAmt',   label: '금액',
+        cellStyle: (v, row) => row.cacheAmt > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600',
+        fmt: (v, row) => (row.cacheAmt > 0 ? '+' : '') + (row.cacheAmt||0).toLocaleString() + '원' },
       { key: 'balanceAmt', label: '잔액', fmt: v => (v||0).toLocaleString() + '원' },
       { key: 'cacheDesc',  label: '내용' },
     ];
@@ -281,16 +283,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ cfTotalBalance.toLocaleString() }}원</span>
       </div>
       <bo-grid bare :columns="cacheHistColumns" :rows="cfMemberCacheHistory" row-key="cacheId"
-               empty-text="캐쉬 내역이 없습니다.">
-        <template #cell-cacheTypeCd="{ row }">
-          <td><span class="badge" :class="fnTypeBadge(row.cacheTypeCd)">{{ row.cacheTypeCd }}</span></td>
-        </template>
-        <template #cell-cacheAmt="{ row }">
-          <td :style="row.cacheAmt>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
-            {{ row.cacheAmt > 0 ? '+' : '' }}{{ (row.cacheAmt||0).toLocaleString() }}원
-          </td>
-        </template>
-      </bo-grid>
+               empty-text="캐쉬 내역이 없습니다."></bo-grid>
     </div>
   </div>
 </div>

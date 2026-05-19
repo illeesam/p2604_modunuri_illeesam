@@ -228,11 +228,11 @@ window.MbMemberMng = {
       { key: 'memberNm',         label: '이름',     sortKey: 'nm' },
       { key: 'loginId',          label: '이메일' },
       { key: 'memberPhone',      label: '연락처' },
-      { key: 'gradeCd',          label: '등급' },
-      { key: 'memberStatusCd',   label: '상태' },
-      { key: 'joinDate',         label: '가입일',   sortKey: 'reg' },
-      { key: 'orderCount',       label: '주문수',   style: 'width:80px;text-align:right' },
-      { key: 'totalPurchaseAmt', label: '총구매액', style: 'width:100px;text-align:right' },
+      { key: 'gradeCd',          label: '등급',     align: 'center', badge: (row) => fnGradeBadge(row.gradeCd) },
+      { key: 'memberStatusCd',   label: '상태',     align: 'center', badge: (row) => fnStatusBadge(row.memberStatusCd) },
+      { key: 'joinDate',         label: '가입일',   sortKey: 'reg', fmt: (v) => fnFmtDate(v) },
+      { key: 'orderCount',       label: '주문수',   style: 'width:80px;text-align:right', align: 'right', fmt: (v) => (v || 0) + '건' },
+      { key: 'totalPurchaseAmt', label: '총구매액', style: 'width:100px;text-align:right', align: 'right', fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: '_act',             label: '관리',     style: 'text-align:center;width:80px' },
     ];
     const fnGridRowClass = (row) => (detailModal.dtlId === row.memberId ? 'active' : '');
@@ -282,7 +282,7 @@ window.MbMemberMng = {
     </bo-search-area>
   </div>
   <bo-grid :columns="listColumns" :rows="members" :pager="pager" row-key="memberId"
-    :sort-state="uiState" list-title="회원목록"
+    :sort-state="uiState" list-title="회원목록" row-clickable
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
@@ -290,28 +290,7 @@ window.MbMemberMng = {
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </template>
     <template #cell-memberNm="{ row }">
-      <td><span class="title-link" @click="openDetail(row)">{{ row.memberNm }}</span></td>
-    </template>
-    <template #cell-loginId="{ row }">
-      <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ row.loginId }}</td>
-    </template>
-    <template #cell-memberPhone="{ row }">
-      <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ row.memberPhone }}</td>
-    </template>
-    <template #cell-gradeCd="{ row }">
-      <td @click="openDetail(row)" style="cursor:pointer"><span class="badge" :class="fnGradeBadge(row.gradeCd)">{{ row.gradeCd }}</span></td>
-    </template>
-    <template #cell-memberStatusCd="{ row }">
-      <td @click="openDetail(row)" style="cursor:pointer"><span class="badge" :class="fnStatusBadge(row.memberStatusCd)">{{ row.memberStatusCd }}</span></td>
-    </template>
-    <template #cell-joinDate="{ row }">
-      <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ fnFmtDate(row.joinDate) }}</td>
-    </template>
-    <template #cell-orderCount="{ row }">
-      <td @click="openDetail(row)" style="cursor:pointer;text-align:right;font-size:12px">{{ (row.orderCount||0) }}건</td>
-    </template>
-    <template #cell-totalPurchaseAmt="{ row }">
-      <td @click="openDetail(row)" style="cursor:pointer;text-align:right;font-size:12px">{{ (row.totalPurchaseAmt||0).toLocaleString() }}원</td>
+      <td><span class="title-link">{{ row.memberNm }}</span></td>
     </template>
     <template #cell-_act="{ row }">
       <td style="text-align:center" @click.stop><button class="btn btn-blue btn-sm" @click="openDetail(row)">수정</button></td>

@@ -181,34 +181,34 @@ window.SyMemberLoginHist = {
     /* fnDecode */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
-    /* BoGridReadonly 컬럼 정의 (전 셀 #cell-* 슬롯 override, 행펼침 #row-expand) */
+    /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
     const logColumns = [
-      { key: '_exp',     label: '',          style: 'width:20px' },
-      { key: 'logId',    label: '로그ID' },
-      { key: 'loginDate',label: '로그인일시' },
-      { key: 'member',   label: '회원' },
-      { key: 'loginId',  label: '로그인ID' },
-      { key: 'resultCd', label: '결과' },
-      { key: 'failCnt',  label: '실패',      style: 'text-align:center;' },
-      { key: 'ip',       label: 'IP' },
-      { key: 'browser',  label: 'OS/브라우저' },
-      { key: 'uiNm',     label: '화면>기능' },
-      { key: 'traceId',  label: 'Trace ID' },
-      { key: 'regDate',  label: '등록일시' },
+      { key: '_exp',     label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
+      { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) },
+      { key: '_member',  label: '회원' },
+      { key: 'loginId',  label: '로그인ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
+      { key: 'resultCd', label: '결과', badge: (row) => fnResultBadge(row.resultCd), fmt: (v) => fnResultLabel(v) },
+      { key: 'failCnt',  label: '실패',      style: 'text-align:center;', align: 'center', cellStyle: (v, row) => row.failCnt > 0 ? 'color:#e74c3c;font-weight:700' : '', fmt: (v) => v > 0 ? v + '회' : '-' },
+      { key: 'ip',       label: 'IP', mono: true, fmt: (v) => v || '-' },
+      { key: '_browser', label: 'OS/브라우저', cellStyle: 'font-size:11px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.browser + ' / ' + row.os, fmt: (v, row) => row.browser || row.device || '-' },
+      { key: '_uiNm',    label: '화면>기능' },
+      { key: 'traceId',  label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
+      { key: 'regDate',  label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
     const tokenColumns = [
-      { key: '_exp',          label: '',          style: 'width:20px' },
-      { key: 'logId',         label: '토큰로그ID' },
-      { key: 'regDate',       label: '일시' },
-      { key: 'member',        label: '회원' },
-      { key: 'actionCd',      label: '액션' },
-      { key: 'tokenTypeCd',   label: '토큰유형' },
-      { key: 'accessTokenExp',label: 'AT만료' },
-      { key: 'tokenExp',      label: 'RT만료' },
-      { key: 'ip',            label: 'IP' },
-      { key: 'uiNm',          label: '화면>기능' },
-      { key: 'traceId',       label: 'Trace ID' },
-      { key: 'revokeReason',  label: '폐기사유' },
+      { key: '_exp',          label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: 'logId',         label: '토큰로그ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
+      { key: 'regDate',       label: '일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
+      { key: '_member',       label: '회원' },
+      { key: 'actionCd',      label: '액션', badge: (row) => fnActionBadge(row.actionCd), fmt: (v) => fnActionLabel(v) },
+      { key: 'tokenTypeCd',   label: '토큰유형', badge: (row) => fnTypeBadge(row.tokenTypeCd), cellStyle: 'font-size:11px', fmt: (v) => v || '-' },
+      { key: 'accessTokenExp',label: 'AT만료', cellStyle: 'color:#8e44ad', fmt: (v) => String(v || '').slice(0, 19) || '-' },
+      { key: 'tokenExp',      label: 'RT만료', cellStyle: (v, row) => (row.actionCd === 'EXPIRE' || row.actionCd === 'REVOKE') ? 'color:#e74c3c' : '', fmt: (v) => String(v || '').slice(0, 19) || '-' },
+      { key: 'ip',            label: 'IP', mono: true, fmt: (v) => v || '-' },
+      { key: '_uiNm',         label: '화면>기능' },
+      { key: 'traceId',       label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
+      { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
     /* BoGridReadonly isExpanded prop 래퍼 (row,idx)=>bool */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
@@ -280,8 +280,8 @@ window.SyMemberLoginHist = {
   <bo-grid-readonly v-if="uiState.activeTab==='log'"
     :columns="logColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded"
-    @set-page="setPage" @size-change="onSizeChange">
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
+    @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
 
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
@@ -291,46 +291,16 @@ window.SyMemberLoginHist = {
       </div>
     </template>
 
-    <template #cell-_exp="{ row, idx }">
-      <td style="text-align:center;color:#bbb;font-size:11px;user-select:none;cursor:pointer;" @click="toggleRow(row.logId||idx)">{{ isExpanded(row.logId||idx)?'▲':'▼' }}</td>
+    <template #cell-_member="{ row }">
+      <td><div style="font-weight:600">{{ row.memberNm||row.memberId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ row.memberId }}</div></td>
     </template>
-    <template #cell-logId="{ row }">
-      <td style="font-family:monospace;font-size:11px;color:#888;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.logId||'-' }}</td>
-    </template>
-    <template #cell-loginDate="{ row }">
-      <td style="white-space:nowrap;font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">{{ String(row.loginDate||row.regDate||'').slice(0,19) }}</td>
-    </template>
-    <template #cell-member="{ row }">
-      <td style="cursor:pointer;" @click="toggleRow(row.logId)"><div style="font-weight:600">{{ row.memberNm||row.memberId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ row.memberId }}</div></td>
-    </template>
-    <template #cell-loginId="{ row }">
-      <td style="font-size:12px;color:#555;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.loginId||'-' }}</td>
-    </template>
-    <template #cell-resultCd="{ row }">
-      <td style="cursor:pointer;" @click="toggleRow(row.logId)"><span class="badge" :class="fnResultBadge(row.resultCd)">{{ fnResultLabel(row.resultCd) }}</span></td>
-    </template>
-    <template #cell-failCnt="{ row }">
-      <td style="text-align:center;cursor:pointer;" :style="row.failCnt>0?'color:#e74c3c;font-weight:700':''" @click="toggleRow(row.logId)">{{ row.failCnt>0?row.failCnt+'회':'-' }}</td>
-    </template>
-    <template #cell-ip="{ row }">
-      <td style="font-family:monospace;font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.ip||'-' }}</td>
-    </template>
-    <template #cell-browser="{ row }">
-      <td style="font-size:11px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.browser+' / '+row.os" @click="toggleRow(row.logId)">{{ row.browser||row.device||'-' }}</td>
-    </template>
-    <template #cell-uiNm="{ row }">
-      <td style="font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">
+    <template #cell-_uiNm="{ row }">
+      <td style="font-size:12px;">
         <span v-if="row.uiNm" style="color:#e8587a;font-weight:600">{{ fnDecode(row.uiNm) }}</span>
         <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa"> &gt; </span>
         <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
         <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc">-</span>
       </td>
-    </template>
-    <template #cell-traceId="{ row }">
-      <td style="font-family:monospace;font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.traceId" @click="toggleRow(row.logId)">{{ row.traceId||'-' }}</td>
-    </template>
-    <template #cell-regDate="{ row }">
-      <td style="font-size:12px;white-space:nowrap;cursor:pointer;" @click="toggleRow(row.logId)">{{ String(row.regDate||'').slice(0,19) }}</td>
     </template>
 
     <template #row-expand="{ row, colspan }">
@@ -378,8 +348,8 @@ window.SyMemberLoginHist = {
   <bo-grid-readonly v-if="uiState.activeTab==='token'"
     :columns="tokenColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded"
-    @set-page="setPage" @size-change="onSizeChange">
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
+    @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
 
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
@@ -389,46 +359,16 @@ window.SyMemberLoginHist = {
       </div>
     </template>
 
-    <template #cell-_exp="{ row, idx }">
-      <td style="text-align:center;color:#bbb;font-size:11px;user-select:none;cursor:pointer;" @click="toggleRow(row.logId||idx)">{{ isExpanded(row.logId||idx)?'▲':'▼' }}</td>
+    <template #cell-_member="{ row }">
+      <td><div style="font-weight:600">{{ row.memberNm||row.memberId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ row.memberId }}</div></td>
     </template>
-    <template #cell-logId="{ row }">
-      <td style="font-family:monospace;font-size:11px;color:#888;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.logId||'-' }}</td>
-    </template>
-    <template #cell-regDate="{ row }">
-      <td style="white-space:nowrap;font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">{{ String(row.regDate||'').slice(0,19) }}</td>
-    </template>
-    <template #cell-member="{ row }">
-      <td style="cursor:pointer;" @click="toggleRow(row.logId)"><div style="font-weight:600">{{ row.memberNm||row.memberId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ row.memberId }}</div></td>
-    </template>
-    <template #cell-actionCd="{ row }">
-      <td style="cursor:pointer;" @click="toggleRow(row.logId)"><span class="badge" :class="fnActionBadge(row.actionCd)">{{ fnActionLabel(row.actionCd) }}</span></td>
-    </template>
-    <template #cell-tokenTypeCd="{ row }">
-      <td style="cursor:pointer;" @click="toggleRow(row.logId)"><span class="badge" :class="fnTypeBadge(row.tokenTypeCd)" style="font-size:11px">{{ row.tokenTypeCd||'-' }}</span></td>
-    </template>
-    <template #cell-accessTokenExp="{ row }">
-      <td style="font-size:12px;color:#8e44ad;cursor:pointer;" @click="toggleRow(row.logId)">{{ String(row.accessTokenExp||'').slice(0,19)||'-' }}</td>
-    </template>
-    <template #cell-tokenExp="{ row }">
-      <td style="font-size:12px;cursor:pointer;" :style="row.actionCd==='EXPIRE'||row.actionCd==='REVOKE'?'color:#e74c3c':''" @click="toggleRow(row.logId)">{{ String(row.tokenExp||'').slice(0,19)||'-' }}</td>
-    </template>
-    <template #cell-ip="{ row }">
-      <td style="font-family:monospace;font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.ip||'-' }}</td>
-    </template>
-    <template #cell-uiNm="{ row }">
-      <td style="font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">
+    <template #cell-_uiNm="{ row }">
+      <td style="font-size:12px;">
         <span v-if="row.uiNm" style="color:#e8587a;font-weight:600">{{ fnDecode(row.uiNm) }}</span>
         <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa"> &gt; </span>
         <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
         <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc">-</span>
       </td>
-    </template>
-    <template #cell-traceId="{ row }">
-      <td style="font-family:monospace;font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.traceId" @click="toggleRow(row.logId)">{{ row.traceId||'-' }}</td>
-    </template>
-    <template #cell-revokeReason="{ row }">
-      <td style="font-size:12px;color:#e74c3c;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.revokeReason||'-' }}</td>
     </template>
 
     <template #row-expand="{ row, colspan }">

@@ -247,7 +247,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     /* BoGrid(bare) 컬럼 정의 — 대상 상품 */
     const productColumns = [
       { key: 'productId', label: 'ID' },
-      { key: 'prodNm',    label: '상품명' },
+      { key: 'prodNm',    label: '상품명', refLink: 'product', refKey: 'productId' },
       { key: 'category',  label: '카테고리' },
       { key: 'price',     label: '가격', fmt: v => (v||0).toLocaleString() + '원' },
       { key: 'stock',     label: '재고', fmt: v => v + '개' },
@@ -257,7 +257,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productColumns };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productColumns, showRefModal };
   },
   template: /* html */`
 <div>
@@ -442,10 +442,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
       </div>
       <bo-grid bare :columns="productColumns" :rows="cfSelectedProducts" row-key="productId"
-               empty-text="선택된 상품이 없습니다.">
-        <template #cell-prodNm="{ row }">
-          <td><span class="ref-link" @click="showRefModal('product', row.productId)">{{ row.prodNm }}</span></td>
-        </template>
+               empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)">
         <template #cell-_act="{ row }">
           <td><button class="btn btn-danger btn-sm" @click="removeProduct(row.productId)">제거</button></td>
         </template>

@@ -289,11 +289,15 @@ window.SyBatchMng = {
       { key: 'batchNm',       label: '배치명',       style: 'min-width:120px;', edit: 'text', placeholder: '배치명' },
       { key: 'batchCode',     label: '배치코드',     style: 'min-width:160px;', edit: 'text', mono: true, placeholder: 'BATCH_CODE' },
       { key: 'cronExpr',      label: 'Cron 표현식',  style: 'min-width:170px;' },
-      { key: 'batchStatusCd', label: '활성',         style: 'width:62px;' },
+      { key: 'batchStatusCd', label: '활성',         style: 'width:62px;',
+        edit: 'select', options: () => codes.active_statuses },
       { key: 'batchDesc',     label: '설명',         style: 'min-width:130px;', edit: 'text', placeholder: '설명' },
-      { key: 'batchLastRun',  label: '최근실행',     style: 'width:110px;' },
-      { key: 'batchRunStatus',label: '실행상태',     style: 'width:72px;' },
-      { key: 'siteNm',        label: '사이트',       style: 'width:55px;' },
+      { key: 'batchLastRun',  label: '최근실행',     style: 'width:110px;', align: 'center',
+        cellStyle: 'font-size:11px;color:#555;white-space:nowrap;' },
+      { key: 'batchRunStatus',label: '실행상태',     style: 'width:72px;', align: 'center',
+        badge: (row) => 'badge-xs ' + (({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[row.batchRunStatus]) || 'badge-gray') },
+      { key: 'siteNm',        label: '사이트',       style: 'width:55px;', align: 'center',
+        cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: 'runNow',        label: '',             style: 'width:36px;' },
     ];
 
@@ -387,23 +391,6 @@ window.SyBatchMng = {
       </td>
     </template>
 
-    <template #cell-batchStatusCd="{ row }">
-      <td>
-        <select class="grid-select" v-model="row.batchStatusCd" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px;">
-          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </td>
-    </template>
-
-    <template #cell-batchLastRun="{ row }">
-      <td style="font-size:11px;color:#555;text-align:center;white-space:nowrap;">{{ row.batchLastRun }}</td>
-    </template>
-    <template #cell-batchRunStatus="{ row }">
-      <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(row.batchRunStatus)">{{ row.batchRunStatus }}</span></td>
-    </template>
-    <template #cell-siteNm>
-      <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
-    </template>
     <template #cell-runNow="{ row }">
       <td style="text-align:center;">
         <button v-if="row._row_status!=='I' && row._row_status!=='D'" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>

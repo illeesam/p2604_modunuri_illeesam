@@ -564,7 +564,8 @@ window.SyRoleMng = {
       { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: codes.use_yn },
       { key: 'roleCat',      label: '역할구분', style: 'width:100px;' },
       { key: 'roleRemark',   label: '비고',     edit: 'text' },
-      { key: 'siteNm',       label: '사이트명', style: 'width:80px;' },
+      { key: 'siteNm',       label: '사이트명', style: 'width:80px;', align: 'center',
+        cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -678,10 +679,6 @@ window.SyRoleMng = {
           <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
         </select>
       </td>
-    </template>
-
-    <template #cell-siteNm>
-      <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
     </template>
 
     <template #row-actions="{ row, idx }">

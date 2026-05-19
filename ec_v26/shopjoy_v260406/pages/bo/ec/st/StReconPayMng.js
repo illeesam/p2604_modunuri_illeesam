@@ -108,12 +108,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const gridColumns = [
       { key: 'orderId',    label: '주문ID' },
       { key: 'txDate',     label: '거래일' },
-      { key: 'payMethod',  label: '결제수단' },
-      { key: 'payAmt',     label: '주문금액' },
-      { key: 'pgAmt',      label: 'PG정산액' },
-      { key: 'settleAmt',  label: '정산기준액' },
-      { key: 'diff',       label: '차이금액' },
-      { key: 'diffStatus', label: '대사결과' },
+      { key: 'payMethod',  label: '결제수단', badge: (row) => fnPayBadge(row.payMethod) },
+      { key: 'payAmt',     label: '주문금액', fmt: fmtW },
+      { key: 'pgAmt',      label: 'PG정산액', fmt: fmtW },
+      { key: 'settleAmt',  label: '정산기준액', fmt: fmtW },
+      { key: 'diff',       label: '차이금액',
+        fmt: (v) => v !== 0 ? (v > 0 ? '+' : '') + Number(v).toLocaleString() + '원' : '-',
+        cellStyle: (v) => Math.abs(v) > 0 ? 'color:#e74c3c;font-weight:700' : '' },
+      { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
     ];
 
     return { uiState, handleDateRangeChange, codes, pager, rows, gridColumns, cfSummary, fnDiffBadge, fnPayBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
@@ -151,12 +153,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="gridColumns" :rows="rows" :pager="pager" row-key="orderId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       @set-page="setPage" @size-change="onSizeChange">
-      <template #cell-payMethod="{ row: r }"><td><span class="badge" :class="fnPayBadge(r.payMethod)">{{ r.payMethod }}</span></td></template>
-      <template #cell-payAmt="{ row: r }"><td>{{ fmtW(r.payAmt) }}</td></template>
-      <template #cell-pgAmt="{ row: r }"><td>{{ fmtW(r.pgAmt) }}</td></template>
-      <template #cell-settleAmt="{ row: r }"><td>{{ fmtW(r.settleAmt) }}</td></template>
-      <template #cell-diff="{ row: r }"><td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td></template>
-      <template #cell-diffStatus="{ row: r }"><td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td></template>
     </bo-grid>
   </div>
 </div>

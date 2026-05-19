@@ -431,10 +431,13 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     /* 묶음상품 목록 그리드 컬럼 (모든 셀 커스텀 → #cell 슬롯, 헤더만 정의) */
     const bundleColumns = [
       { key: 'prodNm',    label: '묶음상품' },
-      { key: 'itemCount', label: '구성품수',   style: 'width:70px;text-align:center;' },
-      { key: 'rateSum',   label: '안분율 합계', style: 'width:130px;text-align:center;' },
-      { key: 'salePrice', label: '판매가',     style: 'width:110px;text-align:right;' },
-      { key: 'status',    label: '상태',       style: 'width:90px;text-align:center;' },
+      { key: 'itemCount', label: '구성품수',   style: 'width:70px;text-align:center;', align: 'center', fmt: (v) => (v + '개') },
+      { key: 'rateSum',   label: '안분율 합계', style: 'width:130px;text-align:center;', align: 'center',
+        badge: (g) => fnRateSumBadge(g.bundleProdId), fmt: (v, g) => ('합계 ' + rateSum(g.bundleProdId).toFixed(1) + '%') },
+      { key: 'salePrice', label: '판매가',     style: 'width:110px;text-align:right;', align: 'right',
+        fmt: (v, g) => (g.prod ? (g.prod.salePrice || g.prod.price || 0).toLocaleString() + '원' : '-') },
+      { key: 'status',    label: '상태',       style: 'width:90px;text-align:center;', align: 'center',
+        badge: (g) => fnBundleStatusBadge(g).replace('badge ', ''), fmt: (v, g) => fnBundleStatusText(g) },
     ];
     const fnBundleRowStyle = (g) =>
       (uiState.dtlMode === 'edit' && uiState.editBundleId === g.bundleProdId)
@@ -515,26 +518,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
             </div>
           </div>
         </div>
-      </td>
-    </template>
-    <template #cell-itemCount="{ row: g }">
-      <td style="text-align:center;font-size:12px;">{{ g.itemCount }}개</td>
-    </template>
-    <template #cell-rateSum="{ row: g }">
-      <td style="text-align:center;">
-        <span :class="['badge', fnRateSumBadge(g.bundleProdId)]" style="font-size:12px">
-          합계 {{ rateSum(g.bundleProdId).toFixed(1) }}%
-        </span>
-      </td>
-    </template>
-    <template #cell-salePrice="{ row: g }">
-      <td style="text-align:right;font-size:12px;">
-        {{ g.prod ? (g.prod.salePrice || g.prod.price || 0).toLocaleString() + '원' : '-' }}
-      </td>
-    </template>
-    <template #cell-status="{ row: g }">
-      <td style="text-align:center;">
-        <span :class="fnBundleStatusBadge(g)">{{ fnBundleStatusText(g) }}</span>
       </td>
     </template>
     <template #row-actions="{ row: g }">

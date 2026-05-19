@@ -266,7 +266,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'issueDate',   label: '발급일' },
       { key: 'issuePrice',  label: '발급가격', style: 'text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
       { key: 'expiryDate',  label: '만료일' },
-      { key: 'status',      label: '상태' },
+      { key: 'status',      label: '상태',
+        badge: row => row.status === '정상' ? 'badge-green' : row.status === '사용완료' ? 'badge-blue' : row.status === '만료됨' ? 'badge-gray' : 'badge-gray' },
     ];
     const usageColumns = [
       { key: 'usageNo',    label: '사용번호' },
@@ -509,11 +510,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
     <bo-grid bare :columns="issueColumns" :rows="cfIssuedList" row-key="issueNo"
-             empty-text="발급내역이 없습니다.">
-      <template #cell-status="{ row }">
-        <td><span class="badge" :class="{'badge-green':row.status==='정상','badge-blue':row.status==='사용완료','badge-gray':row.status==='만료됨'}">{{ row.status }}</span></td>
-      </template>
-    </bo-grid>
+             empty-text="발급내역이 없습니다."></bo-grid>
   </div>
 
   <!-- -- 사용내역 탭 --------------------------------------------------------- -->

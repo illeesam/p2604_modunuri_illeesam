@@ -200,13 +200,19 @@ window.CmNoticeMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
     const listColumns = [
-      { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;' },
+      { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;',
+        badge: (row) => fnTypeBadge(row.noticeTypeCd) },
       { key: 'noticeTitle',    label: '제목',     sortKey: 'nm' },
-      { key: 'isFixed',        label: '고정',     style: 'width:70px;' },
-      { key: 'startDate',      label: '시작일',   style: 'width:120px;' },
-      { key: 'endDate',        label: '종료일',   style: 'width:120px;' },
-      { key: 'noticeStatusCd', label: '상태',     style: 'width:80px;' },
-      { key: 'siteNm',         label: '사이트명', style: 'width:110px;' },
+      { key: 'isFixed',        label: '고정',     style: 'width:70px;',
+        badge: (row) => row.isFixed === 'Y' ? 'badge-red' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '고정' : '-' },
+      { key: 'startDate',      label: '시작일',   style: 'width:120px;',
+        fmt: (v) => v || '-' },
+      { key: 'endDate',        label: '종료일',   style: 'width:120px;',
+        fmt: (v) => v || '-' },
+      { key: 'noticeStatusCd', label: '상태',     style: 'width:80px;',
+        badge: (row) => fnStatusBadge(row.noticeStatusCd) },
+      { key: 'siteNm',         label: '사이트명', style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: 'regDate',        label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
       { key: '_act',           label: '관리',     style: 'width:140px;text-align:right;' },
     ];
@@ -263,9 +269,6 @@ window.CmNoticeMng = {
       <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </template>
-    <template #cell-noticeTypeCd="{ row }">
-      <td><span class="badge" :class="fnTypeBadge(row.noticeTypeCd)">{{ row.noticeTypeCd }}</span></td>
-    </template>
     <template #cell-noticeTitle="{ row }">
       <td>
         <span class="title-link" @click="handleLoadDetail(row.noticeId)" :style="selectedId===row.noticeId?'color:#e8587a;font-weight:700;':''">
@@ -274,24 +277,6 @@ window.CmNoticeMng = {
           <span v-if="selectedId===row.noticeId" style="font-size:10px;margin-left:3px;">▼</span>
         </span>
       </td>
-    </template>
-    <template #cell-isFixed="{ row }">
-      <td><span class="badge" :class="row.isFixed==='Y'?'badge-red':'badge-gray'">{{ row.isFixed==='Y' ? '고정' : '-' }}</span></td>
-    </template>
-    <template #cell-startDate="{ row }">
-      <td>{{ row.startDate || '-' }}</td>
-    </template>
-    <template #cell-endDate="{ row }">
-      <td>{{ row.endDate || '-' }}</td>
-    </template>
-    <template #cell-noticeStatusCd="{ row }">
-      <td><span class="badge" :class="fnStatusBadge(row.noticeStatusCd)">{{ row.noticeStatusCd }}</span></td>
-    </template>
-    <template #cell-siteNm="{ row }">
-      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-    </template>
-    <template #cell-regDate="{ row }">
-      <td>{{ row.regDate }}</td>
     </template>
     <template #cell-_act="{ row }">
       <td>

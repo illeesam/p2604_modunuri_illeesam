@@ -326,8 +326,9 @@ window.OdOrderDtl = {
     /* 결제정보 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
     const paymentColumns = [
       { key: 'payMethod', label: '결제수단' },
-      { key: 'payStatus', label: '결제상태' },
-      { key: 'amount',    label: '결제금액', style: 'text-align:right;' },
+      { key: 'payStatus', label: '결제상태', badge: (row) => fnPayStatusBadge(row.payStatus) },
+      { key: 'amount',    label: '결제금액', style: 'text-align:right;',
+        align: 'right', fmt: (v) => fmt(v), cellStyle: 'font-weight:700;' },
       { key: 'payDate',   label: '결제일시' },
       { key: 'apprNo',    label: '승인번호' },
       { key: 'issuer',    label: '카드사/계좌' },
@@ -338,8 +339,8 @@ window.OdOrderDtl = {
       { key: 'date',   label: '수정일시', style: 'width:140px;' },
       { key: 'user',   label: '수정자',   style: 'width:100px;' },
       { key: 'field',  label: '항목',     style: 'width:120px;' },
-      { key: 'before', label: '변경 전' },
-      { key: 'after',  label: '변경 후' },
+      { key: 'before', label: '변경 전', cellStyle: 'color:#888;' },
+      { key: 'after',  label: '변경 후', cellStyle: 'color:#e8587a;font-weight:600;' },
     ];
 
     /* 주문항목 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
@@ -347,11 +348,15 @@ window.OdOrderDtl = {
       { key: 'prodNm',      label: '상품명' },
       { key: 'color',       label: '색상',       style: 'width:60px;',                fmt: v => v || '-' },
       { key: 'size',        label: '사이즈',     style: 'width:50px;',                fmt: v => v || '-' },
-      { key: 'qty',         label: '수량',       style: 'width:44px;text-align:center;' },
-      { key: 'salePrice',   label: '판매금액',   style: 'width:90px;text-align:right;' },
+      { key: 'qty',         label: '수량',       style: 'width:44px;text-align:center;',
+        align: 'center', fmt: (v) => v || 1, cellStyle: 'font-weight:600;' },
+      { key: 'salePrice',   label: '판매금액',   style: 'width:90px;text-align:right;',
+        align: 'right', fmt: (v, row) => fmt(row.salePrice || row.price), cellStyle: 'color:#666;' },
       { key: 'discInfo',    label: '할인정보',   style: 'width:80px;' },
-      { key: 'discAmount',  label: '할인금액',   style: 'width:90px;text-align:right;' },
-      { key: 'price',       label: '결제금액',   style: 'width:100px;text-align:right;' },
+      { key: 'discAmount',  label: '할인금액',   style: 'width:90px;text-align:right;',
+        align: 'right', fmt: (v) => v ? '-' + fmt(v) : '-', cellStyle: 'color:#d84315;font-weight:600;' },
+      { key: 'price',       label: '결제금액',   style: 'width:100px;text-align:right;',
+        align: 'right', fmt: (v) => fmt(v), cellStyle: 'font-weight:700;color:#1a1a1a;' },
       { key: 'orderStatus', label: '주문상태',   style: 'width:90px;text-align:center;' },
       { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;' },
       { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
@@ -608,20 +613,8 @@ window.OdOrderDtl = {
           <span style="font-size:18px;margin-right:6px;">{{ row.emoji || '🛍' }}</span>{{ row.prodNm }}
         </td>
       </template>
-      <template #cell-qty="{ row }">
-        <td style="text-align:center;font-weight:600;font-size:12px;">{{ row.qty || 1 }}</td>
-      </template>
-      <template #cell-salePrice="{ row }">
-        <td style="text-align:right;color:#666;font-size:12px;">{{ fmt(row.salePrice || row.price) }}</td>
-      </template>
       <template #cell-discInfo="{ row }">
         <td style="font-size:12px;"><span v-if="row.discInfo" style="font-size:11px;padding:2px 7px;border-radius:8px;background:#fff3e0;color:#e65100;font-weight:600;">{{ row.discInfo }}</span><span v-else style="color:#bbb;">-</span></td>
-      </template>
-      <template #cell-discAmount="{ row }">
-        <td style="text-align:right;color:#d84315;font-weight:600;font-size:12px;">{{ row.discAmount ? '-'+fmt(row.discAmount) : '-' }}</td>
-      </template>
-      <template #cell-price="{ row }">
-        <td style="text-align:right;font-weight:700;color:#1a1a1a;font-size:12px;">{{ fmt(row.price) }}</td>
       </template>
       <template #cell-orderStatus>
         <td style="text-align:center;font-size:12px;"><span style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">{{ form.orderStatusCd || '-' }}</span></td>
@@ -680,12 +673,6 @@ window.OdOrderDtl = {
   <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
     <bo-grid bare :columns="paymentColumns" :rows="cfPaymentList" empty-text="결제정보가 없습니다.">
-      <template #cell-payStatus="{ row }">
-        <td><span class="badge" :class="fnPayStatusBadge(row.payStatus)">{{ row.payStatus }}</span></td>
-      </template>
-      <template #cell-amount="{ row }">
-        <td style="text-align:right;font-weight:700;">{{ fmt(row.amount) }}</td>
-      </template>
     </bo-grid>
   </div>
 
@@ -699,12 +686,6 @@ window.OdOrderDtl = {
   <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
     <bo-grid bare :columns="editHistColumns" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
-      <template #cell-before="{ row }">
-        <td style="color:#888;">{{ row.before }}</td>
-      </template>
-      <template #cell-after="{ row }">
-        <td style="color:#e8587a;font-weight:600;">{{ row.after }}</td>
-      </template>
     </bo-grid>
   </div>
   </div>

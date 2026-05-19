@@ -109,17 +109,17 @@ window.StErpGenMng = {
     const previewColumns = [
       { key: 'debit',       label: '차변계정' },
       { key: 'credit',      label: '대변계정' },
-      { key: 'debitAmt',    label: '차변금액' },
-      { key: 'creditAmt',   label: '대변금액' },
-      { key: 'description', label: '적요' },
+      { key: 'debitAmt',    label: '차변금액', fmt: fmtW, cellStyle: 'font-weight:700;color:#3498db' },
+      { key: 'creditAmt',   label: '대변금액', fmt: fmtW, cellStyle: 'font-weight:700;color:#27ae60' },
+      { key: 'description', label: '적요', cellStyle: 'color:#666' },
     ];
     const histColumns = [
-      { key: 'genMon',    label: '정산월' },
-      { key: 'slipType',  label: '전표유형' },
-      { key: 'slipCnt',   label: '전표수' },
-      { key: 'totalAmt',  label: '총금액' },
+      { key: 'genMon',    label: '정산월', cellStyle: 'font-weight:700' },
+      { key: 'slipType',  label: '전표유형', badge: () => 'badge-blue' },
+      { key: 'slipCnt',   label: '전표수', fmt: (v) => v + '건' },
+      { key: 'totalAmt',  label: '총금액', fmt: fmtW, cellStyle: 'font-weight:700' },
       { key: 'genDate',   label: '생성일' },
-      { key: 'status',    label: '상태' },
+      { key: 'status',    label: '상태', badge: (row) => fnStatusBadge(row.status) },
       { key: 'regUserNm', label: '담당자' },
     ];
 
@@ -162,9 +162,6 @@ window.StErpGenMng = {
       <bo-grid
         :columns="previewColumns" :rows="cfPreviewRows"
         :list-title="'전표 미리보기'" :count-text="cfPreviewRows.length + '건'">
-        <template #cell-debitAmt="{ row: r }"><td style="font-weight:700;color:#3498db">{{ fmtW(r.debitAmt) }}</td></template>
-        <template #cell-creditAmt="{ row: r }"><td style="font-weight:700;color:#27ae60">{{ fmtW(r.creditAmt) }}</td></template>
-        <template #cell-description="{ row: r }"><td style="font-size:12px;color:#666">{{ r.description }}</td></template>
       </bo-grid>
     </div>
     <div v-else style="color:#999;margin-top:12px">해당 월의 생성 대상 전표가 없습니다.</div>
@@ -175,11 +172,6 @@ window.StErpGenMng = {
     <bo-grid
       :columns="histColumns" :rows="genHistory" row-key="genId"
       list-title="전표생성 이력" :count-text="genHistory.length + '건'">
-      <template #cell-genMon="{ row: r }"><td><strong>{{ r.genMon }}</strong></td></template>
-      <template #cell-slipType="{ row: r }"><td><span class="badge badge-blue">{{ r.slipType }}</span></td></template>
-      <template #cell-slipCnt="{ row: r }"><td>{{ r.slipCnt }}건</td></template>
-      <template #cell-totalAmt="{ row: r }"><td style="font-weight:700">{{ fmtW(r.totalAmt) }}</td></template>
-      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
     </bo-grid>
   </div>
 </div>

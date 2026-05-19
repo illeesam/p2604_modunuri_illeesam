@@ -19,12 +19,18 @@ window.MbMemGradeMng = {
     const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
     const gridColumns = [
-      { key: 'gradeCd',        label: '등급코드',     style: 'width:130px;' },
-      { key: 'gradeNm',        label: '등급명',       style: 'min-width:150px;' },
-      { key: 'gradeRank',      label: '순위',         style: 'width:80px;text-align:right;' },
-      { key: 'minPurchaseAmt', label: '최소구매금액', style: 'width:150px;text-align:right;' },
-      { key: 'saveRate',       label: '적립률(%)',    style: 'width:110px;text-align:right;' },
-      { key: 'useYn',          label: '사용여부',     style: 'width:90px;text-align:center;' },
+      { key: 'gradeCd',        label: '등급코드',     style: 'width:130px;',
+        edit: 'select', options: () => codes.member_grades },
+      { key: 'gradeNm',        label: '등급명',       style: 'min-width:150px;',
+        edit: 'text', placeholder: '등급명' },
+      { key: 'gradeRank',      label: '순위',         style: 'width:80px;text-align:right;',
+        edit: 'number' },
+      { key: 'minPurchaseAmt', label: '최소구매금액', style: 'width:150px;text-align:right;',
+        edit: 'number' },
+      { key: 'saveRate',       label: '적립률(%)',    style: 'width:110px;text-align:right;',
+        edit: 'number' },
+      { key: 'useYn',          label: '사용여부',     style: 'width:90px;text-align:center;',
+        edit: 'select', options: () => codes.use_yn },
     ];
 
     /* fnLoadCodes */
@@ -224,48 +230,6 @@ window.MbMemGradeMng = {
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @cell-change="onCellChange">
 
-
-    <template #cell-gradeCd="{ row }">
-      <td>
-        <select class="grid-select" v-model="row.gradeCd"
-          :disabled="row._row_status==='D'" @change="onCellChange(row)">
-          <option value="">선택</option>
-          <option v-for="c in codes.member_grades" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </td>
-    </template>
-    <template #cell-gradeNm="{ row }">
-      <td>
-        <input class="grid-input" v-model="row.gradeNm"
-          :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="등급명">
-      </td>
-    </template>
-    <template #cell-gradeRank="{ row }">
-      <td>
-        <input class="grid-input grid-num" type="number" v-model.number="row.gradeRank"
-          :disabled="row._row_status==='D'" @input="onCellChange(row)">
-      </td>
-    </template>
-    <template #cell-minPurchaseAmt="{ row }">
-      <td>
-        <input class="grid-input grid-num" type="number" v-model.number="row.minPurchaseAmt"
-          :disabled="row._row_status==='D'" @input="onCellChange(row)">
-      </td>
-    </template>
-    <template #cell-saveRate="{ row }">
-      <td>
-        <input class="grid-input grid-num" type="number" step="0.01" v-model.number="row.saveRate"
-          :disabled="row._row_status==='D'" @input="onCellChange(row)">
-      </td>
-    </template>
-    <template #cell-useYn="{ row }">
-      <td>
-        <select class="grid-select" v-model="row.useYn"
-          :disabled="row._row_status==='D'" @change="onCellChange(row)">
-          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </td>
-    </template>
 
     <template #row-actions="{ row, idx }">
       <button v-if="['U','I','D'].includes(row._row_status)"

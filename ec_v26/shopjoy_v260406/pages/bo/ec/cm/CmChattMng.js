@@ -166,14 +166,20 @@ window.CmChattMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
     const listColumns = [
-      { key: 'memberNm',    label: '회원' },
+      { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'subject',     label: '제목' },
-      { key: 'lastMsgDate', label: '마지막 메시지' },
-      { key: 'msgCnt',      label: '메시지수',  style: 'width:80px;' },
-      { key: 'unread',      label: '미읽음',    style: 'width:80px;' },
-      { key: 'chattStatusCd', label: '상태',    style: 'width:90px;' },
+      { key: 'lastMsgDate', label: '마지막 메시지',
+        cellStyle: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888',
+        fmt: (v) => v || '-' },
+      { key: 'msgCnt',      label: '메시지수',  style: 'width:80px;',
+        fmt: (v, row) => (row.adminUnreadCnt || 0) + (row.memberUnreadCnt || 0) + '개' },
+      { key: 'unread',      label: '미읽음',    style: 'width:80px;',
+        badge: (row) => row.memberUnreadCnt > 0 ? 'badge-red' : 'badge-gray',
+        fmt: (v, row) => row.memberUnreadCnt > 0 ? row.memberUnreadCnt : 0 },
+      { key: 'chattStatusCd', label: '상태',    style: 'width:90px;',
+        badge: (row) => fnStatusBadge(row.chattStatusCd) },
       { key: 'regDate',     label: '일시',      style: 'width:140px;', sortKey: 'reg' },
-      { key: 'siteNm',      label: '사이트명',  style: 'width:110px;' },
+      { key: 'siteNm',      label: '사이트명',  style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: '_act',        label: '관리',      style: 'width:140px;text-align:right;' },
     ];
     const fnGridRowClass = (row) => (uiStateDetail.selectedId === row.chattRoomId ? 'active' : '');
@@ -217,37 +223,14 @@ window.CmChattMng = {
     :sort-state="uiState" list-title="채팅목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange"
+    @ref-click="({type,id}) => showRefModal(type, id)">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </template>
-    <template #cell-memberNm="{ row }">
-      <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm }}</span></td>
-    </template>
     <template #cell-subject="{ row }">
       <td><span class="title-link" @click="handleLoadDetail(row.chattRoomId)" :style="uiStateDetail.selectedId===row.chattRoomId?'color:#e8587a;font-weight:700;':''">{{ row.subject }}<span v-if="uiStateDetail.selectedId===row.chattRoomId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-    </template>
-    <template #cell-lastMsgDate="{ row }">
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888;">{{ row.lastMsgDate || '-' }}</td>
-    </template>
-    <template #cell-msgCnt="{ row }">
-      <td>{{ (row.adminUnreadCnt||0) + (row.memberUnreadCnt||0) }}개</td>
-    </template>
-    <template #cell-unread="{ row }">
-      <td>
-        <span v-if="row.memberUnreadCnt > 0" class="badge badge-red">{{ row.memberUnreadCnt }}</span>
-        <span v-else class="badge badge-gray">0</span>
-      </td>
-    </template>
-    <template #cell-chattStatusCd="{ row }">
-      <td><span class="badge" :class="fnStatusBadge(row.chattStatusCd)">{{ row.chattStatusCd }}</span></td>
-    </template>
-    <template #cell-regDate="{ row }">
-      <td>{{ row.regDate }}</td>
-    </template>
-    <template #cell-siteNm="{ row }">
-      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
     </template>
     <template #cell-_act="{ row }">
       <td><div class="actions">

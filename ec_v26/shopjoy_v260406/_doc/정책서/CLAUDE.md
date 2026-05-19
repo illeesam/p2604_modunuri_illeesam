@@ -141,7 +141,7 @@
 #### 개발 표준 (sy.50~57)
 | # | 파일 | 내용 |
 |---|------|------|
-| 51 | 프로그램설계정책 | 프론트/어드민 컴포넌트 설계 기준 |
+| 51 | 프로그램설계정책 | 프론트/어드민 컴포넌트 설계 기준 + §4.6 BoGrid 컬럼 속성화(AG-Grid 식 fmt/badge/cellStyle/cellClass/edit) |
 | 52 | DDL단어사전규칙 | 컬럼명 표준, 도메인 프리픽스, 길이/타입 표준 |
 | 53 | 캐시관리 | 서버·클라이언트 캐시 정책 |
 | 54 | 네이밍규칙 | Vue 3 함수·변수 접두어 (on/handle/fn/cf/sf/sv) |
@@ -240,6 +240,7 @@
 | **상태 코드** | `*.01.상태표.md` (각 도메인) |
 | **기술 표준** | `base/base.*.md`, `sy.5*.md` |
 | **UI 정책** | `base/base.UX-*.md` |
+| **BoGrid 컬럼 속성화** ⭐ | `sy.51.프로그램설계정책.md` §4.6 — #cell- 슬롯 대신 columns 의 fmt/badge/cellStyle/cellClass/edit 로 (AG-Grid colDef 식) |
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
 | **`/api/base/**` 호출 금지** ⭐ | `base/base.기술-api.md` §3.5 — 클라이언트는 `/api/bo/**` / `/api/fo/**` 만 호출 |
 | **탭별 저장 후 재조회** ⭐ | `base/base.UX-admin.md` §18 — 저장 탭 즉시 GET 재조회, 첫 탭 저장 시 상위 Mng 도 재조회 |

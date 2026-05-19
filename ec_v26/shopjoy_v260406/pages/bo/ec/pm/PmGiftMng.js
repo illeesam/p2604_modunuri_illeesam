@@ -182,13 +182,15 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     const gridColumns = [
       { key: 'giftNm',       label: '사은품명', sortKey: 'nm' },
-      { key: 'giftTypeCd',   label: '조건유형' },
-      { key: 'condVal',      label: '조건값' },
-      { key: 'giftStock',    label: '재고' },
+      { key: 'giftTypeCd',   label: '조건유형', badge: (row) => fnTypeBadge(row.giftTypeCd) },
+      { key: 'condVal',      label: '조건값',
+        fmt: (v, row) => row.giftTypeCd === '금액조건' ? (row.minOrderAmt || 0).toLocaleString() + '원↑'
+          : row.giftTypeCd === '수량조건' ? (row.minOrderQty || 0) + '개↑' : '-' },
+      { key: 'giftStock',    label: '재고', fmt: (v) => (v || 0).toLocaleString() + '개' },
       { key: 'startDate',    label: '시작일', sortKey: 'reg' },
       { key: 'endDate',      label: '종료일' },
-      { key: 'giftStatusCd', label: '상태' },
-      { key: 'siteNm',       label: '사이트' },
+      { key: 'giftStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.giftStatusCd) },
+      { key: 'siteNm',       label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), gifts, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
@@ -236,11 +238,6 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       @sort="onSort">
       <template #head-actions>관리</template>
       <template #cell-giftNm="{ row: g }"><td><span class="title-link" @click="handleLoadDetail(g.giftId)" :style="selectedId===g.giftId?'color:#e8587a;font-weight:700;':''">{{ g.giftNm }}<span v-if="selectedId===g.giftId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
-      <template #cell-giftTypeCd="{ row: g }"><td><span class="badge" :class="fnTypeBadge(g.giftTypeCd)">{{ g.giftTypeCd }}</span></td></template>
-      <template #cell-condVal="{ row: g }"><td>{{ g.giftTypeCd === '금액조건' ? (g.minOrderAmt||0).toLocaleString() + '원↑' : g.giftTypeCd === '수량조건' ? (g.minOrderQty||0) + '개↑' : '-' }}</td></template>
-      <template #cell-giftStock="{ row: g }"><td>{{ (g.giftStock||0).toLocaleString() }}개</td></template>
-      <template #cell-giftStatusCd="{ row: g }"><td><span class="badge" :class="fnStatusBadge(g.giftStatusCd)">{{ g.giftStatusCd }}</span></td></template>
-      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
       <template #row-actions="{ row: g }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(g.giftId)">수정</button>

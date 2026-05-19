@@ -1128,40 +1128,51 @@ window.PdProdDtl = {
     ];
     const fnMdRowStyle = (u) => 'cursor:pointer;' + (form.mdUserId === u.userId ? 'background:#fff0f4;font-weight:700;' : '');
     const prodPickerCols = [
-      { key: 'productId', label: 'ID',       style: 'width:46px;' },
-      { key: 'prodNm',    label: '상품명' },
+      { key: 'productId', label: 'ID',       style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
+      { key: 'prodNm',    label: '상품명',   cellStyle: 'font-weight:600;' },
       { key: 'category',  label: '카테고리', style: 'width:80px;' },
-      { key: 'price',     label: '가격',     style: 'width:90px;' },
-      { key: 'stock',     label: '재고',     style: 'width:60px;' },
+      { key: 'price',     label: '가격',     style: 'width:90px;text-align:right;', align: 'right',
+        fmt: (v, row) => ((row.price || 0).toLocaleString() + '원') },
+      { key: 'stock',     label: '재고',     style: 'width:60px;text-align:right;', align: 'right',
+        fmt: (v, row) => (row.stock + '개') },
       { key: 'status',    label: '상태',     style: 'width:60px;' },
     ];
     const remainSkuCols = [
-      { key: '_nm1',     label: '1단 옵션' },
-      { key: '_nm2',     label: '2단 옵션' },
+      { key: '_nm1',     label: '1단 옵션', badge: () => 'badge-gray', fmt: (v, row) => (row._nm1 || '-') },
+      { key: '_nm2',     label: '2단 옵션', badge: () => 'badge-blue', fmt: (v, row) => (row._nm2 || '-') },
       { key: 'skuCode',  label: 'SKU코드',  style: 'color:#888;' },
-      { key: 'addPrice', label: '추가금액', style: 'width:100px;', fmt: (v) => (v || 0).toLocaleString() + '원' },
-      { key: 'stock',    label: '재고',     style: 'width:80px;' },
-      { key: 'statusCd', label: '판매상태', style: 'width:110px;' },
-      { key: 'saleCnt',  label: '판매수량', style: 'width:68px;', fmt: (v) => (v || 0).toLocaleString() },
-      { key: 'useYn',    label: '사용',     style: 'width:42px;' },
+      { key: 'addPrice', label: '추가금액', style: 'width:100px;', align: 'right', cellStyle: 'color:#888;',
+        fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'stock',    label: '재고',     style: 'width:80px;', align: 'right',
+        cellStyle: (v) => ((v || 0) === 0 ? 'color:#f5222d;font-weight:700;' : ''),
+        fmt: (v) => (v || 0) },
+      { key: 'statusCd', label: '판매상태', style: 'width:110px;', badge: () => 'badge-gray' },
+      { key: 'saleCnt',  label: '판매수량', style: 'width:68px;', align: 'right', cellStyle: 'color:#888;',
+        fmt: (v) => (v || 0).toLocaleString() },
+      { key: 'useYn',    label: '사용',     style: 'width:42px;', align: 'center',
+        badge: (row) => (row.useYn === 'Y' ? 'badge-green' : 'badge-gray') },
     ];
     const fnRemainSkuRowStyle = () => 'opacity:0.6;background:#f9f9f9;';
 
     /* BoGrid 컬럼 — 연관상품 (pd_prod_rel · REL_PROD) */
     const relProdCols = [
-      { key: '_id2',     label: 'ID',     style: 'width:46px;text-align:center;' },
+      { key: '_id2',     label: 'ID',     style: 'width:46px;text-align:center;', align: 'center',
+        cellStyle: 'color:#888;', fmt: (v, row) => (row.relProdId || row.prodId) },
       { key: 'prodNm',   label: '상품명' },
-      { key: '_relType', label: '유형',   style: 'width:80px;' },
+      { key: '_relType', label: '유형',   style: 'width:80px;', fmt: (v, row) => (row.prodRelTypeCdNm || row.prodRelTypeCd) },
       { key: '_act',     label: '관리',   style: 'width:54px;text-align:center;' },
     ];
     /* BoGrid 컬럼 — 코디상품 (pd_prod_rel · CODY_PROD) */
     const codeProdCols = [
-      { key: 'productId', label: 'ID',     style: 'width:46px;text-align:center;' },
+      { key: 'productId', label: 'ID',     style: 'width:46px;text-align:center;', align: 'center', cellStyle: 'color:#888;' },
       { key: 'prodNm',    label: '상품명' },
       { key: 'category',  label: '카테고리', style: 'width:80px;' },
-      { key: '_price',    label: '가격',   style: 'width:90px;text-align:right;' },
-      { key: '_stock',    label: '재고',   style: 'width:60px;text-align:right;' },
-      { key: '_status',   label: '상태',   style: 'width:60px;' },
+      { key: '_price',    label: '가격',   style: 'width:90px;text-align:right;', align: 'right',
+        fmt: (v, row) => ((row.price || 0).toLocaleString() + '원') },
+      { key: '_stock',    label: '재고',   style: 'width:60px;text-align:right;', align: 'right',
+        fmt: (v, row) => (row.stock + '개') },
+      { key: '_status',   label: '상태',   style: 'width:60px;',
+        badge: (row) => (row.status === '판매중' ? 'badge-green' : 'badge-gray'), fmt: (v, row) => row.status },
       { key: '_act',      label: '관리',   style: 'width:54px;text-align:center;' },
     ];
     /* BoGrid 컬럼 — 판매계획 (selectable + 인라인 편집) */
@@ -1367,20 +1378,17 @@ window.PdProdDtl = {
           <!-- -- 목록 ----------------------------------------------------- -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
             <bo-grid bare :columns="mdUserCols" :rows="cfMdUserListFiltered" row-key="userId"
-              :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." @row-click="selectMdUser">
+              :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @row-click="selectMdUser">
               <template #cell-userNm="{ row }">
-                <td @click="selectMdUser(row)">
+                <td>
                   <span style="display:flex;align-items:center;gap:6px;">
                     <span v-if="form.mdUserId===row.userId" style="color:#e8587a;font-size:12px;">✔</span>
                     {{ row.userNm }}
                   </span>
                 </td>
               </template>
-              <template #cell-deptId="{ row }">
-                <td @click="selectMdUser(row)">{{ row.deptId }}</td>
-              </template>
               <template #cell-roleId="{ row }">
-                <td @click="selectMdUser(row)"><span class="badge badge-gray" style="font-size:11px;">{{ row.roleId }}</span></td>
+                <td><span class="badge badge-gray" style="font-size:11px;">{{ row.roleId }}</span></td>
               </template>
             </bo-grid>
           </div>
@@ -1967,14 +1975,8 @@ window.PdProdDtl = {
       <bo-grid bare :columns="relProdCols" :rows="relProds" row-key="_id"
         draggable row-actions empty-text="+ 추가 버튼으로 연관상품을 등록하세요."
         @reorder="onRelDrop">
-        <template #cell-_id2="{ row }">
-          <td style="text-align:center;color:#888;">{{ row.relProdId || row.prodId }}</td>
-        </template>
         <template #cell-prodNm="{ row }">
           <td><span class="ref-link" @click="navigate('pdProdDtl',{id:row.relProdId||row.prodId})">{{ row.prodNm }}</span></td>
-        </template>
-        <template #cell-_relType="{ row }">
-          <td>{{ row.prodRelTypeCdNm || row.prodRelTypeCd }}</td>
         </template>
         <template #row-actions="{ idx }">
           <td style="text-align:center;">
@@ -1998,23 +2000,8 @@ window.PdProdDtl = {
       <bo-grid bare :columns="codeProdCols" :rows="codeProds" row-key="_id"
         draggable row-actions empty-text="+ 추가 버튼으로 코디상품을 등록하세요."
         @reorder="onCodeDrop">
-        <template #cell-productId="{ row }">
-          <td style="text-align:center;color:#888;">{{ row.productId }}</td>
-        </template>
         <template #cell-prodNm="{ row }">
           <td><span class="ref-link" @click="navigate('pdProdDtl',{id:row.productId})">{{ row.prodNm }}</span></td>
-        </template>
-        <template #cell-category="{ row }">
-          <td>{{ row.category }}</td>
-        </template>
-        <template #cell-_price="{ row }">
-          <td style="text-align:right;">{{ (row.price||0).toLocaleString() }}원</td>
-        </template>
-        <template #cell-_stock="{ row }">
-          <td style="text-align:right;">{{ row.stock }}개</td>
-        </template>
-        <template #cell-_status="{ row }">
-          <td><span class="badge" :class="row.status==='판매중'?'badge-green':'badge-gray'" style="font-size:10px;">{{ row.status }}</span></td>
         </template>
         <template #row-actions="{ idx }">
           <td style="text-align:center;">
@@ -2057,24 +2044,9 @@ window.PdProdDtl = {
           <!-- -- 목록 ----------------------------------------------------- -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
             <bo-grid bare :columns="prodPickerCols" :rows="cfProdPickerList" row-key="productId"
-              empty-text="검색 결과가 없습니다." @row-click="selectProdItem">
-              <template #cell-productId="{ row }">
-                <td style="text-align:center;color:#888;cursor:pointer;" @click="selectProdItem(row)">{{ row.productId }}</td>
-              </template>
-              <template #cell-prodNm="{ row }">
-                <td style="font-weight:600;cursor:pointer;" @click="selectProdItem(row)">{{ row.prodNm }}</td>
-              </template>
-              <template #cell-category="{ row }">
-                <td style="cursor:pointer;" @click="selectProdItem(row)">{{ row.category }}</td>
-              </template>
-              <template #cell-price="{ row }">
-                <td style="text-align:right;cursor:pointer;" @click="selectProdItem(row)">{{ (row.price||0).toLocaleString() }}원</td>
-              </template>
-              <template #cell-stock="{ row }">
-                <td style="text-align:right;cursor:pointer;" @click="selectProdItem(row)">{{ row.stock }}개</td>
-              </template>
+              empty-text="검색 결과가 없습니다." row-clickable @row-click="selectProdItem">
               <template #cell-status="{ row }">
-                <td style="cursor:pointer;" @click="selectProdItem(row)"><span class="badge" :class="row.status==='판매중'?'badge-green':'badge-gray'" style="font-size:10px;">{{ row.status }}</span></td>
+                <td><span class="badge" :class="row.status==='판매중'?'badge-green':'badge-gray'" style="font-size:10px;">{{ row.status }}</span></td>
               </template>
             </bo-grid>
           </div>
@@ -2364,27 +2336,6 @@ window.PdProdDtl = {
           <bo-grid bare :columns="remainSkuCols"
             :rows="tabData.skus.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)"
             row-key="skuId" :row-style="fnRemainSkuRowStyle" empty-text="잔존 SKU 데이터가 없습니다.">
-            <template #cell-_nm1="{ row }">
-              <td><span class="badge badge-gray" style="font-size:11px;">{{ row._nm1 || '-' }}</span></td>
-            </template>
-            <template #cell-_nm2="{ row }">
-              <td><span class="badge badge-blue" style="font-size:11px;">{{ row._nm2 || '-' }}</span></td>
-            </template>
-            <template #cell-addPrice="{ row }">
-              <td style="text-align:right;color:#888;">{{ (row.addPrice||0).toLocaleString() }}원</td>
-            </template>
-            <template #cell-stock="{ row }">
-              <td style="text-align:right;" :style="(row.stock||0)===0?'color:#f5222d;font-weight:700;':''">{{ row.stock||0 }}</td>
-            </template>
-            <template #cell-statusCd="{ row }">
-              <td><span class="badge badge-gray" style="font-size:11px;">{{ row.statusCd }}</span></td>
-            </template>
-            <template #cell-saleCnt="{ row }">
-              <td style="text-align:right;color:#888;">{{ (row.saleCnt||0).toLocaleString() }}</td>
-            </template>
-            <template #cell-useYn="{ row }">
-              <td style="text-align:center;"><span :class="row.useYn==='Y'?'badge badge-green':'badge badge-gray'" style="font-size:10px;">{{ row.useYn }}</span></td>
-            </template>
           </bo-grid>
         </div>
         <div v-if="tabData.skus.length > tabPage.skus.pageSize" class="pagination" style="margin:8px 0 16px;">

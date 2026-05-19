@@ -123,14 +123,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const gridColumns = [
       { key: 'payId',      label: '지급ID' },
       { key: 'payDate',    label: '지급일' },
-      { key: 'vendorNm',   label: '업체명' },
+      { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
       { key: 'closeMon',   label: '정산월' },
-      { key: 'settleAmt',  label: '정산액' },
-      { key: 'payAmt',     label: '지급액' },
+      { key: 'settleAmt',  label: '정산액', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'payAmt',     label: '지급액',
+        fmt: (v) => v > 0 ? fmtW(v) : '-',
+        cellStyle: (v) => v > 0 ? 'color:#27ae60;font-weight:700' : 'color:#999' },
       { key: 'bankNm',     label: '은행' },
-      { key: 'bankAccount',label: '계좌번호' },
+      { key: 'bankAccount',label: '계좌번호', cellStyle: 'color:#666' },
       { key: 'bankHolder', label: '예금주' },
-      { key: 'payStatus',  label: '상태' },
+      { key: 'payStatus',  label: '상태', badge: (row) => fnStatusBadge(row.payStatus) },
       { key: 'regUserNm',  label: '담당자' },
     ];
 
@@ -189,11 +191,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="setPage" @size-change="onSizeChange">
       <template #head-actions>액션</template>
-      <template #cell-vendorNm="{ row: r }"><td><strong>{{ r.vendorNm }}</strong></td></template>
-      <template #cell-settleAmt="{ row: r }"><td style="font-weight:700">{{ fmtW(r.settleAmt) }}</td></template>
-      <template #cell-payAmt="{ row: r }"><td :style="r.payAmt>0?'color:#27ae60;font-weight:700':'color:#999'">{{ r.payAmt > 0 ? fmtW(r.payAmt) : '-' }}</td></template>
-      <template #cell-bankAccount="{ row: r }"><td style="font-size:12px;color:#666">{{ r.bankAccount }}</td></template>
-      <template #cell-payStatus="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.payStatus)">{{ r.payStatus }}</span></td></template>
       <template #row-actions="{ row: r }">
         <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="doPay(r)">지급처리</button>
       </template>

@@ -313,6 +313,17 @@ Vue.onMounted(loadColSettings);
 복잡한 목록 화면(주문·클레임·배송·회원·상품 Mng)에 우선 적용.  
 단순 코드성 마스터(등급·태그 등)는 생략 가능.
 
+### 7.4 BoGrid 컬럼 속성화 (AG-Grid colDef 식)
+
+`<bo-grid>` 의 셀은 `#cell-{key}` 슬롯 대신 **`gridColumns` 객체의 속성**(`fmt`/`badge`/
+`cellStyle`/`cellClass`/`align`/`edit`)으로 선언하여 보일러플레이트 축소.
+
+- 신규 화면은 처음부터 columns 속성으로 작성, 슬롯은 KEEP 패턴(행클릭/ref-link/박스
+  배지/`:title` 동적/v-if 복합/버튼)에만 사용
+- `#head` 슬롯 전면 금지 — 헤더는 columns 의 `label`/`style`/`cls`/`sortKey` 로만
+- 상세 표준·변환규칙·KEEP 패턴: [`sy.51.프로그램설계정책.md`](../sy/sy.51.프로그램설계정책.md) §4.6 참조
+- BO 전 도메인 84파일 전수 적용 완료(2026-05-20, ~790→393 슬롯, 50% 속성화)
+
 ---
 
 ## 8. 공통 필터 (adminCommonFilter)

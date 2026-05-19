@@ -79,6 +79,9 @@ window.PdRestockNotiMng = {
 
     /* 재입고 알림 toggleOne */
     const toggleOne     = id => { if (checkedIds.has(id)) checkedIds.delete(id); else checkedIds.add(id); };
+
+    /* 재입고 알림 fnIsChecked — BoGrid selectable :is-checked 바인딩용 */
+    const fnIsChecked   = id => checkedIds.has(id);
     const checkedCount  = computed(() => checkedIds.size);
 
     /* 재입고 알림 handleSend */
@@ -124,18 +127,20 @@ window.PdRestockNotiMng = {
 
     // -- return ---------------------------------------------------------------
 
+    /* AG-Grid 식 컬럼 정의 — width/align 등 헤더·셀 속성을 컬럼 객체에 선언.
+       체크박스 열은 BoGrid 의 selectable 기능이 자동 렌더하므로 컬럼에서 제외. */
     const gridColumns = [
-      { key: '_chk',     label: '' },
-      { key: 'prodId',   label: '상품명' },
-      { key: 'skuId',    label: 'SKU' },
-      { key: 'memberId', label: '신청회원' },
-      { key: 'notiYn',   label: '발송여부' },
-      { key: 'notiDate', label: '발송일시' },
-      { key: 'regDate',  label: '신청일' },
+      { key: 'prodId',   label: '상품명', fmt: (v, row) => getProdNm(row.prodId) },
+      { key: 'skuId',    label: 'SKU',    style: 'width:100px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
+      { key: 'memberId', label: '신청회원', style: 'width:100px', fmt: (v, row) => getMemNm(row.memberId) },
+      { key: 'notiYn',   label: '발송여부', style: 'width:80px;text-align:center', align: 'center',
+        badge: (row) => fnYnBadge(row.notiYn), fmt: (v, row) => row.notiYn === 'Y' ? '발송완료' : '미발송' },
+      { key: 'notiDate', label: '발송일시', style: 'width:140px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
+      { key: 'regDate',  label: '신청일',  style: 'width:140px' },
     ];
 
     return { restockNotis, uiState, searchParam, pager, gridColumns, setPage, onSearch, onReset,
-             checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,
+             checkedIds, checkedCount, allChecked, toggleAll, toggleOne, fnIsChecked, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,
              codes };
   },
   template: `
@@ -162,21 +167,9 @@ window.PdRestockNotiMng = {
       <bo-grid
         :columns="gridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
         list-title="목록" :count-text="pager.pageTotalCount + '건'"
-        @set-page="setPage" @size-change="onSizeChange">
-        <template #head>
-          <th style="width:36px"><input type="checkbox" :checked="allChecked" @change="toggleAll"></th>
-          <th>상품명</th><th style="width:100px">SKU</th><th style="width:100px">신청회원</th>
-          <th style="width:80px;text-align:center">발송여부</th>
-          <th style="width:140px">발송일시</th>
-          <th style="width:140px">신청일</th>
-        </template>
-        <template #cell-_chk="{ row }"><td><input type="checkbox" :checked="checkedIds.has(row.restockNotiId)" @change="toggleOne(row.restockNotiId)"></td></template>
-        <template #cell-prodId="{ row }"><td>{{ getProdNm(row.prodId) }}</td></template>
-        <template #cell-skuId="{ row }"><td style="font-size:12px;color:#888">{{ row.skuId || '-' }}</td></template>
-        <template #cell-memberId="{ row }"><td style="font-size:12px">{{ getMemNm(row.memberId) }}</td></template>
-        <template #cell-notiYn="{ row }"><td style="text-align:center"><span :class="['badge',fnYnBadge(row.notiYn)]">{{ row.notiYn==='Y'?'발송완료':'미발송' }}</span></td></template>
-        <template #cell-notiDate="{ row }"><td style="font-size:12px;color:#888">{{ row.notiDate || '-' }}</td></template>
-        <template #cell-regDate="{ row }"><td style="font-size:12px">{{ row.regDate }}</td></template>
+        selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
+        @set-page="setPage" @size-change="onSizeChange"
+        @toggle-check="toggleOne" @toggle-check-all="toggleAll">
       </bo-grid>
     </div>
 </div>`

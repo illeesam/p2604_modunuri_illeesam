@@ -100,12 +100,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'vendorNm',   label: '업체명' },
-      { key: 'orderCnt',   label: '주문건수' },
-      { key: 'sysAmt',     label: '시스템 정산액' },
-      { key: 'vendorAmt',  label: '업체 청구액' },
-      { key: 'diff',       label: '차이금액' },
-      { key: 'diffStatus', label: '대사결과' },
+      { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
+      { key: 'orderCnt',   label: '주문건수', fmt: (v) => v + '건' },
+      { key: 'sysAmt',     label: '시스템 정산액', fmt: fmtW },
+      { key: 'vendorAmt',  label: '업체 청구액', fmt: fmtW },
+      { key: 'diff',       label: '차이금액',
+        fmt: (v) => v !== 0 ? (v > 0 ? '+' : '') + Number(v).toLocaleString() + '원' : '-',
+        cellStyle: (v) => Math.abs(v) > 0 ? 'color:#e74c3c;font-weight:700' : '' },
+      { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
     ];
 
     return { uiState, handleDateRangeChange, codes, pager, rows, gridColumns, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
@@ -142,12 +144,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="gridColumns" :rows="rows" :pager="pager" row-key="vendorId"
       list-title="목록" :count-text="pager.pageTotalCount + '개 업체'"
       @set-page="setPage" @size-change="onSizeChange">
-      <template #cell-vendorNm="{ row: r }"><td><strong>{{ r.vendorNm }}</strong></td></template>
-      <template #cell-orderCnt="{ row: r }"><td>{{ r.orderCnt }}건</td></template>
-      <template #cell-sysAmt="{ row: r }"><td>{{ fmtW(r.sysAmt) }}</td></template>
-      <template #cell-vendorAmt="{ row: r }"><td>{{ fmtW(r.vendorAmt) }}</td></template>
-      <template #cell-diff="{ row: r }"><td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td></template>
-      <template #cell-diffStatus="{ row: r }"><td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td></template>
     </bo-grid>
   </div>
 </div>

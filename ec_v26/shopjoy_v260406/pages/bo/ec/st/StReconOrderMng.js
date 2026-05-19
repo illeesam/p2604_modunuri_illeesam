@@ -110,11 +110,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'orderId',    label: '주문ID' },
       { key: 'orderDate',  label: '주문일' },
       { key: 'vendorNm',   label: '업체' },
-      { key: 'orderAmt',   label: '주문금액' },
-      { key: 'settleAmt',  label: '정산기준액' },
-      { key: 'reconAmt',   label: '실정산액' },
-      { key: 'diff',       label: '차이금액' },
-      { key: 'diffStatus', label: '대사결과' },
+      { key: 'orderAmt',   label: '주문금액', fmt: fmtW },
+      { key: 'settleAmt',  label: '정산기준액', fmt: fmtW },
+      { key: 'reconAmt',   label: '실정산액', fmt: fmtW },
+      { key: 'diff',       label: '차이금액',
+        fmt: (v) => v !== 0 ? (v > 0 ? '+' : '') + Number(v).toLocaleString() + '원' : '-',
+        cellStyle: (v) => Math.abs(v) > 0 ? 'color:#e74c3c;font-weight:700' : '' },
+      { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
     ];
 
     return { uiState, handleDateRangeChange, codes, pager, rows, gridColumns, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
@@ -162,15 +164,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="gridColumns" :rows="rows" :pager="pager" row-key="orderId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       @set-page="setPage" @size-change="onSizeChange">
-      <template #cell-orderAmt="{ row: r }"><td>{{ fmtW(r.orderAmt) }}</td></template>
-      <template #cell-settleAmt="{ row: r }"><td>{{ fmtW(r.settleAmt) }}</td></template>
-      <template #cell-reconAmt="{ row: r }"><td>{{ fmtW(r.reconAmt) }}</td></template>
-      <template #cell-diff="{ row: r }">
-        <td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td>
-      </template>
-      <template #cell-diffStatus="{ row: r }">
-        <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
-      </template>
     </bo-grid>
   </div>
 </div>

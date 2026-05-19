@@ -238,10 +238,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'userNm',       label: '이름', sortKey: 'nm' },
       { key: 'userEmail',    label: '이메일' },
       { key: 'userPhone',    label: '연락처' },
-      { key: 'roleNm',       label: '권한' },
-      { key: 'deptNm',       label: '부서' },
-      { key: 'userStatusCd', label: '상태' },
-      { key: 'lastLoginDate',label: '최근로그인', sortKey: 'reg' },
+      { key: 'roleNm',       label: '권한', badge: (row) => fnRoleBadge(row.roleNm) },
+      { key: 'deptNm',       label: '부서', cellStyle: 'color:#666' },
+      { key: 'userStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.userStatusCd) },
+      { key: 'lastLoginDate',label: '최근로그인', sortKey: 'reg', cellStyle: 'color:#888',
+        fmt: (v) => v ? v.substring(0, 10) : '-' },
       { key: 'siteNm',       label: '사이트명' },
     ];
     const fnRowStyle = (u) => uiStateDetail.selectedId === u.userId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
@@ -313,21 +314,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </template>
     <template #cell-userNm="{ row }">
       <td><span class="title-link" @click="handleLoadDetail(row.userId)" :style="uiStateDetail.selectedId===row.userId?'color:#e8587a;font-weight:700;':''">{{ row.userNm }}<span v-if="uiStateDetail.selectedId===row.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-    </template>
-    <template #cell-userEmail="{ row }">
-      <td style="font-size:12px;">{{ row.userEmail }}</td>
-    </template>
-    <template #cell-roleNm="{ row }">
-      <td><span class="badge" :class="fnRoleBadge(row.roleNm)">{{ row.roleNm }}</span></td>
-    </template>
-    <template #cell-deptNm="{ row }">
-      <td style="font-size:12px;color:#666;">{{ row.deptNm }}</td>
-    </template>
-    <template #cell-userStatusCd="{ row }">
-      <td><span class="badge" :class="fnStatusBadge(row.userStatusCd)">{{ row.userStatusCd }}</span></td>
-    </template>
-    <template #cell-lastLoginDate="{ row }">
-      <td style="font-size:12px;color:#888;">{{ row.lastLoginDate ? row.lastLoginDate.substring(0,10) : '-' }}</td>
     </template>
     <template #cell-siteNm>
       <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>

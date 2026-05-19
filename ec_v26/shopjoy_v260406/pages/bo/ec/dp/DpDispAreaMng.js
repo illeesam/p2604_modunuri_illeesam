@@ -154,8 +154,11 @@ const searchParam = reactive(_initSearchParam());
       { key: 'areaCd',     label: '영역코드' },
       { key: 'areaNm',     label: '영역명',   sortKey: 'nm' },
       { key: 'areaTypeCd', label: '유형' },
-      { key: 'useYn',      label: '사용여부' },
-      { key: 'regDate',    label: '등록일',   sortKey: 'reg' },
+      { key: 'useYn',      label: '사용여부',
+        badge: row => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt:   v   => v === 'Y' ? '사용' : '미사용' },
+      { key: 'regDate',    label: '등록일',   sortKey: 'reg',
+        fmt: v => (v||'').slice(0,10) },
       { key: '_act',       label: '액션' },
     ];
 
@@ -203,26 +206,17 @@ const searchParam = reactive(_initSearchParam());
     <bo-grid :columns="listColumns" :rows="areas" :pager="pager" row-key="areaId"
       :sort-state="uiState" list-title="전시 영역 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
-      empty-text="조회된 데이터가 없습니다."
+      empty-text="조회된 데이터가 없습니다." row-clickable
       @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => loadView(r.areaId)">
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
       </template>
       <template #cell-areaCd="{ row }">
-        <td @click="loadView(row.areaId)" style="cursor:pointer"><code style="font-size:11px;">{{ row.areaCd }}</code></td>
+        <td><code style="font-size:11px;">{{ row.areaCd }}</code></td>
       </template>
       <template #cell-areaNm="{ row }">
         <td class="title-link" @click="loadView(row.areaId)">{{ row.areaNm }}</td>
-      </template>
-      <template #cell-areaTypeCd="{ row }">
-        <td @click="loadView(row.areaId)" style="cursor:pointer">{{ row.areaTypeCd }}</td>
-      </template>
-      <template #cell-useYn="{ row }">
-        <td @click="loadView(row.areaId)" style="cursor:pointer"><span :class="'badge '+(row.useYn==='Y'?'badge-green':'badge-gray')">{{ row.useYn==='Y'?'사용':'미사용' }}</span></td>
-      </template>
-      <template #cell-regDate="{ row }">
-        <td @click="loadView(row.areaId)" style="cursor:pointer">{{ (row.regDate||'').slice(0,10) }}</td>
       </template>
       <template #cell-_act="{ row }">
         <td class="actions" @click.stop>

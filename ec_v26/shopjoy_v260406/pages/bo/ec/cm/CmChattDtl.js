@@ -191,14 +191,18 @@ window.CmChattDtl = {
     /* BoGrid 컬럼 정의 */
     const memberChatColumns = [
       { key: 'subject', label: '제목' },
-      { key: '_status', label: '상태' },
+      { key: '_status', label: '상태',
+        badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
+        fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시' },
       { key: '_act', label: '관리' },
     ];
     const userChatColumns = [
       { key: 'subject', label: '제목' },
-      { key: '_status', label: '상태' },
+      { key: '_status', label: '상태',
+        badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
+        fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시' },
       { key: '_act', label: '보기' },
@@ -287,9 +291,6 @@ window.CmChattDtl = {
         </span>
       </div>
       <bo-grid bare :columns="memberChatColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다.">
-        <template #cell-_status="{ row }">
-          <td><span class="badge" :class="row.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ row.chattStatusCd }}</span></td>
-        </template>
         <template #cell-_act="{ row }">
           <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">상세</button></td>
         </template>

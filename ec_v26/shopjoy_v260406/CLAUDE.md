@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - [모달 디자인 시스템](#모달-디자인-시스템) — BaseModal
 - [Vue 3 초기화 순서](#vue-3-초기화-순서-composition-api) — ref/computed/watch 선언 순서 ⭐
 - [함수·변수 네이밍 규칙](#함수변수-네이밍-규칙) — on/handle/fn/cf/sf/sv 접두어
-- [UI/UX 정책](#uiux-정책) — showToast/showConfirm 표준, 목록 번호/ID 컬럼 규칙
+- [UI/UX 정책](#uiux-정책) — showToast/showConfirm 표준, 목록 번호/ID 컬럼 규칙, BoGrid 컬럼 속성화(AG-Grid 식) ⭐
 
 **⚙️ 백엔드 (Spring Boot)**
 - [EcAdminApi Controller/Service](#ecadminapi-controller--service-파라미터-패턴) — Map<String, Object> p 패턴
@@ -1107,6 +1107,29 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 - 하단 페이지네이션 UI 없음 — 전체 행을 스크롤 영역에 표시
 - 테이블을 `<div style="max-height:480px;overflow-y:auto;">` 로 감쌈
 - 빈 행의 colspan은 실제 컬럼 수와 일치 유지
+
+**BoGrid 컬럼 속성화 표준 (AG-Grid colDef 식)** ⭐:
+단순 셀(텍스트·배지·조건부색상·포맷)은 `#cell-{key}` 슬롯 대신 `gridColumns` 객체
+속성으로 선언. 신규 화면은 처음부터 columns 속성 우선.
+
+| 슬롯 패턴 | columns 속성 |
+|---|---|
+| `<td>{{fn(row.x)}}</td>` | `fmt: (v)=>...` |
+| `<td style="color:#x">` 고정 | `cellStyle: 'color:#x'` |
+| `<td :style="조건?a:b">` 조건부 | `cellStyle: (v,row)=>조건?a:b` |
+| `<td style="text-align:right">` | `align: 'right'` (td는 align 필수) |
+| `<span class="badge" :class="fnB(row.x)">{{x}}</span>` | `badge: (row)=>fnB(row.x)` |
+| 인라인 input/select | `edit: 'text'\|'select'` + `options: ()=>codes.x` |
+
+**KEEP(슬롯 유지) 패턴**: 행클릭/토글(`@click="loadView/openDetail"`)·ref-link
+(`showRefModal`)·`<code>`/박스형 인라인 배지·동적 `:title`·v-if 다중 분기·이미지+
+텍스트 복합·버튼 다수·외부값 참조. **`#head` 슬롯 전면 금지**(columns 자동 헤더).
+
+**주의**: `tdStyle` 기본이 `font-size:12px;` → cellStyle 에 `font-size:12px` 금지(중복).
+속성값 `&&` 신규 도입 금지(삼항 `?:` OK). helper 함수는 setup return 에 있어야 참조 가능.
+
+**적용 현황**: BO 전 도메인 84파일 전수 적용 완료(2026-05-20, ~790→393 슬롯, 50%
+속성화, `node --check` 0 실패). 상세 표준 → [`_doc/정책서/sy/sy.51.프로그램설계정책.md`](_doc/정책서/sy/sy.51.프로그램설계정책.md) §4.6
 
 ### 알림 & 사용자 피드백
 

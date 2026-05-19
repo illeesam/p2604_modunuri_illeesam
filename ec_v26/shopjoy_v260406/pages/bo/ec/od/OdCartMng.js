@@ -89,6 +89,9 @@ window.OdCartMng = {
     /* ── 표시 함수 ── */
     const fnCheckedBadge = (v) => v === 'Y' ? 'badge badge-green' : 'badge badge-gray';
 
+    /* 장바구니 fnCheckedBadgeCls (BoGrid badge 컬럼용 bare class) */
+    const fnCheckedBadgeCls = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
+
     /* 장바구니 fnCheckedNm */
     const fnCheckedNm    = (v) => v === 'Y' ? '선택' : '미선택';
 
@@ -178,21 +181,26 @@ window.OdCartMng = {
       { key: 'memberNm', label: '회원',   style: 'min-width:130px;' },
       { key: 'prodNm',   label: '상품',   style: 'min-width:180px;' },
       { key: '_opt',     label: '옵션',   style: 'min-width:120px;' },
-      { key: 'unitPrice',label: '단가',   style: 'width:90px;text-align:right;' },
-      { key: 'orderQty', label: '수량',   style: 'width:50px;text-align:center;' },
-      { key: 'itemPrice',label: '합계금액', style: 'width:100px;text-align:right;' },
-      { key: 'isChecked',label: '선택',   style: 'width:66px;text-align:center;' },
-      { key: 'regDate',  label: '등록일시', style: 'width:130px;' },
+      { key: 'unitPrice',label: '단가',   style: 'width:90px;text-align:right;',
+        align: 'right', fmt: (v) => fnPrice(v), cellStyle: 'font-size:13px;' },
+      { key: 'orderQty', label: '수량',   style: 'width:50px;text-align:center;',
+        align: 'center', cellStyle: 'font-weight:600;' },
+      { key: 'itemPrice',label: '합계금액', style: 'width:100px;text-align:right;',
+        align: 'right', fmt: (v) => fnPrice(v), cellStyle: 'font-weight:700;color:#111;' },
+      { key: 'isChecked',label: '선택',   style: 'width:66px;text-align:center;',
+        align: 'center', fmt: (v) => fnCheckedNm(v), badge: (row) => fnCheckedBadgeCls(row.isChecked) },
+      { key: 'regDate',  label: '등록일시', style: 'width:130px;',
+        fmt: (v) => fnDate(v), cellStyle: 'font-size:11px;color:#888;' },
       { key: '_act',     label: '관리',   style: 'width:60px;text-align:center;' },
     ];
 
     /* ── 회원선택 모달 picker BoGrid 컬럼 (행 클릭 시 onSelectMember) ── */
     const memberPickColumns = [
       { key: 'memberNm',       label: '이름',   style: 'min-width:130px;' },
-      { key: 'loginId',        label: '로그인ID', style: 'min-width:110px;' },
+      { key: 'loginId',        label: '로그인ID', style: 'min-width:110px;', mono: true, cellStyle: 'font-size:12px;color:#374151;' },
       { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;' },
       { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;' },
-      { key: 'memberPhone',    label: '연락처', style: 'width:110px;' },
+      { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
       { key: '_pick',          label: '선택',   style: 'width:70px;text-align:center;' },
     ];
 
@@ -340,23 +348,6 @@ window.OdCartMng = {
           <span v-else style="color:#ccc;font-size:12px;">-</span>
         </td>
       </template>
-      <template #cell-unitPrice="{ row }">
-        <td style="text-align:right;font-size:13px;">{{ fnPrice(row.unitPrice) }}</td>
-      </template>
-      <template #cell-orderQty="{ row }">
-        <td style="text-align:center;font-weight:600;">{{ row.orderQty }}</td>
-      </template>
-      <template #cell-itemPrice="{ row }">
-        <td style="text-align:right;font-weight:700;color:#111;">{{ fnPrice(row.itemPrice) }}</td>
-      </template>
-      <template #cell-isChecked="{ row }">
-        <td style="text-align:center;">
-          <span :class="fnCheckedBadge(row.isChecked)">{{ fnCheckedNm(row.isChecked) }}</span>
-        </td>
-      </template>
-      <template #cell-regDate="{ row }">
-        <td style="font-size:11px;color:#888;">{{ fnDate(row.regDate) }}</td>
-      </template>
       <template #cell-_act="{ row }">
         <td style="text-align:center;">
           <button class="btn btn-danger btn-xs" @click="handleDelete(row.cartId)">삭제</button>
@@ -414,10 +405,11 @@ window.OdCartMng = {
       <!-- 목록 -->
       <div style="flex:1;overflow-y:auto;">
         <div v-if="memberPick.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
-        <bo-grid v-else bare :columns="memberPickColumns" :rows="memberPick.rows" row-key="memberId"
-                 :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다.">
+        <bo-grid v-else bare row-clickable :columns="memberPickColumns" :rows="memberPick.rows" row-key="memberId"
+                 :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
+                 @row-click="onSelectMember">
           <template #cell-memberNm="{ row }">
-            <td @click="onSelectMember(row)">
+            <td>
               <div style="display:flex;align-items:center;gap:8px;">
                 <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">
                   {{ row.memberNm ? row.memberNm.charAt(0) : '?' }}
@@ -426,24 +418,18 @@ window.OdCartMng = {
               </div>
             </td>
           </template>
-          <template #cell-loginId="{ row }">
-            <td @click="onSelectMember(row)"><span style="font-family:monospace;font-size:12px;color:#374151;">{{ row.loginId }}</span></td>
-          </template>
           <template #cell-gradeCdNm="{ row }">
-            <td style="text-align:center;" @click="onSelectMember(row)">
+            <td style="text-align:center;">
               <span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.gradeCdNm || '-' }}</span>
             </td>
           </template>
           <template #cell-memberStatusCd="{ row }">
-            <td style="text-align:center;" @click="onSelectMember(row)">
+            <td style="text-align:center;">
               <span :style="row.memberStatusCd==='ACTIVE' ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;'"
                     style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">
                 {{ row.memberStatusCdNm || row.memberStatusCd || '-' }}
               </span>
             </td>
-          </template>
-          <template #cell-memberPhone="{ row }">
-            <td style="font-size:12px;color:#6b7280;" @click="onSelectMember(row)">{{ row.memberPhone || '-' }}</td>
           </template>
           <template #cell-_pick="{ row }">
             <td style="text-align:center;">

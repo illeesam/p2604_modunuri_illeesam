@@ -226,15 +226,15 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
-      { key: 'bbmId',        label: '게시판' },
+      { key: 'bbmId',        label: '게시판', badge: () => 'badge-gray', fmt: (v) => bbmNm(v) },
       { key: 'bbsTitle',     label: '제목', sortKey: 'nm' },
       { key: 'authorNm',     label: '작성자' },
-      { key: 'viewCount',    label: '조회수' },
-      { key: 'commentCount', label: '댓글' },
-      { key: 'attachGrpId',  label: '첨부그룹' },
-      { key: 'bbsStatusCd',  label: '상태' },
+      { key: 'viewCount',    label: '조회수', align: 'center' },
+      { key: 'commentCount', label: '댓글', align: 'center' },
+      { key: 'attachGrpId',  label: '첨부그룹', cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
+      { key: 'bbsStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.bbsStatusCd) },
       { key: 'siteNm',       label: '사이트명' },
-      { key: 'regDate',      label: '등록일', sortKey: 'reg' },
+      { key: 'regDate',      label: '등록일', sortKey: 'reg', fmt: (v) => String(v || '').slice(0, 10) },
     ];
     const fnRowStyle = (b) => detailModal.dtlId === b.bbsId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
@@ -285,29 +285,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </template>
     <template #head-actions><th style="text-align:right">관리</th></template>
 
-    <template #cell-bbmId="{ row }">
-      <td><span class="badge badge-gray">{{ bbmNm(row.bbmId) }}</span></td>
-    </template>
     <template #cell-bbsTitle="{ row }">
       <td><span class="title-link" @click="handleLoadDetail(row.bbsId)" :style="detailModal.dtlId===row.bbsId?'color:#e8587a;font-weight:700;':''">{{ row.bbsTitle }}<span v-if="detailModal.dtlId===row.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
     </template>
-    <template #cell-viewCount="{ row }">
-      <td style="text-align:center;">{{ row.viewCount }}</td>
-    </template>
-    <template #cell-commentCount="{ row }">
-      <td style="text-align:center;">{{ row.commentCount }}</td>
-    </template>
-    <template #cell-attachGrpId="{ row }">
-      <td style="font-size:11px;color:#888;">{{ row.attachGrpId || '-' }}</td>
-    </template>
-    <template #cell-bbsStatusCd="{ row }">
-      <td><span class="badge" :class="fnStatusBadge(row.bbsStatusCd)">{{ row.bbsStatusCd }}</span></td>
-    </template>
     <template #cell-siteNm>
       <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-    </template>
-    <template #cell-regDate="{ row }">
-      <td>{{ String(row.regDate||'').slice(0,10) }}</td>
     </template>
     <template #row-actions="{ row }">
       <td><div class="actions">

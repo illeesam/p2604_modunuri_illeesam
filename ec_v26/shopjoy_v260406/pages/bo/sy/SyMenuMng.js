@@ -263,7 +263,8 @@ window.SyMenuMng = {
       { key: 'sortOrd',    label: '순서',     cls: 'col-ord',  edit: 'number' },
       { key: 'useYn',      label: '사용여부', cls: 'col-use',  edit: 'select', options: codes.use_yn },
       { key: 'menuRemark', label: '비고',     edit: 'text' },
-      { key: 'siteNm',     label: '사이트명', style: 'width:80px;' },
+      { key: 'siteNm',     label: '사이트명', style: 'width:80px;', align: 'center',
+        cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -347,10 +348,6 @@ window.SyMenuMng = {
             @click.stop="openParentModal(row)">🔍</button>
         </div>
       </td>
-    </template>
-
-    <template #cell-siteNm>
-      <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
     </template>
 
     <template #row-actions="{ row, idx }">

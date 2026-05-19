@@ -109,13 +109,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const gridColumns = [
       { key: 'claimId',    label: '클레임ID' },
       { key: 'reqDate',    label: '요청일' },
-      { key: 'type',       label: '유형' },
-      { key: 'refundAmt',  label: '환불액' },
-      { key: 'settleAdj',  label: '정산조정기준' },
-      { key: 'reconAdj',   label: '실반영액' },
-      { key: 'diff',       label: '차이' },
-      { key: 'status',     label: '처리상태' },
-      { key: 'diffStatus', label: '대사결과' },
+      { key: 'type',       label: '유형', badge: (row) => fnTypeBadge(row.type) },
+      { key: 'refundAmt',  label: '환불액', fmt: (v) => v > 0 ? fmtW(v) : '-' },
+      { key: 'settleAdj',  label: '정산조정기준', fmt: (v) => v !== 0 ? fmtW(v) : '-',
+        cellStyle: (v) => v < 0 ? 'color:#e74c3c' : '' },
+      { key: 'reconAdj',   label: '실반영액', fmt: (v) => v !== 0 ? fmtW(v) : '-',
+        cellStyle: (v) => v < 0 ? 'color:#e74c3c' : '' },
+      { key: 'diff',       label: '차이',
+        fmt: (v) => v !== 0 ? (v > 0 ? '+' : '') + Number(v).toLocaleString() + '원' : '-',
+        cellStyle: (v) => Math.abs(v) > 0 ? 'color:#e74c3c;font-weight:700' : '' },
+      { key: 'status',     label: '처리상태', badge: (row) => fnStatusBadge(row.status) },
+      { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
     ];
 
     return { uiState, handleDateRangeChange, codes, pager, rows, gridColumns, cfSummary, fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
@@ -152,13 +156,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="gridColumns" :rows="rows" :pager="pager" row-key="claimId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       @set-page="setPage" @size-change="onSizeChange">
-      <template #cell-type="{ row: r }"><td><span class="badge" :class="fnTypeBadge(r.type)">{{ r.type }}</span></td></template>
-      <template #cell-refundAmt="{ row: r }"><td>{{ r.refundAmt > 0 ? fmtW(r.refundAmt) : '-' }}</td></template>
-      <template #cell-settleAdj="{ row: r }"><td :style="r.settleAdj<0?'color:#e74c3c':''">{{ r.settleAdj !== 0 ? fmtW(r.settleAdj) : '-' }}</td></template>
-      <template #cell-reconAdj="{ row: r }"><td :style="r.reconAdj<0?'color:#e74c3c':''">{{ r.reconAdj !== 0 ? fmtW(r.reconAdj) : '-' }}</td></template>
-      <template #cell-diff="{ row: r }"><td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td></template>
-      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
-      <template #cell-diffStatus="{ row: r }"><td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td></template>
     </bo-grid>
   </div>
 </div>

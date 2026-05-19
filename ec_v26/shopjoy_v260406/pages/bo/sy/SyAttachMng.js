@@ -255,10 +255,11 @@ window.SyAttachMng = {
       { key: 'fileNm', label: '파일명', style: 'word-break:break-all;' },
       { key: 'fileSize', label: '크기', style: 'width:70px;', fmt: v => fnFmtSize(v) },
       { key: 'fileExt', label: '확장자', style: 'width:55px;' },
-      { key: 'refId', label: '참조ID', style: 'width:100px;' },
-      { key: 'memo', label: '메모' },
+      { key: 'refId', label: '참조ID', style: 'width:100px;', cellStyle: 'color:#666;' },
+      { key: 'memo', label: '메모', cellStyle: 'color:#888;' },
       { key: 'regDate', label: '등록일', style: 'width:145px;', fmt: v => String(v || '').slice(0, 19) },
-      { key: 'siteNm', label: '사이트명', style: 'width:70px;' },
+      { key: 'siteNm', label: '사이트명', style: 'width:70px;',
+        cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: '_act', label: '관리', style: 'width:80px;text-align:right;' },
     ];
 
@@ -519,15 +520,6 @@ window.SyAttachMng = {
           </template>
           <template #cell-fileExt="{ row }">
             <td style="font-size:12px;"><span style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;">{{ row.fileExt }}</span></td>
-          </template>
-          <template #cell-refId="{ row }">
-            <td style="font-size:12px;color:#666;">{{ row.refId }}</td>
-          </template>
-          <template #cell-memo="{ row }">
-            <td style="font-size:12px;color:#888;">{{ row.memo }}</td>
-          </template>
-          <template #cell-siteNm="{ row }">
-            <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           </template>
           <template #cell-_act="{ row }">
             <td><div class="actions">

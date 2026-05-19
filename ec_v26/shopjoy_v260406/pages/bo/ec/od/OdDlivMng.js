@@ -405,14 +405,21 @@ window.OdDlivMng = {
     /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
     const listColumns = [
       { key: 'dlivId',           label: '배송ID' },
-      { key: 'orderId',          label: '주문ID' },
-      { key: 'memberNm',         label: '회원' },
+      { key: 'orderId',          label: '주문ID', refLink: 'order' },
+      { key: 'memberNm',         label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'recvNm',           label: '수령인' },
-      { key: '_courier',         label: '택배사' },
-      { key: 'outboundTrackingNo', label: '운송장번호' },
-      { key: 'recvAddr',         label: '배송지' },
-      { key: '_dlivStatus',      label: '상태', sortKey: 'reg', style: 'white-space:nowrap;' },
-      { key: '_site',            label: '사이트명' },
+      { key: '_courier',         label: '택배사',
+        fmt: (v, row) => row.outboundCourierCdNm || row.outboundCourierCd },
+      { key: 'outboundTrackingNo', label: '운송장번호',
+        fmt: (v) => v || '-' },
+      { key: 'recvAddr',         label: '배송지',
+        cellStyle: 'max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' },
+      { key: '_dlivStatus',      label: '상태', sortKey: 'reg', style: 'white-space:nowrap;',
+        fmt: (v, row) => row.dlivStatusCdNm || row.dlivStatusCd,
+        badge: (row) => fnStatusBadge(row.dlivStatusCd) },
+      { key: '_site',            label: '사이트명',
+        fmt: () => cfSiteNm.value,
+        cellStyle: 'color:#2563eb;' },
       { key: '_act',             label: '관리', style: 'text-align:right;' },
     ];
     const fnGridRowStyle = (d) =>
@@ -422,10 +429,10 @@ window.OdDlivMng = {
     /* 회원선택 모달 picker BoGrid 컬럼 (행 클릭 시 onSelectMember) */
     const memberPickColumns = [
       { key: 'memberNm',       label: '이름' },
-      { key: 'loginId',        label: '로그인ID' },
+      { key: 'loginId',        label: '로그인ID', mono: true, cellStyle: 'font-size:12px;' },
       { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;' },
       { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;' },
-      { key: 'memberPhone',    label: '연락처', style: 'width:110px;' },
+      { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
       { key: '_pick',          label: '선택',   style: 'width:70px;text-align:center;' },
     ];
 
@@ -476,37 +483,13 @@ window.OdDlivMng = {
     <bo-grid bare selectable :columns="listColumns" :rows="deliveries" :pager="pager" row-key="dlivId"
       :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
       :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
-      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll">
+      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" @ref-click="({type,id}) => showRefModal(type, id)">
       <template #cell-dlivId="{ row }">
         <td>
           <span class="title-link" @click="handleLoadDetail(row.dlivId)" :style="selectedId===row.dlivId?'color:#e8587a;font-weight:700;':''">
             {{ row.dlivId }}<span v-if="selectedId===row.dlivId" style="font-size:10px;margin-left:3px;">▼</span>
           </span>
         </td>
-      </template>
-      <template #cell-orderId="{ row }">
-        <td><span class="ref-link" @click="showRefModal('order', row.orderId)">{{ row.orderId }}</span></td>
-      </template>
-      <template #cell-memberNm="{ row }">
-        <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm }}</span></td>
-      </template>
-      <template #cell-recvNm="{ row }">
-        <td>{{ row.recvNm }}</td>
-      </template>
-      <template #cell-_courier="{ row }">
-        <td>{{ row.outboundCourierCdNm || row.outboundCourierCd }}</td>
-      </template>
-      <template #cell-outboundTrackingNo="{ row }">
-        <td>{{ row.outboundTrackingNo || '-' }}</td>
-      </template>
-      <template #cell-recvAddr="{ row }">
-        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row.recvAddr }}</td>
-      </template>
-      <template #cell-_dlivStatus="{ row }">
-        <td><span class="badge" :class="fnStatusBadge(row.dlivStatusCd)">{{ row.dlivStatusCdNm || row.dlivStatusCd }}</span></td>
-      </template>
-      <template #cell-_site="{ row }">
-        <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
       </template>
       <template #cell-_act="{ row }">
         <td><div class="actions">
@@ -676,27 +659,22 @@ window.OdDlivMng = {
       </div>
       <div style="flex:1;overflow-y:auto;">
         <div v-if="memberPick.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
-        <bo-grid v-else bare :columns="memberPickColumns" :rows="memberPick.rows" row-key="memberId"
-                 :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다.">
+        <bo-grid v-else bare row-clickable :columns="memberPickColumns" :rows="memberPick.rows" row-key="memberId"
+                 :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
+                 @row-click="onSelectMember">
           <template #cell-memberNm="{ row }">
-            <td @click="onSelectMember(row)">
+            <td>
               <div style="display:flex;align-items:center;gap:8px;">
                 <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">{{ row.memberNm ? row.memberNm.charAt(0) : '?' }}</div>
                 <span style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</span>
               </div>
             </td>
           </template>
-          <template #cell-loginId="{ row }">
-            <td @click="onSelectMember(row)"><span style="font-family:monospace;font-size:12px;">{{ row.loginId }}</span></td>
-          </template>
           <template #cell-gradeCdNm="{ row }">
-            <td style="text-align:center;" @click="onSelectMember(row)"><span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.gradeCdNm || '-' }}</span></td>
+            <td style="text-align:center;"><span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.gradeCdNm || '-' }}</span></td>
           </template>
           <template #cell-memberStatusCd="{ row }">
-            <td style="text-align:center;" @click="onSelectMember(row)"><span :style="row.memberStatusCd==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;'" style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.memberStatusCdNm || row.memberStatusCd || '-' }}</span></td>
-          </template>
-          <template #cell-memberPhone="{ row }">
-            <td style="font-size:12px;color:#6b7280;" @click="onSelectMember(row)">{{ row.memberPhone || '-' }}</td>
+            <td style="text-align:center;"><span :style="row.memberStatusCd==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;'" style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.memberStatusCdNm || row.memberStatusCd || '-' }}</span></td>
           </template>
           <template #cell-_pick="{ row }">
             <td style="text-align:center;"><button class="btn btn-primary btn-xs" @click.stop="onSelectMember(row)" style="border-radius:6px;font-size:11px;">선택</button></td>

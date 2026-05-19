@@ -263,12 +263,16 @@ window.PdReviewMng = {
     const listColumns = [
       { key: 'reviewTitle',     label: '리뷰 제목' },
       { key: 'prodId',          label: '상품ID',   style: 'width:110px' },
-      { key: 'prodNm',          label: '상품명' },
+      { key: 'prodNm',          label: '상품명',   cellStyle: 'color:#444;',
+        fmt: (v, row) => (getProdNm(row.prodId) || row.prodNm || '') },
       { key: '_preview',        label: '미리',     style: 'width:48px;text-align:center;' },
-      { key: 'memberId',        label: '작성자',   style: 'width:80px' },
-      { key: 'rating',          label: '평점',     style: 'width:90px;text-align:center' },
-      { key: 'helpfulCnt',      label: '도움',     style: 'width:60px;text-align:right' },
-      { key: 'reviewStatusCd',  label: '상태',     style: 'width:80px;text-align:center' },
+      { key: 'memberId',        label: '작성자',   style: 'width:80px', fmt: (v, row) => getMemNm(row.memberId) },
+      { key: 'rating',          label: '평점',     style: 'width:90px;text-align:center', align: 'center',
+        cellStyle: 'color:#f59e0b;font-size:13px', fmt: (v, row) => (Number(row.rating || 0).toFixed(1) + ' ★') },
+      { key: 'helpfulCnt',      label: '도움',     style: 'width:60px;text-align:right', align: 'right' },
+      { key: 'reviewStatusCd',  label: '상태',     style: 'width:80px;text-align:center', align: 'center',
+        badge: (row) => fnStatusBadge(row.reviewStatusCd),
+        fmt: (v, row) => (STATUS_LABEL[row.reviewStatusCd] || row.reviewStatusCd) },
       { key: 'reviewDate',      label: '작성일',   style: 'width:140px', sortKey: 'reg' },
       { key: '_statusChg',      label: '상태변경', style: 'width:90px;text-align:center' },
     ];
@@ -277,10 +281,13 @@ window.PdReviewMng = {
     /* 상품별 리뷰 목록 BoGrid 컬럼 */
     const prodReviewColumns = [
       { key: 'reviewTitle',    label: '리뷰 제목' },
-      { key: 'memberId',       label: '작성자',   style: 'width:80px' },
-      { key: 'rating',         label: '평점',     style: 'width:90px;text-align:center' },
-      { key: 'helpfulCnt',     label: '도움',     style: 'width:60px;text-align:right' },
-      { key: 'reviewStatusCd', label: '상태',     style: 'width:80px;text-align:center' },
+      { key: 'memberId',       label: '작성자',   style: 'width:80px', fmt: (v, row) => getMemNm(row.memberId) },
+      { key: 'rating',         label: '평점',     style: 'width:90px;text-align:center', align: 'center',
+        cellStyle: 'color:#f59e0b;font-size:13px', fmt: (v, row) => (Number(row.rating || 0).toFixed(1) + ' ★') },
+      { key: 'helpfulCnt',     label: '도움',     style: 'width:60px;text-align:right', align: 'right' },
+      { key: 'reviewStatusCd', label: '상태',     style: 'width:80px;text-align:center', align: 'center',
+        badge: (row) => fnStatusBadge(row.reviewStatusCd),
+        fmt: (v, row) => (STATUS_LABEL[row.reviewStatusCd] || row.reviewStatusCd) },
       { key: 'reviewDate',     label: '작성일',   style: 'width:140px' },
       { key: '_statusChg',     label: '상태변경', style: 'width:90px;text-align:center' },
     ];
@@ -318,10 +325,10 @@ window.PdReviewMng = {
     <bo-grid :columns="listColumns" :rows="reviews" :pager="pager" row-key="reviewId"
       :sort-state="uiState" list-title="상품리뷰 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
-      :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+      :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
       @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
       <template #cell-reviewTitle="{ row }">
-        <td @click="openDetail(row)" style="cursor:pointer"><span class="title-link">{{ row.reviewTitle }}</span></td>
+        <td><span class="title-link">{{ row.reviewTitle }}</span></td>
       </template>
       <template #cell-prodId="{ row }">
         <td style="font-size:12px;" @click.stop>
@@ -331,28 +338,10 @@ window.PdReviewMng = {
             @click="onProdIdClick(row.prodId)">{{ row.prodId }}</span>
         </td>
       </template>
-      <template #cell-prodNm="{ row }">
-        <td @click="openDetail(row)" style="cursor:pointer;font-size:12px;color:#444;">{{ getProdNm(row.prodId) || row.prodNm || '' }}</td>
-      </template>
       <template #cell-_preview="{ row }">
         <td style="text-align:center" @click.stop>
           <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click="previewProduct(row.prodId)">👁</button>
         </td>
-      </template>
-      <template #cell-memberId="{ row }">
-        <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ getMemNm(row.memberId) }}</td>
-      </template>
-      <template #cell-rating="{ row }">
-        <td @click="openDetail(row)" style="cursor:pointer;text-align:center;color:#f59e0b;font-size:13px">{{ Number(row.rating || 0).toFixed(1) }} ★</td>
-      </template>
-      <template #cell-helpfulCnt="{ row }">
-        <td @click="openDetail(row)" style="cursor:pointer;text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
-      </template>
-      <template #cell-reviewStatusCd="{ row }">
-        <td @click="openDetail(row)" style="cursor:pointer;text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
-      </template>
-      <template #cell-reviewDate="{ row }">
-        <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ row.reviewDate }}</td>
       </template>
       <template #cell-_statusChg="{ row }">
         <td style="text-align:center" @click.stop>
@@ -372,25 +361,10 @@ window.PdReviewMng = {
       </div>
       <bo-grid bare :columns="prodReviewColumns" :rows="prodReviews" :pager="prodReviewPager"
         row-key="reviewId" :row-class="fnProdReviewRowClass"
-        empty-text="해당 상품의 리뷰가 없습니다."
+        empty-text="해당 상품의 리뷰가 없습니다." row-clickable
         @set-page="setProdReviewPage" @size-change="onProdReviewSizeChange" @row-click="openDetail">
         <template #cell-reviewTitle="{ row }">
-          <td @click="openDetail(row)" style="cursor:pointer"><span class="title-link">{{ row.reviewTitle }}</span></td>
-        </template>
-        <template #cell-memberId="{ row }">
-          <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ getMemNm(row.memberId) }}</td>
-        </template>
-        <template #cell-rating="{ row }">
-          <td @click="openDetail(row)" style="cursor:pointer;text-align:center;color:#f59e0b;font-size:13px">{{ Number(row.rating || 0).toFixed(1) }} ★</td>
-        </template>
-        <template #cell-helpfulCnt="{ row }">
-          <td @click="openDetail(row)" style="cursor:pointer;text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
-        </template>
-        <template #cell-reviewStatusCd="{ row }">
-          <td @click="openDetail(row)" style="cursor:pointer;text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
-        </template>
-        <template #cell-reviewDate="{ row }">
-          <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ row.reviewDate }}</td>
+          <td><span class="title-link">{{ row.reviewTitle }}</span></td>
         </template>
         <template #cell-_statusChg="{ row }">
           <td style="text-align:center" @click.stop>

@@ -147,20 +147,36 @@ const rawList = reactive([]);
 
     /* rawColumns — BoGrid 컬럼 정의 (특수셀은 #cell- 슬롯 override) */
     const rawColumns = [
-      { key: 'expand',         label: '',         style: 'width:30px' },
-      { key: 'settleRawId',    label: '원장ID' },
+      { key: 'expand',         label: '',         style: 'width:30px',
+        align: 'center',
+        cellStyle: 'color:#aaa;font-size:11px;user-select:none;',
+        fmt: (v, row) => isExpanded(row.settleRawId) ? '▲' : '▼' },
+      { key: 'settleRawId',    label: '원장ID',
+        cellStyle: 'font-size:12px;color:#555;' },
       { key: 'orderDate',      label: '거래일자' },
-      { key: 'rawTypeCd',      label: '유형' },
-      { key: 'orderId',        label: '소스ID' },
+      { key: 'rawTypeCd',      label: '유형',
+        badge: (row) => row.rawTypeCd === 'ORDER' ? 'badge-blue' : 'badge-orange' },
+      { key: 'orderId',        label: '소스ID', cellStyle: 'color:#555' },
       { key: 'vendorNm',       label: '업체' },
       { key: 'prodNm',         label: '상품명' },
-      { key: 'orderQty',       label: '수량',         style: 'text-align:right' },
-      { key: 'settleTargetAmt', label: '정산대상금액', style: 'text-align:right' },
-      { key: 'settleFeeAmt',   label: '수수료',       style: 'text-align:right' },
-      { key: 'settleAmt',      label: '정산금액',     style: 'text-align:right' },
-      { key: 'rawStatusCd',    label: '수집상태' },
-      { key: 'closeYn',        label: '마감' },
-      { key: 'erpSendYn',      label: 'ERP' },
+      { key: 'orderQty',       label: '수량',         style: 'text-align:right',
+        align: 'right', fmt: (v) => (v || 0).toLocaleString() },
+      { key: 'settleTargetAmt', label: '정산대상금액', style: 'text-align:right',
+        align: 'right', fmt: fmtW,
+        cellStyle: (v) => 'font-weight:600;' + (v < 0 ? 'color:#e74c3c' : '') },
+      { key: 'settleFeeAmt',   label: '수수료',       style: 'text-align:right',
+        align: 'right', fmt: fmtW, cellStyle: 'color:#e74c3c' },
+      { key: 'settleAmt',      label: '정산금액',     style: 'text-align:right',
+        align: 'right', fmt: fmtW,
+        cellStyle: (v) => 'font-weight:700;' + (v < 0 ? 'color:#e74c3c' : 'color:#2980b9') },
+      { key: 'rawStatusCd',    label: '수집상태',
+        badge: (row) => fnRawStatusBadge(row.rawStatusCd), fmt: (v) => rawStatusLabel(v) },
+      { key: 'closeYn',        label: '마감',
+        badge: (row) => row.closeYn === 'Y' ? 'badge-purple' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '마감' : '미마감' },
+      { key: 'erpSendYn',      label: 'ERP',
+        badge: (row) => row.erpSendYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '전송' : '미전송' },
     ];
 
     /* doCollect */
@@ -317,27 +333,14 @@ const rawList = reactive([]);
     row-key="settleRawId"
     list-title="정산수집원장"
     :is-expanded="(r) => isExpanded(r.settleRawId)"
-    empty-text="데이터가 없습니다."
+    empty-text="데이터가 없습니다." row-clickable
     @set-page="setPage"
-    @size-change="onSizeChange">
+    @size-change="onSizeChange"
+    @row-click="(r) => toggleRow(r.settleRawId)">
     <template #toolbar-actions>
       <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▼ 전체펼치기</button>
       <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▲ 전체접기</button>
       <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
-    </template>
-    <template #cell-expand="{ row }">
-      <td style="text-align:center;color:#aaa;font-size:11px;user-select:none;cursor:pointer" @click="toggleRow(row.settleRawId)">
-        {{ isExpanded(row.settleRawId) ? '▲' : '▼' }}
-      </td>
-    </template>
-    <template #cell-settleRawId="{ row }">
-      <td style="font-size:12px;color:#555;cursor:pointer" @click="toggleRow(row.settleRawId)">{{ row.settleRawId }}</td>
-    </template>
-    <template #cell-rawTypeCd="{ row }">
-      <td><span class="badge" :class="row.rawTypeCd==='ORDER'?'badge-blue':'badge-orange'">{{ row.rawTypeCd }}</span></td>
-    </template>
-    <template #cell-orderId="{ row }">
-      <td style="font-size:12px;color:#555">{{ row.orderId }}</td>
     </template>
     <template #cell-vendorNm="{ row }">
       <td>
@@ -350,27 +353,6 @@ const rawList = reactive([]);
         <div style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.prodNm }}</div>
         <div style="font-size:11px;color:#aaa">{{ row.brandNm }}</div>
       </td>
-    </template>
-    <template #cell-orderQty="{ row }">
-      <td style="text-align:right">{{ (row.orderQty||0).toLocaleString() }}</td>
-    </template>
-    <template #cell-settleTargetAmt="{ row }">
-      <td style="text-align:right;font-weight:600" :style="row.settleTargetAmt<0?'color:#e74c3c':''">{{ fmtW(row.settleTargetAmt) }}</td>
-    </template>
-    <template #cell-settleFeeAmt="{ row }">
-      <td style="text-align:right;color:#e74c3c">{{ fmtW(row.settleFeeAmt) }}</td>
-    </template>
-    <template #cell-settleAmt="{ row }">
-      <td style="text-align:right;font-weight:700" :style="row.settleAmt<0?'color:#e74c3c':'color:#2980b9'">{{ fmtW(row.settleAmt) }}</td>
-    </template>
-    <template #cell-rawStatusCd="{ row }">
-      <td><span class="badge" :class="fnRawStatusBadge(row.rawStatusCd)">{{ rawStatusLabel(row.rawStatusCd) }}</span></td>
-    </template>
-    <template #cell-closeYn="{ row }">
-      <td><span class="badge" :class="row.closeYn==='Y'?'badge-purple':'badge-gray'">{{ row.closeYn==='Y'?'마감':'미마감' }}</span></td>
-    </template>
-    <template #cell-erpSendYn="{ row }">
-      <td><span class="badge" :class="row.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ row.erpSendYn==='Y'?'전송':'미전송' }}</span></td>
     </template>
     <template #row-expand="{ row: r, colspan }">
             <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">

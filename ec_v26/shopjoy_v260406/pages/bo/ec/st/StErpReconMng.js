@@ -121,13 +121,15 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const gridColumns = [
       { key: 'reconId',    label: '대사ID' },
       { key: 'reconDate',  label: '대사일자' },
-      { key: 'slipId',     label: '전표ID' },
-      { key: 'slipType',   label: '유형' },
-      { key: 'sysAmt',     label: '시스템금액' },
-      { key: 'erpAmt',     label: 'ERP금액' },
-      { key: 'diff',       label: '차이금액' },
-      { key: 'diffStatus', label: '대사결과' },
-      { key: 'remark',     label: '비고' },
+      { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
+      { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
+      { key: 'sysAmt',     label: '시스템금액', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'erpAmt',     label: 'ERP금액', fmt: (v) => v > 0 ? fmtW(v) : '-' },
+      { key: 'diff',       label: '차이금액', fmt: (v) => v > 0 ? fmtW(v) : '-',
+        cellStyle: (v) => v > 0 ? 'color:#e74c3c;font-weight:700' : '' },
+      { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
+      { key: 'remark',     label: '비고',
+        cellStyle: 'font-size:11px;color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
     ];
 
     return { uiState, handleDateRangeChange, codes, pager, reconList, gridColumns, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
@@ -170,13 +172,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="setPage" @size-change="onSizeChange">
       <template #head-actions>액션</template>
-      <template #cell-slipId="{ row: r }"><td style="font-size:11px">{{ r.slipId }}</td></template>
-      <template #cell-slipType="{ row: r }"><td><span class="badge" :class="fnTypeBadge(r.slipType)">{{ r.slipType }}</span></td></template>
-      <template #cell-sysAmt="{ row: r }"><td style="font-weight:700">{{ fmtW(r.sysAmt) }}</td></template>
-      <template #cell-erpAmt="{ row: r }"><td>{{ r.erpAmt > 0 ? fmtW(r.erpAmt) : '-' }}</td></template>
-      <template #cell-diff="{ row: r }"><td :style="r.diff>0?'color:#e74c3c;font-weight:700':''">{{ r.diff > 0 ? fmtW(r.diff) : '-' }}</td></template>
-      <template #cell-diffStatus="{ row: r }"><td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td></template>
-      <template #cell-remark="{ row: r }"><td style="font-size:11px;color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.remark }}</td></template>
       <template #row-actions="{ row: r }">
         <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="doFix(r)">조정</button>
       </template>

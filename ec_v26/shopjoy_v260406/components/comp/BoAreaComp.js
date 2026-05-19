@@ -26,8 +26,31 @@
  *                  · draggable → 행 드래그 정렬 + reorder emit
  *                  · showSave → 툴바 [저장] 버튼 + save emit
  *                  · rowActions → 우측 행액션 컬럼(#row-actions 슬롯) 노출
+ *                  columns[] 컬럼 객체 속성 (AG-Grid colDef 대응 — 단순 셀은
+ *                    #cell- 슬롯 대신 아래 속성으로 선언, 슬롯 보일러플레이트 축소):
+ *                    · key, label, style(th 인라인), cls(th class), width, align
+ *                    · noHead       — 헤더 라벨 숨김(th 유지)
+ *                    · sortKey      — 헤더 클릭 정렬(+ :sort-state + @sort)
+ *                    · fmt(v,row)   — 셀 표시값 변환 (AG-Grid valueFormatter)
+ *                                     조건부 포맷도 가능: (v)=> v>0?fmtW(v):'-'
+ *                    · badge        — true|codeGrp|(row)=>badgeClass → 배지 렌더
+ *                    · link         — true → title-link + @row-click emit
+ *                    · refLink      — 'member'|'order'|'claim'|'prod' 등 type 문자열.
+ *                                     ref-link 스타일 a 태그 + @ref-click emit({row,col,type})
+ *                                     부모에서 `@ref-click="({type,row}) => showRefModal(type, row.xxx)"` 처리
+ *                    · cellTitle    — true(=cellText) | string | (v,row)=>string. td :title 동적 바인딩(ellipsis 셀)
+ *                    · mono         — monospace 폰트
+ *                    · cellStyle    — 문자열 | (v,row)=>string. td 인라인 스타일
+ *                                     합성(조건부 색상·ellipsis 등). 미지정 시 무영향
+ *                    · cellClass    — 문자열 | (v,row)=>string. td class. 미지정 시 무영향
+ *                    · edit('text'|'number'|'date'|'select') + options → 인라인 입력
+ *                  특수 셀(버튼 여러개·중첩 컴포넌트·이미지+텍스트·행토글/확장 등)만
+ *                    #cell-{key} 슬롯 사용. 단순출력/배지/조건부색상은 위 속성으로.
  *                  props: columns, rows, pager, sortState, listTitle, rowClass,
- *                         rowStyle, draggable, showSave, rowActions, isExpanded …
+ *                         rowStyle, draggable, showSave, rowActions, isExpanded,
+ *                         rowClickable — true=<tr> 전체 클릭 시 row-click emit (행클릭 통일 패턴)
+ *                                        button/input/select/title-link 등은 자동 @click.stop 보호
+ *                                        셀 슬롯 내부 인터랙티브 요소는 부모가 @click.stop 책임
  *                  emit:  set-page(n), size-change, sort(key), row-click(row),
  *                         save, row-remove(row), reorder
  *                  슬롯: #toolbar-actions, #head, #head-actions, #cell-{key},
@@ -48,6 +71,8 @@
  *                  헤더: #head 슬롯 없으면 columns 로 자동 생성.
  *                        col.label(표시명) / col.style(인라인) / col.cls(클래스
  *                        예 col-id·col-ord·col-use) / col.noHead(라벨 숨김, th 유지)
+ *                        셀: BoGrid 와 동일 columns 속성 지원
+ *                        (fmt/badge/cellStyle/cellClass/mono/align/edit)
  *                        정렬클릭·조건부 컬럼 등 동적 헤더만 #head 슬롯 사용
  *                  슬롯: #toolbar-actions, #head, #cell-{key},
  *                        #row-actions(우측 행액션 1컬럼 — 취소·삭제·설정 등 한 셀에)
@@ -115,7 +140,9 @@ window.BoSearchArea = {
 window._boAreaCompUtil = {
   /* 정렬·옵션 정규화 */
   normOptions(opts) {
-    return (opts || []).map(o => ({
+    // 함수형 options 지원 (codes 지연 로드 대응) — 호출해 배열 획득
+    const arr = (typeof opts === 'function') ? opts() : opts;
+    return (arr || []).map(o => ({
       value: o.value != null ? o.value : o.codeValue,
       label: o.label != null ? o.label : o.codeLabel,
     }));
@@ -144,11 +171,35 @@ window._boAreaCompUtil = {
     if (col.align) s += 'text-align:' + col.align + ';';
     return s;
   },
-  tdStyle(col) {
+  tdStyle(col, row) {
     let s = 'font-size:12px;';
     if (col.align) s += 'text-align:' + col.align + ';';
     if (col.mono)  s += 'font-family:monospace;';
+    // AG-Grid 식 cellStyle: 문자열 또는 (value,row)=>string. 마지막에 합성(미지정 시 기존 동작 동일)
+    if (col.cellStyle != null) {
+      const ext = (typeof col.cellStyle === 'function')
+        ? col.cellStyle(row ? row[col.key] : undefined, row)
+        : col.cellStyle;
+      if (ext) s += (s.endsWith(';') ? '' : ';') + ext;
+    }
     return s;
+  },
+  /* AG-Grid 식 cellClass: 문자열 또는 (value,row)=>string. 미지정 시 '' (class 영향 없음) */
+  cellClass(col, row) {
+    if (col.cellClass == null) return '';
+    return (typeof col.cellClass === 'function')
+      ? (col.cellClass(row ? row[col.key] : undefined, row) || '')
+      : col.cellClass;
+  },
+  /* AG-Grid 식 tooltipValueGetter 대응: cellTitle — true(=cellText) | string | (v,row)=>string. ellipsis 셀의 :title 슬롯 제거용 */
+  cellTitle(col, row) {
+    if (col.cellTitle == null) return null;
+    if (col.cellTitle === true) return String(this.cellText(col, row) || '');
+    if (typeof col.cellTitle === 'function') {
+      const v = col.cellTitle(row ? row[col.key] : undefined, row);
+      return v == null ? null : String(v);
+    }
+    return String(col.cellTitle);
   },
 };
 
@@ -186,9 +237,11 @@ window.BoGrid = {
     checkedKey: { type: String,  default: null },                // 체크 식별 필드 (없으면 rowKey 사용). isChecked/toggleCheck 가 받는 값
     isChecked:  { type: Function, default: null },                // (key)=>bool. 행 체크 여부 (부모 Set 기반)
     allChecked: { type: Boolean, default: false },               // 헤더 전체선택 체크 상태 (부모 computed 미러)
+    rowClickable: { type: Boolean, default: false },             // true=<tr> 전체 클릭 시 row-click emit (행클릭 통일로 #cell- 슬롯 제거 가능)
+                                                                   // 셀 내부 button/select/input/checkbox 등은 @click.stop 자동 보호 — 행이벤트 미전파
   },
   emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder',
-          'toggle-check', 'toggle-check-all'],
+          'toggle-check', 'toggle-check-all', 'ref-click'],
   setup(props, { emit, slots }) {
     const U = window._boAreaCompUtil;
     const cfTotal = Vue.computed(() => props.pager ? (props.pager.pageTotalCount || 0) : props.rows.length);
@@ -221,6 +274,12 @@ window.BoGrid = {
     const onDragEnd = () => { if (dragSrc.value !== null) { dragSrc.value = null; emit('reorder'); } };
 
     const onRowClick = (row) => emit('row-click', row);
+    /* refLink: 'member'|... type 문자열. col.refKey 가 있으면 row[refKey] 를 id 로 자동 추출(없으면 row[col.key]).
+     * payload: { row, col, type, id } — 부모는 보통 id 만 받아 showRefModal(type, id) 호출 */
+    const onRefClick = (row, col) => {
+      const id = col.refKey ? row[col.refKey] : row[col.key];
+      emit('ref-click', { row, col, type: col.refLink, id });
+    };
     const onSave     = () => emit('save');
     const onRemove   = (row) => emit('row-remove', row);
     const onSetPage  = (n) => emit('set-page', n);
@@ -240,7 +299,7 @@ window.BoGrid = {
       + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
 
     return { U, cfTotal, cfShowTfoot, rowNo, onSort, sortIcon, sortActive, onDragStart, onDragOver, onDragEnd,
-             onRowClick, onSave, onRemove, onSetPage, onSizeChg,
+             onRowClick, onRefClick, onSave, onRemove, onSetPage, onSizeChg,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
              fnRowChecked, onToggleCheck, onToggleCheckAll };
   },
@@ -279,7 +338,8 @@ window.BoGrid = {
       <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
         <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
             :draggable="draggable"
-            @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
+            @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd"
+            @click="rowClickable ? onRowClick(row) : null">
           <td v-if="selectable" style="text-align:center;" @click.stop>
             <input type="checkbox" :checked="fnRowChecked(row)" @change="onToggleCheck(row)" />
           </td>
@@ -287,20 +347,21 @@ window.BoGrid = {
           <td style="text-align:center;font-size:11px;color:#999;">{{ rowNo(idx) }}</td>
           <template v-for="col in columns" :key="col.key">
             <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-              <td :style="U.tdStyle(col)">
-                <!-- 인라인 편집 셀 -->
+              <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
+                <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
                 <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
-                       :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;" />
+                       :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;" @click.stop />
                 <input v-else-if="col.edit==='number'" type="number" class="form-control" v-model.number="row[col.key]"
-                       style="padding:2px 6px;font-size:12px;width:80px;text-align:right;" />
+                       style="padding:2px 6px;font-size:12px;width:80px;text-align:right;" @click.stop />
                 <input v-else-if="col.edit==='date'" type="date" class="form-control" v-model="row[col.key]"
-                       style="padding:2px 4px;font-size:11px;width:130px;text-align:center;" />
+                       style="padding:2px 4px;font-size:11px;width:130px;text-align:center;" @click.stop />
                 <select v-else-if="col.edit==='select'" class="form-control" v-model="row[col.key]"
-                        style="padding:2px 4px;font-size:12px;">
+                        style="padding:2px 4px;font-size:12px;" @click.stop>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
                 <!-- 표시 셀 -->
-                <span v-else-if="col.link" class="title-link" @click="onRowClick(row)">{{ U.cellText(col, row) }}</span>
+                <span v-else-if="col.link" class="title-link" @click.stop="onRowClick(row)">{{ U.cellText(col, row) }}</span>
+                <a v-else-if="col.refLink" href="#" class="ref-link" @click.stop.prevent="onRefClick(row, col)">{{ U.cellText(col, row) }}</a>
                 <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
                 <template v-else>{{ U.cellText(col, row) }}</template>
               </td>
@@ -542,7 +603,7 @@ window.BoGridCrud = {
           </td>
           <template v-for="col in columns" :key="col.key">
             <slot :name="'cell-' + col.key" :row="fnRow(item)" :idx="idx" :node="item">
-              <td :style="U.tdStyle(col)">
+              <td :style="U.tdStyle(col, fnRow(item))" :class="U.cellClass(col, fnRow(item))" :title="U.cellTitle(col, fnRow(item))">
                 <input v-if="col.edit==='text'" class="grid-input" :class="{ 'grid-mono': col.mono }"
                        v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
                        :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" />

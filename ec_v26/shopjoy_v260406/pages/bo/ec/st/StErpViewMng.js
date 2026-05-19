@@ -106,15 +106,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'slipId',     label: '전표ID' },
+      { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
       { key: 'slipDate',   label: '전표일자' },
-      { key: 'slipType',   label: '유형' },
+      { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
       { key: 'debit',      label: '차변계정' },
       { key: 'credit',     label: '대변계정' },
-      { key: 'debitAmt',   label: '금액' },
-      { key: 'description',label: '적요' },
-      { key: 'erpRef',     label: 'ERP전표번호' },
-      { key: 'sendStatus', label: '전송상태' },
+      { key: 'debitAmt',   label: '금액', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'description',label: '적요',
+        cellStyle: 'color:#555;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
+      { key: 'erpRef',     label: 'ERP전표번호', cellStyle: 'font-size:11px;color:#888',
+        fmt: (v) => v || '-' },
+      { key: 'sendStatus', label: '전송상태', badge: (row) => fnStatusBadge(row.sendStatus) },
     ];
 
     return { uiState, handleDateRangeChange, codes, pager, slips, gridColumns, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
@@ -161,12 +163,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="setPage" @size-change="onSizeChange">
       <template #head-actions>액션</template>
-      <template #cell-slipId="{ row: r }"><td style="font-size:11px">{{ r.slipId }}</td></template>
-      <template #cell-slipType="{ row: r }"><td><span class="badge" :class="fnTypeBadge(r.slipType)">{{ r.slipType }}</span></td></template>
-      <template #cell-debitAmt="{ row: r }"><td style="font-weight:700">{{ fmtW(r.debitAmt) }}</td></template>
-      <template #cell-description="{ row: r }"><td style="font-size:12px;color:#555;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.description }}</td></template>
-      <template #cell-erpRef="{ row: r }"><td style="font-size:11px;color:#888">{{ r.erpRef || '-' }}</td></template>
-      <template #cell-sendStatus="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.sendStatus)">{{ r.sendStatus }}</span></td></template>
       <template #row-actions="{ row: r }">
         <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="doResend(r)">재전송</button>
       </template>

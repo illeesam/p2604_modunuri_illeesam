@@ -211,13 +211,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
       { key: 'pathId',        label: '표시경로' },
-      { key: 'alarmTypeCd',   label: '유형' },
+      { key: 'alarmTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.alarmTypeCd) },
       { key: 'alarmTitle',    label: '제목', sortKey: 'nm' },
-      { key: 'alarmMsg',      label: '메시지' },
-      { key: 'targetTypeCd',  label: '대상' },
-      { key: 'alarmSendDate', label: '발송일' },
-      { key: 'alarmStatusCd', label: '상태' },
-      { key: 'siteNm',        label: '사이트명' },
+      { key: 'alarmMsg',      label: '메시지', cellStyle: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' },
+      { key: 'targetTypeCd',  label: '대상', badge: (row) => fnTargetBadge(row.targetTypeCd) },
+      { key: 'alarmSendDate', label: '발송일', fmt: (v) => v || '-' },
+      { key: 'alarmStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.alarmStatusCd) },
+      { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: 'regDate',       label: '등록일', sortKey: 'reg' },
     ];
     const fnRowStyle = (a) => detailModal.dtlId === a.alarmId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
@@ -280,29 +280,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <template #cell-pathId="{ row }">
       <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row.pathId!=null?'#374151':'#9ca3af',fontWeight:row.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(row)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
     </template>
-    <template #cell-alarmTypeCd="{ row }">
-      <td><span class="badge" :class="fnTypeBadge(row.alarmTypeCd)">{{ row.alarmTypeCd }}</span></td>
-    </template>
     <template #cell-alarmTitle="{ row }">
       <td><span class="title-link" @click="handleLoadDetail(row.alarmId)" :style="detailModal.dtlId===row.alarmId?'color:#e8587a;font-weight:700;':''">{{ row.alarmTitle }}<span v-if="detailModal.dtlId===row.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
     </template>
-    <template #cell-alarmMsg="{ row }">
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row.alarmMsg }}</td>
-    </template>
-    <template #cell-targetTypeCd="{ row }">
-      <td><span class="badge" :class="fnTargetBadge(row.targetTypeCd)">{{ row.targetTypeCd }}</span></td>
-    </template>
-    <template #cell-alarmSendDate="{ row }">
-      <td>{{ row.alarmSendDate || '-' }}</td>
-    </template>
-    <template #cell-alarmStatusCd="{ row }">
-      <td><span class="badge" :class="fnStatusBadge(row.alarmStatusCd)">{{ row.alarmStatusCd }}</span></td>
-    </template>
     <template #cell-siteNm>
       <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-    </template>
-    <template #cell-regDate="{ row }">
-      <td>{{ row.regDate }}</td>
     </template>
     <template #row-actions="{ row }">
       <td><div class="actions">

@@ -174,13 +174,16 @@ window.PmEventMng = {
 
     const gridColumns = [
       { key: 'eventTitle',     label: '이벤트 제목', sortKey: 'nm' },
-      { key: 'targetProducts', label: '대상상품' },
-      { key: 'authRequired',   label: '인증필요' },
+      { key: 'targetProducts', label: '대상상품',
+        fmt: (v) => (v || []).length + '개 상품' },
+      { key: 'authRequired',   label: '인증필요',
+        badge: (row) => row.authRequired ? 'badge-orange' : 'badge-gray',
+        fmt: (v) => v ? '필요' : '불필요' },
       { key: 'startDate',      label: '시작일' },
       { key: 'endDate',        label: '종료일' },
-      { key: 'eventStatusCd',  label: '상태' },
+      { key: 'eventStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.eventStatusCd) },
       { key: 'regDate',        label: '등록일', sortKey: 'reg' },
-      { key: 'siteNm',         label: '사이트명' },
+      { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, tabMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
@@ -218,10 +221,6 @@ window.PmEventMng = {
       @sort="onSort">
       <template #head-actions>관리</template>
       <template #cell-eventTitle="{ row: e }"><td><span class="title-link" @click="handleLoadDetail(e.eventId)" :style="uiStateDetail.selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.eventTitle }}<span v-if="uiStateDetail.selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
-      <template #cell-targetProducts="{ row: e }"><td>{{ (e.targetProducts||[]).length }}개 상품</td></template>
-      <template #cell-authRequired="{ row: e }"><td><span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'">{{ e.authRequired ? '필요' : '불필요' }}</span></td></template>
-      <template #cell-eventStatusCd="{ row: e }"><td><span class="badge" :class="fnStatusBadge(e.eventStatusCd)">{{ e.eventStatusCd }}</span></td></template>
-      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
       <template #row-actions="{ row: e }">
         <div class="actions" style="display:flex;gap:6px;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(e.eventId)">수정</button>

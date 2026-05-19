@@ -218,30 +218,30 @@ window.SyApiLogMng = {
     /* fnDecode */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
-    /* BoGridReadonly 컬럼 정의 (전 셀 #cell-* 슬롯 override, 행펼침 #row-expand) */
+    /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
     const accessColumns = [
-      { key: '_exp',       label: '',          style: 'width:20px' },
-      { key: 'reqMethod',  label: '메서드' },
-      { key: 'reqPath',    label: 'API 경로' },
-      { key: 'respStatus', label: '상태',      style: 'text-align:center;' },
-      { key: 'respTimeMs', label: 'ms',        style: 'text-align:right;' },
-      { key: 'reqIp',      label: 'IP' },
-      { key: 'userId',     label: '사용자ID' },
-      { key: 'uiNm',       label: '화면 > 기능' },
-      { key: 'traceId',    label: 'Trace ID' },
-      { key: 'regDate',    label: '등록일시' },
+      { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
+      { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
+      { key: 'respStatus', label: '상태',      style: 'text-align:center;', align: 'center', badge: (row) => fnStatusBadge(row.respStatus), fmt: (v) => v || '-' },
+      { key: 'respTimeMs', label: 'ms',        style: 'text-align:right;', align: 'right', mono: true, cellStyle: (v, row) => row.respTimeMs > 1000 ? 'color:#e74c3c;font-weight:700' : '', fmt: (v) => v != null ? v : '-' },
+      { key: 'reqIp',      label: 'IP', mono: true, fmt: (v) => v || '-' },
+      { key: 'userId',     label: '사용자ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
+      { key: '_uiNm',      label: '화면 > 기능' },
+      { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
+      { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
     const errorColumns = [
-      { key: '_exp',       label: '',          style: 'width:20px' },
-      { key: 'reqMethod',  label: '메서드' },
-      { key: 'reqPath',    label: 'API 경로' },
-      { key: 'errorType',  label: '오류유형' },
-      { key: 'errorMsg',   label: '오류메시지' },
-      { key: 'reqIp',      label: 'IP' },
-      { key: 'userId',     label: '사용자ID' },
-      { key: 'uiNm',       label: '화면 > 기능' },
-      { key: 'traceId',    label: 'Trace ID' },
-      { key: 'regDate',    label: '등록일시' },
+      { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
+      { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
+      { key: '_errorType', label: '오류유형', cellStyle: 'color:#e74c3c;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.errorType, fmt: (v, row) => row.errorType || '-' },
+      { key: '_errorMsg',  label: '오류메시지', cellStyle: 'color:#555;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.errorMsg, fmt: (v, row) => row.errorMsg || '-' },
+      { key: 'reqIp',      label: 'IP', mono: true, fmt: (v) => v || '-' },
+      { key: 'userId',     label: '사용자ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
+      { key: '_uiNm',      label: '화면 > 기능' },
+      { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
+      { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
     /* BoGridReadonly isExpanded prop 래퍼 (row,idx)=>bool */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
@@ -326,8 +326,8 @@ window.SyApiLogMng = {
   <bo-grid-readonly v-if="uiState.activeTab==='access'"
     :columns="accessColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded"
-    @set-page="setPage" @size-change="onSizeChange">
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
+    @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
 
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
@@ -337,40 +337,13 @@ window.SyApiLogMng = {
       </div>
     </template>
 
-    <template #cell-_exp="{ row, idx }">
-      <td style="text-align:center;color:#bbb;font-size:11px;user-select:none;cursor:pointer;" @click="toggleRow(row.logId||idx)">{{ isExpanded(row.logId||idx) ? '▲' : '▼' }}</td>
-    </template>
-    <template #cell-reqMethod="{ row }">
-      <td style="cursor:pointer;" @click="toggleRow(row.logId)"><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod || '-' }}</span></td>
-    </template>
-    <template #cell-reqPath="{ row }">
-      <td style="font-family:monospace;font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.reqPath" @click="toggleRow(row.logId)">{{ row.reqPath || '-' }}</td>
-    </template>
-    <template #cell-respStatus="{ row }">
-      <td style="text-align:center;cursor:pointer;" @click="toggleRow(row.logId)"><span class="badge" :class="fnStatusBadge(row.respStatus)">{{ row.respStatus || '-' }}</span></td>
-    </template>
-    <template #cell-respTimeMs="{ row }">
-      <td style="text-align:right;font-family:monospace;font-size:12px;cursor:pointer;" :style="row.respTimeMs>1000?'color:#e74c3c;font-weight:700':''" @click="toggleRow(row.logId)">{{ row.respTimeMs != null ? row.respTimeMs : '-' }}</td>
-    </template>
-    <template #cell-reqIp="{ row }">
-      <td style="font-family:monospace;font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.reqIp || '-' }}</td>
-    </template>
-    <template #cell-userId="{ row }">
-      <td style="font-size:12px;color:#555;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.userId || '-' }}</td>
-    </template>
-    <template #cell-uiNm="{ row }">
-      <td style="font-size:12px;color:#555;cursor:pointer;" @click="toggleRow(row.logId)">
+    <template #cell-_uiNm="{ row }">
+      <td style="font-size:12px;color:#555;">
         <span v-if="row.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) }}</span>
         <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa;"> &gt; </span>
         <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
         <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc;">-</span>
       </td>
-    </template>
-    <template #cell-traceId="{ row }">
-      <td style="font-family:monospace;font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.traceId" @click="toggleRow(row.logId)">{{ row.traceId || '-' }}</td>
-    </template>
-    <template #cell-regDate="{ row }">
-      <td style="font-size:12px;white-space:nowrap;cursor:pointer;" @click="toggleRow(row.logId)">{{ String(row.regDate || '').slice(0, 19) }}</td>
     </template>
 
     <template #row-expand="{ row, colspan }">
@@ -422,8 +395,8 @@ window.SyApiLogMng = {
   <bo-grid-readonly v-if="uiState.activeTab==='error'"
     :columns="errorColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded"
-    @set-page="setPage" @size-change="onSizeChange">
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
+    @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
 
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
@@ -433,40 +406,13 @@ window.SyApiLogMng = {
       </div>
     </template>
 
-    <template #cell-_exp="{ row, idx }">
-      <td style="text-align:center;color:#bbb;font-size:11px;user-select:none;cursor:pointer;" @click="toggleRow(row.logId||idx)">{{ isExpanded(row.logId||idx) ? '▲' : '▼' }}</td>
-    </template>
-    <template #cell-reqMethod="{ row }">
-      <td style="cursor:pointer;" @click="toggleRow(row.logId)"><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod || '-' }}</span></td>
-    </template>
-    <template #cell-reqPath="{ row }">
-      <td style="font-family:monospace;font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.reqPath" @click="toggleRow(row.logId)">{{ row.reqPath || '-' }}</td>
-    </template>
-    <template #cell-errorType="{ row }">
-      <td style="font-size:12px;color:#e74c3c;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.errorType" @click="toggleRow(row.logId)">{{ row.errorType || '-' }}</td>
-    </template>
-    <template #cell-errorMsg="{ row }">
-      <td style="font-size:12px;color:#555;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.errorMsg" @click="toggleRow(row.logId)">{{ row.errorMsg || '-' }}</td>
-    </template>
-    <template #cell-reqIp="{ row }">
-      <td style="font-family:monospace;font-size:12px;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.reqIp || '-' }}</td>
-    </template>
-    <template #cell-userId="{ row }">
-      <td style="font-size:12px;color:#555;cursor:pointer;" @click="toggleRow(row.logId)">{{ row.userId || '-' }}</td>
-    </template>
-    <template #cell-uiNm="{ row }">
-      <td style="font-size:12px;color:#555;cursor:pointer;" @click="toggleRow(row.logId)">
+    <template #cell-_uiNm="{ row }">
+      <td style="font-size:12px;color:#555;">
         <span v-if="row.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) }}</span>
         <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa;"> &gt; </span>
         <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
         <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc;">-</span>
       </td>
-    </template>
-    <template #cell-traceId="{ row }">
-      <td style="font-family:monospace;font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" :title="row.traceId" @click="toggleRow(row.logId)">{{ row.traceId || '-' }}</td>
-    </template>
-    <template #cell-regDate="{ row }">
-      <td style="font-size:12px;white-space:nowrap;cursor:pointer;" @click="toggleRow(row.logId)">{{ String(row.regDate || '').slice(0, 19) }}</td>
     </template>
 
     <template #row-expand="{ row, colspan }">

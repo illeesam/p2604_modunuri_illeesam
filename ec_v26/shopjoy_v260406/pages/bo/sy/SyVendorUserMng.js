@@ -473,25 +473,25 @@ window.SyVendorUserMng = {
 
     /* BoGridReadonly 컬럼 정의 (특수셀 #cell-* 슬롯 override) */
     const vendorGridColumns = [
-      { key: 'vendorTypeCd', label: '업체유형' },
-      { key: 'vendorNm',     label: '업체명' },
+      { key: 'vendorTypeCd', label: '업체유형', align: 'center', badge: (row) => fnVendorTypeBadge(row.vendorTypeCd), fmt: (v) => fnVendorTypeLabel(v) },
+      { key: 'vendorNm',     label: '업체명', cellStyle: 'font-weight:600' },
       { key: 'bizNo',        label: '사업자번호' },
       { key: 'ceo',          label: '대표자' },
-      { key: 'phone',        label: '전화' },
+      { key: 'phone',        label: '전화', cellStyle: 'font-size:11.5px' },
       { key: '_pick',        label: '선택', style: 'text-align:right;' },
     ];
     const userGridColumns = [
-      { key: 'memberNm',           label: '이름' },
-      { key: 'positionCd',         label: '직위' },
-      { key: 'vendorUserDeptNm',   label: '부서' },
+      { key: 'memberNm',           label: '이름', cellStyle: 'font-weight:600' },
+      { key: 'positionCd',         label: '직위', cellStyle: 'color:#666' },
+      { key: 'vendorUserDeptNm',   label: '부서', cellStyle: 'color:#666' },
       { key: 'vendorUserMobile',   label: '휴대전화' },
       { key: 'vendorUserEmail',    label: '이메일' },
-      { key: 'vendorUserStatusCd', label: '상태', style: 'width:80px;text-align:center;' },
+      { key: 'vendorUserStatusCd', label: '상태', style: 'width:80px;text-align:center;', align: 'center', badge: (row) => fnStatusBadge(row.vendorUserStatusCd), fmt: (v) => fnStatusLabel(v) },
     ];
     /* BoGrid(bare) 컬럼 정의 — 부여된 역할 목록 */
     const userRoleColumns = [
-      { key: 'roleNm',    label: '역할명' },
-      { key: 'grantDate', label: '부여일시' },
+      { key: 'roleNm',    label: '역할명', cellStyle: 'font-weight:600', fmt: (v, row) => row.roleNm || roleNmByCode(row.roleId) },
+      { key: 'grantDate', label: '부여일시', cellStyle: 'color:#6b7280', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'validTerm', label: '유효기간' },
       { key: '_act',      label: '관리', style: 'text-align:right;' },
     ];
@@ -560,22 +560,10 @@ window.SyVendorUserMng = {
   <bo-grid-readonly
     :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
     list-title="업체목록" :count-text="vendors.length + '건'"
-    :row-style="fnVendorRowStyle"
+    :row-style="fnVendorRowStyle" row-clickable
     @set-page="setBizPage" @row-click="pickVendorRow">
-    <template #cell-vendorTypeCd="{ row }">
-      <td @click="pickVendorRow(row)"><span class="badge" :class="fnVendorTypeBadge(row.vendorTypeCd)" style="font-size:10px;">{{ fnVendorTypeLabel(row.vendorTypeCd) }}</span></td>
-    </template>
-    <template #cell-vendorNm="{ row }">
-      <td style="font-weight:600;" @click="pickVendorRow(row)">{{ row.vendorNm }}</td>
-    </template>
     <template #cell-bizNo="{ row }">
-      <td @click="pickVendorRow(row)"><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ row.bizNo }}</code></td>
-    </template>
-    <template #cell-ceo="{ row }">
-      <td @click="pickVendorRow(row)">{{ row.ceo }}</td>
-    </template>
-    <template #cell-phone="{ row }">
-      <td style="font-size:11.5px;" @click="pickVendorRow(row)">{{ row.phone }}</td>
+      <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ row.bizNo }}</code></td>
     </template>
     <template #cell-_pick="{ row }">
       <td style="text-align:right;">
@@ -588,30 +576,10 @@ window.SyVendorUserMng = {
   <bo-grid-readonly v-if="uiState.searchVendorId != null" style="margin-top:16px;"
     :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
     list-title="사용자목록" :count-text="vendorUsers.length + '건'"
-    :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true"
+    :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="openEdit">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규등록</button>
-    </template>
-    <template #cell-memberNm="{ row }">
-      <td style="font-weight:600;" @click="openEdit(row)">{{ row.memberNm }}</td>
-    </template>
-    <template #cell-positionCd="{ row }">
-      <td style="font-size:12px;color:#666;" @click="openEdit(row)">{{ row.positionCd }}</td>
-    </template>
-    <template #cell-vendorUserDeptNm="{ row }">
-      <td style="font-size:12px;color:#666;" @click="openEdit(row)">{{ row.vendorUserDeptNm }}</td>
-    </template>
-    <template #cell-vendorUserMobile="{ row }">
-      <td style="font-size:12px;" @click="openEdit(row)">{{ row.vendorUserMobile }}</td>
-    </template>
-    <template #cell-vendorUserEmail="{ row }">
-      <td style="font-size:12px;" @click="openEdit(row)">{{ row.vendorUserEmail }}</td>
-    </template>
-    <template #cell-vendorUserStatusCd="{ row }">
-      <td style="text-align:center;" @click="openEdit(row)">
-        <span class="badge" :class="fnStatusBadge(row.vendorUserStatusCd)">{{ fnStatusLabel(row.vendorUserStatusCd) }}</span>
-      </td>
     </template>
     <template #row-actions="{ row }">
       <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(row)">삭제</button>
@@ -695,12 +663,6 @@ window.SyVendorUserMng = {
           <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
           <bo-grid v-else bare :columns="userRoleColumns" :rows="userRoles" row-key="vendorUserRoleId"
                    empty-text="부여된 역할이 없습니다.">
-            <template #cell-roleNm="{ row }">
-              <td style="font-weight:600;">{{ row.roleNm || roleNmByCode(row.roleId) }}</td>
-            </template>
-            <template #cell-grantDate="{ row }">
-              <td style="color:#6b7280;">{{ row.grantDate ? String(row.grantDate).slice(0,16) : '-' }}</td>
-            </template>
             <template #cell-validTerm="{ row }">
               <td style="color:#6b7280;">
                 <span v-if="row.validFrom || row.validTo">{{ row.validFrom||'∞' }} ~ {{ row.validTo||'∞' }}</span>

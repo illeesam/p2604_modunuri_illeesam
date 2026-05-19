@@ -160,15 +160,15 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'pathId',        label: '표시경로' },
       { key: 'bbmCode',       label: '게시판코드' },
       { key: 'bbmNm',         label: '게시판명' },
-      { key: 'bbmTypeCd',     label: '유형' },
-      { key: 'allowComment',  label: '댓글허용' },
-      { key: 'allowAttach',   label: '첨부허용' },
-      { key: 'contentTypeCd', label: '내용입력' },
-      { key: 'scopeTypeCd',   label: '공개범위' },
-      { key: 'allowLike',     label: '좋아요' },
-      { key: 'bbsCount',      label: '게시글수' },
-      { key: 'sortOrd',       label: '정렬순서' },
-      { key: 'useYn',         label: '사용여부' },
+      { key: 'bbmTypeCd',     label: '유형', badge: (row) => fnTypeBadge(row.bbmTypeCd) },
+      { key: 'allowComment',  label: '댓글허용', badge: (row) => fnCommentBadge(row.allowComment), fmt: (v) => v || '불가' },
+      { key: 'allowAttach',   label: '첨부허용', badge: (row) => fnAttachBadge(row.allowAttach), fmt: (v) => v || '불가' },
+      { key: 'contentTypeCd', label: '내용입력', badge: (row) => fnContentBadge(row.contentTypeCd), fmt: (v) => v || '-' },
+      { key: 'scopeTypeCd',   label: '공개범위', badge: (row) => fnScopeBadge(row.scopeTypeCd), fmt: (v) => v || '-' },
+      { key: 'allowLike',     label: '좋아요', badge: (row) => fnYnBadge(row.allowLike), fmt: (v) => v === 'Y' ? '허용' : '불가' },
+      { key: 'bbsCount',      label: '게시글수', align: 'center', fmt: (v) => v || 0 },
+      { key: 'sortOrd',       label: '정렬순서', align: 'center' },
+      { key: 'useYn',         label: '사용여부', badge: (row) => fnYnBadge(row.useYn), fmt: (v) => v === 'Y' ? '사용' : '미사용' },
       { key: 'siteNm',        label: '사이트명' },
       { key: 'regDate',       label: '등록일' },
     ];
@@ -233,38 +233,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <template #cell-bbmNm="{ row }">
           <td><span class="title-link" @click="handleLoadDetail(row.bbmId)" :style="detailModal.dtlId===row.bbmId?'color:#e8587a;font-weight:700;':''">{{ row.bbmNm }}<span v-if="detailModal.dtlId===row.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
         </template>
-        <template #cell-bbmTypeCd="{ row }">
-          <td><span class="badge" :class="fnTypeBadge(row.bbmTypeCd)">{{ row.bbmTypeCd }}</span></td>
-        </template>
-        <template #cell-allowComment="{ row }">
-          <td><span class="badge" :class="fnCommentBadge(row.allowComment)">{{ row.allowComment || '불가' }}</span></td>
-        </template>
-        <template #cell-allowAttach="{ row }">
-          <td><span class="badge" :class="fnAttachBadge(row.allowAttach)">{{ row.allowAttach || '불가' }}</span></td>
-        </template>
-        <template #cell-contentTypeCd="{ row }">
-          <td><span class="badge" :class="fnContentBadge(row.contentTypeCd)">{{ row.contentTypeCd || '-' }}</span></td>
-        </template>
-        <template #cell-scopeTypeCd="{ row }">
-          <td><span class="badge" :class="fnScopeBadge(row.scopeTypeCd)">{{ row.scopeTypeCd || '-' }}</span></td>
-        </template>
-        <template #cell-allowLike="{ row }">
-          <td><span class="badge" :class="fnYnBadge(row.allowLike)">{{ row.allowLike==='Y'?'허용':'불가' }}</span></td>
-        </template>
-        <template #cell-bbsCount="{ row }">
-          <td style="text-align:center;">{{ row.bbsCount || 0 }}</td>
-        </template>
-        <template #cell-sortOrd="{ row }">
-          <td style="text-align:center;">{{ row.sortOrd }}</td>
-        </template>
-        <template #cell-useYn="{ row }">
-          <td><span class="badge" :class="fnYnBadge(row.useYn)">{{ row.useYn==='Y'?'사용':'미사용' }}</span></td>
-        </template>
         <template #cell-siteNm>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-        </template>
-        <template #cell-regDate="{ row }">
-          <td>{{ row.regDate }}</td>
         </template>
         <template #row-actions="{ row }">
           <td><div class="actions">

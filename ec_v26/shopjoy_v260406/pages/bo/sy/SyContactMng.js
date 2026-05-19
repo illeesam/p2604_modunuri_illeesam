@@ -168,11 +168,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
 
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
-      { key: 'memberNm',        label: '회원' },
+      { key: 'memberNm',        label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'categoryCd',      label: '카테고리' },
       { key: 'contactTitle',    label: '제목' },
-      { key: 'contactStatusCd', label: '상태' },
-      { key: 'regDate',         label: '등록일', sortKey: 'reg' },
+      { key: 'contactStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.contactStatusCd) },
+      { key: 'regDate',         label: '등록일', sortKey: 'reg', fmt: (v, row) => String(row.regDate || row.contactDate || '').slice(0, 10) },
       { key: 'siteNm',          label: '사이트명' },
     ];
     const fnRowStyle = (c) => detailModal.dtlId === c.contactId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
@@ -211,7 +211,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     :columns="gridColumns" :rows="contacts" :pager="pager" row-key="contactId"
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange"
+    @ref-click="({type,id}) => showRefModal(type, id)">
 
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
@@ -221,20 +222,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     </template>
     <template #head-actions><th style="text-align:right">관리</th></template>
 
-    <template #cell-memberNm="{ row }">
-      <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm }}</span></td>
-    </template>
     <template #cell-categoryCd="{ row }">
       <td><span class="tag">{{ row.categoryCd }}</span></td>
     </template>
     <template #cell-contactTitle="{ row }">
       <td><span class="title-link" @click="handleLoadDetail(row.contactId)" :style="detailModal.dtlId===row.contactId?'color:#e8587a;font-weight:700;':''">{{ row.contactTitle }}<span v-if="detailModal.dtlId===row.contactId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-    </template>
-    <template #cell-contactStatusCd="{ row }">
-      <td><span class="badge" :class="fnStatusBadge(row.contactStatusCd)">{{ row.contactStatusCd }}</span></td>
-    </template>
-    <template #cell-regDate="{ row }">
-      <td>{{ String(row.regDate||row.contactDate||'').slice(0,10) }}</td>
     </template>
     <template #cell-siteNm>
       <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>

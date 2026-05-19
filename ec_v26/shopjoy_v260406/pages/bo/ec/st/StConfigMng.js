@@ -165,13 +165,19 @@ window.StConfigMng = {
 
     const gridColumns = [
       { key: 'siteNm',             label: '사이트' },
-      { key: 'categoryNm',         label: '카테고리' },
-      { key: 'commissionRate',     label: '수수료율' },
-      { key: 'settleCycleCd',      label: '정산주기' },
-      { key: 'settleDay',          label: '정산일' },
-      { key: 'minSettleAmt',       label: '최소정산금' },
-      { key: 'useYn',              label: '사용여부' },
-      { key: 'settleConfigRemark', label: '비고' },
+      { key: 'categoryNm',         label: '카테고리', cellStyle: 'font-weight:700',
+        fmt: (v, row) => row.categoryNm || row.vendorNm || '-' },
+      { key: 'commissionRate',     label: '수수료율', cellStyle: 'font-weight:700',
+        fmt: (v) => v + '%' },
+      { key: 'settleCycleCd',      label: '정산주기',
+        badge: (row) => fnCycleBadge(row.settleCycleCd), fmt: (v) => fnCycleCdToLabel(v) },
+      { key: 'settleDay',          label: '정산일', fmt: (v) => '매월 ' + v + '일' },
+      { key: 'minSettleAmt',       label: '최소정산금',
+        fmt: (v) => Number(v || 0).toLocaleString() + '원' },
+      { key: 'useYn',              label: '사용여부',
+        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '사용' : '미사용' },
+      { key: 'settleConfigRemark', label: '비고', cellStyle: 'color:#888' },
     ];
 
     return { uiState, configs, gridColumns, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
@@ -198,13 +204,6 @@ window.StConfigMng = {
       list-title="목록" :count-text="configs.length + '건'" :row-actions="true"
       :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
       <template #head-actions>액션</template>
-      <template #cell-categoryNm="{ row: c }"><td><strong>{{ c.categoryNm || c.vendorNm || '-' }}</strong></td></template>
-      <template #cell-commissionRate="{ row: c }"><td><strong>{{ c.commissionRate }}%</strong></td></template>
-      <template #cell-settleCycleCd="{ row: c }"><td><span class="badge" :class="fnCycleBadge(c.settleCycleCd)">{{ fnCycleCdToLabel(c.settleCycleCd) }}</span></td></template>
-      <template #cell-settleDay="{ row: c }"><td>매월 {{ c.settleDay }}일</td></template>
-      <template #cell-minSettleAmt="{ row: c }"><td>{{ Number(c.minSettleAmt || 0).toLocaleString() }}원</td></template>
-      <template #cell-useYn="{ row: c }"><td><span class="badge" :class="c.useYn==='Y'?'badge-green':'badge-gray'">{{ c.useYn==='Y'?'사용':'미사용' }}</span></td></template>
-      <template #cell-settleConfigRemark="{ row: c }"><td style="color:#888;font-size:12px">{{ c.settleConfigRemark }}</td></template>
       <template #row-actions="{ row: c }">
         <button class="btn btn-sm btn-primary" @click="openEdit(c)">수정</button>
         <button class="btn btn-sm btn-danger"  @click="handleDelete(c)">삭제</button>

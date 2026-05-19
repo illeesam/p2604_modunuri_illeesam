@@ -187,13 +187,17 @@ window.PmCouponMng = {
     const gridColumns = [
       { key: 'couponNm',       label: '쿠폰명', sortKey: 'nm' },
       { key: 'couponCd',       label: '코드' },
-      { key: 'discount',       label: '할인' },
-      { key: 'minOrderAmt',    label: '최소주문' },
-      { key: 'targetTypeCdNm', label: '발급대상' },
-      { key: 'issue',          label: '발급/사용' },
+      { key: 'discount',       label: '할인', fmt: (v, row) => discountLabel(row) },
+      { key: 'minOrderAmt',    label: '최소주문',
+        fmt: (v) => v ? v.toLocaleString() + '원↑' : '-' },
+      { key: 'targetTypeCdNm', label: '발급대상', fmt: (v) => v || '-' },
+      { key: 'issue',          label: '발급/사용',
+        fmt: (v, row) => (row.issueCnt || 0) + ' / ' + (row.issueLimit || 0) },
       { key: 'validTo',        label: '만료일', sortKey: 'reg' },
-      { key: 'couponStatusCd', label: '상태' },
-      { key: 'siteNm',         label: '사이트명' },
+      { key: 'couponStatusCd', label: '상태',
+        badge: (row) => fnStatusBadge(row.couponStatusCdNm || row.couponStatusCd),
+        fmt: (v, row) => row.couponStatusCdNm || row.couponStatusCd },
+      { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
@@ -242,12 +246,6 @@ window.PmCouponMng = {
       <template #head-actions>관리</template>
       <template #cell-couponNm="{ row: c }"><td><span class="title-link" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?'color:#e8587a;font-weight:700;':''">{{ c.couponNm }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
       <template #cell-couponCd="{ row: c }"><td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;">{{ c.couponCd }}</code></td></template>
-      <template #cell-discount="{ row: c }"><td>{{ discountLabel(c) }}</td></template>
-      <template #cell-minOrderAmt="{ row: c }"><td>{{ c.minOrderAmt ? c.minOrderAmt.toLocaleString()+'원↑' : '-' }}</td></template>
-      <template #cell-targetTypeCdNm="{ row: c }"><td>{{ c.targetTypeCdNm || '-' }}</td></template>
-      <template #cell-issue="{ row: c }"><td>{{ c.issueCnt || 0 }} / {{ c.issueLimit || 0 }}</td></template>
-      <template #cell-couponStatusCd="{ row: c }"><td><span class="badge" :class="fnStatusBadge(c.couponStatusCdNm || c.couponStatusCd)">{{ c.couponStatusCdNm || c.couponStatusCd }}</span></td></template>
-      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
       <template #row-actions="{ row: c }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.couponId)">수정</button>

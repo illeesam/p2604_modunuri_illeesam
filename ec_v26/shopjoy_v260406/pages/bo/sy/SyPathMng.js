@@ -259,8 +259,12 @@ window.SyPathMng = {
 
     /* BoGridEdit 컬럼 정의 — 전 셀 슬롯 (기존 onCellChange 변경추적 보존) */
     const gridColumns = [
-      { key: 'rowStatus',    label: '상태',     style: 'width:60px;text-align:center;' },
-      { key: 'pathId',       label: 'ID',       style: 'width:60px;text-align:center;' },
+      { key: 'rowStatus',    label: '상태',     style: 'width:60px;text-align:center;', align: 'center',
+        badge: (row) => 'badge-xs ' + (row._status === 'N' ? 'badge-green' : row._status === 'U' ? 'badge-orange' : 'badge-gray'),
+        fmt: (v, row) => row._status || 'N' },
+      { key: 'pathId',       label: 'ID',       style: 'width:60px;text-align:center;', align: 'center',
+        cellStyle: 'font-size:11px;color:#999;',
+        fmt: (v, row) => row.pathId > 0 ? row.pathId : 'NEW' },
       { key: 'bizCd',        label: '업무코드', style: 'width:120px;' },
       { key: 'parentPathId', label: '부모경로', style: 'width:160px;' },
       { key: 'pathLabel',    label: '경로 라벨' },
@@ -328,17 +332,6 @@ window.SyPathMng = {
       </template>
       <template #head-actions>관리</template>
 
-      <template #cell-rowStatus="{ row }">
-        <td style="text-align:center">
-          <span class="badge badge-xs"
-            :class="{ 'badge-green': row._status==='N', 'badge-orange': row._status==='U', 'badge-gray': !row._status }">
-            {{ row._status || 'N' }}
-          </span>
-        </td>
-      </template>
-      <template #cell-pathId="{ row }">
-        <td style="text-align:center;font-size:11px;color:#999">{{ row.pathId > 0 ? row.pathId : 'NEW' }}</td>
-      </template>
       <template #cell-bizCd="{ row }">
         <td style="padding:3px 6px">
           <input class="grid-input" :value="row.bizCd" @input="onCellChange(row,'bizCd',$event.target.value)" placeholder="biz_cd">

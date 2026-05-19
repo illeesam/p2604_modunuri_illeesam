@@ -185,12 +185,14 @@ const CATEGORIES = [
       { key: 'planNm',       label: '기획전명', sortKey: 'nm' },
       { key: 'category',     label: '카테고리' },
       { key: 'theme',        label: '테마' },
-      { key: 'productIds',   label: '상품수' },
-      { key: 'planStatusCd', label: '상태' },
-      { key: 'viewCount',    label: '조회수' },
-      { key: 'period',       label: '기간' },
+      { key: 'productIds',   label: '상품수',
+        fmt: (v) => (v || []).length + '개' },
+      { key: 'planStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.planStatusCd) },
+      { key: 'viewCount',    label: '조회수', fmt: (v) => (v || 0).toLocaleString() },
+      { key: 'period',       label: '기간', cellStyle: 'font-size:11px;color:#666',
+        fmt: (v, row) => row.startDate + ' ~ ' + row.endDate },
       { key: 'regDate',      label: '등록일', sortKey: 'reg' },
-      { key: 'siteNm',       label: '사이트명' },
+      { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
@@ -231,11 +233,6 @@ const CATEGORIES = [
       <template #head-actions>관리</template>
       <template #cell-planNm="{ row: p }"><td><span class="title-link" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?'color:#e8587a;font-weight:700;':''">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
       <template #cell-category="{ row: p }"><td><span style="font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:2px 8px;">{{ p.category }}</span></td></template>
-      <template #cell-productIds="{ row: p }"><td>{{ (p.productIds||[]).length }}개</td></template>
-      <template #cell-planStatusCd="{ row: p }"><td><span class="badge" :class="fnStatusBadge(p.planStatusCd)">{{ p.planStatusCd }}</span></td></template>
-      <template #cell-viewCount="{ row: p }"><td>{{ (p.viewCount||0).toLocaleString() }}</td></template>
-      <template #cell-period="{ row: p }"><td style="font-size:11px;color:#666;">{{ p.startDate }} ~ {{ p.endDate }}</td></template>
-      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
       <template #row-actions="{ row: p }">
         <div class="actions" style="display:flex;gap:6px;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.planId)">수정</button>

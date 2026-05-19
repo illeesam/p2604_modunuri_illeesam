@@ -180,16 +180,18 @@ window.PmCacheMng = {
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'memberNm',    label: '회원' },
+      { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'cacheDate',   label: '일시', sortKey: 'reg' },
-      { key: 'cacheTypeCd', label: '유형' },
-      { key: 'cacheAmt',    label: '금액' },
-      { key: 'balanceAmt',  label: '잔액' },
+      { key: 'cacheTypeCd', label: '유형', badge: (row) => fnTypeBadge(row.cacheTypeCd) },
+      { key: 'cacheAmt',    label: '금액',
+        fmt: (v) => ((v || 0) > 0 ? '+' : '') + (v || 0).toLocaleString() + '원',
+        cellStyle: (v) => (v || 0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600' },
+      { key: 'balanceAmt',  label: '잔액', fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'cacheDesc',   label: '내용' },
-      { key: 'siteNm',      label: '사이트명' },
+      { key: 'siteNm',      label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, showRefModal,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },
@@ -232,14 +234,9 @@ window.PmCacheMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
-      @sort="onSort">
+      @sort="onSort" @ref-click="({type,id}) => showRefModal(type, id)">
       <template #head-actions>관리</template>
-      <template #cell-memberNm="{ row: c }"><td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td></template>
-      <template #cell-cacheTypeCd="{ row: c }"><td><span class="badge" :class="fnTypeBadge(c.cacheTypeCd)">{{ c.cacheTypeCd }}</span></td></template>
-      <template #cell-cacheAmt="{ row: c }"><td :style="(c.cacheAmt||0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600'">{{ (c.cacheAmt||0) > 0 ? '+' : '' }}{{ (c.cacheAmt||0).toLocaleString() }}원</td></template>
-      <template #cell-balanceAmt="{ row: c }"><td>{{ (c.balanceAmt||0).toLocaleString() }}원</td></template>
       <template #cell-cacheDesc="{ row: c }"><td><span class="title-link" @click="handleLoadDetail(c.cacheId)" :style="selectedId===c.cacheId?'color:#e8587a;font-weight:700;':''">{{ c.cacheDesc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
-      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
       <template #row-actions="{ row: c }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.cacheId)">수정</button>

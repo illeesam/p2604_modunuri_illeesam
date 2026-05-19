@@ -177,10 +177,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'adjId',        label: '조정ID' },
       { key: 'adjDate',      label: '조정일자' },
       { key: 'vendorNm',     label: '업체명' },
-      { key: 'adjType',      label: '유형' },
-      { key: 'adjAmt',       label: '조정금액' },
-      { key: 'reason',       label: '사유' },
-      { key: 'aprvStatusCd', label: '승인상태' },
+      { key: 'adjType',      label: '유형', badge: (row) => fnTypeBadge(row.adjType) },
+      { key: 'adjAmt',       label: '조정금액', fmt: fmtW,
+        cellStyle: (v, row) => row.adjAmt < 0
+          ? 'color:#e74c3c;font-weight:700' : 'color:#27ae60;font-weight:700' },
+      { key: 'reason',       label: '사유',
+        cellStyle: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
+      { key: 'aprvStatusCd', label: '승인상태', badge: (row) => fnAprvBadge(row.aprvStatusCd) },
       { key: 'regUserNm',    label: '등록자' },
     ];
 
@@ -234,10 +237,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
       @set-page="setPage" @size-change="onSizeChange">
       <template #head-actions>액션</template>
-      <template #cell-adjType="{ row: r }"><td><span class="badge" :class="fnTypeBadge(r.adjType)">{{ r.adjType }}</span></td></template>
-      <template #cell-adjAmt="{ row: r }"><td :style="r.adjAmt<0?'color:#e74c3c;font-weight:700':'color:#27ae60;font-weight:700'">{{ fmtW(r.adjAmt) }}</td></template>
-      <template #cell-reason="{ row: r }"><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.reason }}</td></template>
-      <template #cell-aprvStatusCd="{ row: r }"><td><span class="badge" :class="fnAprvBadge(r.aprvStatusCd)">{{ r.aprvStatusCd }}</span></td></template>
       <template #row-actions="{ row: r }">
         <button class="btn btn-sm btn-primary" @click="openEdit(r)">수정</button>
         <button class="btn btn-sm btn-danger"  @click="handleDelete(r)">삭제</button>

@@ -184,14 +184,15 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     const gridColumns = [
       { key: 'saveNm',     label: '마일리지명', sortKey: 'nm' },
-      { key: 'saveType',   label: '유형' },
-      { key: 'saveVal',    label: '적립값' },
-      { key: 'saveUnit',   label: '단위' },
-      { key: 'expireDay',  label: '유효기간' },
+      { key: 'saveType',   label: '유형', badge: (row) => fnTypeBadge(row.saveType) },
+      { key: 'saveVal',    label: '적립값', fmt: (v) => (v || 0).toLocaleString() },
+      { key: 'saveUnit',   label: '단위', cellStyle: 'color:#555', fmt: (v) => v || '원' },
+      { key: 'expireDay',  label: '유효기간', cellStyle: 'color:#555',
+        fmt: (v) => (v || 365) + '일' },
       { key: 'startDate',  label: '시작일', sortKey: 'reg' },
       { key: 'endDate',    label: '종료일' },
-      { key: 'saveStatus', label: '상태' },
-      { key: 'siteNm',     label: '사이트' },
+      { key: 'saveStatus', label: '상태', badge: (row) => fnStatusBadge(row.saveStatus) },
+      { key: 'siteNm',     label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), saves, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
@@ -239,12 +240,6 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       @sort="onSort">
       <template #head-actions>관리</template>
       <template #cell-saveNm="{ row: s }"><td><span class="title-link" @click="handleLoadDetail(s.saveId)" :style="selectedId===s.saveId?'color:#e8587a;font-weight:700;':''">{{ s.saveNm }}<span v-if="selectedId===s.saveId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
-      <template #cell-saveType="{ row: s }"><td><span class="badge" :class="fnTypeBadge(s.saveType)">{{ s.saveType }}</span></td></template>
-      <template #cell-saveVal="{ row: s }"><td>{{ (s.saveVal||0).toLocaleString() }}</td></template>
-      <template #cell-saveUnit="{ row: s }"><td style="font-size:12px;color:#555;">{{ s.saveUnit || '원' }}</td></template>
-      <template #cell-expireDay="{ row: s }"><td style="font-size:12px;color:#555;">{{ s.expireDay || 365 }}일</td></template>
-      <template #cell-saveStatus="{ row: s }"><td><span class="badge" :class="fnStatusBadge(s.saveStatus)">{{ s.saveStatus }}</span></td></template>
-      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
       <template #row-actions="{ row: s }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(s.saveId)">수정</button>

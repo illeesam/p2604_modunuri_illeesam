@@ -115,12 +115,12 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'siteNm',   label: '사이트' },
-      { key: 'prodId',   label: '상품명' },
-      { key: 'qnaTitle', label: '제목' },
-      { key: 'memberId', label: '작성자' },
-      { key: 'answYn',   label: '상태' },
-      { key: 'regDate',  label: '등록일', sortKey: 'reg' },
+      { key: 'siteNm',   label: '사이트', fmt: () => cfSiteNm.value },
+      { key: 'prodId',   label: '상품명', fmt: (v) => getProdNm(v) },
+      { key: 'qnaTitle', label: '제목', cellClass: 'title-link' },
+      { key: 'memberId', label: '작성자', fmt: (v) => getMemNm(v) },
+      { key: 'answYn',   label: '상태', badge: (q) => fnStatusBadge(q.answYn), fmt: (v) => fnAnswLabel(v) },
+      { key: 'regDate',  label: '등록일', sortKey: 'reg', fmt: (v) => (v || '').slice(0, 10) },
     ];
 
     return { qnas, uiState, codes, pager, searchParam, gridColumns,
@@ -160,12 +160,6 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
       @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
-      <template #cell-siteNm><td>{{ cfSiteNm }}</td></template>
-      <template #cell-prodId="{ row: q }"><td>{{ getProdNm(q.prodId) }}</td></template>
-      <template #cell-qnaTitle="{ row: q }"><td class="title-link">{{ q.qnaTitle }}</td></template>
-      <template #cell-memberId="{ row: q }"><td>{{ getMemNm(q.memberId) }}</td></template>
-      <template #cell-answYn="{ row: q }"><td><span :class="['badge',fnStatusBadge(q.answYn)]">{{ fnAnswLabel(q.answYn) }}</span></td></template>
-      <template #cell-regDate="{ row: q }"><td>{{ (q.regDate||'').slice(0,10) }}</td></template>
     </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>

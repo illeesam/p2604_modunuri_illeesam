@@ -150,7 +150,9 @@ window.FoSearchArea = {
 /* ── 공통 헬퍼 (그리드 공유) ────────────────────────────────────────────── */
 window._foAreaCompUtil = {
   normOptions(opts) {
-    return (opts || []).map(o => ({
+    // 함수형 options 지원 (codes 지연 로드 대응)
+    const arr = (typeof opts === 'function') ? opts() : opts;
+    return (arr || []).map(o => ({
       value: o.value != null ? o.value : o.codeValue,
       label: o.label != null ? o.label : o.codeLabel,
     }));
@@ -175,11 +177,25 @@ window._foAreaCompUtil = {
     if (col.align) s += 'text-align:' + col.align + ';';
     return s;
   },
-  tdStyle(col) {
+  tdStyle(col, row) {
     let s = '';
     if (col.align) s += 'text-align:' + col.align + ';';
     if (col.mono)  s += 'font-family:monospace;';
+    // AG-Grid 식 cellStyle: 문자열 또는 (value,row)=>string. 미지정 시 기존 동작 동일
+    if (col.cellStyle != null) {
+      const ext = (typeof col.cellStyle === 'function')
+        ? col.cellStyle(row ? row[col.key] : undefined, row)
+        : col.cellStyle;
+      if (ext) s += (s && !s.endsWith(';') ? ';' : '') + ext;
+    }
     return s;
+  },
+  /* AG-Grid 식 cellClass: 문자열 또는 (value,row)=>string. 미지정 시 '' */
+  cellClass(col, row) {
+    if (col.cellClass == null) return '';
+    return (typeof col.cellClass === 'function')
+      ? (col.cellClass(row ? row[col.key] : undefined, row) || '')
+      : col.cellClass;
   },
   /* 페이저 호환 — BO식(pageNo/pageSize/pageTotalCount) / FO식(page/size) 모두 수용 */
   pgNo(p)    { return p ? (p.pageNo != null ? p.pageNo : (p.page != null ? p.page : 1)) : 1; },
@@ -334,7 +350,7 @@ window.FoGrid = {
             <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">{{ rowNo(idx) }}</td>
             <template v-for="col in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-                <td :style="U.tdStyle(col)">
+                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)">
                   <input v-if="col.edit==='text'" class="fo-grid-input" v-model="row[col.key]"
                          :placeholder="col.placeholder" />
                   <input v-else-if="col.edit==='number'" type="number" class="fo-grid-input fo-grid-num"
@@ -549,7 +565,7 @@ window.FoGridCrud = {
           </td>
           <template v-for="col in columns" :key="col.key">
             <slot :name="'cell-' + col.key" :row="row" :idx="idx">
-              <td :style="U.tdStyle(col)">
+              <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)">
                 <input v-if="col.edit==='text'" class="fo-grid-input" :class="{ 'fo-grid-mono': col.mono }"
                        v-model="row[col.key]" :disabled="row._row_status==='D'"
                        :placeholder="col.placeholder" @input="onCellChange(row)" />

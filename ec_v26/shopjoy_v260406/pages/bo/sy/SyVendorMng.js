@@ -173,14 +173,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const gridColumns = [
       { key: 'pathId',        label: '표시경로' },
       { key: 'vendorId',      label: 'ID' },
-      { key: 'vendorType',    label: '업체유형' },
+      { key: 'vendorType',    label: '업체유형', badge: (row) => fnTypeBadge(row.vendorType) },
       { key: 'vendorNm',      label: '업체명', sortKey: 'nm' },
       { key: 'ceoNm',         label: '대표자' },
       { key: 'vendorNo',      label: '사업자번호' },
       { key: 'vendorPhone',   label: '전화번호' },
       { key: 'vendorEmail',   label: '이메일' },
       { key: 'contractDate',  label: '계약일', sortKey: 'reg' },
-      { key: 'vendorStatusCd', label: '상태' },
+      { key: 'vendorStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.vendorStatusCd) },
       { key: 'siteNm',        label: '사이트명' },
     ];
     const fnRowStyle = (v) => uiStateDetail.selectedId === v.vendorId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
@@ -242,32 +242,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <template #cell-pathId="{ row }">
           <bo-path-pick-field biz-cd="sy_vendor" :row="row" @change="onPathChange(row)" />
         </template>
-        <template #cell-vendorId="{ row }">
-          <td>{{ row.vendorId }}</td>
-        </template>
-        <template #cell-vendorType="{ row }">
-          <td><span class="badge" :class="fnTypeBadge(row.vendorType)">{{ row.vendorType }}</span></td>
-        </template>
         <template #cell-vendorNm="{ row }">
           <td><span class="title-link" @click="handleLoadDetail(row.vendorId)" :style="selectedId===row.vendorId?'color:#e8587a;font-weight:700;':''">{{ row.vendorNm }}<span v-if="selectedId===row.vendorId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-        </template>
-        <template #cell-ceoNm="{ row }">
-          <td>{{ row.ceoNm }}</td>
-        </template>
-        <template #cell-vendorNo="{ row }">
-          <td>{{ row.vendorNo }}</td>
-        </template>
-        <template #cell-vendorPhone="{ row }">
-          <td>{{ row.vendorPhone }}</td>
-        </template>
-        <template #cell-vendorEmail="{ row }">
-          <td style="font-size:12px;">{{ row.vendorEmail }}</td>
-        </template>
-        <template #cell-contractDate="{ row }">
-          <td>{{ row.contractDate }}</td>
-        </template>
-        <template #cell-vendorStatusCd="{ row }">
-          <td><span class="badge" :class="fnStatusBadge(row.vendorStatusCd)">{{ row.vendorStatusCd }}</span></td>
         </template>
         <template #cell-siteNm>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>

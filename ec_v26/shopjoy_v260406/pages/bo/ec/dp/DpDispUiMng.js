@@ -142,8 +142,11 @@ window.DpDispUiMng = {
     const listColumns = [
       { key: 'uiNm',         label: 'UI명',     sortKey: 'nm' },
       { key: 'deviceTypeCd', label: '유형' },
-      { key: 'useYn',        label: '사용여부' },
-      { key: 'regDate',      label: '등록일',   sortKey: 'reg' },
+      { key: 'useYn',        label: '사용여부',
+        badge: row => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt:   v   => v === 'Y' ? '사용' : '미사용' },
+      { key: 'regDate',      label: '등록일',   sortKey: 'reg',
+        fmt: v => (v||'').slice(0,10) },
       { key: '_act',         label: '액션' },
     ];
 
@@ -194,7 +197,7 @@ window.DpDispUiMng = {
     <bo-grid :columns="listColumns" :rows="displays" :pager="pager" row-key="uiId"
       :sort-state="uiState" list-title="전시 UI 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
-      empty-text="조회된 데이터가 없습니다."
+      empty-text="조회된 데이터가 없습니다." row-clickable
       @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => loadView(r.uiId)">
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
@@ -202,15 +205,6 @@ window.DpDispUiMng = {
       </template>
       <template #cell-uiNm="{ row }">
         <td class="title-link" @click="loadView(row.uiId)">{{ row.uiNm }}</td>
-      </template>
-      <template #cell-deviceTypeCd="{ row }">
-        <td @click="loadView(row.uiId)" style="cursor:pointer">{{ row.deviceTypeCd }}</td>
-      </template>
-      <template #cell-useYn="{ row }">
-        <td @click="loadView(row.uiId)" style="cursor:pointer"><span :class="'badge '+(row.useYn==='Y'?'badge-green':'badge-gray')">{{ row.useYn==='Y'?'사용':'미사용' }}</span></td>
-      </template>
-      <template #cell-regDate="{ row }">
-        <td @click="loadView(row.uiId)" style="cursor:pointer">{{ (row.regDate||'').slice(0,10) }}</td>
       </template>
       <template #cell-_act="{ row }">
         <td class="actions" @click.stop>

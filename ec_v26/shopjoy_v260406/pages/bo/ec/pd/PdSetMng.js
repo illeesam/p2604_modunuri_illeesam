@@ -400,9 +400,13 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const setColumns = [
       { key: 'prodNm',    label: '세트상품' },
       { key: 'itemCount', label: '구성품수', style: 'width:70px;text-align:center', fmt: v => (v || 0) + '개' },
-      { key: '_price',    label: '판매가',   style: 'width:110px;text-align:right' },
-      { key: '_stock',    label: '재고',     style: 'width:60px;text-align:center' },
-      { key: '_status',   label: '상태',     style: 'width:90px;text-align:center' },
+      { key: '_price',    label: '판매가',   style: 'width:110px;text-align:right', align: 'right',
+        fmt: (v, row) => (row.prod ? (row.prod.salePrice || row.prod.price || 0).toLocaleString() + '원' : '-') },
+      { key: '_stock',    label: '재고',     style: 'width:60px;text-align:center', align: 'center',
+        fmt: (v, row) => (row.prod ? (row.prod.stock != null ? row.prod.stock : '-') : '-') },
+      { key: '_status',   label: '상태',     style: 'width:90px;text-align:center', align: 'center',
+        badge: (row) => { const pr = row.prod || {}; return (pr.status === '판매중' || pr.prodStatusCd === 'ACTIVE') ? 'badge-green' : (pr.prodStatusCd === 'DRAFT' ? 'badge-orange' : 'badge-gray'); },
+        fmt: (v, row) => (row.prod ? (row.prod.status || row.prod.prodStatusCd || '-') : '-') },
       { key: '_act',      label: '관리',     style: 'width:110px;text-align:center' },
     ];
     const fnSetRowStyle = (g) => (uiState.dtlMode === 'edit' && uiState.editSetId === g.setProdId) ? 'background:#e6f4ff' : '';
@@ -419,10 +423,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* BoGrid 컬럼 — 구성품 상품 피커 */
     const pickerColumns = [
-      { key: 'productId', label: 'ID',       style: 'width:44px' },
-      { key: 'prodNm',    label: '상품명' },
-      { key: 'category',  label: '카테고리', style: 'width:70px;text-align:center' },
-      { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right' },
+      { key: 'productId', label: 'ID',       style: 'width:44px', cellStyle: 'color:#aaa;' },
+      { key: 'prodNm',    label: '상품명', fmt: (v, row) => (row.prodNm || row.productName) },
+      { key: 'category',  label: '카테고리', style: 'width:70px;text-align:center', align: 'center',
+        cellStyle: 'color:#888;', fmt: (v) => (v || '-') },
+      { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right', align: 'right',
+        fmt: (v, row) => ((row.salePrice || row.price || 0).toLocaleString() + '원') },
       { key: '_sel',      label: '선택',     style: 'width:56px;text-align:center' },
     ];
 
@@ -494,22 +500,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
               </div>
             </div>
           </div>
-        </td>
-      </template>
-      <template #cell-_price="{ row }">
-        <td style="text-align:right">{{ row.prod ? (row.prod.salePrice || row.prod.price || 0).toLocaleString() + '원' : '-' }}</td>
-      </template>
-      <template #cell-_stock="{ row }">
-        <td style="text-align:center">{{ row.prod ? (row.prod.stock != null ? row.prod.stock : '-') : '-' }}</td>
-      </template>
-      <template #cell-_status="{ row }">
-        <td style="text-align:center">
-          <span :class="['badge',
-            row.prod?.status==='판매중'        ? 'badge-green'  :
-            row.prod?.prodStatusCd==='ACTIVE' ? 'badge-green'  :
-            row.prod?.prodStatusCd==='DRAFT'  ? 'badge-orange' : 'badge-gray']">
-            {{ row.prod ? (row.prod.status || row.prod.prodStatusCd || '-') : '-' }}
-          </span>
         </td>
       </template>
       <template #cell-_act="{ row }">
@@ -719,18 +709,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <bo-grid bare :columns="pickerColumns" :rows="cfPickerList" row-key="productId"
             empty-text="검색 결과가 없습니다.">
-            <template #cell-productId="{ row }">
-              <td style="color:#aaa;font-size:12px">{{ row.productId }}</td>
-            </template>
-            <template #cell-prodNm="{ row }">
-              <td>{{ row.prodNm || row.productName }}</td>
-            </template>
-            <template #cell-category="{ row }">
-              <td style="text-align:center;font-size:12px;color:#888">{{ row.category || '-' }}</td>
-            </template>
-            <template #cell-_price="{ row }">
-              <td style="text-align:right">{{ (row.salePrice||row.price||0).toLocaleString() }}원</td>
-            </template>
             <template #cell-_sel="{ row }">
               <td style="text-align:center">
                 <button class="btn btn-blue btn-xs" @click="addItemFromProd(row)">선택</button>

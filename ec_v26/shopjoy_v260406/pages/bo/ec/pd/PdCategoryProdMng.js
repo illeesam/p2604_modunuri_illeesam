@@ -330,12 +330,17 @@ window.PdCategoryProdMng = {
     /* BoGrid 컬럼 — 카테고리-상품 매핑 (전시기간/전시 컬럼은 NORMAL 외 타입만) */
     const cfCatProdColumns = computed(() => {
       const cols = [
-        { key: 'prodId',   label: 'ID',   style: 'width:40px;text-align:center' },
+        { key: 'prodId',   label: 'ID',   style: 'width:40px;text-align:center', align: 'center', cellStyle: 'color:#aaa;' },
         { key: '_prodNm',  label: '상품명 / 강조옵션' },
-        { key: '_catPath', label: '카테고리경로', style: 'width:130px;text-align:center' },
-        { key: '_price',   label: '판매가',  style: 'width:78px;text-align:right' },
-        { key: '_stock',   label: '재고',    style: 'width:44px;text-align:center' },
-        { key: '_status',  label: '상태',    style: 'width:52px;text-align:center' },
+        { key: '_catPath', label: '카테고리경로', style: 'width:130px;text-align:center', align: 'center',
+          cellStyle: 'color:#888;line-height:1.3;', fmt: (v, row) => getCatPath(row.categoryId) },
+        { key: '_price',   label: '판매가',  style: 'width:78px;text-align:right', align: 'right',
+          fmt: (v, row) => (((getProd(row.prodId) || {}).salePrice || 0).toLocaleString() + '원') },
+        { key: '_stock',   label: '재고',    style: 'width:44px;text-align:center', align: 'center',
+          fmt: (v, row) => ((getProd(row.prodId) || {}).prodStock != null ? (getProd(row.prodId) || {}).prodStock : '-') },
+        { key: '_status',  label: '상태',    style: 'width:52px;text-align:center', align: 'center',
+          badge: (row) => { const n = (getProd(row.prodId) || {}).prodStatusCdNm; return n === '판매중' ? 'badge-green' : (n === '품절' ? 'badge-red' : 'badge-gray'); },
+          fmt: (v, row) => ((getProd(row.prodId) || {}).prodStatusCdNm || '-') },
       ];
       if (uiState.activeTypeCd !== 'NORMAL') {
         cols.push({ key: '_dispPeriod', label: '전시기간', style: 'width:216px;text-align:center' });
@@ -352,11 +357,13 @@ window.PdCategoryProdMng = {
 
     /* BoGrid 컬럼 — 상품 추가 피커 */
     const catProdPickerColumns = [
-      { key: 'prodId',    label: 'ID',       style: 'width:44px' },
+      { key: 'prodId',    label: 'ID',       style: 'width:44px', cellStyle: 'color:#aaa;' },
       { key: 'prodNm',    label: '상품명' },
-      { key: 'cateNm',    label: '카테고리', style: 'width:80px;text-align:center' },
-      { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right' },
-      { key: 'prodStock', label: '재고',     style: 'width:60px;text-align:center', fmt: v => v != null ? v : '-' },
+      { key: 'cateNm',    label: '카테고리', style: 'width:80px;text-align:center', align: 'center',
+        cellStyle: 'color:#888;', fmt: (v) => (v || '-') },
+      { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right', align: 'right',
+        fmt: (v, row) => ((row.salePrice || 0).toLocaleString() + '원') },
+      { key: 'prodStock', label: '재고',     style: 'width:60px;text-align:center', align: 'center', fmt: v => v != null ? v : '-' },
       { key: '_add',      label: '추가',     style: 'width:56px;text-align:center' },
     ];
 
@@ -458,9 +465,6 @@ window.PdCategoryProdMng = {
           draggable row-actions :row-style="fnCatProdRowStyle"
           :empty-text="searchParam.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.'"
           @reorder="onDrop">
-          <template #cell-prodId="{ row }">
-            <td style="text-align:center;font-size:11px;color:#aaa">{{ row.prodId }}</td>
-          </template>
           <template #cell-_prodNm="{ row }">
             <td>
               <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
@@ -477,25 +481,6 @@ window.PdCategoryProdMng = {
                   {{ opt.icon }} {{ opt.nm }}
                 </button>
               </div>
-            </td>
-          </template>
-          <template #cell-_catPath="{ row }">
-            <td style="text-align:center;font-size:10px;color:#888;line-height:1.3">{{ getCatPath(row.categoryId) }}</td>
-          </template>
-          <template #cell-_price="{ row }">
-            <td style="text-align:right;font-size:12px">{{ ((getProd(row.prodId)?.salePrice||0)).toLocaleString() }}원</td>
-          </template>
-          <template #cell-_stock="{ row }">
-            <td style="text-align:center;font-size:12px">{{ ((getProd(row.prodId) || {}).prodStock != null ? (getProd(row.prodId) || {}).prodStock : '-') }}</td>
-          </template>
-          <template #cell-_status="{ row }">
-            <td style="text-align:center">
-              <span :class="['badge',
-                     getProd(row.prodId)?.prodStatusCdNm==='판매중' ? 'badge-green' :
-                     getProd(row.prodId)?.prodStatusCdNm==='품절'   ? 'badge-red'   : 'badge-gray']"
-                    style="font-size:11px">
-                {{ getProd(row.prodId)?.prodStatusCdNm || '-' }}
-              </span>
             </td>
           </template>
           <template #cell-_dispPeriod="{ row }">
@@ -642,21 +627,6 @@ window.PdCategoryProdMng = {
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <bo-grid bare :columns="catProdPickerColumns" :rows="pickerResults" row-key="prodId"
             empty-text="검색 결과가 없습니다.">
-            <template #cell-prodId="{ row }">
-              <td style="color:#aaa;font-size:12px">{{ row.prodId }}</td>
-            </template>
-            <template #cell-prodNm="{ row }">
-              <td>{{ row.prodNm }}</td>
-            </template>
-            <template #cell-cateNm="{ row }">
-              <td style="text-align:center;font-size:12px;color:#888">{{ row.cateNm || '-' }}</td>
-            </template>
-            <template #cell-_price="{ row }">
-              <td style="text-align:right;font-size:12px">{{ (row.salePrice||0).toLocaleString() }}원</td>
-            </template>
-            <template #cell-prodStock="{ row }">
-              <td style="text-align:center;font-size:12px">{{ row.prodStock != null ? row.prodStock : '-' }}</td>
-            </template>
             <template #cell-_add="{ row }">
               <td style="text-align:center">
                 <button class="btn btn-blue btn-xs" @click="addProd(row)">추가</button>

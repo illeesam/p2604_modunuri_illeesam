@@ -118,7 +118,9 @@ window.XsSample04 = {
       { key: 'grade',    label: '등급', width: '56px', align: 'center' },
       { key: 'status',   label: '상태', width: '50px', align: 'center' },
       { key: 'orders',   label: '주문', width: '56px', align: 'right' },
-      { key: 'totalAmt', label: '총구매액', width: '110px', align: 'right' },
+      { key: 'totalAmt', label: '총구매액', width: '110px', align: 'right',
+        cellStyle: 'color:var(--text-primary);font-weight:700',
+        fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'joinDate', label: '가입일', width: '86px', align: 'center' },
       { key: '_act',     label: '', width: '48px', align: 'center' },
     ];
@@ -395,9 +397,6 @@ window.XsSample04 = {
         <td style="text-align:center;">
           <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="fnStatusBadge(row.status)">{{ row.status }}</span>
         </td>
-      </template>
-      <template #cell-totalAmt="{ row }">
-        <td style="text-align:right;color:var(--text-primary);font-weight:700;">{{ row.totalAmt.toLocaleString() }}원</td>
       </template>
       <template #cell-_act="{ row }">
         <td style="text-align:center;">

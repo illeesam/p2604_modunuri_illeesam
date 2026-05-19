@@ -549,13 +549,14 @@ window.SyCodeMng = {
      * BoGridCrud 트리 모드: flat-rows=flatTree, row-accessor=it=>it.node.code */
     const treeGridColumns = [
       { key: 'codeLabel',       label: '코드라벨',          style: 'min-width:220px;' },
-      { key: 'codeValue',       label: '코드값' },
+      { key: 'codeValue',       label: '코드값',            edit: 'text', mono: true },
       { key: 'parentCodeValue', label: '상위코드값',        style: 'width:140px;' },
-      { key: 'sortOrd',         label: '순서',             cls: 'col-ord' },
-      { key: 'useYn',           label: '사용여부',          cls: 'col-use' },
+      { key: 'sortOrd',         label: '순서',             cls: 'col-ord', edit: 'number' },
+      { key: 'useYn',           label: '사용여부',          cls: 'col-use', edit: 'select', options: () => pageCodes.use_yn },
       { key: 'codeOpt1',        label: '스타일 (code_opt1)', style: 'width:140px;' },
-      { key: 'codeRemark',      label: '비고' },
-      { key: 'siteNm',          label: '사이트명',          style: 'width:80px;' },
+      { key: 'codeRemark',      label: '비고',             edit: 'text' },
+      { key: 'siteNm',          label: '사이트명',          style: 'width:80px;', align: 'center',
+        cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => siteNm },
     ];
     const treeRowAccessor = (it) => it.node.code;
     const treeRowKeyFn    = (it) => it.node.value;
@@ -802,24 +803,11 @@ window.SyCodeMng = {
             </div>
           </td>
         </template>
-        <template #cell-codeValue="{ row }">
-          <td><input class="grid-input grid-mono" v-model="row.codeValue" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-        </template>
         <template #cell-parentCodeValue="{ row }">
           <td>
             <select class="grid-select" style="font-size:12px;" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
               <option :value="null">-- 없음 --</option>
               <option v-for="opt in parentOpts" :key="opt.value" :value="opt.value">{{ opt.displayLabel }}</option>
-            </select>
-          </td>
-        </template>
-        <template #cell-sortOrd="{ row }">
-          <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-        </template>
-        <template #cell-useYn="{ row }">
-          <td>
-            <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
             </select>
           </td>
         </template>
@@ -832,12 +820,6 @@ window.SyCodeMng = {
                 :disabled="row._row_status==='D'" @input="onCellChange(row)" />
             </div>
           </td>
-        </template>
-        <template #cell-codeRemark="{ row }">
-          <td><input class="grid-input" v-model="row.codeRemark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-        </template>
-        <template #cell-siteNm>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
         </template>
 
         <template #row-actions="{ row }">

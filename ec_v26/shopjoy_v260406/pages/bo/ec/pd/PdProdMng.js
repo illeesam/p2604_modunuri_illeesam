@@ -208,12 +208,12 @@ window.PdProdMng = {
     const gridColumns = [
       { key: 'prodNm',       label: '상품명', sortKey: 'nm' },
       { key: 'cateNm',       label: '카테고리' },
-      { key: 'listPrice',    label: '가격' },
-      { key: 'prodStock',    label: '재고' },
+      { key: 'listPrice',    label: '가격', fmt: (v) => ((v || 0).toLocaleString() + '원') },
+      { key: 'prodStock',    label: '재고', fmt: (v) => (v + '개') },
       { key: 'brandNm',      label: '브랜드' },
-      { key: 'prodStatusCd', label: '상태' },
+      { key: 'prodStatusCd', label: '상태', badge: (p) => fnStatusBadge(p.prodStatusCd), fmt: (v, p) => (p.prodStatusCdNm || p.prodStatusCd) },
       { key: 'regDate',      label: '등록일', sortKey: 'reg' },
-      { key: 'siteNm',       label: '사이트명' },
+      { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
     return { uiStateDetail, selectedId, products, uiState, codes, searchParam, gridColumns, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel, onSort, sortIcon };
@@ -268,10 +268,6 @@ window.PdProdMng = {
       <template #cell-prodNm="{ row: p }">
         <td><span class="title-link" @click="handleLoadDetail(p.prodId)" :style="selectedId===p.prodId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.prodId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
       </template>
-      <template #cell-listPrice="{ row: p }"><td>{{ (p.listPrice||0).toLocaleString() }}원</td></template>
-      <template #cell-prodStock="{ row: p }"><td>{{ p.prodStock }}개</td></template>
-      <template #cell-prodStatusCd="{ row: p }"><td><span class="badge" :class="fnStatusBadge(p.prodStatusCd)">{{ p.prodStatusCdNm || p.prodStatusCd }}</span></td></template>
-      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
       <template #row-actions="{ row: p }">
         <div class="actions">
           <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.prodId)">👁</button>

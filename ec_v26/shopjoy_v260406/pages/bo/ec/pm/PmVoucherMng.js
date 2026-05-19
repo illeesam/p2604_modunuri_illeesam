@@ -178,15 +178,20 @@ window.PmVoucherMng = {
 
     const gridColumns = [
       { key: 'voucherNm',       label: '상품권명', sortKey: 'nm' },
-      { key: 'voucherValue',    label: '액면가' },
-      { key: 'salePrice',       label: '판매가' },
-      { key: 'issueQty',        label: '발행매수' },
-      { key: 'soldQty',         label: '판매매수' },
-      { key: 'remain',          label: '잔여' },
+      { key: 'voucherValue',    label: '액면가', align: 'right',
+        fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'salePrice',       label: '판매가', align: 'right',
+        fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'issueQty',        label: '발행매수', align: 'center',
+        fmt: (v) => (v || 0).toLocaleString() + '개' },
+      { key: 'soldQty',         label: '판매매수', align: 'center',
+        fmt: (v) => (v || 0).toLocaleString() + '개' },
+      { key: 'remain',          label: '잔여', align: 'center',
+        fmt: (v, row) => ((row.issueQty || 0) - (row.soldQty || 0)).toLocaleString() + '개' },
       { key: 'startDate',       label: '시작일', sortKey: 'reg' },
       { key: 'endDate',         label: '종료일' },
-      { key: 'voucherStatusCd', label: '상태' },
-      { key: 'siteNm',          label: '사이트' },
+      { key: 'voucherStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.voucherStatusCd) },
+      { key: 'siteNm',          label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vouchers, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
@@ -233,13 +238,6 @@ window.PmVoucherMng = {
       @sort="onSort">
       <template #head-actions>관리</template>
       <template #cell-voucherNm="{ row: v }"><td><span class="title-link" @click="handleLoadDetail(v.voucherId)" :style="selectedId===v.voucherId?'color:#e8587a;font-weight:700;':''">{{ v.voucherNm }}<span v-if="selectedId===v.voucherId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
-      <template #cell-voucherValue="{ row: v }"><td style="text-align:right;">{{ (v.voucherValue||0).toLocaleString() }}원</td></template>
-      <template #cell-salePrice="{ row: v }"><td style="text-align:right;">{{ (v.salePrice||0).toLocaleString() }}원</td></template>
-      <template #cell-issueQty="{ row: v }"><td style="text-align:center;">{{ (v.issueQty||0).toLocaleString() }}개</td></template>
-      <template #cell-soldQty="{ row: v }"><td style="text-align:center;">{{ (v.soldQty||0).toLocaleString() }}개</td></template>
-      <template #cell-remain="{ row: v }"><td style="text-align:center;">{{ ((v.issueQty||0) - (v.soldQty||0)).toLocaleString() }}개</td></template>
-      <template #cell-voucherStatusCd="{ row: v }"><td><span class="badge" :class="fnStatusBadge(v.voucherStatusCd)">{{ v.voucherStatusCd }}</span></td></template>
-      <template #cell-siteNm><td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td></template>
       <template #row-actions="{ row: v }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(v.voucherId)">수정</button>

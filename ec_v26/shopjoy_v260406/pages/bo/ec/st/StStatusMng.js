@@ -361,13 +361,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* BoGrid 컬럼 정의 — 특수셀은 #cell- 슬롯 override */
     const vendorColumns = [
-      { key: 'vendorNm',  label: '업체명' },
-      { key: 'orderCnt',  label: '주문건수' },
-      { key: 'sales',     label: '매출액' },
-      { key: 'refund',    label: '환불액' },
-      { key: 'netSales',  label: '순매출' },
-      { key: 'comm',      label: '수수료(10%)' },
-      { key: 'settle',    label: '정산예정액' },
+      { key: 'vendorNm',  label: '업체명', cellStyle: 'font-weight:700' },
+      { key: 'orderCnt',  label: '주문건수', fmt: (v) => v + '건' },
+      { key: 'sales',     label: '매출액', fmt: fmtW },
+      { key: 'refund',    label: '환불액', cellStyle: 'color:#e74c3c',
+        fmt: (v) => v > 0 ? '-' + fmtW(v) : '-' },
+      { key: 'netSales',  label: '순매출', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'comm',      label: '수수료(10%)', fmt: fmtW, cellStyle: 'color:#e67e22' },
+      { key: 'settle',    label: '정산예정액', fmt: fmtW, cellStyle: 'color:#27ae60;font-weight:700' },
     ];
     const orderColumns = [
       { key: 'orderId',    label: '주문ID' },
@@ -375,10 +376,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'userNm',     label: '고객명' },
       { key: 'vendorNm',   label: '업체' },
       { key: 'prodNm',     label: '상품명' },
-      { key: 'totalPrice', label: '결제금액' },
-      { key: 'comm',       label: '수수료' },
-      { key: 'settle',     label: '정산액' },
-      { key: 'status',     label: '상태' },
+      { key: 'totalPrice', label: '결제금액', fmt: fmtW },
+      { key: 'comm',       label: '수수료', cellStyle: 'color:#e67e22',
+        fmt: (v, row) => row.isCancelled ? '-' : fmtW(v) },
+      { key: 'settle',     label: '정산액',
+        fmt: (v, row) => row.isCancelled ? '-' : fmtW(v),
+        cellStyle: (v, row) => 'font-weight:700;' + (row.isCancelled ? 'color:#bbb' : 'color:#27ae60') },
+      { key: 'status',     label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
     const claimColumns = [
       { key: 'claimId',      label: '클레임ID' },
@@ -386,32 +390,35 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'userNm',       label: '고객명' },
       { key: 'orderId',      label: '주문ID' },
       { key: 'prodNm',       label: '상품명' },
-      { key: 'type',         label: '유형' },
+      { key: 'type',         label: '유형', badge: (row) => fnTypeBadge(row.type) },
       { key: 'reason',       label: '사유' },
-      { key: 'refundAmount', label: '환불액' },
-      { key: 'settleImpact', label: '정산차감' },
-      { key: 'status',       label: '상태' },
+      { key: 'refundAmount', label: '환불액', fmt: (v) => v > 0 ? fmtW(v) : '-' },
+      { key: 'settleImpact', label: '정산차감', cellStyle: 'color:#e74c3c;font-weight:700',
+        fmt: (v) => v < 0 ? '-' + fmtW(Math.abs(v)) : '-' },
+      { key: 'status',       label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
     const promoColumns = [
       { key: 'promoId',     label: 'ID' },
-      { key: 'promoType',   label: '유형' },
+      { key: 'promoType',   label: '유형', badge: () => 'badge-blue' },
       { key: 'promoNm',     label: '프로모션명' },
-      { key: 'issueCnt',    label: '발급/충전수' },
-      { key: 'useCnt',      label: '사용건수' },
-      { key: 'discountAmt', label: '할인/지원액' },
-      { key: 'period',      label: '기간' },
-      { key: 'status',      label: '상태' },
+      { key: 'issueCnt',    label: '발급/충전수', fmt: (v) => fmt(v) },
+      { key: 'useCnt',      label: '사용건수', fmt: (v) => fmt(v) },
+      { key: 'discountAmt', label: '할인/지원액', fmt: fmtW, cellStyle: 'color:#e74c3c;font-weight:700' },
+      { key: 'period',      label: '기간', cellStyle: 'color:#888' },
+      { key: 'status',      label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
     const settleColumns = [
-      { key: 'month',     label: '정산월' },
-      { key: 'orderCnt',  label: '주문건수' },
-      { key: 'sales',     label: '매출액' },
-      { key: 'refund',    label: '환불액' },
-      { key: 'net',       label: '순매출' },
-      { key: 'comm',      label: '수수료(10%)' },
-      { key: 'promo',     label: '프로모션비(3%)' },
-      { key: 'settle',    label: '순정산액' },
-      { key: 'statusCd',  label: '상태' },
+      { key: 'month',     label: '정산월', cellStyle: 'font-weight:700' },
+      { key: 'orderCnt',  label: '주문건수', fmt: (v) => v + '건' },
+      { key: 'sales',     label: '매출액', fmt: fmtW },
+      { key: 'refund',    label: '환불액', cellStyle: 'color:#e74c3c',
+        fmt: (v) => v > 0 ? '-' + fmtW(v) : '-' },
+      { key: 'net',       label: '순매출', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'comm',      label: '수수료(10%)', fmt: fmtW, cellStyle: 'color:#e67e22' },
+      { key: 'promo',     label: '프로모션비(3%)', fmt: fmtW, cellStyle: 'color:#9b59b6' },
+      { key: 'settle',    label: '순정산액', fmt: fmtW,
+        cellStyle: (v) => 'font-weight:700;' + (v >= 0 ? 'color:#27ae60' : 'color:#e74c3c') },
+      { key: 'statusCd',  label: '상태', badge: (row) => fnStatusBadge(row.statusCd) },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -504,13 +511,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       empty-text="데이터가 없습니다."
       @set-page="setVendorPage"
       @size-change="onVendorSizeChange">
-      <template #cell-vendorNm="{ row: r }"><td><strong>{{ r.vendorNm }}</strong></td></template>
-      <template #cell-orderCnt="{ row: r }"><td>{{ r.orderCnt }}건</td></template>
-      <template #cell-sales="{ row: r }"><td>{{ fmtW(r.sales) }}</td></template>
-      <template #cell-refund="{ row: r }"><td style="color:#e74c3c">{{ r.refund > 0 ? '-'+fmtW(r.refund) : '-' }}</td></template>
-      <template #cell-netSales="{ row: r }"><td><strong>{{ fmtW(r.netSales) }}</strong></td></template>
-      <template #cell-comm="{ row: r }"><td style="color:#e67e22">{{ fmtW(r.comm) }}</td></template>
-      <template #cell-settle="{ row: r }"><td style="color:#27ae60;font-weight:700">{{ fmtW(r.settle) }}</td></template>
     </bo-grid>
   </div>
 
@@ -552,15 +552,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       empty-text="데이터가 없습니다."
       @set-page="setOrderPage"
       @size-change="onOrderSizeChange">
-      <template #cell-orderId="{ row: r }"><td>{{ r.orderId }}</td></template>
-      <template #cell-orderDate="{ row: r }"><td>{{ r.orderDate }}</td></template>
-      <template #cell-userNm="{ row: r }"><td>{{ r.userNm }}</td></template>
-      <template #cell-vendorNm="{ row: r }"><td>{{ r.vendorNm }}</td></template>
-      <template #cell-prodNm="{ row: r }"><td>{{ r.prodNm }}</td></template>
-      <template #cell-totalPrice="{ row: r }"><td>{{ fmtW(r.totalPrice) }}</td></template>
-      <template #cell-comm="{ row: r }"><td style="color:#e67e22">{{ r.isCancelled ? '-' : fmtW(r.comm) }}</td></template>
-      <template #cell-settle="{ row: r }"><td style="font-weight:700" :style="r.isCancelled ? 'color:#bbb' : 'color:#27ae60'">{{ r.isCancelled ? '-' : fmtW(r.settle) }}</td></template>
-      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
     </bo-grid>
   </div>
 
@@ -604,16 +595,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       empty-text="데이터가 없습니다."
       @set-page="setClaimPage"
       @size-change="onClaimSizeChange">
-      <template #cell-claimId="{ row: r }"><td>{{ r.claimId }}</td></template>
-      <template #cell-requestDate="{ row: r }"><td>{{ r.requestDate }}</td></template>
-      <template #cell-userNm="{ row: r }"><td>{{ r.userNm }}</td></template>
-      <template #cell-orderId="{ row: r }"><td>{{ r.orderId }}</td></template>
-      <template #cell-prodNm="{ row: r }"><td>{{ r.prodNm }}</td></template>
-      <template #cell-type="{ row: r }"><td><span class="badge" :class="fnTypeBadge(r.type)">{{ r.type }}</span></td></template>
-      <template #cell-reason="{ row: r }"><td>{{ r.reason }}</td></template>
-      <template #cell-refundAmount="{ row: r }"><td>{{ r.refundAmount > 0 ? fmtW(r.refundAmount) : '-' }}</td></template>
-      <template #cell-settleImpact="{ row: r }"><td style="color:#e74c3c;font-weight:700">{{ r.settleImpact < 0 ? '-'+fmtW(Math.abs(r.settleImpact)) : '-' }}</td></template>
-      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
     </bo-grid>
   </div>
 
@@ -650,14 +631,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       empty-text="데이터가 없습니다."
       @set-page="setPromoPage"
       @size-change="onPromoSizeChange">
-      <template #cell-promoId="{ row: r }"><td>{{ r.promoId }}</td></template>
-      <template #cell-promoType="{ row: r }"><td><span class="badge badge-blue">{{ r.promoType }}</span></td></template>
-      <template #cell-promoNm="{ row: r }"><td>{{ r.promoNm }}</td></template>
-      <template #cell-issueCnt="{ row: r }"><td>{{ fmt(r.issueCnt) }}</td></template>
-      <template #cell-useCnt="{ row: r }"><td>{{ fmt(r.useCnt) }}</td></template>
-      <template #cell-discountAmt="{ row: r }"><td style="color:#e74c3c;font-weight:700">{{ fmtW(r.discountAmt) }}</td></template>
-      <template #cell-period="{ row: r }"><td style="font-size:12px;color:#888">{{ r.period }}</td></template>
-      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
     </bo-grid>
   </div>
 
@@ -694,15 +667,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       empty-text="데이터가 없습니다."
       @set-page="setSettlePage"
       @size-change="onSettleSizeChange">
-      <template #cell-month="{ row: r }"><td><strong>{{ r.month }}</strong></td></template>
-      <template #cell-orderCnt="{ row: r }"><td>{{ r.orderCnt }}건</td></template>
-      <template #cell-sales="{ row: r }"><td>{{ fmtW(r.sales) }}</td></template>
-      <template #cell-refund="{ row: r }"><td style="color:#e74c3c">{{ r.refund > 0 ? '-'+fmtW(r.refund) : '-' }}</td></template>
-      <template #cell-net="{ row: r }"><td><strong>{{ fmtW(r.net) }}</strong></td></template>
-      <template #cell-comm="{ row: r }"><td style="color:#e67e22">{{ fmtW(r.comm) }}</td></template>
-      <template #cell-promo="{ row: r }"><td style="color:#9b59b6">{{ fmtW(r.promo) }}</td></template>
-      <template #cell-settle="{ row: r }"><td style="font-weight:700" :style="r.settle >= 0 ? 'color:#27ae60' : 'color:#e74c3c'">{{ fmtW(r.settle) }}</td></template>
-      <template #cell-statusCd="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.statusCd)">{{ r.statusCd }}</span></td></template>
     </bo-grid>
   </div>
 </div>

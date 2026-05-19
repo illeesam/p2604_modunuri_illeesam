@@ -157,15 +157,15 @@ window.StSettleCloseMng = {
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'closeMon',  label: '정산월' },
-      { key: 'sales',     label: '매출액' },
-      { key: 'refund',    label: '환불액' },
-      { key: 'net',       label: '순매출' },
-      { key: 'comm',      label: '수수료' },
-      { key: 'promo',     label: '프로모션비' },
-      { key: 'settle',    label: '정산액' },
+      { key: 'closeMon',  label: '정산월', cellStyle: 'font-weight:700' },
+      { key: 'sales',     label: '매출액', fmt: fmtW },
+      { key: 'refund',    label: '환불액', fmt: fmtW, cellStyle: 'color:#e74c3c' },
+      { key: 'net',       label: '순매출', fmt: fmtW },
+      { key: 'comm',      label: '수수료', fmt: fmtW, cellStyle: 'color:#e67e22' },
+      { key: 'promo',     label: '프로모션비', fmt: fmtW, cellStyle: 'color:#9b59b6' },
+      { key: 'settle',    label: '정산액', fmt: fmtW, cellStyle: 'color:#27ae60;font-weight:700' },
       { key: 'closeDate', label: '마감일' },
-      { key: 'status',    label: '상태' },
+      { key: 'status',    label: '상태', badge: (row) => fnStatusBadge(row.status) },
       { key: 'regUserNm', label: '담당자' },
     ];
 
@@ -240,14 +240,6 @@ window.StSettleCloseMng = {
       :columns="gridColumns" :rows="cfFilteredClose" row-key="closeId"
       list-title="정산마감 이력" :count-text="cfFilteredClose.length + '건'" :row-actions="true">
       <template #head-actions>액션</template>
-      <template #cell-closeMon="{ row: r }"><td><strong>{{ r.closeMon }}</strong></td></template>
-      <template #cell-sales="{ row: r }"><td>{{ fmtW(r.sales) }}</td></template>
-      <template #cell-refund="{ row: r }"><td style="color:#e74c3c">{{ fmtW(r.refund) }}</td></template>
-      <template #cell-net="{ row: r }"><td>{{ fmtW(r.net) }}</td></template>
-      <template #cell-comm="{ row: r }"><td style="color:#e67e22">{{ fmtW(r.comm) }}</td></template>
-      <template #cell-promo="{ row: r }"><td style="color:#9b59b6">{{ fmtW(r.promo) }}</td></template>
-      <template #cell-settle="{ row: r }"><td style="color:#27ae60;font-weight:700">{{ fmtW(r.settle) }}</td></template>
-      <template #cell-status="{ row: r }"><td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td></template>
       <template #row-actions="{ row: r }">
         <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="doReopen(r)">마감취소</button>
       </template>

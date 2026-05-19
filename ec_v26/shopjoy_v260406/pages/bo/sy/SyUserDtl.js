@@ -124,13 +124,18 @@ window.SyUserDtl = {
 
     /* BoGrid(bare) 컬럼 정의 — 적용 역할 목록 */
     const userRoleColumns = [
-      { key: 'roleId',       label: 'ID',     style: 'width:50px;text-align:center;' },
-      { key: 'roleCode',     label: '역할코드', style: 'width:130px;' },
-      { key: 'roleNm',       label: '역할명' },
-      { key: 'roleType',     label: '유형',   style: 'width:80px;text-align:center;' },
-      { key: 'restrictPerm', label: '제한',   style: 'width:80px;text-align:center;' },
-      { key: 'useYn',        label: '사용',   style: 'width:60px;text-align:center;' },
-      { key: 'remark',       label: '비고' },
+      { key: 'roleId',       label: 'ID',     style: 'width:50px;text-align:center;', align: 'center',
+        cellStyle: 'color:#888;' },
+      { key: 'roleCode',     label: '역할코드', style: 'width:130px;', mono: true,
+        cellStyle: 'font-size:11px;color:#2563eb;' },
+      { key: 'roleNm',       label: '역할명', cellStyle: 'font-weight:600;' },
+      { key: 'roleType',     label: '유형',   style: 'width:80px;text-align:center;', align: 'center',
+        badge: (row) => fnRoleTypeBadge(row.roleType) },
+      { key: 'restrictPerm', label: '제한',   style: 'width:80px;text-align:center;', align: 'center',
+        badge: (row) => row.restrictPerm === '없음' ? 'badge-green' : row.restrictPerm === '읽기' ? 'badge-orange' : 'badge-red' },
+      { key: 'useYn',        label: '사용',   style: 'width:60px;text-align:center;', align: 'center',
+        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-red' },
+      { key: 'remark',       label: '비고', cellStyle: 'color:#666;' },
     ];
 
     /* 사용자(관리자) fnRoleTypeBadge */
@@ -298,37 +303,8 @@ window.SyUserDtl = {
       </span>
     </div>
     <bo-grid bare :columns="userRoleColumns" :rows="cfUserRoles" row-key="roleId"
-             empty-text="배정된 역할이 없습니다.">
-      <template #cell-roleId="{ row }">
-        <td style="text-align:center;color:#888;">{{ row.roleId }}</td>
-      </template>
-      <template #cell-roleCode="{ row }">
-        <td><span style="font-family:monospace;font-size:11px;color:#2563eb;">{{ row.roleCode }}</span></td>
-      </template>
-      <template #cell-roleNm="{ row }">
-        <td style="font-weight:600;">{{ row.roleNm }}</td>
-      </template>
-      <template #cell-roleType="{ row }">
-        <td style="text-align:center;">
-          <span class="badge" :class="fnRoleTypeBadge(row.roleType)">{{ row.roleType }}</span>
-        </td>
-      </template>
-      <template #cell-restrictPerm="{ row }">
-        <td style="text-align:center;">
-          <span class="badge" :class="row.restrictPerm==='없음'?'badge-green':row.restrictPerm==='읽기'?'badge-orange':'badge-red'">
-            {{ row.restrictPerm }}
-          </span>
-        </td>
-      </template>
-      <template #cell-useYn="{ row }">
-        <td style="text-align:center;">
-          <span class="badge" :class="row.useYn==='Y'?'badge-green':'badge-red'">{{ row.useYn }}</span>
-        </td>
-      </template>
-      <template #cell-remark="{ row }">
-        <td style="font-size:12px;color:#666;">{{ row.remark }}</td>
-      </template>
-    </bo-grid>
+             empty-text="배정된 역할이 없습니다." />
+
   </div>
 
   <!-- ── 부서 선택 팝업 ─────────────────────────────────────────────────────── -->

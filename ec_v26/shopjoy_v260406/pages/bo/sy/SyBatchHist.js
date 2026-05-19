@@ -120,15 +120,15 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       handleSearchData().then(() => { onExpandAll(); });
     });
 
-    /* BoGridReadonly 컬럼 정의 (전 셀 #cell-* 슬롯, 행펼침 #row-expand) */
+    /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
     const histColumns = [
-      { key: 'batchLogId', label: '로그ID',  style: 'width:46px;' },
-      { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;' },
-      { key: 'batchCode',  label: '배치코드', style: 'min-width:150px;' },
-      { key: 'runAt',      label: '실행일시', style: 'width:128px;' },
-      { key: 'durationMs', label: '소요시간', style: 'width:66px;text-align:center;' },
-      { key: 'runStatus',  label: '결과',    style: 'width:66px;text-align:center;' },
-      { key: 'message',    label: '메시지',  style: 'width:auto;' },
+      { key: 'batchLogId', label: '로그ID',  style: 'width:46px;', cellStyle: 'color:#aaa' },
+      { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;', cellStyle: 'font-weight:500' },
+      { key: '_batchCode', label: '배치코드', style: 'min-width:150px;' },
+      { key: 'runAt',      label: '실행일시', style: 'width:128px;', cellStyle: 'color:#555;font-family:monospace;font-size:11px' },
+      { key: 'durationMs', label: '소요시간', style: 'width:66px;text-align:center;', align: 'center', cellStyle: 'color:#666', fmt: (v) => fnFmtDuration(v) },
+      { key: 'runStatus',  label: '결과',    style: 'width:66px;text-align:center;', align: 'center', badge: (row) => fnRunBadge(row.runStatus) },
+      { key: 'message',    label: '메시지',  style: 'width:auto;', cellStyle: (v, row) => 'font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;' + (row.runStatus === '실패' ? 'color:#dc2626' : 'color:#555') },
       { key: '_exp',       label: '',        style: 'width:32px;' },
     ];
     const fnRowExpanded = (log) => isExpanded(log.batchLogId);
@@ -149,9 +149,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <bo-grid-readonly
     :columns="histColumns" :rows="batchLogs" :pager="pager" row-key="batchLogId"
     list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded"
+    :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded" row-clickable
     empty-text="실행이력이 없습니다."
-    @set-page="setPage" @size-change="onSizeChange">
+    @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleExpand(row.batchLogId)">
 
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -169,29 +169,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </div>
     </template>
 
-    <template #cell-batchLogId="{ row }">
-      <td style="color:#aaa;" @click="toggleExpand(row.batchLogId)">{{ row.batchLogId }}</td>
-    </template>
-    <template #cell-batchNm="{ row }">
-      <td style="font-weight:500;" @click="toggleExpand(row.batchLogId)">{{ row.batchNm }}</td>
-    </template>
-    <template #cell-batchCode="{ row }">
-      <td @click="toggleExpand(row.batchLogId)"><code style="font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.batchCode }}</code></td>
-    </template>
-    <template #cell-runAt="{ row }">
-      <td style="color:#555;font-family:monospace;font-size:11px;" @click="toggleExpand(row.batchLogId)">{{ row.runAt }}</td>
-    </template>
-    <template #cell-durationMs="{ row }">
-      <td style="text-align:center;color:#666;" @click="toggleExpand(row.batchLogId)">{{ fnFmtDuration(row.durationMs) }}</td>
-    </template>
-    <template #cell-runStatus="{ row }">
-      <td style="text-align:center;" @click="toggleExpand(row.batchLogId)"><span class="badge badge-xs" :class="fnRunBadge(row.runStatus)">{{ row.runStatus }}</span></td>
-    </template>
-    <template #cell-message="{ row }">
-      <td style="font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;cursor:pointer;"
-        :style="row.runStatus==='실패' ? 'color:#dc2626;' : 'color:#555;'" @click="toggleExpand(row.batchLogId)">
-        {{ row.message }}
-      </td>
+    <template #cell-_batchCode="{ row }">
+      <td><code style="font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.batchCode }}</code></td>
     </template>
     <template #cell-_exp="{ row }">
       <td style="text-align:center;padding:0 4px;">

@@ -143,13 +143,13 @@ window.SyI18nMng = {
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
       { key: 'i18nKey',     label: '키 (i18n_key)' },
-      { key: 'i18nDesc',    label: '설명' },
-      { key: 'i18nScopeCd', label: '범위' },
-      { key: 'i18nCategory',label: '카테고리' },
-      { key: 'msgKo',       label: 'ko' },
-      { key: 'msgEn',       label: 'en' },
-      { key: 'msgJa',       label: 'ja' },
-      { key: 'useYn',       label: '사용' },
+      { key: 'i18nDesc',    label: '설명', cellStyle: 'color:#666;font-size:12px' },
+      { key: 'i18nScopeCd', label: '범위', align: 'center', badge: (row) => fnScopeBadge(row.i18nScopeCd) },
+      { key: 'i18nCategory',label: '카테고리', cellStyle: 'font-size:12px;color:#888' },
+      { key: 'msgKo',       label: 'ko', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row.i18nId, 'ko') },
+      { key: 'msgEn',       label: 'en', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row.i18nId, 'en') },
+      { key: 'msgJa',       label: 'ja', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row.i18nId, 'ja') },
+      { key: 'useYn',       label: '사용', align: 'center', badge: (row) => fnYnBadge(row.useYn) },
     ];
     const fnRowStyle = (row) => selectedId.value === row.i18nId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
@@ -186,32 +186,11 @@ window.SyI18nMng = {
     <bo-grid-readonly
       :columns="gridColumns" :rows="i18nKeys" :pager="pager" row-key="i18nId"
       list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
-      :row-style="fnRowStyle"
-      @set-page="setPage" @size-change="onSizeChange">
+      :row-style="fnRowStyle" row-clickable
+      @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
 
       <template #cell-i18nKey="{ row }">
-        <td @click="openDetail(row)"><code style="font-size:12px;color:#7c3aed">{{ row.i18nKey }}</code></td>
-      </template>
-      <template #cell-i18nDesc="{ row }">
-        <td @click="openDetail(row)" style="color:#666;font-size:12px">{{ row.i18nDesc }}</td>
-      </template>
-      <template #cell-i18nScopeCd="{ row }">
-        <td @click="openDetail(row)" style="text-align:center"><span :class="['badge',fnScopeBadge(row.i18nScopeCd)]">{{ row.i18nScopeCd }}</span></td>
-      </template>
-      <template #cell-i18nCategory="{ row }">
-        <td @click="openDetail(row)" style="font-size:12px;color:#888">{{ row.i18nCategory }}</td>
-      </template>
-      <template #cell-msgKo="{ row }">
-        <td @click="openDetail(row)" style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'ko') }}</td>
-      </template>
-      <template #cell-msgEn="{ row }">
-        <td @click="openDetail(row)" style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'en') }}</td>
-      </template>
-      <template #cell-msgJa="{ row }">
-        <td @click="openDetail(row)" style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'ja') }}</td>
-      </template>
-      <template #cell-useYn="{ row }">
-        <td @click="openDetail(row)" style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span></td>
+        <td><code style="font-size:12px;color:#7c3aed">{{ row.i18nKey }}</code></td>
       </template>
     </bo-grid-readonly>
     <!-- -- 번역 편집 패널 ----------------------------------------------------- -->

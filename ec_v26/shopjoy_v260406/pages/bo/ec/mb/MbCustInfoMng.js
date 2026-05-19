@@ -282,72 +282,73 @@
       };
 
       // -- 그리드 컬럼 정의 ----------------------------------------------------
+      const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');
       const orderCols = [
-        { key: 'orderId', label: '주문번호' },
-        { key: 'orderDate', label: '일시', style: 'white-space:nowrap;' },
-        { key: 'prodNm', label: '상품명' },
-        { key: 'totalPrice', label: '금액', style: 'text-align:right;' },
-        { key: 'status', label: '상태' },
+        { key: 'orderId', label: '주문번호' },  // ref-link KEEP
+        { key: 'orderDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
+        { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(150), cellTitle: true },
+        { key: 'totalPrice', label: '금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;', fmt: (v) => fnFmtPrice(v) },
+        { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
       const claimCols = [
-        { key: 'claimId', label: '클레임번호' },
+        { key: 'claimId', label: '클레임번호' },  // ref-link KEEP
         { key: 'type', label: '유형' },
-        { key: 'prodNm', label: '상품명' },
-        { key: 'status', label: '상태' },
+        { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(130), cellTitle: true },
+        { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
         { key: 'requestDate', label: '신청일', style: 'white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
       ];
       const dlivCols = [
-        { key: 'dlivId', label: '배송번호' },
+        { key: 'dlivId', label: '배송번호', cellStyle: 'font-weight:500;' },
         { key: 'orderId', label: '주문번호' },
         { key: 'courier', label: '택배사', fmt: (v) => v || '-' },
-        { key: 'trackingNo', label: '운송장번호', fmt: (v) => v || '-' },
-        { key: 'status', label: '상태' },
+        { key: 'trackingNo', label: '운송장번호', cellStyle: 'color:#888;', fmt: (v) => v || '-' },
+        { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
       const cacheCols = [
-        { key: 'date', label: '일시', style: 'white-space:nowrap;' },
-        { key: 'type', label: '구분' },
-        { key: 'amount', label: '금액', style: 'text-align:right;' },
-        { key: 'balance', label: '잔액', style: 'text-align:right;' },
-        { key: 'desc', label: '사유' },
+        { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
+        { key: 'type', label: '구분', badge: (row) => (row.type === '충전' ? 'badge-blue' : 'badge-orange') },
+        { key: 'amount', label: '금액', style: 'text-align:right;', align: 'right', cellStyle: (v, row) => 'font-weight:600;' + (row.amount > 0 ? 'color:#1565c0;' : 'color:#c62828;'), fmt: (v, row) => (row.amount > 0 ? '+' : '') + row.amount.toLocaleString() + '원' },
+        { key: 'balance', label: '잔액', style: 'text-align:right;', align: 'right', cellStyle: 'color:#555;', fmt: (v) => fnFmtPrice(v) },
+        { key: 'desc', label: '사유', cellStyle: _ellipsis(150, 'color:#666;'), cellTitle: true },
       ];
       const contactCols = [
-        { key: 'date', label: '접수일', style: 'white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
-        { key: 'category', label: '분류' },
-        { key: 'title', label: '제목' },
-        { key: 'status', label: '상태' },
+        { key: 'date', label: '접수일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
+        { key: 'category', label: '분류', cellStyle: 'white-space:nowrap;' },
+        { key: 'title', label: '제목', cellStyle: _ellipsis(200), cellTitle: true },
+        { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
       const chatCols = [
-        { key: 'date', label: '일시', style: 'white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
-        { key: 'subject', label: '제목' },
-        { key: 'lastMsg', label: '마지막 메시지' },
-        { key: 'status', label: '상태' },
+        { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
+        { key: 'subject', label: '제목', cellStyle: _ellipsis(130), cellTitle: true },
+        { key: 'lastMsg', label: '마지막 메시지', cellStyle: _ellipsis(180, 'color:#666;'), cellTitle: true },
+        { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
       const loginCols = [
-        { key: 'loginDate', label: '일시', style: 'white-space:nowrap;' },
-        { key: 'ip', label: 'IP' },
-        { key: 'device', label: '기기/브라우저' },
-        { key: 'result', label: '결과' },
+        { key: 'loginDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
+        { key: 'ip', label: 'IP', cellStyle: 'color:#666;font-family:monospace;' },
+        { key: 'device', label: '기기/브라우저', cellStyle: 'color:#555;' },
+        { key: 'result', label: '결과', badge: (row) => fnBadgeCls(row.result) },
       ];
       const couponCols = [
-        { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;' },
-        { key: 'couponNm', label: '쿠폰명' },
-        { key: 'couponCode', label: '코드' },
-        { key: 'orderId', label: '주문번호' },
-        { key: 'discountAmt', label: '할인금액', style: 'text-align:right;' },
+        { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
+        { key: 'couponNm', label: '쿠폰명', cellStyle: _ellipsis(150), cellTitle: true },
+        { key: 'couponCode', label: '코드', cellStyle: 'font-family:monospace;color:#666;' },
+        { key: 'orderId', label: '주문번호' },  // ref-link KEEP
+        { key: 'discountAmt', label: '할인금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;color:#e91e63;', fmt: (v, row) => '-' + (row.discountAmt || 0).toLocaleString() + '원' },
       ];
       const sendCols = [
-        { key: 'sendDate', label: '발송일시', style: 'white-space:nowrap;' },
-        { key: 'channelCd', label: '채널' },
-        { key: 'title', label: '제목/내용' },
-        { key: 'statusCd', label: '결과' },
+        { key: 'sendDate', label: '발송일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
+        { key: 'channelCd', label: '채널', badge: (row) => fnChannelCls(row.channelCd) },
+        { key: 'title', label: '제목/내용', cellStyle: _ellipsis(220, 'color:#333;'), cellTitle: true },
+        { key: 'statusCd', label: '결과', badge: (row) => fnBadgeCls(row.statusCd) },
       ];
       const memberModalCols = [
-        { key: 'userId', label: 'ID', style: 'width:50px;text-align:center;' },
-        { key: 'memberNm', label: '이름', style: 'width:90px;' },
-        { key: 'email', label: '이메일' },
-        { key: 'phone', label: '전화', style: 'width:130px;', fmt: (v) => v || '-' },
-        { key: 'grade', label: '등급', style: 'width:60px;text-align:center;' },
-        { key: 'status', label: '상태', style: 'width:60px;text-align:center;' },
+        { key: 'userId', label: 'ID', style: 'width:50px;text-align:center;', align: 'center', cellStyle: 'color:#aaa;' },
+        { key: 'memberNm', label: '이름', style: 'width:90px;', cellStyle: 'font-weight:600;color:#1a1a2e;' },
+        { key: 'email', label: '이메일', cellStyle: 'color:#555;' },
+        { key: 'phone', label: '전화', style: 'width:130px;', cellStyle: 'color:#666;font-family:monospace;', fmt: (v) => v || '-' },
+        { key: 'grade', label: '등급', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.grade === 'VIP' ? 'badge-purple' : row.grade === '우수' ? 'badge-blue' : 'badge-gray') },
+        { key: 'status', label: '상태', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.status === '활성' ? 'badge-green' : 'badge-red') },
         { key: '_act', label: '관리', style: 'width:70px;text-align:right;' },
       ];
 
@@ -530,18 +531,6 @@
             <template #cell-orderId="{ row }">
               <td><a href="#" @click.prevent="showRefModal('order',row.orderId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ row.orderId }}</a></td>
             </template>
-            <template #cell-orderDate="{ row }">
-              <td style="color:#888;white-space:nowrap;">{{ row.orderDate }}</td>
-            </template>
-            <template #cell-prodNm="{ row }">
-              <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="row.prodNm">{{ row.prodNm }}</td>
-            </template>
-            <template #cell-totalPrice="{ row }">
-              <td style="text-align:right;font-weight:600;">{{ fnFmtPrice(row.totalPrice) }}</td>
-            </template>
-            <template #cell-status="{ row }">
-              <td><span :class="'badge '+fnBadgeCls(row.status)">{{ row.status }}</span></td>
-            </template>
           </bo-grid>
         </div>
       </div>
@@ -558,12 +547,6 @@
             <template #cell-claimId="{ row }">
               <td><a href="#" @click.prevent="showRefModal('claim',row.claimId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ row.claimId }}</a></td>
             </template>
-            <template #cell-prodNm="{ row }">
-              <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="row.prodNm">{{ row.prodNm }}</td>
-            </template>
-            <template #cell-status="{ row }">
-              <td><span :class="'badge '+fnBadgeCls(row.status)">{{ row.status }}</span></td>
-            </template>
           </bo-grid>
         </div>
       </div>
@@ -576,17 +559,7 @@
           <span style="margin-left:2px;background:#e0f2f1;color:#00695c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustDeliveries.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="dlivCols" :rows="cfCustDeliveries" row-key="dlivId" empty-text="배송 내역이 없습니다.">
-            <template #cell-dlivId="{ row }">
-              <td style="font-weight:500;">{{ row.dlivId }}</td>
-            </template>
-            <template #cell-trackingNo="{ row }">
-              <td style="color:#888;">{{ row.trackingNo || '-' }}</td>
-            </template>
-            <template #cell-status="{ row }">
-              <td><span :class="'badge '+fnBadgeCls(row.status)">{{ row.status }}</span></td>
-            </template>
-          </bo-grid>
+          <bo-grid bare :columns="dlivCols" :rows="cfCustDeliveries" row-key="dlivId" empty-text="배송 내역이 없습니다."></bo-grid>
         </div>
       </div>
 
@@ -600,21 +573,6 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="cacheCols" :rows="cfCustCache" row-key="cacheId" empty-text="캐쉬 내역이 없습니다.">
-            <template #cell-date="{ row }">
-              <td style="color:#888;white-space:nowrap;">{{ row.date }}</td>
-            </template>
-            <template #cell-type="{ row }">
-              <td><span :class="'badge '+(row.type==='충전'?'badge-blue':'badge-orange')">{{ row.type }}</span></td>
-            </template>
-            <template #cell-amount="{ row }">
-              <td style="text-align:right;font-weight:600;" :style="row.amount>0?'color:#1565c0;':'color:#c62828;'">{{ row.amount > 0 ? '+' : '' }}{{ row.amount.toLocaleString() }}원</td>
-            </template>
-            <template #cell-balance="{ row }">
-              <td style="text-align:right;color:#555;">{{ fnFmtPrice(row.balance) }}</td>
-            </template>
-            <template #cell-desc="{ row }">
-              <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;" :title="row.desc">{{ row.desc }}</td>
-            </template>
           </bo-grid>
         </div>
       </div>
@@ -628,18 +586,6 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="contactCols" :rows="cfCustContacts" row-key="inquiryId" empty-text="문의 내역이 없습니다.">
-            <template #cell-date="{ row }">
-              <td style="color:#888;white-space:nowrap;">{{ row.date ? row.date.slice(0,10) : '' }}</td>
-            </template>
-            <template #cell-category="{ row }">
-              <td style="white-space:nowrap;">{{ row.category }}</td>
-            </template>
-            <template #cell-title="{ row }">
-              <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="row.title">{{ row.title }}</td>
-            </template>
-            <template #cell-status="{ row }">
-              <td><span :class="'badge '+fnBadgeCls(row.status)">{{ row.status }}</span></td>
-            </template>
           </bo-grid>
         </div>
       </div>
@@ -653,18 +599,6 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="chatCols" :rows="cfCustChats" row-key="chatId" empty-text="채팅 내역이 없습니다.">
-            <template #cell-date="{ row }">
-              <td style="color:#888;white-space:nowrap;">{{ row.date ? row.date.slice(0,10) : '' }}</td>
-            </template>
-            <template #cell-subject="{ row }">
-              <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="row.subject">{{ row.subject }}</td>
-            </template>
-            <template #cell-lastMsg="{ row }">
-              <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;" :title="row.lastMsg">{{ row.lastMsg }}</td>
-            </template>
-            <template #cell-status="{ row }">
-              <td><span :class="'badge '+fnBadgeCls(row.status)">{{ row.status }}</span></td>
-            </template>
           </bo-grid>
         </div>
       </div>
@@ -677,20 +611,7 @@
           <span style="margin-left:2px;background:#eceff1;color:#37474f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustLoginHist.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="loginCols" :rows="cfCustLoginHist" row-key="loginId" empty-text="로그인 내역이 없습니다.">
-            <template #cell-loginDate="{ row }">
-              <td style="color:#888;white-space:nowrap;">{{ row.loginDate }}</td>
-            </template>
-            <template #cell-ip="{ row }">
-              <td style="color:#666;font-family:monospace;">{{ row.ip }}</td>
-            </template>
-            <template #cell-device="{ row }">
-              <td style="color:#555;">{{ row.device }}</td>
-            </template>
-            <template #cell-result="{ row }">
-              <td><span :class="'badge '+fnBadgeCls(row.result)">{{ row.result }}</span></td>
-            </template>
-          </bo-grid>
+          <bo-grid bare :columns="loginCols" :rows="cfCustLoginHist" row-key="loginId" empty-text="로그인 내역이 없습니다."></bo-grid>
         </div>
       </div>
 
@@ -703,20 +624,8 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="couponCols" :rows="cfCustCouponUsage" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다.">
-            <template #cell-usedDate="{ row }">
-              <td style="color:#888;white-space:nowrap;">{{ row.usedDate }}</td>
-            </template>
-            <template #cell-couponNm="{ row }">
-              <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="row.couponNm">{{ row.couponNm }}</td>
-            </template>
-            <template #cell-couponCode="{ row }">
-              <td style="font-family:monospace;color:#666;font-size:11px;">{{ row.couponCode }}</td>
-            </template>
             <template #cell-orderId="{ row }">
               <td><a href="#" @click.prevent="showRefModal('order',row.orderId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ row.orderId }}</a></td>
-            </template>
-            <template #cell-discountAmt="{ row }">
-              <td style="text-align:right;font-weight:600;color:#e91e63;">-{{ (row.discountAmt||0).toLocaleString() }}원</td>
             </template>
           </bo-grid>
         </div>
@@ -731,18 +640,6 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="sendCols" :rows="cfCustSendHist" row-key="sendId" empty-text="발송 내역이 없습니다.">
-            <template #cell-sendDate="{ row }">
-              <td style="color:#888;white-space:nowrap;">{{ row.sendDate }}</td>
-            </template>
-            <template #cell-channelCd="{ row }">
-              <td><span :class="'badge '+fnChannelCls(row.channelCd)">{{ row.channelCd }}</span></td>
-            </template>
-            <template #cell-title="{ row }">
-              <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;" :title="row.title">{{ row.title }}</td>
-            </template>
-            <template #cell-statusCd="{ row }">
-              <td><span :class="'badge '+fnBadgeCls(row.statusCd)">{{ row.statusCd }}</span></td>
-            </template>
           </bo-grid>
         </div>
       </div>
@@ -769,25 +666,7 @@
         style="flex:1;font-size:13px;" />
       <button class="btn btn-primary btn-sm" @click="searchMemberModal" style="white-space:nowrap;">🔍 검색</button>
     </div>
-    <bo-grid bare :columns="memberModalCols" :rows="memberModal.list" row-key="userId" empty-text="검색 결과가 없습니다." @row-click="selectMember">
-      <template #cell-userId="{ row }">
-        <td style="text-align:center;color:#aaa;cursor:pointer;" @click="selectMember(row)">{{ row.userId }}</td>
-      </template>
-      <template #cell-memberNm="{ row }">
-        <td style="font-weight:600;color:#1a1a2e;cursor:pointer;" @click="selectMember(row)">{{ row.memberNm }}</td>
-      </template>
-      <template #cell-email="{ row }">
-        <td style="color:#555;cursor:pointer;" @click="selectMember(row)">{{ row.email }}</td>
-      </template>
-      <template #cell-phone="{ row }">
-        <td style="color:#666;font-family:monospace;cursor:pointer;" @click="selectMember(row)">{{ row.phone || '-' }}</td>
-      </template>
-      <template #cell-grade="{ row }">
-        <td style="text-align:center;cursor:pointer;" @click="selectMember(row)"><span :class="'badge '+(row.grade==='VIP'?'badge-purple':row.grade==='우수'?'badge-blue':'badge-gray')">{{ row.grade }}</span></td>
-      </template>
-      <template #cell-status="{ row }">
-        <td style="text-align:center;cursor:pointer;" @click="selectMember(row)"><span :class="'badge '+(row.status==='활성'?'badge-green':'badge-red')">{{ row.status }}</span></td>
-      </template>
+    <bo-grid bare :columns="memberModalCols" :rows="memberModal.list" row-key="userId" row-clickable empty-text="검색 결과가 없습니다." @row-click="selectMember">
       <template #cell-_act="{ row }">
         <td style="text-align:right;">
           <button class="btn btn-primary btn-sm" @click.stop="selectMember(row)">선택</button>

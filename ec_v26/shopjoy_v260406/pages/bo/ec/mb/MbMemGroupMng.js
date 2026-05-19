@@ -166,10 +166,14 @@ window.MbMemGroupMng = {
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const gridColumns = [
-      { key: 'groupNm',   label: '그룹명',   style: 'min-width:180px;' },
-      { key: 'groupMemo', label: '메모',     style: 'min-width:260px;' },
-      { key: 'memberCnt', label: '회원수',   style: 'width:90px;text-align:right;' },
-      { key: 'useYn',     label: '사용여부', style: 'width:90px;text-align:center;' },
+      { key: 'groupNm',   label: '그룹명',   style: 'min-width:180px;',
+        edit: 'text', placeholder: '그룹명' },
+      { key: 'groupMemo', label: '메모',     style: 'min-width:260px;',
+        edit: 'text', placeholder: '메모' },
+      { key: 'memberCnt', label: '회원수',   style: 'width:90px;text-align:right;',
+        align: 'right', fmt: (v) => (v || 0).toLocaleString() },
+      { key: 'useYn',     label: '사용여부', style: 'width:90px;text-align:center;',
+        edit: 'select', options: () => codes.use_yn },
     ];
 
     return {
@@ -205,30 +209,6 @@ window.MbMemGroupMng = {
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @cell-change="onCellChange">
 
-
-    <template #cell-groupNm="{ row }">
-      <td>
-        <input class="grid-input" v-model="row.groupNm"
-          :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="그룹명">
-      </td>
-    </template>
-    <template #cell-groupMemo="{ row }">
-      <td>
-        <input class="grid-input" v-model="row.groupMemo"
-          :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="메모">
-      </td>
-    </template>
-    <template #cell-memberCnt="{ row }">
-      <td style="text-align:right;padding-right:10px;">{{ (row.memberCnt || 0).toLocaleString() }}</td>
-    </template>
-    <template #cell-useYn="{ row }">
-      <td>
-        <select class="grid-select" v-model="row.useYn"
-          :disabled="row._row_status==='D'" @change="onCellChange(row)">
-          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </td>
-    </template>
 
     <template #row-actions="{ row, idx }">
       <button v-if="['U','I','D'].includes(row._row_status)"
