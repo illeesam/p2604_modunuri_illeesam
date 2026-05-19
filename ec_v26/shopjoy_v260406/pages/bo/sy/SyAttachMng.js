@@ -249,13 +249,26 @@ window.SyAttachMng = {
     const _USE_YN_FB = { '활성': 'badge-green', '비활성': 'badge-gray', 'ACTIVE': 'badge-green', 'INACTIVE': 'badge-gray' };
     const fnStatusBadge = s => coUtil.cofCodeBadge('USE_YN', s, _USE_YN_FB[s] || 'badge-gray');
 
+    /* BoGrid 컬럼 정의 (첨부파일 목록) */
+    const fileColumns = [
+      { key: 'attachGrpId', label: '그룹' },
+      { key: 'fileNm', label: '파일명', style: 'word-break:break-all;' },
+      { key: 'fileSize', label: '크기', style: 'width:70px;', fmt: v => fnFmtSize(v) },
+      { key: 'fileExt', label: '확장자', style: 'width:55px;' },
+      { key: 'refId', label: '참조ID', style: 'width:100px;' },
+      { key: 'memo', label: '메모' },
+      { key: 'regDate', label: '등록일', style: 'width:145px;', fmt: v => String(v || '').slice(0, 19) },
+      { key: 'siteNm', label: '사이트명', style: 'width:70px;' },
+      { key: '_act', label: '관리', style: 'width:80px;text-align:right;' },
+    ];
+
     // -- return ---------------------------------------------------------------
     return {
       attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
       attachGrps, grpSearchType, grpSearchValue, onGrpSearch, grpForm, pager,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
-      fnFmtSize, fnStatusBadge,
+      fnFmtSize, fnStatusBadge, fileColumns,
     };
   },
   template: /* html */`
@@ -488,42 +501,41 @@ window.SyAttachMng = {
           </div>
         </div>
 
-        <table class="admin-table">
-          <thead><tr>
-            <th style="width:36px;text-align:center;">번호</th>
-            <th>그룹</th>
-            <th>파일명</th>
-            <th style="width:70px;">크기</th>
-            <th style="width:55px;">확장자</th>
-            <th style="width:100px;">참조ID</th>
-            <th>메모</th>
-            <th style="width:145px;">등록일</th>
-            <th style="width:70px;">사이트명</th>
-            <th style="width:80px;text-align:right;">관리</th>
-          </tr></thead>
-          <tbody>
-            <tr v-if="uiState.loading"><td colspan="10" style="text-align:center;color:#999;padding:30px;">조회 중...</td></tr>
-            <tr v-else-if="attaches.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-else v-for="(a, idx) in attaches" :key="a.attachId">
-              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-              <td>
-                <span style="font-size:11px;color:#666;">{{ a.attachGrpNm || attachGrps.find(g=>g.attachGrpId===a.attachGrpId)?.attachGrpNm }}</span>
-                <span style="font-size:10px;color:#bbb;margin-left:4px;">#{{ a.attachGrpId }}</span>
-              </td>
-              <td style="font-size:12px;word-break:break-all;">{{ a.fileNm }}</td>
-              <td style="font-size:12px;">{{ fnFmtSize(a.fileSize) }}</td>
-              <td><span style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;">{{ a.fileExt }}</span></td>
-              <td style="font-size:12px;color:#666;">{{ a.refId }}</td>
-              <td style="font-size:12px;color:#888;">{{ a.memo }}</td>
-              <td style="font-size:12px;">{{ String(a.regDate||'').slice(0,19) }}</td>
-              <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-              <td><div class="actions">
-                <button class="btn btn-blue btn-sm" @click="openFileEdit(a)">수정</button>
-                <button class="btn btn-danger btn-sm" @click="handleDeleteFile(a)">삭제</button>
-              </div></td>
-            </tr>
-          </tbody>
-        </table>
+        <bo-grid
+          bare
+          :columns="fileColumns"
+          :rows="attaches"
+          :pager="pager"
+          row-key="attachId"
+          :loading="uiState.loading"
+          :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
+          @set-page="setPage"
+          @size-change="onSizeChange">
+          <template #cell-attachGrpId="{ row }">
+            <td style="font-size:12px;">
+              <span style="font-size:11px;color:#666;">{{ row.attachGrpNm || attachGrps.find(g=>g.attachGrpId===row.attachGrpId)?.attachGrpNm }}</span>
+              <span style="font-size:10px;color:#bbb;margin-left:4px;">#{{ row.attachGrpId }}</span>
+            </td>
+          </template>
+          <template #cell-fileExt="{ row }">
+            <td style="font-size:12px;"><span style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;">{{ row.fileExt }}</span></td>
+          </template>
+          <template #cell-refId="{ row }">
+            <td style="font-size:12px;color:#666;">{{ row.refId }}</td>
+          </template>
+          <template #cell-memo="{ row }">
+            <td style="font-size:12px;color:#888;">{{ row.memo }}</td>
+          </template>
+          <template #cell-siteNm="{ row }">
+            <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+          </template>
+          <template #cell-_act="{ row }">
+            <td><div class="actions">
+              <button class="btn btn-blue btn-sm" @click="openFileEdit(row)">수정</button>
+              <button class="btn btn-danger btn-sm" @click="handleDeleteFile(row)">삭제</button>
+            </div></td>
+          </template>
+        </bo-grid>
 
         <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
 
