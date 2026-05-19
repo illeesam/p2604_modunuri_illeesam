@@ -106,6 +106,62 @@ window.PdProdHist = {
       return 'badge-gray';
     };
 
+    /* 행 커서 기본 비활성(원본 외형 보존) */
+    const fnNoCursor = () => '';
+
+    /* bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) */
+    const qnaCols = [
+      { key: 'qnaTitle',     label: '질문',   style: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' },
+      { key: 'memberNm',     label: '작성자' },
+      { key: 'regDate',      label: '작성일' },
+      { key: 'qnaStatusCd',  label: '상태' },
+      { key: 'answerYn',     label: '답변여부' },
+    ];
+    const reviewCols = [
+      { key: 'rating',           label: '평점',  style: 'white-space:nowrap;' },
+      { key: 'reviewContent',    label: '내용',  style: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' },
+      { key: 'memberNm',         label: '작성자' },
+      { key: 'reviewDate',       label: '작성일' },
+      { key: 'reviewStatusCd',   label: '상태' },
+    ];
+    const orderCols = [
+      { key: 'orderId',        label: '주문ID' },
+      { key: 'memberNm',       label: '회원' },
+      { key: 'orderDate',      label: '주문일', fmt: (v) => fnFmtDate(v) },
+      { key: 'totalAmt',       label: '금액',   fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'orderQty',       label: '수량' },
+      { key: 'orderStatusCd',  label: '상태' },
+      { key: '_act',           label: '관리' },
+    ];
+    const stockCols = [
+      { key: 'histDate',     label: '일시',        fmt: (v) => fnFmtDate(v) },
+      { key: 'stockTypeCd',  label: '유형' },
+      { key: 'stockQty',     label: '수량' },
+      { key: 'stockBalance', label: '처리 후 재고', fmt: (v) => (v == null ? '' : v + '개') },
+      { key: 'regByNm',      label: '처리자' },
+      { key: 'stockMemo',    label: '메모' },
+    ];
+    const priceCols = [
+      { key: 'histDate',    label: '일시',          fmt: (v) => fnFmtDate(v) },
+      { key: 'priceField',  label: '항목(변경사유)' },
+      { key: 'priceBefore', label: '변경 전', style: 'color:#888;' },
+      { key: 'priceAfter',  label: '변경 후', style: 'font-weight:600;color:#e8587a;' },
+      { key: 'regByNm',     label: '처리자' },
+    ];
+    const statusCols = [
+      { key: 'histDate',      label: '일시',     fmt: (v) => fnFmtDate(v) },
+      { key: 'statusCdBefore', label: '변경 전' },
+      { key: 'statusCdAfter',  label: '변경 후' },
+      { key: 'regByNm',       label: '처리자' },
+    ];
+    const changeCols = [
+      { key: 'histDate',     label: '일시',     fmt: (v) => fnFmtDate(v) },
+      { key: 'changeField',  label: '항목' },
+      { key: 'changeBefore', label: '변경 전', style: 'color:#888;' },
+      { key: 'changeAfter',  label: '변경 후', style: 'font-weight:500;' },
+      { key: 'regByNm',      label: '처리자' },
+    ];
+
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleLoadTab(uiState.botTab);
@@ -137,7 +193,8 @@ window.PdProdHist = {
       uiState, botTab, tabMode2,
       qnaList, reviewList,
       relatedOrders, stockHistory, priceHistory, statusHistory, changeHistory,
-      showTab, fnFmtDate, fnStockBadge
+      showTab, fnFmtDate, fnStockBadge, showRefModal,
+      fnNoCursor, qnaCols, reviewCols, orderCols, stockCols, priceCols, statusCols, changeCols
     };
   },
   template: /* html */`
@@ -169,142 +226,127 @@ window.PdProdHist = {
   <!-- -- 상품 Q&A ----------------------------------------------------------- -->
   <div class="card" v-show="showTab('qna')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 상품 Q&amp;A <span class="tab-count">{{ qnaList.length }}</span></div>
-    <table class="bo-table" v-if="qnaList.length">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <th>질문</th><th>작성자</th><th>작성일</th><th>상태</th><th>답변여부</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="(q, idx) in qnaList" :key="q.qnaId">
-          <td style="text-align:center;">{{ idx + 1 }}</td>
-          <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ q.qnaTitle || q.qnaContent }}</td>
-          <td>{{ q.memberNm || q.memberId }}</td>
-          <td>{{ fnFmtDate(q.regDate) }}</td>
-          <td><span class="badge" :class="q.qnaStatusCd==='ACTIVE'?'badge-green':'badge-gray'">{{ q.qnaStatusCdNm || q.qnaStatusCd }}</span></td>
-          <td><span class="badge" :class="q.answerYn==='Y'?'badge-blue':'badge-orange'">{{ q.answerYn==='Y' ? '답변완료' : '미답변' }}</span></td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">Q&amp;A가 없습니다.</div>
+    <bo-grid bare :columns="qnaCols" :rows="qnaList" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다.">
+      <template #cell-qnaTitle="{ row }">
+        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row.qnaTitle || row.qnaContent }}</td>
+      </template>
+      <template #cell-memberNm="{ row }">
+        <td>{{ row.memberNm || row.memberId }}</td>
+      </template>
+      <template #cell-regDate="{ row }">
+        <td>{{ fnFmtDate(row.regDate) }}</td>
+      </template>
+      <template #cell-qnaStatusCd="{ row }">
+        <td><span class="badge" :class="row.qnaStatusCd==='ACTIVE'?'badge-green':'badge-gray'">{{ row.qnaStatusCdNm || row.qnaStatusCd }}</span></td>
+      </template>
+      <template #cell-answerYn="{ row }">
+        <td><span class="badge" :class="row.answerYn==='Y'?'badge-blue':'badge-orange'">{{ row.answerYn==='Y' ? '답변완료' : '미답변' }}</span></td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 리뷰 --------------------------------------------------------------- -->
   <div class="card" v-show="showTab('review')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⭐ 리뷰 <span class="tab-count">{{ reviewList.length }}</span></div>
-    <table class="bo-table" v-if="reviewList.length">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <th>평점</th><th>내용</th><th>작성자</th><th>작성일</th><th>상태</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="(r, idx) in reviewList" :key="r.reviewId">
-          <td style="text-align:center;">{{ idx + 1 }}</td>
-          <td style="white-space:nowrap;">
-            <span style="color:#faad14;font-weight:700;">{{ r.rating }}</span>
-            <span style="color:#faad14;font-size:11px;">★</span>
-          </td>
-          <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.reviewContent || r.reviewTitle }}</td>
-          <td>{{ r.memberNm || r.memberId }}</td>
-          <td>{{ fnFmtDate(r.reviewDate || r.regDate) }}</td>
-          <td><span class="badge" :class="r.reviewStatusCd==='ACTIVE'?'badge-green':'badge-gray'">{{ r.reviewStatusCdNm || r.reviewStatusCd }}</span></td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">리뷰가 없습니다.</div>
+    <bo-grid bare :columns="reviewCols" :rows="reviewList" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
+      <template #cell-rating="{ row }">
+        <td style="white-space:nowrap;">
+          <span style="color:#faad14;font-weight:700;">{{ row.rating }}</span>
+          <span style="color:#faad14;font-size:11px;">★</span>
+        </td>
+      </template>
+      <template #cell-reviewContent="{ row }">
+        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row.reviewContent || row.reviewTitle }}</td>
+      </template>
+      <template #cell-memberNm="{ row }">
+        <td>{{ row.memberNm || row.memberId }}</td>
+      </template>
+      <template #cell-reviewDate="{ row }">
+        <td>{{ fnFmtDate(row.reviewDate || row.regDate) }}</td>
+      </template>
+      <template #cell-reviewStatusCd="{ row }">
+        <td><span class="badge" :class="row.reviewStatusCd==='ACTIVE'?'badge-green':'badge-gray'">{{ row.reviewStatusCdNm || row.reviewStatusCd }}</span></td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
-    <table class="bo-table" v-if="relatedOrders.length">
-      <thead><tr><th>주문ID</th><th>회원</th><th>주문일</th><th>금액</th><th>수량</th><th>상태</th><th>관리</th></tr></thead>
-      <tbody>
-        <tr v-for="o in relatedOrders" :key="o.orderId">
-          <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('member', o.memberId)">{{ o.memberNm || o.memberId }}</span></td>
-          <td>{{ fnFmtDate(o.orderDate) }}</td>
-          <td>{{ (o.totalAmt||0).toLocaleString() }}원</td>
-          <td>{{ o.orderQty }}</td>
-          <td><span class="badge badge-blue">{{ o.orderStatusCdNm || o.orderStatusCd }}</span></td>
-          <td><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:o.orderId})">상세</button></td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문이 없습니다.</div>
+    <bo-grid bare :columns="orderCols" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다.">
+      <template #cell-orderId="{ row }">
+        <td><span class="ref-link" @click="showRefModal('order', row.orderId)">{{ row.orderId }}</span></td>
+      </template>
+      <template #cell-memberNm="{ row }">
+        <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm || row.memberId }}</span></td>
+      </template>
+      <template #cell-orderStatusCd="{ row }">
+        <td><span class="badge badge-blue">{{ row.orderStatusCdNm || row.orderStatusCd }}</span></td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button></td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 재고 이력 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('stock')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></div>
-    <table class="bo-table" v-if="stockHistory.length">
-      <thead><tr><th>일시</th><th>유형</th><th>수량</th><th>처리 후 재고</th><th>처리자</th><th>메모</th></tr></thead>
-      <tbody>
-        <tr v-for="h in stockHistory" :key="h.histId">
-          <td>{{ fnFmtDate(h.histDate) }}</td>
-          <td><span class="badge" :class="fnStockBadge(h.stockTypeCd)">{{ h.stockTypeCdNm || h.stockTypeCd }}</span></td>
-          <td :style="(h.stockQty||0)>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
-            {{ (h.stockQty||0) > 0 ? '+' : '' }}{{ h.stockQty }}
-          </td>
-          <td>{{ h.stockBalance }}개</td>
-          <td>{{ h.regByNm || h.regBy }}</td>
-          <td>{{ h.stockMemo }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">재고 이력이 없습니다.</div>
+    <bo-grid bare :columns="stockCols" :rows="stockHistory" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다.">
+      <template #cell-stockTypeCd="{ row }">
+        <td><span class="badge" :class="fnStockBadge(row.stockTypeCd)">{{ row.stockTypeCdNm || row.stockTypeCd }}</span></td>
+      </template>
+      <template #cell-stockQty="{ row }">
+        <td :style="(row.stockQty||0)>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
+          {{ (row.stockQty||0) > 0 ? '+' : '' }}{{ row.stockQty }}
+        </td>
+      </template>
+      <template #cell-regByNm="{ row }">
+        <td>{{ row.regByNm || row.regBy }}</td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 가격변경이력 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('price')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
-    <table class="bo-table" v-if="priceHistory.length">
-      <thead><tr><th>일시</th><th>항목(변경사유)</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
-      <tbody>
-        <tr v-for="h in priceHistory" :key="h.histId">
-          <td>{{ fnFmtDate(h.histDate) }}</td>
-          <td><span class="tag">{{ h.priceField }}</span></td>
-          <td style="color:#888;">{{ h.priceBefore }}</td>
-          <td style="font-weight:600;color:#e8587a;">{{ h.priceAfter }}</td>
-          <td>{{ h.regByNm || h.regBy }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">가격 변경 이력이 없습니다.</div>
+    <bo-grid bare :columns="priceCols" :rows="priceHistory" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
+      <template #cell-priceField="{ row }">
+        <td><span class="tag">{{ row.priceField }}</span></td>
+      </template>
+      <template #cell-regByNm="{ row }">
+        <td>{{ row.regByNm || row.regBy }}</td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 상품상태 이력 -------------------------------------------------------- -->
   <div class="card" v-show="showTab('status')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></div>
-    <table class="bo-table" v-if="statusHistory.length">
-      <thead><tr><th>일시</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
-      <tbody>
-        <tr v-for="h in statusHistory" :key="h.histId">
-          <td>{{ fnFmtDate(h.histDate) }}</td>
-          <td><span class="badge badge-gray">{{ h.statusCdBeforeNm || h.statusCdBefore || '-' }}</span></td>
-          <td><span class="badge badge-blue">{{ h.statusCdAfterNm || h.statusCdAfter }}</span></td>
-          <td>{{ h.regByNm || h.regBy }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">상태 변경 이력이 없습니다.</div>
+    <bo-grid bare :columns="statusCols" :rows="statusHistory" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다.">
+      <template #cell-statusCdBefore="{ row }">
+        <td><span class="badge badge-gray">{{ row.statusCdBeforeNm || row.statusCdBefore || '-' }}</span></td>
+      </template>
+      <template #cell-statusCdAfter="{ row }">
+        <td><span class="badge badge-blue">{{ row.statusCdAfterNm || row.statusCdAfter }}</span></td>
+      </template>
+      <template #cell-regByNm="{ row }">
+        <td>{{ row.regByNm || row.regBy }}</td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 상품정보 변경이력 ------------------------------------------------------ -->
   <div class="card" v-show="showTab('changes')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
-    <table class="bo-table" v-if="changeHistory.length">
-      <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
-      <tbody>
-        <tr v-for="h in changeHistory" :key="h.histId">
-          <td>{{ fnFmtDate(h.histDate) }}</td>
-          <td><span class="tag">{{ h.changeField }}</span></td>
-          <td style="color:#888;">{{ h.changeBefore }}</td>
-          <td style="font-weight:500;">{{ h.changeAfter }}</td>
-          <td>{{ h.regByNm || h.regBy }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">변경 이력이 없습니다.</div>
+    <bo-grid bare :columns="changeCols" :rows="changeHistory" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
+      <template #cell-changeField="{ row }">
+        <td><span class="tag">{{ row.changeField }}</span></td>
+      </template>
+      <template #cell-regByNm="{ row }">
+        <td>{{ row.regByNm || row.regBy }}</td>
+      </template>
+    </bo-grid>
   </div>
   </div>
 </div>
