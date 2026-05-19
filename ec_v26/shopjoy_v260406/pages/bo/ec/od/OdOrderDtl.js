@@ -662,9 +662,7 @@ window.OdOrderDtl = {
           </div>
         </td>
       </template>
-    </bo-grid>
-    <table v-if="orderItems.length" class="bo-table" style="margin-top:-1px;">
-      <tfoot>
+      <template #tfoot>
         <tr style="background:#fafafa;font-weight:700;">
           <td style="width:36px;"></td>
           <td colspan="4" style="text-align:right;color:#555;">합계</td>
@@ -674,8 +672,8 @@ window.OdOrderDtl = {
           <td style="width:100px;text-align:right;color:#1a1a1a;">{{ fmt(orderItems.reduce((s,x)=>s+(x.price||0),0)) }}</td>
           <td colspan="3"></td>
         </tr>
-      </tfoot>
-    </table>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 결제정보 탭 --------------------------------------------------------- -->

@@ -469,9 +469,7 @@ window.OdDlivDtl = {
           <span v-else style="color:#ccc;">-</span>
         </td>
       </template>
-    </bo-grid>
-    <table v-if="dlivItems.length" class="bo-table" style="margin-top:-1px;">
-      <tfoot>
+      <template #tfoot>
         <tr style="background:#fafafa;font-weight:700;">
           <td style="width:36px;"></td>
           <td colspan="4" style="text-align:right;color:#555;">합계</td>
@@ -481,8 +479,8 @@ window.OdDlivDtl = {
           <td style="width:100px;text-align:right;color:#1a1a1a;">{{ fmt(dlivItems.reduce((s,x)=>s+(x.price||0),0)) }}</td>
           <td colspan="3"></td>
         </tr>
-      </tfoot>
-    </table>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 결제정보 탭 --------------------------------------------------------- -->

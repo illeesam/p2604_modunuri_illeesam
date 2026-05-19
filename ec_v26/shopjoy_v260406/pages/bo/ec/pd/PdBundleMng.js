@@ -428,9 +428,31 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     };
 
 
+    /* 묶음상품 목록 그리드 컬럼 (모든 셀 커스텀 → #cell 슬롯, 헤더만 정의) */
+    const bundleColumns = [
+      { key: 'prodNm',    label: '묶음상품' },
+      { key: 'itemCount', label: '구성품수',   style: 'width:70px;text-align:center;' },
+      { key: 'rateSum',   label: '안분율 합계', style: 'width:130px;text-align:center;' },
+      { key: 'salePrice', label: '판매가',     style: 'width:110px;text-align:right;' },
+      { key: 'status',    label: '상태',       style: 'width:90px;text-align:center;' },
+    ];
+    const fnBundleRowStyle = (g) =>
+      (uiState.dtlMode === 'edit' && uiState.editBundleId === g.bundleProdId)
+        ? 'background:#e6f4ff' : '';
+    /* 상태 배지 class — 템플릿 속성값 && 금지정책상 fn 으로 분리 */
+    const fnBundleStatusBadge = (g) => {
+      const st = g.prod ? (g.prod.prodStatusCd || g.prod.status) : null;
+      if (st === 'ACTIVE' || st === '판매중') return 'badge badge-green';
+      if (st === 'INACTIVE') return 'badge badge-gray';
+      return 'badge badge-orange';
+    };
+    const fnBundleStatusText = (g) =>
+      g.prod ? (g.prod.prodStatusCd || g.prod.status || '-') : '-';
+
     // -- return ---------------------------------------------------------------
 
     return {
+      bundleColumns, fnBundleRowStyle, fnBundleStatusBadge, fnBundleStatusText,
       codes, uiState, bundles, bundleList,
       searchParam, pager, setPage,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
@@ -470,74 +492,56 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
   </div>
 
   <!-- -- 목록 ------------------------------------------------------------- -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">묶음상품 목록</span>
-      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-      <div class="pager-right">
-        <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
-      </div>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <th>묶음상품</th>
-        <th style="width:70px;text-align:center">구성품수</th>
-        <th style="width:130px;text-align:center">안분율 합계</th>
-        <th style="width:110px;text-align:right">판매가</th>
-        <th style="width:90px;text-align:center">상태</th>
-        <th style="width:110px;text-align:center">관리</th>
-      </tr></thead>
-      <tbody>
-        <template v-for="(g, idx) in bundleList" :key="(g && g.bundleProdId)">
-          <tr :style="(uiState.dtlMode==='edit' && uiState.editBundleId===g.bundleProdId) ? 'background:#e6f4ff' : ''">
-            <td style="text-align:center;font-size:11px;color:#999;vertical-align:top;padding-top:12px;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td>
-              <div style="display:flex;align-items:flex-start;gap:6px">
-                <span class="badge badge-blue" style="flex-shrink:0;margin-top:1px">묶음</span>
-                <div>
-                  <span class="title-link" @click="openDtl(g.bundleProdId)">{{ g.prodNm }}</span>
-                  <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
-                    <span v-for="(item,i) in (g?.items || [])" :key="(item && item.bundleItemId)||i"
-                          style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
-                      {{ getProdNm(item.itemProdId) }}
-                      <span style="color:#1677ff">×{{ item.itemQty }}</span>
-                      <span style="color:#aaa;margin-left:2px">{{ item.priceRate }}%</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </td>
-            <td style="text-align:center">{{ g.itemCount }}개</td>
-            <td style="text-align:center">
-              <span :class="['badge', fnRateSumBadge(g.bundleProdId)]" style="font-size:12px">
-                합계 {{ rateSum(g.bundleProdId).toFixed(1) }}%
+  <bo-grid list-title="묶음상품 목록" :columns="bundleColumns" :rows="bundleList"
+           :pager="pager" :row-style="fnBundleRowStyle" row-key="bundleProdId"
+           empty-text="데이터가 없습니다." :row-actions="true"
+           @set-page="setPage" @size-change="onSizeChange">
+    <template #toolbar-actions>
+      <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
+    </template>
+    <template #cell-prodNm="{ row: g }">
+      <td style="font-size:12px;">
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <span class="badge badge-blue" style="flex-shrink:0;margin-top:1px">묶음</span>
+          <div>
+            <span class="title-link" @click="openDtl(g.bundleProdId)">{{ g.prodNm }}</span>
+            <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
+              <span v-for="(item,i) in (g?.items || [])" :key="(item && item.bundleItemId)||i"
+                    style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
+                {{ getProdNm(item.itemProdId) }}
+                <span style="color:#1677ff">×{{ item.itemQty }}</span>
+                <span style="color:#aaa;margin-left:2px">{{ item.priceRate }}%</span>
               </span>
-            </td>
-            <td style="text-align:right">
-              {{ g.prod ? (g.prod.salePrice || g.prod.price || 0).toLocaleString() + '원' : '-' }}
-            </td>
-            <td style="text-align:center">
-              <span :class="['badge',
-                g.prod && (g.prod.prodStatusCd||g.prod.status)==='ACTIVE'  ? 'badge-green' :
-                g.prod && g.prod.status==='판매중'                          ? 'badge-green' :
-                g.prod && (g.prod.prodStatusCd||g.prod.status)==='INACTIVE' ? 'badge-gray' : 'badge-orange']">
-                {{ g.prod ? (g.prod.prodStatusCd || g.prod.status || '-') : '-' }}
-              </span>
-            </td>
-            <td style="text-align:center" class="actions">
-              <button class="btn btn-blue btn-xs" @click="openDtl(g.bundleProdId)">수정</button>
-              <button class="btn btn-danger btn-xs" @click="handleDelete(g.bundleProdId)">삭제</button>
-            </td>
-          </tr>
-        </template>
-        <tr v-if="!bundleList.length">
-          <td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+            </div>
+          </div>
+        </div>
+      </td>
+    </template>
+    <template #cell-itemCount="{ row: g }">
+      <td style="text-align:center;font-size:12px;">{{ g.itemCount }}개</td>
+    </template>
+    <template #cell-rateSum="{ row: g }">
+      <td style="text-align:center;">
+        <span :class="['badge', fnRateSumBadge(g.bundleProdId)]" style="font-size:12px">
+          합계 {{ rateSum(g.bundleProdId).toFixed(1) }}%
+        </span>
+      </td>
+    </template>
+    <template #cell-salePrice="{ row: g }">
+      <td style="text-align:right;font-size:12px;">
+        {{ g.prod ? (g.prod.salePrice || g.prod.price || 0).toLocaleString() + '원' : '-' }}
+      </td>
+    </template>
+    <template #cell-status="{ row: g }">
+      <td style="text-align:center;">
+        <span :class="fnBundleStatusBadge(g)">{{ fnBundleStatusText(g) }}</span>
+      </td>
+    </template>
+    <template #row-actions="{ row: g }">
+      <button class="btn btn-blue btn-xs" @click="openDtl(g.bundleProdId)">수정</button>
+      <button class="btn btn-danger btn-xs" @click="handleDelete(g.bundleProdId)">삭제</button>
+    </template>
+  </bo-grid>
 
   <!-- -- 신규등록 / 구성관리 (인라인 Dtl) ------------------------------------------ -->
   <div v-if="uiState.dtlMode !== null" class="card"

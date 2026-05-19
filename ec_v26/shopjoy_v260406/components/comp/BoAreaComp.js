@@ -31,7 +31,9 @@
  *                  emit:  set-page(n), size-change, sort(key), row-click(row),
  *                         save, row-remove(row), reorder
  *                  슬롯: #toolbar-actions, #head, #head-actions, #cell-{key},
- *                        #row-actions, #row-expand
+ *                        #row-actions, #row-expand,
+ *                        #tfoot({rows,colspan}) — 합계행 등. 슬롯 없거나 rows 비면 미렌더
+ *                          (Od*Dtl 항목 합계행처럼 그리드 하단 고정행 통합용)
  *                  ※ window.BoGridReadonly / window.BoGridEdit 는 BoGrid 의 별칭
  *                    (기존 화면 <bo-grid-readonly> / <bo-grid-edit> 무수정 호환)
  *
@@ -187,9 +189,11 @@ window.BoGrid = {
   },
   emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder',
           'toggle-check', 'toggle-check-all'],
-  setup(props, { emit }) {
+  setup(props, { emit, slots }) {
     const U = window._boAreaCompUtil;
     const cfTotal = Vue.computed(() => props.pager ? (props.pager.pageTotalCount || 0) : props.rows.length);
+    /* tfoot 슬롯 가드 — 템플릿 속성값 && 금지 정책상 computed 로 분리 */
+    const cfShowTfoot = Vue.computed(() => !!slots.tfoot && props.rows.length > 0);
 
     const rowNo = (idx) => props.pager
       ? (props.pager.pageNo - 1) * props.pager.pageSize + idx + 1
@@ -235,7 +239,7 @@ window.BoGrid = {
     const cfColspan = Vue.computed(() => props.columns.length + 1
       + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
 
-    return { U, cfTotal, rowNo, onSort, sortIcon, sortActive, onDragStart, onDragOver, onDragEnd,
+    return { U, cfTotal, cfShowTfoot, rowNo, onSort, sortIcon, sortActive, onDragStart, onDragOver, onDragEnd,
              onRowClick, onSave, onRemove, onSetPage, onSizeChg,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
              fnRowChecked, onToggleCheck, onToggleCheckAll };
@@ -320,6 +324,9 @@ window.BoGrid = {
             style="text-align:center;padding:30px;color:#aaa">{{ emptyText }}</td>
       </tr>
     </tbody>
+    <tfoot v-if="cfShowTfoot">
+      <slot name="tfoot" :rows="rows" :colspan="cfColspan"></slot>
+    </tfoot>
   </table>
 
   <bo-pager v-if="pager && !bare" :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg" />
