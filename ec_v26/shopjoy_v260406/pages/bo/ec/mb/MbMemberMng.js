@@ -223,6 +223,20 @@ window.MbMemberMng = {
     /* 회원 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+    const listColumns = [
+      { key: 'memberNm',         label: '이름',     sortKey: 'nm' },
+      { key: 'loginId',          label: '이메일' },
+      { key: 'memberPhone',      label: '연락처' },
+      { key: 'gradeCd',          label: '등급' },
+      { key: 'memberStatusCd',   label: '상태' },
+      { key: 'joinDate',         label: '가입일',   sortKey: 'reg' },
+      { key: 'orderCount',       label: '주문수',   style: 'width:80px;text-align:right' },
+      { key: 'totalPurchaseAmt', label: '총구매액', style: 'width:100px;text-align:right' },
+      { key: '_act',             label: '관리',     style: 'text-align:center;width:80px' },
+    ];
+    const fnGridRowClass = (row) => (detailModal.dtlId === row.memberId ? 'active' : '');
+
     // 4️⃣ watch 선언
     // 5️⃣ onMounted
     onMounted(() => {
@@ -235,7 +249,8 @@ window.MbMemberMng = {
       searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, fnGradeBadge, fnStatusBadge, fnFmtDate, onSizeChange,
-      onSort, sortIcon, uiState
+      onSort, sortIcon, uiState,
+      listColumns, fnGridRowClass,
     };
   },
   template: /* html */`
@@ -266,38 +281,42 @@ window.MbMemberMng = {
       </select>
     </bo-search-area>
   </div>
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">회원목록</span>
-      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-      <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">이름 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th>
-        <th>이메일</th><th>연락처</th><th>등급</th><th>상태</th>
-        <th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">가입일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-        <th style="width:80px;text-align:right">주문수</th><th style="width:100px;text-align:right">총구매액</th><th style="text-align:center;width:80px">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="(row, idx) in members" :key="row?.memberId" :class="{active:selectedId===row.memberId}" style="cursor:pointer">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="openDetail(row)">{{ row.memberNm }}</span></td>
-          <td style="font-size:12px">{{ row.loginId }}</td>
-          <td style="font-size:12px">{{ row.memberPhone }}</td>
-          <td><span class="badge" :class="fnGradeBadge(row.gradeCd)">{{ row.gradeCd }}</span></td>
-          <td><span class="badge" :class="fnStatusBadge(row.memberStatusCd)">{{ row.memberStatusCd }}</span></td>
-          <td style="font-size:12px">{{ fnFmtDate(row.joinDate) }}</td>
-          <td style="text-align:right;font-size:12px">{{ (row.orderCount||0) }}건</td>
-          <td style="text-align:right;font-size:12px">{{ (row.totalPurchaseAmt||0).toLocaleString() }}원</td>
-          <td style="text-align:center"><button class="btn btn-blue btn-sm" @click.stop="openDetail(row)">수정</button></td>
-        </tr>
-        <tr v-if="!members.length"><td colspan="10" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+  <bo-grid :columns="listColumns" :rows="members" :pager="pager" row-key="memberId"
+    :sort-state="uiState" list-title="회원목록"
+    :count-text="'총 ' + pager.pageTotalCount + '건'"
+    :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
+    <template #toolbar-actions>
+      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+    </template>
+    <template #cell-memberNm="{ row }">
+      <td><span class="title-link" @click="openDetail(row)">{{ row.memberNm }}</span></td>
+    </template>
+    <template #cell-loginId="{ row }">
+      <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ row.loginId }}</td>
+    </template>
+    <template #cell-memberPhone="{ row }">
+      <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ row.memberPhone }}</td>
+    </template>
+    <template #cell-gradeCd="{ row }">
+      <td @click="openDetail(row)" style="cursor:pointer"><span class="badge" :class="fnGradeBadge(row.gradeCd)">{{ row.gradeCd }}</span></td>
+    </template>
+    <template #cell-memberStatusCd="{ row }">
+      <td @click="openDetail(row)" style="cursor:pointer"><span class="badge" :class="fnStatusBadge(row.memberStatusCd)">{{ row.memberStatusCd }}</span></td>
+    </template>
+    <template #cell-joinDate="{ row }">
+      <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ fnFmtDate(row.joinDate) }}</td>
+    </template>
+    <template #cell-orderCount="{ row }">
+      <td @click="openDetail(row)" style="cursor:pointer;text-align:right;font-size:12px">{{ (row.orderCount||0) }}건</td>
+    </template>
+    <template #cell-totalPurchaseAmt="{ row }">
+      <td @click="openDetail(row)" style="cursor:pointer;text-align:right;font-size:12px">{{ (row.totalPurchaseAmt||0).toLocaleString() }}원</td>
+    </template>
+    <template #cell-_act="{ row }">
+      <td style="text-align:center" @click.stop><button class="btn btn-blue btn-sm" @click="openDetail(row)">수정</button></td>
+    </template>
+  </bo-grid>
   <mb-member-dtl :detail-modal="detailModal" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
   :reload-trigger="detailModal.reloadTrigger"
   :on-list-reload="handleSearchList"

@@ -259,6 +259,21 @@ window.PdReviewMng = {
     /* 상품 리뷰 starStr */
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
+    const listColumns = [
+      { key: 'reviewTitle',     label: '리뷰 제목' },
+      { key: 'prodId',          label: '상품ID',   style: 'width:110px' },
+      { key: 'prodNm',          label: '상품명' },
+      { key: '_preview',        label: '미리',     style: 'width:48px;text-align:center;' },
+      { key: 'memberId',        label: '작성자',   style: 'width:80px' },
+      { key: 'rating',          label: '평점',     style: 'width:90px;text-align:center' },
+      { key: 'helpfulCnt',      label: '도움',     style: 'width:60px;text-align:right' },
+      { key: 'reviewStatusCd',  label: '상태',     style: 'width:80px;text-align:center' },
+      { key: 'reviewDate',      label: '작성일',   style: 'width:140px', sortKey: 'reg' },
+      { key: '_statusChg',      label: '상태변경', style: 'width:90px;text-align:center' },
+    ];
+    const fnGridRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
+
     // -- return ---------------------------------------------------------------
 
     return { reviews, uiState, searchParam, pager, setPage, onSearch, onReset,
@@ -267,6 +282,7 @@ window.PdReviewMng = {
               prodReviews, prodReviewPager, selectedProdId, onProdIdClick, setProdReviewPage, onProdReviewSizeChange,
               statusModal, openStatusModal, onStatusSelectChange, closeStatusModal, confirmStatusChange,
               cfStatusModalRowTitle, cfStatusModalCurrentCd,
+              listColumns, fnGridRowClass,
             };
   },
   template: `
@@ -287,55 +303,53 @@ window.PdReviewMng = {
         </select>
       </bo-search-area>
     </div>
-    <div class="card">
-      <div class="toolbar">
-        <span class="list-title">상품리뷰 목록</span>
-        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-      </div>
-      <table class="bo-table">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th>리뷰 제목</th>
-          <th style="width:110px">상품ID</th>
-          <th>상품명</th>
-          <th style="width:48px;text-align:center;">미리</th>
-          <th style="width:80px">작성자</th>
-          <th style="width:90px;text-align:center">평점</th>
-          <th style="width:60px;text-align:right">도움</th>
-          <th style="width:80px;text-align:center">상태</th>
-          <th @click="onSort('reg')" style="width:140px;cursor:pointer;user-select:none;white-space:nowrap;">작성일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-          <th style="width:90px;text-align:center">상태변경</th>
-        </tr></thead>
-        <tbody>
-          <tr v-for="(row, idx) in reviews" :key="row && row.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td><span class="title-link">{{ row.reviewTitle }}</span></td>
-            <td style="font-size:12px;" @click.stop>
-              <span class="title-link"
-                :style="{color: selectedProdId===row.prodId ? '#e8587a' : '#1e88e5', fontWeight: selectedProdId===row.prodId ? 700 : 500, cursor:'pointer'}"
-                title="해당 상품의 리뷰만 하단에 표시"
-                @click="onProdIdClick(row.prodId)">{{ row.prodId }}</span>
-            </td>
-            <td style="font-size:12px;color:#444;">{{ getProdNm(row.prodId) || row.prodNm || '' }}</td>
-            <td style="text-align:center" @click.stop>
-              <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click="previewProduct(row.prodId)">👁</button>
-            </td>
-            <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
-            <td style="text-align:center;color:#f59e0b;font-size:13px">{{ Number(row.rating || 0).toFixed(1) }} ★</td>
-            <td style="text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
-            <td style="text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
-            <td style="font-size:12px">{{ row.reviewDate }}</td>
-            <td style="text-align:center" @click.stop>
-              <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="onStatusSelectChange(row, $event)">
-                <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
-              </select>
-            </td>
-          </tr>
-          <tr v-if="!reviews.length"><td colspan="11" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
-        </tbody>
-      </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-    </div>
+    <bo-grid :columns="listColumns" :rows="reviews" :pager="pager" row-key="reviewId"
+      :sort-state="uiState" list-title="상품리뷰 목록"
+      :count-text="'총 ' + pager.pageTotalCount + '건'"
+      :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
+      <template #cell-reviewTitle="{ row }">
+        <td @click="openDetail(row)" style="cursor:pointer"><span class="title-link">{{ row.reviewTitle }}</span></td>
+      </template>
+      <template #cell-prodId="{ row }">
+        <td style="font-size:12px;" @click.stop>
+          <span class="title-link"
+            :style="{color: selectedProdId===row.prodId ? '#e8587a' : '#1e88e5', fontWeight: selectedProdId===row.prodId ? 700 : 500, cursor:'pointer'}"
+            title="해당 상품의 리뷰만 하단에 표시"
+            @click="onProdIdClick(row.prodId)">{{ row.prodId }}</span>
+        </td>
+      </template>
+      <template #cell-prodNm="{ row }">
+        <td @click="openDetail(row)" style="cursor:pointer;font-size:12px;color:#444;">{{ getProdNm(row.prodId) || row.prodNm || '' }}</td>
+      </template>
+      <template #cell-_preview="{ row }">
+        <td style="text-align:center" @click.stop>
+          <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click="previewProduct(row.prodId)">👁</button>
+        </td>
+      </template>
+      <template #cell-memberId="{ row }">
+        <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ getMemNm(row.memberId) }}</td>
+      </template>
+      <template #cell-rating="{ row }">
+        <td @click="openDetail(row)" style="cursor:pointer;text-align:center;color:#f59e0b;font-size:13px">{{ Number(row.rating || 0).toFixed(1) }} ★</td>
+      </template>
+      <template #cell-helpfulCnt="{ row }">
+        <td @click="openDetail(row)" style="cursor:pointer;text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
+      </template>
+      <template #cell-reviewStatusCd="{ row }">
+        <td @click="openDetail(row)" style="cursor:pointer;text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
+      </template>
+      <template #cell-reviewDate="{ row }">
+        <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ row.reviewDate }}</td>
+      </template>
+      <template #cell-_statusChg="{ row }">
+        <td style="text-align:center" @click.stop>
+          <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="onStatusSelectChange(row, $event)">
+            <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
+          </select>
+        </td>
+      </template>
+    </bo-grid>
 
     <!-- ── 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ─────────────────── -->
     <div class="card" v-if="selectedProdId">
