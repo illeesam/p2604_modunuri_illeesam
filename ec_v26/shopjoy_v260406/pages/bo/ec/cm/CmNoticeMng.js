@@ -198,6 +198,20 @@ window.CmNoticeMng = {
       '공지목록.csv'
     );
 
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+    const listColumns = [
+      { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;' },
+      { key: 'noticeTitle',    label: '제목',     sortKey: 'nm' },
+      { key: 'isFixed',        label: '고정',     style: 'width:70px;' },
+      { key: 'startDate',      label: '시작일',   style: 'width:120px;' },
+      { key: 'endDate',        label: '종료일',   style: 'width:120px;' },
+      { key: 'noticeStatusCd', label: '상태',     style: 'width:80px;' },
+      { key: 'siteNm',         label: '사이트명', style: 'width:110px;' },
+      { key: 'regDate',        label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
+      { key: '_act',           label: '관리',     style: 'width:140px;text-align:right;' },
+    ];
+    const fnGridRowClass = (row) => (uiStateDetail.selectedId === row.noticeId ? 'active' : '');
+
     // -- return ----------------------------------------------------------------
 
     return {
@@ -209,6 +223,7 @@ window.CmNoticeMng = {
       handleSearchList, handleDelete, handleLoadDetail, loadView,
       openNew, closeDetail, inlineNavigate,
       fnStatusBadge, fnTypeBadge, exportExcel, onSort, sortIcon,
+      listColumns, fnGridRowClass,
     };
   },
   template: /* html */`
@@ -238,60 +253,55 @@ window.CmNoticeMng = {
     </bo-search-area>
   </div>
 
-  <!-- -- 목록 영역 ------------------------------------------------------- -->
-  <div class="card">
-
-    <!-- -- 툴바 ----------------------------------------------------------- -->
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>공지사항목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-      </div>
-    </div>
-
-    <!-- -- 테이블 ---------------------------------------------------------- -->
-    <table class="bo-table">
-      <thead>
-        <tr>
-          <th style="width:36px;text-align:center;">번호</th><th>유형</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">제목 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>고정</th>
-          <th>시작일</th><th>종료일</th><th>상태</th><th>사이트명</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
-          <th style="text-align:right">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="notices.length===0">
-          <td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-        </tr>
-        <tr v-else v-for="(n, idx) in notices" :key="n?.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="badge" :class="fnTypeBadge(n.noticeTypeCd)">{{ n.noticeTypeCd }}</span></td>
-          <td>
-            <span class="title-link" @click="handleLoadDetail(n.noticeId)" :style="selectedId===n.noticeId?'color:#e8587a;font-weight:700;':''">
-              {{ n.noticeTitle }}
-              <span v-if="n.isFixed==='Y'" style="margin-left:4px;font-size:10px;color:#e8587a;">📌</span>
-              <span v-if="selectedId===n.noticeId" style="font-size:10px;margin-left:3px;">▼</span>
-            </span>
-          </td>
-          <td><span class="badge" :class="n.isFixed==='Y'?'badge-red':'badge-gray'">{{ n.isFixed==='Y' ? '고정' : '-' }}</span></td>
-          <td>{{ n.startDate || '-' }}</td>
-          <td>{{ n.endDate || '-' }}</td>
-          <td><span class="badge" :class="fnStatusBadge(n.noticeStatusCd)">{{ n.noticeStatusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td>{{ n.regDate }}</td>
-          <td>
-            <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleLoadDetail(n.noticeId)">수정</button>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(n)">삭제</button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- -- 페이징 ---------------------------------------------------------- -->
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+  <!-- -- 목록 영역 (BoGrid) --------------------------------------------- -->
+  <bo-grid :columns="listColumns" :rows="notices" :pager="pager" row-key="noticeId"
+    :sort-state="uiState" list-title="공지사항목록"
+    :count-text="'총 ' + pager.pageTotalCount + '건'"
+    :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+    <template #toolbar-actions>
+      <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+    </template>
+    <template #cell-noticeTypeCd="{ row }">
+      <td><span class="badge" :class="fnTypeBadge(row.noticeTypeCd)">{{ row.noticeTypeCd }}</span></td>
+    </template>
+    <template #cell-noticeTitle="{ row }">
+      <td>
+        <span class="title-link" @click="handleLoadDetail(row.noticeId)" :style="selectedId===row.noticeId?'color:#e8587a;font-weight:700;':''">
+          {{ row.noticeTitle }}
+          <span v-if="row.isFixed==='Y'" style="margin-left:4px;font-size:10px;color:#e8587a;">📌</span>
+          <span v-if="selectedId===row.noticeId" style="font-size:10px;margin-left:3px;">▼</span>
+        </span>
+      </td>
+    </template>
+    <template #cell-isFixed="{ row }">
+      <td><span class="badge" :class="row.isFixed==='Y'?'badge-red':'badge-gray'">{{ row.isFixed==='Y' ? '고정' : '-' }}</span></td>
+    </template>
+    <template #cell-startDate="{ row }">
+      <td>{{ row.startDate || '-' }}</td>
+    </template>
+    <template #cell-endDate="{ row }">
+      <td>{{ row.endDate || '-' }}</td>
+    </template>
+    <template #cell-noticeStatusCd="{ row }">
+      <td><span class="badge" :class="fnStatusBadge(row.noticeStatusCd)">{{ row.noticeStatusCd }}</span></td>
+    </template>
+    <template #cell-siteNm="{ row }">
+      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+    </template>
+    <template #cell-regDate="{ row }">
+      <td>{{ row.regDate }}</td>
+    </template>
+    <template #cell-_act="{ row }">
+      <td>
+        <div class="actions">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.noticeId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+        </div>
+      </td>
+    </template>
+  </bo-grid>
 
   </div>
 

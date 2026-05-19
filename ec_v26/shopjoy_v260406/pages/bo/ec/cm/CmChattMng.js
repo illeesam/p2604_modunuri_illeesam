@@ -164,6 +164,20 @@ window.CmChattMng = {
     /* exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(chatts, [{label:'채팅ID',key:'chattRoomId'},{label:'회원명',key:'memberNm'},{label:'상태',key:'chattStatusCd'},{label:'마지막메시지일시',key:'lastMsgDate'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
+    const listColumns = [
+      { key: 'memberNm',    label: '회원' },
+      { key: 'subject',     label: '제목' },
+      { key: 'lastMsgDate', label: '마지막 메시지' },
+      { key: 'msgCnt',      label: '메시지수',  style: 'width:80px;' },
+      { key: 'unread',      label: '미읽음',    style: 'width:80px;' },
+      { key: 'chattStatusCd', label: '상태',    style: 'width:90px;' },
+      { key: 'regDate',     label: '일시',      style: 'width:140px;', sortKey: 'reg' },
+      { key: 'siteNm',      label: '사이트명',  style: 'width:110px;' },
+      { key: '_act',        label: '관리',      style: 'width:140px;text-align:right;' },
+    ];
+    const fnGridRowClass = (row) => (uiStateDetail.selectedId === row.chattRoomId ? 'active' : '');
+
     // -- return ---------------------------------------------------------------
 
     return {
@@ -173,7 +187,8 @@ window.CmChattMng = {
       onSearch, onReset, setPage, onSizeChange, handleDelete,
       uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId),
       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail,
-      inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon
+      inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+      showRefModal, listColumns, fnGridRowClass,
     };
   },
   template: /* html */`
@@ -198,42 +213,49 @@ window.CmChattMng = {
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
     </bo-search-area>
   </div>
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>채팅목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-      </div>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>회원</th><th>제목</th><th>마지막 메시지</th><th>메시지수</th><th>미읽음</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">일시 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="chatts.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(c, idx) in chatts" :key="c?.chattRoomId" :style="uiStateDetail.selectedId===c.chattRoomId?'background:#fff8f9;':''">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="ref-link" @click="showRefModal('member', c.memberId)">{{ c.memberNm }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(c.chattRoomId)" :style="uiStateDetail.selectedId===c.chattRoomId?'color:#e8587a;font-weight:700;':''">{{ c.subject }}<span v-if="uiStateDetail.selectedId===c.chattRoomId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888;">{{ c.lastMsgDate || '-' }}</td>
-          <td>{{ (c.adminUnreadCnt||0) + (c.memberUnreadCnt||0) }}개</td>
-          <td>
-            <span v-if="c.memberUnreadCnt > 0" class="badge badge-red">{{ c.memberUnreadCnt }}</span>
-            <span v-else class="badge badge-gray">0</span>
-          </td>
-          <td><span class="badge" :class="fnStatusBadge(c.chattStatusCd)">{{ c.chattStatusCd }}</span></td>
-          <td>{{ c.regDate }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.chattRoomId)">보기</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-  </div>
+  <bo-grid :columns="listColumns" :rows="chatts" :pager="pager" row-key="chattRoomId"
+    :sort-state="uiState" list-title="채팅목록"
+    :count-text="'총 ' + pager.pageTotalCount + '건'"
+    :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+    <template #toolbar-actions>
+      <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+    </template>
+    <template #cell-memberNm="{ row }">
+      <td><span class="ref-link" @click="showRefModal('member', row.memberId)">{{ row.memberNm }}</span></td>
+    </template>
+    <template #cell-subject="{ row }">
+      <td><span class="title-link" @click="handleLoadDetail(row.chattRoomId)" :style="uiStateDetail.selectedId===row.chattRoomId?'color:#e8587a;font-weight:700;':''">{{ row.subject }}<span v-if="uiStateDetail.selectedId===row.chattRoomId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+    </template>
+    <template #cell-lastMsgDate="{ row }">
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888;">{{ row.lastMsgDate || '-' }}</td>
+    </template>
+    <template #cell-msgCnt="{ row }">
+      <td>{{ (row.adminUnreadCnt||0) + (row.memberUnreadCnt||0) }}개</td>
+    </template>
+    <template #cell-unread="{ row }">
+      <td>
+        <span v-if="row.memberUnreadCnt > 0" class="badge badge-red">{{ row.memberUnreadCnt }}</span>
+        <span v-else class="badge badge-gray">0</span>
+      </td>
+    </template>
+    <template #cell-chattStatusCd="{ row }">
+      <td><span class="badge" :class="fnStatusBadge(row.chattStatusCd)">{{ row.chattStatusCd }}</span></td>
+    </template>
+    <template #cell-regDate="{ row }">
+      <td>{{ row.regDate }}</td>
+    </template>
+    <template #cell-siteNm="{ row }">
+      <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
+    </template>
+    <template #cell-_act="{ row }">
+      <td><div class="actions">
+        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.chattRoomId)">보기</button>
+        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+      </div></td>
+    </template>
+  </bo-grid>
 
   <!-- -- 하단 상세: ChattDtl 임베드 -------------------------------------------- -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
