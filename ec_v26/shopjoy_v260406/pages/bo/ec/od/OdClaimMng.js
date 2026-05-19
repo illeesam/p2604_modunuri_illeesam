@@ -442,9 +442,19 @@ window.OdClaimMng = {
       (uiStateDetail.selectedId === c.claimId ? 'background:#fff8f9;' : '')
       + (isChecked(c.claimId) ? 'background:#eef6fd;' : '');
 
+    /* 회원선택 모달 picker BoGrid 컬럼 (행 클릭 시 onSelectMember) */
+    const memberPickColumns = [
+      { key: 'memberNm',       label: '이름' },
+      { key: 'loginId',        label: '로그인ID' },
+      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;' },
+      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;' },
+      { key: 'memberPhone',    label: '연락처', style: 'width:110px;' },
+      { key: '_pick',          label: '선택',   style: 'width:70px;text-align:center;' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, listColumns, fnGridRowStyle };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, listColumns, fnGridRowStyle, memberPickColumns };
   },
   template: /* html */`
 <div>
@@ -693,38 +703,32 @@ window.OdClaimMng = {
       </div>
       <div style="flex:1;overflow-y:auto;">
         <div v-if="memberPick.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
-        <table v-else class="admin-table" style="margin:0;">
-          <thead>
-            <tr>
-              <th style="width:40px;text-align:center;">번호</th>
-              <th>이름</th>
-              <th>로그인ID</th>
-              <th style="width:80px;text-align:center;">등급</th>
-              <th style="width:80px;text-align:center;">상태</th>
-              <th style="width:110px;">연락처</th>
-              <th style="width:70px;text-align:center;">선택</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="!memberPick.rows.length">
-              <td colspan="7" style="text-align:center;padding:32px;color:#bbb;">조회 결과가 없습니다.</td>
-            </tr>
-            <tr v-for="(m, idx) in memberPick.rows" :key="m.memberId" style="cursor:pointer;" @click="onSelectMember(m)" onmouseover="this.style.background='#fff5f8'" onmouseout="this.style.background=''">
-              <td style="text-align:center;color:#999;font-size:12px;">{{ (memberPick.pageNo - 1) * 20 + idx + 1 }}</td>
-              <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">{{ m.memberNm ? m.memberNm.charAt(0) : '?' }}</div>
-                  <span style="font-weight:600;font-size:13px;">{{ m.memberNm || '-' }}</span>
-                </div>
-              </td>
-              <td><span style="font-family:monospace;font-size:12px;">{{ m.loginId }}</span></td>
-              <td style="text-align:center;"><span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ m.gradeCdNm || '-' }}</span></td>
-              <td style="text-align:center;"><span :style="m.memberStatusCd==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;'" style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ m.memberStatusCdNm || m.memberStatusCd || '-' }}</span></td>
-              <td style="font-size:12px;color:#6b7280;">{{ m.memberPhone || '-' }}</td>
-              <td style="text-align:center;"><button class="btn btn-primary btn-xs" @click.stop="onSelectMember(m)" style="border-radius:6px;font-size:11px;">선택</button></td>
-            </tr>
-          </tbody>
-        </table>
+        <bo-grid v-else bare :columns="memberPickColumns" :rows="memberPick.rows" row-key="memberId"
+                 :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다.">
+          <template #cell-memberNm="{ row }">
+            <td @click="onSelectMember(row)">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">{{ row.memberNm ? row.memberNm.charAt(0) : '?' }}</div>
+                <span style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</span>
+              </div>
+            </td>
+          </template>
+          <template #cell-loginId="{ row }">
+            <td @click="onSelectMember(row)"><span style="font-family:monospace;font-size:12px;">{{ row.loginId }}</span></td>
+          </template>
+          <template #cell-gradeCdNm="{ row }">
+            <td style="text-align:center;" @click="onSelectMember(row)"><span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.gradeCdNm || '-' }}</span></td>
+          </template>
+          <template #cell-memberStatusCd="{ row }">
+            <td style="text-align:center;" @click="onSelectMember(row)"><span :style="row.memberStatusCd==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;'" style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.memberStatusCdNm || row.memberStatusCd || '-' }}</span></td>
+          </template>
+          <template #cell-memberPhone="{ row }">
+            <td style="font-size:12px;color:#6b7280;" @click="onSelectMember(row)">{{ row.memberPhone || '-' }}</td>
+          </template>
+          <template #cell-_pick="{ row }">
+            <td style="text-align:center;"><button class="btn btn-primary btn-xs" @click.stop="onSelectMember(row)" style="border-radius:6px;font-size:11px;">선택</button></td>
+          </template>
+        </bo-grid>
       </div>
       <div style="padding:10px 24px;border-top:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;display:flex;justify-content:center;">
         <div class="pager" v-if="memberPick.totalPage > 1">

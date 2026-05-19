@@ -283,11 +283,31 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     const qrcodeContainer = Vue.toRef(uiState, 'qrcodeContainer');
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
 
+    /* BoGrid(bare) 컬럼 정의 — 발급목록 / 사용목록 (최대 10건 미리보기) */
+    const issuedColumns = [
+      { key: 'code',       label: '쿠폰코드', fmt: v => v || '-' },
+      { key: 'target',     label: '발급대상', fmt: v => v || '-' },
+      { key: 'issuedDate', label: '발급일시', fmt: v => v || '-' },
+      { key: 'expiryDate', label: '유효기간', fmt: v => v || '-' },
+      { key: 'status',     label: '상태' },
+    ];
+    const usedColumns = [
+      { key: 'code',        label: '쿠폰코드', fmt: v => v || '-' },
+      { key: 'userId',      label: '사용자', fmt: v => v || '-' },
+      { key: 'orderId',     label: '주문ID', fmt: v => v || '-' },
+      { key: 'orderAmt',    label: '주문금액', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'discountAmt', label: '할인액' },
+      { key: 'usedDate',    label: '사용일시', fmt: v => v || '-' },
+    ];
+    const cfIssuedTop = computed(() => cfIssuedList.value.slice(0, 10));
+    const cfUsedTop   = computed(() => cfUsedList.value.slice(0, 10));
+
     // -- return ---------------------------------------------------------------
 
     return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, tabMode2, handleSave, onTabChange,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       cfSelectedVendorNm, selectVendor, vendors, showVendorModal,
+      issuedColumns, usedColumns, cfIssuedTop, cfUsedTop,
     };
   },
   template: /* html */`
@@ -625,37 +645,22 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     <div class="card" v-show="showTab('issued')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count">{{ cfIssuedList.length }}</span></div>
       <div v-if="cfIssuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">발급된 쿠폰이 없습니다.</div>
-      <table v-else class="bo-table" style="font-size:12px;">
-        <thead><tr><th>쿠폰코드</th><th>발급대상</th><th>발급일시</th><th>유효기간</th><th>상태</th></tr></thead>
-        <tbody>
-          <tr v-for="(item, idx) in cfIssuedList.slice(0, 10)" :key="idx">
-            <td>{{ item.code || '-' }}</td>
-            <td>{{ item.target || '-' }}</td>
-            <td>{{ item.issuedDate || '-' }}</td>
-            <td>{{ item.expiryDate || '-' }}</td>
-            <td><span class="badge" :class="item.status==='사용'?'badge-blue':'badge-green'">{{ item.status || '미사용' }}</span></td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid v-else bare :columns="issuedColumns" :rows="cfIssuedTop">
+        <template #cell-status="{ row }">
+          <td><span class="badge" :class="row.status==='사용'?'badge-blue':'badge-green'">{{ row.status || '미사용' }}</span></td>
+        </template>
+      </bo-grid>
     </div>
 
     <!-- -- 사용목록 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('used')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count">{{ cfUsedList.length }}</span></div>
       <div v-if="cfUsedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">사용된 쿠폰이 없습니다.</div>
-      <table v-else class="bo-table" style="font-size:12px;">
-        <thead><tr><th>쿠폰코드</th><th>사용자</th><th>주문ID</th><th>주문금액</th><th>할인액</th><th>사용일시</th></tr></thead>
-        <tbody>
-          <tr v-for="(item, idx) in cfUsedList.slice(0, 10)" :key="idx">
-            <td>{{ item.code || '-' }}</td>
-            <td>{{ item.userId || '-' }}</td>
-            <td>{{ item.orderId || '-' }}</td>
-            <td>{{ (item.orderAmt||0).toLocaleString() }}원</td>
-            <td style="color:#e8587a;font-weight:600;">-{{ (item.discountAmt||0).toLocaleString() }}원</td>
-            <td>{{ item.usedDate || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid v-else bare :columns="usedColumns" :rows="cfUsedTop">
+        <template #cell-discountAmt="{ row }">
+          <td style="color:#e8587a;font-weight:600;">-{{ (row.discountAmt||0).toLocaleString() }}원</td>
+        </template>
+      </bo-grid>
     </div>
   </div>
 

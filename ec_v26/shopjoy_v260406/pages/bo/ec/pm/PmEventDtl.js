@@ -244,9 +244,20 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    /* BoGrid(bare) 컬럼 정의 — 대상 상품 */
+    const productColumns = [
+      { key: 'productId', label: 'ID' },
+      { key: 'prodNm',    label: '상품명' },
+      { key: 'category',  label: '카테고리' },
+      { key: 'price',     label: '가격', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'stock',     label: '재고', fmt: v => v + '개' },
+      { key: 'status',    label: '상태' },
+      { key: '_act',      label: '제거' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productColumns };
   },
   template: /* html */`
 <div>
@@ -435,21 +446,15 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         <button v-if="!cfDtlMode" class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
       </div>
-      <table class="bo-table" v-if="cfSelectedProducts.length">
-        <thead><tr><th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>상태</th><th>제거</th></tr></thead>
-        <tbody>
-          <tr v-for="p in cfSelectedProducts" :key="p?.productId">
-            <td>{{ p.productId }}</td>
-            <td><span class="ref-link" @click="showRefModal('product', p.productId)">{{ p.prodNm }}</span></td>
-            <td>{{ p.category }}</td>
-            <td>{{ (p.price||0).toLocaleString() }}원</td>
-            <td>{{ p.stock }}개</td>
-            <td>{{ p.status }}</td>
-            <td><button class="btn btn-danger btn-sm" @click="removeProduct(p.productId)">제거</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">선택된 상품이 없습니다.</div>
+      <bo-grid bare :columns="productColumns" :rows="cfSelectedProducts" row-key="productId"
+               empty-text="선택된 상품이 없습니다.">
+        <template #cell-prodNm="{ row }">
+          <td><span class="ref-link" @click="showRefModal('product', row.productId)">{{ row.prodNm }}</span></td>
+        </template>
+        <template #cell-_act="{ row }">
+          <td><button class="btn btn-danger btn-sm" @click="removeProduct(row.productId)">제거</button></td>
+        </template>
+      </bo-grid>
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>

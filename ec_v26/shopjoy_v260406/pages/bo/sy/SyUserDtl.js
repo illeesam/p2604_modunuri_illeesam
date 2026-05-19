@@ -122,6 +122,17 @@ window.SyUserDtl = {
     /* ── 현재 적용 역할 목록 (빈 배열 정적 — computed 불필요) ── */
     const cfUserRoles = [];
 
+    /* BoGrid(bare) 컬럼 정의 — 적용 역할 목록 */
+    const userRoleColumns = [
+      { key: 'roleId',       label: 'ID',     style: 'width:50px;text-align:center;' },
+      { key: 'roleCode',     label: '역할코드', style: 'width:130px;' },
+      { key: 'roleNm',       label: '역할명' },
+      { key: 'roleType',     label: '유형',   style: 'width:80px;text-align:center;' },
+      { key: 'restrictPerm', label: '제한',   style: 'width:80px;text-align:center;' },
+      { key: 'useYn',        label: '사용',   style: 'width:60px;text-align:center;' },
+      { key: 'remark',       label: '비고' },
+    ];
+
     /* 사용자(관리자) fnRoleTypeBadge */
     const fnRoleTypeBadge = (t) => ({
       '시스템': 'badge-purple', '업무': 'badge-blue', '기타': 'badge-gray',
@@ -165,7 +176,7 @@ window.SyUserDtl = {
     return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
              cfDtlMode, addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
-             cfUserRoles, fnRoleTypeBadge, showToast };
+             cfUserRoles, userRoleColumns, fnRoleTypeBadge, showToast };
   },
   template: /* html */`
 <div>
@@ -286,42 +297,38 @@ window.SyUserDtl = {
         <span class="list-count">{{ cfUserRoles.length }}건</span>
       </span>
     </div>
-    <div v-if="cfUserRoles.length === 0"
-      style="text-align:center;color:#bbb;padding:24px;font-size:13px;">
-      배정된 역할이 없습니다.
-    </div>
-    <table v-else class="bo-table">
-      <thead>
-        <tr>
-          <th style="width:50px;">ID</th>
-          <th style="width:130px;">역할코드</th>
-          <th>역할명</th>
-          <th style="width:80px;">유형</th>
-          <th style="width:80px;">제한</th>
-          <th style="width:60px;">사용</th>
-          <th>비고</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="r in cfUserRoles" :key="r.roleId">
-          <td style="text-align:center;color:#888;">{{ r.roleId }}</td>
-          <td><span style="font-family:monospace;font-size:11px;color:#2563eb;">{{ r.roleCode }}</span></td>
-          <td style="font-weight:600;">{{ r.roleNm }}</td>
-          <td style="text-align:center;">
-            <span class="badge" :class="fnRoleTypeBadge(r.roleType)">{{ r.roleType }}</span>
-          </td>
-          <td style="text-align:center;">
-            <span class="badge" :class="r.restrictPerm==='없음'?'badge-green':r.restrictPerm==='읽기'?'badge-orange':'badge-red'">
-              {{ r.restrictPerm }}
-            </span>
-          </td>
-          <td style="text-align:center;">
-            <span class="badge" :class="r.useYn==='Y'?'badge-green':'badge-red'">{{ r.useYn }}</span>
-          </td>
-          <td style="font-size:12px;color:#666;">{{ r.remark }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid bare :columns="userRoleColumns" :rows="cfUserRoles" row-key="roleId"
+             empty-text="배정된 역할이 없습니다.">
+      <template #cell-roleId="{ row }">
+        <td style="text-align:center;color:#888;">{{ row.roleId }}</td>
+      </template>
+      <template #cell-roleCode="{ row }">
+        <td><span style="font-family:monospace;font-size:11px;color:#2563eb;">{{ row.roleCode }}</span></td>
+      </template>
+      <template #cell-roleNm="{ row }">
+        <td style="font-weight:600;">{{ row.roleNm }}</td>
+      </template>
+      <template #cell-roleType="{ row }">
+        <td style="text-align:center;">
+          <span class="badge" :class="fnRoleTypeBadge(row.roleType)">{{ row.roleType }}</span>
+        </td>
+      </template>
+      <template #cell-restrictPerm="{ row }">
+        <td style="text-align:center;">
+          <span class="badge" :class="row.restrictPerm==='없음'?'badge-green':row.restrictPerm==='읽기'?'badge-orange':'badge-red'">
+            {{ row.restrictPerm }}
+          </span>
+        </td>
+      </template>
+      <template #cell-useYn="{ row }">
+        <td style="text-align:center;">
+          <span class="badge" :class="row.useYn==='Y'?'badge-green':'badge-red'">{{ row.useYn }}</span>
+        </td>
+      </template>
+      <template #cell-remark="{ row }">
+        <td style="font-size:12px;color:#666;">{{ row.remark }}</td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- ── 부서 선택 팝업 ─────────────────────────────────────────────────────── -->

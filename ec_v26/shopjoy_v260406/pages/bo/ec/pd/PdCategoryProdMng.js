@@ -327,10 +327,44 @@ window.PdCategoryProdMng = {
       }
     };
 
+    /* BoGrid 컬럼 — 카테고리-상품 매핑 (전시기간/전시 컬럼은 NORMAL 외 타입만) */
+    const cfCatProdColumns = computed(() => {
+      const cols = [
+        { key: 'prodId',   label: 'ID',   style: 'width:40px;text-align:center' },
+        { key: '_prodNm',  label: '상품명 / 강조옵션' },
+        { key: '_catPath', label: '카테고리경로', style: 'width:130px;text-align:center' },
+        { key: '_price',   label: '판매가',  style: 'width:78px;text-align:right' },
+        { key: '_stock',   label: '재고',    style: 'width:44px;text-align:center' },
+        { key: '_status',  label: '상태',    style: 'width:52px;text-align:center' },
+      ];
+      if (uiState.activeTypeCd !== 'NORMAL') {
+        cols.push({ key: '_dispPeriod', label: '전시기간', style: 'width:216px;text-align:center' });
+        cols.push({ key: 'dispYn',      label: '전시',     style: 'width:60px;text-align:center' });
+      }
+      return cols;
+    });
+    const fnCatProdRowStyle = (row, idx) => {
+      if (dragoverIdx.value === idx) return 'background:#e6f4ff';
+      if (row._isNew) return 'background:#f6ffed';
+      if (uiState.activeTypeCd !== 'NORMAL' && row.dispYn === 'N') return 'background:#fafafa;opacity:0.65';
+      return '';
+    };
+
+    /* BoGrid 컬럼 — 상품 추가 피커 */
+    const catProdPickerColumns = [
+      { key: 'prodId',    label: 'ID',       style: 'width:44px' },
+      { key: 'prodNm',    label: '상품명' },
+      { key: 'cateNm',    label: '카테고리', style: 'width:80px;text-align:center' },
+      { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right' },
+      { key: 'prodStock', label: '재고',     style: 'width:60px;text-align:center', fmt: v => v != null ? v : '-' },
+      { key: '_add',      label: '추가',     style: 'width:56px;text-align:center' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return {
       codes, uiState, categories, categoryProds,
+      cfCatProdColumns, fnCatProdRowStyle, catProdPickerColumns,
       TYPE_TABS, EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
       searchParam, onSearch, onReset,
@@ -419,88 +453,77 @@ window.PdCategoryProdMng = {
         </div>
 
         <!-- -- TABLE 뷰 (tab / 1col) ------------------------------------- -->
-        <table v-if="uiState.tabMode==='tab'||uiState.tabMode==='1col'" class="bo-table">
-          <thead><tr>
-            <th style="width:28px"></th>
-            <th style="width:36px;text-align:center">순서</th>
-            <th style="width:40px;text-align:center">ID</th>
-            <th>상품명 / 강조옵션</th>
-            <th style="width:130px;text-align:center">카테고리경로</th>
-            <th style="width:78px;text-align:right">판매가</th>
-            <th style="width:44px;text-align:center">재고</th>
-            <th style="width:52px;text-align:center">상태</th>
-            <th v-if="uiState.activeTypeCd!=='NORMAL'" style="width:216px;text-align:center">전시기간</th>
-            <th v-if="uiState.activeTypeCd!=='NORMAL'" style="width:60px;text-align:center">전시</th>
-            <th style="width:40px;text-align:center">삭제</th>
-          </tr></thead>
-          <tbody>
-            <tr v-for="(row, idx) in categoryProds" :key="(row && row._id)"
-                draggable="true"
-                @dragstart="onDragStart(idx)"
-                @dragover.prevent="onDragOver(idx)"
-                @drop="onDrop()"
-                :style="dragoverIdx===idx ? 'background:#e6f4ff' : (row._isNew ? 'background:#f6ffed' : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N' ? 'background:#fafafa;opacity:0.65' : ''))">
-              <td style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
-              <td style="text-align:center;font-size:12px;color:#aaa">{{ idx+1 }}</td>
-              <td style="text-align:center;font-size:11px;color:#aaa">{{ row.prodId }}</td>
-              <td>
-                <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
-                  <span v-if="row._isNew" class="badge badge-green" style="font-size:10px">NEW</span>
-                  <span style="font-weight:500">{{ getProdNm(row.prodId) }}</span>
-                </div>
-                <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
-                  <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)"
-                          @click="toggleEmphasis(row, opt.cd)"
-                          style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
-                          :style="hasEmphasis(row.emphasisCd, opt.cd)
-                            ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700'
-                            : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
-                    {{ opt.icon }} {{ opt.nm }}
-                  </button>
-                </div>
-              </td>
-              <td style="text-align:center;font-size:10px;color:#888;line-height:1.3">
-                {{ getCatPath(row.categoryId) }}
-              </td>
-              <td style="text-align:right;font-size:12px">
-                {{ ((getProd(row.prodId)?.salePrice||0)).toLocaleString() }}원
-              </td>
-              <td style="text-align:center;font-size:12px">{{ ((getProd(row.prodId) || {}).prodStock != null ? (getProd(row.prodId) || {}).prodStock : '-') }}</td>
-              <td style="text-align:center">
-                <span :class="['badge',
-                       getProd(row.prodId)?.prodStatusCdNm==='판매중' ? 'badge-green' :
-                       getProd(row.prodId)?.prodStatusCdNm==='품절'   ? 'badge-red'   : 'badge-gray']"
-                      style="font-size:11px">
-                  {{ getProd(row.prodId)?.prodStatusCdNm || '-' }}
-                </span>
-              </td>
-              <td v-if="uiState.activeTypeCd!=='NORMAL'">
-                <div style="display:flex;align-items:center;gap:2px;justify-content:center">
-                  <input type="date" class="form-control" v-model="row.dispStartDate"
-                         style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
-                  <span style="color:#aaa;font-size:11px;flex-shrink:0">~</span>
-                  <input type="date" class="form-control" v-model="row.dispEndDate"
-                         style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
-                </div>
-              </td>
-              <td v-if="uiState.activeTypeCd!=='NORMAL'" style="text-align:center">
-                <select class="form-control" v-model="row.dispYn"
-                        style="width:52px;padding:2px 4px;font-size:12px;text-align:center"
-                        :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
-                  <option v-for="c in codes.disp_yn_opts" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-                </select>
-              </td>
-              <td style="text-align:center">
-                <button class="btn btn-danger btn-xs" @click="removeRow(row)">✕</button>
-              </td>
-            </tr>
-            <tr v-if="!categoryProds.length">
-              <td :colspan="uiState.activeTypeCd!=='NORMAL' ? 11 : 9" style="text-align:center;padding:32px;color:#aaa">
-                {{ searchParam.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <bo-grid v-if="uiState.tabMode==='tab'||uiState.tabMode==='1col'"
+          bare :columns="cfCatProdColumns" :rows="categoryProds" row-key="_id"
+          draggable row-actions :row-style="fnCatProdRowStyle"
+          :empty-text="searchParam.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.'"
+          @reorder="onDrop">
+          <template #cell-prodId="{ row }">
+            <td style="text-align:center;font-size:11px;color:#aaa">{{ row.prodId }}</td>
+          </template>
+          <template #cell-_prodNm="{ row }">
+            <td>
+              <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+                <span v-if="row._isNew" class="badge badge-green" style="font-size:10px">NEW</span>
+                <span style="font-weight:500">{{ getProdNm(row.prodId) }}</span>
+              </div>
+              <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
+                <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)"
+                        @click="toggleEmphasis(row, opt.cd)"
+                        style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
+                        :style="hasEmphasis(row.emphasisCd, opt.cd)
+                          ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700'
+                          : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
+                  {{ opt.icon }} {{ opt.nm }}
+                </button>
+              </div>
+            </td>
+          </template>
+          <template #cell-_catPath="{ row }">
+            <td style="text-align:center;font-size:10px;color:#888;line-height:1.3">{{ getCatPath(row.categoryId) }}</td>
+          </template>
+          <template #cell-_price="{ row }">
+            <td style="text-align:right;font-size:12px">{{ ((getProd(row.prodId)?.salePrice||0)).toLocaleString() }}원</td>
+          </template>
+          <template #cell-_stock="{ row }">
+            <td style="text-align:center;font-size:12px">{{ ((getProd(row.prodId) || {}).prodStock != null ? (getProd(row.prodId) || {}).prodStock : '-') }}</td>
+          </template>
+          <template #cell-_status="{ row }">
+            <td style="text-align:center">
+              <span :class="['badge',
+                     getProd(row.prodId)?.prodStatusCdNm==='판매중' ? 'badge-green' :
+                     getProd(row.prodId)?.prodStatusCdNm==='품절'   ? 'badge-red'   : 'badge-gray']"
+                    style="font-size:11px">
+                {{ getProd(row.prodId)?.prodStatusCdNm || '-' }}
+              </span>
+            </td>
+          </template>
+          <template #cell-_dispPeriod="{ row }">
+            <td>
+              <div style="display:flex;align-items:center;gap:2px;justify-content:center">
+                <input type="date" class="form-control" v-model="row.dispStartDate"
+                       style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
+                <span style="color:#aaa;font-size:11px;flex-shrink:0">~</span>
+                <input type="date" class="form-control" v-model="row.dispEndDate"
+                       style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
+              </div>
+            </td>
+          </template>
+          <template #cell-dispYn="{ row }">
+            <td style="text-align:center">
+              <select class="form-control" v-model="row.dispYn"
+                      style="width:52px;padding:2px 4px;font-size:12px;text-align:center"
+                      :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
+                <option v-for="c in codes.disp_yn_opts" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+              </select>
+            </td>
+          </template>
+          <template #row-actions="{ row }">
+            <td style="text-align:center">
+              <button class="btn btn-danger btn-xs" @click="removeRow(row)">✕</button>
+            </td>
+          </template>
+        </bo-grid>
 
         <!-- -- CARD GRID 뷰 (2col / 3col / 4col) ------------------------- -->
         <div v-else
@@ -617,31 +640,29 @@ window.PdCategoryProdMng = {
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <table class="bo-table" style="margin:0">
-            <thead><tr>
-              <th style="width:44px">ID</th>
-              <th>상품명</th>
-              <th style="width:80px;text-align:center">카테고리</th>
-              <th style="width:90px;text-align:right">판매가</th>
-              <th style="width:60px;text-align:center">재고</th>
-              <th style="width:56px;text-align:center">추가</th>
-            </tr></thead>
-            <tbody>
-              <tr v-for="p in pickerResults" :key="(p && p.prodId)">
-                <td style="color:#aaa;font-size:12px">{{ p.prodId }}</td>
-                <td>{{ p.prodNm }}</td>
-                <td style="text-align:center;font-size:12px;color:#888">{{ p.cateNm || '-' }}</td>
-                <td style="text-align:right;font-size:12px">{{ (p.salePrice||0).toLocaleString() }}원</td>
-                <td style="text-align:center;font-size:12px">{{ p.prodStock != null ? p.prodStock : '-' }}</td>
-                <td style="text-align:center">
-                  <button class="btn btn-blue btn-xs" @click="addProd(p)">추가</button>
-                </td>
-              </tr>
-              <tr v-if="!pickerResults.length">
-                <td colspan="6" style="text-align:center;padding:24px;color:#aaa">검색 결과가 없습니다.</td>
-              </tr>
-            </tbody>
-          </table>
+          <bo-grid bare :columns="catProdPickerColumns" :rows="pickerResults" row-key="prodId"
+            empty-text="검색 결과가 없습니다.">
+            <template #cell-prodId="{ row }">
+              <td style="color:#aaa;font-size:12px">{{ row.prodId }}</td>
+            </template>
+            <template #cell-prodNm="{ row }">
+              <td>{{ row.prodNm }}</td>
+            </template>
+            <template #cell-cateNm="{ row }">
+              <td style="text-align:center;font-size:12px;color:#888">{{ row.cateNm || '-' }}</td>
+            </template>
+            <template #cell-_price="{ row }">
+              <td style="text-align:right;font-size:12px">{{ (row.salePrice||0).toLocaleString() }}원</td>
+            </template>
+            <template #cell-prodStock="{ row }">
+              <td style="text-align:center;font-size:12px">{{ row.prodStock != null ? row.prodStock : '-' }}</td>
+            </template>
+            <template #cell-_add="{ row }">
+              <td style="text-align:center">
+                <button class="btn btn-blue btn-xs" @click="addProd(row)">추가</button>
+              </td>
+            </template>
+          </bo-grid>
         </div>
       </div>
     </div>

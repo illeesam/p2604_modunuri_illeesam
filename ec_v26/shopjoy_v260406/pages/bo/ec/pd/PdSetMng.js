@@ -141,6 +141,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       uiState.dragIdx = uiState.dragoverIdx = null;
     };
 
+    /* BoGrid draggable 가 dtlItems 를 in-place 재정렬 후 emit. sortOrd 만 재부여 */
+    const onItemReorder = () => {
+      window.safeArrayUtils.safeForEach(dtlItems, (item, i) => { item.sortOrd = i + 1; });
+    };
+
     /* -- 상품 피커 -- */
     /* 피커 상품 서버검색 — 검색어/검색대상을 pdProd.getPage 에 전달(상위 50건).
        이미 담긴 항목·자기자신은 서버결과에서 클라이언트 제외(소량). 모달열기/Enter/[조회] 시점에만 호출. */
@@ -390,11 +395,44 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     };
 
 
+    /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
+    const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const setColumns = [
+      { key: 'prodNm',    label: '세트상품' },
+      { key: 'itemCount', label: '구성품수', style: 'width:70px;text-align:center', fmt: v => (v || 0) + '개' },
+      { key: '_price',    label: '판매가',   style: 'width:110px;text-align:right' },
+      { key: '_stock',    label: '재고',     style: 'width:60px;text-align:center' },
+      { key: '_status',   label: '상태',     style: 'width:90px;text-align:center' },
+      { key: '_act',      label: '관리',     style: 'width:110px;text-align:center' },
+    ];
+    const fnSetRowStyle = (g) => (uiState.dtlMode === 'edit' && uiState.editSetId === g.setProdId) ? 'background:#e6f4ff' : '';
+
+    /* BoGrid 컬럼 — 구성품 목록 (인라인 편집 + 드래그) */
+    const setItemColumns = [
+      { key: 'itemNm',     label: '표시명 (item_nm) *',       style: 'width:180px' },
+      { key: 'itemProdId', label: '연결상품 (item_prod_id)' },
+      { key: 'itemQty',    label: '수량',        style: 'width:80px;text-align:center' },
+      { key: 'itemDesc',   label: '구성품 설명' },
+      { key: 'useYn',      label: '사용',        style: 'width:60px;text-align:center' },
+    ];
+    const fnSetItemRowStyle = (item, idx) => uiState.dragoverIdx === idx ? 'background:#e6f4ff' : (item.useYn === 'N' ? 'opacity:0.55' : '');
+
+    /* BoGrid 컬럼 — 구성품 상품 피커 */
+    const pickerColumns = [
+      { key: 'productId', label: 'ID',       style: 'width:44px' },
+      { key: 'prodNm',    label: '상품명' },
+      { key: 'category',  label: '카테고리', style: 'width:70px;text-align:center' },
+      { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right' },
+      { key: '_sel',      label: '선택',     style: 'width:56px;text-align:center' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return {
       codes, uiState,
-      setList, searchParam, pager, setPage,
+      setList, cfSetPageRows, setColumns, fnSetRowStyle,
+      setItemColumns, fnSetItemRowStyle, pickerColumns,
+      searchParam, pager, setPage,
       onSearch, onReset, getProdNm, getProd, getBrandNm,
       getCategoryNm, getCategoryDepth,
       dtlCategories, cfCatExcludeSet,
@@ -403,7 +441,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       dtlItems, openNew, openDtl, closeDtl, handleSave, handleDelete,
       addItemFromProd, addItemBlank, removeItem,
       cfPickerList, pickerResults, onPickerSearch, openPicker,
-      onDragStart, onDragOver, onDrop, onSizeChange };
+      onDragStart, onDragOver, onDrop, onItemReorder, onSizeChange };
   },
 
   template: `
@@ -438,62 +476,49 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
       </div>
     </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <th>세트상품</th>
-        <th style="width:70px;text-align:center">구성품수</th>
-        <th style="width:110px;text-align:right">판매가</th>
-        <th style="width:60px;text-align:center">재고</th>
-        <th style="width:90px;text-align:center">상태</th>
-        <th style="width:110px;text-align:center">관리</th>
-      </tr></thead>
-      <tbody>
-        <template v-for="(g, idx) in setList.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize)" :key="(g && g.setProdId)">
-          <tr :style="(uiState.dtlMode==='edit' && uiState.editSetId===g.setProdId) ? 'background:#e6f4ff' : ''">
-            <td style="text-align:center;font-size:11px;color:#999;vertical-align:top;padding-top:12px;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td>
-              <div style="display:flex;align-items:flex-start;gap:6px">
-                <span class="badge badge-orange" style="flex-shrink:0;margin-top:1px">세트</span>
-                <div>
-                  <span class="title-link" @click="openDtl(g.setProdId)">{{ g.prodNm }}</span>
-                  <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
-                    <span v-for="(item,i) in g.items" :key="item.setItemId||i"
-                          style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
-                      {{ item.itemNm }}
-                      <span style="color:#1677ff">×{{ item.itemQty }}</span>
-                      <span v-if="!item.itemProdId && !item.componentProdId" style="color:#f59e0b;margin-left:2px" title="비상품구성품">◆</span>
-                    </span>
-                  </div>
-                </div>
+    <bo-grid bare :columns="setColumns" :rows="cfSetPageRows" :pager="pager"
+      row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다.">
+      <template #cell-prodNm="{ row }">
+        <td>
+          <div style="display:flex;align-items:flex-start;gap:6px">
+            <span class="badge badge-orange" style="flex-shrink:0;margin-top:1px">세트</span>
+            <div>
+              <span class="title-link" @click="openDtl(row.setProdId)">{{ row.prodNm }}</span>
+              <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
+                <span v-for="(item,i) in row.items" :key="item.setItemId||i"
+                      style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
+                  {{ item.itemNm }}
+                  <span style="color:#1677ff">×{{ item.itemQty }}</span>
+                  <span v-if="coUtil.cofAnd(!item.itemProdId, !item.componentProdId)" style="color:#f59e0b;margin-left:2px" title="비상품구성품">◆</span>
+                </span>
               </div>
-            </td>
-            <td style="text-align:center">{{ g.itemCount }}개</td>
-            <td style="text-align:right">
-              {{ g.prod ? (g.prod.salePrice || g.prod.price || 0).toLocaleString() + '원' : '-' }}
-            </td>
-            <td style="text-align:center">
-              {{ g.prod ? (g.prod.stock != null ? g.prod.stock : '-') : '-' }}
-            </td>
-            <td style="text-align:center">
-              <span :class="['badge',
-                g.prod && g.prod.status==='판매중'         ? 'badge-green'  :
-                g.prod && g.prod.prodStatusCd==='ACTIVE'  ? 'badge-green'  :
-                g.prod && g.prod.prodStatusCd==='DRAFT'   ? 'badge-orange' : 'badge-gray']">
-                {{ g.prod ? (g.prod.status || g.prod.prodStatusCd || '-') : '-' }}
-              </span>
-            </td>
-            <td style="text-align:center" class="actions">
-              <button class="btn btn-blue btn-xs" @click="openDtl(g.setProdId)">수정</button>
-              <button class="btn btn-danger btn-xs" @click="handleDelete(g.setProdId)">삭제</button>
-            </td>
-          </tr>
-        </template>
-        <tr v-if="!setList.length">
-          <td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td>
-        </tr>
-      </tbody>
-    </table>
+            </div>
+          </div>
+        </td>
+      </template>
+      <template #cell-_price="{ row }">
+        <td style="text-align:right">{{ row.prod ? (row.prod.salePrice || row.prod.price || 0).toLocaleString() + '원' : '-' }}</td>
+      </template>
+      <template #cell-_stock="{ row }">
+        <td style="text-align:center">{{ row.prod ? (row.prod.stock != null ? row.prod.stock : '-') : '-' }}</td>
+      </template>
+      <template #cell-_status="{ row }">
+        <td style="text-align:center">
+          <span :class="['badge',
+            row.prod?.status==='판매중'        ? 'badge-green'  :
+            row.prod?.prodStatusCd==='ACTIVE' ? 'badge-green'  :
+            row.prod?.prodStatusCd==='DRAFT'  ? 'badge-orange' : 'badge-gray']">
+            {{ row.prod ? (row.prod.status || row.prod.prodStatusCd || '-') : '-' }}
+          </span>
+        </td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td style="text-align:center" class="actions">
+          <button class="btn btn-blue btn-xs" @click="openDtl(row.setProdId)">수정</button>
+          <button class="btn btn-danger btn-xs" @click="handleDelete(row.setProdId)">삭제</button>
+        </td>
+      </template>
+    </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
@@ -605,65 +630,56 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         표시 목적 · 재고 개별 차감 없음 · 안분율 없음
       </span>
     </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:28px"></th>
-        <th style="width:180px">표시명 (item_nm) <span style="color:#f5222d">*</span></th>
-        <th>연결상품 (item_prod_id)</th>
-        <th style="width:80px;text-align:center">수량</th>
-        <th>구성품 설명</th>
-        <th style="width:60px;text-align:center">사용</th>
-        <th style="width:50px;text-align:center">삭제</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="(item, idx) in dtlItems" :key="(item && item._id)"
-            draggable="true"
-            @dragstart="onDragStart(idx)"
-            @dragover.prevent="onDragOver(idx)"
-            @drop="onDrop()"
-            :style="uiState.dragoverIdx===idx ? 'background:#e6f4ff' : (item.useYn==='N' ? 'opacity:0.55' : '')">
-          <td style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
-          <td>
-            <input class="form-control" v-model="item.itemNm" placeholder="표시명 입력"
-                   style="font-size:13px;font-weight:500"
-                   :class="{ 'is-invalid': !item.itemNm.trim() }">
-          </td>
-          <td>
-            <div v-if="item.itemProdId" style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:11px;color:#aaa;background:#f5f5f5;padding:1px 6px;border-radius:4px">#{{ item.itemProdId }}</span>
-              <span style="font-size:13px;color:#333">{{ getProdNm(item.itemProdId) }}</span>
-              <button type="button" @click="item.itemProdId=null"
-                      style="border:none;background:none;color:#f87171;cursor:pointer;font-size:12px;padding:0 2px">✕ 연결해제</button>
-            </div>
-            <div v-else style="display:flex;align-items:center;gap:6px">
-              <span class="badge badge-orange" style="font-size:10px">비상품</span>
-              <span style="font-size:12px;color:#aaa">상품 미연결 (예: 증정품·박스)</span>
-            </div>
-          </td>
-          <td style="text-align:center">
-            <input type="number" class="form-control" v-model.number="item.itemQty"
-                   min="1" style="width:60px;text-align:center;margin:0 auto;padding:3px 6px">
-          </td>
-          <td>
-            <input class="form-control" v-model="item.itemDesc"
-                   placeholder="소재·용량·색상 등 부가 설명" style="font-size:12px">
-          </td>
-          <td style="text-align:center">
-            <select class="form-control" v-model="item.useYn" style="width:56px;padding:2px 4px">
-              <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-            </select>
-          </td>
-          <td style="text-align:center">
-            <button class="btn btn-danger btn-xs" @click="removeItem(idx)">✕</button>
-          </td>
-        </tr>
-        <tr v-if="!dtlItems.length">
-          <td colspan="7" style="text-align:center;padding:24px;color:#aaa">
-            구성품이 없습니다. 아래 버튼으로 추가하세요.
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid bare :columns="setItemColumns" :rows="dtlItems" row-key="_id"
+      draggable row-actions :row-style="fnSetItemRowStyle"
+      empty-text="구성품이 없습니다. 아래 버튼으로 추가하세요."
+      @reorder="onItemReorder">
+      <template #cell-itemNm="{ row }">
+        <td>
+          <input class="form-control" v-model="row.itemNm" placeholder="표시명 입력"
+                 style="font-size:13px;font-weight:500"
+                 :class="{ 'is-invalid': !row.itemNm.trim() }">
+        </td>
+      </template>
+      <template #cell-itemProdId="{ row }">
+        <td>
+          <div v-if="row.itemProdId" style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:#aaa;background:#f5f5f5;padding:1px 6px;border-radius:4px">#{{ row.itemProdId }}</span>
+            <span style="font-size:13px;color:#333">{{ getProdNm(row.itemProdId) }}</span>
+            <button type="button" @click="row.itemProdId=null"
+                    style="border:none;background:none;color:#f87171;cursor:pointer;font-size:12px;padding:0 2px">✕ 연결해제</button>
+          </div>
+          <div v-else style="display:flex;align-items:center;gap:6px">
+            <span class="badge badge-orange" style="font-size:10px">비상품</span>
+            <span style="font-size:12px;color:#aaa">상품 미연결 (예: 증정품·박스)</span>
+          </div>
+        </td>
+      </template>
+      <template #cell-itemQty="{ row }">
+        <td style="text-align:center">
+          <input type="number" class="form-control" v-model.number="row.itemQty"
+                 min="1" style="width:60px;text-align:center;margin:0 auto;padding:3px 6px">
+        </td>
+      </template>
+      <template #cell-itemDesc="{ row }">
+        <td>
+          <input class="form-control" v-model="row.itemDesc"
+                 placeholder="소재·용량·색상 등 부가 설명" style="font-size:12px">
+        </td>
+      </template>
+      <template #cell-useYn="{ row }">
+        <td style="text-align:center">
+          <select class="form-control" v-model="row.useYn" style="width:56px;padding:2px 4px">
+            <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          </select>
+        </td>
+      </template>
+      <template #row-actions="{ idx }">
+        <td style="text-align:center">
+          <button class="btn btn-danger btn-xs" @click="removeItem(idx)">✕</button>
+        </td>
+      </template>
+    </bo-grid>
 
     <!-- -- 구성품 추가 버튼 ---------------------------------------------------- -->
     <div style="margin-top:12px;display:flex;gap:8px">
@@ -701,29 +717,26 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <table class="bo-table" style="margin:0">
-            <thead><tr>
-              <th style="width:44px">ID</th>
-              <th>상품명</th>
-              <th style="width:70px;text-align:center">카테고리</th>
-              <th style="width:90px;text-align:right">판매가</th>
-              <th style="width:56px;text-align:center">선택</th>
-            </tr></thead>
-            <tbody>
-              <tr v-for="p in cfPickerList" :key="(p && p.productId)">
-                <td style="color:#aaa;font-size:12px">{{ p.productId }}</td>
-                <td>{{ p.prodNm || p.productName }}</td>
-                <td style="text-align:center;font-size:12px;color:#888">{{ p.category || '-' }}</td>
-                <td style="text-align:right">{{ (p.salePrice||p.price||0).toLocaleString() }}원</td>
-                <td style="text-align:center">
-                  <button class="btn btn-blue btn-xs" @click="addItemFromProd(p)">선택</button>
-                </td>
-              </tr>
-              <tr v-if="!cfPickerList.length">
-                <td colspan="5" style="text-align:center;padding:24px;color:#aaa">검색 결과가 없습니다.</td>
-              </tr>
-            </tbody>
-          </table>
+          <bo-grid bare :columns="pickerColumns" :rows="cfPickerList" row-key="productId"
+            empty-text="검색 결과가 없습니다.">
+            <template #cell-productId="{ row }">
+              <td style="color:#aaa;font-size:12px">{{ row.productId }}</td>
+            </template>
+            <template #cell-prodNm="{ row }">
+              <td>{{ row.prodNm || row.productName }}</td>
+            </template>
+            <template #cell-category="{ row }">
+              <td style="text-align:center;font-size:12px;color:#888">{{ row.category || '-' }}</td>
+            </template>
+            <template #cell-_price="{ row }">
+              <td style="text-align:right">{{ (row.salePrice||row.price||0).toLocaleString() }}원</td>
+            </template>
+            <template #cell-_sel="{ row }">
+              <td style="text-align:center">
+                <button class="btn btn-blue btn-xs" @click="addItemFromProd(row)">선택</button>
+              </td>
+            </template>
+          </bo-grid>
         </div>
       </div>
     </div>

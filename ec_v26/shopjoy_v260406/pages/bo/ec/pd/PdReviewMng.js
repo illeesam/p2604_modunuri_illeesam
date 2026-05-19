@@ -274,6 +274,18 @@ window.PdReviewMng = {
     ];
     const fnGridRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
 
+    /* 상품별 리뷰 목록 BoGrid 컬럼 */
+    const prodReviewColumns = [
+      { key: 'reviewTitle',    label: '리뷰 제목' },
+      { key: 'memberId',       label: '작성자',   style: 'width:80px' },
+      { key: 'rating',         label: '평점',     style: 'width:90px;text-align:center' },
+      { key: 'helpfulCnt',     label: '도움',     style: 'width:60px;text-align:right' },
+      { key: 'reviewStatusCd', label: '상태',     style: 'width:80px;text-align:center' },
+      { key: 'reviewDate',     label: '작성일',   style: 'width:140px' },
+      { key: '_statusChg',     label: '상태변경', style: 'width:90px;text-align:center' },
+    ];
+    const fnProdReviewRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
+
     // -- return ---------------------------------------------------------------
 
     return { reviews, uiState, searchParam, pager, setPage, onSearch, onReset,
@@ -282,7 +294,7 @@ window.PdReviewMng = {
               prodReviews, prodReviewPager, selectedProdId, onProdIdClick, setProdReviewPage, onProdReviewSizeChange,
               statusModal, openStatusModal, onStatusSelectChange, closeStatusModal, confirmStatusChange,
               cfStatusModalRowTitle, cfStatusModalCurrentCd,
-              listColumns, fnGridRowClass,
+              listColumns, fnGridRowClass, prodReviewColumns, fnProdReviewRowClass,
             };
   },
   template: `
@@ -358,37 +370,38 @@ window.PdReviewMng = {
         <span class="list-count">총 {{ prodReviewPager.pageTotalCount }}건</span>
         <button class="btn btn-xs" style="margin-left:auto;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:2px 8px;" @click="onProdIdClick(selectedProdId)">✕ 닫기</button>
       </div>
-      <table class="bo-table">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th>리뷰 제목</th>
-          <th style="width:80px">작성자</th>
-          <th style="width:90px;text-align:center">평점</th>
-          <th style="width:60px;text-align:right">도움</th>
-          <th style="width:80px;text-align:center">상태</th>
-          <th style="width:140px">작성일</th>
-          <th style="width:90px;text-align:center">상태변경</th>
-        </tr></thead>
-        <tbody>
-          <tr v-for="(row, idx) in prodReviews" :key="row && row.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (prodReviewPager.pageNo - 1) * prodReviewPager.pageSize + idx + 1 }}</td>
-            <td><span class="title-link">{{ row.reviewTitle }}</span></td>
-            <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
-            <td style="text-align:center;color:#f59e0b;font-size:13px">{{ Number(row.rating || 0).toFixed(1) }} ★</td>
-            <td style="text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
-            <td style="text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
-            <td style="font-size:12px">{{ row.reviewDate }}</td>
-            <td style="text-align:center" @click.stop>
-              <select class="form-control" style="font-size:11px;padding:2px 4px"
-                :value="row.reviewStatusCd"
-                @change="onStatusSelectChange(row, $event)">
-                <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
-              </select>
-            </td>
-          </tr>
-          <tr v-if="!prodReviews.length"><td colspan="8" style="text-align:center;padding:24px;color:#aaa">해당 상품의 리뷰가 없습니다.</td></tr>
-        </tbody>
-      </table>
+      <bo-grid bare :columns="prodReviewColumns" :rows="prodReviews" :pager="prodReviewPager"
+        row-key="reviewId" :row-class="fnProdReviewRowClass"
+        empty-text="해당 상품의 리뷰가 없습니다."
+        @set-page="setProdReviewPage" @size-change="onProdReviewSizeChange" @row-click="openDetail">
+        <template #cell-reviewTitle="{ row }">
+          <td @click="openDetail(row)" style="cursor:pointer"><span class="title-link">{{ row.reviewTitle }}</span></td>
+        </template>
+        <template #cell-memberId="{ row }">
+          <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ getMemNm(row.memberId) }}</td>
+        </template>
+        <template #cell-rating="{ row }">
+          <td @click="openDetail(row)" style="cursor:pointer;text-align:center;color:#f59e0b;font-size:13px">{{ Number(row.rating || 0).toFixed(1) }} ★</td>
+        </template>
+        <template #cell-helpfulCnt="{ row }">
+          <td @click="openDetail(row)" style="cursor:pointer;text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
+        </template>
+        <template #cell-reviewStatusCd="{ row }">
+          <td @click="openDetail(row)" style="cursor:pointer;text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
+        </template>
+        <template #cell-reviewDate="{ row }">
+          <td @click="openDetail(row)" style="cursor:pointer;font-size:12px">{{ row.reviewDate }}</td>
+        </template>
+        <template #cell-_statusChg="{ row }">
+          <td style="text-align:center" @click.stop>
+            <select class="form-control" style="font-size:11px;padding:2px 4px"
+              :value="row.reviewStatusCd"
+              @change="onStatusSelectChange(row, $event)">
+              <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
+            </select>
+          </td>
+        </template>
+      </bo-grid>
       <bo-pager :pager="prodReviewPager" :on-set-page="setProdReviewPage" :on-size-change="onProdReviewSizeChange" />
     </div>
 

@@ -145,9 +145,18 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    /* BoGrid(bare) 컬럼 정의 — 회원 캐쉬 내역 */
+    const cacheHistColumns = [
+      { key: 'cacheDate',  label: '일시' },
+      { key: 'cacheTypeCd', label: '유형' },
+      { key: 'cacheAmt',   label: '금액' },
+      { key: 'balanceAmt', label: '잔액', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'cacheDesc',  label: '내용' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal, cacheHistColumns };
   },
   template: /* html */`
 <div>
@@ -276,21 +285,17 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         </span>
         <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ cfTotalBalance.toLocaleString() }}원</span>
       </div>
-      <table class="bo-table" v-if="cfMemberCacheHistory.length">
-        <thead><tr><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th></tr></thead>
-        <tbody>
-          <tr v-for="c in cfMemberCacheHistory" :key="c?.cacheId">
-            <td>{{ c.cacheDate }}</td>
-            <td><span class="badge" :class="fnTypeBadge(c.cacheTypeCd)">{{ c.cacheTypeCd }}</span></td>
-            <td :style="c.cacheAmt>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
-              {{ c.cacheAmt > 0 ? '+' : '' }}{{ (c.cacheAmt||0).toLocaleString() }}원
-            </td>
-            <td>{{ (c.balanceAmt||0).toLocaleString() }}원</td>
-            <td>{{ c.cacheDesc }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">캐쉬 내역이 없습니다.</div>
+      <bo-grid bare :columns="cacheHistColumns" :rows="cfMemberCacheHistory" row-key="cacheId"
+               empty-text="캐쉬 내역이 없습니다.">
+        <template #cell-cacheTypeCd="{ row }">
+          <td><span class="badge" :class="fnTypeBadge(row.cacheTypeCd)">{{ row.cacheTypeCd }}</span></td>
+        </template>
+        <template #cell-cacheAmt="{ row }">
+          <td :style="row.cacheAmt>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
+            {{ row.cacheAmt > 0 ? '+' : '' }}{{ (row.cacheAmt||0).toLocaleString() }}원
+          </td>
+        </template>
+      </bo-grid>
     </div>
   </div>
 </div>

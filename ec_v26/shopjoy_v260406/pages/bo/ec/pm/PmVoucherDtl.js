@@ -259,9 +259,27 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    /* BoGrid(bare) 컬럼 정의 — 발급내역 / 사용내역 */
+    const issueColumns = [
+      { key: 'issueNo',     label: '발급번호' },
+      { key: 'memberNm',    label: '회원명' },
+      { key: 'issueDate',   label: '발급일' },
+      { key: 'issuePrice',  label: '발급가격', style: 'text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'expiryDate',  label: '만료일' },
+      { key: 'status',      label: '상태' },
+    ];
+    const usageColumns = [
+      { key: 'usageNo',    label: '사용번호' },
+      { key: 'issueNo',    label: '발급번호' },
+      { key: 'memberNm',   label: '회원명' },
+      { key: 'orderId',    label: '주문ID' },
+      { key: 'useAmount',  label: '사용금액', style: 'text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'useDate',    label: '사용일시' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, cfDtlMode, tabMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, cfDtlMode, tabMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor, issueColumns, usageColumns };
   },
   template: /* html */`
 <div>
@@ -495,39 +513,19 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- -- 발급내역 탭 --------------------------------------------------------- -->
   <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
-    <table class="bo-table" style="margin:0;">
-      <thead><tr><th>발급번호</th><th>회원명</th><th>발급일</th><th>발급가격</th><th>만료일</th><th>상태</th></tr></thead>
-      <tbody>
-        <tr v-if="cfIssuedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">발급내역이 없습니다.</td></tr>
-        <tr v-for="item in cfIssuedList" :key="item?.issueNo">
-          <td>{{ item.issueNo }}</td>
-          <td>{{ item.memberNm }}</td>
-          <td>{{ item.issueDate }}</td>
-          <td style="text-align:right;">{{ (item.issuePrice||0).toLocaleString() }}원</td>
-          <td>{{ item.expiryDate }}</td>
-          <td><span class="badge" :class="{'badge-green':item.status==='정상','badge-blue':item.status==='사용완료','badge-gray':item.status==='만료됨'}">{{ item.status }}</span></td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid bare :columns="issueColumns" :rows="cfIssuedList" row-key="issueNo"
+             empty-text="발급내역이 없습니다.">
+      <template #cell-status="{ row }">
+        <td><span class="badge" :class="{'badge-green':row.status==='정상','badge-blue':row.status==='사용완료','badge-gray':row.status==='만료됨'}">{{ row.status }}</span></td>
+      </template>
+    </bo-grid>
   </div>
 
   <!-- -- 사용내역 탭 --------------------------------------------------------- -->
   <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">사용내역</div>
-    <table class="bo-table" style="margin:0;">
-      <thead><tr><th>사용번호</th><th>발급번호</th><th>회원명</th><th>주문ID</th><th>사용금액</th><th>사용일시</th></tr></thead>
-      <tbody>
-        <tr v-if="cfUsedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">사용내역이 없습니다.</td></tr>
-        <tr v-for="item in cfUsedList" :key="item?.usageNo">
-          <td>{{ item.usageNo }}</td>
-          <td>{{ item.issueNo }}</td>
-          <td>{{ item.memberNm }}</td>
-          <td>{{ item.orderId }}</td>
-          <td style="text-align:right;">{{ (item.useAmount||0).toLocaleString() }}원</td>
-          <td>{{ item.useDate }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <bo-grid bare :columns="usageColumns" :rows="cfUsedList" row-key="usageNo"
+             empty-text="사용내역이 없습니다."></bo-grid>
   </div>
 
   <!-- -- 상세정보 탭 --------------------------------------------------------- -->

@@ -13,7 +13,7 @@ window.OdCartMng = {
 
     /* ── 목록 상태 ── */
     const rows   = reactive([]);
-    const pager  = reactive({ pageNo: 1, pageSize: 20, totalCount: 0, totalPage: 1 });
+    const pager  = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 50, 100] });
     const search = reactive({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
     const uiState = reactive({ loading: false, selectedIds: [] });
     const codes = reactive({ sites: [], cart_date_types: [] });
@@ -122,8 +122,13 @@ window.OdCartMng = {
         const res = await boApiSvc.odCart.getPage(params, '장바구니관리', '조회');
         const d = res.data?.data || {};
         rows.splice(0, rows.length, ...(d.pageList || []));
-        pager.totalCount = d.pageTotalCount || 0;
-        pager.totalPage  = d.pageTotalPage  || 1;
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage  = d.pageTotalPage  || 1;
+        const tp = pager.pageTotalPage;
+        const cur = pager.pageNo;
+        const from = Math.max(1, cur - 4);
+        const to = Math.min(tp, from + 9);
+        pager.pageNums = Array.from({ length: to - from + 1 }, (_, i) => from + i);
       } catch (err) {
         showToast(err.response?.data?.message || '조회 중 오류가 발생했습니다.', 'error', 0);
       } finally {
@@ -148,20 +153,48 @@ window.OdCartMng = {
       onSearch();
     };
 
-    /* 장바구니 onPageChange */
-    const onPageChange = (no) => { pager.pageNo = no; handleSearchList(); };
+    /* 장바구니 setPage / onSizeChange (bo-pager 연동) */
+    const setPage = (no) => { if (no >= 1 && no <= pager.pageTotalPage) { pager.pageNo = no; handleSearchList(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
-    /* ── 체크박스 ── */
-    const onToggleAll = (e) => {
-      uiState.selectedIds = e.target.checked ? rows.map(r => r.cartId) : [];
-    };
-
-    /* 장바구니 onToggleRow */
-    const onToggleRow = (id) => {
+    /* ── BoGrid selectable 연동 ── */
+    const Vue3 = Vue;
+    const isChecked = (id) => uiState.selectedIds.includes(id);
+    const cfAllChecked = Vue3.computed(() =>
+      rows.length > 0 && uiState.selectedIds.length === rows.length);
+    const toggleCheck = (id) => {
       const idx = uiState.selectedIds.indexOf(id);
       if (idx >= 0) uiState.selectedIds.splice(idx, 1);
       else uiState.selectedIds.push(id);
     };
+    const toggleCheckAll = () => {
+      uiState.selectedIds = cfAllChecked.value ? [] : rows.map(r => r.cartId);
+    };
+    const fnGridRowStyle = (r) =>
+      uiState.selectedIds.includes(r.cartId) ? 'background:#fff5f8;' : '';
+
+    /* ── BoGrid 컬럼 정의 ── */
+    const listColumns = [
+      { key: 'memberNm', label: '회원',   style: 'min-width:130px;' },
+      { key: 'prodNm',   label: '상품',   style: 'min-width:180px;' },
+      { key: '_opt',     label: '옵션',   style: 'min-width:120px;' },
+      { key: 'unitPrice',label: '단가',   style: 'width:90px;text-align:right;' },
+      { key: 'orderQty', label: '수량',   style: 'width:50px;text-align:center;' },
+      { key: 'itemPrice',label: '합계금액', style: 'width:100px;text-align:right;' },
+      { key: 'isChecked',label: '선택',   style: 'width:66px;text-align:center;' },
+      { key: 'regDate',  label: '등록일시', style: 'width:130px;' },
+      { key: '_act',     label: '관리',   style: 'width:60px;text-align:center;' },
+    ];
+
+    /* ── 회원선택 모달 picker BoGrid 컬럼 (행 클릭 시 onSelectMember) ── */
+    const memberPickColumns = [
+      { key: 'memberNm',       label: '이름',   style: 'min-width:130px;' },
+      { key: 'loginId',        label: '로그인ID', style: 'min-width:110px;' },
+      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;' },
+      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;' },
+      { key: 'memberPhone',    label: '연락처', style: 'width:110px;' },
+      { key: '_pick',          label: '선택',   style: 'width:70px;text-align:center;' },
+    ];
 
     /* ── 삭제 ── */
     const handleDelete = async (cartId) => {
@@ -212,8 +245,8 @@ window.OdCartMng = {
       memberPick, openMemberPick, closeMemberPick,
       handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember,
       fnCheckedBadge, fnCheckedNm, fnPrice, fnDate, fnAvatar,
-      onSearch, onReset, onPageChange,
-      onToggleAll, onToggleRow,
+      onSearch, onReset, setPage, onSizeChange,
+      listColumns, memberPickColumns, isChecked, cfAllChecked, toggleCheck, toggleCheckAll, fnGridRowStyle,
       handleDelete, handleBulkDelete,
     };
   },
@@ -264,7 +297,7 @@ window.OdCartMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title">장바구니 목록</span>
-      <span class="list-count">총 {{ pager.totalCount.toLocaleString() }}건</span>
+      <span class="list-count">총 {{ pager.pageTotalCount.toLocaleString() }}건</span>
       <div style="margin-left:auto;">
         <button v-if="uiState.selectedIds.length" class="btn btn-danger btn-sm" @click="handleBulkDelete">
           🗑 선택삭제 ({{ uiState.selectedIds.length }})
@@ -275,90 +308,62 @@ window.OdCartMng = {
     <div v-if="uiState.loading" style="text-align:center;padding:48px;color:#bbb;">
       <div style="font-size:28px;margin-bottom:8px;">⏳</div>조회 중...
     </div>
-    <table v-else class="admin-table">
-      <thead>
-        <tr>
-          <th style="width:36px;text-align:center;">
-            <input type="checkbox" @change="onToggleAll"
-                   :checked="rows.length > 0 && uiState.selectedIds.length === rows.length" />
-          </th>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th style="min-width:130px;">회원</th>
-          <th style="min-width:180px;">상품</th>
-          <th style="min-width:120px;">옵션</th>
-          <th style="width:90px;text-align:right;">단가</th>
-          <th style="width:50px;text-align:center;">수량</th>
-          <th style="width:100px;text-align:right;">합계금액</th>
-          <th style="width:66px;text-align:center;">선택</th>
-          <th style="width:130px;">등록일시</th>
-          <th style="width:60px;text-align:center;">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="!rows.length">
-          <td colspan="11" style="text-align:center;padding:40px;color:#bbb;">
-            <div style="font-size:28px;margin-bottom:6px;">🛒</div>
-            조회 결과가 없습니다.
-          </td>
-        </tr>
-        <tr v-for="(r, idx) in rows" :key="r.cartId"
-            :style="uiState.selectedIds.includes(r.cartId) ? 'background:#fff5f8;' : (idx%2===1?'background:#fafafa;':'')">
-          <td style="text-align:center;">
-            <input type="checkbox" :checked="uiState.selectedIds.includes(r.cartId)"
-                   @change="onToggleRow(r.cartId)" />
-          </td>
-          <td style="text-align:center;color:#999;font-size:12px;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <!-- 회원 -->
-          <td>
-            <div style="display:flex;align-items:center;gap:7px;">
-              <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">
-                {{ fnAvatar(r.memberNm) }}
-              </div>
-              <div>
-                <div style="font-weight:600;font-size:13px;">{{ r.memberNm || '-' }}</div>
-                <div style="font-size:11px;color:#aaa;font-family:monospace;">{{ r.memberId || r.sessionKey || '-' }}</div>
-              </div>
+    <bo-grid v-else bare selectable :columns="listColumns" :rows="rows" :pager="pager" row-key="cartId"
+      :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
+      empty-text="조회 결과가 없습니다."
+      @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll">
+      <template #cell-memberNm="{ row }">
+        <td>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">
+              {{ fnAvatar(row.memberNm) }}
             </div>
-          </td>
-          <!-- 상품 -->
-          <td>
-            <div style="font-size:13px;font-weight:500;line-height:1.4;">{{ r.prodNm || '-' }}</div>
-            <div style="font-size:11px;color:#aaa;font-family:monospace;">{{ r.prodId }}</div>
-          </td>
-          <!-- 옵션 -->
-          <td>
-            <div v-if="r.optNm1 || r.optNm2" style="display:flex;flex-direction:column;gap:3px;">
-              <span v-if="r.optNm1" style="display:inline-block;background:#fdf2f8;color:#9d174d;border:1px solid #fbcfe8;border-radius:4px;padding:1px 7px;font-size:11px;">{{ r.optNm1 }}</span>
-              <span v-if="r.optNm2" style="display:inline-block;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:4px;padding:1px 7px;font-size:11px;">{{ r.optNm2 }}</span>
+            <div>
+              <div style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</div>
+              <div style="font-size:11px;color:#aaa;font-family:monospace;">{{ row.memberId || row.sessionKey || '-' }}</div>
             </div>
-            <span v-else style="color:#ccc;font-size:12px;">-</span>
-          </td>
-          <td style="text-align:right;font-size:13px;">{{ fnPrice(r.unitPrice) }}</td>
-          <td style="text-align:center;font-weight:600;">{{ r.orderQty }}</td>
-          <td style="text-align:right;font-weight:700;color:#111;">{{ fnPrice(r.itemPrice) }}</td>
-          <td style="text-align:center;">
-            <span :class="fnCheckedBadge(r.isChecked)">{{ fnCheckedNm(r.isChecked) }}</span>
-          </td>
-          <td style="font-size:11px;color:#888;">{{ fnDate(r.regDate) }}</td>
-          <td style="text-align:center;">
-            <button class="btn btn-danger btn-xs" @click="handleDelete(r.cartId)">삭제</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- 페이지네이션 -->
-    <div v-if="pager.totalPage > 1" class="pagination">
-      <div class="pager">
-        <button class="btn btn-secondary btn-sm" :disabled="pager.pageNo <= 1" @click="onPageChange(pager.pageNo - 1)">이전</button>
-        <template v-for="n in pager.totalPage" :key="n">
-          <button v-if="Math.abs(n - pager.pageNo) <= 4"
-                  :class="['btn btn-sm', n === pager.pageNo ? 'btn-primary' : 'btn-secondary']"
-                  @click="onPageChange(n)">{{ n }}</button>
-        </template>
-        <button class="btn btn-secondary btn-sm" :disabled="pager.pageNo >= pager.totalPage" @click="onPageChange(pager.pageNo + 1)">다음</button>
-      </div>
-    </div>
+          </div>
+        </td>
+      </template>
+      <template #cell-prodNm="{ row }">
+        <td>
+          <div style="font-size:13px;font-weight:500;line-height:1.4;">{{ row.prodNm || '-' }}</div>
+          <div style="font-size:11px;color:#aaa;font-family:monospace;">{{ row.prodId }}</div>
+        </td>
+      </template>
+      <template #cell-_opt="{ row }">
+        <td>
+          <div v-if="row.optNm1 || row.optNm2" style="display:flex;flex-direction:column;gap:3px;">
+            <span v-if="row.optNm1" style="display:inline-block;background:#fdf2f8;color:#9d174d;border:1px solid #fbcfe8;border-radius:4px;padding:1px 7px;font-size:11px;">{{ row.optNm1 }}</span>
+            <span v-if="row.optNm2" style="display:inline-block;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:4px;padding:1px 7px;font-size:11px;">{{ row.optNm2 }}</span>
+          </div>
+          <span v-else style="color:#ccc;font-size:12px;">-</span>
+        </td>
+      </template>
+      <template #cell-unitPrice="{ row }">
+        <td style="text-align:right;font-size:13px;">{{ fnPrice(row.unitPrice) }}</td>
+      </template>
+      <template #cell-orderQty="{ row }">
+        <td style="text-align:center;font-weight:600;">{{ row.orderQty }}</td>
+      </template>
+      <template #cell-itemPrice="{ row }">
+        <td style="text-align:right;font-weight:700;color:#111;">{{ fnPrice(row.itemPrice) }}</td>
+      </template>
+      <template #cell-isChecked="{ row }">
+        <td style="text-align:center;">
+          <span :class="fnCheckedBadge(row.isChecked)">{{ fnCheckedNm(row.isChecked) }}</span>
+        </td>
+      </template>
+      <template #cell-regDate="{ row }">
+        <td style="font-size:11px;color:#888;">{{ fnDate(row.regDate) }}</td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td style="text-align:center;">
+          <button class="btn btn-danger btn-xs" @click="handleDelete(row.cartId)">삭제</button>
+        </td>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
   <!-- 회원 선택 팝업 -->
@@ -409,54 +414,44 @@ window.OdCartMng = {
       <!-- 목록 -->
       <div style="flex:1;overflow-y:auto;">
         <div v-if="memberPick.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
-        <table v-else class="admin-table" style="margin:0;">
-          <thead>
-            <tr>
-              <th style="width:40px;text-align:center;">번호</th>
-              <th style="min-width:130px;">이름</th>
-              <th style="min-width:110px;">로그인ID</th>
-              <th style="width:80px;text-align:center;">등급</th>
-              <th style="width:80px;text-align:center;">상태</th>
-              <th style="width:110px;">연락처</th>
-              <th style="width:70px;text-align:center;">선택</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="!memberPick.rows.length">
-              <td colspan="7" style="text-align:center;padding:32px;color:#bbb;">조회 결과가 없습니다.</td>
-            </tr>
-            <tr v-for="(m, idx) in memberPick.rows" :key="m.memberId"
-                style="cursor:pointer;transition:background .1s;"
-                @click="onSelectMember(m)"
-                onmouseover="this.style.background='#fff5f8'"
-                onmouseout="this.style.background=''">
-              <td style="text-align:center;color:#999;font-size:12px;">{{ (memberPick.pageNo - 1) * 20 + idx + 1 }}</td>
-              <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">
-                    {{ m.memberNm ? m.memberNm.charAt(0) : '?' }}
-                  </div>
-                  <span style="font-weight:600;font-size:13px;">{{ m.memberNm || '-' }}</span>
+        <bo-grid v-else bare :columns="memberPickColumns" :rows="memberPick.rows" row-key="memberId"
+                 :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다.">
+          <template #cell-memberNm="{ row }">
+            <td @click="onSelectMember(row)">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">
+                  {{ row.memberNm ? row.memberNm.charAt(0) : '?' }}
                 </div>
-              </td>
-              <td><span style="font-family:monospace;font-size:12px;color:#374151;">{{ m.loginId }}</span></td>
-              <td style="text-align:center;">
-                <span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ m.gradeCdNm || '-' }}</span>
-              </td>
-              <td style="text-align:center;">
-                <span :style="m.memberStatusCd==='ACTIVE' ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;'"
-                      style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">
-                  {{ m.memberStatusCdNm || m.memberStatusCd || '-' }}
-                </span>
-              </td>
-              <td style="font-size:12px;color:#6b7280;">{{ m.memberPhone || '-' }}</td>
-              <td style="text-align:center;">
-                <button class="btn btn-primary btn-xs" @click.stop="onSelectMember(m)"
-                        style="border-radius:6px;font-size:11px;">선택</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <span style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</span>
+              </div>
+            </td>
+          </template>
+          <template #cell-loginId="{ row }">
+            <td @click="onSelectMember(row)"><span style="font-family:monospace;font-size:12px;color:#374151;">{{ row.loginId }}</span></td>
+          </template>
+          <template #cell-gradeCdNm="{ row }">
+            <td style="text-align:center;" @click="onSelectMember(row)">
+              <span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.gradeCdNm || '-' }}</span>
+            </td>
+          </template>
+          <template #cell-memberStatusCd="{ row }">
+            <td style="text-align:center;" @click="onSelectMember(row)">
+              <span :style="row.memberStatusCd==='ACTIVE' ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;'"
+                    style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">
+                {{ row.memberStatusCdNm || row.memberStatusCd || '-' }}
+              </span>
+            </td>
+          </template>
+          <template #cell-memberPhone="{ row }">
+            <td style="font-size:12px;color:#6b7280;" @click="onSelectMember(row)">{{ row.memberPhone || '-' }}</td>
+          </template>
+          <template #cell-_pick="{ row }">
+            <td style="text-align:center;">
+              <button class="btn btn-primary btn-xs" @click.stop="onSelectMember(row)"
+                      style="border-radius:6px;font-size:11px;">선택</button>
+            </td>
+          </template>
+        </bo-grid>
       </div>
 
       <!-- 팝업 페이지네이션 -->

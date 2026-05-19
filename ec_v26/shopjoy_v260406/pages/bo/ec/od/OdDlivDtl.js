@@ -236,9 +236,24 @@ window.OdDlivDtl = {
       { key: 'after',  label: '변경 후' },
     ];
 
+    /* 배송항목 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
+    const dlivItemCols = [
+      { key: 'prodNm',      label: '상품명' },
+      { key: 'color',       label: '색상',       style: 'width:60px;',                fmt: v => v || '-' },
+      { key: 'size',        label: '사이즈',     style: 'width:50px;',                fmt: v => v || '-' },
+      { key: 'qty',         label: '수량',       style: 'width:44px;text-align:center;' },
+      { key: 'salePrice',   label: '판매금액',   style: 'width:90px;text-align:right;' },
+      { key: 'discInfo',    label: '할인정보',   style: 'width:80px;' },
+      { key: 'discAmount',  label: '할인금액',   style: 'width:90px;text-align:right;' },
+      { key: 'price',       label: '결제금액',   style: 'width:100px;text-align:right;' },
+      { key: 'orderStatus', label: '주문상태',   style: 'width:90px;text-align:center;' },
+      { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;' },
+      { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes, paymentCols, editHistCols };
+    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes, paymentCols, editHistCols, dlivItemCols };
   },
   template: /* html */`
 <div>
@@ -406,68 +421,68 @@ window.OdDlivDtl = {
       <a v-else-if="form.outboundCourierCd==='롯데택배' && form.outboundTrackingNo" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
       <a v-else-if="form.outboundCourierCd==='한진택배' && form.outboundTrackingNo" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
     </div>
-    <table class="bo-table" v-if="dlivItems.length">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">No.</th>
-        <th>상품명</th>
-        <th style="width:60px;">색상</th>
-        <th style="width:50px;">사이즈</th>
-        <th style="width:44px;text-align:center;">수량</th>
-        <th style="width:90px;text-align:right;">판매금액</th>
-        <th style="width:80px;">할인정보</th>
-        <th style="width:90px;text-align:right;">할인금액</th>
-        <th style="width:100px;text-align:right;">결제금액</th>
-        <th style="width:90px;text-align:center;">주문상태</th>
-        <th style="width:110px;text-align:center;">클레임상태</th>
-        <th style="width:140px;">교환정보</th>
-      </tr></thead>
-      <tbody>
-        <tr v-for="(it,i) in dlivItems" :key="Math.random()">
-          <td style="text-align:center;color:#aaa;">{{ i+1 }}</td>
-          <td><span style="font-size:18px;margin-right:6px;">{{ it.emoji || '🛍' }}</span>{{ it.prodNm }}</td>
-          <td>{{ it.color || '-' }}</td>
-          <td>{{ it.size || '-' }}</td>
-          <td style="text-align:center;font-weight:600;">{{ it.qty || 1 }}</td>
-          <td style="text-align:right;color:#666;">{{ fmt(it.salePrice || it.price) }}</td>
-          <td><span v-if="it.discInfo" style="font-size:11px;padding:2px 7px;border-radius:8px;background:#fff3e0;color:#e65100;font-weight:600;">{{ it.discInfo }}</span><span v-else style="color:#bbb;">-</span></td>
-          <td style="text-align:right;color:#d84315;font-weight:600;">{{ it.discAmount ? '-'+fmt(it.discAmount) : '-' }}</td>
-          <td style="text-align:right;font-weight:700;color:#1a1a1a;">{{ fmt(it.price) }}</td>
-          <td style="text-align:center;">
-            <span v-if="form.orderStatusCd" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">{{ form.orderStatusCd }}</span>
-            <span v-else style="color:#ccc;">-</span>
-          </td>
-          <td style="text-align:center;">
-            <span v-if="cfFirstClaim" style="display:inline-flex;align-items:center;gap:3px;">
-              <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[cfFirstClaim.type]||'#9ca3af'}">{{ cfFirstClaim.type }}</span>
-              <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ cfFirstClaim.status }}</span>
+    <bo-grid bare :columns="dlivItemCols" :rows="dlivItems"
+             empty-text="배송 항목 정보가 없습니다.">
+      <template #cell-prodNm="{ row }">
+        <td style="font-size:12px;"><span style="font-size:18px;margin-right:6px;">{{ row.emoji || '🛍' }}</span>{{ row.prodNm }}</td>
+      </template>
+      <template #cell-qty="{ row }">
+        <td style="text-align:center;font-weight:600;font-size:12px;">{{ row.qty || 1 }}</td>
+      </template>
+      <template #cell-salePrice="{ row }">
+        <td style="text-align:right;color:#666;font-size:12px;">{{ fmt(row.salePrice || row.price) }}</td>
+      </template>
+      <template #cell-discInfo="{ row }">
+        <td style="font-size:12px;"><span v-if="row.discInfo" style="font-size:11px;padding:2px 7px;border-radius:8px;background:#fff3e0;color:#e65100;font-weight:600;">{{ row.discInfo }}</span><span v-else style="color:#bbb;">-</span></td>
+      </template>
+      <template #cell-discAmount="{ row }">
+        <td style="text-align:right;color:#d84315;font-weight:600;font-size:12px;">{{ row.discAmount ? '-'+fmt(row.discAmount) : '-' }}</td>
+      </template>
+      <template #cell-price="{ row }">
+        <td style="text-align:right;font-weight:700;color:#1a1a1a;font-size:12px;">{{ fmt(row.price) }}</td>
+      </template>
+      <template #cell-orderStatus>
+        <td style="text-align:center;font-size:12px;">
+          <span v-if="form.orderStatusCd" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">{{ form.orderStatusCd }}</span>
+          <span v-else style="color:#ccc;">-</span>
+        </td>
+      </template>
+      <template #cell-claimStatus>
+        <td style="text-align:center;font-size:12px;">
+          <span v-if="cfFirstClaim" style="display:inline-flex;align-items:center;gap:3px;">
+            <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[cfFirstClaim.type]||'#9ca3af'}">{{ cfFirstClaim.type }}</span>
+            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ cfFirstClaim.status }}</span>
+          </span>
+          <span v-else style="color:#ccc;">-</span>
+        </td>
+      </template>
+      <template #cell-exchInfo>
+        <td style="font-size:12px;">
+          <div v-if="cfFirstClaim && cfFirstClaim.type==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
+            <span v-if="cfFirstClaim.exchangeCourier" @click="openTracking(cfFirstClaim.exchangeCourier, cfFirstClaim.exchangeTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-weight:700;">
+              발송 {{ cfFirstClaim.exchangeCourier }} · {{ cfFirstClaim.exchangeTrackingNo || '-' }} 🔍
             </span>
-            <span v-else style="color:#ccc;">-</span>
-          </td>
-          <td>
-            <div v-if="cfFirstClaim && cfFirstClaim.type==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
-              <span v-if="cfFirstClaim.exchangeCourier" @click="openTracking(cfFirstClaim.exchangeCourier, cfFirstClaim.exchangeTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-weight:700;">
-                발송 {{ cfFirstClaim.exchangeCourier }} · {{ cfFirstClaim.exchangeTrackingNo || '-' }} 🔍
-              </span>
-              <span v-if="cfFirstClaim.courier" @click="openTracking(cfFirstClaim.courier, cfFirstClaim.trackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-weight:700;">
-                수거 {{ cfFirstClaim.courier }} · {{ cfFirstClaim.trackingNo || '-' }} 🔍
-              </span>
-            </div>
-            <span v-else style="color:#ccc;">-</span>
-          </td>
-        </tr>
-      </tbody>
+            <span v-if="cfFirstClaim.courier" @click="openTracking(cfFirstClaim.courier, cfFirstClaim.trackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-weight:700;">
+              수거 {{ cfFirstClaim.courier }} · {{ cfFirstClaim.trackingNo || '-' }} 🔍
+            </span>
+          </div>
+          <span v-else style="color:#ccc;">-</span>
+        </td>
+      </template>
+    </bo-grid>
+    <table v-if="dlivItems.length" class="bo-table" style="margin-top:-1px;">
       <tfoot>
         <tr style="background:#fafafa;font-weight:700;">
-          <td colspan="5" style="text-align:right;color:#555;">합계</td>
-          <td style="text-align:right;color:#666;">{{ fmt(dlivItems.reduce((s,x)=>s+(x.salePrice||x.price||0),0)) }}</td>
-          <td></td>
-          <td style="text-align:right;color:#d84315;">-{{ fmt(dlivItems.reduce((s,x)=>s+(x.discAmount||0),0)) }}</td>
-          <td style="text-align:right;color:#1a1a1a;">{{ fmt(dlivItems.reduce((s,x)=>s+(x.price||0),0)) }}</td>
+          <td style="width:36px;"></td>
+          <td colspan="4" style="text-align:right;color:#555;">합계</td>
+          <td style="width:90px;text-align:right;color:#666;">{{ fmt(dlivItems.reduce((s,x)=>s+(x.salePrice||x.price||0),0)) }}</td>
+          <td style="width:80px;"></td>
+          <td style="width:90px;text-align:right;color:#d84315;">-{{ fmt(dlivItems.reduce((s,x)=>s+(x.discAmount||0),0)) }}</td>
+          <td style="width:100px;text-align:right;color:#1a1a1a;">{{ fmt(dlivItems.reduce((s,x)=>s+(x.price||0),0)) }}</td>
           <td colspan="3"></td>
         </tr>
       </tfoot>
     </table>
-    <div v-else style="text-align:center;color:#bbb;padding:30px;">배송 항목 정보가 없습니다.</div>
   </div>
 
   <!-- -- 결제정보 탭 --------------------------------------------------------- -->

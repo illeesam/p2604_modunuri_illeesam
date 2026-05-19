@@ -1147,6 +1147,43 @@ window.PdProdDtl = {
     ];
     const fnRemainSkuRowStyle = () => 'opacity:0.6;background:#f9f9f9;';
 
+    /* BoGrid 컬럼 — 연관상품 (pd_prod_rel · REL_PROD) */
+    const relProdCols = [
+      { key: '_id2',     label: 'ID',     style: 'width:46px;text-align:center;' },
+      { key: 'prodNm',   label: '상품명' },
+      { key: '_relType', label: '유형',   style: 'width:80px;' },
+      { key: '_act',     label: '관리',   style: 'width:54px;text-align:center;' },
+    ];
+    /* BoGrid 컬럼 — 코디상품 (pd_prod_rel · CODY_PROD) */
+    const codeProdCols = [
+      { key: 'productId', label: 'ID',     style: 'width:46px;text-align:center;' },
+      { key: 'prodNm',    label: '상품명' },
+      { key: 'category',  label: '카테고리', style: 'width:80px;' },
+      { key: '_price',    label: '가격',   style: 'width:90px;text-align:right;' },
+      { key: '_stock',    label: '재고',   style: 'width:60px;text-align:right;' },
+      { key: '_status',   label: '상태',   style: 'width:60px;' },
+      { key: '_act',      label: '관리',   style: 'width:54px;text-align:center;' },
+    ];
+    /* BoGrid 컬럼 — 판매계획 (selectable + 인라인 편집) */
+    const planCols = [
+      { key: '_start',  label: '시작일시', style: 'width:140px;' },
+      { key: '_end',    label: '종료일시', style: 'width:140px;' },
+      { key: '_status', label: '상태',    style: 'width:80px;' },
+      { key: '_list',   label: '정가',    style: 'width:90px;' },
+      { key: '_sale',   label: '판매가',  style: 'width:90px;' },
+      { key: '_purch',  label: '매입가',  style: 'width:80px;' },
+    ];
+    const fnPlanRowChecked = (key) => {
+      const r = window.safeArrayUtils.safeFind(cfPlanVisible.value, x => String(x._id) === String(key));
+      return !!(r && r._checked);
+    };
+    const onPlanToggleCheck = (key) => {
+      const r = window.safeArrayUtils.safeFind(cfPlanVisible.value, x => String(x._id) === String(key));
+      if (r) r._checked = !r._checked;
+    };
+    const onPlanToggleCheckAll = () => { cfPlanAllChecked.value = !cfPlanAllChecked.value; };
+    const fnPlanRowStyle2 = (row) => planRowStyle(row._row_status);
+
     // -- return ---------------------------------------------------------------
 
     return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
@@ -1174,6 +1211,8 @@ window.PdProdDtl = {
       safeFirst, safeGet, safeFind, safeFilter,
       grpCodes,
       fnNoCursor, mdUserCols, fnMdRowStyle, prodPickerCols, remainSkuCols, fnRemainSkuRowStyle,
+      relProdCols, codeProdCols, planCols,
+      fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
     };
   },
@@ -1925,49 +1964,24 @@ window.PdProdDtl = {
         <button class="btn btn-sm btn-secondary" @click="openProdPicker('rel')">+ 추가</button>
       </div>
 
-      <table class="bo-table" style="font-size:12px;">
-        <thead>
-          <tr>
-            <th style="width:24px;"></th>
-            <th style="width:46px;">ID</th>
-            <th>상품명</th>
-            <th style="width:80px;">카테고리</th>
-            <th style="width:90px;">가격</th>
-            <th style="width:60px;">재고</th>
-            <th style="width:60px;">상태</th>
-            <th style="width:54px;">관리</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(p, idx) in cfTabPageList.rels" :key="p?._id"
-            draggable="true"
-            @dragstart="onRelDragStart((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx)"
-            @dragover.prevent="onRelDragOver((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx)"
-            @drop.prevent="onRelDrop()"
-            @dragend="dragRelIdx=null;dragoverRelIdx=null"
-            :style="dragoverRelIdx===((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx) && dragRelIdx!==((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx) ? 'background:#e6f4ff;' : ''">
-            <td style="text-align:center;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">≡</td>
-            <td style="text-align:center;color:#888;">{{ p.relProdId || p.prodId }}</td>
-            <td><span class="ref-link" @click="navigate('pdProdDtl',{id:p.relProdId||p.prodId})">{{ p.prodNm }}</span></td>
-            <td>{{ p.prodRelTypeCdNm || p.prodRelTypeCd }}</td>
-            <td style="text-align:center;">
-              <button class="btn btn-xs btn-danger" @click="removeRelProd((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx)">삭제</button>
-            </td>
-          </tr>
-          <tr v-if="relProds.length===0">
-            <td colspan="5" style="text-align:center;color:#bbb;padding:20px;font-size:12px;">+ 추가 버튼으로 연관상품을 등록하세요.</td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- 페이저 -->
-      <div v-if="tabData.rels.length > tabPage.rels.pageSize" class="pagination" style="margin-top:12px;">
-        <button class="pager" @click="onTabPageChange('rels',1)" :disabled="tabPage.rels.pageNo===1">«</button>
-        <button class="pager" @click="onTabPageChange('rels',tabPage.rels.pageNo-1)" :disabled="tabPage.rels.pageNo===1">‹</button>
-        <button v-for="n in fnTabPageNos('rels')" :key="n" class="pager" :class="{active:tabPage.rels.pageNo===n}" @click="onTabPageChange('rels',n)">{{ n }}</button>
-        <button class="pager" @click="onTabPageChange('rels',tabPage.rels.pageNo+1)" :disabled="tabPage.rels.pageNo===cfTabTotalPages('rels')">›</button>
-        <button class="pager" @click="onTabPageChange('rels',cfTabTotalPages('rels'))" :disabled="tabPage.rels.pageNo===cfTabTotalPages('rels')">»</button>
-        <span class="pager-right">{{ tabData.rels.length }}건 / {{ tabPage.rels.pageSize }}개씩</span>
-      </div>
+      <bo-grid bare :columns="relProdCols" :rows="relProds" row-key="_id"
+        draggable row-actions empty-text="+ 추가 버튼으로 연관상품을 등록하세요."
+        @reorder="onRelDrop">
+        <template #cell-_id2="{ row }">
+          <td style="text-align:center;color:#888;">{{ row.relProdId || row.prodId }}</td>
+        </template>
+        <template #cell-prodNm="{ row }">
+          <td><span class="ref-link" @click="navigate('pdProdDtl',{id:row.relProdId||row.prodId})">{{ row.prodNm }}</span></td>
+        </template>
+        <template #cell-_relType="{ row }">
+          <td>{{ row.prodRelTypeCdNm || row.prodRelTypeCd }}</td>
+        </template>
+        <template #row-actions="{ idx }">
+          <td style="text-align:center;">
+            <button class="btn btn-xs btn-danger" @click="removeRelProd(idx)">삭제</button>
+          </td>
+        </template>
+      </bo-grid>
     </div>
 
     <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;" />
@@ -1981,43 +1995,33 @@ window.PdProdDtl = {
         <button class="btn btn-sm btn-secondary" @click="openProdPicker('code')">+ 추가</button>
       </div>
 
-      <table class="bo-table" style="font-size:12px;">
-        <thead>
-          <tr>
-            <th style="width:24px;"></th>
-            <th style="width:46px;">ID</th>
-            <th>상품명</th>
-            <th style="width:80px;">카테고리</th>
-            <th style="width:90px;">가격</th>
-            <th style="width:60px;">재고</th>
-            <th style="width:60px;">상태</th>
-            <th style="width:54px;">관리</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(p, idx) in codeProds" :key="p?._id"
-            draggable="true"
-            @dragstart="onCodeDragStart(idx)"
-            @dragover.prevent="onCodeDragOver(idx)"
-            @drop.prevent="onCodeDrop()"
-            @dragend="dragCodeIdx=null;dragoverCodeIdx=null"
-            :style="dragoverCodeIdx===idx && dragCodeIdx!==idx ? 'background:#e6f4ff;' : ''">
-            <td style="text-align:center;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">≡</td>
-            <td style="text-align:center;color:#888;">{{ p.productId }}</td>
-            <td><span class="ref-link" @click="navigate('pdProdDtl',{id:p.productId})">{{ p.prodNm }}</span></td>
-            <td>{{ p.category }}</td>
-            <td style="text-align:right;">{{ (p.price||0).toLocaleString() }}원</td>
-            <td style="text-align:right;">{{ p.stock }}개</td>
-            <td><span class="badge" :class="p.status==='판매중'?'badge-green':'badge-gray'" style="font-size:10px;">{{ p.status }}</span></td>
-            <td style="text-align:center;">
-              <button class="btn btn-xs btn-danger" @click="removeCodeProd(idx)">삭제</button>
-            </td>
-          </tr>
-          <tr v-if="codeProds.length===0">
-            <td colspan="8" style="text-align:center;color:#bbb;padding:20px;font-size:12px;">+ 추가 버튼으로 코디상품을 등록하세요.</td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid bare :columns="codeProdCols" :rows="codeProds" row-key="_id"
+        draggable row-actions empty-text="+ 추가 버튼으로 코디상품을 등록하세요."
+        @reorder="onCodeDrop">
+        <template #cell-productId="{ row }">
+          <td style="text-align:center;color:#888;">{{ row.productId }}</td>
+        </template>
+        <template #cell-prodNm="{ row }">
+          <td><span class="ref-link" @click="navigate('pdProdDtl',{id:row.productId})">{{ row.prodNm }}</span></td>
+        </template>
+        <template #cell-category="{ row }">
+          <td>{{ row.category }}</td>
+        </template>
+        <template #cell-_price="{ row }">
+          <td style="text-align:right;">{{ (row.price||0).toLocaleString() }}원</td>
+        </template>
+        <template #cell-_stock="{ row }">
+          <td style="text-align:right;">{{ row.stock }}개</td>
+        </template>
+        <template #cell-_status="{ row }">
+          <td><span class="badge" :class="row.status==='판매중'?'badge-green':'badge-gray'" style="font-size:10px;">{{ row.status }}</span></td>
+        </template>
+        <template #row-actions="{ idx }">
+          <td style="text-align:center;">
+            <button class="btn btn-xs btn-danger" @click="removeCodeProd(idx)">삭제</button>
+          </td>
+        </template>
+      </bo-grid>
     </div>
 
     <div class="form-actions" v-if="!cfDtlMode">
@@ -2168,51 +2172,49 @@ window.PdProdDtl = {
         </div>
       </div>
       <div style="overflow-x:auto;">
-        <table class="bo-table" style="min-width:860px;font-size:12px;">
-          <thead>
-            <tr>
-              <th style="width:36px;"><input type="checkbox" :checked="cfPlanAllChecked" @change="e=>cfPlanAllChecked=e.target.checked" /></th>
-              <th style="width:140px;">시작일시</th>
-              <th style="width:140px;">종료일시</th>
-              <th style="width:80px;">상태</th>
-              <th style="width:90px;">정가</th>
-              <th style="width:90px;">판매가</th>
-              <th style="width:80px;">매입가</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, idx) in cfPlanVisible" :key="row?._id" :style="planRowStyle(row._row_status)">
-              <td style="text-align:center;"><input type="checkbox" v-model="row._checked" /></td>
-              <td>
-                <bo-date-time-picker
-                  :date="row.startDate" :time="row.startTime"
-                  @update:date="v => { row.startDate = v; onPlanChange(row); }"
-                  @update:time="v => { row.startTime = v; onPlanChange(row); }"
-                  :show-now="false" :show-clear="false"
-                  date-width="104px" time-width="64px" />
-              </td>
-              <td>
-                <bo-date-time-picker
-                  :date="row.endDate" :time="row.endTime"
-                  @update:date="v => { row.endDate = v; onPlanChange(row); }"
-                  @update:time="v => { row.endTime = v; onPlanChange(row); }"
-                  :show-now="false" :show-clear="false"
-                  date-width="104px" time-width="64px" />
-              </td>
-              <td>
-                <select v-model="row.planStatus" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;">
-                  <option v-for="c in grpCodes.prod_plan_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-                </select>
-              </td>
-              <td><input type="number" v-model.number="row.listPrice"     @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
-              <td><input type="number" v-model.number="row.salePrice"     @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
-              <td><input type="number" v-model.number="row.purchasePrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
-            </tr>
-            <tr v-if="cfPlanVisible.length===0">
-              <td colspan="7" style="text-align:center;color:#aaa;padding:16px;">[행추가]로 판매계획을 추가하세요.</td>
-            </tr>
-          </tbody>
-        </table>
+        <bo-grid bare :columns="planCols" :rows="cfPlanVisible" row-key="_id"
+          selectable checked-key="_id"
+          :all-checked="cfPlanAllChecked" :is-checked="fnPlanRowChecked"
+          :row-style="fnPlanRowStyle2"
+          empty-text="[행추가]로 판매계획을 추가하세요."
+          @toggle-check="onPlanToggleCheck" @toggle-check-all="onPlanToggleCheckAll">
+          <template #cell-_start="{ row }">
+            <td>
+              <bo-date-time-picker
+                :date="row.startDate" :time="row.startTime"
+                @update:date="v => { row.startDate = v; onPlanChange(row); }"
+                @update:time="v => { row.startTime = v; onPlanChange(row); }"
+                :show-now="false" :show-clear="false"
+                date-width="104px" time-width="64px" />
+            </td>
+          </template>
+          <template #cell-_end="{ row }">
+            <td>
+              <bo-date-time-picker
+                :date="row.endDate" :time="row.endTime"
+                @update:date="v => { row.endDate = v; onPlanChange(row); }"
+                @update:time="v => { row.endTime = v; onPlanChange(row); }"
+                :show-now="false" :show-clear="false"
+                date-width="104px" time-width="64px" />
+            </td>
+          </template>
+          <template #cell-_status="{ row }">
+            <td>
+              <select v-model="row.planStatus" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;">
+                <option v-for="c in grpCodes.prod_plan_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+              </select>
+            </td>
+          </template>
+          <template #cell-_list="{ row }">
+            <td><input type="number" v-model.number="row.listPrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
+          </template>
+          <template #cell-_sale="{ row }">
+            <td><input type="number" v-model.number="row.salePrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
+          </template>
+          <template #cell-_purch="{ row }">
+            <td><input type="number" v-model.number="row.purchasePrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
+          </template>
+        </bo-grid>
       </div>
       <div style="margin-top:8px;display:flex;gap:8px;font-size:11px;color:#aaa;align-items:center;">
         <span style="background:#f6ffed;border:1px solid #b7eb8f;border-radius:3px;padding:1px 6px;color:#389e0d;">I 신규</span>

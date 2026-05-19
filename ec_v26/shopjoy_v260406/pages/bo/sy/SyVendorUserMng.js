@@ -488,13 +488,20 @@ window.SyVendorUserMng = {
       { key: 'vendorUserEmail',    label: '이메일' },
       { key: 'vendorUserStatusCd', label: '상태', style: 'width:80px;text-align:center;' },
     ];
+    /* BoGrid(bare) 컬럼 정의 — 부여된 역할 목록 */
+    const userRoleColumns = [
+      { key: 'roleNm',    label: '역할명' },
+      { key: 'grantDate', label: '부여일시' },
+      { key: 'validTerm', label: '유효기간' },
+      { key: '_act',      label: '관리', style: 'text-align:right;' },
+    ];
     const fnVendorRowStyle = (v) => 'cursor:pointer;' + (uiState.searchVendorId === v.vendorId ? 'background:#fff0f4;' : '');
     const fnUserRowStyle   = (u) => 'cursor:pointer;' + (formData.vendorUserId === u.vendorUserId ? 'background:#fff0f4;' : '');
 
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
-      vendorGridColumns, userGridColumns, fnVendorRowStyle, fnUserRowStyle,
+      vendorGridColumns, userGridColumns, userRoleColumns, fnVendorRowStyle, fnUserRowStyle,
       vendors, bizPager, setBizPage,
       onSearch, onReset,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
@@ -686,23 +693,26 @@ window.SyVendorUserMng = {
             <button class="btn btn-blue btn-sm" @click="openRoleModal">+ 역할 추가</button>
           </div>
           <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
-          <div v-else-if="userRoles.length===0" style="padding:12px;color:#9ca3af;font-size:12px;text-align:center;">부여된 역할이 없습니다.</div>
-          <table v-else class="bo-table" style="font-size:12px;">
-            <thead><tr><th>역할명</th><th>부여일시</th><th>유효기간</th><th style="text-align:right;">관리</th></tr></thead>
-            <tbody>
-              <tr v-for="r in userRoles" :key="r.vendorUserRoleId">
-                <td style="font-weight:600;">{{ r.roleNm || roleNmByCode(r.roleId) }}</td>
-                <td style="color:#6b7280;">{{ r.grantDate ? String(r.grantDate).slice(0,16) : '-' }}</td>
-                <td style="color:#6b7280;">
-                  <span v-if="r.validFrom || r.validTo">{{ r.validFrom||'∞' }} ~ {{ r.validTo||'∞' }}</span>
-                  <span v-else style="color:#d1d5db;">제한없음</span>
-                </td>
-                <td style="text-align:right;">
-                  <button class="btn btn-danger btn-xs" @click="handleDeleteRole(r)">삭제</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <bo-grid v-else bare :columns="userRoleColumns" :rows="userRoles" row-key="vendorUserRoleId"
+                   empty-text="부여된 역할이 없습니다.">
+            <template #cell-roleNm="{ row }">
+              <td style="font-weight:600;">{{ row.roleNm || roleNmByCode(row.roleId) }}</td>
+            </template>
+            <template #cell-grantDate="{ row }">
+              <td style="color:#6b7280;">{{ row.grantDate ? String(row.grantDate).slice(0,16) : '-' }}</td>
+            </template>
+            <template #cell-validTerm="{ row }">
+              <td style="color:#6b7280;">
+                <span v-if="row.validFrom || row.validTo">{{ row.validFrom||'∞' }} ~ {{ row.validTo||'∞' }}</span>
+                <span v-else style="color:#d1d5db;">제한없음</span>
+              </td>
+            </template>
+            <template #cell-_act="{ row }">
+              <td style="text-align:right;">
+                <button class="btn btn-danger btn-xs" @click="handleDeleteRole(row)">삭제</button>
+              </td>
+            </template>
+          </bo-grid>
         </div>
       </div>
     </div>

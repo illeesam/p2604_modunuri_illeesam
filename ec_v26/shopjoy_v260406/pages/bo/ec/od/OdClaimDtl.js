@@ -173,6 +173,8 @@ window.OdClaimDtl = {
 
     /* 클레임(취소/반품/교환) isExpanded */
     const isExpanded = (i) => expandedItems.has(i);
+    /* bo-grid 행펼침 판정 (교환 클레임 + 펼침 상태) */
+    const fnItemExpanded = (row, i) => isExpanded(i) && form.claimTypeCd === '교환';
     const cfAllExpanded = computed(() => claimItems.length > 0 && window.safeArrayUtils.safeEvery(claimItems, (_,i) => expandedItems.has(i)));
 
     /* 클레임(취소/반품/교환) toggleExpandAll */
@@ -264,9 +266,24 @@ window.OdClaimDtl = {
       { key: 'after',  label: '변경 후' },
     ];
 
+    /* 클레임항목 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
+    const claimItemCols = [
+      { key: 'prodNm',      label: '상품명' },
+      { key: 'color',       label: '색상',       style: 'width:60px;',                fmt: v => v || '-' },
+      { key: 'size',        label: '사이즈',     style: 'width:50px;',                fmt: v => v || '-' },
+      { key: 'qty',         label: '수량',       style: 'width:44px;text-align:center;' },
+      { key: 'salePrice',   label: '판매금액',   style: 'width:90px;text-align:right;' },
+      { key: 'discInfo',    label: '할인정보',   style: 'width:80px;' },
+      { key: 'discAmount',  label: '할인금액',   style: 'width:90px;text-align:right;' },
+      { key: 'price',       label: '결제금액',   style: 'width:100px;text-align:right;' },
+      { key: 'orderStatus', label: '주문상태',   style: 'width:90px;text-align:center;' },
+      { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;' },
+      { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, cfDtlMode, tabMode2, showTab, codes, paymentCols, editHistCols };
+    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, cfDtlMode, tabMode2, showTab, codes, paymentCols, editHistCols, claimItemCols, fnItemExpanded };
   },
   template: /* html */`
 <div>
@@ -445,90 +462,89 @@ window.OdClaimDtl = {
         {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
       </button>
     </div>
-    <table class="bo-table" v-if="claimItems.length">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">No.</th>
-        <th>상품명</th>
-        <th style="width:60px;">색상</th>
-        <th style="width:50px;">사이즈</th>
-        <th style="width:44px;text-align:center;">수량</th>
-        <th style="width:90px;text-align:right;">판매금액</th>
-        <th style="width:80px;">할인정보</th>
-        <th style="width:90px;text-align:right;">할인금액</th>
-        <th style="width:100px;text-align:right;">결제금액</th>
-        <th style="width:90px;text-align:center;">주문상태</th>
-        <th style="width:110px;text-align:center;">클레임상태</th>
-        <th style="width:140px;">교환정보</th>
-      </tr></thead>
-      <tbody>
-        <template v-for="(it,i) in claimItems" :key="Math.random()">
-        <tr>
-          <td style="text-align:center;color:#aaa;">
-            <span v-if="form.claimTypeCd==='교환'" @click="toggleExpand(i)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;" :title="isExpanded(i)?'교환품 숨기기':'교환품 보기'">
-              {{ isExpanded(i) ? '▼' : '▶' }}
+    <bo-grid bare :columns="claimItemCols" :rows="claimItems"
+             :is-expanded="fnItemExpanded"
+             empty-text="클레임 항목 정보가 없습니다.">
+      <template #cell-prodNm="{ row, idx }">
+        <td style="font-size:12px;">
+          <span v-if="form.claimTypeCd==='교환'" @click="toggleExpand(idx)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
+            {{ isExpanded(idx) ? '▼' : '▶' }}
+          </span>
+          {{ row.prodNm }}
+        </td>
+      </template>
+      <template #cell-qty="{ row }">
+        <td style="text-align:center;font-weight:600;font-size:12px;">{{ row.qty || 1 }}</td>
+      </template>
+      <template #cell-salePrice="{ row }">
+        <td style="text-align:right;color:#666;font-size:12px;">{{ fmt(row.salePrice || row.price || 0) }}</td>
+      </template>
+      <template #cell-discInfo="{ row }">
+        <td style="font-size:12px;"><span v-if="row.discInfo" style="font-size:11px;padding:2px 7px;border-radius:8px;background:#fff3e0;color:#e65100;font-weight:600;">{{ row.discInfo }}</span><span v-else style="color:#bbb;">-</span></td>
+      </template>
+      <template #cell-discAmount="{ row }">
+        <td style="text-align:right;color:#d84315;font-weight:600;font-size:12px;">{{ row.discAmount ? '-'+fmt(row.discAmount) : '-' }}</td>
+      </template>
+      <template #cell-price="{ row }">
+        <td style="text-align:right;font-weight:700;color:#1a1a1a;font-size:12px;">{{ fmt(row.price || 0) }}</td>
+      </template>
+      <template #cell-orderStatus>
+        <td style="text-align:center;font-size:12px;">
+          <span v-if="form.orderStatusCd" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">
+            {{ form.orderStatusCd }}
+          </span>
+          <span v-else style="color:#ccc;">-</span>
+        </td>
+      </template>
+      <template #cell-claimStatus>
+        <td style="text-align:center;font-size:12px;">
+          <span style="display:inline-flex;align-items:center;gap:3px;">
+            <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af'}">{{ form.claimTypeCd }}</span>
+            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ form.claimStatusCd }}</span>
+          </span>
+        </td>
+      </template>
+      <template #cell-exchInfo>
+        <td style="font-size:12px;">
+          <div v-if="form.claimTypeCd==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
+            <span v-if="form.exchangeCourierCd" @click="openTracking(form.exchangeCourierCd, form.exchangeTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-weight:700;">
+              발송 {{ form.exchangeCourierCd }} · {{ form.exchangeTrackingNo || '-' }} 🔍
             </span>
-            {{ i+1 }}
-          </td>
-          <td>{{ it.prodNm }}</td>
-          <td>{{ it.color || '-' }}</td>
-          <td>{{ it.size || '-' }}</td>
-          <td style="text-align:center;font-weight:600;">{{ it.qty || 1 }}</td>
-          <td style="text-align:right;color:#666;">{{ fmt(it.salePrice || it.price || 0) }}</td>
-          <td><span v-if="it.discInfo" style="font-size:11px;padding:2px 7px;border-radius:8px;background:#fff3e0;color:#e65100;font-weight:600;">{{ it.discInfo }}</span><span v-else style="color:#bbb;">-</span></td>
-          <td style="text-align:right;color:#d84315;font-weight:600;">{{ it.discAmount ? '-'+fmt(it.discAmount) : '-' }}</td>
-          <td style="text-align:right;font-weight:700;color:#1a1a1a;">{{ fmt(it.price || 0) }}</td>
-          <td style="text-align:center;">
-            <span v-if="form.orderStatusCd" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">
-              {{ form.orderStatusCd }}
+            <span v-if="form.returnCourierCd" @click="openTracking(form.returnCourierCd, form.returnTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-weight:700;">
+              수거 {{ form.returnCourierCd }} · {{ form.returnTrackingNo || '-' }} 🔍
             </span>
-            <span v-else style="color:#ccc;">-</span>
-          </td>
-          <td style="text-align:center;">
-            <span style="display:inline-flex;align-items:center;gap:3px;">
-              <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af'}">{{ form.claimTypeCd }}</span>
-              <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ form.claimStatusCd }}</span>
+          </div>
+          <span v-else style="color:#ccc;">-</span>
+        </td>
+      </template>
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3b82f6;color:#fff;font-weight:800;">↔ 교환품</span>
+            <span style="font-size:13px;font-weight:700;color:#1e40af;">{{ getExchangedItem(row).prodNm }}</span>
+            <span style="font-size:12px;color:#555;">색상: <b>{{ row.color }}</b> → <b style="color:#1e40af;">{{ getExchangedItem(row).color }}</b></span>
+            <span style="font-size:12px;color:#555;">사이즈: <b>{{ getExchangedItem(row).size }}</b></span>
+            <span style="font-size:12px;color:#555;">수량: <b>{{ getExchangedItem(row).qty }}</b></span>
+            <span v-if="getExchangedItem(row).courier" @click="openTracking(getExchangedItem(row).courier, getExchangedItem(row).trackingNo)" style="cursor:pointer;margin-left:auto;padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;">
+              발송 {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍
             </span>
-          </td>
-          <td>
-            <div v-if="form.claimTypeCd==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
-              <span v-if="form.exchangeCourierCd" @click="openTracking(form.exchangeCourierCd, form.exchangeTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-weight:700;">
-                발송 {{ form.exchangeCourierCd }} · {{ form.exchangeTrackingNo || '-' }} 🔍
-              </span>
-              <span v-if="form.returnCourierCd" @click="openTracking(form.returnCourierCd, form.returnTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-weight:700;">
-                수거 {{ form.returnCourierCd }} · {{ form.returnTrackingNo || '-' }} 🔍
-              </span>
-            </div>
-            <span v-else style="color:#ccc;">-</span>
-          </td>
-        </tr>
-        <tr v-if="isExpanded(i) && form.claimTypeCd==='교환'" style="background:#f0f7ff;">
-          <td colspan="12" style="padding:10px 14px;">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-              <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3b82f6;color:#fff;font-weight:800;">↔ 교환품</span>
-              <span style="font-size:13px;font-weight:700;color:#1e40af;">{{ getExchangedItem(it).prodNm }}</span>
-              <span style="font-size:12px;color:#555;">색상: <b>{{ it.color }}</b> → <b style="color:#1e40af;">{{ getExchangedItem(it).color }}</b></span>
-              <span style="font-size:12px;color:#555;">사이즈: <b>{{ getExchangedItem(it).size }}</b></span>
-              <span style="font-size:12px;color:#555;">수량: <b>{{ getExchangedItem(it).qty }}</b></span>
-              <span v-if="getExchangedItem(it).courier" @click="openTracking(getExchangedItem(it).courier, getExchangedItem(it).trackingNo)" style="cursor:pointer;margin-left:auto;padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;">
-                발송 {{ getExchangedItem(it).courier }} · {{ getExchangedItem(it).trackingNo || '-' }} 🔍
-              </span>
-            </div>
-          </td>
-        </tr>
-        </template>
-      </tbody>
+          </div>
+        </td>
+      </template>
+    </bo-grid>
+    <table v-if="claimItems.length" class="bo-table" style="margin-top:-1px;">
       <tfoot>
         <tr style="background:#fafafa;font-weight:700;">
-          <td colspan="5" style="text-align:right;color:#555;">합계</td>
-          <td style="text-align:right;color:#666;">{{ fmt(claimItems.reduce((s,x)=>s+(x.salePrice||x.price||0),0)) }}</td>
-          <td></td>
-          <td style="text-align:right;color:#d84315;">-{{ fmt(claimItems.reduce((s,x)=>s+(x.discAmount||0),0)) }}</td>
-          <td style="text-align:right;color:#1a1a1a;">{{ fmt(claimItems.reduce((s,x)=>s+(x.price||0),0)) }}</td>
+          <td style="width:36px;"></td>
+          <td colspan="4" style="text-align:right;color:#555;">합계</td>
+          <td style="width:90px;text-align:right;color:#666;">{{ fmt(claimItems.reduce((s,x)=>s+(x.salePrice||x.price||0),0)) }}</td>
+          <td style="width:80px;"></td>
+          <td style="width:90px;text-align:right;color:#d84315;">-{{ fmt(claimItems.reduce((s,x)=>s+(x.discAmount||0),0)) }}</td>
+          <td style="width:100px;text-align:right;color:#1a1a1a;">{{ fmt(claimItems.reduce((s,x)=>s+(x.price||0),0)) }}</td>
           <td colspan="3"></td>
         </tr>
       </tfoot>
     </table>
-    <div v-else style="text-align:center;color:#bbb;padding:30px;">클레임 항목 정보가 없습니다.</div>
   </div>
 
   <!-- -- 결제정보 탭 --------------------------------------------------------- -->
