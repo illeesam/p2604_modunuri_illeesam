@@ -1,5 +1,5 @@
 """
-Patch all modal components in components/modals/BaseModal.js and pages/bo/BoModals.js
+Patch all modal components in components/modals/BaseModals.js and pages/bo/BoModals.js
 to add `reloadTrigger` prop and watch which calls fetch function.
 
 Detects fetch function name from `onMounted(() => { fnName(); })` or
@@ -8,7 +8,7 @@ Detects fetch function name from `onMounted(() => { fnName(); })` or
 import re
 
 TARGETS = [
-    'components/modals/BaseModal.js',
+    'components/modals/BaseModals.js',
     'pages/bo/BoModals.js',
 ]
 

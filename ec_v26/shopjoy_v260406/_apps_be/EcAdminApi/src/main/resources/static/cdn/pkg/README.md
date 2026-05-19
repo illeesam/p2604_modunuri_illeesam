@@ -149,7 +149,7 @@ assets/cdn/pkg/
 |---|---|
 | 원본 | `https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js` |
 | 로드 위치 | `index.html` |
-| 사용 파일 | `components/modals/BaseModal.js`, `pages/Order.js`, `layout/AppHeader.js`, `pages/admin/sy/UserDtl.js` |
+| 사용 파일 | `components/modals/BaseModals.js`, `pages/Order.js`, `layout/AppHeader.js`, `pages/admin/sy/UserDtl.js` |
 | ⚠️ 주의 | Kakao 내부 API 변경 잦음 — **분기 1회 재다운로드** |
 
 ### marked · `marked/11.1.1/marked.min.js`

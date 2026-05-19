@@ -692,7 +692,7 @@ window.BoLocalTreeCard = {
 };
 
 /* ── BoModal — 공통 모달 껍데기 래퍼 ────────────────────────────────────────
- * BaseModal.js 가 전역 주입하는 .modal-overlay / .modal-box / .modal-header /
+ * BaseModals.js 가 전역 주입하는 .modal-overlay / .modal-box / .modal-header /
  * .modal-close CSS 를 그대로 재사용한다. position:fixed 인라인 모달을 1줄로 대체.
  *
  * props:

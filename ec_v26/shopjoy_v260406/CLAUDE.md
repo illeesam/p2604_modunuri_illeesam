@@ -96,7 +96,7 @@ index.html
 ├─ pages/Home{NO}.js   pages/Prod{NO}List.js   pages/Prod{NO}View.js
 ├─ pages/{Cart,Order,Contact,Faq,Login,Event,Blog,Like,Location,About,...}.js
 ├─ pages/my/My*.js       (Pinia 의존)
-├─ components/modals/BaseModal.js + components/comp/BaseComp.js
+├─ components/modals/BaseModals.js + components/comp/BaseComp.js
 └─ base/frontApp.js      (마지막. Vue 앱 생성/마운트) + base/frontAuth.js + base/frontConfig.js
 ```
 
@@ -117,7 +117,7 @@ bo.html
 ├─ head: Vue, Yup, Quill, adminGlobalStyle0N.css
 ├─ pages/admin/AdminData.js   (window.adminData - 모든 목업)
 ├─ utils/adminAxios.js (window.adminApi) + utils/adminUtil.js (window.adminUtil)
-├─ components/modals/BaseModal.js + comp/BaseComp.js
+├─ components/modals/BaseModals.js + comp/BaseComp.js
 ├─ pages/admin/ec/*.js        (EC 도메인: Member/Prod/Order/Claim/Dliv/Coupon/Cache/Category/Event/Notice/Chatt/CustInfo/Disp*)
 ├─ pages/admin/sy/*.js        (시스템: User/Dept/Menu/Role/Site/Code/Brand/Template/Vendor/Attach/Batch/Alarm/Bbm/Bbs/Contact)
 └─ pages/admin/AdminApp.js    (마지막. 멀티탭 시스템 마운트)
@@ -665,7 +665,7 @@ CSS 변수 기반 테마 전환:
 
 ## 모달 디자인 시스템
 
-`components/modals/BaseModal.js` 상단에서 전역 `<style>` 주입 → 모든 모달에 자동 적용:
+`components/modals/BaseModals.js` 상단에서 전역 `<style>` 주입 → 모든 모달에 자동 적용:
 - 오버레이: 반투명 다크네이비 + 블러
 - 모달 박스: 16px 라운드 + 2중 그림자
 - 헤더: **핑크 그라데이션** (`#fff0f4 → #ffe4ec → #ffd5e1`)

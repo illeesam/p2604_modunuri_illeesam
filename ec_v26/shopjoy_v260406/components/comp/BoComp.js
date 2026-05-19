@@ -753,7 +753,7 @@ window.BoDateTimePicker = {
 window.BoPathPickField = {
   name: 'BoPathPickField',
   /* path-pick-modal 은 boApp.js 가 전역 등록 → 로컬 components 불필요
-   * (BoComp.js 가 BaseModal.js 보다 먼저 로드되므로 직접 참조 금지) */
+   * (BoComp.js 가 BaseModals.js 보다 먼저 로드되므로 직접 참조 금지) */
   props: {
     bizCd:       { type: String,  required: true },
     row:         { type: Object,  required: true },

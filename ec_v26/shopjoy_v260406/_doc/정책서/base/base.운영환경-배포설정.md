@@ -41,7 +41,7 @@ HTTP/2는 **HTTPS 필수**. Let's Encrypt 무료 인증서 사용.
 | HTTP/1.1 | 6개씩 줄 서기 | 26라운드 × 50ms = **1.3초** 대기 |
 | HTTP/2 | 멀티플렉싱 (동시 전송) | 1라운드 × 50ms = **50ms** |
 
-gzip 압축 시 JS 파일 크기 약 70% 감소 (`BaseModal.js` 130KB → ~35KB).
+gzip 압축 시 JS 파일 크기 약 70% 감소 (`BaseModals.js` 130KB → ~35KB).
 
 ### Synology Web Station에서 활성화
 

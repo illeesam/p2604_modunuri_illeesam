@@ -270,27 +270,22 @@ window.SyBbsDtl = {
   />
 
   <!-- ── 게시판 상세보기 팝업 ──────────────────────────────────────────────────── -->
-  <div v-if="showBbmDetail && selectedBbm" class="modal-overlay" @click.self="showBbmDetail=false">
-    <div class="modal-box" style="max-width:420px;">
-      <div class="modal-header">
-        <span class="modal-title">게시판 상세</span>
-        <span class="modal-close" @click="showBbmDetail=false">✕</span>
-      </div>
-      <div class="detail-row"><span class="detail-label">게시판ID</span><span class="detail-value">{{ selectedBbm.bbmId }}</span></div>
-      <div class="detail-row"><span class="detail-label">게시판코드</span><span class="detail-value"><code style="font-size:12px;">{{ selectedBbm.bbmCode }}</code></span></div>
-      <div class="detail-row"><span class="detail-label">게시판명</span><span class="detail-value">{{ selectedBbm.bbmNm }}</span></div>
-      <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value">{{ selectedBbm.bbmType }}</span></div>
-      <div class="detail-row"><span class="detail-label">댓글허용</span><span class="detail-value">{{ selectedBbm.allowComment }}</span></div>
-      <div class="detail-row"><span class="detail-label">첨부허용</span><span class="detail-value">{{ selectedBbm.allowAttach }}</span></div>
-      <div class="detail-row"><span class="detail-label">내용입력</span><span class="detail-value">{{ selectedBbm.contentTypeCd }}</span></div>
-      <div class="detail-row"><span class="detail-label">공개범위</span><span class="detail-value">{{ selectedBbm.scopeType }}</span></div>
-      <div class="detail-row"><span class="detail-label">좋아요허용</span><span class="detail-value">{{ selectedBbm.allowLike==='Y'?'허용':'불가' }}</span></div>
-      <div class="detail-row"><span class="detail-label">사용여부</span><span class="detail-value">{{ selectedBbm.useYn==='Y'?'사용':'미사용' }}</span></div>
-      <div style="margin-top:16px;text-align:right;">
-        <button class="btn btn-secondary" @click="showBbmDetail=false">닫기</button>
-      </div>
-    </div>
-  </div>
+  <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
+            width="420px" @close="showBbmDetail=false">
+    <div class="detail-row"><span class="detail-label">게시판ID</span><span class="detail-value">{{ selectedBbm.bbmId }}</span></div>
+    <div class="detail-row"><span class="detail-label">게시판코드</span><span class="detail-value"><code style="font-size:12px;">{{ selectedBbm.bbmCode }}</code></span></div>
+    <div class="detail-row"><span class="detail-label">게시판명</span><span class="detail-value">{{ selectedBbm.bbmNm }}</span></div>
+    <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value">{{ selectedBbm.bbmType }}</span></div>
+    <div class="detail-row"><span class="detail-label">댓글허용</span><span class="detail-value">{{ selectedBbm.allowComment }}</span></div>
+    <div class="detail-row"><span class="detail-label">첨부허용</span><span class="detail-value">{{ selectedBbm.allowAttach }}</span></div>
+    <div class="detail-row"><span class="detail-label">내용입력</span><span class="detail-value">{{ selectedBbm.contentTypeCd }}</span></div>
+    <div class="detail-row"><span class="detail-label">공개범위</span><span class="detail-value">{{ selectedBbm.scopeType }}</span></div>
+    <div class="detail-row"><span class="detail-label">좋아요허용</span><span class="detail-value">{{ selectedBbm.allowLike==='Y'?'허용':'불가' }}</span></div>
+    <div class="detail-row"><span class="detail-label">사용여부</span><span class="detail-value">{{ selectedBbm.useYn==='Y'?'사용':'미사용' }}</span></div>
+    <template #footer>
+      <button class="btn btn-secondary" @click="showBbmDetail=false">닫기</button>
+    </template>
+  </bo-modal>
 </div>
 `
 };

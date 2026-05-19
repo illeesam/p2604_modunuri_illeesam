@@ -751,57 +751,50 @@
   </template>
 
   <!-- -- 고객 선택 모달 -- -->
-  <div v-if="memberModal && memberModal.show" class="modal-overlay" @click.self="memberModal.show=false">
-    <div class="modal-box" style="max-width:760px;width:96%;max-height:85vh;display:flex;flex-direction:column;">
-      <div class="modal-header">
-        <span class="modal-title">고객 검색</span>
-        <span class="modal-close" @click="memberModal.show=false">✕</span>
-      </div>
-      <div style="flex:1;overflow:auto;padding:0 4px;">
-        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
-          <bo-multi-check-select
-            v-model="memberModal.searchType"
-            :options="[
-              { value: 'memberNm', label: '이름' },
-              { value: 'email',    label: '이메일' },
-              { value: 'phone',    label: '전화번호' },
-            ]"
-            placeholder="검색대상 전체"
-            all-label="전체 선택"
-            min-width="160px" />
-          <input type="text" class="form-control" v-model="memberModal.keyword"
-            placeholder="검색어 입력" @keyup.enter="() => searchMemberModal?.()"
-            style="flex:1;font-size:13px;" />
-          <button class="btn btn-primary btn-sm" @click="searchMemberModal" style="white-space:nowrap;">🔍 검색</button>
-        </div>
-        <bo-grid bare :columns="memberModalCols" :rows="memberModal.list" row-key="userId" empty-text="검색 결과가 없습니다." @row-click="selectMember">
-          <template #cell-userId="{ row }">
-            <td style="text-align:center;color:#aaa;cursor:pointer;" @click="selectMember(row)">{{ row.userId }}</td>
-          </template>
-          <template #cell-memberNm="{ row }">
-            <td style="font-weight:600;color:#1a1a2e;cursor:pointer;" @click="selectMember(row)">{{ row.memberNm }}</td>
-          </template>
-          <template #cell-email="{ row }">
-            <td style="color:#555;cursor:pointer;" @click="selectMember(row)">{{ row.email }}</td>
-          </template>
-          <template #cell-phone="{ row }">
-            <td style="color:#666;font-family:monospace;cursor:pointer;" @click="selectMember(row)">{{ row.phone || '-' }}</td>
-          </template>
-          <template #cell-grade="{ row }">
-            <td style="text-align:center;cursor:pointer;" @click="selectMember(row)"><span :class="'badge '+(row.grade==='VIP'?'badge-purple':row.grade==='우수'?'badge-blue':'badge-gray')">{{ row.grade }}</span></td>
-          </template>
-          <template #cell-status="{ row }">
-            <td style="text-align:center;cursor:pointer;" @click="selectMember(row)"><span :class="'badge '+(row.status==='활성'?'badge-green':'badge-red')">{{ row.status }}</span></td>
-          </template>
-          <template #cell-_act="{ row }">
-            <td style="text-align:right;">
-              <button class="btn btn-primary btn-sm" @click.stop="selectMember(row)">선택</button>
-            </td>
-          </template>
-        </bo-grid>
-      </div>
+  <bo-modal :show="memberModal.show" title="고객 검색" width="760px" max-width="96vw"
+            max-height="85vh" @close="memberModal.show=false">
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+      <bo-multi-check-select
+        v-model="memberModal.searchType"
+        :options="[
+          { value: 'memberNm', label: '이름' },
+          { value: 'email',    label: '이메일' },
+          { value: 'phone',    label: '전화번호' },
+        ]"
+        placeholder="검색대상 전체"
+        all-label="전체 선택"
+        min-width="160px" />
+      <input type="text" class="form-control" v-model="memberModal.keyword"
+        placeholder="검색어 입력" @keyup.enter="() => searchMemberModal?.()"
+        style="flex:1;font-size:13px;" />
+      <button class="btn btn-primary btn-sm" @click="searchMemberModal" style="white-space:nowrap;">🔍 검색</button>
     </div>
-  </div>
+    <bo-grid bare :columns="memberModalCols" :rows="memberModal.list" row-key="userId" empty-text="검색 결과가 없습니다." @row-click="selectMember">
+      <template #cell-userId="{ row }">
+        <td style="text-align:center;color:#aaa;cursor:pointer;" @click="selectMember(row)">{{ row.userId }}</td>
+      </template>
+      <template #cell-memberNm="{ row }">
+        <td style="font-weight:600;color:#1a1a2e;cursor:pointer;" @click="selectMember(row)">{{ row.memberNm }}</td>
+      </template>
+      <template #cell-email="{ row }">
+        <td style="color:#555;cursor:pointer;" @click="selectMember(row)">{{ row.email }}</td>
+      </template>
+      <template #cell-phone="{ row }">
+        <td style="color:#666;font-family:monospace;cursor:pointer;" @click="selectMember(row)">{{ row.phone || '-' }}</td>
+      </template>
+      <template #cell-grade="{ row }">
+        <td style="text-align:center;cursor:pointer;" @click="selectMember(row)"><span :class="'badge '+(row.grade==='VIP'?'badge-purple':row.grade==='우수'?'badge-blue':'badge-gray')">{{ row.grade }}</span></td>
+      </template>
+      <template #cell-status="{ row }">
+        <td style="text-align:center;cursor:pointer;" @click="selectMember(row)"><span :class="'badge '+(row.status==='활성'?'badge-green':'badge-red')">{{ row.status }}</span></td>
+      </template>
+      <template #cell-_act="{ row }">
+        <td style="text-align:right;">
+          <button class="btn btn-primary btn-sm" @click.stop="selectMember(row)">선택</button>
+        </td>
+      </template>
+    </bo-grid>
+  </bo-modal>
 
 </div>
 `,

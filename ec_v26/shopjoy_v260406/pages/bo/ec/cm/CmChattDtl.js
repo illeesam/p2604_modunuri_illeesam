@@ -357,20 +357,14 @@ window.CmChattDtl = {
   </template>
 
   <!-- -- 메시지 내 참조 모달 (상품/주문/클레임) ---------------------------------------- -->
-  <div v-if="refModal && refModal.show" class="modal-overlay" @click.self="closeRefModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <span class="modal-title">
-          {{ refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세' }}
-        </span>
-        <span class="modal-close" @click="closeRefModal">×</span>
-      </div>
-      <div style="text-align:center;color:#aaa;padding:20px;">정보를 찾을 수 없습니다.</div>
-      <div style="margin-top:16px;text-align:right;">
-        <button class="btn btn-secondary" @click="closeRefModal">닫기</button>
-      </div>
-    </div>
-  </div>
+  <bo-modal :show="refModal.show"
+            :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'"
+            @close="closeRefModal">
+    <div style="text-align:center;color:#aaa;padding:20px;">정보를 찾을 수 없습니다.</div>
+    <template #footer>
+      <button class="btn btn-secondary" @click="closeRefModal">닫기</button>
+    </template>
+  </bo-modal>
 </div>
 `
 };

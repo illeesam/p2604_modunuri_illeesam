@@ -377,29 +377,24 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     </div>
 
     <!-- -- 판매업체 선택 모달 --------------------------------------------------- -->
-    <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
-      <div class="modal-box" style="width:400px;">
-        <div class="modal-header">
-          <span class="modal-title">판매업체 선택</span>
-          <span class="modal-close" @click="showVendorModal=false">×</span>
+    <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
+              body-pad="0" @close="showVendorModal=false">
+      <div style="max-height:400px;overflow-y:auto;">
+        <div v-for="v in vendors" :key="v?.vendorId"
+          style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
+          :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
+          @click="selectVendor(v.vendorId, v.vendorNm)">
+          <span style="font-weight:500;">{{ v.vendorNm }}</span>
+          <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
         </div>
-        <div style="padding:0;max-height:400px;overflow-y:auto;">
-          <div v-for="v in vendors" :key="v?.vendorId"
-            style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
-            :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
-            @click="selectVendor(v.vendorId, v.vendorNm)">
-            <span style="font-weight:500;">{{ v.vendorNm }}</span>
-            <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
-          </div>
-          <div v-if="![] || [].length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
-            판매업체가 없습니다.
-          </div>
-        </div>
-        <div style="padding:12px 16px;border-top:1px solid #f0f0f0;text-align:right;">
-          <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
+        <div v-if="!vendors.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
+          판매업체가 없습니다.
         </div>
       </div>
-    </div>
+      <template #footer>
+        <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
+      </template>
+    </bo-modal>
     <div class="form-actions" v-if="!cfDtlMode">
       <button @click="handleSave" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn-primary">{{ cfIsNew ? '등록' : '저장' }}</button>
       <button @click="navigate('pmVoucherMng')" class="btn btn-secondary">취소</button>
@@ -544,24 +539,18 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   </div>
 
   <!-- -- SNS 전송 모달 ------------------------------------------------------ -->
-  <div v-if="snsModal.show" class="modal-overlay" @click.self="snsModal.show=false">
-    <div class="modal-box" style="max-width:500px;">
-      <div class="modal-header">
-        <span class="modal-title">{{ snsModal.channel==='kakao' ? '💬 카카오톡' : '📧 이메일' }} 전송</span>
-        <span class="modal-close" @click="snsModal.show=false">✕</span>
-      </div>
-      <div style="padding:16px;">
-        <div style="margin-bottom:12px;">
-          <label class="form-label">전송 메시지</label>
-          <textarea v-model="snsMsg" class="form-control" style="height:120px;"></textarea>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px;border-top:1px solid #eee;">
-        <button @click="snsModal.show=false" class="btn btn-secondary btn-sm">취소</button>
-        <button @click="sendSns" class="btn btn-primary btn-sm">전송</button>
-      </div>
+  <bo-modal :show="snsModal.show"
+            :title="(snsModal.channel==='kakao' ? '💬 카카오톡' : '📧 이메일') + ' 전송'"
+            width="500px" @close="snsModal.show=false">
+    <div style="margin-bottom:12px;">
+      <label class="form-label">전송 메시지</label>
+      <textarea v-model="snsMsg" class="form-control" style="height:120px;"></textarea>
     </div>
-  </div>
+    <template #footer>
+      <button @click="snsModal.show=false" class="btn btn-secondary btn-sm">취소</button>
+      <button @click="sendSns" class="btn btn-primary btn-sm">전송</button>
+    </template>
+  </bo-modal>
 </div>
 `
 };

@@ -29,7 +29,7 @@ bo.html
 ├─ pages/admin/AdminData.js        (window.adminData - 모든 목업)
 ├─ utils/adminAxios.js             (window.adminApi)
 ├─ utils/adminUtil.js              (window.adminUtil / window.adminApiCall)
-├─ components/modals/BaseModal.js
+├─ components/modals/BaseModals.js
 ├─ components/comp/BaseComp.js
 ├─ pages/admin/ec/*.js             (EC 도메인 컴포넌트)
 ├─ pages/admin/sy/*.js             (SY 도메인 컴포넌트)

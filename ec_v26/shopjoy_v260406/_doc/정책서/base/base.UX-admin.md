@@ -687,7 +687,7 @@ const openCatModal = () => {
 `window._boCmPaths`를 갱신한다. 각 화면의 `openPathPick`에서 별도 재조회 불필요.
 
 ```js
-// PathPickModal 내부 (BaseModal.js) — 마운트 시 자동 재조회
+// PathPickModal 내부 (BaseModals.js) — 마운트 시 자동 재조회
 Vue.onMounted(async () => {
   const res = await boApi.get('/bo/sy/path/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('표시경로', '목록조회') });
   const list = res.data?.data?.pageList || [];

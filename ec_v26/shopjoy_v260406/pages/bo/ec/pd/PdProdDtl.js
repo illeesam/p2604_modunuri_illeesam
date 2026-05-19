@@ -2412,7 +2412,7 @@ window.PdProdDtl = {
     <pd-prod-hist :prod-id="dtlId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
 
-  <!-- 공통코드 그룹 미리보기 모달 (BoModal.js / window.BoCodeGrpModal) -->
+  <!-- 공통코드 그룹 미리보기 모달 (BoModals.js / window.BoCodeGrpModal) -->
   <bo-code-grp-modal
     :show="codeGrpModal.show"
     :code-grp="codeGrpModal.codeGrp"

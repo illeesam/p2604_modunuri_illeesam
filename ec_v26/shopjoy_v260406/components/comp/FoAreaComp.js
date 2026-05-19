@@ -4,7 +4,7 @@
  * ※ 모두 'Fo' prefix / 'fo-' 태그 사용. FoComp.js(개별 위젯)와 짝을 이루는 "영역" 단위 컴포넌트.
  *   BoAreaComp.js 를 FO 컨텍스트로 이식 — 차이점:
  *     · 스타일: .bo-table 미존재 → 본 파일 상단에서 .fo-grid-table CSS 를 1회 주입
- *       (BaseModal.js 가 모달 CSS 를 주입하는 방식과 동일). 색상은 FO CSS 변수
+ *       (BaseModals.js 가 모달 CSS 를 주입하는 방식과 동일). 색상은 FO CSS 변수
  *       (--text-primary / --blue / --border / --bg-card …)로 라이트/다크 자동 대응.
  *     · 모달: FO 의 .modal-overlay / .modal-box CSS 재사용. BO 핑크 헤더 대신
  *       FO 톤(악센트 컬러)·둥근 테두리.

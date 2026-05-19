@@ -723,7 +723,7 @@ const modal = reactive({
 
 #### Phase 1 (완료 ✅)
 - [x] `SyRoleMng.js` — 검색 필터 reactive 통합
-- [x] `BaseModal.js` 주요 모달들 — reactive 패턴 적용
+- [x] `BaseModals.js` 주요 모달들 — reactive 패턴 적용
 - [x] 정책서 업데이트 — ref vs reactive 원칙 + 리팩토링 가이드
 
 #### Phase 2 (다음 우선순위)
@@ -744,7 +744,7 @@ const modal = reactive({
 - 기타 Dtl.js 파일들 (30개+)
 
 #### Phase 3 (모달, 선택 상태)
-- `components/modals/BaseModal.js` — 이미 reactive 모달 패턴 적용됨 ✅
+- `components/modals/BaseModals.js` — 이미 reactive 모달 패턴 적용됨 ✅
 - 개별 모달 상태 (expandedNodes, hoverId 등)
 - 트리 선택 상태 (selectedPath, selectedId 등)
 

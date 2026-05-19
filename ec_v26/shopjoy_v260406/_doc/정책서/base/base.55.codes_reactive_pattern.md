@@ -448,7 +448,7 @@ codes.disp_ui_types = codeStore.svCodes;  // ❌ Store 오염 가능
 ### ✅ Tier 5: Utils, Layout, Components — 완료 (8개)
 
 **Modal & Components (5개):**
-- components/modals/BaseModal.js
+- components/modals/BaseModals.js
 - components/disp/DispX01Ui.js, DispX02Area.js, DispX03Panel.js, DispX04Widget.js
 
 **Layout (3개):**

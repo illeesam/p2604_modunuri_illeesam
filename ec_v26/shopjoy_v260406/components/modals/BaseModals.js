@@ -1,4 +1,4 @@
-/* ShopJoy – components/modals/BaseModal.js
+/* ShopJoy – components/modals/BaseModals.js
    여러 팝업 컴포넌트를 한 곳에 모아둡니다.
    My.js 의 components 블록에 등록하여 사용합니다.
 

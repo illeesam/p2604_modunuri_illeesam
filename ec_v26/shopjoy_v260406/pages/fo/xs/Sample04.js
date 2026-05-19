@@ -290,14 +290,14 @@ window.XsSample04 = {
     </div>
   </div>
 
-  <!-- -- ━━━ BaseModal.js 공통 모달 (17종) ━━━ ------------------------------- -->
+  <!-- -- ━━━ BaseModals.js 공통 모달 (17종) ━━━ ------------------------------- -->
   <div style="margin-top:22px;display:flex;flex-direction:column;gap:14px;">
 
     <!-- -- 섹션 헤더 -------------------------------------------------------- -->
     <div>
       <div style="font-size:13px;font-weight:700;color:#333;">
-        BaseModal.js 공통 모달
-        <span style="font-size:11px;font-weight:400;color:#888;margin-left:6px;">components/modals/BaseModal.js — 17가지 패턴</span>
+        BaseModals.js 공통 모달
+        <span style="font-size:11px;font-weight:400;color:#888;margin-left:6px;">components/modals/BaseModals.js — 17가지 패턴</span>
       </div>
     </div>
 

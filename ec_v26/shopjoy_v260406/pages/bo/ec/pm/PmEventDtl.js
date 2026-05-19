@@ -372,29 +372,24 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       </div>
 
       <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
-      <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
-        <div class="modal-box" style="width:400px;">
-          <div class="modal-header">
-            <span class="modal-title">판매업체 선택</span>
-            <span class="modal-close" @click="showVendorModal=false">×</span>
+      <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
+                body-pad="0" @close="showVendorModal=false">
+        <div style="max-height:400px;overflow-y:auto;">
+          <div v-for="v in vendors" :key="v?.vendorId"
+            style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
+            :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
+            @click="selectVendor(v.vendorId, v.vendorNm)">
+            <span style="font-weight:500;">{{ v.vendorNm }}</span>
+            <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
           </div>
-          <div style="padding:0;max-height:400px;overflow-y:auto;">
-            <div v-for="v in vendors" :key="v?.vendorId"
-              style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
-              :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
-              @click="selectVendor(v.vendorId, v.vendorNm)">
-              <span style="font-weight:500;">{{ v.vendorNm }}</span>
-              <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
-            </div>
-            <div v-if="![] || [].length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
-              판매업체가 없습니다.
-            </div>
-          </div>
-          <div style="padding:12px 16px;border-top:1px solid #f0f0f0;text-align:right;">
-            <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
+          <div v-if="!vendors.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
+            판매업체가 없습니다.
           </div>
         </div>
-      </div>
+        <template #footer>
+          <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
+        </template>
+      </bo-modal>
 
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
@@ -504,27 +499,21 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
   </div>
 
   <!-- -- 상품 선택 팝업 ------------------------------------------------------- -->
-  <div v-if="showProdPopup" class="modal-overlay" @click.self="showProdPopup=false">
-    <div class="modal-box">
-      <div class="modal-header">
-        <span class="modal-title">대상 상품 선택</span>
-        <span class="modal-close" @click="showProdPopup=false">×</span>
-      </div>
-      <div style="margin-bottom:10px;">
-        <input class="form-control" v-model="prodSearch" placeholder="상품명 검색" />
-      </div>
-      <div class="popup-prod-list">
-        <label v-for="p in cfFilteredProds" :key="p?.productId" class="popup-prod-item">
-          <input type="checkbox" :checked="isSelected(p.productId)" @change="toggleProduct(p.productId)" />
-          <span>{{ p.prodNm }}</span>
-          <span style="font-size:12px;color:#888;margin-left:auto;">{{ (p.price||0).toLocaleString() }}원</span>
-        </label>
-      </div>
-      <div style="margin-top:12px;text-align:right;">
-        <button class="btn btn-primary" @click="showProdPopup=false">확인 ({{ form.targetProducts.length }}개)</button>
-      </div>
+  <bo-modal :show="showProdPopup" title="대상 상품 선택" @close="showProdPopup=false">
+    <div style="margin-bottom:10px;">
+      <input class="form-control" v-model="prodSearch" placeholder="상품명 검색" />
     </div>
-  </div>
+    <div class="popup-prod-list">
+      <label v-for="p in cfFilteredProds" :key="p?.productId" class="popup-prod-item">
+        <input type="checkbox" :checked="isSelected(p.productId)" @change="toggleProduct(p.productId)" />
+        <span>{{ p.prodNm }}</span>
+        <span style="font-size:12px;color:#888;margin-left:auto;">{{ (p.price||0).toLocaleString() }}원</span>
+      </label>
+    </div>
+    <template #footer>
+      <button class="btn btn-primary" @click="showProdPopup=false">확인 ({{ form.targetProducts.length }}개)</button>
+    </template>
+  </bo-modal>
 </div>
 `
 };

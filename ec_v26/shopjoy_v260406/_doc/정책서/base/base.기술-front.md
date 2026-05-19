@@ -33,7 +33,7 @@ index.html
 ├─ pages/Home{NO}.js  Prod{NO}List.js  Prod{NO}View.js   (FRONT_SITE_NO별 동적 로드)
 ├─ pages/{Cart,Order,Contact,Faq,Login,Event,Blog,Like,Location,About,...}.js
 ├─ pages/my/My*.js
-├─ components/modals/BaseModal.js + components/comp/BaseComp.js
+├─ components/modals/BaseModals.js + components/comp/BaseComp.js
 └─ base/frontApp.js              (마지막. Vue 앱 생성·마운트)
 ```
 
