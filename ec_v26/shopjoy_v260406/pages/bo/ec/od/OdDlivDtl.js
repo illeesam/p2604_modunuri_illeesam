@@ -247,13 +247,19 @@ window.OdDlivDtl = {
       { key: 'salePrice',   label: '판매금액',   style: 'width:90px;text-align:right;',
         align: 'right', cellStyle: 'color:#666',
         fmt: (v, row) => fmt(row.salePrice || row.price) },
-      { key: 'discInfo',    label: '할인정보',   style: 'width:80px;' },
+      { key: 'discInfo',    label: '할인정보',   style: 'width:80px;', cellStyle: 'font-size:12px;',
+        fmt: (v) => v || '-',
+        cellInnerStyle: (v) => v ? 'font-size:11px;padding:2px 7px;border-radius:8px;background:#fff3e0;color:#e65100;font-weight:600;' : 'color:#bbb;' },
       { key: 'discAmount',  label: '할인금액',   style: 'width:90px;text-align:right;',
         align: 'right', cellStyle: 'color:#d84315;font-weight:600',
         fmt: (v) => v ? '-' + fmt(v) : '-' },
       { key: 'price',       label: '결제금액',   style: 'width:100px;text-align:right;',
         align: 'right', cellStyle: 'font-weight:700;color:#1a1a1a', fmt: (v) => fmt(v) },
-      { key: 'orderStatus', label: '주문상태',   style: 'width:90px;text-align:center;' },
+      { key: 'orderStatus', label: '주문상태',   style: 'width:90px;text-align:center;', align: 'center',
+        fmt: () => form.orderStatusCd || '-',
+        cellInnerStyle: () => form.orderStatusCd
+          ? 'font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;'
+          : 'color:#ccc;' },
       { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;' },
       { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
     ];
@@ -432,15 +438,6 @@ window.OdDlivDtl = {
              empty-text="배송 항목 정보가 없습니다.">
       <template #cell-prodNm="{ row }">
         <td style="font-size:12px;"><span style="font-size:18px;margin-right:6px;">{{ row.emoji || '🛍' }}</span>{{ row.prodNm }}</td>
-      </template>
-      <template #cell-discInfo="{ row }">
-        <td style="font-size:12px;"><span v-if="row.discInfo" style="font-size:11px;padding:2px 7px;border-radius:8px;background:#fff3e0;color:#e65100;font-weight:600;">{{ row.discInfo }}</span><span v-else style="color:#bbb;">-</span></td>
-      </template>
-      <template #cell-orderStatus>
-        <td style="text-align:center;font-size:12px;">
-          <span v-if="form.orderStatusCd" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">{{ form.orderStatusCd }}</span>
-          <span v-else style="color:#ccc;">-</span>
-        </td>
       </template>
       <template #cell-claimStatus>
         <td style="text-align:center;font-size:12px;">

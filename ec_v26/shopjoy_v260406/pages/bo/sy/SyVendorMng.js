@@ -174,7 +174,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'pathId',        label: '표시경로' },
       { key: 'vendorId',      label: 'ID' },
       { key: 'vendorType',    label: '업체유형', badge: (row) => fnTypeBadge(row.vendorType) },
-      { key: 'vendorNm',      label: '업체명', sortKey: 'nm' },
+      { key: 'vendorNm',      label: '업체명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'ceoNm',         label: '대표자' },
       { key: 'vendorNo',      label: '사업자번호' },
       { key: 'vendorPhone',   label: '전화번호' },
@@ -229,7 +230,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         :columns="gridColumns" :rows="vendors" :pager="pager" row-key="vendorId"
         list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
-        @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+        @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.vendorId)">
 
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
@@ -241,9 +242,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
         <template #cell-pathId="{ row }">
           <bo-path-pick-field biz-cd="sy_vendor" :row="row" @change="onPathChange(row)" />
-        </template>
-        <template #cell-vendorNm="{ row }">
-          <td><span class="title-link" @click="handleLoadDetail(row.vendorId)" :style="selectedId===row.vendorId?'color:#e8587a;font-weight:700;':''">{{ row.vendorNm }}<span v-if="selectedId===row.vendorId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
         </template>
         <template #row-actions="{ row }">
           <td><div class="actions">

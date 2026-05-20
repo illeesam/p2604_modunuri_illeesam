@@ -413,11 +413,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* BoGrid 컬럼 — 구성품 목록 (인라인 편집 + 드래그) */
     const setItemColumns = [
-      { key: 'itemNm',     label: '표시명 (item_nm) *',       style: 'width:180px' },
+      { key: 'itemNm',     label: '표시명 (item_nm) *',       style: 'width:180px', edit: 'text', placeholder: '표시명 입력' },
       { key: 'itemProdId', label: '연결상품 (item_prod_id)' },
-      { key: 'itemQty',    label: '수량',        style: 'width:80px;text-align:center' },
+      { key: 'itemQty',    label: '수량',        style: 'width:80px;text-align:center', edit: 'number', align: 'center' },
       { key: 'itemDesc',   label: '구성품 설명', edit: 'text', placeholder: '소재·용량·색상 등 부가 설명' },
-      { key: 'useYn',      label: '사용',        style: 'width:60px;text-align:center' },
+      { key: 'useYn',      label: '사용',        style: 'width:60px;text-align:center', edit: 'select', options: () => codes.use_yn },
     ];
     const fnSetItemRowStyle = (item, idx) => uiState.dragoverIdx === idx ? 'background:#e6f4ff' : (item.useYn === 'N' ? 'opacity:0.55' : '');
 
@@ -624,13 +624,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       draggable row-actions :row-style="fnSetItemRowStyle"
       empty-text="구성품이 없습니다. 아래 버튼으로 추가하세요."
       @reorder="onItemReorder">
-      <template #cell-itemNm="{ row }">
-        <td>
-          <input class="form-control" v-model="row.itemNm" placeholder="표시명 입력"
-                 style="font-size:13px;font-weight:500"
-                 :class="{ 'is-invalid': !row.itemNm.trim() }">
-        </td>
-      </template>
       <template #cell-itemProdId="{ row }">
         <td>
           <div v-if="row.itemProdId" style="display:flex;align-items:center;gap:6px">
@@ -643,19 +636,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
             <span class="badge badge-orange" style="font-size:10px">비상품</span>
             <span style="font-size:12px;color:#aaa">상품 미연결 (예: 증정품·박스)</span>
           </div>
-        </td>
-      </template>
-      <template #cell-itemQty="{ row }">
-        <td style="text-align:center">
-          <input type="number" class="form-control" v-model.number="row.itemQty"
-                 min="1" style="width:60px;text-align:center;margin:0 auto;padding:3px 6px">
-        </td>
-      </template>
-      <template #cell-useYn="{ row }">
-        <td style="text-align:center">
-          <select class="form-control" v-model="row.useYn" style="width:56px;padding:2px 4px">
-            <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
         </td>
       </template>
       <template #row-actions="{ idx }">

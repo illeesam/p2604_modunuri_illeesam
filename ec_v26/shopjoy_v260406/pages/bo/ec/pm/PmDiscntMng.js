@@ -186,7 +186,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'discntNm',       label: '할인명', sortKey: 'nm' },
+      { key: 'discntNm',       label: '할인명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'discntTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.discntTypeCd) },
       { key: 'discntValue',    label: '할인값',
         fmt: (v, row) => row.discntTypeCd === '정률' ? (row.discntValue + '%')
@@ -241,9 +242,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"
-      @sort="onSort">
+      @sort="onSort" @row-click="d => handleLoadDetail(d.discntId)">
       <template #head-actions>관리</template>
-      <template #cell-discntNm="{ row: d }"><td><span class="title-link" @click="handleLoadDetail(d.discntId)" :style="selectedId===d.discntId?'color:#e8587a;font-weight:700;':''">{{ d.discntNm }}<span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
       <template #row-actions="{ row: d }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)">수정</button>

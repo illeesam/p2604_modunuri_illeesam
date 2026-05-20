@@ -404,7 +404,8 @@ window.OdDlivMng = {
 
     /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
     const listColumns = [
-      { key: 'dlivId',           label: '배송ID' },
+      { key: 'dlivId',           label: '배송ID', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'orderId',          label: '주문ID', refLink: 'order' },
       { key: 'memberNm',         label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'recvNm',           label: '수령인' },
@@ -430,8 +431,12 @@ window.OdDlivMng = {
     const memberPickColumns = [
       { key: 'memberNm',       label: '이름' },
       { key: 'loginId',        label: '로그인ID', mono: true, cellStyle: 'font-size:12px;' },
-      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;' },
-      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;' },
+      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;',
+        fmt: (v) => v || '-',
+        cellInnerStyle: 'background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
+      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;',
+        fmt: (v, row) => row.memberStatusCdNm || v || '-',
+        cellInnerStyle: (v) => (v==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;') + 'border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
       { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
       { key: '_pick',          label: '선택',   style: 'width:70px;text-align:center;' },
     ];
@@ -484,13 +489,6 @@ window.OdDlivMng = {
       :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
       :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
       @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" @ref-click="({type,id}) => showRefModal(type, id)">
-      <template #cell-dlivId="{ row }">
-        <td>
-          <span class="title-link" @click="handleLoadDetail(row.dlivId)" :style="selectedId===row.dlivId?'color:#e8587a;font-weight:700;':''">
-            {{ row.dlivId }}<span v-if="selectedId===row.dlivId" style="font-size:10px;margin-left:3px;">▼</span>
-          </span>
-        </td>
-      </template>
       <template #cell-_act="{ row }">
         <td><div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.dlivId)">수정</button>
@@ -669,12 +667,6 @@ window.OdDlivMng = {
                 <span style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</span>
               </div>
             </td>
-          </template>
-          <template #cell-gradeCdNm="{ row }">
-            <td style="text-align:center;"><span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.gradeCdNm || '-' }}</span></td>
-          </template>
-          <template #cell-memberStatusCd="{ row }">
-            <td style="text-align:center;"><span :style="row.memberStatusCd==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;'" style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.memberStatusCdNm || row.memberStatusCd || '-' }}</span></td>
           </template>
           <template #cell-_pick="{ row }">
             <td style="text-align:center;"><button class="btn btn-primary btn-xs" @click.stop="onSelectMember(row)" style="border-radius:6px;font-size:11px;">선택</button></td>

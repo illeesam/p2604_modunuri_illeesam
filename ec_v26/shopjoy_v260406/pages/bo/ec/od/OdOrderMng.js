@@ -209,6 +209,17 @@ window.OdOrderMng = {
     /* 주문 fnClaimTypeColor */
     const fnClaimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
 
+    /* 결제수단 색맵 (배지 배경/글자색) */
+    const PAY_COLORS = {
+      '계좌이체': { bg:'#e3f2fd', fg:'#1565c0' },
+      '카드결제': { bg:'#f3e5f5', fg:'#6a1b9a' },
+      '캐쉬':     { bg:'#fff3e0', fg:'#e65100' },
+    };
+    const fnPayMethodStyle = (v) => {
+      const c = PAY_COLORS[v] || { bg:'#e8f5e9', fg:'#2e7d32' };
+      return `font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;background:${c.bg};color:${c.fg};`;
+    };
+
     /* 주문 getItemCount */
     const getItemCount = (o) => {
       const m = (o.prodNm || '').match(/외\s*(\d+)/);
@@ -383,20 +394,32 @@ window.OdOrderMng = {
     /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
     const fnPayStatusText = (o) => (o.orderStatusCd === '취소' || o.orderStatusCd === '자동취소') ? '환불완료' : o.orderStatusCd === '입금대기' ? '미결제' : '결제완료';
     const listColumns = [
-      { key: 'orderId',       label: '주문ID' },
+      { key: 'orderId',       label: '주문ID', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'memberNm',      label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'orderDate',     label: '주문일시', sortKey: 'reg', style: 'white-space:nowrap;' },
-      { key: 'prodNm',        label: '상품' },
+      { key: 'prodNm',        label: '상품',
+        fmt: (v, row) => `${row.prodNm || ''} (${getItemCount(row)}개)` },
       { key: 'payAmt',        label: '결제금액', fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'payMethodCd',   label: '결제수단',
-        fmt: (v, row) => row.payMethodCdNm || row.payMethodCd || '-' },
+        fmt: (v, row) => row.payMethodCdNm || row.payMethodCd || '-',
+        cellInnerStyle: (v) => fnPayMethodStyle(v) },
       { key: '_payStatus',    label: '결제상태',
         fmt: (v, row) => fnPayStatusText(row),
         badge: (row) => fnPayStatusBadge(fnPayStatusText(row)) },
       { key: 'orderStatusCd', label: '주문상태',
         fmt: (v, row) => row.orderStatusCdNm || row.orderStatusCd,
         badge: (row) => fnStatusBadge(row.orderStatusCd) },
-      { key: '_claim',        label: '클레임상태' },
+      { key: '_claim',        label: '클레임상태',
+        fmt: (v, row) => {
+          const c = claimByOrder(row.orderId);
+          return c ? `${c.claimTypeCd} · ${c.claimStatusCdNm || c.claimStatusCd}` : '-';
+        },
+        cellInnerStyle: (v, row) => {
+          const c = claimByOrder(row.orderId);
+          if (!c) return 'font-size:11px;color:#ccc;';
+          return `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${fnClaimTypeColor(c.claimTypeCd)};`;
+        } },
       { key: '_site',         label: '사이트명',
         fmt: () => cfSiteNm.value,
         cellStyle: 'color:#2563eb;' },
@@ -410,8 +433,12 @@ window.OdOrderMng = {
     const memberPickColumns = [
       { key: 'memberNm',       label: '이름' },
       { key: 'loginId',        label: '로그인ID', mono: true, cellStyle: 'font-size:12px;' },
-      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;' },
-      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;' },
+      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;',
+        fmt: (v) => v || '-',
+        cellInnerStyle: 'background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
+      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;',
+        fmt: (v, row) => row.memberStatusCdNm || v || '-',
+        cellInnerStyle: (v) => (v==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;') + 'border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
       { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
       { key: '_pick',          label: '선택',   style: 'width:70px;text-align:center;' },
     ];
@@ -462,39 +489,9 @@ window.OdOrderMng = {
     <bo-grid bare selectable :columns="listColumns" :rows="orders" :pager="pager" row-key="orderId"
       :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
       :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
-      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" @ref-click="({type,id}) => showRefModal(type, id)">
-      <template #cell-orderId="{ row }">
-        <td><span class="title-link" @click="handleLoadDetail(row.orderId)" :style="selectedId===row.orderId?'color:#e8587a;font-weight:700;':''">{{ row.orderId }}<span v-if="selectedId===row.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-      </template>
-      <template #cell-prodNm="{ row }">
-        <td>
-          {{ row.prodNm }}
-          <span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:#e5e7eb;color:#555;font-weight:700;margin-left:4px;vertical-align:middle;">{{ getItemCount(row) }}개</span>
-        </td>
-      </template>
-      <template #cell-payMethodCd="{ row }">
-        <td>
-          <span :style="{
-            fontSize:'11px',padding:'2px 8px',borderRadius:'10px',fontWeight:600,
-            background: row.payMethodCd==='계좌이체'?'#e3f2fd':row.payMethodCd==='카드결제'?'#f3e5f5':row.payMethodCd==='캐쉬'?'#fff3e0':'#e8f5e9',
-            color: row.payMethodCd==='계좌이체'?'#1565c0':row.payMethodCd==='카드결제'?'#6a1b9a':row.payMethodCd==='캐쉬'?'#e65100':'#2e7d32',
-          }">{{ row.payMethodCdNm || row.payMethodCd || '-' }}</span>
-        </td>
-      </template>
-      <template #cell-_claim="{ row }">
-        <td>
-          <span v-if="claimByOrder(row.orderId)" style="display:inline-flex;align-items:center;gap:3px;">
-            <span :style="{
-              fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,
-              background: fnClaimTypeColor(claimByOrder(row.orderId).claimTypeCd)
-            }">{{ claimByOrder(row.orderId).claimTypeCd }}</span>
-            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">
-              {{ claimByOrder(row.orderId).claimStatusCdNm || claimByOrder(row.orderId).claimStatusCd }}
-            </span>
-          </span>
-          <span v-else style="font-size:11px;color:#ccc;">-</span>
-        </td>
-      </template>
+      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll"
+      @row-click="row => handleLoadDetail(row.orderId)"
+      @ref-click="({type,id}) => showRefModal(type, id)">
       <template #cell-_act="{ row }">
         <td><div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.orderId)">수정</button>
@@ -667,12 +664,6 @@ window.OdOrderMng = {
                 <span style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</span>
               </div>
             </td>
-          </template>
-          <template #cell-gradeCdNm="{ row }">
-            <td style="text-align:center;"><span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.gradeCdNm || '-' }}</span></td>
-          </template>
-          <template #cell-memberStatusCd="{ row }">
-            <td style="text-align:center;"><span :style="row.memberStatusCd==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;'" style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.memberStatusCdNm || row.memberStatusCd || '-' }}</span></td>
           </template>
           <template #cell-_pick="{ row }">
             <td style="text-align:center;"><button class="btn btn-primary btn-xs" @click.stop="onSelectMember(row)" style="border-radius:6px;font-size:11px;">선택</button></td>

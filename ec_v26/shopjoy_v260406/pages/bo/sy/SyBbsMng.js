@@ -227,7 +227,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
       { key: 'bbmId',        label: '게시판', badge: () => 'badge-gray', fmt: (v) => bbmNm(v) },
-      { key: 'bbsTitle',     label: '제목', sortKey: 'nm' },
+      { key: 'bbsTitle',     label: '제목', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => detailModal.dtlId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'authorNm',     label: '작성자' },
       { key: 'viewCount',    label: '조회수', align: 'center' },
       { key: 'commentCount', label: '댓글', align: 'center' },
@@ -275,7 +276,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     :columns="gridColumns" :rows="bbss" :pager="pager" row-key="bbsId"
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건' + (uiState.selectedPath != null ? '  #' + uiState.selectedPath : '')"
     :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.bbsId)">
 
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
@@ -285,9 +286,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </template>
     <template #head-actions><th style="text-align:right">관리</th></template>
 
-    <template #cell-bbsTitle="{ row }">
-      <td><span class="title-link" @click="handleLoadDetail(row.bbsId)" :style="detailModal.dtlId===row.bbsId?'color:#e8587a;font-weight:700;':''">{{ row.bbsTitle }}<span v-if="detailModal.dtlId===row.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-    </template>
     <template #row-actions="{ row }">
       <td><div class="actions">
         <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.bbsId)">수정</button>

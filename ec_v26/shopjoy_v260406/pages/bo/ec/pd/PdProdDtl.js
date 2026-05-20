@@ -1175,14 +1175,18 @@ window.PdProdDtl = {
         badge: (row) => (row.status === '판매중' ? 'badge-green' : 'badge-gray'), fmt: (v, row) => row.status },
       { key: '_act',      label: '관리',   style: 'width:54px;text-align:center;' },
     ];
-    /* BoGrid 컬럼 — 판매계획 (selectable + 인라인 편집) */
+    /* BoGrid 컬럼 — 판매계획 (selectable + 인라인 편집)
+     * _start/_end: bo-date-time-picker 커스텀 컴포넌트 슬롯 KEEP
+     * planStatus/listPrice/salePrice/purchasePrice: BoGrid edit 자동 렌더 (@cell-change 미사용, change 시 onPlanChange 호출 위해 슬롯 유지)
+     */
     const planCols = [
-      { key: '_start',  label: '시작일시', style: 'width:140px;' },
-      { key: '_end',    label: '종료일시', style: 'width:140px;' },
-      { key: '_status', label: '상태',    style: 'width:80px;' },
-      { key: '_list',   label: '정가',    style: 'width:90px;' },
-      { key: '_sale',   label: '판매가',  style: 'width:90px;' },
-      { key: '_purch',  label: '매입가',  style: 'width:80px;' },
+      { key: '_start',       label: '시작일시', style: 'width:140px;' },
+      { key: '_end',         label: '종료일시', style: 'width:140px;' },
+      { key: 'planStatus',   label: '상태',    style: 'width:80px;',
+        edit: 'select', options: () => grpCodes.prod_plan_statuses },
+      { key: 'listPrice',    label: '정가',    style: 'width:90px;', edit: 'number', align: 'right' },
+      { key: 'salePrice',    label: '판매가',  style: 'width:90px;', edit: 'number', align: 'right' },
+      { key: 'purchasePrice', label: '매입가', style: 'width:80px;', edit: 'number', align: 'right' },
     ];
     const fnPlanRowChecked = (key) => {
       const r = window.safeArrayUtils.safeFind(cfPlanVisible.value, x => String(x._id) === String(key));
@@ -2143,7 +2147,8 @@ window.PdProdDtl = {
           :all-checked="cfPlanAllChecked" :is-checked="fnPlanRowChecked"
           :row-style="fnPlanRowStyle2"
           empty-text="[행추가]로 판매계획을 추가하세요."
-          @toggle-check="onPlanToggleCheck" @toggle-check-all="onPlanToggleCheckAll">
+          @toggle-check="onPlanToggleCheck" @toggle-check-all="onPlanToggleCheckAll"
+          @cell-change="row => onPlanChange(row)">
           <template #cell-_start="{ row }">
             <td>
               <bo-date-time-picker
@@ -2163,22 +2168,6 @@ window.PdProdDtl = {
                 :show-now="false" :show-clear="false"
                 date-width="104px" time-width="64px" />
             </td>
-          </template>
-          <template #cell-_status="{ row }">
-            <td>
-              <select v-model="row.planStatus" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;">
-                <option v-for="c in grpCodes.prod_plan_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-              </select>
-            </td>
-          </template>
-          <template #cell-_list="{ row }">
-            <td><input type="number" v-model.number="row.listPrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
-          </template>
-          <template #cell-_sale="{ row }">
-            <td><input type="number" v-model.number="row.salePrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
-          </template>
-          <template #cell-_purch="{ row }">
-            <td><input type="number" v-model.number="row.purchasePrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
           </template>
         </bo-grid>
       </div>

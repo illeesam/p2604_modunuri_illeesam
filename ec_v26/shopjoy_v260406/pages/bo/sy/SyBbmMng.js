@@ -159,7 +159,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const gridColumns = [
       { key: 'pathId',        label: '표시경로' },
       { key: 'bbmCode',       label: '게시판코드' },
-      { key: 'bbmNm',         label: '게시판명' },
+      { key: 'bbmNm',         label: '게시판명', link: true,
+        cellInnerStyle: (v) => detailModal.dtlId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'bbmTypeCd',     label: '유형', badge: (row) => fnTypeBadge(row.bbmTypeCd) },
       { key: 'allowComment',  label: '댓글허용', badge: (row) => fnCommentBadge(row.allowComment), fmt: (v) => v || '불가' },
       { key: 'allowAttach',   label: '첨부허용', badge: (row) => fnAttachBadge(row.allowAttach), fmt: (v) => v || '불가' },
@@ -214,7 +215,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         :columns="gridColumns" :rows="bbms" :pager="pager" row-key="bbmId"
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
-        @set-page="setPage" @size-change="onSizeChange">
+        @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.bbmId)">
 
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
@@ -229,9 +230,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </template>
         <template #cell-bbmCode="{ row }">
           <td><code style="font-size:11px;color:#555;">{{ row.bbmCode }}</code></td>
-        </template>
-        <template #cell-bbmNm="{ row }">
-          <td><span class="title-link" @click="handleLoadDetail(row.bbmId)" :style="detailModal.dtlId===row.bbmId?'color:#e8587a;font-weight:700;':''">{{ row.bbmNm }}<span v-if="detailModal.dtlId===row.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
         </template>
         <template #row-actions="{ row }">
           <td><div class="actions">

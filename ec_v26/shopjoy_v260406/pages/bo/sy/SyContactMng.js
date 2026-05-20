@@ -169,8 +169,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
       { key: 'memberNm',        label: '회원', refLink: 'member', refKey: 'memberId' },
-      { key: 'categoryCd',      label: '카테고리' },
-      { key: 'contactTitle',    label: '제목' },
+      { key: 'categoryCd',      label: '카테고리', cellInnerClass: 'tag' },
+      { key: 'contactTitle',    label: '제목', link: true,
+        cellInnerStyle: (v) => detailModal.dtlId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'contactStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.contactStatusCd) },
       { key: 'regDate',         label: '등록일', sortKey: 'reg', fmt: (v, row) => String(row.regDate || row.contactDate || '').slice(0, 10) },
       { key: 'siteNm',          label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
@@ -212,7 +213,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="onSort" @set-page="setPage" @size-change="onSizeChange"
-    @ref-click="({type,id}) => showRefModal(type, id)">
+    @ref-click="({type,id}) => showRefModal(type, id)" @row-click="row => handleLoadDetail(row.contactId)">
 
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
@@ -222,12 +223,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     </template>
     <template #head-actions><th style="text-align:right">관리</th></template>
 
-    <template #cell-categoryCd="{ row }">
-      <td><span class="tag">{{ row.categoryCd }}</span></td>
-    </template>
-    <template #cell-contactTitle="{ row }">
-      <td><span class="title-link" @click="handleLoadDetail(row.contactId)" :style="detailModal.dtlId===row.contactId?'color:#e8587a;font-weight:700;':''">{{ row.contactTitle }}<span v-if="detailModal.dtlId===row.contactId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-    </template>
     <template #row-actions="{ row }">
       <td><div class="actions">
         <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.contactId)">수정</button>

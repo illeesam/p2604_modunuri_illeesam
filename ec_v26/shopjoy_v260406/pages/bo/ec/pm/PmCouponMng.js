@@ -185,7 +185,8 @@ window.PmCouponMng = {
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'couponNm',       label: '쿠폰명', sortKey: 'nm' },
+      { key: 'couponNm',       label: '쿠폰명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'couponCd',       label: '코드' },
       { key: 'discount',       label: '할인', fmt: (v, row) => discountLabel(row) },
       { key: 'minOrderAmt',    label: '최소주문',
@@ -242,9 +243,8 @@ window.PmCouponMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"
-      @sort="onSort">
+      @sort="onSort" @row-click="c => handleLoadDetail(c.couponId)">
       <template #head-actions>관리</template>
-      <template #cell-couponNm="{ row: c }"><td><span class="title-link" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?'color:#e8587a;font-weight:700;':''">{{ c.couponNm }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
       <template #cell-couponCd="{ row: c }"><td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;">{{ c.couponCd }}</code></td></template>
       <template #row-actions="{ row: c }">
         <div class="actions">

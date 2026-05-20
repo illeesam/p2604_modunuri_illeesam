@@ -182,8 +182,10 @@ const CATEGORIES = [
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'planNm',       label: '기획전명', sortKey: 'nm' },
-      { key: 'category',     label: '카테고리' },
+      { key: 'planNm',       label: '기획전명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+      { key: 'category',     label: '카테고리',
+        cellInnerStyle: 'font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:2px 8px;' },
       { key: 'theme',        label: '테마' },
       { key: 'productIds',   label: '상품수',
         fmt: (v) => (v || []).length + '개' },
@@ -229,10 +231,8 @@ const CATEGORIES = [
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => selectedId===p.planId ? 'background:#fff8f9;' : ''"
-      @sort="onSort">
+      @sort="onSort" @row-click="p => handleLoadDetail(p.planId)">
       <template #head-actions>관리</template>
-      <template #cell-planNm="{ row: p }"><td><span class="title-link" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?'color:#e8587a;font-weight:700;':''">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
-      <template #cell-category="{ row: p }"><td><span style="font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:2px 8px;">{{ p.category }}</span></td></template>
       <template #row-actions="{ row: p }">
         <div class="actions" style="display:flex;gap:6px;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.planId)">수정</button>

@@ -235,7 +235,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
       { key: 'loginId',      label: '로그인ID' },
-      { key: 'userNm',       label: '이름', sortKey: 'nm' },
+      { key: 'userNm',       label: '이름', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'userEmail',    label: '이메일' },
       { key: 'userPhone',    label: '연락처' },
       { key: 'roleNm',       label: '권한', badge: (row) => fnRoleBadge(row.roleNm) },
@@ -299,7 +300,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     :columns="gridColumns" :rows="users" :pager="pager" row-key="userId"
     list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.userId)">
 
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
@@ -311,9 +312,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     <template #cell-loginId="{ row }">
       <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.loginId }}</code></td>
-    </template>
-    <template #cell-userNm="{ row }">
-      <td><span class="title-link" @click="handleLoadDetail(row.userId)" :style="uiStateDetail.selectedId===row.userId?'color:#e8587a;font-weight:700;':''">{{ row.userNm }}<span v-if="uiStateDetail.selectedId===row.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
     </template>
     <template #row-actions="{ row }">
       <td><div class="actions">

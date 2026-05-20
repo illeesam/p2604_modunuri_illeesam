@@ -183,7 +183,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'saveNm',     label: '마일리지명', sortKey: 'nm' },
+      { key: 'saveNm',     label: '마일리지명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'saveType',   label: '유형', badge: (row) => fnTypeBadge(row.saveType) },
       { key: 'saveVal',    label: '적립값', fmt: (v) => (v || 0).toLocaleString() },
       { key: 'saveUnit',   label: '단위', cellStyle: 'color:#555', fmt: (v) => v || '원' },
@@ -237,9 +238,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(s) => selectedId===s.saveId ? 'background:#fff8f9;' : ''"
-      @sort="onSort">
+      @sort="onSort" @row-click="s => handleLoadDetail(s.saveId)">
       <template #head-actions>관리</template>
-      <template #cell-saveNm="{ row: s }"><td><span class="title-link" @click="handleLoadDetail(s.saveId)" :style="selectedId===s.saveId?'color:#e8587a;font-weight:700;':''">{{ s.saveNm }}<span v-if="selectedId===s.saveId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
       <template #row-actions="{ row: s }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(s.saveId)">수정</button>

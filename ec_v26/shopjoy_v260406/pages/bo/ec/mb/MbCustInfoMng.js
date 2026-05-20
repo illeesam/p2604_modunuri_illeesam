@@ -284,14 +284,14 @@
       // -- 그리드 컬럼 정의 ----------------------------------------------------
       const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');
       const orderCols = [
-        { key: 'orderId', label: '주문번호' },  // ref-link KEEP
+        { key: 'orderId', label: '주문번호', refLink: 'order' },
         { key: 'orderDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'totalPrice', label: '금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;', fmt: (v) => fnFmtPrice(v) },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
       const claimCols = [
-        { key: 'claimId', label: '클레임번호' },  // ref-link KEEP
+        { key: 'claimId', label: '클레임번호', refLink: 'claim' },
         { key: 'type', label: '유형' },
         { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(130), cellTitle: true },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
@@ -333,7 +333,7 @@
         { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'couponNm', label: '쿠폰명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'couponCode', label: '코드', cellStyle: 'font-family:monospace;color:#666;' },
-        { key: 'orderId', label: '주문번호' },  // ref-link KEEP
+        { key: 'orderId', label: '주문번호', refLink: 'order' },
         { key: 'discountAmt', label: '할인금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;color:#e91e63;', fmt: (v, row) => '-' + (row.discountAmt || 0).toLocaleString() + '원' },
       ];
       const sendCols = [
@@ -527,10 +527,8 @@
           <span style="margin-left:2px;background:#e3f2fd;color:#1565c0;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustOrders.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="orderCols" :rows="cfCustOrders" row-key="orderId" empty-text="주문 내역이 없습니다.">
-            <template #cell-orderId="{ row }">
-              <td><a href="#" @click.prevent="showRefModal('order',row.orderId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ row.orderId }}</a></td>
-            </template>
+          <bo-grid bare :columns="orderCols" :rows="cfCustOrders" row-key="orderId" empty-text="주문 내역이 없습니다."
+            @ref-click="({type,id}) => showRefModal(type, id)">
           </bo-grid>
         </div>
       </div>
@@ -543,10 +541,8 @@
           <span style="margin-left:2px;background:#ffebee;color:#c62828;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustClaims.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="claimCols" :rows="cfCustClaims" row-key="claimId" empty-text="클레임 내역이 없습니다.">
-            <template #cell-claimId="{ row }">
-              <td><a href="#" @click.prevent="showRefModal('claim',row.claimId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ row.claimId }}</a></td>
-            </template>
+          <bo-grid bare :columns="claimCols" :rows="cfCustClaims" row-key="claimId" empty-text="클레임 내역이 없습니다."
+            @ref-click="({type,id}) => showRefModal(type, id)">
           </bo-grid>
         </div>
       </div>
@@ -623,10 +619,8 @@
           <span style="margin-left:2px;background:#fce4ec;color:#880e4f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustCouponUsage.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="couponCols" :rows="cfCustCouponUsage" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다.">
-            <template #cell-orderId="{ row }">
-              <td><a href="#" @click.prevent="showRefModal('order',row.orderId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ row.orderId }}</a></td>
-            </template>
+          <bo-grid bare :columns="couponCols" :rows="cfCustCouponUsage" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
+            @ref-click="({type,id}) => showRefModal(type, id)">
           </bo-grid>
         </div>
       </div>

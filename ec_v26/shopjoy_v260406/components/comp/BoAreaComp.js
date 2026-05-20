@@ -43,6 +43,10 @@
  *                    · cellStyle    — 문자열 | (v,row)=>string. td 인라인 스타일
  *                                     합성(조건부 색상·ellipsis 등). 미지정 시 무영향
  *                    · cellClass    — 문자열 | (v,row)=>string. td class. 미지정 시 무영향
+ *                    · cellInnerStyle/cellInnerClass — td 안 <span> 래퍼 style/class.
+ *                                     박스형 인라인 배지(border-radius/padding/font-size 통째 인라인 스타일)
+ *                                     를 columns 속성으로 옮길 때 사용. cellStyle 은 td 전체에,
+ *                                     cellInnerStyle 은 inner span 에만 적용되어 외관 동일 유지.
  *                    · edit('text'|'number'|'date'|'select') + options → 인라인 입력
  *                  특수 셀(버튼 여러개·중첩 컴포넌트·이미지+텍스트·행토글/확장 등)만
  *                    #cell-{key} 슬롯 사용. 단순출력/배지/조건부색상은 위 속성으로.
@@ -104,6 +108,13 @@
  *     fmt,              // fn(value,row)=>표시문자열
  *     placeholder,      // edit input placeholder
  *     mono,             // true → 고정폭 폰트
+ *     cellStyle,        // 문자열|(v,row)=>string — td 인라인 스타일
+ *     cellClass,        // 문자열|(v,row)=>string — td class
+ *     cellTitle,        // true|문자열|(v,row)=>string — td :title (ellipsis 셀)
+ *     cellInnerStyle,   // 문자열|(v,row)=>string — td 안 <span> 래퍼 style (박스형 배지)
+ *     cellInnerClass,   // 문자열|(v,row)=>string — td 안 <span> 래퍼 class
+ *     refLink,          // 'member'|'order'|... type 문자열 → ref-link a 태그
+ *     refKey,           // refLink 시 id 추출용 키(미지정 시 col.key)
  *   }
  *   특수 셀은 columns 에 두되 템플릿에서 <template #cell-{key}="{ row, idx, no }"> 로 override.
  * ──────────────────────────────────────────────────────────────────────── */
@@ -201,6 +212,21 @@ window._boAreaCompUtil = {
     }
     return String(col.cellTitle);
   },
+  /* inner <span> 래퍼용 — 박스형 인라인 배지(border-radius/padding/font-size 등) 통째를 td 안 span 에 적용 */
+  cellInnerStyle(col, row) {
+    if (col.cellInnerStyle == null) return null;
+    const v = (typeof col.cellInnerStyle === 'function')
+      ? col.cellInnerStyle(row ? row[col.key] : undefined, row)
+      : col.cellInnerStyle;
+    return v == null ? null : String(v);
+  },
+  cellInnerClass(col, row) {
+    if (col.cellInnerClass == null) return null;
+    const v = (typeof col.cellInnerClass === 'function')
+      ? col.cellInnerClass(row ? row[col.key] : undefined, row)
+      : col.cellInnerClass;
+    return v == null ? null : String(v);
+  },
 };
 
 /* ── BoGrid — 서버 페이징 그리드 통합(구 BoGridReadonly + BoGridEdit) ──────────
@@ -240,7 +266,7 @@ window.BoGrid = {
     rowClickable: { type: Boolean, default: false },             // true=<tr> 전체 클릭 시 row-click emit (행클릭 통일로 #cell- 슬롯 제거 가능)
                                                                    // 셀 내부 button/select/input/checkbox 등은 @click.stop 자동 보호 — 행이벤트 미전파
   },
-  emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder',
+  emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder', 'cell-change',
           'toggle-check', 'toggle-check-all', 'ref-click'],
   setup(props, { emit, slots }) {
     const U = window._boAreaCompUtil;
@@ -350,19 +376,27 @@ window.BoGrid = {
               <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                 <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
                 <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
-                       :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;" @click.stop />
+                       :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;"
+                       @click.stop @input="$emit('cell-change', row, col)" />
                 <input v-else-if="col.edit==='number'" type="number" class="form-control" v-model.number="row[col.key]"
-                       style="padding:2px 6px;font-size:12px;width:80px;text-align:right;" @click.stop />
+                       style="padding:2px 6px;font-size:12px;width:80px;text-align:right;"
+                       @click.stop @input="$emit('cell-change', row, col)" />
                 <input v-else-if="col.edit==='date'" type="date" class="form-control" v-model="row[col.key]"
-                       style="padding:2px 4px;font-size:11px;width:130px;text-align:center;" @click.stop />
+                       style="padding:2px 4px;font-size:11px;width:130px;text-align:center;"
+                       @click.stop @input="$emit('cell-change', row, col)" />
                 <select v-else-if="col.edit==='select'" class="form-control" v-model="row[col.key]"
-                        style="padding:2px 4px;font-size:12px;" @click.stop>
+                        style="padding:2px 4px;font-size:12px;"
+                        @click.stop @change="$emit('cell-change', row, col)">
+                  <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
-                <!-- 표시 셀 -->
-                <span v-else-if="col.link" class="title-link" @click.stop="onRowClick(row)">{{ U.cellText(col, row) }}</span>
+                <!-- 표시 셀 (link는 cellInnerStyle/Class 합성 가능) -->
+                <span v-else-if="col.link" class="title-link" @click.stop="onRowClick(row)"
+                      :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">{{ U.cellText(col, row) }}</span>
                 <a v-else-if="col.refLink" href="#" class="ref-link" @click.stop.prevent="onRefClick(row, col)">{{ U.cellText(col, row) }}</a>
                 <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
+                <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
+                      :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">{{ U.cellText(col, row) }}</span>
                 <template v-else>{{ U.cellText(col, row) }}</template>
               </td>
             </slot>
@@ -438,7 +472,7 @@ window.BoGridCrud = {
     treeRowKey:  { type: Function, default: null },
   },
   emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
-          'update:checkAll', 'update:focusedIdx', 'export', 'sort'],
+          'update:checkAll', 'update:focusedIdx', 'export', 'sort', 'row-dblclick'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
 
@@ -591,6 +625,7 @@ window.BoGridCrud = {
             class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '' ]"
             :draggable="cfShowDrag"
             @click="onSetFocused(idx)"
+            @dblclick="$emit('row-dblclick', fnRow(item), idx)"
             @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
           <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경">⠿</td>
           <td v-if="cfShowNo" style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
@@ -616,9 +651,12 @@ window.BoGridCrud = {
                 <select v-else-if="col.edit==='select'" class="grid-select"
                         v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
                         @change="onCellChange(fnRow(item))">
+                  <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
                 <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, fnRow(item))">{{ U.cellText(col, fnRow(item)) }}</span>
+                <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
+                      :style="U.cellInnerStyle(col, fnRow(item))" :class="U.cellInnerClass(col, fnRow(item))">{{ U.cellText(col, fnRow(item)) }}</span>
                 <template v-else>{{ U.cellText(col, fnRow(item)) }}</template>
               </td>
             </slot>

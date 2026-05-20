@@ -344,7 +344,9 @@ window.PdCategoryProdMng = {
       ];
       if (uiState.activeTypeCd !== 'NORMAL') {
         cols.push({ key: '_dispPeriod', label: '전시기간', style: 'width:216px;text-align:center' });
-        cols.push({ key: 'dispYn',      label: '전시',     style: 'width:60px;text-align:center' });
+        cols.push({ key: 'dispYn',      label: '전시',     style: 'width:60px;text-align:center',
+          edit: 'select', options: () => codes.disp_yn_opts,
+          cellStyle: (v) => v==='Y' ? 'color:#16a34a;font-weight:600;' : 'color:#9ca3af;' });
       }
       return cols;
     });
@@ -492,15 +494,6 @@ window.PdCategoryProdMng = {
                 <input type="date" class="form-control" v-model="row.dispEndDate"
                        style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
               </div>
-            </td>
-          </template>
-          <template #cell-dispYn="{ row }">
-            <td style="text-align:center">
-              <select class="form-control" v-model="row.dispYn"
-                      style="width:52px;padding:2px 4px;font-size:12px;text-align:center"
-                      :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
-                <option v-for="c in codes.disp_yn_opts" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-              </select>
             </td>
           </template>
           <template #row-actions="{ row }">

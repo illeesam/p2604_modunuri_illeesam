@@ -212,7 +212,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const gridColumns = [
       { key: 'pathId',        label: '표시경로' },
       { key: 'alarmTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.alarmTypeCd) },
-      { key: 'alarmTitle',    label: '제목', sortKey: 'nm' },
+      { key: 'alarmTitle',    label: '제목', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => detailModal.dtlId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'alarmMsg',      label: '메시지', cellStyle: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' },
       { key: 'targetTypeCd',  label: '대상', badge: (row) => fnTargetBadge(row.targetTypeCd) },
       { key: 'alarmSendDate', label: '발송일', fmt: (v) => v || '-' },
@@ -267,7 +268,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     :columns="gridColumns" :rows="alarms" :pager="pager" row-key="alarmId"
     list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.alarmId)">
 
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
@@ -279,9 +280,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     <template #cell-pathId="{ row }">
       <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row.pathId!=null?'#374151':'#9ca3af',fontWeight:row.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(row)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
-    </template>
-    <template #cell-alarmTitle="{ row }">
-      <td><span class="title-link" @click="handleLoadDetail(row.alarmId)" :style="detailModal.dtlId===row.alarmId?'color:#e8587a;font-weight:700;':''">{{ row.alarmTitle }}<span v-if="detailModal.dtlId===row.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
     </template>
     <template #row-actions="{ row }">
       <td><div class="actions">

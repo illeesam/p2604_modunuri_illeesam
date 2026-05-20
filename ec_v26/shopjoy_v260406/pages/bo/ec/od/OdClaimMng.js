@@ -143,6 +143,9 @@ window.OdClaimMng = {
     const _CLAIM_TYPE_FB = { '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' };
     const fnTypeBadge = t => coUtil.cofCodeBadge('CLAIM_TYPE_KR', t, _CLAIM_TYPE_FB[t] || 'badge-gray');
 
+    /* 클레임 타입별 배경색(통합 배지용) */
+    const fnClaimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
+
     /* 클레임(취소/반품/교환) fnStatusBadge — 공통코드 CLAIM_STATUS_KR 우선, 미매칭 시 로컬 fallback */
     const _CLAIM_STATUS_FB = {
       '신청': 'badge-orange', '승인': 'badge-blue', '수거중': 'badge-blue',
@@ -428,12 +431,15 @@ window.OdClaimMng = {
 
     /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
     const listColumns = [
-      { key: 'claimId',       label: '클레임ID' },
+      { key: 'claimId',       label: '클레임ID', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'memberNm',      label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'orderId',       label: '주문ID', refLink: 'order' },
       { key: 'prodNm',        label: '상품' },
       { key: 'reasonDetail',  label: '사유' },
-      { key: '_claimStatus',  label: '클레임상태' },
+      { key: '_claimStatus',  label: '클레임상태',
+        fmt: (v, row) => `${row.claimTypeCdNm || row.claimTypeCd} · ${row.claimStatusCdNm || row.claimStatusCd}`,
+        cellInnerStyle: (v, row) => `font-size:10px;padding:2px 8px;border-radius:10px;color:#fff;font-weight:700;background:${fnClaimTypeColor(row.claimTypeCd)};` },
       { key: 'requestDate',   label: '신청일', sortKey: 'reg', style: 'white-space:nowrap;',
         fmt: (v) => (v || '').slice(0, 10) },
       { key: '_site',         label: '사이트명',
@@ -449,8 +455,12 @@ window.OdClaimMng = {
     const memberPickColumns = [
       { key: 'memberNm',       label: '이름' },
       { key: 'loginId',        label: '로그인ID', mono: true, cellStyle: 'font-size:12px;' },
-      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;' },
-      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;' },
+      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;',
+        fmt: (v) => v || '-',
+        cellInnerStyle: 'background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
+      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;',
+        fmt: (v, row) => row.memberStatusCdNm || v || '-',
+        cellInnerStyle: (v) => (v==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;') + 'border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
       { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
       { key: '_pick',          label: '선택',   style: 'width:70px;text-align:center;' },
     ];
@@ -506,20 +516,6 @@ window.OdClaimMng = {
       :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
       :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
       @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" @ref-click="({type,id}) => showRefModal(type, id)">
-      <template #cell-claimId="{ row }">
-        <td><span class="title-link" @click="handleLoadDetail(row.claimId)" :style="selectedId===row.claimId?'color:#e8587a;font-weight:700;':''">{{ row.claimId }}<span v-if="selectedId===row.claimId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-      </template>
-      <template #cell-_claimStatus="{ row }">
-        <td>
-          <span style="display:inline-flex;align-items:center;gap:3px;">
-            <span :style="{
-              fontSize:'10px',padding:'2px 8px',borderRadius:'10px',color:'#fff',fontWeight:700,
-              background: row.claimTypeCd==='취소' ? '#ef4444' : row.claimTypeCd==='반품' ? '#FFBB00' : '#3b82f6',
-            }">{{ row.claimTypeCdNm || row.claimTypeCd }}</span>
-            <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ row.claimStatusCdNm || row.claimStatusCd }}</span>
-          </span>
-        </td>
-      </template>
       <template #cell-_act="{ row }">
         <td><div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.claimId)">수정</button>
@@ -698,12 +694,6 @@ window.OdClaimMng = {
                 <span style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</span>
               </div>
             </td>
-          </template>
-          <template #cell-gradeCdNm="{ row }">
-            <td style="text-align:center;"><span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.gradeCdNm || '-' }}</span></td>
-          </template>
-          <template #cell-memberStatusCd="{ row }">
-            <td style="text-align:center;"><span :style="row.memberStatusCd==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;'" style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.memberStatusCdNm || row.memberStatusCd || '-' }}</span></td>
           </template>
           <template #cell-_pick="{ row }">
             <td style="text-align:center;"><button class="btn btn-primary btn-xs" @click.stop="onSelectMember(row)" style="border-radius:6px;font-size:11px;">선택</button></td>

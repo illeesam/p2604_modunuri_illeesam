@@ -122,7 +122,9 @@ window.PdProdHist = {
         fmt: (v, row) => (row.answerYn === 'Y' ? '답변완료' : '미답변') },
     ];
     const reviewCols = [
-      { key: 'rating',           label: '평점',  style: 'white-space:nowrap;' },
+      { key: 'rating',           label: '평점',  style: 'white-space:nowrap;',
+        cellInnerStyle: 'color:#faad14;font-weight:700;',
+        fmt: (v) => `${v} ★` },
       { key: 'reviewContent',    label: '내용',  style: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
         cellStyle: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
         fmt: (v, row) => (row.reviewContent || row.reviewTitle) },
@@ -155,7 +157,7 @@ window.PdProdHist = {
     ];
     const priceCols = [
       { key: 'histDate',    label: '일시',          fmt: (v) => fnFmtDate(v) },
-      { key: 'priceField',  label: '항목(변경사유)' },
+      { key: 'priceField',  label: '항목(변경사유)', cellInnerClass: 'tag' },
       { key: 'priceBefore', label: '변경 전', style: 'color:#888;' },
       { key: 'priceAfter',  label: '변경 후', style: 'font-weight:600;color:#e8587a;' },
       { key: 'regByNm',     label: '처리자', fmt: (v, row) => (row.regByNm || row.regBy) },
@@ -170,7 +172,7 @@ window.PdProdHist = {
     ];
     const changeCols = [
       { key: 'histDate',     label: '일시',     fmt: (v) => fnFmtDate(v) },
-      { key: 'changeField',  label: '항목' },
+      { key: 'changeField',  label: '항목', cellInnerClass: 'tag' },
       { key: 'changeBefore', label: '변경 전', style: 'color:#888;' },
       { key: 'changeAfter',  label: '변경 후', style: 'font-weight:500;' },
       { key: 'regByNm',      label: '처리자', fmt: (v, row) => (row.regByNm || row.regBy) },
@@ -248,12 +250,6 @@ window.PdProdHist = {
   <div class="card" v-show="showTab('review')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⭐ 리뷰 <span class="tab-count">{{ reviewList.length }}</span></div>
     <bo-grid bare :columns="reviewCols" :rows="reviewList" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
-      <template #cell-rating="{ row }">
-        <td style="white-space:nowrap;">
-          <span style="color:#faad14;font-weight:700;">{{ row.rating }}</span>
-          <span style="color:#faad14;font-size:11px;">★</span>
-        </td>
-      </template>
     </bo-grid>
   </div>
 
@@ -278,9 +274,6 @@ window.PdProdHist = {
   <div class="card" v-show="showTab('price')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
     <bo-grid bare :columns="priceCols" :rows="priceHistory" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
-      <template #cell-priceField="{ row }">
-        <td><span class="tag">{{ row.priceField }}</span></td>
-      </template>
     </bo-grid>
   </div>
 
@@ -295,9 +288,6 @@ window.PdProdHist = {
   <div class="card" v-show="showTab('changes')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
     <bo-grid bare :columns="changeCols" :rows="changeHistory" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
-      <template #cell-changeField="{ row }">
-        <td><span class="tag">{{ row.changeField }}</span></td>
-      </template>
     </bo-grid>
   </div>
   </div>

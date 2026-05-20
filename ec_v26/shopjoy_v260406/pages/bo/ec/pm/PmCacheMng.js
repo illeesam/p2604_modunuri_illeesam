@@ -187,7 +187,8 @@ window.PmCacheMng = {
         fmt: (v) => ((v || 0) > 0 ? '+' : '') + (v || 0).toLocaleString() + '원',
         cellStyle: (v) => (v || 0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600' },
       { key: 'balanceAmt',  label: '잔액', fmt: (v) => (v || 0).toLocaleString() + '원' },
-      { key: 'cacheDesc',   label: '내용' },
+      { key: 'cacheDesc',   label: '내용', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'siteNm',      label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
@@ -234,9 +235,8 @@ window.PmCacheMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
-      @sort="onSort" @ref-click="({type,id}) => showRefModal(type, id)">
+      @sort="onSort" @ref-click="({type,id}) => showRefModal(type, id)" @row-click="c => handleLoadDetail(c.cacheId)">
       <template #head-actions>관리</template>
-      <template #cell-cacheDesc="{ row: c }"><td><span class="title-link" @click="handleLoadDetail(c.cacheId)" :style="selectedId===c.cacheId?'color:#e8587a;font-weight:700;':''">{{ c.cacheDesc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
       <template #row-actions="{ row: c }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.cacheId)">수정</button>

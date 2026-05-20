@@ -177,7 +177,8 @@ window.PmVoucherMng = {
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'voucherNm',       label: '상품권명', sortKey: 'nm' },
+      { key: 'voucherNm',       label: '상품권명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'voucherValue',    label: '액면가', align: 'right',
         fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'salePrice',       label: '판매가', align: 'right',
@@ -235,9 +236,8 @@ window.PmVoucherMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(v) => selectedId===v.voucherId ? 'background:#fff8f9;' : ''"
-      @sort="onSort">
+      @sort="onSort" @row-click="v => handleLoadDetail(v.voucherId)">
       <template #head-actions>관리</template>
-      <template #cell-voucherNm="{ row: v }"><td><span class="title-link" @click="handleLoadDetail(v.voucherId)" :style="selectedId===v.voucherId?'color:#e8587a;font-weight:700;':''">{{ v.voucherNm }}<span v-if="selectedId===v.voucherId" style="font-size:10px;margin-left:3px;">▼</span></span></td></template>
       <template #row-actions="{ row: v }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(v.voucherId)">수정</button>

@@ -167,7 +167,8 @@ window.CmChattMng = {
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
     const listColumns = [
       { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
-      { key: 'subject',     label: '제목' },
+      { key: 'subject',     label: '제목', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'lastMsgDate', label: '마지막 메시지',
         cellStyle: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888',
         fmt: (v) => v || '-' },
@@ -224,13 +225,10 @@ window.CmChattMng = {
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="onSort" @set-page="setPage" @size-change="onSizeChange"
-    @ref-click="({type,id}) => showRefModal(type, id)">
+    @ref-click="({type,id}) => showRefModal(type, id)" @row-click="row => handleLoadDetail(row.chattRoomId)">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-    </template>
-    <template #cell-subject="{ row }">
-      <td><span class="title-link" @click="handleLoadDetail(row.chattRoomId)" :style="uiStateDetail.selectedId===row.chattRoomId?'color:#e8587a;font-weight:700;':''">{{ row.subject }}<span v-if="uiStateDetail.selectedId===row.chattRoomId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
     </template>
     <template #cell-_act="{ row }">
       <td><div class="actions">

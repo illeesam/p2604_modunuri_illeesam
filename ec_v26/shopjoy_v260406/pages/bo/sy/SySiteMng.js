@@ -206,7 +206,8 @@ const detailModal = reactive({
       { key: 'pathId',        label: '표시경로' },
       { key: 'siteCode',      label: '사이트코드' },
       { key: 'siteTypeCd',    label: '유형', badge: (row) => fnTypeBadge(row.siteTypeCd) },
-      { key: 'siteNm',        label: '사이트명', sortKey: 'nm' },
+      { key: 'siteNm',        label: '사이트명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => detailModal.dtlId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'siteDomain',    label: '도메인', cellStyle: 'color:#2563eb' },
       { key: 'siteEmail',     label: '대표이메일' },
       { key: 'sitePhone',     label: '대표전화' },
@@ -269,7 +270,7 @@ const detailModal = reactive({
         :columns="gridColumns" :rows="sites" :pager="pager" row-key="siteId"
         list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
-        @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+        @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.siteId)">
 
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
@@ -284,14 +285,6 @@ const detailModal = reactive({
         </template>
         <template #cell-siteCode="{ row }">
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ row.siteCode }}</code></td>
-        </template>
-        <template #cell-siteNm="{ row }">
-          <td>
-            <span class="title-link" @click="handleLoadDetail(row.siteId)" :style="detailModal.dtlId===row.siteId?'color:#e8587a;font-weight:700;':''">
-              {{ row.siteNm }}<span v-if="detailModal.dtlId===row.siteId" style="font-size:10px;margin-left:3px;">▼</span>
-            </span>
-            <div style="font-size:11px;color:#888;margin-top:2px;">{{ row.description }}</div>
-          </td>
         </template>
         <template #row-actions="{ row }">
           <td><div class="actions">

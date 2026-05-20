@@ -218,7 +218,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'templateId',     label: 'ID' },
       { key: 'templateTypeCd', label: '템플릿유형', badge: (row) => fnTypeBadge(row.templateTypeCd) },
       { key: 'templateCode',   label: '템플릿코드' },
-      { key: 'templateNm',     label: '템플릿명', sortKey: 'nm' },
+      { key: 'templateNm',     label: '템플릿명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'templateSubject', label: '제목(Subject)', cellStyle: 'color:#555', fmt: (v) => v || '-' },
       { key: 'useYn',          label: '사용여부', badge: (row) => fnUseYnBadge(row.useYn), fmt: (v) => v === 'Y' ? '사용' : '미사용' },
       { key: 'regDate',        label: '등록일', sortKey: 'reg' },
@@ -269,7 +270,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         :columns="gridColumns" :rows="templates" :pager="pager" row-key="templateId"
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
-        @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+        @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.templateId)">
 
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
@@ -284,9 +285,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </template>
         <template #cell-templateCode="{ row }">
           <td><code style="font-size:11px;color:#555;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.templateCode || '-' }}</code></td>
-        </template>
-        <template #cell-templateNm="{ row }">
-          <td><span class="title-link" @click="handleLoadDetail(row.templateId)" :style="selectedId===row.templateId?'color:#e8587a;font-weight:700;':''">{{ row.templateNm }}<span v-if="selectedId===row.templateId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
         </template>
         <template #row-actions="{ row }">
           <td><div class="actions">

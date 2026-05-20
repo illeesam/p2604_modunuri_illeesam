@@ -179,8 +179,14 @@ window.OdCartMng = {
     /* ── BoGrid 컬럼 정의 ── */
     const listColumns = [
       { key: 'memberNm', label: '회원',   style: 'min-width:130px;' },
-      { key: 'prodNm',   label: '상품',   style: 'min-width:180px;' },
-      { key: '_opt',     label: '옵션',   style: 'min-width:120px;' },
+      { key: 'prodNm',   label: '상품',   style: 'min-width:180px;',
+        fmt: (v, row) => `${row.prodNm || '-'} #${row.prodId}` },
+      { key: '_opt',     label: '옵션',   style: 'min-width:120px;',
+        fmt: (v, row) => {
+          const arr = [row.optNm1, row.optNm2].filter(Boolean);
+          return arr.length ? arr.join(' / ') : '-';
+        },
+        cellInnerStyle: (v, row) => (row.optNm1 || row.optNm2) ? '' : 'color:#ccc;font-size:12px;' },
       { key: 'unitPrice',label: '단가',   style: 'width:90px;text-align:right;',
         align: 'right', fmt: (v) => fnPrice(v), cellStyle: 'font-size:13px;' },
       { key: 'orderQty', label: '수량',   style: 'width:50px;text-align:center;',
@@ -198,8 +204,12 @@ window.OdCartMng = {
     const memberPickColumns = [
       { key: 'memberNm',       label: '이름',   style: 'min-width:130px;' },
       { key: 'loginId',        label: '로그인ID', style: 'min-width:110px;', mono: true, cellStyle: 'font-size:12px;color:#374151;' },
-      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;' },
-      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;' },
+      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;',
+        fmt: (v) => v || '-',
+        cellInnerStyle: 'background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
+      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;',
+        fmt: (v, row) => row.memberStatusCdNm || v || '-',
+        cellInnerStyle: (v) => (v==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;') + 'border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
       { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
       { key: '_pick',          label: '선택',   style: 'width:70px;text-align:center;' },
     ];
@@ -333,21 +343,6 @@ window.OdCartMng = {
           </div>
         </td>
       </template>
-      <template #cell-prodNm="{ row }">
-        <td>
-          <div style="font-size:13px;font-weight:500;line-height:1.4;">{{ row.prodNm || '-' }}</div>
-          <div style="font-size:11px;color:#aaa;font-family:monospace;">{{ row.prodId }}</div>
-        </td>
-      </template>
-      <template #cell-_opt="{ row }">
-        <td>
-          <div v-if="row.optNm1 || row.optNm2" style="display:flex;flex-direction:column;gap:3px;">
-            <span v-if="row.optNm1" style="display:inline-block;background:#fdf2f8;color:#9d174d;border:1px solid #fbcfe8;border-radius:4px;padding:1px 7px;font-size:11px;">{{ row.optNm1 }}</span>
-            <span v-if="row.optNm2" style="display:inline-block;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:4px;padding:1px 7px;font-size:11px;">{{ row.optNm2 }}</span>
-          </div>
-          <span v-else style="color:#ccc;font-size:12px;">-</span>
-        </td>
-      </template>
       <template #cell-_act="{ row }">
         <td style="text-align:center;">
           <button class="btn btn-danger btn-xs" @click="handleDelete(row.cartId)">삭제</button>
@@ -416,19 +411,6 @@ window.OdCartMng = {
                 </div>
                 <span style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</span>
               </div>
-            </td>
-          </template>
-          <template #cell-gradeCdNm="{ row }">
-            <td style="text-align:center;">
-              <span style="background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">{{ row.gradeCdNm || '-' }}</span>
-            </td>
-          </template>
-          <template #cell-memberStatusCd="{ row }">
-            <td style="text-align:center;">
-              <span :style="row.memberStatusCd==='ACTIVE' ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;'"
-                    style="border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;">
-                {{ row.memberStatusCdNm || row.memberStatusCd || '-' }}
-              </span>
             </td>
           </template>
           <template #cell-_pick="{ row }">

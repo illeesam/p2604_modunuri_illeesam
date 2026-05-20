@@ -528,32 +528,43 @@ window.SyCodeMng = {
     const fnCodeGridColumns = () => {
       const cols = [
         { key: 'codeGrp',    label: '코드그룹',          edit: 'text' },
-        { key: 'type',       label: '유형',             style: 'width:60px;' },
+        { key: 'type',       label: '유형',             style: 'width:60px;', align: 'center',
+          fmt: () => uiState.isTreeType ? '트리' : '일반',
+          cellInnerStyle: () => 'display:inline-block;padding:3px 6px;border-radius:3px;font-size:10px;font-weight:600;'
+            + (uiState.isTreeType ? 'background:#fecaca;color:#991b1b;' : 'background:#dbeafe;color:#1e40af;') },
         { key: 'codeLabel',  label: '코드라벨',          edit: 'text' },
         { key: 'codeValue',  label: '코드값',           edit: 'text', mono: true },
       ];
       if (uiState.isTreeType) {
-        cols.push({ key: 'parentCodeValue', label: '상위코드값', style: 'width:140px;' });
+        cols.push({ key: 'parentCodeValue', label: '상위코드값', style: 'width:140px;',
+          edit: 'select', nullable: true, nullLabel: '-- 없음 --',
+          options: () => parentOpts.map(o => ({ value: o.value, label: o.label })) });
       }
       cols.push(
         { key: 'sortOrd',    label: '순서',             cls: 'col-ord', edit: 'number' },
-        { key: 'useYn',      label: '사용여부',          cls: 'col-use' },
-        { key: 'codeOpt1',   label: '스타일 (code_opt1)', style: 'width:140px;' },
+        { key: 'useYn',      label: '사용여부',          cls: 'col-use',
+          edit: 'select', options: () => pageCodes.use_yn },
+        { key: 'codeOpt1',   label: '스타일 (code_opt1)', style: 'width:140px;', edit: 'text', mono: true,
+          placeholder: '#000000 / fa-icon' },
         { key: 'codeRemark', label: '비고',             edit: 'text' },
-        { key: 'siteNm',     label: '사이트명',          style: 'width:80px;' },
+        { key: 'siteNm',     label: '사이트명',          style: 'width:80px;', align: 'center',
+          cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => siteNm },
       );
       return cols;
     };
 
-    /* 트리 탭 그리드 — 전 셀 #cell-* 슬롯 override (트리 들여쓰기 UI 보존).
+    /* 트리 탭 그리드 — codeLabel(트리 들여쓰기 UI)·parentCodeValue(displayLabel) 만 슬롯 KEEP.
      * BoGridCrud 트리 모드: flat-rows=flatTree, row-accessor=it=>it.node.code */
     const treeGridColumns = [
       { key: 'codeLabel',       label: '코드라벨',          style: 'min-width:220px;' },
       { key: 'codeValue',       label: '코드값',            edit: 'text', mono: true },
-      { key: 'parentCodeValue', label: '상위코드값',        style: 'width:140px;' },
+      { key: 'parentCodeValue', label: '상위코드값',        style: 'width:140px;',
+        edit: 'select', nullable: true, nullLabel: '-- 없음 --',
+        options: () => parentOpts.map(o => ({ value: o.value, label: o.displayLabel || o.label })) },
       { key: 'sortOrd',         label: '순서',             cls: 'col-ord', edit: 'number' },
       { key: 'useYn',           label: '사용여부',          cls: 'col-use', edit: 'select', options: () => pageCodes.use_yn },
-      { key: 'codeOpt1',        label: '스타일 (code_opt1)', style: 'width:140px;' },
+      { key: 'codeOpt1',        label: '스타일 (code_opt1)', style: 'width:140px;', edit: 'text', mono: true,
+        placeholder: '#000000 / fa-icon' },
       { key: 'codeRemark',      label: '비고',             edit: 'text' },
       { key: 'siteNm',          label: '사이트명',          style: 'width:80px;', align: 'center',
         cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => siteNm },
@@ -561,14 +572,17 @@ window.SyCodeMng = {
     const treeRowAccessor = (it) => it.node.code;
     const treeRowKeyFn    = (it) => it.node.value;
 
-    /* 코드그룹 그리드 — 전 셀 #cell-* 슬롯(onGrpChange 추적 보존), 헤더는 columns 자동생성(sortKey 포함) */
+    /* 코드그룹 그리드 — BoGridCrud 자동 edit/표시. pathId(커스텀 컴포넌트)·grpNm(input+카운트박지) 만 슬롯 KEEP */
     const grpGridColumns = [
       { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)' },
-      { key: 'codeGrp',     label: '코드그룹', sortKey: 'codeGrp' },
+      { key: 'codeGrp',     label: '코드그룹', sortKey: 'codeGrp', edit: 'text', mono: true },
       { key: 'grpNm',       label: '그룹명',   sortKey: 'grpNm' },
-      { key: 'type',        label: '유형',  style: 'width:70px;' },
-      { key: 'description', label: '설명',   sortKey: 'description' },
-      { key: 'useYn',       label: '사용',  cls: 'col-use' },
+      { key: 'type',        label: '유형',     style: 'width:70px;', align: 'center',
+        cellInnerStyle: (v) => v ? 'display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;'
+          + (v==='트리' ? 'background:#fecaca;color:#991b1b;' : 'background:#dbeafe;color:#1e40af;') : '' },
+      { key: 'description', label: '설명',     sortKey: 'description', edit: 'text' },
+      { key: 'useYn',       label: '사용',     cls: 'col-use',
+        edit: 'select', options: () => pageCodes.use_yn },
     ];
 
     // -- return ----------------------------------------------------------------
@@ -633,7 +647,7 @@ window.SyCodeMng = {
       :show-row-id="false" :show-row-check="false" :draggable="false"
       :show-add="false" :show-save="false"
       :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"
-      @sort="onGrpSort">
+      @sort="onGrpSort" @cell-change="onGrpChange">
 
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="addGrp">+ 행추가</button>
@@ -644,9 +658,6 @@ window.SyCodeMng = {
         <bo-path-pick-field biz-cd="sy_code_grp" :row="g"
           :disabled="g._row_status==='D'" @change="onPathChange(g)" />
       </template>
-      <template #cell-codeGrp="{ row: g }">
-        <td><input class="grid-input grid-mono" v-model="g.codeGrp" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
-      </template>
       <template #cell-grpNm="{ row: g }">
         <td>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -655,24 +666,6 @@ window.SyCodeMng = {
               {{ g.codeCount != null ? g.codeCount : '-' }}개
             </span>
           </div>
-        </td>
-      </template>
-      <template #cell-type="{ row: g }">
-        <td style="text-align:center;">
-          <span v-if="g.type" style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;"
-            :style="g.type==='트리' ? {background:'#fecaca',color:'#991b1b'} : {background:'#dbeafe',color:'#1e40af'}">
-            {{ g.type }}
-          </span>
-        </td>
-      </template>
-      <template #cell-description="{ row: g }">
-        <td><input class="grid-input" v-model="g.description" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
-      </template>
-      <template #cell-useYn="{ row: g }">
-        <td>
-          <select class="grid-select" v-model="g.useYn" :disabled="g._row_status==='D'" @change="onGrpChange(g)">
-            <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-          </select>
         </td>
       </template>
       <template #row-actions="{ row: g, idx }">
@@ -708,48 +701,8 @@ window.SyCodeMng = {
         v-model:checkAll="uiState.checkAll"
         @add="addRow" @save="handleSave"
         @delete-checked="deleteRows" @cancel-checked="cancelChecked"
-        @cell-change="onCellChange" @export="exportExcel" @reorder="onDragEnd">
-
-        <template #cell-type="{ row }">
-          <td style="text-align:center;" @dblclick="handleLoadDetail(row.codeId)">
-            <span style="display:inline-block;padding:3px 6px;border-radius:3px;font-size:10px;font-weight:600;"
-              :style="uiState.isTreeType ? {background:'#fecaca',color:'#991b1b'} : {background:'#dbeafe',color:'#1e40af'}">
-              {{ uiState.isTreeType ? '트리' : '일반' }}
-            </span>
-          </td>
-        </template>
-
-        <template #cell-parentCodeValue="{ row }">
-          <td @dblclick="handleLoadDetail(row.codeId)">
-            <select class="grid-select" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option :value="null">-- 없음 --</option>
-              <option v-for="opt in parentOpts" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-            </select>
-          </td>
-        </template>
-
-        <template #cell-useYn="{ row }">
-          <td @dblclick="handleLoadDetail(row.codeId)">
-            <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-            </select>
-          </td>
-        </template>
-
-        <template #cell-codeOpt1="{ row }">
-          <td @dblclick="handleLoadDetail(row.codeId)">
-            <div style="display:flex;gap:4px;align-items:center;">
-              <span v-if="row.codeOpt1 && row.codeOpt1.startsWith('#')"
-                :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+row.codeOpt1+';'"></span>
-              <input class="grid-input grid-mono" v-model="row.codeOpt1" placeholder="#000000 / fa-icon"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)" />
-            </div>
-          </td>
-        </template>
-
-        <template #cell-siteNm="{ row }">
-          <td style="font-size:11px;color:#2563eb;text-align:center;" @dblclick="handleLoadDetail(row.codeId)">{{ siteNm }}</td>
-        </template>
+        @cell-change="onCellChange" @export="exportExcel" @reorder="onDragEnd"
+        @row-dblclick="row => handleLoadDetail(row.codeId)">
 
         <template #row-actions="{ row, idx }">
           <button v-if="['U','I','D'].includes(row._row_status)"
@@ -800,24 +753,6 @@ window.SyCodeMng = {
               <input class="grid-input" style="flex:1;" v-model="row.codeLabel" :disabled="row._row_status==='D'" @input="onCellChange(row)" />
               <span v-if="node.node.children.length > 0" style="flex-shrink:0;font-size:10px;color:#6b7280;background:#f3f4f6;padding:1px 5px;border-radius:3px;"
                 :title="'직속 자식 ' + node.node.children.length + '개'">↳ {{ node.node.children.length }}</span>
-            </div>
-          </td>
-        </template>
-        <template #cell-parentCodeValue="{ row }">
-          <td>
-            <select class="grid-select" style="font-size:12px;" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option :value="null">-- 없음 --</option>
-              <option v-for="opt in parentOpts" :key="opt.value" :value="opt.value">{{ opt.displayLabel }}</option>
-            </select>
-          </td>
-        </template>
-        <template #cell-codeOpt1="{ row }">
-          <td>
-            <div style="display:flex;gap:4px;align-items:center;">
-              <span v-if="row.codeOpt1 && row.codeOpt1.startsWith('#')"
-                :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+row.codeOpt1+';'"></span>
-              <input class="grid-input grid-mono" v-model="row.codeOpt1" placeholder="#000000 / fa-icon"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)" />
             </div>
           </td>
         </template>

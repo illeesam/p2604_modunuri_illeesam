@@ -251,10 +251,15 @@ window.SyAttachMng = {
 
     /* BoGrid 컬럼 정의 (첨부파일 목록) */
     const fileColumns = [
-      { key: 'attachGrpId', label: '그룹' },
+      { key: 'attachGrpId', label: '그룹', cellStyle: 'color:#666;',
+        fmt: (v, row) => {
+          const nm = row.attachGrpNm || attachGrps.find(g => g.attachGrpId === v)?.attachGrpNm || '';
+          return `${nm} #${v}`;
+        } },
       { key: 'fileNm', label: '파일명', style: 'word-break:break-all;' },
       { key: 'fileSize', label: '크기', style: 'width:70px;', fmt: v => fnFmtSize(v) },
-      { key: 'fileExt', label: '확장자', style: 'width:55px;' },
+      { key: 'fileExt', label: '확장자', style: 'width:55px;',
+        cellInnerStyle: 'background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;' },
       { key: 'refId', label: '참조ID', style: 'width:100px;', cellStyle: 'color:#666;' },
       { key: 'memo', label: '메모', cellStyle: 'color:#888;' },
       { key: 'regDate', label: '등록일', style: 'width:145px;', fmt: v => String(v || '').slice(0, 19) },
@@ -512,15 +517,6 @@ window.SyAttachMng = {
           :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
           @set-page="setPage"
           @size-change="onSizeChange">
-          <template #cell-attachGrpId="{ row }">
-            <td style="font-size:12px;">
-              <span style="font-size:11px;color:#666;">{{ row.attachGrpNm || attachGrps.find(g=>g.attachGrpId===row.attachGrpId)?.attachGrpNm }}</span>
-              <span style="font-size:10px;color:#bbb;margin-left:4px;">#{{ row.attachGrpId }}</span>
-            </td>
-          </template>
-          <template #cell-fileExt="{ row }">
-            <td style="font-size:12px;"><span style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;">{{ row.fileExt }}</span></td>
-          </template>
           <template #cell-_act="{ row }">
             <td><div class="actions">
               <button class="btn btn-blue btn-sm" @click="openFileEdit(row)">수정</button>

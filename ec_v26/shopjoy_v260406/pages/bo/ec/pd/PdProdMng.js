@@ -206,7 +206,8 @@ window.PdProdMng = {
     // -- return ---------------------------------------------------------------
 
     const gridColumns = [
-      { key: 'prodNm',       label: '상품명', sortKey: 'nm' },
+      { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'cateNm',       label: '카테고리' },
       { key: 'listPrice',    label: '가격', fmt: (v) => ((v || 0).toLocaleString() + '원') },
       { key: 'prodStock',    label: '재고', fmt: (v) => (v + '개') },
@@ -263,11 +264,8 @@ window.PdProdMng = {
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => selectedId===p.prodId ? 'background:#fff8f9;' : ''"
-      @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="p => handleLoadDetail(p.prodId)">
       <template #head-actions>관리</template>
-      <template #cell-prodNm="{ row: p }">
-        <td><span class="title-link" @click="handleLoadDetail(p.prodId)" :style="selectedId===p.prodId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.prodId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-      </template>
       <template #row-actions="{ row: p }">
         <div class="actions">
           <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.prodId)">👁</button>
