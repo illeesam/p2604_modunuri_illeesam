@@ -328,6 +328,11 @@ window.PdCategoryProdMng = {
     };
 
     /* BoGrid 컬럼 — 카테고리-상품 매핑 (전시기간/전시 컬럼은 NORMAL 외 타입만) */
+        const baseSearchColumns = [
+      { type: 'label', label: '상품명' },
+      { key: 'prodNm', type: 'text', placeholder: '상품명 검색', width: '280px' },
+    ];
+
     const cfCatProdGridColumns = computed(() => {
       const cols = [
         { key: 'prodId',   label: 'ID',   style: 'width:40px;text-align:center', align: 'center', cellStyle: 'color:#aaa;' },
@@ -372,7 +377,7 @@ window.PdCategoryProdMng = {
 
     return {
       codes, uiState, categories, categoryProds,
-      cfCatProdGridColumns, fnCatProdRowStyle, catProdPickerGridColumns,
+      baseSearchColumns, cfCatProdGridColumns, fnCatProdRowStyle, catProdPickerGridColumns,
       TYPE_TABS, EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
       searchParam, onSearch, onReset,
@@ -393,11 +398,7 @@ window.PdCategoryProdMng = {
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <label class="search-label">상품명</label>
-      <input class="form-control" v-model="searchParam.prodNm" @keyup.enter="() => onSearch?.()"
-             placeholder="상품명 검색" style="max-width:280px">
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <!-- -- 좌 트리 + 우 상품목록 -------------------------------------------------- -->

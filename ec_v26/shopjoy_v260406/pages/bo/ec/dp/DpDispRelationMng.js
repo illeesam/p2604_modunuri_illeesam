@@ -143,8 +143,13 @@ window.DpDispRelationMng = {
 
     // -- return ---------------------------------------------------------------
 
+    const baseSearchColumns = [
+      { type: 'label', label: '등록기간' },
+      { key: 'dateStart_range', type: 'dateRange', startKey: 'dateStart', endKey: 'dateEnd' },
+    ];
+
     return {
-      codes, searchParam,
+      codes, searchParam, baseSearchColumns,
       onSearch, onReset,
       expandedNodes, toggleNode, isNodeExpanded,
       cfTreeData, fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge,
@@ -156,12 +161,7 @@ window.DpDispRelationMng = {
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <span class="search-label">등록기간</span>
-      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
-      <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
 
   <!-- -- 내용 ------------------------------------------------------------- -->

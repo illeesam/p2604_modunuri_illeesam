@@ -391,6 +391,29 @@ window.OdOrderMng = {
     /* 주문 onClearMember */
     const onClearMember = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
 
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'orderId',   label: '주문ID' },
+          { value: 'memberNm',  label: '회원명' },
+          { value: 'loginId',   label: '로그인ID' },
+          { value: 'recvNm',    label: '수령인' },
+          { value: 'recvPhone', label: '수령연락처' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { type: 'label', label: '회원' },
+      { key: 'memberId', type: 'pick', nameKey: 'memberNm',
+        display: (p) => p.memberNm || p.memberId, placeholder: '회원 선택',
+        onOpen: () => openMemberPick(), onClear: () => onClearMember() },
+      { key: 'status', type: 'select', options: () => codes.order_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange',
+        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeOptions: () => codes.order_date_types,
+        rangeOptions: () => codes.date_range_opts,
+        onRangeChange: () => handleDateRangeChange() },
+    ];
+
     /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
     const fnPayStatusText = (o) => (o.orderStatusCd === '취소' || o.orderStatusCd === '자동취소') ? '환불완료' : o.orderStatusCd === '입금대기' ? '미결제' : '결제완료';
     const listGridColumns = [
@@ -445,35 +468,13 @@ window.OdOrderMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, listGridColumns, fnGridRowStyle, memberPickGridColumns };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, baseSearchColumns, listGridColumns, fnGridRowStyle, memberPickGridColumns };
   },
   template: /* html */`
 <div>
   <div class="page-title">주문관리</div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select v-model="searchParam.searchType" :options="[
-          { value: 'orderId',   label: '주문ID' },
-          { value: 'memberNm',  label: '회원명' },
-          { value: 'loginId',   label: '로그인ID' },
-          { value: 'recvNm',    label: '수령인' },
-          { value: 'recvPhone', label: '수령연락처' },
-        ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <span class="search-label">회원</span>
-      <div style="display:inline-flex;align-items:center;gap:4px;">
-        <input :value="searchParam.memberNm || searchParam.memberId" readonly placeholder="회원 선택"
-               class="form-control" style="width:140px;background:#f9f9f9;cursor:pointer;"
-               @click="openMemberPick" />
-        <button class="btn btn-secondary btn-sm" @click="openMemberPick">검색</button>
-        <button v-if="searchParam.memberId" class="btn btn-sm" style="padding:2px 6px;font-size:11px;color:#999;background:none;border:1px solid #ddd;" @click="onClearMember">✕</button>
-      </div>
-      <select v-model="searchParam.status">
-        <option value="">상태 전체</option>
-        <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.dateType"><option v-for="c in codes.order_date_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
   <div class="card">
     <div class="toolbar">

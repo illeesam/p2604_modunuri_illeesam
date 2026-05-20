@@ -525,6 +525,24 @@ window.SyCodeMng = {
 
     /* BoGridCrud 컬럼 정의 (코드목록 일반 탭 / 특수셀은 #cell-{key} 슬롯 override)
        parentCodeValue 는 트리타입에서만 노출 → 헤더·셀 정합 위해 columns 자체를 동적 구성 */
+        const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'codeGrp',   label: '코드그룹' },
+          { value: 'codeLabel', label: '라벨' },
+          { value: 'codeValue', label: '코드값' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'useYn', type: 'text', placeholder: '검색어 입력' },
+      { key: 'useYn', type: 'select', options: () => pageCodes.use_yn, nullLabel: '사용여부 전체' },
+      { type: 'label', label: '등록일' },
+      { key: 'dateRange', type: 'dateRange',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => pageCodes.date_range_opts,
+        onRangeChange: () => handleDateRangeChange() },
+    ];
+
     const fnCodeGridColumns = () => {
       const cols = [
         { key: 'codeGrp',    label: '코드그룹',          edit: 'text' },
@@ -589,7 +607,7 @@ window.SyCodeMng = {
 
     return {
       uiState, pageCodes, siteNm,
-      fnCodeGridColumns, grpGridColumns, treeGridColumns, treeRowAccessor, treeRowKeyFn,
+      baseSearchColumns, fnCodeGridColumns, grpGridColumns, treeGridColumns, treeRowAccessor, treeRowKeyFn,
       codeTotal, grpCount, fnCodeListTitle,
       searchParam, handleDateRangeChange,
       onSearch, onReset, onCellChange,
@@ -609,31 +627,7 @@ window.SyCodeMng = {
 
   <!-- -- 검색 영역 -------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'codeGrp',   label: '코드그룹' },
-          { value: 'codeLabel', label: '라벨' },
-          { value: 'codeValue', label: '코드값' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <select v-model="searchParam.useYn">
-        <option value="">사용여부 전체</option>
-        <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-      <span class="search-label">등록일</span>
-      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
-      <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
-      <select v-model="searchParam.dateRange" @change="handleDateRangeChange">
-        <option value="">옵션선택</option>
-        <option v-for="o in pageCodes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <!-- -- 표시경로 트리 + 코드그룹 CRUD ----------------------------------- -->

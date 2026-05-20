@@ -205,6 +205,27 @@ window.PdProdMng = {
 
     // -- return ---------------------------------------------------------------
 
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'prodId',   label: '상품ID' },
+          { value: 'prodNm',   label: '상품명' },
+          { value: 'prodCode', label: '상품코드' },
+          { value: 'brandNm',  label: '브랜드명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'cate', type: 'pick',
+        display: (p) => p.cate, placeholder: '카테고리 선택', width: '120px',
+        openLabel: '선택', onOpen: () => openCatModal(), onClear: () => clearCate() },
+      { key: 'status', type: 'select', options: () => codes.product_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange',
+        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeOptions: () => codes.prod_date_types,
+        rangeOptions: () => codes.date_range_opts,
+        onRangeChange: () => handleDateRangeChange() },
+    ];
+
     const baseGridColumns = [
       { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -217,7 +238,7 @@ window.PdProdMng = {
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
-    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, baseGridColumns, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel, onSort, sortIcon };
+    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, baseSearchColumns, baseGridColumns, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -233,23 +254,7 @@ window.PdProdMng = {
     </div>
   </div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select v-model="searchParam.searchType" :options="[
-          { value: 'prodId',   label: '상품ID' },
-          { value: 'prodNm',   label: '상품명' },
-          { value: 'prodCode', label: '상품코드' },
-          { value: 'brandNm',  label: '브랜드명' },
-        ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <div style="display:flex;align-items:center;gap:4px;">
-        <input class="form-control" v-model="searchParam.cate" placeholder="카테고리 선택" readonly
-          style="width:120px;cursor:pointer;background:#fafafa;" @click="openCatModal" />
-        <button type="button" class="btn btn-secondary btn-sm" @click="openCatModal">선택</button>
-        <button v-if="searchParam.cate" type="button" class="btn btn-secondary btn-sm" @click="clearCate">✕</button>
-      </div>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.product_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
-      <select v-model="searchParam.dateType"><option v-for="c in codes.prod_date_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
   <div class="card">
     <div class="toolbar">

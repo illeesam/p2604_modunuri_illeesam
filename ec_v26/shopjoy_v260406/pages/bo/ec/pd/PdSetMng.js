@@ -397,6 +397,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
     const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+        const baseSearchColumns = [
+      { type: 'label', label: '세트상품명' },
+      { key: 'nm', type: 'text', placeholder: '세트상품명 검색', width: '320px' },
+    ];
+
     const setGridColumns = [
       { key: 'prodNm',    label: '세트상품' },
       { key: 'itemCount', label: '구성품수', style: 'width:70px;text-align:center', fmt: v => (v || 0) + '개' },
@@ -434,7 +439,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     return {
       codes, uiState,
-      setList, cfSetPageRows, setGridColumns, fnSetRowStyle,
+      setList, cfSetPageRows, baseSearchColumns, setGridColumns, fnSetRowStyle,
       setItemGridColumns, fnSetItemRowStyle, pickerGridColumns,
       searchParam, pager, setPage,
       onSearch, onReset, getProdNm, getProd, getBrandNm,
@@ -464,11 +469,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <label class="search-label">세트상품명</label>
-      <input class="form-control" v-model="searchParam.nm" @keyup.enter="() => onSearch?.()"
-             placeholder="세트상품명 검색" style="max-width:320px">
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <!-- -- 목록 ------------------------------------------------------------- -->

@@ -169,6 +169,17 @@ window.BoSearchArea = {
       <label v-if="col.type==='label'" class="search-label">{{ col.label }}</label>
       <!-- 슬롯 탈출구 -->
       <slot v-else-if="col.type==='slot'" :name="col.name || 'extra'"></slot>
+      <!-- 회원/항목 picker 박스 (input readonly + 검색 버튼 + 클리어) — col.type==='pick' -->
+      <template v-else-if="col.type==='pick'">
+        <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
+          readonly :placeholder="col.placeholder || '선택'"
+          class="form-control" :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;cursor:pointer;'"
+          @click="col.onOpen(po(col))" />
+        <button class="btn btn-secondary btn-sm" @click="col.onOpen(po(col))">{{ col.openLabel || '검색' }}</button>
+        <button v-if="po(col)[col.key]" class="btn btn-sm"
+          style="padding:2px 6px;font-size:11px;color:#999;background:none;border:1px solid #ddd;"
+          @click="col.onClear(po(col))">✕</button>
+      </template>
       <!-- 다중선택 (검색대상) -->
       <bo-multi-check-select v-else-if="col.type==='multiCheck'"
         v-model="po(col)[col.key]" :options="col.options"
@@ -178,8 +189,9 @@ window.BoSearchArea = {
       <input v-else-if="col.type==='text'" v-model="po(col)[col.key]"
         :placeholder="col.placeholder" :style="col.width ? ('width:' + col.width) : ''"
         @keyup.enter="onSearch" />
-      <!-- select -->
-      <select v-else-if="col.type==='select'" v-model="po(col)[col.key]">
+      <!-- select (col.onChange: fn 지원) -->
+      <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
+        @change="col.onChange ? col.onChange($event) : null">
         <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
         <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>

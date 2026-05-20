@@ -429,6 +429,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
 
     /* 묶음상품 목록 그리드 컬럼 (모든 셀 커스텀 → #cell 슬롯, 헤더만 정의) */
+        const baseSearchColumns = [
+      { type: 'label', label: '묶음상품명' },
+      { key: 'nm', type: 'text', placeholder: '묶음상품명 검색', width: '320px' },
+    ];
+
     const bundleGridColumns = [
       { key: 'prodNm',    label: '묶음상품' },
       { key: 'itemCount', label: '구성품수',   style: 'width:70px;text-align:center;', align: 'center', fmt: (v) => (v + '개') },
@@ -455,7 +460,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     // -- return ---------------------------------------------------------------
 
     return {
-      bundleGridColumns, fnBundleRowStyle, fnBundleStatusBadge, fnBundleStatusText,
+      baseSearchColumns, bundleGridColumns, fnBundleRowStyle, fnBundleStatusBadge, fnBundleStatusText,
       codes, uiState, bundles, bundleList,
       searchParam, pager, setPage,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
@@ -487,11 +492,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <label class="search-label">묶음상품명</label>
-      <input class="form-control" v-model="searchParam.nm" @keyup.enter="() => onSearch?.()"
-             placeholder="묶음상품명 검색" style="max-width:320px">
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <!-- -- 목록 ------------------------------------------------------------- -->
