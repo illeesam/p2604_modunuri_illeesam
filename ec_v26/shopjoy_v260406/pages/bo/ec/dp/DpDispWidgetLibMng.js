@@ -183,6 +183,20 @@ window.DpDispWidgetLibMng = {
     /* 적용 필터 없음 여부 (template 속성값 && 금지 회피용) */
     const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
 
+    /* 검색바 :columns 자동 렌더 정의 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'widgetNm',      label: '이름' },
+          { value: 'widgetLibDesc', label: '설명' },
+          { value: 'tag',           label: '태그' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'type',   type: 'select', options: () => codes.disp_widget_types, nullLabel: '타입 전체' },
+      { key: 'status', type: 'select', options: () => codes.active_statuses,   nullLabel: '상태 전체' },
+    ];
+
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm' 와 sortKey 일치) */
     const listGridColumns = [
       { key: 'widgetNm',    label: '이름', sortKey: 'nm', cellInnerClass: 'title-link',
@@ -219,33 +233,16 @@ window.DpDispWidgetLibMng = {
       fnBuildPagerNums,
       wIcon, wTypeLabel,
       uiStateDetail, cfDetailEditId, cfDetailKey, handleLoadDetail, openNew, closeDetail, inlineNavigate,
-      handleDelete, fnStatusCls, fnStatusLabel, onSort, sortIcon, listGridColumns, cfNoFilter };
+      handleDelete, fnStatusCls, fnStatusLabel, onSort, sortIcon, listGridColumns, baseSearchColumns, cfNoFilter };
   },
   template: /* html */`
 <div>
   <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}</style>
   <div class="page-title">위젯라이브러리관리</div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" :show-actions="false" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'widgetNm',   label: '이름' },
-          { value: 'widgetLibDesc', label: '설명' },
-          { value: 'tag',  label: '태그' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <select v-model="searchParam.type">
-        <option value="">타입 전체</option>
-        <option v-for="t in codes.disp_widget_types" :key="t.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.status">
-        <option value="">상태 전체</option>
-        <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
+    <bo-search-area :loading="uiState.loading" :show-actions="false"
+      :columns="baseSearchColumns" :param="searchParam"
+      @search="onSearch" @reset="onReset">
       <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
         <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">변경됨 →</span>
         <button class="btn btn-primary" @click="onSearch"

@@ -237,6 +237,15 @@ window.SyApiLogMng = {
         placeholder: '검색어 입력', width: '150px' },
     ];
 
+    /* 펼침 영역(srchOpen=true) 두번째 BoSearchArea 용 columns */
+    const moreSearchColumns = [
+      { key: 'searchStatus',    type: 'text',   placeholder: '상태코드 (예: 500)', width: '150px' },
+      { key: 'searchAppTypeCd', type: 'select', options: () => codes.app_types, nullLabel: '앱유형 전체' },
+      { type: 'label', label: 'x-헤더' },
+      { key: 'searchUiNm',      type: 'text',   placeholder: '화면명 (x-ui-nm)', width: '170px' },
+      { key: 'searchTraceId',   type: 'text',   placeholder: 'Trace ID',         width: '200px' },
+    ];
+
     const accessGridColumns = [
       { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
@@ -277,7 +286,7 @@ window.SyApiLogMng = {
       fnMethodBadge, fnStatusBadge, fnDecode,
       expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded, handleClearLog,
       showRefModal,
-      baseSearchColumns, accessGridColumns, errorGridColumns, fnRowExpanded, fnRowClickStyle,
+      baseSearchColumns, moreSearchColumns, accessGridColumns, errorGridColumns, fnRowExpanded, fnRowClickStyle,
     };
   },
   template: /* html */`
@@ -299,16 +308,10 @@ window.SyApiLogMng = {
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
       </template>
     </bo-search-area>
-    <div v-if="uiState.srchOpen" class="search-bar" style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;">
-      <input v-model="uiState.searchStatus" placeholder="상태코드 (예: 500)" style="width:150px" @keyup.enter="onSearch" />
-      <select v-model="uiState.searchAppTypeCd" style="width:120px">
-        <option value="">앱유형 전체</option>
-        <option v-for="c in codes.app_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <span class="search-label">x-헤더</span>
-      <input v-model="uiState.searchUiNm"    placeholder="화면명 (x-ui-nm)"  style="width:170px" @keyup.enter="onSearch" />
-      <input v-model="uiState.searchTraceId" placeholder="Trace ID"          style="width:200px" @keyup.enter="onSearch" />
-    </div>
+    <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
+      bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
+      :columns="moreSearchColumns" :param="uiState"
+      @search="onSearch" />
   </div>
 
   <!-- -- 탭 + 목록 --------------------------------------------------------- -->

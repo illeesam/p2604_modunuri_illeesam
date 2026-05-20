@@ -423,9 +423,37 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
+    /* 검색바 :columns 자동 렌더 정의 — 모두 uiState 공유 */
+    const dateSearchColumns = [
+      { key: 'dateRange', type: 'select', options: () => codes.date_range_opts,
+        nullLabel: '기간 선택', onChange: () => onDateRangeChange() },
+      { key: 'dateStart', type: 'date' },
+      { type: 'label', label: '~' },
+      { key: 'dateEnd',   type: 'date' },
+    ];
+    const vendorSearchColumns = [
+      { key: 'vendorSearchValue', type: 'text', placeholder: '업체명 검색', width: '200px' },
+    ];
+    const orderSearchColumns = [
+      { key: 'orderSearchValue',  type: 'text',   placeholder: '주문ID / 고객명 / 상품명', width: '220px' },
+      { key: 'orderSearchStatus', type: 'select', options: () => codes.st_order_statuses,  nullLabel: '상태 전체' },
+    ];
+    const claimSearchColumns = [
+      { key: 'claimSearchType',   type: 'select', options: () => codes.claim_types_kr,    nullLabel: '유형 전체' },
+      { key: 'claimSearchStatus', type: 'select', options: () => codes.claim_statuses_kr, nullLabel: '상태 전체' },
+    ];
+    const promoSearchColumns = [
+      { key: 'promoSearchType',  type: 'select', options: () => codes.promo_types_kr, nullLabel: '유형 전체' },
+      { key: 'promoSearchValue', type: 'text',   placeholder: '프로모션명 검색', width: '180px' },
+    ];
+    const settleSearchColumns = [
+      { key: 'settleSearchMonth', type: 'text', placeholder: '월 검색 (예: 2026-04)', width: '180px' },
+    ];
+
     return {
       uiState, TABS,
       vendorGridColumns, orderGridColumns, claimGridColumns, promoGridColumns, settleGridColumns,
+      dateSearchColumns, vendorSearchColumns, orderSearchColumns, claimSearchColumns, promoSearchColumns, settleSearchColumns,
       onDateRangeChange,
       /* vendor */ vendorPager, cfVendorRows, cfVendorTotal, cfVendorPages, cfVendorPageList, cfVendorSummary,
       /* order  */ orderPager, cfOrderRows, cfOrderTotal, cfOrderPages, cfOrderPageList, cfOrderSummary,
@@ -454,14 +482,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
   <!-- -- 공통 날짜 필터 ------------------------------------------------------- -->
   <div class="card" style="margin-bottom:12px">
-    <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'" @search="onSearch" @reset="onReset">
-      <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
-        <option value="">기간 선택</option>
-        <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
-      </select>
-      <input type="date" v-model="uiState.dateStart" style="width:140px" />
-      <span style="line-height:32px">~</span>
-      <input type="date" v-model="uiState.dateEnd"   style="width:140px" />
+    <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'"
+      :columns="dateSearchColumns" :param="uiState"
+      @search="onSearch" @reset="onReset">
       <template #actions-after>
         <button class="btn btn-secondary" @click="exportTab">📥 Excel</button>
       </template>
@@ -497,9 +520,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </div>
     </div>
     <!-- -- 검색 ----------------------------------------------------------- -->
-    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
-      <input v-model="uiState.vendorSearchValue" placeholder="업체명 검색" style="width:200px" @keyup.enter="() => onSearch?.()" />
-    </bo-search-area>
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
+      :columns="vendorSearchColumns" :param="uiState"
+      @search="onSearch" />
     <!-- -- 테이블 ---------------------------------------------------------- -->
     <bo-grid
       :columns="vendorGridColumns"
@@ -534,13 +557,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfOrderSummary.settle) }}</div>
       </div>
     </div>
-    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
-      <input v-model="uiState.orderSearchValue" placeholder="주문ID / 고객명 / 상품명" style="width:220px" @keyup.enter="() => onSearch?.()" />
-      <select v-model="uiState.orderSearchStatus" style="width:130px">
-        <option value="">상태 전체</option>
-        <option v-for="c in codes.st_order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
+      :columns="orderSearchColumns" :param="uiState"
+      @search="onSearch" />
     <bo-grid
       :columns="orderGridColumns"
       :rows="cfOrderPageList"
@@ -576,15 +595,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#3498db">{{ cfClaimSummary.cnt > 0 ? Math.round(cfClaimRows.filter(r=>r.isCompleted).length / cfClaimSummary.cnt * 100) : 0 }}%</div>
       </div>
     </div>
-    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
-      <select v-model="uiState.claimSearchType" style="width:120px">
-        <option value="">유형 전체</option><option v-for="c in codes.claim_types_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="uiState.claimSearchStatus" style="width:140px">
-        <option value="">상태 전체</option>
-        <option v-for="c in codes.claim_statuses_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
+      :columns="claimSearchColumns" :param="uiState"
+      @search="onSearch" />
     <bo-grid
       :columns="claimGridColumns"
       :rows="cfClaimPageList"
@@ -614,13 +627,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#e74c3c">{{ fmtW(cfPromoSummary.totalDiscount) }}</div>
       </div>
     </div>
-    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
-      <select v-model="uiState.promoSearchType" style="width:110px">
-        <option value="">유형 전체</option>
-        <option v-for="c in codes.promo_types_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <input v-model="uiState.promoSearchValue" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
-    </bo-search-area>
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
+      :columns="promoSearchColumns" :param="uiState"
+      @search="onSearch" />
     <bo-grid
       :columns="promoGridColumns"
       :rows="cfPromoPageList"
@@ -654,9 +663,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfSettleSummary.settle) }}</div>
       </div>
     </div>
-    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'" @search="onSearch">
-      <input v-model="uiState.settleSearchMonth" placeholder="월 검색 (예: 2026-04)" style="width:180px" @keyup.enter="() => onSearch?.()" />
-    </bo-search-area>
+    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
+      :columns="settleSearchColumns" :param="uiState"
+      @search="onSearch" />
     <bo-grid
       :columns="settleGridColumns"
       :rows="cfSettlePageList"

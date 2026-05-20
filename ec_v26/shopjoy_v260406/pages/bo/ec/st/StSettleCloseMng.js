@@ -44,7 +44,7 @@ window.StSettleCloseMng = {
           boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
           boApiSvc.stSettleClose.getPage({
-            searchValue: searchValue.value, status: searchStatus.value, pageNo: 1, pageSize: 100
+            searchValue: searchParam.searchValue, status: searchParam.searchStatus, pageNo: 1, pageSize: 100
           }, '정산마감관리', '이력조회'),
         ]);
         orders.splice(0, orders.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
@@ -59,28 +59,38 @@ window.StSettleCloseMng = {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    const searchType = ref('');
-    const searchValue = ref('');
-    const searchStatus = ref('');
+    const searchParam = reactive({ searchType: '', searchValue: '', searchStatus: '' });
 
     /* 적용된 검색조건 스냅샷 — 입력 즉시 filter 금지, [조회] 시점에만 반영 (UI/UX 검색 방식 정책) */
     const applied = reactive({ searchType: '', searchValue: '', searchStatus: '' });
 
     /* 정산 마감 목록조회 — [조회] 클릭/Enter 시점에만 검색조건 적용 */
     const onSearch = async () => {
-      applied.searchType   = searchType.value;
-      applied.searchValue  = searchValue.value;
-      applied.searchStatus = searchStatus.value;
+      applied.searchType   = searchParam.searchType;
+      applied.searchValue  = searchParam.searchValue;
+      applied.searchStatus = searchParam.searchStatus;
       await handleSearchData('DEFAULT');
     };
 
     /* 정산 마감 onReset */
     const onReset = () => {
-      searchType.value = '';
-      searchValue.value = '';
-      searchStatus.value = '';
+      searchParam.searchType = '';
+      searchParam.searchValue = '';
+      searchParam.searchStatus = '';
       onSearch();
     };
+
+    /* 검색바 :columns 자동 렌더 정의 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'closeMon',  label: '정산월' },
+          { value: 'regUserNm', label: '담당자' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
+      { key: 'searchStatus', type: 'select', options: () => codes.settle_close_statuses, nullLabel: '상태 전체' },
+    ];
 
     const closeList = reactive([]);
 
@@ -169,7 +179,7 @@ window.StSettleCloseMng = {
       { key: 'regUserNm', label: '담당자' },
     ];
 
-    return { uiState, closeList, cfFilteredClose, baseGridColumns, searchType, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
+    return { uiState, closeList, cfFilteredClose, baseGridColumns, baseSearchColumns, searchParam, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
   },
   template: /* html */`
 <div>
@@ -220,22 +230,9 @@ window.StSettleCloseMng = {
 
   <!-- -- 마감 이력 ---------------------------------------------------------- -->
   <div class="card" style="margin-top:12px">
-    <bo-search-area :loading="uiState.loading" bar-style="margin-bottom:12px" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchType"
-        :options="[
-          { value: 'closeMon',  label: '정산월' },
-          { value: 'regUserNm', label: '담당자' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchValue" placeholder="검색어 입력" style="width:180px" @keyup.enter="onSearch" />
-      <select v-model="searchStatus" style="width:130px">
-        <option value="">상태 전체</option>
-        <option v-for="c in codes.settle_close_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" bar-style="margin-bottom:12px"
+      :columns="baseSearchColumns" :param="searchParam"
+      @search="onSearch" @reset="onReset" />
     <bo-grid
       :columns="baseGridColumns" :rows="cfFilteredClose" row-key="closeId"
       list-title="정산마감 이력" :count-text="cfFilteredClose.length + '건'" :row-actions="true">

@@ -471,6 +471,26 @@ window.SyVendorUserMng = {
 
     // -- return ---------------------------------------------------------------
 
+    const baseSearchColumns = [
+      { type: 'label', label: '업체' },
+      { key: 'searchVendorId', type: 'pick',
+        display: (p) => p.searchVendorId != null ? fnVendorSummary(p.searchVendorId) : '',
+        placeholder: '업체 선택...', width: '300px',
+        onOpen: () => { uiState.vendorPickOpen = true; },
+        onClear: () => { uiState.searchVendorId = null; vendorUsers.splice(0); } },
+      { key: 'bizSearchType', type: 'multiCheck',
+        options: [
+          { value: 'vendorNm', label: '업체명' },
+          { value: 'corpNo',   label: '사업자번호' },
+          { value: 'vendorId', label: '업체ID' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'bizSearchValue', type: 'text', placeholder: '검색어 입력', width: '200px' },
+      { key: 'bizVendorFlt', type: 'select',
+        options: () => codes.vendor_types.map(v => ({ value: v[0], label: v[1] })),
+        nullLabel: '업체유형 전체' },
+    ];
+
     /* BoGridReadonly 컬럼 정의 (특수셀 #cell-* 슬롯 override) */
     const vendorGridColumns = [
       { key: 'vendorTypeCd', label: '업체유형', align: 'center', badge: (row) => fnVendorTypeBadge(row.vendorTypeCd), fmt: (v) => fnVendorTypeLabel(v) },
@@ -502,6 +522,7 @@ window.SyVendorUserMng = {
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
+      baseSearchColumns,
       vendorGridColumns, userGridColumns, userRoleGridColumns, fnVendorRowStyle, fnUserRowStyle,
       vendors, bizPager, setBizPage,
       onSearch, onReset,
@@ -532,29 +553,8 @@ window.SyVendorUserMng = {
 
   <!-- -- 업체 검색 ---------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <span class="search-label">업체</span>
-      <div :style="{display:'flex',alignItems:'center',gap:'8px',flex:1,maxWidth:'480px',padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',background:'#f5f5f7',color:uiState.searchVendorId!=null?'#374151':'#9ca3af',fontWeight:uiState.searchVendorId!=null?600:400,fontSize:'12px'}">
-        <span style="flex:1;">{{ uiState.searchVendorId != null ? fnVendorSummary(uiState.searchVendorId) : '업체 선택...' }}</span>
-        <button type="button" @click="uiState.vendorPickOpen=true" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}">🔍</button>
-        <button v-if="uiState.searchVendorId!=null" type="button" @click="uiState.searchVendorId=null;vendorUsers.splice(0)" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #fca5a5',borderRadius:'50%',fontSize:'11px',color:'#dc2626',padding:'0',fontWeight:700}">✕</button>
-      </div>
-      <bo-multi-check-select
-        v-model="uiState.bizSearchType"
-        :options="[
-          { value: 'vendorNm', label: '업체명' },
-          { value: 'corpNo',   label: '사업자번호' },
-          { value: 'vendorId', label: '업체ID' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="uiState.bizSearchValue" placeholder="검색어 입력" style="margin-left:8px;min-width:200px;" @keyup.enter="onSearch" />
-      <select class="form-control" v-model="uiState.bizVendorFlt" style="width:140px;">
-        <option value="">업체유형 전체</option>
-        <option v-for="v in codes.vendor_types" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :columns="baseSearchColumns" :param="uiState"
+      :loading="uiState.loading" @search="onSearch" @reset="onReset" />
   </div>
 
   <!-- -- 업체 목록 ---------------------------------------------------------- -->

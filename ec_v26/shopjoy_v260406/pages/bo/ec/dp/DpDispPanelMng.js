@@ -195,6 +195,10 @@ window.DpDispPanelMng = {
         .filter(c => c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
+    /* :columns select 옵션 — 라벨에 codeValue 병기 (영역코드 가독성) */
+    const cfAreaSelectOptions = computed(() =>
+      cfAreas.value.map(a => ({ value: a.codeValue, label: `${a.codeValue} ${a.codeLabel}` }))
+    );
 
     /* fnBuildPagerNums */
     const fnBuildPagerNums = () => {
@@ -235,6 +239,34 @@ window.DpDispPanelMng = {
       'approval_widget':'전자결재', 'map_widget':'지도맵',
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     }[t] || t);
+
+    /* 1행: 일반 검색 :columns */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'panelNm', label: '패널명' },
+          { value: 'areaCd',  label: '영역코드' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { type: 'label', label: '화면영역' },
+      { key: 'area', type: 'select', options: () => cfAreaSelectOptions.value, nullLabel: '전체 영역', minWidth: '160px' },
+      { key: 'status', type: 'select', options: () => codes.active_statuses, nullLabel: '상태 전체' },
+      { type: 'label', label: '등록일' },
+      { key: 'dateRange', type: 'dateRange',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        onRangeChange: () => handleDateRangeChange() },
+    ];
+    /* 2행: 전시일·노출조건·인증 :columns ('전시일시' 는 bo-date-time-picker 라 slot 탈출구) */
+    const moreSearchColumns = [
+      { type: 'label', label: '전시일시' },
+      { type: 'slot', name: 'dispDate' },
+      { type: 'label', label: '공개대상' },
+      { key: 'visibility', type: 'select', options: () => codes.visibility_opts, nullable: false, minWidth: '100px' },
+      { type: 'label', label: '표시방식' },
+      { key: 'layoutType', type: 'select', options: () => codes.layout_types, nullLabel: '전체', minWidth: '100px' },
+    ];
 
     /* setDispNow */
     const setDispNow = () => {
@@ -470,47 +502,24 @@ window.DpDispPanelMng = {
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), panels, uiState, fnPathLabel, displays, codes,
       cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
       selectPathNode,
-      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, pager, cfFiltered, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow, onSort, sortIcon };
+      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, pager, cfFiltered, cfAreas, cfAreaSelectOptions, baseSearchColumns, moreSearchColumns, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow, onSort, sortIcon };
   },
   template: /* html */`
 <div>
   <div class="page-title">전시패널관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 전시패널 관리</span></div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'panelNm', label: '패널명' },
-          { value: 'areaCd',  label: '영역코드' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <span class="search-label">화면영역</span>
-      <select v-model="searchParam.area" style="min-width:160px;">
-        <option value="">전체 영역</option>
-        <option v-for="a in cfAreas" :key="a?.codeValue" :value="a.codeValue">{{ a.codeValue }} {{ a.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      <!-- -- 2행: 전시일·노출조건·인증 ---------------------------------------------- -->
-      <div class="search-bar" style="flex-basis:100%;margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
-      <span class="search-label">전시일시</span>
-      <bo-date-time-picker v-model:date="searchParam.dispDate" v-model:time="searchParam.dispTime"
-        :show-clear="false" input-class="date-range-input" date-width="145px" time-width="145px" />
-      <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
-      <span class="search-label">공개대상</span>
-      <select v-model="searchParam.visibility" style="min-width:100px;">
-        <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">{{ o.label }}</option>
-      </select>
-      <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
-      <span class="search-label">표시방식</span>
-      <select v-model="searchParam.layoutType" style="min-width:100px;">
-        <option value="">전체</option>
-        <option v-for="o in codes.layout_types" :key="o?.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-      </div>
+    <bo-search-area :loading="uiState.loading"
+      :columns="baseSearchColumns" :param="searchParam"
+      @search="onSearch" @reset="onReset" />
+    <!-- -- 2행: 전시일·노출조건·인증 (별도 BoSearchArea, actions 없음) ----------- -->
+    <bo-search-area :show-actions="false"
+      bar-style="margin-top:8px;padding-top:8px;border-top:1px dashed #eee;"
+      :columns="moreSearchColumns" :param="searchParam"
+      @search="onSearch">
+      <template #dispDate>
+        <bo-date-time-picker v-model:date="searchParam.dispDate" v-model:time="searchParam.dispTime"
+          :show-clear="false" input-class="date-range-input" date-width="145px" time-width="145px" />
+      </template>
     </bo-search-area>
   </div>
   <!-- -- 본문: 좌측 트리 + 우측 목록 ---------------------------------------------- -->

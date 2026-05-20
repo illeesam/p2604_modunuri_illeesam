@@ -198,6 +198,13 @@ window.SyUserLoginHist = {
       { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '170px' },
     ];
 
+    /* 펼침 영역(srchOpen=true) 두번째 BoSearchArea 용 columns */
+    const moreSearchColumns = [
+      { type: 'label', label: 'x-헤더' },
+      { key: 'searchUiNm',    type: 'text', placeholder: '화면명 (x-ui-nm)', width: '170px' },
+      { key: 'searchTraceId', type: 'text', placeholder: 'Trace ID',         width: '200px' },
+    ];
+
     /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
     const logGridColumns = [
       { key: '_exp',     label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
@@ -238,7 +245,7 @@ window.SyUserLoginHist = {
       expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge, fnDecode,
       onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange, handleClearLog,
-      baseSearchColumns, logGridColumns, tokenGridColumns, fnRowExpanded, fnRowClickStyle,
+      baseSearchColumns, moreSearchColumns, logGridColumns, tokenGridColumns, fnRowExpanded, fnRowClickStyle,
     };
   },
   template: /* html */`
@@ -260,11 +267,10 @@ window.SyUserLoginHist = {
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
       </template>
     </bo-search-area>
-    <div v-if="uiState.srchOpen" class="search-bar" style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;">
-      <span class="search-label">x-헤더</span>
-      <input v-model="uiState.searchUiNm"    placeholder="화면명 (x-ui-nm)"  style="width:170px" @keyup.enter="onSearch" />
-      <input v-model="uiState.searchTraceId" placeholder="Trace ID"          style="width:200px" @keyup.enter="onSearch" />
-    </div>
+    <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
+      bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
+      :columns="moreSearchColumns" :param="uiState"
+      @search="onSearch" />
   </div>
 
   <!-- ── 탭 + 목록 ─────────────────────────────────────────────────── -->
