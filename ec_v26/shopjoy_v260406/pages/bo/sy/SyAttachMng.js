@@ -250,7 +250,7 @@ window.SyAttachMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('USE_YN', s, _USE_YN_FB[s] || 'badge-gray');
 
     /* BoGrid 컬럼 정의 (첨부파일 목록) */
-    const fileColumns = [
+    const fileGridColumns = [
       { key: 'attachGrpId', label: '그룹', cellStyle: 'color:#666;',
         fmt: (v, row) => {
           const nm = row.attachGrpNm || attachGrps.find(g => g.attachGrpId === v)?.attachGrpNm || '';
@@ -273,7 +273,7 @@ window.SyAttachMng = {
       attachGrps, grpSearchType, grpSearchValue, onGrpSearch, grpForm, pager,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
-      fnFmtSize, fnStatusBadge, fileColumns,
+      fnFmtSize, fnStatusBadge, fileGridColumns,
     };
   },
   template: /* html */`
@@ -508,7 +508,7 @@ window.SyAttachMng = {
 
         <bo-grid
           bare
-          :columns="fileColumns"
+          :columns="fileGridColumns"
           :rows="attaches"
           :pager="pager"
           row-key="attachId"

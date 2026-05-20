@@ -169,7 +169,7 @@ window.XsSample08 = {
     // -- return ---------------------------------------------------------------
 
     /* fo-grid-crud 컬럼 */
-    const gridCols = [
+    const baseGridColumns = [
       { key: 'categoryNm', label: '카테고리명', edit: 'text' },
       { key: 'parentNm',   label: '상위카테고리', edit: 'text', width: '120px' },
       { key: 'depth',      label: '뎁스',   edit: 'number', width: '60px', align: 'center' },
@@ -184,7 +184,7 @@ window.XsSample08 = {
 
     return {
       toast, searchParam, onSearch, onReset,
-      gridRows, gridCols, pager, setPage, getRealIdx,
+      gridRows, baseGridColumns, pager, setPage, getRealIdx,
       setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -217,7 +217,7 @@ window.XsSample08 = {
   </div>
   <fo-grid-crud
     list-title="카테고리 목록" row-key="categoryId"
-    :columns="gridCols" :rows="gridRows"
+    :columns="baseGridColumns" :rows="gridRows"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="addRow" @save="handleSave"

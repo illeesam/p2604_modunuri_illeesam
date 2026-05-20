@@ -184,7 +184,7 @@ window.PmCouponMng = {
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'couponNm',       label: '쿠폰명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'couponCd',       label: '코드',
@@ -202,7 +202,7 @@ window.PmCouponMng = {
       { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, codes, searchParam, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },
@@ -240,7 +240,7 @@ window.PmCouponMng = {
       </div>
     </div>
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="gridColumns" :rows="coupons" :pager="pager" row-key="couponId"
+      :columns="baseGridColumns" :rows="coupons" :pager="pager" row-key="couponId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"

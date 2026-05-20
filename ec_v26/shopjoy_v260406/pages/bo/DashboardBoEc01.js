@@ -151,7 +151,7 @@
         { key: '3col', icon: '▭▭▭', label: '3열' },
         { key: '4col', icon: '▭▭▭▭', label: '4열' },
       ];
-      const cfGridCols = computed(() => {
+      const cfBaseGridColumns = computed(() => {
         if (uiState.tabMode === 'tab') return '1fr';
         return 'repeat(' + parseInt(uiState.tabMode) + ',minmax(0,1fr))';
       });
@@ -312,7 +312,7 @@
       return {
         fmt, pct, filters, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
         toggle, toggleAll, isSel, onReset, onSearch, doExcelDownload,
-        uiState, TABS, VIEW_MODES, cfGridCols, showPanel,
+        uiState, TABS, VIEW_MODES, cfBaseGridColumns, showPanel,
         cfMonthLabels, cfMonthlySales, cfMonthlyJoin, cfMonthlyLeave, cfMonthlyClicks, cfMonthlyOrders, cfChannelMonthly,
         linePoints, areaPath, maxOf,
         cfTotalSales, cfTotalQtyComp, marginRate, cfAvgOrderValue,
@@ -394,7 +394,7 @@
   </div>
 
   <!-- 탭 컨텐츠: 뷰모드에 따라 grid -->
-  <div :style="{display:'grid',gridTemplateColumns:cfGridCols,gap:'12px'}">
+  <div :style="{display:'grid',gridTemplateColumns:cfBaseGridColumns,gap:'12px'}">
   <!-- 1) 월별 매출현황 -->
   <div v-show="showPanel('sales')" class="card" style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">

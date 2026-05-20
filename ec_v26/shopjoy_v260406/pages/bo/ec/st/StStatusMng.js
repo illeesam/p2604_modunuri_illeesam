@@ -360,7 +360,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
 
     /* BoGrid 컬럼 정의 — 특수셀은 #cell- 슬롯 override */
-    const vendorColumns = [
+    const vendorGridColumns = [
       { key: 'vendorNm',  label: '업체명', cellStyle: 'font-weight:700' },
       { key: 'orderCnt',  label: '주문건수', fmt: (v) => v + '건' },
       { key: 'sales',     label: '매출액', fmt: fmtW },
@@ -370,7 +370,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'comm',      label: '수수료(10%)', fmt: fmtW, cellStyle: 'color:#e67e22' },
       { key: 'settle',    label: '정산예정액', fmt: fmtW, cellStyle: 'color:#27ae60;font-weight:700' },
     ];
-    const orderColumns = [
+    const orderGridColumns = [
       { key: 'orderId',    label: '주문ID' },
       { key: 'orderDate',  label: '주문일시' },
       { key: 'userNm',     label: '고객명' },
@@ -384,7 +384,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         cellStyle: (v, row) => 'font-weight:700;' + (row.isCancelled ? 'color:#bbb' : 'color:#27ae60') },
       { key: 'status',     label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
-    const claimColumns = [
+    const claimGridColumns = [
       { key: 'claimId',      label: '클레임ID' },
       { key: 'requestDate',  label: '요청일시' },
       { key: 'userNm',       label: '고객명' },
@@ -397,7 +397,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         fmt: (v) => v < 0 ? '-' + fmtW(Math.abs(v)) : '-' },
       { key: 'status',       label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
-    const promoColumns = [
+    const promoGridColumns = [
       { key: 'promoId',     label: 'ID' },
       { key: 'promoType',   label: '유형', badge: () => 'badge-blue' },
       { key: 'promoNm',     label: '프로모션명' },
@@ -407,7 +407,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'period',      label: '기간', cellStyle: 'color:#888' },
       { key: 'status',      label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
-    const settleColumns = [
+    const settleGridColumns = [
       { key: 'month',     label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'orderCnt',  label: '주문건수', fmt: (v) => v + '건' },
       { key: 'sales',     label: '매출액', fmt: fmtW },
@@ -425,7 +425,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     return {
       uiState, TABS,
-      vendorColumns, orderColumns, claimColumns, promoColumns, settleColumns,
+      vendorGridColumns, orderGridColumns, claimGridColumns, promoGridColumns, settleGridColumns,
       onDateRangeChange,
       /* vendor */ vendorPager, cfVendorRows, cfVendorTotal, cfVendorPages, cfVendorPageList, cfVendorSummary,
       /* order  */ orderPager, cfOrderRows, cfOrderTotal, cfOrderPages, cfOrderPageList, cfOrderSummary,
@@ -502,7 +502,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </bo-search-area>
     <!-- -- 테이블 ---------------------------------------------------------- -->
     <bo-grid
-      :columns="vendorColumns"
+      :columns="vendorGridColumns"
       :rows="cfVendorPageList"
       :pager="vendorPager"
       row-key="vendorId"
@@ -542,7 +542,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </select>
     </bo-search-area>
     <bo-grid
-      :columns="orderColumns"
+      :columns="orderGridColumns"
       :rows="cfOrderPageList"
       :pager="orderPager"
       row-key="orderId"
@@ -586,7 +586,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </select>
     </bo-search-area>
     <bo-grid
-      :columns="claimColumns"
+      :columns="claimGridColumns"
       :rows="cfClaimPageList"
       :pager="claimPager"
       row-key="claimId"
@@ -622,7 +622,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <input v-model="uiState.promoSearchValue" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </bo-search-area>
     <bo-grid
-      :columns="promoColumns"
+      :columns="promoGridColumns"
       :rows="cfPromoPageList"
       :pager="promoPager"
       row-key="promoId"
@@ -658,7 +658,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <input v-model="uiState.settleSearchMonth" placeholder="월 검색 (예: 2026-04)" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </bo-search-area>
     <bo-grid
-      :columns="settleColumns"
+      :columns="settleGridColumns"
       :rows="cfSettlePageList"
       :pager="settlePager"
       row-key="month"

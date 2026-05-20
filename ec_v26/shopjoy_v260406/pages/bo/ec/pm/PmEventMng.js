@@ -172,7 +172,7 @@ window.PmEventMng = {
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'eventTitle',     label: '이벤트 제목', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'targetProducts', label: '대상상품',
@@ -187,7 +187,7 @@ window.PmEventMng = {
       { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, tabMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, tabMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -215,7 +215,7 @@ window.PmEventMng = {
     </div>
     <!-- -- 리스트 뷰 -------------------------------------------------------- -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="gridColumns" :rows="events" :pager="pager" row-key="eventId"
+      :columns="baseGridColumns" :rows="events" :pager="pager" row-key="eventId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(e) => uiStateDetail.selectedId===e.eventId ? 'background:#fff8f9;' : ''"

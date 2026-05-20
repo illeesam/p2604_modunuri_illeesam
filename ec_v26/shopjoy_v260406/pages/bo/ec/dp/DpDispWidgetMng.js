@@ -189,7 +189,7 @@ window.DpDispWidgetMng = {
     const fnRowStyle = (row) => (uiStateDetail.selectedId === row.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;cursor:pointer;';
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'widgetId',   label: 'ID',       style: 'width:56px;', link: true,
         cellStyle: 'color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;font-family:monospace;',
         fmt: (v) => v ? '#' + String(v).slice(-6) : '-' },
@@ -231,7 +231,7 @@ window.DpDispWidgetMng = {
       cfDetailEditId, cfDetailKey,
       selectNode,
       fnStatusCls, fnStatusLabel, contentSummary, handleDelete, onSort, sortIcon,
-      listColumns, cfNoFilter, fnRowStyle,
+      listGridColumns, cfNoFilter, fnRowStyle,
     };
   },
   template: /* html */`
@@ -298,7 +298,7 @@ window.DpDispWidgetMng = {
   <!-- -- 우측 목록 ---------------------------------------------------------- -->
   <div style="flex:1;min-width:0;width:100%;">
   <!-- -- 목록 ------------------------------------------------------------- -->
-  <bo-grid :columns="listColumns" :rows="widgets" :pager="pager" row-key="widgetId"
+  <bo-grid :columns="listGridColumns" :rows="widgets" :pager="pager" row-key="widgetId"
     :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
     :count-text="pager.pageTotalCount + '건'"
     empty-text="등록된 위젯이 없습니다."

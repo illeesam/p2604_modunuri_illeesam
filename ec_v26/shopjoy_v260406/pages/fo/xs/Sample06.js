@@ -162,7 +162,7 @@ window.XsSample06 = {
     // -- return ---------------------------------------------------------------
 
     /* fo-grid-crud 컬럼 */
-    const gridCols = [
+    const baseGridColumns = [
       { key: 'couponNm',     label: '쿠폰명', edit: 'text' },
       { key: 'discountType', label: '할인유형', edit: 'select', width: '80px', align: 'center',
         options: codes.discnt_type_opts },
@@ -178,7 +178,7 @@ window.XsSample06 = {
 
     return {
       toast, searchParam, onSearch, onReset,
-      gridRows, gridCols, pager, setPage, getRealIdx,
+      gridRows, baseGridColumns, pager, setPage, getRealIdx,
       setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -207,7 +207,7 @@ window.XsSample06 = {
   </div>
   <fo-grid-crud
     list-title="쿠폰 목록" row-key="couponId"
-    :columns="gridCols" :rows="gridRows"
+    :columns="baseGridColumns" :rows="gridRows"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="addRow" @save="handleSave"

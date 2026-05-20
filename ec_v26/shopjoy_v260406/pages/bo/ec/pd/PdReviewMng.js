@@ -260,7 +260,7 @@ window.PdReviewMng = {
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'reviewTitle',     label: '리뷰 제목', cellInnerClass: 'title-link' },
       { key: 'prodId',          label: '상품ID',   style: 'width:110px', cellStyle: 'font-size:12px;',
         linkToggle: {
@@ -287,7 +287,7 @@ window.PdReviewMng = {
     const fnGridRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
 
     /* 상품별 리뷰 목록 BoGrid 컬럼 */
-    const prodReviewColumns = [
+    const prodReviewGridColumns = [
       { key: 'reviewTitle',    label: '리뷰 제목', cellInnerClass: 'title-link' },
       { key: 'memberId',       label: '작성자',   style: 'width:80px', fmt: (v, row) => getMemNm(row.memberId) },
       { key: 'rating',         label: '평점',     style: 'width:90px;text-align:center', align: 'center',
@@ -311,7 +311,7 @@ window.PdReviewMng = {
               prodReviews, prodReviewPager, selectedProdId, onProdIdClick, setProdReviewPage, onProdReviewSizeChange,
               statusModal, openStatusModal, onStatusSelectChange, closeStatusModal, confirmStatusChange,
               cfStatusModalRowTitle, cfStatusModalCurrentCd,
-              listColumns, fnGridRowClass, prodReviewColumns, fnProdReviewRowClass,
+              listGridColumns, fnGridRowClass, prodReviewGridColumns, fnProdReviewRowClass,
             };
   },
   template: `
@@ -332,7 +332,7 @@ window.PdReviewMng = {
         </select>
       </bo-search-area>
     </div>
-    <bo-grid :columns="listColumns" :rows="reviews" :pager="pager" row-key="reviewId"
+    <bo-grid :columns="listGridColumns" :rows="reviews" :pager="pager" row-key="reviewId"
       :sort-state="uiState" list-title="상품리뷰 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions
@@ -349,7 +349,7 @@ window.PdReviewMng = {
         <span class="list-count">총 {{ prodReviewPager.pageTotalCount }}건</span>
         <button class="btn btn-xs" style="margin-left:auto;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:2px 8px;" @click="onProdIdClick(selectedProdId)">✕ 닫기</button>
       </div>
-      <bo-grid bare :columns="prodReviewColumns" :rows="prodReviews" :pager="prodReviewPager"
+      <bo-grid bare :columns="prodReviewGridColumns" :rows="prodReviews" :pager="prodReviewPager"
         row-key="reviewId" :row-class="fnProdReviewRowClass"
         empty-text="해당 상품의 리뷰가 없습니다." row-clickable
         @set-page="setProdReviewPage" @size-change="onProdReviewSizeChange" @row-click="openDetail">

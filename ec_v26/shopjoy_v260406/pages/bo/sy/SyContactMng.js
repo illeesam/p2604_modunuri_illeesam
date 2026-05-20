@@ -167,7 +167,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     const exportExcel = () => coUtil.cofExportCsv(contacts, [{label:'ID',key:'contactId'},{label:'회원명',key:'memberNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'contactTitle'},{label:'상태',key:'contactStatusCd'},{label:'등록일',key:'contactDate'}], '문의목록.csv');
 
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'memberNm',        label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'categoryCd',      label: '카테고리', cellInnerClass: 'tag' },
       { key: 'contactTitle',    label: '제목', link: true,
@@ -180,7 +180,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
 
     // -- return ---------------------------------------------------------------
 
-    return { contacts, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, gridColumns, fnRowStyle };
+    return { contacts, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, baseGridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
@@ -209,7 +209,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     </bo-search-area>
   </div>
   <bo-grid-readonly
-    :columns="gridColumns" :rows="contacts" :pager="pager" row-key="contactId"
+    :columns="baseGridColumns" :rows="contacts" :pager="pager" row-key="contactId"
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="onSort" @set-page="setPage" @size-change="onSizeChange"

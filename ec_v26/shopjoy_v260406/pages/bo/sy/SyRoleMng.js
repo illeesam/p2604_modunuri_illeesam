@@ -556,7 +556,7 @@ window.SyRoleMng = {
 
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'roleCode',     label: '역할코드', style: 'width:120px;',    edit: 'text', mono: true },
       { key: 'roleNm',       label: '역할명',   style: 'min-width:150px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
@@ -587,7 +587,7 @@ window.SyRoleMng = {
     // -- return ---------------------------------------------------------------
 
     return {
-      uiState, codes, gridColumns,
+      uiState, codes, baseGridColumns,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
@@ -651,7 +651,7 @@ window.SyRoleMng = {
     <div>
 <!-- -- CRUD 그리드 --------------------------------------------------------- -->
   <bo-grid-crud
-    :columns="gridColumns" :rows="gridRows" row-key="roleId"
+    :columns="baseGridColumns" :rows="gridRows" row-key="roleId"
     list-title="역할목록" :show-export="true" :draggable="false"
     v-model:focusedIdx="uiState.focusedIdx"
     v-model:checkAll="uiState.checkAll"

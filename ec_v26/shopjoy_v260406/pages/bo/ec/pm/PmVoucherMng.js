@@ -176,7 +176,7 @@ window.PmVoucherMng = {
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'voucherNm',       label: '상품권명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'voucherValue',    label: '액면가', align: 'right',
@@ -195,7 +195,7 @@ window.PmVoucherMng = {
       { key: 'siteNm',          label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vouchers, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vouchers, uiState, codes, searchParam, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
   template: /* html */`
@@ -232,7 +232,7 @@ window.PmVoucherMng = {
       </div>
     </div>
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="gridColumns" :rows="vouchers" :pager="pager" row-key="voucherId"
+      :columns="baseGridColumns" :rows="vouchers" :pager="pager" row-key="voucherId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(v) => selectedId===v.voucherId ? 'background:#fff8f9;' : ''"

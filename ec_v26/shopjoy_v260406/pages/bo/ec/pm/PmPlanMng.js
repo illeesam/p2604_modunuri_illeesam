@@ -181,7 +181,7 @@ const CATEGORIES = [
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'planNm',       label: '기획전명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'category',     label: '카테고리',
@@ -197,7 +197,7 @@ const CATEGORIES = [
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, codes, searchParam, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
   template: /* html */`
@@ -227,7 +227,7 @@ const CATEGORIES = [
     </div>
     <!-- -- 리스트 뷰 -------------------------------------------------------- -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="gridColumns" :rows="plans" :pager="pager" row-key="planId"
+      :columns="baseGridColumns" :rows="plans" :pager="pager" row-key="planId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => selectedId===p.planId ? 'background:#fff8f9;' : ''"

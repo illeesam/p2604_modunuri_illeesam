@@ -179,7 +179,7 @@ window.PmCacheMng = {
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'cacheDate',   label: '일시', sortKey: 'reg' },
       { key: 'cacheTypeCd', label: '유형', badge: (row) => fnTypeBadge(row.cacheTypeCd) },
@@ -192,7 +192,7 @@ window.PmCacheMng = {
       { key: 'siteNm',      label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, showRefModal,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, codes, searchParam, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, showRefModal,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },
@@ -231,7 +231,7 @@ window.PmCacheMng = {
       </div>
     </div>
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="gridColumns" :rows="caches" :pager="pager" row-key="cacheId"
+      :columns="baseGridColumns" :rows="caches" :pager="pager" row-key="cacheId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.cacheId ? 'background:#fff8f9;' : ''"

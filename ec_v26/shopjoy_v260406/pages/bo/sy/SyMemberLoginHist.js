@@ -182,7 +182,7 @@ window.SyMemberLoginHist = {
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
     /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
-    const logColumns = [
+    const logGridColumns = [
       { key: '_exp',     label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) },
@@ -197,7 +197,7 @@ window.SyMemberLoginHist = {
       { key: 'traceId',  label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',  label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
-    const tokenColumns = [
+    const tokenGridColumns = [
       { key: '_exp',          label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',         label: '토큰로그ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'regDate',       label: '일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
@@ -221,7 +221,7 @@ window.SyMemberLoginHist = {
       expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge, fnDecode,
       onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange, handleClearLog,
-      logColumns, tokenColumns, fnRowExpanded, fnRowClickStyle,
+      logGridColumns, tokenGridColumns, fnRowExpanded, fnRowClickStyle,
     };
   },
   template: /* html */`
@@ -280,7 +280,7 @@ window.SyMemberLoginHist = {
 
   <!-- ── 로그인 로그 탭 ──────────────────────────────────────────── -->
   <bo-grid-readonly v-if="uiState.activeTab==='log'"
-    :columns="logColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    :columns="logGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
@@ -336,7 +336,7 @@ window.SyMemberLoginHist = {
 
   <!-- ── 토큰 이력 탭 ────────────────────────────────────────────── -->
   <bo-grid-readonly v-if="uiState.activeTab==='token'"
-    :columns="tokenColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    :columns="tokenGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">

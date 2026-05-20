@@ -270,7 +270,7 @@ window.SyBrandMng = {
     // -- return ---------------------------------------------------------------
 
     /* BoGridCrud 호환 — 컬럼 정의 + local 모드 컬럼 hint */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', style: 'min-width:140px;', pathPick: 'sy_brand' },
       { key: 'brandCode',   label: '브랜드코드', style: 'min-width:110px;', edit: 'text', mono: true, placeholder: 'BRAND_CODE' },
       { key: 'brandNm',     label: '브랜드명',  style: 'min-width:130px;', edit: 'text', placeholder: '브랜드명' },
@@ -283,7 +283,7 @@ window.SyBrandMng = {
 
     return { brands, uiState, codes, onPathChange,
       searchParam, handleDateRangeChange,
-      gridRows, gridColumns, fnColTitle,
+      gridRows, baseGridColumns, fnColTitle,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -332,7 +332,7 @@ window.SyBrandMng = {
 
   <!-- -- CRUD 그리드 ------------------------------------------------------- -->
   <bo-grid-crud
-    :columns="gridColumns" :rows="gridRows" row-key="brandId"
+    :columns="baseGridColumns" :rows="gridRows" row-key="brandId"
     list-title="브랜드목록" :show-export="true"
     v-model:focusedIdx="uiState.focusedIdx"
     v-model:checkAll="uiState.checkAll"

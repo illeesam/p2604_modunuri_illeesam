@@ -1109,8 +1109,16 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 - 빈 행의 colspan은 실제 컬럼 수와 일치 유지
 
 **BoGrid 컬럼 속성화 표준 (AG-Grid colDef 식)** ⭐:
-단순 셀(텍스트·배지·조건부색상·포맷)은 `#cell-{key}` 슬롯 대신 `gridColumns` 객체
+단순 셀(텍스트·배지·조건부색상·포맷)은 `#cell-{key}` 슬롯 대신 컬럼 객체
 속성으로 선언. 신규 화면은 처음부터 columns 속성 우선.
+
+**컬럼 변수 명명 규칙** ⭐ (2026-05-20 통일):
+- BoGrid/FoGrid `:columns="..."` 에 전달하는 모든 컬럼 배열 변수는 **`xxxGridColumns`** 접미사 통일
+- 기본/메인 그리드: `baseGridColumns` (이전 `gridColumns`)
+- 목록 그리드: `listGridColumns` (이전 `listColumns`)
+- 그 외 용도별: `memberPickGridColumns`, `userChatGridColumns`, `claimGridColumns`, `orderGridColumns`, `histGridColumns`, `pickerGridColumns`, `fileGridColumns`, `roleGridColumns`, `paymentGridColumns`, `editHistGridColumns` 등
+- 금지: `xxxCols`, `xxxColumns` (GridColumns 미포함). `Cols` 약어는 가독성 떨어짐
+- computed 컬럼도 동일: `cfXxxGridColumns` (예: `cfCatProdGridColumns`)
 
 | 슬롯 패턴 | columns 속성 |
 |---|---|

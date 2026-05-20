@@ -440,7 +440,7 @@ window.XsSample14 = {
     const closePopover = () => { uiState.popoverKey = null; };
     /* -- 반응형 뷰포트 -- */
         /* auto-fill 기반 반응형: 뷰포트 너비 제약이 걸리면 자동으로 컬럼 축소 */
-    const cfAutoGridCols = computed(() => {
+    const cfAutoGridColumns = computed(() => {
       const map = {
         grid1: 'repeat(1,1fr)',
         grid2: 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))',
@@ -485,7 +485,7 @@ window.XsSample14 = {
       wLabel, wIcon,
       popoverKey, popoverWidget, popoverArea, popoverPanel, popoverPos,
       showWidgetInfo, closePopover,
-      viewportMode, cfAutoGridCols, cfViewportWidth,
+      viewportMode, cfAutoGridColumns, cfViewportWidth,
       showRealContent,
     };
   },
@@ -730,7 +730,7 @@ window.XsSample14 = {
       }">
       <!-- -- ===== grid1 / grid2 / grid3 / grid4 ===== ------------------ -->
       <template v-if="GRID_COLS[activeTab]">
-        <div @click="closeSpanPopup" :style="{ display:'grid', gridTemplateColumns: cfAutoGridCols, gap: '8px' }">
+        <div @click="closeSpanPopup" :style="{ display:'grid', gridTemplateColumns: cfAutoGridColumns, gap: '8px' }">
           <template v-for="(cell, ci) in gridCells[activeTab]" :key="ci">
           <div v-if="!showRealContent || cell.widget"
             @dragover.prevent="dropZoneIdx=ci"

@@ -163,7 +163,7 @@ window.StConfigMng = {
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'siteNm',             label: '사이트' },
       { key: 'categoryNm',         label: '카테고리', cellStyle: 'font-weight:700',
         fmt: (v, row) => row.categoryNm || row.vendorNm || '-' },
@@ -180,7 +180,7 @@ window.StConfigMng = {
       { key: 'settleConfigRemark', label: '비고', cellStyle: 'color:#888' },
     ];
 
-    return { uiState, configs, gridColumns, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
+    return { uiState, configs, baseGridColumns, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
   },
   template: /* html */`
 <div>
@@ -200,7 +200,7 @@ window.StConfigMng = {
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기준 추가</button></div>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="configs" row-key="settleConfigId"
+      :columns="baseGridColumns" :rows="configs" row-key="settleConfigId"
       list-title="목록" :count-text="configs.length + '건'" :row-actions="true"
       :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
       <template #head-actions>액션</template>

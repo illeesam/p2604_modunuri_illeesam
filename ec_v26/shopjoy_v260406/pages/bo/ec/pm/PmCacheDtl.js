@@ -146,7 +146,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* BoGrid(bare) 컬럼 정의 — 회원 캐쉬 내역 */
-    const cacheHistColumns = [
+    const cacheHistGridColumns = [
       { key: 'cacheDate',  label: '일시' },
       { key: 'cacheTypeCd', label: '유형', badge: row => fnTypeBadge(row.cacheTypeCd) },
       { key: 'cacheAmt',   label: '금액',
@@ -158,7 +158,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal, cacheHistColumns };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal, cacheHistGridColumns };
   },
   template: /* html */`
 <div>
@@ -282,7 +282,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         </span>
         <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ cfTotalBalance.toLocaleString() }}원</span>
       </div>
-      <bo-grid bare :columns="cacheHistColumns" :rows="cfMemberCacheHistory" row-key="cacheId"
+      <bo-grid bare :columns="cacheHistGridColumns" :rows="cfMemberCacheHistory" row-key="cacheId"
                empty-text="캐쉬 내역이 없습니다."></bo-grid>
     </div>
   </div>

@@ -517,7 +517,7 @@ window.XsSample07 = {
     };
 
     /* ===== Response Grid (active tab) ===== */
-    const cfResGridCols = computed(() => {
+    const cfResGridColumns = computed(() => {
       const d = cfActiveTab.value?.resData;
       if (!d) return [];
       const arr = Array.isArray(d) ? d : Array.isArray(d?.data) ? d.data : Array.isArray(d?.list) ? d.list : null;
@@ -533,10 +533,10 @@ window.XsSample07 = {
     });
     /* fo-grid 컬럼 정의 — 동적 응답 키를 컬럼 def 로 매핑 */
     const cfResColDefs = computed(() =>
-      cfResGridCols.value.map(c => ({ key: c, label: c, mono: false })));
+      cfResGridColumns.value.map(c => ({ key: c, label: c, mono: false })));
 
     /* 전송이력 fo-grid 컬럼 (특수셀은 #cell 슬롯) */
-    const historyCols = [
+    const historyGridColumns = [
       { key: '_seq',    label: '#',     width: '32px', align: 'center' },
       { key: 'method',  label: '메서드', width: '68px', align: 'center',
         cellInnerStyle: (v) => 'font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;' + fnMethodStyle(v) },
@@ -607,8 +607,8 @@ window.XsSample07 = {
       uiState, hostUrl, token, defHeaders, lsItems, refreshLs,
       toasts, closeToast,
       doSend, history, histSelIdx, histModal, histModalTab, editReq, histResJson, histResStatus, histResTime, histResTs, histResProgress, selectHistory, closeHistModal, resendHist,
-      cfResGridCols, cfResGridRows, cfResColDefs,
-      historyCols, onHistClick, fnHistRowStyle,
+      cfResGridColumns, cfResGridRows, cfResColDefs,
+      historyGridColumns, onHistClick, fnHistRowStyle,
       addRow, removeRow, fnMethodStyle, fnStatusStyle, fnMethodDot, quickRun,
       // 자동실행
       autoPopupTabId, autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
@@ -961,7 +961,7 @@ window.XsSample07 = {
         <button @click="history.splice(0);histSelIdx=null;" style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#888;">전체 삭제</button>
       </div>
       <div style="max-height:228px;overflow-y:auto;">
-        <fo-grid bare :columns="historyCols" :rows="history" row-key="id"
+        <fo-grid bare :columns="historyGridColumns" :rows="history" row-key="id"
           :show-row-no="false" empty-text="전송 이력이 없습니다"
           :row-click="onHistClick" :row-style="fnHistRowStyle">
           <template #cell-_seq="{ row, idx }">

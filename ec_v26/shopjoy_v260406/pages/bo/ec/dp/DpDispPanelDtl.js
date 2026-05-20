@@ -734,7 +734,7 @@ window.DpDispPanelDtl = {
 
     /* BoGrid 컬럼 — 파일목록 (#/파일명/URL) 인라인 편집 */
     /* file_list 위젯용 (cfFileListItems) — updateFileItem(idx, field, value) */
-    const fileListCols = [
+    const fileListGridColumns = [
       { key: 'name', label: '파일명',     style: 'width:200px;',
         editIntercept: { placeholder: '파일명.pdf',
           onInput: (row, val, idx) => updateFileItem(idx, 'name', val) } },
@@ -774,7 +774,7 @@ window.DpDispPanelDtl = {
       fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct,
       fnGetDisplayRows, fnGetRelatedEvent,
       fnGetFileListItems, fnAddFileItemAt, fnRemoveFileItemAt, fnSetFileItem,
-      moveRowAt, codes, cfDtlMode, fileListCols, fnFileListColsForRow,
+      moveRowAt, codes, cfDtlMode, fileListGridColumns, fnFileListColsForRow,
     };
   },
   template: /* html */`
@@ -1184,7 +1184,7 @@ window.DpDispPanelDtl = {
                 </div>
               </div>
               <div v-else>
-                <bo-grid bare :columns="fileListCols" :rows="cfFileListItems" row-actions
+                <bo-grid bare :columns="fileListGridColumns" :rows="cfFileListItems" row-actions
                   empty-text="첨부파일이 없습니다. 아래 [+ 파일 추가] 버튼을 클릭하세요."
                   style="margin-bottom:8px;">
                   <template #row-actions="{ idx }">

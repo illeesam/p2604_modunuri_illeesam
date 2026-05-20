@@ -213,7 +213,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'pathId',         label: '표시경로',
         pathLabelOpen: { label: pathLabel, open: openPathPick, placeholder: '경로 선택...' } },
       { key: 'templateId',     label: 'ID' },
@@ -233,7 +233,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), templates, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectNode, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel, onSort, sortIcon,
-      gridColumns, fnRowStyle };
+      baseGridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
@@ -269,7 +269,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
       <bo-grid-readonly
-        :columns="gridColumns" :rows="templates" :pager="pager" row-key="templateId"
+        :columns="baseGridColumns" :rows="templates" :pager="pager" row-key="templateId"
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.templateId)">

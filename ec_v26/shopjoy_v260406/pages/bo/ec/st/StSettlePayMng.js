@@ -120,7 +120,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'payId',      label: '지급ID' },
       { key: 'payDate',    label: '지급일' },
       { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
@@ -136,7 +136,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'regUserNm',  label: '담당자' },
     ];
 
-    return { uiState, codes, handleDateRangeChange, pager, payList, gridColumns, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, codes, handleDateRangeChange, pager, payList, baseGridColumns, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -187,7 +187,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </div>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="payList" :pager="pager" row-key="payId"
+      :columns="baseGridColumns" :rows="payList" :pager="pager" row-key="payId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="setPage" @size-change="onSizeChange">
       <template #head-actions>액션</template>

@@ -65,7 +65,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     const gridRows   = reactive([]);
     let   _tempId    = -1;
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'tagNm',    label: '태그명', edit: 'text', placeholder: '태그명' },
       { key: 'tagDesc',  label: '설명',   edit: 'text', placeholder: '설명',
         cellStyle: 'color:#888;font-size:12px;' },
@@ -146,7 +146,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     // -- return ---------------------------------------------------------------
 
     return { tags, uiState, codes, searchParam, pager, setPage, onSearch, onReset,
-             gridRows, gridColumns, addRow, onCellChange, deleteRow, saveAll, fnYnBadge, onSizeChange };
+             gridRows, baseGridColumns, addRow, onCellChange, deleteRow, saveAll, fnYnBadge, onSizeChange };
   },
   template: `
 <div>
@@ -163,7 +163,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
       </bo-search-area>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="gridRows" :pager="pager" row-key="tagId" row-actions
+      :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="tagId" row-actions
       list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-row-new' : (row._row_status==='U' ? 'table-row-mod' : '')"
       @set-page="setPage" @size-change="onSizeChange" @cell-change="onCellChange">
 

@@ -118,7 +118,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'reconId',    label: '대사ID' },
       { key: 'reconDate',  label: '대사일자' },
       { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
@@ -132,7 +132,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         cellStyle: 'font-size:11px;color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
     ];
 
-    return { uiState, handleDateRangeChange, codes, pager, reconList, gridColumns, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, reconList, baseGridColumns, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -168,7 +168,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa"><div style="font-size:11px;color:#888">차이금액 합계</div><div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div></div>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="reconList" :pager="pager" row-key="reconId"
+      :columns="baseGridColumns" :rows="reconList" :pager="pager" row-key="reconId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="setPage" @size-change="onSizeChange">
       <template #head-actions>액션</template>

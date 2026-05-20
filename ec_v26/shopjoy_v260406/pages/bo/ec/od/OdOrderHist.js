@@ -82,7 +82,7 @@ window.OdOrderHist = {
     const botTab = Vue.toRef(uiState, 'botTab');
 
     /* BoGrid(bare) 컬럼 정의 — 탭별 보조 테이블 */
-    const itemColumns = [
+    const itemGridColumns = [
       { key: 'no',         label: 'No',     style: 'width:40px;text-align:center;' },
       { key: 'prodNm',     label: '상품명' },
       { key: 'optionNm',   label: '옵션' },
@@ -92,13 +92,13 @@ window.OdOrderHist = {
         align: 'right', cellStyle: 'font-weight:600', fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'statusCd',   label: '상태',   style: 'width:90px;' },
     ];
-    const dlivHistColumns = [
+    const dlivHistGridColumns = [
       { key: 'date',     label: '일시',  style: 'width:120px;' },
       { key: 'status',   label: '상태',  style: 'width:90px;', badge: () => 'badge-blue' },
       { key: 'location', label: '위치' },
       { key: 'memo',     label: '메모' },
     ];
-    const claimColumns = [
+    const claimGridColumns = [
       { key: 'claimId',       label: '클레임ID', style: 'width:120px;', refLink: 'claim' },
       { key: 'memberNm',      label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'claimTypeCd',   label: '유형',   fmt: (v, r) => r.claimTypeCdNm || r.claimTypeCd },
@@ -110,7 +110,7 @@ window.OdOrderHist = {
     // -- return ---------------------------------------------------------------
 
     return { orders, uiState, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, showTab, claims, deliveries,
-             itemColumns, dlivHistColumns, claimColumns, showRefModal, orderId: props.orderId, navigate: props.navigate,
+             itemGridColumns, dlivHistGridColumns, claimGridColumns, showRefModal, orderId: props.orderId, navigate: props.navigate,
              botTab, tabMode2 };
   },
   template: /* html */`
@@ -128,7 +128,7 @@ window.OdOrderHist = {
   <!-- -- 구성 상품 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('products')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
-    <bo-grid bare :columns="itemColumns" :rows="orderItems" row-key="no"
+    <bo-grid bare :columns="itemGridColumns" :rows="orderItems" row-key="no"
              empty-text="구성 상품 정보가 없습니다." row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-secondary btn-sm" @click="showRefModal('order', orderId)">보기</button>
@@ -148,7 +148,7 @@ window.OdOrderHist = {
         </div>
         <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:cfRelatedDliv.dlivId})">배송 수정</button>
       </div>
-      <bo-grid bare :columns="dlivHistColumns" :rows="cfDlivHistory"
+      <bo-grid bare :columns="dlivHistGridColumns" :rows="cfDlivHistory"
                empty-text="배송 이력이 없습니다.">
       </bo-grid>
     </template>
@@ -158,7 +158,7 @@ window.OdOrderHist = {
   <!-- -- 연관 클레임 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
-    <bo-grid bare :columns="claimColumns" :rows="cfRelatedClaims" row-key="claimId"
+    <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
              empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>

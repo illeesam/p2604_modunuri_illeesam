@@ -245,7 +245,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* BoGrid(bare) 컬럼 정의 — 대상 상품 */
-    const productColumns = [
+    const productGridColumns = [
       { key: 'productId', label: 'ID' },
       { key: 'prodNm',    label: '상품명', refLink: 'product', refKey: 'productId' },
       { key: 'category',  label: '카테고리' },
@@ -256,7 +256,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productColumns, showRefModal };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productGridColumns, showRefModal };
   },
   template: /* html */`
 <div>
@@ -440,7 +440,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         <button v-if="!cfDtlMode" class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
       </div>
-      <bo-grid bare :columns="productColumns" :rows="cfSelectedProducts" row-key="productId"
+      <bo-grid bare :columns="productGridColumns" :rows="cfSelectedProducts" row-key="productId"
                empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-danger btn-sm" @click="removeProduct(row.productId)">제거</button>

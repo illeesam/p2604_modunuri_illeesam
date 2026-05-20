@@ -499,7 +499,7 @@ window.DpDispUiSimul = {
       if (structSlots.slice(structSlots.length - cols).some(Boolean))
         for (let i = 0; i < cols; i++) structSlots.push(null);
     };
-    const cfStructGridCols = computed(() => {
+    const cfStructGridColumns = computed(() => {
       const n = uiState.structColCount;
       if (n <= 1) return 'repeat(1,1fr)';
       if (n === 2) return 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))';
@@ -912,7 +912,7 @@ window.DpDispUiSimul = {
       panelWidgetTypes, isPanelAllChecked,
       checkedWidgetKeys, toggleWidgetCheck, checkAllWidgets, clearCheckedWidgets, cfCheckedWidgetCount, cfCheckedWidgetList,
       /* Tab2 그리드 */
-      structSlots, cfStructGridCols,
+      structSlots, cfStructGridColumns,
       STRUCT_VIEWPORT,
       applyAreaLayout,
       onStructDragOver, onStructDragLeave, onStructDrop,
@@ -1556,7 +1556,7 @@ window.DpDispUiSimul = {
             {{ structViewport==='mobile' ? '📱 375px' : '📟 768px' }}
           </div>
           <div :style="{ border: STRUCT_VIEWPORT[structViewport].width ? '2px solid #d1d5db' : 'none', borderRadius: STRUCT_VIEWPORT[structViewport].width ? '12px' : '0', padding: STRUCT_VIEWPORT[structViewport].width ? '10px' : '0', background:'#fff', boxShadow: STRUCT_VIEWPORT[structViewport].width ? '0 4px 20px rgba(0,0,0,.12)' : 'none' }">
-          <div :style="{ display:'grid', gridTemplateColumns:cfStructGridCols, gap:'10px' }">
+          <div :style="{ display:'grid', gridTemplateColumns:cfStructGridColumns, gap:'10px' }">
             <template v-for="(slot, idx) in structSlots" :key="Math.random()">
             <div v-if="!structShowReal || slot"
               @dragover="onStructDragOver($event, idx)"

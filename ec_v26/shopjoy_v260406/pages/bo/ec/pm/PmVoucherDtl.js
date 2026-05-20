@@ -260,7 +260,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* BoGrid(bare) 컬럼 정의 — 발급내역 / 사용내역 */
-    const issueColumns = [
+    const issueGridColumns = [
       { key: 'issueNo',     label: '발급번호' },
       { key: 'memberNm',    label: '회원명' },
       { key: 'issueDate',   label: '발급일' },
@@ -269,7 +269,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'status',      label: '상태',
         badge: row => row.status === '정상' ? 'badge-green' : row.status === '사용완료' ? 'badge-blue' : row.status === '만료됨' ? 'badge-gray' : 'badge-gray' },
     ];
-    const usageColumns = [
+    const usageGridColumns = [
       { key: 'usageNo',    label: '사용번호' },
       { key: 'issueNo',    label: '발급번호' },
       { key: 'memberNm',   label: '회원명' },
@@ -280,7 +280,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, cfDtlMode, tabMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor, issueColumns, usageColumns };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, cfDtlMode, tabMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor, issueGridColumns, usageGridColumns };
   },
   template: /* html */`
 <div>
@@ -509,14 +509,14 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- -- 발급내역 탭 --------------------------------------------------------- -->
   <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
-    <bo-grid bare :columns="issueColumns" :rows="cfIssuedList" row-key="issueNo"
+    <bo-grid bare :columns="issueGridColumns" :rows="cfIssuedList" row-key="issueNo"
              empty-text="발급내역이 없습니다."></bo-grid>
   </div>
 
   <!-- -- 사용내역 탭 --------------------------------------------------------- -->
   <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">사용내역</div>
-    <bo-grid bare :columns="usageColumns" :rows="cfUsedList" row-key="usageNo"
+    <bo-grid bare :columns="usageGridColumns" :rows="cfUsedList" row-key="usageNo"
              empty-text="사용내역이 없습니다."></bo-grid>
   </div>
 

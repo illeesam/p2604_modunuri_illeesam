@@ -219,7 +219,7 @@ window.SyApiLogMng = {
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
     /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
-    const accessColumns = [
+    const accessGridColumns = [
       { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
       { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
@@ -231,7 +231,7 @@ window.SyApiLogMng = {
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
-    const errorColumns = [
+    const errorGridColumns = [
       { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
       { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
@@ -259,7 +259,7 @@ window.SyApiLogMng = {
       fnMethodBadge, fnStatusBadge, fnDecode,
       expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded, handleClearLog,
       showRefModal,
-      accessColumns, errorColumns, fnRowExpanded, fnRowClickStyle,
+      accessGridColumns, errorGridColumns, fnRowExpanded, fnRowClickStyle,
     };
   },
   template: /* html */`
@@ -324,7 +324,7 @@ window.SyApiLogMng = {
 
   <!-- -- API요청로그 탭 -------------------------------------------------- -->
   <bo-grid-readonly v-if="uiState.activeTab==='access'"
-    :columns="accessColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
@@ -384,7 +384,7 @@ window.SyApiLogMng = {
 
   <!-- -- API오류로그 탭 -------------------------------------------------- -->
   <bo-grid-readonly v-if="uiState.activeTab==='error'"
-    :columns="errorColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">

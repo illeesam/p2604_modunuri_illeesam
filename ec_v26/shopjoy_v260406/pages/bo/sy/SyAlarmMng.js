@@ -209,7 +209,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'pathId',        label: '표시경로',
         pathLabelOpen: { label: pathLabel, open: openPathPick, placeholder: '경로 선택...' } },
       { key: 'alarmTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.alarmTypeCd) },
@@ -227,7 +227,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     // -- return ---------------------------------------------------------------
 
     return { alarms, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectNode, codes, cfSiteNm, searchParam, handleDateRangeChange, pager, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, gridColumns, fnRowStyle };
+      selectNode, codes, cfSiteNm, searchParam, handleDateRangeChange, pager, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, baseGridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
@@ -266,7 +266,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
   <bo-grid-readonly
-    :columns="gridColumns" :rows="alarms" :pager="pager" row-key="alarmId"
+    :columns="baseGridColumns" :rows="alarms" :pager="pager" row-key="alarmId"
     list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.alarmId)">

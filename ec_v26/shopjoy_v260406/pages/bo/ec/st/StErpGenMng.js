@@ -106,14 +106,14 @@ window.StErpGenMng = {
 
     // -- return ---------------------------------------------------------------
 
-    const previewColumns = [
+    const previewGridColumns = [
       { key: 'debit',       label: '차변계정' },
       { key: 'credit',      label: '대변계정' },
       { key: 'debitAmt',    label: '차변금액', fmt: fmtW, cellStyle: 'font-weight:700;color:#3498db' },
       { key: 'creditAmt',   label: '대변금액', fmt: fmtW, cellStyle: 'font-weight:700;color:#27ae60' },
       { key: 'description', label: '적요', cellStyle: 'color:#666' },
     ];
-    const histColumns = [
+    const histGridColumns = [
       { key: 'genMon',    label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'slipType',  label: '전표유형', badge: () => 'badge-blue' },
       { key: 'slipCnt',   label: '전표수', fmt: (v) => v + '건' },
@@ -123,7 +123,7 @@ window.StErpGenMng = {
       { key: 'regUserNm', label: '담당자' },
     ];
 
-    return { uiState, targetMon, slipType, cfPreviewRows, genHistory, previewColumns, histColumns, doGenerate, fnStatusBadge, fmtW, onSearch, codes };
+    return { uiState, targetMon, slipType, cfPreviewRows, genHistory, previewGridColumns, histGridColumns, doGenerate, fnStatusBadge, fmtW, onSearch, codes };
   },
   template: /* html */`
 <div>
@@ -160,7 +160,7 @@ window.StErpGenMng = {
     <!-- -- 미리보기 --------------------------------------------------------- -->
     <div v-if="cfPreviewRows.length" style="margin-top:16px">
       <bo-grid
-        :columns="previewColumns" :rows="cfPreviewRows"
+        :columns="previewGridColumns" :rows="cfPreviewRows"
         :list-title="'전표 미리보기'" :count-text="cfPreviewRows.length + '건'">
       </bo-grid>
     </div>
@@ -170,7 +170,7 @@ window.StErpGenMng = {
   <!-- -- 생성 이력 ---------------------------------------------------------- -->
   <div class="card" style="margin-top:12px">
     <bo-grid
-      :columns="histColumns" :rows="genHistory" row-key="genId"
+      :columns="histGridColumns" :rows="genHistory" row-key="genId"
       list-title="전표생성 이력" :count-text="genHistory.length + '건'">
     </bo-grid>
   </div>

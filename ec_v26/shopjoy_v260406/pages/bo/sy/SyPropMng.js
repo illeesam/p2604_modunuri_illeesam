@@ -168,7 +168,7 @@ window.SyPropMng = {
     // -- return ---------------------------------------------------------------
 
     /* BoGridCrud 컬럼 정의 (헤더는 label/style/cls 로 자동 생성, 특수셀은 #cell-{key} 슬롯 override) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'pathId',     label: '표시경로',  style: 'min-width:160px;', pathPick: 'sy_prop' },
       { key: 'propKey',    label: '키',        edit: 'text', mono: true },
       { key: 'propValue',  label: '값',        edit: 'text' },
@@ -182,7 +182,7 @@ window.SyPropMng = {
     return {
       uiState, codes,
       searchParam,
-      selectNode, rows, gridColumns,
+      selectNode, rows, baseGridColumns,
       fetchData,
       onCellChange, addRow, deleteChecked, cancelChecked, handleSave, onReset, exportCsv,
     };
@@ -230,7 +230,7 @@ window.SyPropMng = {
 
     <!-- -- 그리드 (BoGridCrud) -------------------------------------------- -->
     <bo-grid-crud
-      :columns="gridColumns" :rows="rows" row-key="propId"
+      :columns="baseGridColumns" :rows="rows" row-key="propId"
       list-title="프로퍼티목록" :draggable="false"
       @add="addRow" @save="handleSave"
       @delete-checked="deleteChecked" @cancel-checked="cancelChecked"

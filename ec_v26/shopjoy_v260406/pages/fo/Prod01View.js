@@ -243,7 +243,7 @@ window.Prod01View = {
       ['XXL','46', '108','70'],
     ];
     /* fo-grid 컬럼 — sizeGuideRows 는 위치배열 → fmt 로 인덱스 접근 */
-    const sizeGuideCols = [
+    const sizeGuideGridColumns = [
       { key: 's0', label: '사이즈',  align: 'center', fmt: (v, r) => r[0] },
       { key: 's1', label: '어깨 (cm)', align: 'center', fmt: (v, r) => r[1] },
       { key: 's2', label: '가슴 (cm)', align: 'center', fmt: (v, r) => r[2] },
@@ -846,7 +846,7 @@ window.Prod01View = {
       photoNavPrev, photoNavNext, cfPhotoNavIdx,
       cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
       openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
-      sizeGuideRows, sizeGuideCols, sizeGuideColsShort, styleItems,
+      sizeGuideRows, sizeGuideGridColumns, sizeGuideColsShort, styleItems,
       cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,
       cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
       TABS, tabBarRef, sizeSecRef, reviewSecRef, qnaSecRef, styleSecRef,
@@ -1223,7 +1223,7 @@ window.Prod01View = {
         <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">사이즈</div>
         <div class="card" style="padding:28px;">
           <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">📏 사이즈 가이드</div>
-          <fo-grid bare :columns="sizeGuideCols" :rows="sizeGuideRows"
+          <fo-grid bare :columns="sizeGuideGridColumns" :rows="sizeGuideRows"
             :show-row-no="false" min-width="320px" />
           <p style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
         </div>

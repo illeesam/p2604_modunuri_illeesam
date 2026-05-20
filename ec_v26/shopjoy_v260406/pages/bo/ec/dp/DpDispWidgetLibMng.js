@@ -184,7 +184,7 @@ window.DpDispWidgetLibMng = {
     const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm' 와 sortKey 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'widgetNm',    label: '이름', sortKey: 'nm', cellInnerClass: 'title-link',
         fmt: (v, row) => `${wIcon(row.widgetTypeCd)} ${row.widgetNm || ''}` },
       { key: 'widgetTypeCd', label: '타입',
@@ -219,7 +219,7 @@ window.DpDispWidgetLibMng = {
       fnBuildPagerNums,
       wIcon, wTypeLabel,
       uiStateDetail, cfDetailEditId, cfDetailKey, handleLoadDetail, openNew, closeDetail, inlineNavigate,
-      handleDelete, fnStatusCls, fnStatusLabel, onSort, sortIcon, listColumns, cfNoFilter };
+      handleDelete, fnStatusCls, fnStatusLabel, onSort, sortIcon, listGridColumns, cfNoFilter };
   },
   template: /* html */`
 <div>
@@ -265,7 +265,7 @@ window.DpDispWidgetLibMng = {
       </div>
     </div>
     <div>
-      <bo-grid :columns="listColumns" :rows="widgetLibs" :pager="pager" row-key="widgetLibId"
+      <bo-grid :columns="listGridColumns" :rows="widgetLibs" :pager="pager" row-key="widgetLibId"
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="데이터가 없습니다." row-clickable

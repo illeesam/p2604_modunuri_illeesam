@@ -328,7 +328,7 @@ window.PdCategoryProdMng = {
     };
 
     /* BoGrid 컬럼 — 카테고리-상품 매핑 (전시기간/전시 컬럼은 NORMAL 외 타입만) */
-    const cfCatProdColumns = computed(() => {
+    const cfCatProdGridColumns = computed(() => {
       const cols = [
         { key: 'prodId',   label: 'ID',   style: 'width:40px;text-align:center', align: 'center', cellStyle: 'color:#aaa;' },
         { key: '_prodNm',  label: '상품명 / 강조옵션' },
@@ -358,7 +358,7 @@ window.PdCategoryProdMng = {
     };
 
     /* BoGrid 컬럼 — 상품 추가 피커 */
-    const catProdPickerColumns = [
+    const catProdPickerGridColumns = [
       { key: 'prodId',    label: 'ID',       style: 'width:44px', cellStyle: 'color:#aaa;' },
       { key: 'prodNm',    label: '상품명' },
       { key: 'cateNm',    label: '카테고리', style: 'width:80px;text-align:center', align: 'center',
@@ -372,7 +372,7 @@ window.PdCategoryProdMng = {
 
     return {
       codes, uiState, categories, categoryProds,
-      cfCatProdColumns, fnCatProdRowStyle, catProdPickerColumns,
+      cfCatProdGridColumns, fnCatProdRowStyle, catProdPickerGridColumns,
       TYPE_TABS, EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
       searchParam, onSearch, onReset,
@@ -462,7 +462,7 @@ window.PdCategoryProdMng = {
 
         <!-- -- TABLE 뷰 (tab / 1col) ------------------------------------- -->
         <bo-grid v-if="uiState.tabMode==='tab'||uiState.tabMode==='1col'"
-          bare :columns="cfCatProdColumns" :rows="categoryProds" row-key="_id"
+          bare :columns="cfCatProdGridColumns" :rows="categoryProds" row-key="_id"
           draggable row-actions :row-style="fnCatProdRowStyle"
           :empty-text="searchParam.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.'"
           @reorder="onDrop">
@@ -617,7 +617,7 @@ window.PdCategoryProdMng = {
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <bo-grid bare :columns="catProdPickerColumns" :rows="pickerResults" row-key="prodId"
+          <bo-grid bare :columns="catProdPickerGridColumns" :rows="pickerResults" row-key="prodId"
             empty-text="검색 결과가 없습니다." row-actions>
             <template #row-actions="{ row }">
               <button class="btn btn-blue btn-xs" @click="addProd(row)">추가</button>

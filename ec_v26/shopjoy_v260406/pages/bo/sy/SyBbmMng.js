@@ -156,7 +156,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const exportExcel = () => coUtil.cofExportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'pathId',        label: '표시경로', pathPick: 'sy_bbm' },
       { key: 'bbmCode',       label: '게시판코드',
         cellInnerStyle: 'font-size:11px;color:#555;font-family:monospace;' },
@@ -180,7 +180,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     return { bbms, uiState, codes, cfSiteNm, searchParam, pager, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       selectNode,
-      gridColumns, fnRowStyle };
+      baseGridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
@@ -213,7 +213,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <!-- -- 우: 목록 + 상세 --------------------------------------------------- -->
     <div>
       <bo-grid-readonly
-        :columns="gridColumns" :rows="bbms" :pager="pager" row-key="bbmId"
+        :columns="baseGridColumns" :rows="bbms" :pager="pager" row-key="bbmId"
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
         @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.bbmId)">

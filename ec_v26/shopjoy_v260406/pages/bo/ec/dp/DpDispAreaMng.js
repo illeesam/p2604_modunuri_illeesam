@@ -150,7 +150,7 @@ const searchParam = reactive(_initSearchParam());
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'areaCd',     label: '영역코드', cellInnerStyle: 'font-size:11px;font-family:monospace;' },
       { key: 'areaNm',     label: '영역명',   sortKey: 'nm', link: true },
       { key: 'areaTypeCd', label: '유형' },
@@ -167,7 +167,7 @@ const searchParam = reactive(_initSearchParam());
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
       selectNode, fnPathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
-      onSort, sortIcon, listColumns };
+      onSort, sortIcon, listGridColumns };
   },
   template: /* html */`
 <div>
@@ -202,7 +202,7 @@ const searchParam = reactive(_initSearchParam());
         <bo-path-tree biz-cd="ec_disp_area" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
-    <bo-grid :columns="listColumns" :rows="areas" :pager="pager" row-key="areaId"
+    <bo-grid :columns="listGridColumns" :rows="areas" :pager="pager" row-key="areaId"
       :sort-state="uiState" list-title="전시 영역 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable

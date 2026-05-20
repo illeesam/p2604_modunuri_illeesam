@@ -489,7 +489,7 @@ window.SyVendorUserMng = {
       { key: 'vendorUserStatusCd', label: '상태', style: 'width:80px;text-align:center;', align: 'center', badge: (row) => fnStatusBadge(row.vendorUserStatusCd), fmt: (v) => fnStatusLabel(v) },
     ];
     /* BoGrid(bare) 컬럼 정의 — 부여된 역할 목록 */
-    const userRoleColumns = [
+    const userRoleGridColumns = [
       { key: 'roleNm',    label: '역할명', cellStyle: 'font-weight:600', fmt: (v, row) => row.roleNm || roleNmByCode(row.roleId) },
       { key: 'grantDate', label: '부여일시', cellStyle: 'color:#6b7280', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'validTerm', label: '유효기간', cellStyle: 'color:#6b7280;',
@@ -502,7 +502,7 @@ window.SyVendorUserMng = {
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
-      vendorGridColumns, userGridColumns, userRoleColumns, fnVendorRowStyle, fnUserRowStyle,
+      vendorGridColumns, userGridColumns, userRoleGridColumns, fnVendorRowStyle, fnUserRowStyle,
       vendors, bizPager, setBizPage,
       onSearch, onReset,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
@@ -657,7 +657,7 @@ window.SyVendorUserMng = {
             <button class="btn btn-blue btn-sm" @click="openRoleModal">+ 역할 추가</button>
           </div>
           <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
-          <bo-grid v-else bare :columns="userRoleColumns" :rows="userRoles" row-key="vendorUserRoleId"
+          <bo-grid v-else bare :columns="userRoleGridColumns" :rows="userRoles" row-key="vendorUserRoleId"
                    empty-text="부여된 역할이 없습니다." row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-danger btn-xs" @click="handleDeleteRole(row)">삭제</button>

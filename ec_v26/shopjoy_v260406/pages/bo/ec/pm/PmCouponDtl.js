@@ -284,7 +284,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
 
     /* BoGrid(bare) 컬럼 정의 — 발급목록 / 사용목록 (최대 10건 미리보기) */
-    const issuedColumns = [
+    const issuedGridColumns = [
       { key: 'code',       label: '쿠폰코드', fmt: v => v || '-' },
       { key: 'target',     label: '발급대상', fmt: v => v || '-' },
       { key: 'issuedDate', label: '발급일시', fmt: v => v || '-' },
@@ -293,7 +293,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         badge: row => row.status === '사용' ? 'badge-blue' : 'badge-green',
         fmt: v => v || '미사용' },
     ];
-    const usedColumns = [
+    const usedGridColumns = [
       { key: 'code',        label: '쿠폰코드', fmt: v => v || '-' },
       { key: 'userId',      label: '사용자', fmt: v => v || '-' },
       { key: 'orderId',     label: '주문ID', fmt: v => v || '-' },
@@ -311,7 +311,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, tabMode2, handleSave, onTabChange,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       cfSelectedVendorNm, selectVendor, vendors, showVendorModal,
-      issuedColumns, usedColumns, cfIssuedTop, cfUsedTop,
+      issuedGridColumns, usedGridColumns, cfIssuedTop, cfUsedTop,
     };
   },
   template: /* html */`
@@ -644,14 +644,14 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     <div class="card" v-show="showTab('issued')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count">{{ cfIssuedList.length }}</span></div>
       <div v-if="cfIssuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">발급된 쿠폰이 없습니다.</div>
-      <bo-grid v-else bare :columns="issuedColumns" :rows="cfIssuedTop"></bo-grid>
+      <bo-grid v-else bare :columns="issuedGridColumns" :rows="cfIssuedTop"></bo-grid>
     </div>
 
     <!-- -- 사용목록 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('used')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count">{{ cfUsedList.length }}</span></div>
       <div v-if="cfUsedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">사용된 쿠폰이 없습니다.</div>
-      <bo-grid v-else bare :columns="usedColumns" :rows="cfUsedTop"></bo-grid>
+      <bo-grid v-else bare :columns="usedGridColumns" :rows="cfUsedTop"></bo-grid>
     </div>
   </div>
 

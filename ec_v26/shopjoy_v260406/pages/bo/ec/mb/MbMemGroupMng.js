@@ -165,7 +165,7 @@ window.MbMemGroupMng = {
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'groupNm',   label: '그룹명',   style: 'min-width:180px;',
         edit: 'text', placeholder: '그룹명' },
       { key: 'groupMemo', label: '메모',     style: 'min-width:260px;',
@@ -177,7 +177,7 @@ window.MbMemGroupMng = {
     ];
 
     return {
-      uiState, codes, searchParam, gridRows, gridColumns,
+      uiState, codes, searchParam, gridRows, baseGridColumns,
       onSearch, onReset, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, toggleCheckAll,
       handleSave, fnStatusClass, cfVisibleCount,
@@ -200,7 +200,7 @@ window.MbMemGroupMng = {
   </div>
 
   <bo-grid-crud
-    :columns="gridColumns" :rows="gridRows" row-key="memberGroupId"
+    :columns="baseGridColumns" :rows="gridRows" row-key="memberGroupId"
     list-title="회원그룹 목록"
     :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
     v-model:focusedIdx="uiState.focusedIdx"

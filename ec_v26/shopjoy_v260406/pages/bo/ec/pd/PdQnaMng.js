@@ -114,7 +114,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'siteNm',   label: '사이트', fmt: () => cfSiteNm.value },
       { key: 'prodId',   label: '상품명', fmt: (v) => getProdNm(v) },
       { key: 'qnaTitle', label: '제목', cellClass: 'title-link' },
@@ -123,7 +123,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       { key: 'regDate',  label: '등록일', sortKey: 'reg', fmt: (v) => (v || '').slice(0, 10) },
     ];
 
-    return { qnas, uiState, codes, pager, searchParam, gridColumns,
+    return { qnas, uiState, codes, pager, searchParam, baseGridColumns,
       onSearch, onReset, setPage, onSizeChange, getProdNm, getMemNm, fnStatusBadge, fnAnswLabel, cfSiteNm, onSort, sortIcon };
   },
   template: /* html */`
@@ -154,7 +154,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       </div>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="qnas" :pager="pager" row-key="qnaId"
+      :columns="baseGridColumns" :rows="qnas" :pager="pager" row-key="qnaId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"

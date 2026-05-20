@@ -106,7 +106,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'claimId',    label: '클레임ID' },
       { key: 'reqDate',    label: '요청일' },
       { key: 'type',       label: '유형', badge: (row) => fnTypeBadge(row.type) },
@@ -122,7 +122,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
     ];
 
-    return { uiState, handleDateRangeChange, codes, pager, rows, gridColumns, cfSummary, fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, rows, baseGridColumns, cfSummary, fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -153,7 +153,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">조정부족</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="rows" :pager="pager" row-key="claimId"
+      :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="claimId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       @set-page="setPage" @size-change="onSizeChange">
     </bo-grid>

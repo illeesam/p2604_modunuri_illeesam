@@ -129,7 +129,7 @@ window.PdRestockNotiMng = {
 
     /* AG-Grid 식 컬럼 정의 — width/align 등 헤더·셀 속성을 컬럼 객체에 선언.
        체크박스 열은 BoGrid 의 selectable 기능이 자동 렌더하므로 컬럼에서 제외. */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'prodId',   label: '상품명', fmt: (v, row) => getProdNm(row.prodId) },
       { key: 'skuId',    label: 'SKU',    style: 'width:100px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
       { key: 'memberId', label: '신청회원', style: 'width:100px', fmt: (v, row) => getMemNm(row.memberId) },
@@ -139,7 +139,7 @@ window.PdRestockNotiMng = {
       { key: 'regDate',  label: '신청일',  style: 'width:140px' },
     ];
 
-    return { restockNotis, uiState, searchParam, pager, gridColumns, setPage, onSearch, onReset,
+    return { restockNotis, uiState, searchParam, pager, baseGridColumns, setPage, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, fnIsChecked, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,
              codes };
   },
@@ -165,7 +165,7 @@ window.PdRestockNotiMng = {
         </button>
       </div>
       <bo-grid
-        :columns="gridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
+        :columns="baseGridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
         list-title="목록" :count-text="pager.pageTotalCount + '건'"
         selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
         @set-page="setPage" @size-change="onSizeChange"

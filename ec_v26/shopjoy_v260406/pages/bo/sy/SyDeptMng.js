@@ -303,7 +303,7 @@ window.SyDeptMng = {
     );
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'deptCode',     label: '부서코드', style: 'width:110px;',    edit: 'text', mono: true },
       { key: 'deptNm',       label: '부서명',   style: 'min-width:190px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
@@ -321,7 +321,7 @@ window.SyDeptMng = {
 
     return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, cfTypeOptions,
-      cfSiteNm, gridColumns,
+      cfSiteNm, baseGridColumns,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -372,7 +372,7 @@ window.SyDeptMng = {
     <div>
 
   <bo-grid-crud
-    :columns="gridColumns" :rows="gridRows" row-key="deptId"
+    :columns="baseGridColumns" :rows="gridRows" row-key="deptId"
     list-title="부서목록" :show-export="true" :draggable="false"
     v-model:focusedIdx="uiState.focusedIdx"
     v-model:checkAll="uiState.checkAll"

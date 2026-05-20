@@ -257,7 +257,7 @@ window.SyPathMng = {
     };
 
     /* BoGridEdit 컬럼 정의 — 전 셀 슬롯 (기존 onCellChange 변경추적 보존) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'rowStatus',    label: '상태',     style: 'width:60px;text-align:center;', align: 'center',
         badge: (row) => 'badge-xs ' + (row._status === 'N' ? 'badge-green' : row._status === 'U' ? 'badge-orange' : 'badge-gray'),
         fmt: (v, row) => row._status || 'N' },
@@ -278,7 +278,7 @@ window.SyPathMng = {
     return {
       uiState, searchParam, codes,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      gridRows, cfDirtyRows, pager, setPage, onSizeChange, gridColumns, fnRowClass,
+      gridRows, cfDirtyRows, pager, setPage, onSizeChange, baseGridColumns, fnRowClass,
       onSearch, onReset, onCellChange, addRow, cancelRow, deleteRow, handleSave,
       parentModal, cfParentTree, openParentModal, closeParentModal, toggleParentNode, selectParent, getParentLabel,
     };
@@ -323,7 +323,7 @@ window.SyPathMng = {
 
     <!-- 그리드 (BoGridEdit) -->
     <bo-grid-edit
-      :columns="gridColumns" :rows="gridRows" :pager="pager" row-key="pathId"
+      :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="pathId"
       list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
       :row-class="fnRowClass"
       @save="handleSave" @set-page="setPage" @size-change="onSizeChange" @cell-change="onCellChange">

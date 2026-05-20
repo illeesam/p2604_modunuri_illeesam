@@ -219,7 +219,7 @@ window.OdDlivDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* 결제정보 컬럼 */
-    const paymentCols = [
+    const paymentGridColumns = [
       { key: 'orderId',   label: '주문ID', refLink: 'order' },
       { key: 'dlivFee',   label: '배송비',   style: 'text-align:right;',
         align: 'right', cellStyle: 'font-weight:700', fmt: (v) => fmt(v) },
@@ -229,7 +229,7 @@ window.OdDlivDtl = {
     ];
 
     /* 정보수정이력 컬럼 */
-    const editHistCols = [
+    const editHistGridColumns = [
       { key: 'date',   label: '수정일시', style: 'width:140px;' },
       { key: 'user',   label: '수정자',   style: 'width:100px;' },
       { key: 'field',  label: '항목',     style: 'width:120px;' },
@@ -238,7 +238,7 @@ window.OdDlivDtl = {
     ];
 
     /* 배송항목 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
-    const dlivItemCols = [
+    const dlivItemGridColumns = [
       { key: 'prodNm',      label: '상품명', cellStyle: 'font-size:12px;',
         fmt: (v, row) => `${row.emoji || '🛍'} ${row.prodNm || ''}` },
       { key: 'color',       label: '색상',       style: 'width:60px;',                fmt: v => v || '-' },
@@ -282,7 +282,7 @@ window.OdDlivDtl = {
 
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes, paymentCols, editHistCols, dlivItemCols };
+    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes, paymentGridColumns, editHistGridColumns, dlivItemGridColumns };
   },
   template: /* html */`
 <div>
@@ -450,7 +450,7 @@ window.OdDlivDtl = {
       <a v-else-if="form.outboundCourierCd==='롯데택배' && form.outboundTrackingNo" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
       <a v-else-if="form.outboundCourierCd==='한진택배' && form.outboundTrackingNo" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
     </div>
-    <bo-grid bare :columns="dlivItemCols" :rows="dlivItems"
+    <bo-grid bare :columns="dlivItemGridColumns" :rows="dlivItems"
              empty-text="배송 항목 정보가 없습니다.">
       <template #tfoot>
         <tr style="background:#fafafa;font-weight:700;">
@@ -469,7 +469,7 @@ window.OdDlivDtl = {
   <!-- -- 결제정보 탭 --------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
-    <bo-grid bare :columns="paymentCols" :rows="cfPaymentList" empty-text="결제정보가 없습니다." @ref-click="({type,id}) => showRefModal(type, id)">
+    <bo-grid bare :columns="paymentGridColumns" :rows="cfPaymentList" empty-text="결제정보가 없습니다." @ref-click="({type,id}) => showRefModal(type, id)">
     </bo-grid>
   </div>
 
@@ -482,7 +482,7 @@ window.OdDlivDtl = {
   <!-- -- 정보수정이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
-    <bo-grid bare :columns="editHistCols" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
+    <bo-grid bare :columns="editHistGridColumns" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
     </bo-grid>
   </div>
   </div>

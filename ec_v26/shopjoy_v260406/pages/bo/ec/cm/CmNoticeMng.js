@@ -199,7 +199,7 @@ window.CmNoticeMng = {
     );
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;',
         badge: (row) => fnTypeBadge(row.noticeTypeCd) },
       { key: 'noticeTitle',    label: '제목',     sortKey: 'nm', link: true,
@@ -230,7 +230,7 @@ window.CmNoticeMng = {
       handleSearchList, handleDelete, handleLoadDetail, loadView,
       openNew, closeDetail, inlineNavigate,
       fnStatusBadge, fnTypeBadge, exportExcel, onSort, sortIcon,
-      listColumns, fnGridRowClass,
+      listGridColumns, fnGridRowClass,
     };
   },
   template: /* html */`
@@ -261,7 +261,7 @@ window.CmNoticeMng = {
   </div>
 
   <!-- -- 목록 영역 (BoGrid) --------------------------------------------- -->
-  <bo-grid :columns="listColumns" :rows="notices" :pager="pager" row-key="noticeId"
+  <bo-grid :columns="listGridColumns" :rows="notices" :pager="pager" row-key="noticeId"
     :sort-state="uiState" list-title="공지사항목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."

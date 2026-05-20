@@ -283,66 +283,66 @@
 
       // -- 그리드 컬럼 정의 ----------------------------------------------------
       const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');
-      const orderCols = [
+      const orderGridColumns = [
         { key: 'orderId', label: '주문번호', refLink: 'order' },
         { key: 'orderDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'totalPrice', label: '금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;', fmt: (v) => fnFmtPrice(v) },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
-      const claimCols = [
+      const claimGridColumns = [
         { key: 'claimId', label: '클레임번호', refLink: 'claim' },
         { key: 'type', label: '유형' },
         { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(130), cellTitle: true },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
         { key: 'requestDate', label: '신청일', style: 'white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
       ];
-      const dlivCols = [
+      const dlivGridColumns = [
         { key: 'dlivId', label: '배송번호', cellStyle: 'font-weight:500;' },
         { key: 'orderId', label: '주문번호' },
         { key: 'courier', label: '택배사', fmt: (v) => v || '-' },
         { key: 'trackingNo', label: '운송장번호', cellStyle: 'color:#888;', fmt: (v) => v || '-' },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
-      const cacheCols = [
+      const cacheGridColumns = [
         { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'type', label: '구분', badge: (row) => (row.type === '충전' ? 'badge-blue' : 'badge-orange') },
         { key: 'amount', label: '금액', style: 'text-align:right;', align: 'right', cellStyle: (v, row) => 'font-weight:600;' + (row.amount > 0 ? 'color:#1565c0;' : 'color:#c62828;'), fmt: (v, row) => (row.amount > 0 ? '+' : '') + row.amount.toLocaleString() + '원' },
         { key: 'balance', label: '잔액', style: 'text-align:right;', align: 'right', cellStyle: 'color:#555;', fmt: (v) => fnFmtPrice(v) },
         { key: 'desc', label: '사유', cellStyle: _ellipsis(150, 'color:#666;'), cellTitle: true },
       ];
-      const contactCols = [
+      const contactGridColumns = [
         { key: 'date', label: '접수일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
         { key: 'category', label: '분류', cellStyle: 'white-space:nowrap;' },
         { key: 'title', label: '제목', cellStyle: _ellipsis(200), cellTitle: true },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
-      const chatCols = [
+      const chatGridColumns = [
         { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
         { key: 'subject', label: '제목', cellStyle: _ellipsis(130), cellTitle: true },
         { key: 'lastMsg', label: '마지막 메시지', cellStyle: _ellipsis(180, 'color:#666;'), cellTitle: true },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
-      const loginCols = [
+      const loginGridColumns = [
         { key: 'loginDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'ip', label: 'IP', cellStyle: 'color:#666;font-family:monospace;' },
         { key: 'device', label: '기기/브라우저', cellStyle: 'color:#555;' },
         { key: 'result', label: '결과', badge: (row) => fnBadgeCls(row.result) },
       ];
-      const couponCols = [
+      const couponGridColumns = [
         { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'couponNm', label: '쿠폰명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'couponCode', label: '코드', cellStyle: 'font-family:monospace;color:#666;' },
         { key: 'orderId', label: '주문번호', refLink: 'order' },
         { key: 'discountAmt', label: '할인금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;color:#e91e63;', fmt: (v, row) => '-' + (row.discountAmt || 0).toLocaleString() + '원' },
       ];
-      const sendCols = [
+      const sendGridColumns = [
         { key: 'sendDate', label: '발송일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'channelCd', label: '채널', badge: (row) => fnChannelCls(row.channelCd) },
         { key: 'title', label: '제목/내용', cellStyle: _ellipsis(220, 'color:#333;'), cellTitle: true },
         { key: 'statusCd', label: '결과', badge: (row) => fnBadgeCls(row.statusCd) },
       ];
-      const memberModalCols = [
+      const memberModalGridColumns = [
         { key: 'userId', label: 'ID', style: 'width:50px;text-align:center;', align: 'center', cellStyle: 'color:#aaa;' },
         { key: 'memberNm', label: '이름', style: 'width:90px;', cellStyle: 'font-weight:600;color:#1a1a2e;' },
         { key: 'email', label: '이메일', cellStyle: 'color:#555;' },
@@ -354,7 +354,7 @@
     // -- return ---------------------------------------------------------------
 
   return { custInfos, uiState, SEARCH_MODES, memberModal,
-        orderCols, claimCols, dlivCols, cacheCols, contactCols, chatCols, loginCols, couponCols, sendCols, memberModalCols,
+        orderGridColumns, claimGridColumns, dlivGridColumns, cacheGridColumns, contactGridColumns, chatGridColumns, loginGridColumns, couponGridColumns, sendGridColumns, memberModalGridColumns,
         showRefModal,
         searchParam, searchParamOrg, PERIOD_OPTS, cfDateFrom, cfDateTo,
         cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,
@@ -526,7 +526,7 @@
           <span style="margin-left:2px;background:#e3f2fd;color:#1565c0;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustOrders.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="orderCols" :rows="cfCustOrders" row-key="orderId" empty-text="주문 내역이 없습니다."
+          <bo-grid bare :columns="orderGridColumns" :rows="cfCustOrders" row-key="orderId" empty-text="주문 내역이 없습니다."
             @ref-click="({type,id}) => showRefModal(type, id)">
           </bo-grid>
         </div>
@@ -540,7 +540,7 @@
           <span style="margin-left:2px;background:#ffebee;color:#c62828;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustClaims.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="claimCols" :rows="cfCustClaims" row-key="claimId" empty-text="클레임 내역이 없습니다."
+          <bo-grid bare :columns="claimGridColumns" :rows="cfCustClaims" row-key="claimId" empty-text="클레임 내역이 없습니다."
             @ref-click="({type,id}) => showRefModal(type, id)">
           </bo-grid>
         </div>
@@ -554,7 +554,7 @@
           <span style="margin-left:2px;background:#e0f2f1;color:#00695c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustDeliveries.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="dlivCols" :rows="cfCustDeliveries" row-key="dlivId" empty-text="배송 내역이 없습니다."></bo-grid>
+          <bo-grid bare :columns="dlivGridColumns" :rows="cfCustDeliveries" row-key="dlivId" empty-text="배송 내역이 없습니다."></bo-grid>
         </div>
       </div>
 
@@ -567,7 +567,7 @@
           <span style="margin-left:auto;font-size:12px;color:#7b1fa2;font-weight:600;">잔액 {{ fnFmtPrice(cfCustCacheBalance) }}</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="cacheCols" :rows="cfCustCache" row-key="cacheId" empty-text="캐쉬 내역이 없습니다.">
+          <bo-grid bare :columns="cacheGridColumns" :rows="cfCustCache" row-key="cacheId" empty-text="캐쉬 내역이 없습니다.">
           </bo-grid>
         </div>
       </div>
@@ -580,7 +580,7 @@
           <span style="margin-left:2px;background:#e8eaf6;color:#283593;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustContacts.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="contactCols" :rows="cfCustContacts" row-key="inquiryId" empty-text="문의 내역이 없습니다.">
+          <bo-grid bare :columns="contactGridColumns" :rows="cfCustContacts" row-key="inquiryId" empty-text="문의 내역이 없습니다.">
           </bo-grid>
         </div>
       </div>
@@ -593,7 +593,7 @@
           <span style="margin-left:2px;background:#e0f2f1;color:#004d40;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustChats.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="chatCols" :rows="cfCustChats" row-key="chatId" empty-text="채팅 내역이 없습니다.">
+          <bo-grid bare :columns="chatGridColumns" :rows="cfCustChats" row-key="chatId" empty-text="채팅 내역이 없습니다.">
           </bo-grid>
         </div>
       </div>
@@ -606,7 +606,7 @@
           <span style="margin-left:2px;background:#eceff1;color:#37474f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustLoginHist.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="loginCols" :rows="cfCustLoginHist" row-key="loginId" empty-text="로그인 내역이 없습니다."></bo-grid>
+          <bo-grid bare :columns="loginGridColumns" :rows="cfCustLoginHist" row-key="loginId" empty-text="로그인 내역이 없습니다."></bo-grid>
         </div>
       </div>
 
@@ -618,7 +618,7 @@
           <span style="margin-left:2px;background:#fce4ec;color:#880e4f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustCouponUsage.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="couponCols" :rows="cfCustCouponUsage" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
+          <bo-grid bare :columns="couponGridColumns" :rows="cfCustCouponUsage" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
             @ref-click="({type,id}) => showRefModal(type, id)">
           </bo-grid>
         </div>
@@ -632,7 +632,7 @@
           <span style="margin-left:2px;background:#fbe9e7;color:#bf360c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustSendHist.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="sendCols" :rows="cfCustSendHist" row-key="sendId" empty-text="발송 내역이 없습니다.">
+          <bo-grid bare :columns="sendGridColumns" :rows="cfCustSendHist" row-key="sendId" empty-text="발송 내역이 없습니다.">
           </bo-grid>
         </div>
       </div>
@@ -659,7 +659,7 @@
         style="flex:1;font-size:13px;" />
       <button class="btn btn-primary btn-sm" @click="searchMemberModal" style="white-space:nowrap;">🔍 검색</button>
     </div>
-    <bo-grid bare :columns="memberModalCols" :rows="memberModal.list" row-key="userId" row-clickable empty-text="검색 결과가 없습니다." @row-click="selectMember" row-actions>
+    <bo-grid bare :columns="memberModalGridColumns" :rows="memberModal.list" row-key="userId" row-clickable empty-text="검색 결과가 없습니다." @row-click="selectMember" row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-primary btn-sm" @click.stop="selectMember(row)">선택</button>
       </template>

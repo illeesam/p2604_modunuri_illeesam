@@ -123,7 +123,7 @@ window.SyUserDtl = {
     const cfUserRoles = [];
 
     /* BoGrid(bare) 컬럼 정의 — 적용 역할 목록 */
-    const userRoleColumns = [
+    const userRoleGridColumns = [
       { key: 'roleId',       label: 'ID',     style: 'width:50px;text-align:center;', align: 'center',
         cellStyle: 'color:#888;' },
       { key: 'roleCode',     label: '역할코드', style: 'width:130px;', mono: true,
@@ -181,7 +181,7 @@ window.SyUserDtl = {
     return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
              cfDtlMode, addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
-             cfUserRoles, userRoleColumns, fnRoleTypeBadge, showToast };
+             cfUserRoles, userRoleGridColumns, fnRoleTypeBadge, showToast };
   },
   template: /* html */`
 <div>
@@ -302,7 +302,7 @@ window.SyUserDtl = {
         <span class="list-count">{{ cfUserRoles.length }}건</span>
       </span>
     </div>
-    <bo-grid bare :columns="userRoleColumns" :rows="cfUserRoles" row-key="roleId"
+    <bo-grid bare :columns="userRoleGridColumns" :rows="cfUserRoles" row-key="roleId"
              empty-text="배정된 역할이 없습니다." />
 
   </div>

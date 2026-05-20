@@ -99,7 +99,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
       { key: 'orderCnt',   label: '주문건수', fmt: (v) => v + '건' },
       { key: 'sysAmt',     label: '시스템 정산액', fmt: fmtW },
@@ -110,7 +110,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
     ];
 
-    return { uiState, handleDateRangeChange, codes, pager, rows, gridColumns, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, rows, baseGridColumns, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -141,7 +141,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">업체과다</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="rows" :pager="pager" row-key="vendorId"
+      :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="vendorId"
       list-title="목록" :count-text="pager.pageTotalCount + '개 업체'"
       @set-page="setPage" @size-change="onSizeChange">
     </bo-grid>

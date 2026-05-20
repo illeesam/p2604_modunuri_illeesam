@@ -185,7 +185,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'discntNm',       label: '할인명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'discntTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.discntTypeCd) },
@@ -200,7 +200,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       { key: 'siteNm',         label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, gridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
   template: /* html */`
@@ -238,7 +238,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       </div>
     </div>
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="gridColumns" :rows="discounts" :pager="pager" row-key="discntId"
+      :columns="baseGridColumns" :rows="discounts" :pager="pager" row-key="discntId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"

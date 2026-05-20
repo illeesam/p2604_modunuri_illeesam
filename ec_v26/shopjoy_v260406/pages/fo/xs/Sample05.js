@@ -174,7 +174,7 @@ window.XsSample05 = {
     // -- return ---------------------------------------------------------------
 
     /* fo-grid-crud 컬럼 */
-    const gridCols = [
+    const baseGridColumns = [
       { key: 'title',    label: '제목',   edit: 'text' },
       { key: 'author',   label: '작성자', edit: 'text', width: '100px' },
       { key: 'category', label: '카테고리', edit: 'select', width: '90px', align: 'center',
@@ -190,7 +190,7 @@ window.XsSample05 = {
 
     return {
       toast, searchParam, onSearch, onReset,
-      gridRows, gridCols, pager, setPage, getRealIdx,
+      gridRows, baseGridColumns, pager, setPage, getRealIdx,
       setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -228,7 +228,7 @@ window.XsSample05 = {
   </div>
   <fo-grid-crud
     list-title="게시판 목록" row-key="boardId"
-    :columns="gridCols" :rows="gridRows"
+    :columns="baseGridColumns" :rows="gridRows"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="addRow" @save="handleSave"

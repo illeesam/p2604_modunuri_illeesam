@@ -121,7 +121,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     });
 
     /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
-    const histColumns = [
+    const histGridColumns = [
       { key: 'batchLogId', label: '로그ID',  style: 'width:46px;', cellStyle: 'color:#aaa' },
       { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;', cellStyle: 'font-weight:500' },
       { key: '_batchCode', label: '배치코드', style: 'min-width:150px;',
@@ -141,13 +141,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       isExpanded, toggleExpand, onExpandAll, onCollapseAll,
       fnRunBadge, fnFmtDuration,
       codes,
-      histColumns, fnRowExpanded, fnHistRowStyle,
+      histGridColumns, fnRowExpanded, fnHistRowStyle,
     };
   },
   template: /* html */`
 <div>
   <bo-grid-readonly
-    :columns="histColumns" :rows="batchLogs" :pager="pager" row-key="batchLogId"
+    :columns="histGridColumns" :rows="batchLogs" :pager="pager" row-key="batchLogId"
     list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded" row-clickable
     empty-text="실행이력이 없습니다."

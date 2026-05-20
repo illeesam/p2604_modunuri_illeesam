@@ -139,7 +139,7 @@ window.DpDispUiMng = {
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'uiNm',         label: 'UI명',     sortKey: 'nm', link: true },
       { key: 'deviceTypeCd', label: '유형' },
       { key: 'useYn',        label: '사용여부',
@@ -167,7 +167,7 @@ window.DpDispUiMng = {
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
       selectNode, pathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
-      onSort, sortIcon, listColumns };
+      onSort, sortIcon, listGridColumns };
   },
   template: /* html */`
 <div>
@@ -193,7 +193,7 @@ window.DpDispUiMng = {
         <bo-path-tree biz-cd="ec_disp_ui" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
-    <bo-grid :columns="listColumns" :rows="displays" :pager="pager" row-key="uiId"
+    <bo-grid :columns="listGridColumns" :rows="displays" :pager="pager" row-key="uiId"
       :sort-state="uiState" list-title="전시 UI 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable

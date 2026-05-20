@@ -156,7 +156,7 @@ window.StSettleCloseMng = {
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'closeMon',  label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'sales',     label: '매출액', fmt: fmtW },
       { key: 'refund',    label: '환불액', fmt: fmtW, cellStyle: 'color:#e74c3c' },
@@ -169,7 +169,7 @@ window.StSettleCloseMng = {
       { key: 'regUserNm', label: '담당자' },
     ];
 
-    return { uiState, closeList, cfFilteredClose, gridColumns, searchType, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
+    return { uiState, closeList, cfFilteredClose, baseGridColumns, searchType, searchValue, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
   },
   template: /* html */`
 <div>
@@ -237,7 +237,7 @@ window.StSettleCloseMng = {
       </select>
     </bo-search-area>
     <bo-grid
-      :columns="gridColumns" :rows="cfFilteredClose" row-key="closeId"
+      :columns="baseGridColumns" :rows="cfFilteredClose" row-key="closeId"
       list-title="정산마감 이력" :count-text="cfFilteredClose.length + '건'" :row-actions="true">
       <template #head-actions>액션</template>
       <template #row-actions="{ row: r }">

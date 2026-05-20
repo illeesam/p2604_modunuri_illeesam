@@ -110,7 +110,7 @@ window.PdProdHist = {
     const fnNoCursor = () => '';
 
     /* bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) */
-    const qnaCols = [
+    const qnaGridColumns = [
       { key: 'qnaTitle',     label: '질문',   style: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
         cellStyle: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
         fmt: (v, row) => (row.qnaTitle || row.qnaContent) },
@@ -121,7 +121,7 @@ window.PdProdHist = {
       { key: 'answerYn',     label: '답변여부', badge: (row) => (row.answerYn === 'Y' ? 'badge-blue' : 'badge-orange'),
         fmt: (v, row) => (row.answerYn === 'Y' ? '답변완료' : '미답변') },
     ];
-    const reviewCols = [
+    const reviewGridColumns = [
       { key: 'rating',           label: '평점',  style: 'white-space:nowrap;',
         cellInnerStyle: 'color:#faad14;font-weight:700;',
         fmt: (v) => `${v} ★` },
@@ -133,7 +133,7 @@ window.PdProdHist = {
       { key: 'reviewStatusCd',   label: '상태', badge: (row) => (row.reviewStatusCd === 'ACTIVE' ? 'badge-green' : 'badge-gray'),
         fmt: (v, row) => (row.reviewStatusCdNm || row.reviewStatusCd) },
     ];
-    const orderCols = [
+    const orderGridColumns = [
       { key: 'orderId',        label: '주문ID', refLink: 'order' },
       { key: 'memberNm',       label: '회원', refLink: 'member', refKey: 'memberId',
         fmt: (v, row) => (row.memberNm || row.memberId) },
@@ -143,7 +143,7 @@ window.PdProdHist = {
       { key: 'orderStatusCd',  label: '상태', badge: () => 'badge-blue',
         fmt: (v, row) => (row.orderStatusCdNm || row.orderStatusCd) },
     ];
-    const stockCols = [
+    const stockGridColumns = [
       { key: 'histDate',     label: '일시',        fmt: (v) => fnFmtDate(v) },
       { key: 'stockTypeCd',  label: '유형', badge: (row) => fnStockBadge(row.stockTypeCd),
         fmt: (v, row) => (row.stockTypeCdNm || row.stockTypeCd) },
@@ -154,14 +154,14 @@ window.PdProdHist = {
       { key: 'regByNm',      label: '처리자', fmt: (v, row) => (row.regByNm || row.regBy) },
       { key: 'stockMemo',    label: '메모' },
     ];
-    const priceCols = [
+    const priceGridColumns = [
       { key: 'histDate',    label: '일시',          fmt: (v) => fnFmtDate(v) },
       { key: 'priceField',  label: '항목(변경사유)', cellInnerClass: 'tag' },
       { key: 'priceBefore', label: '변경 전', style: 'color:#888;' },
       { key: 'priceAfter',  label: '변경 후', style: 'font-weight:600;color:#e8587a;' },
       { key: 'regByNm',     label: '처리자', fmt: (v, row) => (row.regByNm || row.regBy) },
     ];
-    const statusCols = [
+    const statusGridColumns = [
       { key: 'histDate',      label: '일시',     fmt: (v) => fnFmtDate(v) },
       { key: 'statusCdBefore', label: '변경 전', badge: () => 'badge-gray',
         fmt: (v, row) => (row.statusCdBeforeNm || row.statusCdBefore || '-') },
@@ -169,7 +169,7 @@ window.PdProdHist = {
         fmt: (v, row) => (row.statusCdAfterNm || row.statusCdAfter) },
       { key: 'regByNm',       label: '처리자', fmt: (v, row) => (row.regByNm || row.regBy) },
     ];
-    const changeCols = [
+    const changeGridColumns = [
       { key: 'histDate',     label: '일시',     fmt: (v) => fnFmtDate(v) },
       { key: 'changeField',  label: '항목', cellInnerClass: 'tag' },
       { key: 'changeBefore', label: '변경 전', style: 'color:#888;' },
@@ -209,7 +209,7 @@ window.PdProdHist = {
       qnaList, reviewList,
       relatedOrders, stockHistory, priceHistory, statusHistory, changeHistory,
       showTab, fnFmtDate, fnStockBadge, showRefModal,
-      fnNoCursor, qnaCols, reviewCols, orderCols, stockCols, priceCols, statusCols, changeCols
+      fnNoCursor, qnaGridColumns, reviewGridColumns, orderGridColumns, stockGridColumns, priceGridColumns, statusGridColumns, changeGridColumns
     };
   },
   template: /* html */`
@@ -241,21 +241,21 @@ window.PdProdHist = {
   <!-- -- 상품 Q&A ----------------------------------------------------------- -->
   <div class="card" v-show="showTab('qna')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 상품 Q&amp;A <span class="tab-count">{{ qnaList.length }}</span></div>
-    <bo-grid bare :columns="qnaCols" :rows="qnaList" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다.">
+    <bo-grid bare :columns="qnaGridColumns" :rows="qnaList" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다.">
     </bo-grid>
   </div>
 
   <!-- -- 리뷰 --------------------------------------------------------------- -->
   <div class="card" v-show="showTab('review')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⭐ 리뷰 <span class="tab-count">{{ reviewList.length }}</span></div>
-    <bo-grid bare :columns="reviewCols" :rows="reviewList" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
+    <bo-grid bare :columns="reviewGridColumns" :rows="reviewList" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
     </bo-grid>
   </div>
 
   <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
-    <bo-grid bare :columns="orderCols" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+    <bo-grid bare :columns="orderGridColumns" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button>
       </template>
@@ -265,28 +265,28 @@ window.PdProdHist = {
   <!-- -- 재고 이력 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('stock')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></div>
-    <bo-grid bare :columns="stockCols" :rows="stockHistory" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다.">
+    <bo-grid bare :columns="stockGridColumns" :rows="stockHistory" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다.">
     </bo-grid>
   </div>
 
   <!-- -- 가격변경이력 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('price')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
-    <bo-grid bare :columns="priceCols" :rows="priceHistory" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
+    <bo-grid bare :columns="priceGridColumns" :rows="priceHistory" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
     </bo-grid>
   </div>
 
   <!-- -- 상품상태 이력 -------------------------------------------------------- -->
   <div class="card" v-show="showTab('status')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></div>
-    <bo-grid bare :columns="statusCols" :rows="statusHistory" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다.">
+    <bo-grid bare :columns="statusGridColumns" :rows="statusHistory" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다.">
     </bo-grid>
   </div>
 
   <!-- -- 상품정보 변경이력 ------------------------------------------------------ -->
   <div class="card" v-show="showTab('changes')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
-    <bo-grid bare :columns="changeCols" :rows="changeHistory" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
+    <bo-grid bare :columns="changeGridColumns" :rows="changeHistory" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
     </bo-grid>
   </div>
   </div>

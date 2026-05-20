@@ -205,7 +205,7 @@ window.PdProdMng = {
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'cateNm',       label: '카테고리' },
@@ -217,7 +217,7 @@ window.PdProdMng = {
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
-    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, gridColumns, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel, onSort, sortIcon };
+    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, baseGridColumns, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -260,7 +260,7 @@ window.PdProdMng = {
       </div>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="products" :pager="pager" row-key="prodId"
+      :columns="baseGridColumns" :rows="products" :pager="pager" row-key="prodId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => selectedId===p.prodId ? 'background:#fff8f9;' : ''"

@@ -403,7 +403,7 @@ window.OdDlivMng = {
     const onClearMember = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
 
     /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'dlivId',           label: '배송ID', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'orderId',          label: '주문ID', refLink: 'order' },
@@ -428,7 +428,7 @@ window.OdDlivMng = {
       + (isChecked(d.dlivId) ? 'background:#eef6fd;' : '');
 
     /* 회원선택 모달 picker BoGrid 컬럼 (행 클릭 시 onSelectMember) */
-    const memberPickColumns = [
+    const memberPickGridColumns = [
       { key: 'memberNm',       label: '이름',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'loginId',        label: '로그인ID', mono: true, cellStyle: 'font-size:12px;' },
@@ -443,7 +443,7 @@ window.OdDlivMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, listColumns, fnGridRowStyle, memberPickColumns };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, listGridColumns, fnGridRowStyle, memberPickGridColumns };
   },
   template: /* html */`
 <div>
@@ -485,7 +485,7 @@ window.OdDlivMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <bo-grid bare selectable :columns="listColumns" :rows="deliveries" :pager="pager" row-key="dlivId"
+    <bo-grid bare selectable :columns="listGridColumns" :rows="deliveries" :pager="pager" row-key="dlivId"
       :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
       :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
       @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
@@ -657,7 +657,7 @@ window.OdDlivMng = {
       </div>
       <div style="flex:1;overflow-y:auto;">
         <div v-if="memberPick.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
-        <bo-grid v-else bare row-clickable :columns="memberPickColumns" :rows="memberPick.rows" row-key="memberId"
+        <bo-grid v-else bare row-clickable :columns="memberPickGridColumns" :rows="memberPick.rows" row-key="memberId"
                  :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
                  @row-click="onSelectMember" row-actions>
       <template #row-actions="{ row }">

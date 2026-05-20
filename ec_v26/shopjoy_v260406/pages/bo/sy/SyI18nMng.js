@@ -141,7 +141,7 @@ window.SyI18nMng = {
     });
 
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'i18nKey',     label: '키 (i18n_key)',
         cellInnerStyle: 'font-size:12px;color:#7c3aed;font-family:monospace;' },
       { key: 'i18nDesc',    label: '설명', cellStyle: 'color:#666;font-size:12px' },
@@ -158,7 +158,7 @@ window.SyI18nMng = {
 
     return { uiState, codes, searchParam, pager, setPage, onSearch, onReset,
              i18nKeys, i18nMsgs, selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
-             LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange, gridColumns, fnRowStyle };
+             LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange, baseGridColumns, fnRowStyle };
   },
   template: `
 <div>
@@ -185,7 +185,7 @@ window.SyI18nMng = {
       </bo-search-area>
     </div>
     <bo-grid-readonly
-      :columns="gridColumns" :rows="i18nKeys" :pager="pager" row-key="i18nId"
+      :columns="baseGridColumns" :rows="i18nKeys" :pager="pager" row-key="i18nId"
       list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
       :row-style="fnRowStyle" row-clickable
       @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">

@@ -238,7 +238,7 @@ window.XsSample02 = {
     // -- return ---------------------------------------------------------------
 
     /* fo-grid-crud 컬럼 — category_opts 는 문자열 배열 → {value,label} 매핑 */
-    const gridCols = [
+    const baseGridColumns = [
       { key: 'productNm', label: '상품명', edit: 'text' },
       { key: 'category',  label: '카테고리', edit: 'select', width: '100px', align: 'center',
         options: codes.category_opts.map(c => ({ value: c, label: c })) },
@@ -254,7 +254,7 @@ window.XsSample02 = {
 
     return {
       toast, searchParam, onSearch, onReset,
-      gridRows, gridCols, cfVisibleRows, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
+      gridRows, baseGridColumns, cfVisibleRows, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
       setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -297,7 +297,7 @@ window.XsSample02 = {
   <!-- -- CRUD Grid (fo-grid-crud — 전체로드 스크롤 모델) ------------------- -->
   <fo-grid-crud
     list-title="상품 목록" row-key="productId"
-    :columns="gridCols" :rows="gridRows" max-height="60vh"
+    :columns="baseGridColumns" :rows="gridRows" max-height="60vh"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="addRow" @save="handleSave"

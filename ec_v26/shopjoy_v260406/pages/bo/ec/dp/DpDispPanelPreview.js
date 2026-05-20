@@ -391,7 +391,7 @@ window.DpDispPanelPreview = {
       mobile:  { label:'📱 모바일', width:'375px' },
     };
     /* auto-fill 반응형: 뷰포트 width 제약 + 브라우저 창 리사이즈 모두 반응 */
-    const cfAutoGridCols = computed(() => {
+    const cfAutoGridColumns = computed(() => {
       const map = {
         grid1: 'repeat(1,1fr)',
         grid2: 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))',
@@ -609,7 +609,7 @@ window.DpDispPanelPreview = {
       cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
       uiState, gridState, GRID_TABS,
-      cfAutoGridCols,
+      cfAutoGridColumns,
       tabSlots, cfCurrentSlots,
       dragState, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       toggleSpanPopup, closeSpanPopup,
@@ -827,7 +827,7 @@ window.DpDispPanelPreview = {
           }">
             <div :style="{
               display: 'grid',
-              gridTemplateColumns: cfAutoGridCols,
+              gridTemplateColumns: cfAutoGridColumns,
               gap: '10px',
             }">
               <template v-for="(slot, idx) in cfCurrentSlots" :key="Math.random()">

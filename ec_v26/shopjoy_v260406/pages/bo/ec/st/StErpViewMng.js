@@ -105,7 +105,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
       { key: 'slipDate',   label: '전표일자' },
       { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
@@ -119,7 +119,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'sendStatus', label: '전송상태', badge: (row) => fnStatusBadge(row.sendStatus) },
     ];
 
-    return { uiState, handleDateRangeChange, codes, pager, slips, gridColumns, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, slips, baseGridColumns, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -159,7 +159,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   </div>
   <div class="card" style="margin-top:12px">
     <bo-grid
-      :columns="gridColumns" :rows="slips" :pager="pager" row-key="slipId"
+      :columns="baseGridColumns" :rows="slips" :pager="pager" row-key="slipId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="setPage" @size-change="onSizeChange">
       <template #head-actions>액션</template>

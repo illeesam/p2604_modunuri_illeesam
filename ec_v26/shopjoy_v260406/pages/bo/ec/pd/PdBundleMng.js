@@ -429,7 +429,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
 
     /* 묶음상품 목록 그리드 컬럼 (모든 셀 커스텀 → #cell 슬롯, 헤더만 정의) */
-    const bundleColumns = [
+    const bundleGridColumns = [
       { key: 'prodNm',    label: '묶음상품' },
       { key: 'itemCount', label: '구성품수',   style: 'width:70px;text-align:center;', align: 'center', fmt: (v) => (v + '개') },
       { key: 'rateSum',   label: '안분율 합계', style: 'width:130px;text-align:center;', align: 'center',
@@ -455,7 +455,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     // -- return ---------------------------------------------------------------
 
     return {
-      bundleColumns, fnBundleRowStyle, fnBundleStatusBadge, fnBundleStatusText,
+      bundleGridColumns, fnBundleRowStyle, fnBundleStatusBadge, fnBundleStatusText,
       codes, uiState, bundles, bundleList,
       searchParam, pager, setPage,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
@@ -495,7 +495,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
   </div>
 
   <!-- -- 목록 ------------------------------------------------------------- -->
-  <bo-grid list-title="묶음상품 목록" :columns="bundleColumns" :rows="bundleList"
+  <bo-grid list-title="묶음상품 목록" :columns="bundleGridColumns" :rows="bundleList"
            :pager="pager" :row-style="fnBundleRowStyle" row-key="bundleProdId"
            empty-text="데이터가 없습니다." :row-actions="true"
            @set-page="setPage" @size-change="onSizeChange">

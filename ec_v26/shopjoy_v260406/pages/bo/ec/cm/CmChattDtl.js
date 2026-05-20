@@ -189,7 +189,7 @@ window.CmChattDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* BoGrid 컬럼 정의 */
-    const memberChatColumns = [
+    const memberChatGridColumns = [
       { key: 'subject', label: '제목' },
       { key: '_status', label: '상태',
         badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
@@ -197,7 +197,7 @@ window.CmChattDtl = {
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시' },
     ];
-    const userChatColumns = [
+    const userChatGridColumns = [
       { key: 'subject', label: '제목' },
       { key: '_status', label: '상태',
         badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
@@ -213,7 +213,7 @@ window.CmChattDtl = {
       form, errors, handleSave, onUserChange,
       searchUserId, cfUserChats,
       cfMemberChats, codes,
-      memberChatColumns, userChatColumns,
+      memberChatGridColumns, userChatGridColumns,
     };
   },
   template: /* html */`
@@ -288,7 +288,7 @@ window.CmChattDtl = {
           <span class="ref-link" @click="showRefModal('member', chat.memberId)">{{ chat.memberNm }}</span> 의 다른 채팅
         </span>
       </div>
-      <bo-grid bare :columns="memberChatColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
+      <bo-grid bare :columns="memberChatGridColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">상세</button>
       </template>
@@ -343,7 +343,7 @@ window.CmChattDtl = {
         <div style="display:flex;gap:8px;margin-bottom:14px;">
           <input class="form-control" style="max-width:200px;" v-model="searchUserId" placeholder="회원 ID 입력" />
         </div>
-        <bo-grid bare :columns="userChatColumns" :rows="cfUserChats" row-key="chattRoomId" :empty-text="searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>
+        <bo-grid bare :columns="userChatGridColumns" :rows="cfUserChats" row-key="chattRoomId" :empty-text="searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">보기</button>
       </template>

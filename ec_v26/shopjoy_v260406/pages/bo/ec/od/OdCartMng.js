@@ -177,7 +177,7 @@ window.OdCartMng = {
       uiState.selectedIds.includes(r.cartId) ? 'background:#fff5f8;' : '';
 
     /* ── BoGrid 컬럼 정의 ── */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'memberNm', label: '회원',   style: 'min-width:130px;',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'prodNm',   label: '상품',   style: 'min-width:180px;',
@@ -201,7 +201,7 @@ window.OdCartMng = {
     ];
 
     /* ── 회원선택 모달 picker BoGrid 컬럼 (행 클릭 시 onSelectMember) ── */
-    const memberPickColumns = [
+    const memberPickGridColumns = [
       { key: 'memberNm',       label: '이름',   style: 'min-width:130px;',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'loginId',        label: '로그인ID', style: 'min-width:110px;', mono: true, cellStyle: 'font-size:12px;color:#374151;' },
@@ -264,7 +264,7 @@ window.OdCartMng = {
       handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember,
       fnCheckedBadge, fnCheckedNm, fnPrice, fnDate, fnAvatar,
       onSearch, onReset, setPage, onSizeChange,
-      listColumns, memberPickColumns, isChecked, cfAllChecked, toggleCheck, toggleCheckAll, fnGridRowStyle,
+      listGridColumns, memberPickGridColumns, isChecked, cfAllChecked, toggleCheck, toggleCheckAll, fnGridRowStyle,
       handleDelete, handleBulkDelete,
     };
   },
@@ -326,7 +326,7 @@ window.OdCartMng = {
     <div v-if="uiState.loading" style="text-align:center;padding:48px;color:#bbb;">
       <div style="font-size:28px;margin-bottom:8px;">⏳</div>조회 중...
     </div>
-    <bo-grid v-else bare selectable :columns="listColumns" :rows="rows" :pager="pager" row-key="cartId"
+    <bo-grid v-else bare selectable :columns="listGridColumns" :rows="rows" :pager="pager" row-key="cartId"
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
       @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" row-actions>
@@ -385,7 +385,7 @@ window.OdCartMng = {
       <!-- 목록 -->
       <div style="flex:1;overflow-y:auto;">
         <div v-if="memberPick.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
-        <bo-grid v-else bare row-clickable :columns="memberPickColumns" :rows="memberPick.rows" row-key="memberId"
+        <bo-grid v-else bare row-clickable :columns="memberPickGridColumns" :rows="memberPick.rows" row-key="memberId"
                  :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
                  @row-click="onSelectMember" row-actions>
       <template #row-actions="{ row }">

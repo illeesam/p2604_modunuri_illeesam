@@ -200,7 +200,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'blogTitle',  label: '제목',     sortKey: 'nm', cellInnerClass: 'title-link',
         fmt: (v, row) => {
           const prefix = row.isNotice === 'Y' ? '[공지] ' : '';
@@ -222,7 +222,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange, onSort, sortIcon,
-      listColumns, fnGridRowClass,
+      listGridColumns, fnGridRowClass,
     };
   },
   template: `
@@ -253,7 +253,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
         </select>
       </bo-search-area>
     </div>
-    <bo-grid :columns="listColumns" :rows="blogs" :pager="pager" row-key="blogId"
+    <bo-grid :columns="listGridColumns" :rows="blogs" :pager="pager" row-key="blogId"
       :sort-state="uiState" list-title="게시글 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable

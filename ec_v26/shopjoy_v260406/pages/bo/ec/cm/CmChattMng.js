@@ -165,7 +165,7 @@ window.CmChattMng = {
     const exportExcel = () => coUtil.cofExportCsv(chatts, [{label:'채팅ID',key:'chattRoomId'},{label:'회원명',key:'memberNm'},{label:'상태',key:'chattStatusCd'},{label:'마지막메시지일시',key:'lastMsgDate'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'subject',     label: '제목', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -194,7 +194,7 @@ window.CmChattMng = {
       uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId),
       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail,
       inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
-      showRefModal, listColumns, fnGridRowClass,
+      showRefModal, listGridColumns, fnGridRowClass,
     };
   },
   template: /* html */`
@@ -219,7 +219,7 @@ window.CmChattMng = {
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
     </bo-search-area>
   </div>
-  <bo-grid :columns="listColumns" :rows="chatts" :pager="pager" row-key="chattRoomId"
+  <bo-grid :columns="listGridColumns" :rows="chatts" :pager="pager" row-key="chattRoomId"
     :sort-state="uiState" list-title="채팅목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."

@@ -18,7 +18,7 @@ window.MbMemGradeMng = {
 
     const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'gradeCd',        label: '등급코드',     style: 'width:130px;',
         edit: 'select', options: () => codes.member_grades },
       { key: 'gradeNm',        label: '등급명',       style: 'min-width:150px;',
@@ -189,7 +189,7 @@ window.MbMemGradeMng = {
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     return {
-      uiState, codes, searchParam, gridRows, gridColumns,
+      uiState, codes, searchParam, gridRows, baseGridColumns,
       onSearch, onReset, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, toggleCheckAll,
       handleSave, fnStatusClass, cfVisibleCount,
@@ -221,7 +221,7 @@ window.MbMemGradeMng = {
   </div>
 
   <bo-grid-crud
-    :columns="gridColumns" :rows="gridRows" row-key="memberGradeId"
+    :columns="baseGridColumns" :rows="gridRows" row-key="memberGradeId"
     list-title="회원등급 목록"
     :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
     v-model:focusedIdx="uiState.focusedIdx"

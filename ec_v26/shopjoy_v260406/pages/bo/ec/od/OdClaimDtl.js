@@ -248,7 +248,7 @@ window.OdClaimDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* 결제정보 탭 그리드 컬럼 */
-    const paymentCols = [
+    const paymentGridColumns = [
       { key: 'method',  label: '환불수단' },
       { key: 'status',  label: '환불상태', badge: () => 'badge-orange' },
       { key: 'amount',  label: '환불금액', style: 'text-align:right;', fmt: (v) => fmt(v),
@@ -259,7 +259,7 @@ window.OdClaimDtl = {
     ];
 
     /* 정보수정이력 탭 그리드 컬럼 */
-    const editHistCols = [
+    const editHistGridColumns = [
       { key: 'date',   label: '수정일시', style: 'width:140px;' },
       { key: 'user',   label: '수정자',   style: 'width:100px;' },
       { key: 'field',  label: '항목',     style: 'width:120px;' },
@@ -268,7 +268,7 @@ window.OdClaimDtl = {
     ];
 
     /* 클레임항목 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
-    const claimItemCols = [
+    const claimItemGridColumns = [
       { key: 'prodNm',      label: '상품명' },
       { key: 'color',       label: '색상',       style: 'width:60px;',                fmt: v => v || '-' },
       { key: 'size',        label: '사이즈',     style: 'width:50px;',                fmt: v => v || '-' },
@@ -303,7 +303,7 @@ window.OdClaimDtl = {
 
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, cfDtlMode, tabMode2, showTab, codes, paymentCols, editHistCols, claimItemCols, fnItemExpanded };
+    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, cfDtlMode, tabMode2, showTab, codes, paymentGridColumns, editHistGridColumns, claimItemGridColumns, fnItemExpanded };
   },
   template: /* html */`
 <div>
@@ -482,7 +482,7 @@ window.OdClaimDtl = {
         {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
       </button>
     </div>
-    <bo-grid bare :columns="claimItemCols" :rows="claimItems"
+    <bo-grid bare :columns="claimItemGridColumns" :rows="claimItems"
              :is-expanded="fnItemExpanded"
              empty-text="클레임 항목 정보가 없습니다.">
       <template #cell-prodNm="{ row, idx }">
@@ -524,7 +524,7 @@ window.OdClaimDtl = {
   <!-- -- 결제정보 탭 --------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
-    <bo-grid bare :columns="paymentCols" :rows="cfPaymentList" empty-text="결제·환불 정보가 없습니다.">
+    <bo-grid bare :columns="paymentGridColumns" :rows="cfPaymentList" empty-text="결제·환불 정보가 없습니다.">
     </bo-grid>
   </div>
 
@@ -537,7 +537,7 @@ window.OdClaimDtl = {
   <!-- -- 정보수정이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
-    <bo-grid bare :columns="editHistCols" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
+    <bo-grid bare :columns="editHistGridColumns" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
     </bo-grid>
   </div>
   </div>

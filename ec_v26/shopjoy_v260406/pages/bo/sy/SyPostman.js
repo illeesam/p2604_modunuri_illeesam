@@ -515,7 +515,7 @@ window.SyPostman = {
     };
 
     /* ===== Response Grid (active tab) ===== */
-    const cfResGridCols = computed(() => {
+    const cfResGridColumns = computed(() => {
       const d = cfActiveTab.value?.resData;
       if (!d) return [];
       const arr = Array.isArray(d) ? d : Array.isArray(d?.data) ? d.data : Array.isArray(d?.list) ? d.list : null;
@@ -587,7 +587,7 @@ window.SyPostman = {
       hostUrl, token, defHeaders, lsItems, refreshLs,
       toasts, closeToast,
       doSend, history, histSelIdx, histModal, editReq, histResJson, histResStatus, histResTime, histResTs, selectHistory, closeHistModal, resendHist,
-      cfResGridCols, cfResGridRows,
+      cfResGridColumns, cfResGridRows,
       addRow, removeRow, methodStyle, statusStyle, methodDot, quickRun,
       autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
       openAutoPopup, closeAutoPopup, selectAuto, countdown, codes,
@@ -911,13 +911,13 @@ window.SyPostman = {
                   <thead>
                     <tr style="background:#f8f9fa;border-bottom:2px solid #e0e0e0;">
                       <th style="padding:4px 6px;text-align:center;width:30px;color:#ccc;font-size:10px;font-weight:400;">#</th>
-                      <th v-for="col in cfResGridCols" :key="col" style="padding:4px 8px;text-align:left;font-weight:600;color:#555;white-space:nowrap;font-size:11px;">{{ col }}</th>
+                      <th v-for="col in cfResGridColumns" :key="col" style="padding:4px 8px;text-align:left;font-weight:600;color:#555;white-space:nowrap;font-size:11px;">{{ col }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="(row,i) in cfResGridRows" :key="i" style="border-bottom:1px solid #f5f5f5;">
                       <td style="text-align:center;padding:3px 6px;color:#ddd;font-size:10px;">{{ i+1 }}</td>
-                      <td v-for="col in cfResGridCols" :key="col" style="padding:3px 8px;color:#333;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;" :title="String(row[col])">{{ row[col] }}</td>
+                      <td v-for="col in cfResGridColumns" :key="col" style="padding:3px 8px;color:#333;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;" :title="String(row[col])">{{ row[col] }}</td>
                     </tr>
                   </tbody>
                 </table>

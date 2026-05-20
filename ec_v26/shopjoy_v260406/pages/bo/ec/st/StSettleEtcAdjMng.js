@@ -173,7 +173,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'adjId',        label: '조정ID' },
       { key: 'adjDate',      label: '조정일자' },
       { key: 'vendorNm',     label: '업체명' },
@@ -187,7 +187,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'regUserNm',    label: '등록자' },
     ];
 
-    return { uiState, handleDateRangeChange, codes, pager, etcAdjList, gridColumns, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, etcAdjList, baseGridColumns, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -232,7 +232,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기타조정 추가</button></div>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="etcAdjList" :pager="pager" row-key="adjId"
+      :columns="baseGridColumns" :rows="etcAdjList" :pager="pager" row-key="adjId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
       @set-page="setPage" @size-change="onSizeChange">

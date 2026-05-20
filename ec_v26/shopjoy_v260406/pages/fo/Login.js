@@ -58,7 +58,7 @@ window.Login = {
     const memberPick = reactive({ show: false, searchType: '', searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, pageSize: 20, totalPage: 1 });
     const PICK_SIZE = 20;
     /* fo-grid 컬럼 — 특수 셀(이름/등급/상태/선택)은 #cell 슬롯으로 override */
-    const memberPickCols = [
+    const memberPickGridColumns = [
       { key: 'memberNm', label: '이름',
         fmt: (v, row) => `${(row.memberNm || '?').charAt(0)} ${row.memberNm || '-'}`,
         cellInnerStyle: 'font-weight:700;color:var(--text-primary);white-space:nowrap;' },
@@ -325,7 +325,7 @@ window.Login = {
       sendSnsPhoneCode, verifySnsPhone, doSnsSignup, snsSf, openKakaoAddrSns,
       providerLabel, providerColor, providerTextColor, IS, codes,
       foAuth: window.foAuth,
-      memberPick, memberPickCols, onOpenMemberPick, onMemberPickSearch, onMemberPickPage, onPickMember,
+      memberPick, memberPickGridColumns, onOpenMemberPick, onMemberPickSearch, onMemberPickPage, onPickMember,
     };
   },
   template: /* html */ `
@@ -440,7 +440,7 @@ window.Login = {
           <div style="font-size:11px;color:#aaa;margin-bottom:8px;text-align:left;">총 <b style="color:#e8587a;">{{ memberPick.total }}</b>명</div>
           <!-- 테이블 -->
           <div style="border-radius:8px;border:1px solid #f0e0e8;overflow:hidden;">
-            <fo-grid bare :columns="memberPickCols" :rows="memberPick.rows" :pager="memberPick"
+            <fo-grid bare :columns="memberPickGridColumns" :rows="memberPick.rows" :pager="memberPick"
               row-key="memberId" row-actions
               :empty-text="memberPick.loading ? '⏳ 조회 중...' : '🔍 조회 결과 없음'"
               :row-click="onPickMember">

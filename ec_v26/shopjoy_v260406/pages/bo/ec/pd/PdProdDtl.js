@@ -1121,7 +1121,7 @@ window.PdProdDtl = {
 
     // -- bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) ----------------------------
     const fnNoCursor = () => '';
-    const mdUserCols = [
+    const mdUserGridColumns = [
       { key: 'userNm', label: '이름',
         fmt: (v, row) => form.mdUserId === row.userId ? `✔ ${row.userNm || ''}` : (row.userNm || ''),
         cellStyle: (v, row) => form.mdUserId === row.userId ? 'color:#e8587a;' : '' },
@@ -1129,7 +1129,7 @@ window.PdProdDtl = {
       { key: 'roleId', label: '역할', badge: () => 'badge-gray', cellStyle: 'font-size:11px;' },
     ];
     const fnMdRowStyle = (u) => 'cursor:pointer;' + (form.mdUserId === u.userId ? 'background:#fff0f4;font-weight:700;' : '');
-    const prodPickerCols = [
+    const prodPickerGridColumns = [
       { key: 'productId', label: 'ID',       style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
       { key: 'prodNm',    label: '상품명',   cellStyle: 'font-weight:600;' },
       { key: 'category',  label: '카테고리', style: 'width:80px;' },
@@ -1139,7 +1139,7 @@ window.PdProdDtl = {
         fmt: (v, row) => (row.stock + '개') },
       { key: 'status',    label: '상태',     style: 'width:60px;', badge: row => row.status==='판매중' ? 'badge-green' : 'badge-gray', cellStyle: 'font-size:10px;' },
     ];
-    const remainSkuCols = [
+    const remainSkuGridColumns = [
       { key: '_nm1',     label: '1단 옵션', badge: () => 'badge-gray', fmt: (v, row) => (row._nm1 || '-') },
       { key: '_nm2',     label: '2단 옵션', badge: () => 'badge-blue', fmt: (v, row) => (row._nm2 || '-') },
       { key: 'skuCode',  label: 'SKU코드',  style: 'color:#888;' },
@@ -1157,14 +1157,14 @@ window.PdProdDtl = {
     const fnRemainSkuRowStyle = () => 'opacity:0.6;background:#f9f9f9;';
 
     /* BoGrid 컬럼 — 연관상품 (pd_prod_rel · REL_PROD) */
-    const relProdCols = [
+    const relProdGridColumns = [
       { key: '_id2',     label: 'ID',     style: 'width:46px;text-align:center;', align: 'center',
         cellStyle: 'color:#888;', fmt: (v, row) => (row.relProdId || row.prodId) },
       { key: 'prodNm',   label: '상품명', refLink: 'prod', refKey: 'relProdId' },
       { key: '_relType', label: '유형',   style: 'width:80px;', fmt: (v, row) => (row.prodRelTypeCdNm || row.prodRelTypeCd) },
     ];
     /* BoGrid 컬럼 — 코디상품 (pd_prod_rel · CODY_PROD) */
-    const codeProdCols = [
+    const codeProdGridColumns = [
       { key: 'productId', label: 'ID',     style: 'width:46px;text-align:center;', align: 'center', cellStyle: 'color:#888;' },
       { key: 'prodNm',    label: '상품명', refLink: 'prod', refKey: 'productId' },
       { key: 'category',  label: '카테고리', style: 'width:80px;' },
@@ -1180,7 +1180,7 @@ window.PdProdDtl = {
      * _start/_end: bo-date-time-picker 커스텀 컴포넌트 슬롯 KEEP
      * planStatus/listPrice/salePrice/purchasePrice: BoGrid edit 자동 렌더 (@cell-change 미사용, change 시 onPlanChange 호출 위해 슬롯 유지)
      */
-    const planCols = [
+    const planGridColumns = [
       { key: '_start',       label: '시작일시', style: 'width:140px;',
         dateTimePick: { dateKey: 'startDate', timeKey: 'startTime', showNow: false, showClear: false } },
       { key: '_end',         label: '종료일시', style: 'width:140px;',
@@ -1228,8 +1228,8 @@ window.PdProdDtl = {
       prodOptCategoryTypeCd, openHelp,
       safeFirst, safeGet, safeFind, safeFilter,
       grpCodes,
-      fnNoCursor, mdUserCols, fnMdRowStyle, prodPickerCols, remainSkuCols, fnRemainSkuRowStyle,
-      relProdCols, codeProdCols, planCols,
+      fnNoCursor, mdUserGridColumns, fnMdRowStyle, prodPickerGridColumns, remainSkuGridColumns, fnRemainSkuRowStyle,
+      relProdGridColumns, codeProdGridColumns, planGridColumns,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
     };
@@ -1384,7 +1384,7 @@ window.PdProdDtl = {
           </div>
           <!-- -- 목록 ----------------------------------------------------- -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
-            <bo-grid bare :columns="mdUserCols" :rows="cfMdUserListFiltered" row-key="userId"
+            <bo-grid bare :columns="mdUserGridColumns" :rows="cfMdUserListFiltered" row-key="userId"
               :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @row-click="selectMdUser">
             </bo-grid>
           </div>
@@ -1968,7 +1968,7 @@ window.PdProdDtl = {
         <button class="btn btn-sm btn-secondary" @click="openProdPicker('rel')">+ 추가</button>
       </div>
 
-      <bo-grid bare :columns="relProdCols" :rows="relProds" row-key="_id"
+      <bo-grid bare :columns="relProdGridColumns" :rows="relProds" row-key="_id"
         draggable row-actions empty-text="+ 추가 버튼으로 연관상품을 등록하세요."
         @reorder="onRelDrop"
         @ref-click="({id}) => navigate('pdProdDtl', { id })">
@@ -1989,7 +1989,7 @@ window.PdProdDtl = {
         <button class="btn btn-sm btn-secondary" @click="openProdPicker('code')">+ 추가</button>
       </div>
 
-      <bo-grid bare :columns="codeProdCols" :rows="codeProds" row-key="_id"
+      <bo-grid bare :columns="codeProdGridColumns" :rows="codeProds" row-key="_id"
         draggable row-actions empty-text="+ 추가 버튼으로 코디상품을 등록하세요."
         @reorder="onCodeDrop"
         @ref-click="({id}) => navigate('pdProdDtl', { id })">
@@ -2033,7 +2033,7 @@ window.PdProdDtl = {
           </div>
           <!-- -- 목록 ----------------------------------------------------- -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
-            <bo-grid bare :columns="prodPickerCols" :rows="cfProdPickerList" row-key="productId"
+            <bo-grid bare :columns="prodPickerGridColumns" :rows="cfProdPickerList" row-key="productId"
               empty-text="검색 결과가 없습니다." row-clickable @row-click="selectProdItem">
             </bo-grid>
           </div>
@@ -2131,7 +2131,7 @@ window.PdProdDtl = {
         </div>
       </div>
       <div style="overflow-x:auto;">
-        <bo-grid bare :columns="planCols" :rows="cfPlanVisible" row-key="_id"
+        <bo-grid bare :columns="planGridColumns" :rows="cfPlanVisible" row-key="_id"
           selectable checked-key="_id"
           :all-checked="cfPlanAllChecked" :is-checked="fnPlanRowChecked"
           :row-style="fnPlanRowStyle2"
@@ -2285,7 +2285,7 @@ window.PdProdDtl = {
           <span style="font-weight:400;font-size:11px;margin-left:6px;">옵션 미사용 전환 후 남아있는 SKU 이력 (읽기 전용)</span>
         </div>
         <div style="overflow-x:auto;margin-bottom:16px;">
-          <bo-grid bare :columns="remainSkuCols"
+          <bo-grid bare :columns="remainSkuGridColumns"
             :rows="tabData.skus.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)"
             row-key="skuId" :row-style="fnRemainSkuRowStyle" empty-text="잔존 SKU 데이터가 없습니다.">
           </bo-grid>

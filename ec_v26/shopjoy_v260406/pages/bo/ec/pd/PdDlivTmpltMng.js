@@ -173,7 +173,7 @@ window.PdDlivTmpltMng = {
 
     // -- return ---------------------------------------------------------------
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'dlivTmpltNm',   label: '템플릿명', sortKey: 'nm', link: true },
       { key: 'dlivMethodCd',  label: '배송방법',   style: 'width:90px;', badge: (row) => fnMethodBadge(row.dlivMethodCd) },
       { key: 'dlivPayTypeCd', label: '결제유형',   style: 'width:80px;', badge: () => 'badge-gray' },
@@ -189,7 +189,7 @@ window.PdDlivTmpltMng = {
         badge: (row) => fnYnBadge(row.useYn) },
     ];
 
-    return { uiState, codes, searchParam, gridColumns,
+    return { uiState, codes, searchParam, baseGridColumns,
              pager, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
              fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS, onSizeChange, dlivTmplts, onSort, sortIcon};
@@ -229,7 +229,7 @@ window.PdDlivTmpltMng = {
         <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
       </div>
       <bo-grid
-        :columns="gridColumns" :rows="dlivTmplts" :pager="pager" row-key="dlivTmpltId"
+        :columns="baseGridColumns" :rows="dlivTmplts" :pager="pager" row-key="dlivTmpltId"
         list-title="목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
         :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"

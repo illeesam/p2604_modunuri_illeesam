@@ -284,7 +284,7 @@ window.SyBatchMng = {
 
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'pathId',        label: '표시경로',     style: 'min-width:140px;',
         pathLabelOpen: { label: pathLabel, open: openPathPick, placeholder: '경로 선택...' } },
       { key: 'batchNm',       label: '배치명',       style: 'min-width:120px;', edit: 'text', placeholder: '배치명' },
@@ -304,7 +304,7 @@ window.SyBatchMng = {
     // -- return ---------------------------------------------------------------
 
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectNode, gridColumns,
+      selectNode, baseGridColumns,
       cfSiteNm, searchParam, handleDateRangeChange,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
@@ -361,7 +361,7 @@ window.SyBatchMng = {
     <div>
 <!-- -- CRUD 그리드 --------------------------------------------------------- -->
   <bo-grid-crud
-    :columns="gridColumns" :rows="gridRows" row-key="batchId"
+    :columns="baseGridColumns" :rows="gridRows" row-key="batchId"
     list-title="배치목록" :show-export="true"
     v-model:focusedIdx="uiState.focusedIdx"
     v-model:checkAll="uiState.checkAll"

@@ -145,8 +145,8 @@ const rawList = reactive([]);
     /* fmtPct */
     const fmtPct = n => Number(n || 0).toLocaleString() + '%';
 
-    /* rawColumns — BoGrid 컬럼 정의 (특수셀은 #cell- 슬롯 override) */
-    const rawColumns = [
+    /* rawGridColumns — BoGrid 컬럼 정의 (특수셀은 #cell- 슬롯 override) */
+    const rawGridColumns = [
       { key: 'expand',         label: '',         style: 'width:30px',
         align: 'center',
         cellStyle: 'color:#aaa;font-size:11px;user-select:none;',
@@ -206,7 +206,7 @@ const rawList = reactive([]);
       setPage, onSizeChange, onSearch, onReset,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
-      fmtW, fmtPct, doCollect, codes, rawColumns,
+      fmtW, fmtPct, doCollect, codes, rawGridColumns,
     };
   },
   template: /* html */`
@@ -331,7 +331,7 @@ const rawList = reactive([]);
 
   <!-- -- 목록 카드 -- -->
   <bo-grid
-    :columns="rawColumns"
+    :columns="rawGridColumns"
     :rows="rawList"
     :pager="pager"
     row-key="settleRawId"

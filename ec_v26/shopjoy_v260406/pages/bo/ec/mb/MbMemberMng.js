@@ -224,7 +224,7 @@ window.MbMemberMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
-    const listColumns = [
+    const listGridColumns = [
       { key: 'memberNm',         label: '이름',     sortKey: 'nm',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'loginId',          label: '이메일' },
@@ -250,7 +250,7 @@ window.MbMemberMng = {
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, fnGradeBadge, fnStatusBadge, fnFmtDate, onSizeChange,
       onSort, sortIcon, uiState,
-      listColumns, fnGridRowClass,
+      listGridColumns, fnGridRowClass,
     };
   },
   template: /* html */`
@@ -281,7 +281,7 @@ window.MbMemberMng = {
       </select>
     </bo-search-area>
   </div>
-  <bo-grid :columns="listColumns" :rows="members" :pager="pager" row-key="memberId"
+  <bo-grid :columns="listGridColumns" :rows="members" :pager="pager" row-key="memberId"
     :sort-state="uiState" list-title="회원목록" row-clickable
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."

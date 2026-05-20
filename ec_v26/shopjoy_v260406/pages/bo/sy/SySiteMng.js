@@ -202,7 +202,7 @@ const detailModal = reactive({
       handleSearchList('DEFAULT');
     });
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'pathId',        label: '표시경로',
         pathLabelOpen: { label: pathLabel, open: openPathPick, placeholder: '미설정' } },
       { key: 'siteCode',      label: '사이트코드',
@@ -230,7 +230,7 @@ const detailModal = reactive({
       fnStatusBadge, fnTypeBadge, handleDelete,
       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
       detailModal, exportExcel, onSort, sortIcon,
-      gridColumns, fnRowStyle,
+      baseGridColumns, fnRowStyle,
     };
   },
   template: /* html */`
@@ -269,7 +269,7 @@ const detailModal = reactive({
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
       <bo-grid-readonly
-        :columns="gridColumns" :rows="sites" :pager="pager" row-key="siteId"
+        :columns="baseGridColumns" :rows="sites" :pager="pager" row-key="siteId"
         list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.siteId)">

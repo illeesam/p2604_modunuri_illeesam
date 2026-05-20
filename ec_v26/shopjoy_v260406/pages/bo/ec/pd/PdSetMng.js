@@ -397,7 +397,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
     const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const setColumns = [
+    const setGridColumns = [
       { key: 'prodNm',    label: '세트상품' },
       { key: 'itemCount', label: '구성품수', style: 'width:70px;text-align:center', fmt: v => (v || 0) + '개' },
       { key: '_price',    label: '판매가',   style: 'width:110px;text-align:right', align: 'right',
@@ -411,7 +411,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const fnSetRowStyle = (g) => (uiState.dtlMode === 'edit' && uiState.editSetId === g.setProdId) ? 'background:#e6f4ff' : '';
 
     /* BoGrid 컬럼 — 구성품 목록 (인라인 편집 + 드래그) */
-    const setItemColumns = [
+    const setItemGridColumns = [
       { key: 'itemNm',     label: '표시명 (item_nm) *',       style: 'width:180px', edit: 'text', placeholder: '표시명 입력' },
       { key: 'itemProdId', label: '연결상품 (item_prod_id)' },
       { key: 'itemQty',    label: '수량',        style: 'width:80px;text-align:center', edit: 'number', align: 'center' },
@@ -421,7 +421,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const fnSetItemRowStyle = (item, idx) => uiState.dragoverIdx === idx ? 'background:#e6f4ff' : (item.useYn === 'N' ? 'opacity:0.55' : '');
 
     /* BoGrid 컬럼 — 구성품 상품 피커 */
-    const pickerColumns = [
+    const pickerGridColumns = [
       { key: 'productId', label: 'ID',       style: 'width:44px', cellStyle: 'color:#aaa;' },
       { key: 'prodNm',    label: '상품명', fmt: (v, row) => (row.prodNm || row.productName) },
       { key: 'category',  label: '카테고리', style: 'width:70px;text-align:center', align: 'center',
@@ -434,8 +434,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     return {
       codes, uiState,
-      setList, cfSetPageRows, setColumns, fnSetRowStyle,
-      setItemColumns, fnSetItemRowStyle, pickerColumns,
+      setList, cfSetPageRows, setGridColumns, fnSetRowStyle,
+      setItemGridColumns, fnSetItemRowStyle, pickerGridColumns,
       searchParam, pager, setPage,
       onSearch, onReset, getProdNm, getProd, getBrandNm,
       getCategoryNm, getCategoryDepth,
@@ -480,7 +480,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
       </div>
     </div>
-    <bo-grid bare :columns="setColumns" :rows="cfSetPageRows" :pager="pager"
+    <bo-grid bare :columns="setGridColumns" :rows="cfSetPageRows" :pager="pager"
       row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
       <template #cell-prodNm="{ row }">
         <td>
@@ -616,7 +616,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         표시 목적 · 재고 개별 차감 없음 · 안분율 없음
       </span>
     </div>
-    <bo-grid bare :columns="setItemColumns" :rows="dtlItems" row-key="_id"
+    <bo-grid bare :columns="setItemGridColumns" :rows="dtlItems" row-key="_id"
       draggable row-actions :row-style="fnSetItemRowStyle"
       empty-text="구성품이 없습니다. 아래 버튼으로 추가하세요."
       @reorder="onItemReorder">
@@ -677,7 +677,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <bo-grid bare :columns="pickerColumns" :rows="cfPickerList" row-key="productId"
+          <bo-grid bare :columns="pickerGridColumns" :rows="cfPickerList" row-key="productId"
             empty-text="검색 결과가 없습니다." row-actions>
             <template #row-actions="{ row }">
               <button class="btn btn-blue btn-xs" @click="addItemFromProd(row)">선택</button>

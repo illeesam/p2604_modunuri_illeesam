@@ -170,7 +170,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
 
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'pathId',        label: '표시경로', pathPick: 'sy_vendor' },
       { key: 'vendorId',      label: 'ID' },
       { key: 'vendorType',    label: '업체유형', badge: (row) => fnTypeBadge(row.vendorType) },
@@ -190,7 +190,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vendors, uiState, codes, onPathChange,
       selectNode, codes, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
-      gridColumns, fnRowStyle };
+      baseGridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
@@ -227,7 +227,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       :selected="selectedPath" @select="selectNode" />
     <div>
       <bo-grid-readonly
-        :columns="gridColumns" :rows="vendors" :pager="pager" row-key="vendorId"
+        :columns="baseGridColumns" :rows="vendors" :pager="pager" row-key="vendorId"
         list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.vendorId)">

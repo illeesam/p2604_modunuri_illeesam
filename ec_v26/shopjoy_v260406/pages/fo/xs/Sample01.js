@@ -228,7 +228,7 @@ window.XsSample01 = {
     // -- return ---------------------------------------------------------------
 
     /* fo-grid-crud 컬럼 — 인라인 편집 셀 */
-    const gridCols = [
+    const baseGridColumns = [
       { key: 'memberNm', label: '이름',   edit: 'text' },
       { key: 'email',    label: '이메일', edit: 'text' },
       { key: 'phone',    label: '전화번호', edit: 'text' },
@@ -246,7 +246,7 @@ window.XsSample01 = {
 
     return {
       toast, searchParam, onSearch, onReset,
-      gridRows, gridCols, pager, setPage, getRealIdx,
+      gridRows, baseGridColumns, pager, setPage, getRealIdx,
       setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -299,7 +299,7 @@ window.XsSample01 = {
   <!-- -- CRUD Grid (fo-grid-crud — 전체로드 스크롤 모델) ------------------- -->
   <fo-grid-crud
     list-title="회원 목록" row-key="memberId"
-    :columns="gridCols" :rows="gridRows"
+    :columns="baseGridColumns" :rows="gridRows"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="addRow" @save="handleSave"

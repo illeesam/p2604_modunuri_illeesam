@@ -254,7 +254,7 @@ window.SyMenuMng = {
     );
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
-    const gridColumns = [
+    const baseGridColumns = [
       { key: 'menuCode',   label: '메뉴코드', style: 'width:110px;',    edit: 'text', mono: true },
       { key: 'menuNm',     label: '메뉴명',   style: 'min-width:180px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
@@ -273,7 +273,7 @@ window.SyMenuMng = {
 
     return { menus, uiState, codes, selectNode,
       searchParam,
-      cfSiteNm, gridColumns,
+      cfSiteNm, baseGridColumns,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -317,7 +317,7 @@ window.SyMenuMng = {
       :selected="uiState.selectedTreeId" @select="selectNode" />
     <div>
 <bo-grid-crud
-    :columns="gridColumns" :rows="gridRows" row-key="menuId"
+    :columns="baseGridColumns" :rows="gridRows" row-key="menuId"
     list-title="메뉴목록" :show-export="true" :draggable="false"
     v-model:focusedIdx="uiState.focusedIdx"
     v-model:checkAll="uiState.checkAll"

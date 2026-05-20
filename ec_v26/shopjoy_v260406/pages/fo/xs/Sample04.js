@@ -110,7 +110,7 @@ window.XsSample04 = {
     }[s] || '');
 
     /* fo-grid 컬럼 — 회원 목록(3행 데모). 배지/금액/액션은 #cell 슬롯 override */
-    const sample04Cols = [
+    const sample04GridColumns = [
       { key: 'memberId', label: 'ID', width: '42px', align: 'center' },
       { key: 'name',     label: '이름', width: '76px' },
       { key: 'email',    label: '이메일', mono: true },
@@ -231,7 +231,7 @@ window.XsSample04 = {
 
     return {
       uiState, members, form, formErrors, CATALOG,
-      sample04Cols, sample04Top3,
+      sample04GridColumns, sample04Top3,
       openModal, closeModal, doConfirm, loadingDemo, submitForm, openEditConfirm,
       fnGradeBadge, fnStatusBadge, fnAlertMeta,
       /* BaseModal */
@@ -385,7 +385,7 @@ window.XsSample04 = {
       <span style="font-size:12px;font-weight:700;color:#e8587a;">{{ members.length }}명 중 3행</span>
       <span style="font-size:11px;color:#aaa;margin-left:4px;">— 행 클릭 → 상세보기 모달</span>
     </div>
-    <fo-grid bare :columns="sample04Cols" :rows="sample04Top3"
+    <fo-grid bare :columns="sample04GridColumns" :rows="sample04Top3"
       row-key="memberId" :show-row-no="false" min-width="680px" row-actions
       empty-text="데이터 로딩 중…"
       :row-click="m => openModal('detail',{data:m})">
