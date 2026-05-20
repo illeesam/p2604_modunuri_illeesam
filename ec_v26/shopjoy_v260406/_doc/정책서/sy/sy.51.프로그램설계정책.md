@@ -484,9 +484,13 @@ const loadColumnSettings = () => {
 
 ### 4.6 BoGrid 컬럼 속성화 표준 (AG-Grid colDef 식)
 
-**목적**: 단순 셀(텍스트·배지·조건부색상·포맷)은 `#cell-{key}` 슬롯 대신 `gridColumns`
-객체의 속성으로 선언하여 보일러플레이트를 줄이고 컬럼 정의만 봐도 그리드 모양을 파악
-가능하게 한다. AG-Grid 의 `valueFormatter`/`cellStyle`/`cellClass` 와 동일한 패턴.
+**목적**: 단순 셀(텍스트·배지·조건부색상·포맷)은 `#cell-{key}` 슬롯 대신 컬럼 배열
+(`baseGridColumns` / `listGridColumns` 등 `xxxGridColumns` 변수)의 속성으로 선언하여
+보일러플레이트를 줄이고 컬럼 정의만 봐도 그리드 모양을 파악 가능하게 한다.
+AG-Grid 의 `valueFormatter`/`cellStyle`/`cellClass` 와 동일한 패턴.
+
+**컬럼 변수명**: 항상 `xxxGridColumns` 접미사 (예: `baseGridColumns`, `listGridColumns`,
+`memberPickGridColumns`, `claimGridColumns`). 상세 규칙 → `sy.54.네이밍규칙.md` §BoGrid/FoGrid 컬럼 변수 명명.
 
 **전제 (#head 슬롯 금지)**: `<template #head>` 슬롯은 전면 금지. 헤더는 columns 의
 `label`/`style`/`cls`/`noHead`/`sortKey` 로만 정의. (관련 [[bogrid_auto_header]])

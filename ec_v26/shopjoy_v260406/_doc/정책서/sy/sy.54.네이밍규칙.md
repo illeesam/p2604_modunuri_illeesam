@@ -767,10 +767,38 @@ grep -r "const selected\w* = ref(" pages/bo/**/*.js
 
 ---
 
+## BoGrid/FoGrid 컬럼 변수 명명 (2026-05-20 ⭐)
+
+`<bo-grid :columns="..."> / <fo-grid :columns="...">` 에 전달하는 컬럼 배열 변수는 **`xxxGridColumns`** 접미사로 통일.
+
+### 표준 형식
+
+| 변수명 | 용도 | 예시 화면 |
+|---|---|---|
+| `baseGridColumns` | 메인/기본 그리드 (구 `gridColumns`) | `SyUserMng`, `PmCacheMng`, `SyMenuMng` 등 단일 그리드 페이지 |
+| `listGridColumns` | 목록 그리드 (구 `listColumns`) | `CmBlogMng`, `OdOrderMng`, `MbMemberMng` 등 검색-목록형 |
+| `<용도>GridColumns` | 용도별 명시 | `memberPickGridColumns`, `userChatGridColumns`, `claimGridColumns`, `orderGridColumns`, `histGridColumns`, `pickerGridColumns`, `fileGridColumns`, `paymentGridColumns`, `editHistGridColumns`, `setItemGridColumns`, `relProdGridColumns`, `tokenGridColumns`, `logGridColumns` 등 |
+| `cf<용도>GridColumns` | computed 동적 컬럼 | `cfCatProdGridColumns` (BoGrid), `cfAutoGridColumns` (FoGrid bare grid 자동생성) |
+
+### 금지 형식
+
+| 패턴 | 사유 |
+|---|---|
+| `xxxCols` | 약어로 가독성 ↓ |
+| `xxxColumns` (Grid 누락) | BoGrid/FoGrid 컬럼임을 알 수 없음 |
+| `xxxColDef` / `xxxColDefs` | AG-Grid 외부 용어, BoGrid 비표준 |
+| `gridGridColumns` 같은 이중 첩 | 의미 단어 누락. `baseGridColumns` 사용 |
+
+### 변경 이력
+
+**2026-05-20**: BO/FO 전 파일 113개 변수 일괄 리네임.
+- `xxxColumns / xxxCols → xxxGridColumns` (구 형식 0건 잔존)
+- 이중 첩 보정: `gridGridColumns → baseGridColumns`, `cfGridGridColumns → cfBaseGridColumns`, `cfAutoGridGridColumns → cfAutoGridColumns`, `cfStructGridGridColumns → cfStructGridColumns`, `cfResGridGridColumns → cfResGridColumns`
+
 ---
 
 ## 관련 정책
 
-- `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·상세화면 ID 표시
+- `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·상세화면 ID 표시 + §4.6 BoGrid 컬럼 속성화
 - `base.기술-admin.md` — 관리자 기술 스택 및 컴포넌트 구조
 - `base.기술-front.md` — 사용자 기술 스택 및 컴포넌트 구조
