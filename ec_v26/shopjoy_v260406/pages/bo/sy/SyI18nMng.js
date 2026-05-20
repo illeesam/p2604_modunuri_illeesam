@@ -141,6 +141,23 @@ window.SyI18nMng = {
     });
 
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+        const baseSearchColumns = [
+      { type: 'label', label: '키/설명' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+            { value: 'i18nKey',  label: '키' },
+            { value: 'i18nDesc', label: '설명' },
+          ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { type: 'label', label: '범위' },
+      { key: 'scope', type: 'select', options: () => codes.i18n_scopes, nullLabel: '전체' },
+      { type: 'label', label: '사용여부' },
+      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'scope', type: 'select', options: () => codes.i18n_scopes, nullLabel: '전체' },
+      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'i18nKey',     label: '키 (i18n_key)',
         cellInnerStyle: 'font-size:12px;color:#7c3aed;font-family:monospace;' },
@@ -158,31 +175,13 @@ window.SyI18nMng = {
 
     return { uiState, codes, searchParam, pager, setPage, onSearch, onReset,
              i18nKeys, i18nMsgs, selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
-             LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange, baseGridColumns, fnRowStyle };
+             LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange, baseSearchColumns, baseGridColumns, fnRowStyle };
   },
   template: `
 <div>
   <div class="page-title">다국어관리</div>
     <div class="card">
-      <bo-search-area @search="onSearch" @reset="onReset">
-        <label class="search-label">키/설명</label>
-        <bo-multi-check-select
-          v-model="searchParam.searchType"
-          :options="[
-            { value: 'i18nKey',  label: '키' },
-            { value: 'i18nDesc', label: '설명' },
-          ]"
-          placeholder="검색대상 전체"
-          all-label="전체 선택"
-          min-width="160px" />
-        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="검색어 입력">
-        <label class="search-label">범위</label>
-        <select class="form-control" v-model="searchParam.scope">
-          <option value="">전체</option><option v-for="s in codes.i18n_scopes" :key="s" :value="s">{{ s }}</option>
-        </select>
-        <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-      </bo-search-area>
+      <bo-search-area @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
     </div>
     <bo-grid-readonly
       :columns="baseGridColumns" :rows="i18nKeys" :pager="pager" row-key="i18nId"

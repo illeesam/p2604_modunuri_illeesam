@@ -170,6 +170,26 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
 
+        const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'vendorNm', label: '업체명' },
+          { value: 'corpNo',   label: '사업자번호' },
+          { value: 'vendorId', label: '업체ID' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'type', type: 'select', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.vendor_status, nullLabel: '상태 전체' },
+      { type: 'label', label: '등록일' },
+      { key: 'dateRange', type: 'dateRange',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        onRangeChange: () => onDateRangeChange() },
+      { key: 'type', type: 'select', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.vendor_status, nullLabel: '상태 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'pathId',        label: '표시경로', pathPick: 'sy_vendor' },
       { key: 'vendorId',      label: 'ID' },
@@ -190,32 +210,12 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vendors, uiState, codes, onPathChange,
       selectNode, codes, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
-      baseGridColumns, fnRowStyle };
+      baseSearchColumns, baseGridColumns, fnRowStyle };
   },
   template: /* html */`
 <div>
   <div class="page-title">업체정보</div>  <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'vendorNm', label: '업체명' },
-          { value: 'corpNo',   label: '사업자번호' },
-          { value: 'vendorId', label: '업체ID' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <select v-model="searchParam.type">
-        <option value="">유형 전체</option><option v-for="c in codes.vendor_type_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.status">
-        <option value="">상태 전체</option>
-        <option v-for="c in codes.vendor_status" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   
 

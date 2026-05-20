@@ -1120,6 +1120,27 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 - 금지: `xxxCols`, `xxxColumns` (GridColumns 미포함). `Cols` 약어는 가독성 떨어짐
 - computed 컬럼도 동일: `cfXxxGridColumns` (예: `cfCatProdGridColumns`)
 
+**BoSearchArea `:columns` 자동 렌더** ⭐ (2026-05-20):
+- `<bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="..." @search @reset />` 패턴
+- 슬롯 직접 작성 대신 `baseSearchColumns` 배열 정의 → 자동 렌더
+- 필드 type: `'multiCheck' | 'text' | 'select' | 'date' | 'dateRange' | 'label' | 'slot'`
+- 변수명 표준: `baseSearchColumns` (기본/메인), `xxxSearchColumns` (용도별 모달 검색 등)
+- 예시:
+```js
+const baseSearchColumns = [
+  { key: 'searchType', type: 'multiCheck', options: [...], placeholder: '검색대상 전체', allLabel: '전체 선택' },
+  { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+  { key: 'status', type: 'select', options: () => codes.user_status, nullLabel: '상태 전체' },
+  { key: 'dateRange', type: 'dateRange',
+    typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+    typeOptions: () => codes.user_date_types,
+    rangeOptions: () => codes.date_range_opts,
+    onRangeChange: () => handleDateRangeChange() },
+];
+```
+- 복잡 셀은 `{ type: 'slot', name: 'extra' }` 로 탈출구 사용 (해당 자리에 `<template #extra>...</template>` 렌더)
+- columns 미전달 시 기존 default 슬롯 사용 (하위호환 유지)
+
 | 슬롯 패턴 | columns 속성 |
 |---|---|
 | `<td>{{fn(row.x)}}</td>` | `fmt: (v)=>...` |

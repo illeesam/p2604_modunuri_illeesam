@@ -18,6 +18,20 @@ window.MbMemGradeMng = {
 
     const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
+        const baseSearchColumns = [
+      { type: 'label', label: '등급명/코드' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'gradeNm', label: '등급명' },
+          { value: 'gradeCd', label: '코드' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { type: 'label', label: '사용여부' },
+      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'gradeCd',        label: '등급코드',     style: 'width:130px;',
         edit: 'select', options: () => codes.member_grades },
@@ -189,7 +203,7 @@ window.MbMemGradeMng = {
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     return {
-      uiState, codes, searchParam, gridRows, baseGridColumns,
+      uiState, codes, searchParam, gridRows, baseSearchColumns, baseGridColumns,
       onSearch, onReset, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, toggleCheckAll,
       handleSave, fnStatusClass, cfVisibleCount,
@@ -200,24 +214,7 @@ window.MbMemGradeMng = {
   <div class="page-title">회원등급관리</div>
 
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <label class="search-label">등급명/코드</label>
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'gradeNm', label: '등급명' },
-          { value: 'gradeCd', label: '코드' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="검색어 입력">
-      <label class="search-label">사용여부</label>
-      <select class="form-control" v-model="searchParam.use">
-        <option value="">전체</option>
-        <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <bo-grid-crud

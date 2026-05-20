@@ -65,6 +65,13 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     const gridRows   = reactive([]);
     let   _tempId    = -1;
 
+    const baseSearchColumns = [
+      { type: 'label', label: '태그명' },
+      { key: 'searchValue', type: 'text', placeholder: '태그명 검색' },
+      { type: 'label', label: '사용여부' },
+      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'tagNm',    label: '태그명', edit: 'text', placeholder: '태그명' },
       { key: 'tagDesc',  label: '설명',   edit: 'text', placeholder: '설명',
@@ -146,21 +153,13 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     // -- return ---------------------------------------------------------------
 
     return { tags, uiState, codes, searchParam, pager, setPage, onSearch, onReset,
-             gridRows, baseGridColumns, addRow, onCellChange, deleteRow, saveAll, fnYnBadge, onSizeChange };
+             gridRows, baseGridColumns, baseSearchColumns, addRow, onCellChange, deleteRow, saveAll, fnYnBadge, onSizeChange };
   },
   template: `
 <div>
   <div class="page-title">태그관리</div>
     <div class="card">
-      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-        <label class="search-label">태그명</label>
-        <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="태그명 검색">
-        <label class="search-label">사용여부</label>
-        <select v-model="searchParam.use">
-          <option value="">전체</option>
-          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </bo-search-area>
+      <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
     </div>
     <bo-grid
       :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="tagId" row-actions

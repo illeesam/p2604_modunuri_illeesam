@@ -200,6 +200,23 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+        const baseSearchColumns = [
+      { type: 'label', label: '제목/작성자' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+            { value: 'blogTitle',  label: '제목' },
+            { value: 'blogAuthor', label: '작성자' },
+          ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { type: 'label', label: '공개여부' },
+      { key: 'use', type: 'select', options: () => codes.open_yn_opts, nullLabel: '전체' },
+      { type: 'label', label: '공지여부' },
+      { key: 'notice', type: 'select', options: () => codes.notice_yn_opts, nullLabel: '전체' },
+      { key: 'use', type: 'select', options: () => codes.open_yn_opts, nullLabel: '전체' },
+      { key: 'notice', type: 'select', options: () => codes.notice_yn_opts, nullLabel: '전체' },
+    ];
+
     const listGridColumns = [
       { key: 'blogTitle',  label: '제목',     sortKey: 'nm', cellInnerClass: 'title-link',
         fmt: (v, row) => {
@@ -222,36 +239,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange, onSort, sortIcon,
-      listGridColumns, fnGridRowClass,
+      baseSearchColumns, listGridColumns, fnGridRowClass,
     };
   },
   template: `
 <div>
   <div class="page-title">게시판(블로그)관리</div>
     <div class="card">
-      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-        <label class="search-label">제목/작성자</label>
-        <bo-multi-check-select
-          v-model="searchParam.searchType"
-          :options="[
-            { value: 'blogTitle',  label: '제목' },
-            { value: 'blogAuthor', label: '작성자' },
-          ]"
-          placeholder="검색대상 전체"
-          all-label="전체 선택"
-          min-width="160px" />
-        <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="검색어 입력">
-        <label class="search-label">공개여부</label>
-        <select class="form-control" v-model="searchParam.use">
-          <option value="">전체</option>
-          <option v-for="o in codes.open_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-        </select>
-        <label class="search-label">공지여부</label>
-        <select class="form-control" v-model="searchParam.notice">
-          <option value="">전체</option>
-          <option v-for="o in codes.notice_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-        </select>
-      </bo-search-area>
+      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
     </div>
     <bo-grid :columns="listGridColumns" :rows="blogs" :pager="pager" row-key="blogId"
       :sort-state="uiState" list-title="게시글 목록"

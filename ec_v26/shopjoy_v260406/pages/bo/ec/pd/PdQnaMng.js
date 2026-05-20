@@ -114,6 +114,14 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
 
     // -- return ---------------------------------------------------------------
 
+        const baseSearchColumns = [
+      { type: 'label', label: '키워드' },
+      { key: 'searchValue', type: 'text', placeholder: '제목 검색' },
+      { type: 'label', label: '상태' },
+      { key: 'status', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
+      { key: 'status', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'siteNm',   label: '사이트', fmt: () => cfSiteNm.value },
       { key: 'prodId',   label: '상품명', fmt: (v) => getProdNm(v) },
@@ -123,22 +131,14 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       { key: 'regDate',  label: '등록일', sortKey: 'reg', fmt: (v) => (v || '').slice(0, 10) },
     ];
 
-    return { qnas, uiState, codes, pager, searchParam, baseGridColumns,
+    return { qnas, uiState, codes, pager, searchParam, baseSearchColumns, baseGridColumns,
       onSearch, onReset, setPage, onSizeChange, getProdNm, getMemNm, fnStatusBadge, fnAnswLabel, cfSiteNm, onSort, sortIcon };
   },
   template: /* html */`
 <div>
   <div class="page-title">상품 Q&A 관리</div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset">
-      <label class="search-label">키워드</label>
-      <input class="form-control" v-model="searchParam.searchValue" placeholder="제목 검색" @keyup.enter="onSearch" style="width:200px;" />
-      <label class="search-label">상태</label>
-      <select class="form-control" v-model="searchParam.status" style="width:120px;">
-        <option value="">전체</option>
-        <option v-for="c in codes.qna_statuses" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card">
     <div class="toolbar">

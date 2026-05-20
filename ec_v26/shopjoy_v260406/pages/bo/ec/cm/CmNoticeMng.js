@@ -199,6 +199,19 @@ window.CmNoticeMng = {
     );
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+        const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '제목 검색' },
+      { key: 'type', type: 'select', options: () => codes.noticeTypes, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.noticeStatuses, nullLabel: '상태 전체' },
+      { type: 'label', label: '등록일' },
+      { key: 'dateRange', type: 'dateRange',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        onRangeChange: () => onDateRangeChange() },
+      { key: 'type', type: 'select', options: () => codes.noticeTypes, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.noticeStatuses, nullLabel: '상태 전체' },
+    ];
+
     const listGridColumns = [
       { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;',
         badge: (row) => fnTypeBadge(row.noticeTypeCd) },
@@ -230,7 +243,7 @@ window.CmNoticeMng = {
       handleSearchList, handleDelete, handleLoadDetail, loadView,
       openNew, closeDetail, inlineNavigate,
       fnStatusBadge, fnTypeBadge, exportExcel, onSort, sortIcon,
-      listGridColumns, fnGridRowClass,
+      baseSearchColumns, listGridColumns, fnGridRowClass,
     };
   },
   template: /* html */`
@@ -239,25 +252,7 @@ window.CmNoticeMng = {
 
   <!-- -- 검색 영역 ------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <input v-model="searchParam.searchValue" placeholder="제목 검색" @keyup.enter="onSearch" />
-      <select v-model="searchParam.type">
-        <option value="">유형 전체</option>
-        <option v-for="c in codes.noticeTypes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.status">
-        <option value="">상태 전체</option>
-        <option v-for="c in codes.noticeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <span class="search-label">등록일</span>
-      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
-      <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
-      <select v-model="searchParam.dateRange" @change="onDateRangeChange">
-        <option value="">옵션선택</option>
-        <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <!-- -- 목록 영역 (BoGrid) --------------------------------------------- -->

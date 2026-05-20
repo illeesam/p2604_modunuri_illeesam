@@ -303,6 +303,20 @@ window.SyDeptMng = {
     );
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+        const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'deptCode', label: '부서코드' },
+          { value: 'deptNm',   label: '부서명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'type', type: 'select', options: () => cfTypeOptions, nullLabel: '유형 전체' },
+      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+      { key: 'type', type: 'select', options: () => codes.cfTypeOptions, nullLabel: '유형 전체' },
+      { key: 'useYn', type: 'select', options: () => codes.codes.use_yn, nullLabel: '사용여부 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'deptCode',     label: '부서코드', style: 'width:110px;',    edit: 'text', mono: true },
       { key: 'deptNm',       label: '부서명',   style: 'min-width:190px;', edit: 'text',
@@ -321,7 +335,7 @@ window.SyDeptMng = {
 
     return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, cfTypeOptions,
-      cfSiteNm, baseGridColumns,
+      cfSiteNm, baseSearchColumns, baseGridColumns,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -336,26 +350,7 @@ window.SyDeptMng = {
   <div class="page-title">부서관리</div>
 
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'deptCode', label: '부서코드' },
-          { value: 'deptNm',   label: '부서명' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <select v-model="searchParam.type">
-        <option value="">유형 전체</option>
-        <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>
-      </select>
-      <select v-model="searchParam.useYn">
-        <option value="">사용여부 전체</option>
-        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">

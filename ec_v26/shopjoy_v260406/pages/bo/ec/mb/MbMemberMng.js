@@ -224,6 +224,23 @@ window.MbMemberMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+        const baseSearchColumns = [
+      { type: 'label', label: '이름/이메일/ID' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'memberNm', label: '이름' },
+          { value: 'loginId',  label: '이메일' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { type: 'label', label: '등급' },
+      { key: 'grade', type: 'select', options: () => codes.member_grades, nullLabel: '전체' },
+      { type: 'label', label: '상태' },
+      { key: 'status', type: 'select', options: () => codes.member_statuses, nullLabel: '전체' },
+      { key: 'grade', type: 'select', options: () => codes.member_grades, nullLabel: '전체' },
+      { key: 'status', type: 'select', options: () => codes.member_statuses, nullLabel: '전체' },
+    ];
+
     const listGridColumns = [
       { key: 'memberNm',         label: '이름',     sortKey: 'nm',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
@@ -250,36 +267,14 @@ window.MbMemberMng = {
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, fnGradeBadge, fnStatusBadge, fnFmtDate, onSizeChange,
       onSort, sortIcon, uiState,
-      listGridColumns, fnGridRowClass,
+      baseSearchColumns, listGridColumns, fnGridRowClass,
     };
   },
   template: /* html */`
 <div>
   <div class="page-title">회원관리</div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <label class="search-label">이름/이메일/ID</label>
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'memberNm', label: '이름' },
-          { value: 'loginId',  label: '이메일' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="검색어 입력" />
-      <label class="search-label">등급</label>
-      <select v-model="searchParam.grade">
-        <option value="">전체</option>
-        <option v-for="c in codes.member_grades" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <label class="search-label">상태</label>
-      <select v-model="searchParam.status">
-        <option value="">전체</option>
-        <option v-for="c in codes.member_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <bo-grid :columns="listGridColumns" :rows="members" :pager="pager" row-key="memberId"
     :sort-state="uiState" list-title="회원목록" row-clickable

@@ -165,6 +165,23 @@ window.CmChattMng = {
     const exportExcel = () => coUtil.cofExportCsv(chatts, [{label:'채팅ID',key:'chattRoomId'},{label:'회원명',key:'memberNm'},{label:'상태',key:'chattStatusCd'},{label:'마지막메시지일시',key:'lastMsgDate'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
+        const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'memberNm', label: '회원명' },
+          { value: 'subject',  label: '제목' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'status', type: 'select', options: () => codes.chatt_statuses, nullLabel: '상태 전체' },
+      { type: 'label', label: '등록일' },
+      { key: 'dateRange', type: 'dateRange',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'status', type: 'select', options: () => codes.chatt_statuses, nullLabel: '상태 전체' },
+    ];
+
     const listGridColumns = [
       { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'subject',     label: '제목', link: true,
@@ -194,30 +211,14 @@ window.CmChattMng = {
       uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId),
       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail,
       inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
-      showRefModal, listGridColumns, fnGridRowClass,
+      showRefModal, baseSearchColumns, listGridColumns, fnGridRowClass,
     };
   },
   template: /* html */`
 <div>
   <div class="page-title">채팅관리</div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'memberNm', label: '회원명' },
-          { value: 'subject',  label: '제목' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <select v-model="searchParam.status">
-        <option value="">상태 전체</option>
-        <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <bo-grid :columns="listGridColumns" :rows="chatts" :pager="pager" row-key="chattRoomId"
     :sort-state="uiState" list-title="채팅목록"

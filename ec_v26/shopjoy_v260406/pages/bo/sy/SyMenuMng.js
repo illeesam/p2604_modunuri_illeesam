@@ -254,6 +254,18 @@ window.SyMenuMng = {
     );
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+        const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'menuCode', label: '메뉴코드' },
+          { value: 'menuNm',   label: '메뉴명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'type', type: 'select', options: () => codes.menu_types, nullLabel: '유형 전체' },
+      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'menuCode',   label: '메뉴코드', style: 'width:110px;',    edit: 'text', mono: true },
       { key: 'menuNm',     label: '메뉴명',   style: 'min-width:180px;', edit: 'text',
@@ -273,7 +285,7 @@ window.SyMenuMng = {
 
     return { menus, uiState, codes, selectNode,
       searchParam,
-      cfSiteNm, baseGridColumns,
+      cfSiteNm, baseSearchColumns, baseGridColumns,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -289,26 +301,7 @@ window.SyMenuMng = {
 
 
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'menuCode', label: '메뉴코드' },
-          { value: 'menuNm',   label: '메뉴명' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <select v-model="searchParam.type">
-        <option value="">유형 전체</option>
-        <option v-for="t in codes.menu_types" :key="t">{{ t }}</option>
-      </select>
-      <select v-model="searchParam.useYn">
-        <option value="">사용여부 전체</option>
-        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   

@@ -556,6 +556,18 @@ window.SyRoleMng = {
 
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+        const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'roleCode', label: '역할코드' },
+          { value: 'roleNm',   label: '역할명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'cat', type: 'select', options: () => codes.role_cats, nullLabel: '역할구분 전체' },
+      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'roleCode',     label: '역할코드', style: 'width:120px;',    edit: 'text', mono: true },
       { key: 'roleNm',       label: '역할명',   style: 'min-width:150px;', edit: 'text',
@@ -587,7 +599,7 @@ window.SyRoleMng = {
     // -- return ---------------------------------------------------------------
 
     return {
-      uiState, codes, baseGridColumns,
+      uiState, codes, baseSearchColumns, baseGridColumns,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
@@ -608,26 +620,7 @@ window.SyRoleMng = {
 <div>
   <div class="page-title">역할관리</div>  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'roleCode', label: '역할코드' },
-          { value: 'roleNm',   label: '역할명' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <select v-model="searchParam.cat">
-        <option value="">역할구분 전체</option>
-        <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
-      </select>
-      <select v-model="searchParam.useYn">
-        <option value="">사용여부 전체</option>
-        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   

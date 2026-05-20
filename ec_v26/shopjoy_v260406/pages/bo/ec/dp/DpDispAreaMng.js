@@ -150,6 +150,20 @@ const searchParam = reactive(_initSearchParam());
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+        const baseSearchColumns = [
+      { type: 'label', label: '키워드' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'areaCd', label: '영역코드' },
+          { value: 'areaNm', label: '영역명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { type: 'label', label: '사용여부' },
+      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+    ];
+
     const listGridColumns = [
       { key: 'areaCd',     label: '영역코드', cellInnerStyle: 'font-size:11px;font-family:monospace;' },
       { key: 'areaNm',     label: '영역명',   sortKey: 'nm', link: true },
@@ -167,30 +181,13 @@ const searchParam = reactive(_initSearchParam());
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
       selectNode, fnPathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
-      onSort, sortIcon, listGridColumns };
+      onSort, sortIcon, baseSearchColumns, listGridColumns };
   },
   template: /* html */`
 <div>
   <div class="page-title">전시 영역 관리</div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset">
-      <label class="search-label">키워드</label>
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'areaCd', label: '영역코드' },
-          { value: 'areaNm', label: '영역명' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" style="width:200px;" />
-      <label class="search-label">사용여부</label>
-      <select class="form-control" v-model="searchParam.useYn" style="width:100px;">
-        <option value="">전체</option>
-        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">

@@ -119,10 +119,32 @@
  *   특수 셀은 columns 에 두되 템플릿에서 <template #cell-{key}="{ row, idx, no }"> 로 override.
  * ──────────────────────────────────────────────────────────────────────── */
 
-/* ── BoSearchArea ───────────────────────────────────────────────────────── */
+/* ── BoSearchArea ─────────────────────────────────────────────────────────
+ *  검색 영역 표준 컴포넌트. 슬롯 방식 + `:columns` 자동 렌더 방식 모두 지원.
+ *
+ *  :columns 자동 렌더 사용 시 — `baseSearchColumns` 배열 정의 후 `:param="searchParam"` 전달:
+ *    [
+ *      { key: 'searchType', type: 'multiCheck',
+ *        options: [{value,label},...], placeholder: '검색대상 전체',
+ *        allLabel: '전체 선택', minWidth: '160px' },
+ *      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
+ *      { key: 'role', type: 'select', options: () => codes.user_roles, nullable: true, nullLabel: '권한 전체' },
+ *      { key: 'status', type: 'select', options: () => codes.user_status, nullable: true, nullLabel: '상태 전체' },
+ *      { key: 'dateRange', type: 'dateRange',
+ *        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+ *        typeOptions: () => codes.user_date_types, rangeOptions: () => codes.date_range_opts,
+ *        onRangeChange: fn },
+ *      { label: '추가:', type: 'label' },                // 라벨 텍스트
+ *      { type: 'slot', name: 'extra' },                  // 슬롯 탈출구
+ *    ]
+ *  옵션 함수형(`options: () => codes.x`) 지원 — 코드 지연 로드 대응.
+ *
+ *  columns 없으면 기본 default 슬롯 사용 (기존 화면 호환). */
 window.BoSearchArea = {
   name: 'BoSearchArea',
   props: {
+    columns:     { type: Array,   default: null },   // 자동 렌더용 필드 정의
+    param:       { type: Object,  default: null },   // searchParam reactive (columns 사용 시)
     showActions: { type: Boolean, default: true },  // [조회][초기화] 버튼 노출
     searchLabel: { type: String,  default: '조회' },
     resetLabel:  { type: String,  default: '초기화' },
@@ -131,12 +153,52 @@ window.BoSearchArea = {
   },
   emits: ['search', 'reset'],
   setup(props, { emit }) {
+    const U = window._boAreaCompUtil;
     const onSearch = () => { if (!props.loading) emit('search'); };
     const onReset  = () => emit('reset');
-    return { onSearch, onReset };
+    const normOpts = (opts) => U.normOptions(opts);
+    return { U, onSearch, onReset, normOpts };
   },
   template: /* html */`
 <div class="search-bar" :style="barStyle" @keyup.enter="onSearch">
+  <template v-if="columns && param">
+    <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
+      <!-- 라벨 텍스트 -->
+      <label v-if="col.type==='label'" class="search-label">{{ col.label }}</label>
+      <!-- 슬롯 탈출구 -->
+      <slot v-else-if="col.type==='slot'" :name="col.name || 'extra'"></slot>
+      <!-- 다중선택 (검색대상) -->
+      <bo-multi-check-select v-else-if="col.type==='multiCheck'"
+        v-model="param[col.key]" :options="col.options"
+        :placeholder="col.placeholder || '전체'" :all-label="col.allLabel || '전체 선택'"
+        :min-width="col.minWidth || '160px'" />
+      <!-- 텍스트 입력 -->
+      <input v-else-if="col.type==='text'" v-model="param[col.key]"
+        :placeholder="col.placeholder" :style="col.width ? ('width:' + col.width) : ''"
+        @keyup.enter="onSearch" />
+      <!-- select -->
+      <select v-else-if="col.type==='select'" v-model="param[col.key]">
+        <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
+        <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+      </select>
+      <!-- 단일 날짜 -->
+      <input v-else-if="col.type==='date'" type="date" v-model="param[col.key]" class="date-range-input" />
+      <!-- 날짜 범위 + (옵션) 기간유형 + (옵션) 옵션선택 select -->
+      <template v-else-if="col.type==='dateRange'">
+        <select v-if="col.typeKey" v-model="param[col.typeKey]">
+          <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">{{ c.label }}</option>
+        </select>
+        <input type="date" v-model="param[col.startKey || 'dateStart']" class="date-range-input" />
+        <span class="date-range-sep">~</span>
+        <input type="date" v-model="param[col.endKey || 'dateEnd']" class="date-range-input" />
+        <select v-if="col.rangeOptions" v-model="param[col.key]"
+          @change="col.onRangeChange ? col.onRangeChange($event) : null">
+          <option value="">옵션선택</option>
+          <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
+        </select>
+      </template>
+    </template>
+  </template>
   <slot></slot>
   <div v-if="showActions" class="search-actions">
     <slot name="actions-before"></slot>

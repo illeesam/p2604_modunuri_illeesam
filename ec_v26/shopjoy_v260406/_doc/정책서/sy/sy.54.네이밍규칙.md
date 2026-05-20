@@ -789,6 +789,50 @@ grep -r "const selected\w* = ref(" pages/bo/**/*.js
 | `xxxColDef` / `xxxColDefs` | AG-Grid 외부 용어, BoGrid 비표준 |
 | `gridGridColumns` 같은 이중 첩 | 의미 단어 누락. `baseGridColumns` 사용 |
 
+## BoSearchArea 검색 변수 명명 (2026-05-20 ⭐)
+
+`<bo-search-area :columns="...">` 에 전달하는 검색 필드 배열은 **`xxxSearchColumns`** 접미사로 통일.
+
+### 표준 형식
+
+| 변수명 | 용도 |
+|---|---|
+| `baseSearchColumns` | 메인 화면 검색 영역 |
+| `<용도>SearchColumns` | 모달 내부 picker 검색 등 (예: `memberSearchColumns`, `prodSearchColumns`) |
+
+### 필드 type 종류
+
+| type | 용도 |
+|---|---|
+| `multiCheck` | 검색대상 다중선택 (BoMultiCheckSelect) |
+| `text` | 텍스트 입력 (검색어 등) |
+| `select` | 단일 select (코드 옵션) |
+| `date` | 단일 날짜 |
+| `dateRange` | 기간유형 + 시작/종료 + 옵션선택 (DATE_RANGE_OPT) |
+| `label` | 라벨 텍스트 |
+| `slot` | 슬롯 탈출구 (복잡 필드는 슬롯으로) |
+
+### 사용 예시
+```js
+const baseSearchColumns = [
+  { key: 'searchType', type: 'multiCheck', options: [...] },
+  { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+  { key: 'status', type: 'select', options: () => codes.user_status, nullLabel: '상태 전체' },
+  { key: 'dateRange', type: 'dateRange',
+    typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+    typeOptions: () => codes.user_date_types,
+    rangeOptions: () => codes.date_range_opts,
+    onRangeChange: () => handleDateRangeChange() },
+];
+```
+
+```html
+<bo-search-area :columns="baseSearchColumns" :param="searchParam"
+  :loading="uiState.loading" @search="onSearch" @reset="onReset" />
+```
+
+---
+
 ### 변경 이력
 
 **2026-05-20**: BO/FO 전 파일 113개 변수 일괄 리네임.

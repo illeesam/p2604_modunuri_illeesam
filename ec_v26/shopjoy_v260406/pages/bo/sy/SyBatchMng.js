@@ -284,6 +284,25 @@ window.SyBatchMng = {
 
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+        const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'batchNm',   label: '배치명' },
+          { value: 'batchCode', label: '배치코드' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'status', type: 'select', options: () => codes.active_statuses, nullLabel: '활성여부 전체' },
+      { key: 'runStatus', type: 'select', options: () => codes.batch_run_statuses, nullLabel: '실행상태 전체' },
+      { type: 'label', label: '등록일' },
+      { key: 'dateRange', type: 'dateRange',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'status', type: 'select', options: () => codes.active_statuses, nullLabel: '활성여부 전체' },
+      { key: 'runStatus', type: 'select', options: () => codes.batch_run_statuses, nullLabel: '실행상태 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'pathId',        label: '표시경로',     style: 'min-width:140px;',
         pathLabelOpen: { label: pathLabel, open: openPathPick, placeholder: '경로 선택...' } },
@@ -304,7 +323,7 @@ window.SyBatchMng = {
     // -- return ---------------------------------------------------------------
 
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectNode, baseGridColumns,
+      selectNode, baseSearchColumns, baseGridColumns,
       cfSiteNm, searchParam, handleDateRangeChange,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
@@ -319,34 +338,7 @@ window.SyBatchMng = {
 <div>
   <div class="page-title">배치스케즐관리</div>  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'batchNm',   label: '배치명' },
-          { value: 'batchCode', label: '배치코드' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <select v-model="searchParam.status">
-        <option value="">활성여부 전체</option>
-        <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.runStatus">
-        <option value="">실행상태 전체</option>
-        <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <span class="search-label">등록일</span>
-      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
-      <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
-      <select v-model="searchParam.dateRange" @change="handleDateRangeChange">
-        <option value="">옵션선택</option>
-        <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   

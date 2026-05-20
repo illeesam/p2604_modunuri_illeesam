@@ -165,6 +165,14 @@ window.MbMemGroupMng = {
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
+        const baseSearchColumns = [
+      { type: 'label', label: '그룹명' },
+      { key: 'searchValue', type: 'text', placeholder: '그룹명 검색' },
+      { type: 'label', label: '사용여부' },
+      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'groupNm',   label: '그룹명',   style: 'min-width:180px;',
         edit: 'text', placeholder: '그룹명' },
@@ -177,7 +185,7 @@ window.MbMemGroupMng = {
     ];
 
     return {
-      uiState, codes, searchParam, gridRows, baseGridColumns,
+      uiState, codes, searchParam, gridRows, baseSearchColumns, baseGridColumns,
       onSearch, onReset, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, toggleCheckAll,
       handleSave, fnStatusClass, cfVisibleCount,
@@ -188,15 +196,7 @@ window.MbMemGroupMng = {
   <div class="page-title">회원그룹관리</div>
 
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <label class="search-label">그룹명</label>
-      <input class="form-control" v-model="searchParam.searchValue" @keyup.enter="onSearch" placeholder="그룹명 검색">
-      <label class="search-label">사용여부</label>
-      <select class="form-control" v-model="searchParam.use">
-        <option value="">전체</option>
-        <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <bo-grid-crud

@@ -260,6 +260,17 @@ window.PdReviewMng = {
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
+        const baseSearchColumns = [
+      { type: 'label', label: '리뷰제목' },
+      { key: 'searchValue', type: 'text', placeholder: '리뷰 제목 검색' },
+      { type: 'label', label: '상태' },
+      { key: 'status', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
+      { type: 'label', label: '평점' },
+      { key: 'rating', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
+      { key: 'status', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
+      { key: 'rating', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
+    ];
+
     const listGridColumns = [
       { key: 'reviewTitle',     label: '리뷰 제목', cellInnerClass: 'title-link' },
       { key: 'prodId',          label: '상품ID',   style: 'width:110px', cellStyle: 'font-size:12px;',
@@ -311,26 +322,14 @@ window.PdReviewMng = {
               prodReviews, prodReviewPager, selectedProdId, onProdIdClick, setProdReviewPage, onProdReviewSizeChange,
               statusModal, openStatusModal, onStatusSelectChange, closeStatusModal, confirmStatusChange,
               cfStatusModalRowTitle, cfStatusModalCurrentCd,
-              listGridColumns, fnGridRowClass, prodReviewGridColumns, fnProdReviewRowClass,
+              baseSearchColumns, listGridColumns, fnGridRowClass, prodReviewGridColumns, fnProdReviewRowClass,
             };
   },
   template: `
 <div>
   <div class="page-title">상품리뷰관리</div>
     <div class="card">
-      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-        <label class="search-label">리뷰제목</label>
-        <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
-        <label class="search-label">상태</label>
-        <select v-model="searchParam.status">
-          <option value="">전체</option><option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
-        </select>
-        <label class="search-label">평점</label>
-        <select v-model="searchParam.rating">
-          <option value="">전체</option>
-          <option v-for="o in codes.review_rating_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-        </select>
-      </bo-search-area>
+      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
     </div>
     <bo-grid :columns="listGridColumns" :rows="reviews" :pager="pager" row-key="reviewId"
       :sort-state="uiState" list-title="상품리뷰 목록"
