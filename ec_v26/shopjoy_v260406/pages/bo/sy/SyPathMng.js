@@ -257,6 +257,24 @@ window.SyPathMng = {
     };
 
     /* BoGridEdit 컬럼 정의 — 전 셀 슬롯 (기존 onCellChange 변경추적 보존) */
+        const baseSearchColumns = [
+      { type: 'label', label: '업무코드' },
+      { key: 'bizCd', type: 'text', placeholder: 'biz_cd 검색', width: '180px' },
+      { key: 'searchType', type: 'text', placeholder: 'biz_cd 검색', width: '180px' },
+      { type: 'label', label: '라벨/비고' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'pathLabel',  label: '라벨' },
+          { value: 'pathRemark', label: '비고' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '320px' },
+      { key: 'useYn', type: 'text', placeholder: '검색어 입력', width: '320px' },
+      { type: 'label', label: '사용여부' },
+      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'useYn', type: 'select', options: () => codes.codes.use_yn, nullLabel: '전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'rowStatus',    label: '상태',     style: 'width:60px;text-align:center;', align: 'center',
         badge: (row) => 'badge-xs ' + (row._status === 'N' ? 'badge-green' : row._status === 'U' ? 'badge-orange' : 'badge-gray'),
@@ -278,7 +296,7 @@ window.SyPathMng = {
     return {
       uiState, searchParam, codes,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      gridRows, cfDirtyRows, pager, setPage, onSizeChange, baseGridColumns, fnRowClass,
+      gridRows, cfDirtyRows, pager, setPage, onSizeChange, baseSearchColumns, baseGridColumns, fnRowClass,
       onSearch, onReset, onCellChange, addRow, cancelRow, deleteRow, handleSave,
       parentModal, cfParentTree, openParentModal, closeParentModal, toggleParentNode, selectParent, getParentLabel,
     };
@@ -290,26 +308,7 @@ window.SyPathMng = {
 
   <!-- -- 검색 -- -->
   <div class="card">
-    <bo-search-area @search="onSearch" @reset="onReset">
-      <label class="search-label">업무코드</label>
-      <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:180px" @keyup.enter="onSearch">
-      <label class="search-label">라벨/비고</label>
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'pathLabel',  label: '라벨' },
-          { value: 'pathRemark', label: '비고' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="min-width:200px;flex:1;max-width:320px" @keyup.enter="onSearch">
-      <label class="search-label">사용여부</label>
-      <select class="form-control" v-model="searchParam.useYn" style="width:120px">
-        <option value="">전체</option>
-        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <!-- -- 좌 트리 + 우 그리드 -- -->

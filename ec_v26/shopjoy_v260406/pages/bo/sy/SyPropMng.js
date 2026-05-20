@@ -168,6 +168,24 @@ window.SyPropMng = {
     // -- return ---------------------------------------------------------------
 
     /* BoGridCrud 컬럼 정의 (헤더는 label/style/cls 로 자동 생성, 특수셀은 #cell-{key} 슬롯 override) */
+        const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'pathId',    label: '표시경로' },
+          { value: 'propKey',   label: '키' },
+          { value: 'propValue', label: '값' },
+          { value: 'propLabel', label: '라벨' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '420px' },
+      { key: 'typeFlt', type: 'text', placeholder: '검색어 입력', width: '420px' },
+      { key: 'useFlt', type: 'text', placeholder: '검색어 입력', width: '420px' },
+      { key: 'typeFlt', type: 'select', options: () => codes.prop_types, nullLabel: '전체 타입' },
+      { key: 'useFlt', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+      { key: 'typeFlt', type: 'select', options: () => codes.codes.prop_types, nullLabel: '전체 타입' },
+      { key: 'useFlt', type: 'select', options: () => codes.codes.use_yn, nullLabel: '사용여부 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'pathId',     label: '표시경로',  style: 'min-width:160px;', pathPick: 'sy_prop' },
       { key: 'propKey',    label: '키',        edit: 'text', mono: true },
@@ -182,7 +200,7 @@ window.SyPropMng = {
     return {
       uiState, codes,
       searchParam,
-      selectNode, rows, baseGridColumns,
+      selectNode, rows, baseSearchColumns, baseGridColumns,
       fetchData,
       onCellChange, addRow, deleteChecked, cancelChecked, handleSave, onReset, exportCsv,
     };
@@ -194,31 +212,7 @@ window.SyPropMng = {
 
   <!-- -- 검색 바 ----------------------------------------------------------- -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
-    <bo-search-area @search="fetchData" @reset="onReset">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'pathId',    label: '표시경로' },
-          { value: 'propKey',   label: '키' },
-          { value: 'propValue', label: '값' },
-          { value: 'propLabel', label: '라벨' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="min-width:200px;flex:1;max-width:420px;" @keyup.enter="fetchData">
-      <select class="form-control" v-model="searchParam.typeFlt" style="width:120px;">
-        <option value="">전체 타입</option>
-        <option v-for="t in codes.prop_types" :key="t" :value="t">{{ t }}</option>
-      </select>
-      <select class="form-control" v-model="searchParam.useFlt" style="width:130px;">
-        <option value="">사용여부 전체</option>
-        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-      <template #actions-after>
-        <button class="btn btn-sm" @click="exportCsv">📥 엑셀</button>
-      </template>
-    </bo-search-area>
+    <bo-search-area @search="fetchData" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->

@@ -129,6 +129,15 @@ window.PdRestockNotiMng = {
 
     /* AG-Grid 식 컬럼 정의 — width/align 등 헤더·셀 속성을 컬럼 객체에 선언.
        체크박스 열은 BoGrid 의 selectable 기능이 자동 렌더하므로 컬럼에서 제외. */
+        const baseSearchColumns = [
+      { type: 'label', label: '상품명' },
+      { key: 'prod', type: 'text', placeholder: '상품명 검색' },
+      { key: 'noti', type: 'text', placeholder: '상품명 검색' },
+      { type: 'label', label: '알림발송' },
+      { key: 'noti', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
+      { key: 'noti', type: 'select', options: () => codes.codes.send_yn_opts, nullLabel: '전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'prodId',   label: '상품명', fmt: (v, row) => getProdNm(row.prodId) },
       { key: 'skuId',    label: 'SKU',    style: 'width:100px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
@@ -139,7 +148,7 @@ window.PdRestockNotiMng = {
       { key: 'regDate',  label: '신청일',  style: 'width:140px' },
     ];
 
-    return { restockNotis, uiState, searchParam, pager, baseGridColumns, setPage, onSearch, onReset,
+    return { restockNotis, uiState, searchParam, pager, baseSearchColumns, baseGridColumns, setPage, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, fnIsChecked, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,
              codes };
   },
@@ -147,14 +156,7 @@ window.PdRestockNotiMng = {
 <div>
   <div class="page-title">재입고알림관리</div>
     <div class="card">
-      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-        <label class="search-label">상품명</label>
-        <input v-model="searchParam.prod" @keyup.enter="() => onSearch?.()" placeholder="상품명 검색">
-        <label class="search-label">알림발송</label>
-        <select v-model="searchParam.noti">
-          <option value="">전체</option><option v-for="o in codes.send_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-        </select>
-      </bo-search-area>
+      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
     </div>
     <div class="card">
       <div class="toolbar">

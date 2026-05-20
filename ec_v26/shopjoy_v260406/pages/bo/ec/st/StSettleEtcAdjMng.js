@@ -173,6 +173,26 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
+        const baseSearchColumns = [
+      { key: 'dateRange', type: 'dateRange', paramObj: uiState,
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'type', type: 'select', options: () => codes.settle_etc_adj_types, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.settle_adj_statuses, nullLabel: '상태 전체' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'id',       label: 'ID' },
+          { value: 'vendorNm', label: '업체명' },
+          { value: 'reason',   label: '사유' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
+      { key: 'type', type: 'select', options: () => codes.codes.settle_etc_adj_types, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.codes.settle_adj_statuses, nullLabel: '상태 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'adjId',        label: '조정ID' },
       { key: 'adjDate',      label: '조정일자' },
@@ -187,7 +207,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'regUserNm',    label: '등록자' },
     ];
 
-    return { uiState, handleDateRangeChange, codes, pager, etcAdjList, baseGridColumns, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, etcAdjList, baseSearchColumns, baseGridColumns, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -201,30 +221,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 • 승인 상태: 대기 / 승인 / 반려</div>
   </div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset">
-      <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
-        <option value="">기간 선택</option>
-        <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-      <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
-      <select v-model="searchParam.type" style="width:120px">
-        <option value="">유형 전체</option><option v-for="c in codes.settle_etc_adj_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.status" style="width:100px">
-        <option value="">상태 전체</option><option v-for="c in codes.settle_adj_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'id',       label: 'ID' },
-          { value: 'vendorNm', label: '업체명' },
-          { value: 'reason',   label: '사유' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:180px" @keyup.enter="() => onSearch?.()" />
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card" style="margin-top:12px">
     <div class="toolbar">

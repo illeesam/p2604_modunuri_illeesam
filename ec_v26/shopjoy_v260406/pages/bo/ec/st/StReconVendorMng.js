@@ -99,6 +99,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
+        const baseSearchColumns = [
+      { key: 'dateRange', type: 'dateRange', paramObj: uiState,
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'diff', type: 'select', options: () => codes.recon_results, nullLabel: '대사결과 전체' },
+      { key: 'diff', type: 'select', options: () => codes.codes.recon_results, nullLabel: '대사결과 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
       { key: 'orderCnt',   label: '주문건수', fmt: (v) => v + '건' },
@@ -110,7 +120,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
     ];
 
-    return { uiState, handleDateRangeChange, codes, pager, rows, baseGridColumns, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, rows, baseSearchColumns, baseGridColumns, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -123,16 +133,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 • 차이 발생 시 상호 확인 후 조정(StSettleAdjMng)으로 처리합니다.</div>
   </div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset">
-      <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
-        <option value="">기간 선택</option>
-        <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
-      </select>
-      <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
-      <select v-model="searchParam.diff" style="width:120px">
-        <option value="">대사결과 전체</option><option v-for="c in codes.recon_results" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">

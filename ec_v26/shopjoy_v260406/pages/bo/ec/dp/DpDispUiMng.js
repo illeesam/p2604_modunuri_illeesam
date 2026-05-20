@@ -139,6 +139,15 @@ window.DpDispUiMng = {
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+        const baseSearchColumns = [
+      { type: 'label', label: '키워드' },
+      { key: 'searchValue', type: 'text', placeholder: 'UI명 검색', width: '200px' },
+      { key: 'useYn', type: 'text', placeholder: 'UI명 검색', width: '200px' },
+      { type: 'label', label: '사용여부' },
+      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'useYn', type: 'select', options: () => codes.codes.use_yn, nullLabel: '전체' },
+    ];
+
     const listGridColumns = [
       { key: 'uiNm',         label: 'UI명',     sortKey: 'nm', link: true },
       { key: 'deviceTypeCd', label: '유형' },
@@ -167,21 +176,13 @@ window.DpDispUiMng = {
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
       selectNode, pathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
-      onSort, sortIcon, listGridColumns };
+      onSort, sortIcon, baseSearchColumns, listGridColumns };
   },
   template: /* html */`
 <div>
   <div class="page-title">전시 UI 관리</div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset">
-      <label class="search-label">키워드</label>
-      <input class="form-control" v-model="searchParam.searchValue" placeholder="UI명 검색" @keyup.enter="onSearch" style="width:200px;" />
-      <label class="search-label">사용여부</label>
-      <select class="form-control" v-model="searchParam.useYn" style="width:100px;">
-        <option value="">전체</option>
-        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">

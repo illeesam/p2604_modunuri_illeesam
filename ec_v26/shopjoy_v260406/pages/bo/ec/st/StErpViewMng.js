@@ -105,6 +105,25 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // -- return ---------------------------------------------------------------
 
+        const baseSearchColumns = [
+      { key: 'dateRange', type: 'dateRange', paramObj: uiState,
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'type', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.erp_voucher_statuses, nullLabel: '상태 전체' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'slipId', label: '전표ID' },
+          { value: 'summary', label: '적요' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
+      { key: 'type', type: 'select', options: () => codes.codes.erp_voucher_types, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.codes.erp_voucher_statuses, nullLabel: '상태 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
       { key: 'slipDate',   label: '전표일자' },
@@ -119,7 +138,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'sendStatus', label: '전송상태', badge: (row) => fnStatusBadge(row.sendStatus) },
     ];
 
-    return { uiState, handleDateRangeChange, codes, pager, slips, baseGridColumns, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, slips, baseSearchColumns, baseGridColumns, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -133,29 +152,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 • 전표 대사 확인은 ERP 전표대사(StErpReconMng)에서 합니다.</div>
   </div>
   <div class="card">
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset">
-      <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
-        <option value="">기간 선택</option>
-        <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
-      </select>
-      <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
-      <select v-model="searchParam.type" style="width:120px">
-        <option value="">유형 전체</option><option v-for="c in codes.erp_voucher_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <select v-model="searchParam.status" style="width:110px">
-        <option value="">상태 전체</option><option v-for="c in codes.erp_voucher_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'slipId', label: '전표ID' },
-          { value: 'summary', label: '적요' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:180px" @keyup.enter="() => onSearch?.()" />
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card" style="margin-top:12px">
     <bo-grid

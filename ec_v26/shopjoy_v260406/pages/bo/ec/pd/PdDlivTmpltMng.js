@@ -173,6 +173,19 @@ window.PdDlivTmpltMng = {
 
     // -- return ---------------------------------------------------------------
 
+        const baseSearchColumns = [
+      { type: 'label', label: '템플릿명' },
+      { key: 'searchValue', type: 'text', placeholder: '템플릿명 검색' },
+      { key: 'method', type: 'text', placeholder: '템플릿명 검색' },
+      { key: 'use', type: 'text', placeholder: '템플릿명 검색' },
+      { type: 'label', label: '배송방법' },
+      { key: 'method', type: 'select', options: () => codes.dliv_methods, nullLabel: '전체' },
+      { type: 'label', label: '사용여부' },
+      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'method', type: 'select', options: () => codes.codes.dliv_methods, nullLabel: '전체' },
+      { key: 'use', type: 'select', options: () => codes.codes.use_yn, nullLabel: '전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'dlivTmpltNm',   label: '템플릿명', sortKey: 'nm', link: true },
       { key: 'dlivMethodCd',  label: '배송방법',   style: 'width:90px;', badge: (row) => fnMethodBadge(row.dlivMethodCd) },
@@ -189,7 +202,7 @@ window.PdDlivTmpltMng = {
         badge: (row) => fnYnBadge(row.useYn) },
     ];
 
-    return { uiState, codes, searchParam, baseGridColumns,
+    return { uiState, codes, searchParam, baseSearchColumns, baseGridColumns,
              pager, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
              fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS, onSizeChange, dlivTmplts, onSort, sortIcon};
@@ -208,19 +221,7 @@ window.PdDlivTmpltMng = {
     </div>
   </div>
   <div class="card">
-      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-        <label class="search-label">템플릿명</label>
-        <input v-model="searchParam.searchValue" @keyup.enter="() => onSearch?.()" placeholder="템플릿명 검색">
-        <label class="search-label">배송방법</label>
-        <select v-model="searchParam.method">
-          <option value="">전체</option><option v-for="m in codes.dliv_methods" :key="m.value" :value="m.value">{{ m.label }}</option>
-        </select>
-        <label class="search-label">사용여부</label>
-        <select v-model="searchParam.use">
-          <option value="">전체</option>
-          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </bo-search-area>
+      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
     </div>
     <div class="card">
       <div class="toolbar">

@@ -270,6 +270,28 @@ window.SyBrandMng = {
     // -- return ---------------------------------------------------------------
 
     /* BoGridCrud 호환 — 컬럼 정의 + local 모드 컬럼 hint */
+        const baseSearchColumns = [
+      { type: 'label', label: '업무코드' },
+      { key: 'bizCd', type: 'text', placeholder: 'biz_cd 검색', width: '160px' },
+      { key: 'searchType', type: 'text', placeholder: 'biz_cd 검색', width: '160px' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'brandCode', label: '브랜드코드' },
+          { value: 'brandNm',   label: '브랜드명' },
+          { value: 'brandEnNm', label: '영문명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'useYn', type: 'text', placeholder: '검색어 입력' },
+      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+      { type: 'label', label: '등록일' },
+      { key: 'dateRange', type: 'dateRange',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'useYn', type: 'select', options: () => codes.codes.use_yn, nullLabel: '사용여부 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', style: 'min-width:140px;', pathPick: 'sy_brand' },
       { key: 'brandCode',   label: '브랜드코드', style: 'min-width:110px;', edit: 'text', mono: true, placeholder: 'BRAND_CODE' },
@@ -283,7 +305,7 @@ window.SyBrandMng = {
 
     return { brands, uiState, codes, onPathChange,
       searchParam, handleDateRangeChange,
-      gridRows, baseGridColumns, fnColTitle,
+      gridRows, baseSearchColumns, baseGridColumns, fnColTitle,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -296,33 +318,7 @@ window.SyBrandMng = {
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <label class="search-label">업무코드</label>
-      <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:160px" @keyup.enter="onSearch">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'brandCode', label: '브랜드코드' },
-          { value: 'brandNm',   label: '브랜드명' },
-          { value: 'brandEnNm', label: '영문명' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" />
-      <select v-model="searchParam.useYn">
-        <option value="">사용여부 전체</option>
-        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-      <span class="search-label">등록일</span>
-      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
-      <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
-      <select v-model="searchParam.dateRange" @change="handleDateRangeChange">
-        <option value="">옵션선택</option>
-        <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
 
   <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->

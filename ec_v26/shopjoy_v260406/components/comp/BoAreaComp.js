@@ -157,7 +157,9 @@ window.BoSearchArea = {
     const onSearch = () => { if (!props.loading) emit('search'); };
     const onReset  = () => emit('reset');
     const normOpts = (opts) => U.normOptions(opts);
-    return { U, onSearch, onReset, normOpts };
+    // col.paramObj 가 있으면 그 객체를, 없으면 props.param 사용 — 컬럼별 다른 reactive 매핑 지원
+    const po = (col) => col.paramObj || props.param;
+    return { U, onSearch, onReset, normOpts, po };
   },
   template: /* html */`
 <div class="search-bar" :style="barStyle" @keyup.enter="onSearch">
@@ -169,29 +171,38 @@ window.BoSearchArea = {
       <slot v-else-if="col.type==='slot'" :name="col.name || 'extra'"></slot>
       <!-- 다중선택 (검색대상) -->
       <bo-multi-check-select v-else-if="col.type==='multiCheck'"
-        v-model="param[col.key]" :options="col.options"
+        v-model="po(col)[col.key]" :options="col.options"
         :placeholder="col.placeholder || '전체'" :all-label="col.allLabel || '전체 선택'"
         :min-width="col.minWidth || '160px'" />
       <!-- 텍스트 입력 -->
-      <input v-else-if="col.type==='text'" v-model="param[col.key]"
+      <input v-else-if="col.type==='text'" v-model="po(col)[col.key]"
         :placeholder="col.placeholder" :style="col.width ? ('width:' + col.width) : ''"
         @keyup.enter="onSearch" />
       <!-- select -->
-      <select v-else-if="col.type==='select'" v-model="param[col.key]">
+      <select v-else-if="col.type==='select'" v-model="po(col)[col.key]">
         <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
         <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <!-- 단일 날짜 -->
-      <input v-else-if="col.type==='date'" type="date" v-model="param[col.key]" class="date-range-input" />
+      <input v-else-if="col.type==='date'" type="date" v-model="po(col)[col.key]" class="date-range-input" />
       <!-- 날짜 범위 + (옵션) 기간유형 + (옵션) 옵션선택 select -->
       <template v-else-if="col.type==='dateRange'">
-        <select v-if="col.typeKey" v-model="param[col.typeKey]">
+        <select v-if="col.typeKey" v-model="po(col)[col.typeKey]">
           <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">{{ c.label }}</option>
         </select>
-        <input type="date" v-model="param[col.startKey || 'dateStart']" class="date-range-input" />
-        <span class="date-range-sep">~</span>
-        <input type="date" v-model="param[col.endKey || 'dateEnd']" class="date-range-input" />
-        <select v-if="col.rangeOptions" v-model="param[col.key]"
+        <!-- rangeFirst: true → rangeOptions select 를 date 앞에 표시 (옵션선택 placeholder는 col.rangeFirstLabel) -->
+        <select v-if="col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]"
+          @change="col.onRangeChange ? col.onRangeChange($event) : null"
+          :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
+          <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
+          <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
+        </select>
+        <input type="date" v-model="po(col)[col.startKey || 'dateStart']"
+          :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
+        <span :class="col.sepClass || 'date-range-sep'" :style="col.sepStyle || ''">~</span>
+        <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
+          :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
+        <select v-if="!col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]"
           @change="col.onRangeChange ? col.onRangeChange($event) : null">
           <option value="">옵션선택</option>
           <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
