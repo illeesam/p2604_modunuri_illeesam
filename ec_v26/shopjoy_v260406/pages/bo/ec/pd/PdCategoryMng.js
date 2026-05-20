@@ -373,8 +373,21 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
     // -- return ---------------------------------------------------------------
 
+    const baseSearchColumns = [
+      { type: 'label', label: '사이트 *' },
+      { key: 'siteId', type: 'select', nullable: false,
+        options: () => sites.map(s => ({ value: s.siteId, label: s.siteId + ' ' + s.siteNm })),
+        onChange: () => onSiteChange() },
+      { type: 'label', label: '카테고리명' },
+      { key: 'searchValue', type: 'text', placeholder: '카테고리명 검색' },
+      { type: 'label', label: '단계' },
+      { key: 'categoryDepth', type: 'select', options: () => codes.category_depths, nullLabel: '전체' },
+      { type: 'label', label: '상태' },
+      { key: 'categoryStatusCd', type: 'select', options: () => codes.category_statuses, nullLabel: '전체' },
+    ];
+
     return {
-      codes, uiState, sites, onSiteChange,
+      codes, uiState, sites, onSiteChange, baseSearchColumns,
       selectNode, handleGridSearch,
       searchParam,
       gridRows, pager, setPage, onSizeChange, getRealIdx,
@@ -403,24 +416,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset">
-      <label class="search-label">사이트 <span style="color:#e8587a">*</span></label>
-      <select class="form-control" v-model="searchParam.siteId" @change="onSiteChange" style="width:160px">
-        <option v-for="s in sites" :key="s.siteId" :value="s.siteId">{{ s.siteId }} {{ s.siteNm }}</option>
-      </select>
-      <label class="search-label">카테고리명</label>
-      <input class="form-control" v-model="searchParam.searchValue" placeholder="카테고리명 검색" style="max-width:240px" @keyup.enter="() => onSearch?.()">
-      <label class="search-label">단계</label>
-      <select class="form-control" v-model="searchParam.categoryDepth" style="width:120px">
-        <option value="">전체</option>
-        <option v-for="c in codes.category_depths" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <label class="search-label">상태</label>
-      <select class="form-control" v-model="searchParam.categoryStatusCd" style="width:100px">
-        <option value="">전체</option>
-        <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
 
   <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->

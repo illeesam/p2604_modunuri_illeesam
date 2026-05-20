@@ -176,6 +176,32 @@ window.OdCartMng = {
     const fnGridRowStyle = (r) =>
       uiState.selectedIds.includes(r.cartId) ? 'background:#fff5f8;' : '';
 
+    const baseSearchColumns = [
+      { type: 'label', label: '사이트' },
+      { key: 'siteId', type: 'select',
+        options: () => codes.sites.map(s => ({ value: s.siteId, label: s.siteNm })),
+        nullLabel: '전체' },
+      { type: 'label', label: '회원' },
+      { key: 'memberId', type: 'pick', nameKey: 'memberNm',
+        display: (p) => p.memberNm || p.memberId, placeholder: '회원 선택', width: '160px',
+        onOpen: () => openMemberPick(), onClear: () => onClearMember() },
+      { type: 'label', label: '검색' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'memberNm', label: '회원명' },
+          { value: 'memberId', label: '회원ID' },
+          { value: 'prodId',   label: '상품ID' },
+          { value: 'prodNm',   label: '상품명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
+      { type: 'label', label: '기간' },
+      { key: '_dateRange', type: 'dateRange',
+        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeOptions: () => codes.cart_date_types,
+        dateWidth: '136px' },
+    ];
+
     /* ── BoGrid 컬럼 정의 ── */
     const listGridColumns = [
       { key: 'memberNm', label: '회원',   style: 'min-width:130px;',
@@ -264,7 +290,7 @@ window.OdCartMng = {
       handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember,
       fnCheckedBadge, fnCheckedNm, fnPrice, fnDate, fnAvatar,
       onSearch, onReset, setPage, onSizeChange,
-      listGridColumns, memberPickGridColumns, isChecked, cfAllChecked, toggleCheck, toggleCheckAll, fnGridRowStyle,
+      baseSearchColumns, listGridColumns, memberPickGridColumns, isChecked, cfAllChecked, toggleCheck, toggleCheckAll, fnGridRowStyle,
       handleDelete, handleBulkDelete,
     };
   },
@@ -274,41 +300,9 @@ window.OdCartMng = {
 
   <!-- 검색 -->
   <div class="card" style="margin-bottom:14px;">
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px 16px;" @search="onSearch" @reset="onReset">
-
-      <label class="search-label">사이트</label>
-      <select v-model="search.siteId" class="form-control" style="width:150px;">
-        <option value="">전체</option>
-        <option v-for="s in codes.sites" :key="s.siteId" :value="s.siteId">{{ s.siteNm }}</option>
-      </select>
-
-      <label class="search-label">회원</label>
-      <div style="display:flex;align-items:center;gap:4px;">
-        <input :value="search.memberNm || search.memberId" readonly placeholder="회원 선택"
-               class="form-control" style="width:160px;background:#f9f9f9;cursor:pointer;"
-               @click="openMemberPick" />
-        <button class="btn btn-secondary btn-sm" @click="openMemberPick">검색</button>
-        <button v-if="search.memberId" class="btn btn-sm" style="padding:2px 6px;font-size:11px;color:#999;background:none;border:1px solid #ddd;" @click="onClearMember">✕</button>
-      </div>
-
-      <label class="search-label">검색</label>
-      <bo-multi-check-select v-model="search.searchType" :options="[
-          { value: 'memberNm', label: '회원명' },
-          { value: 'memberId', label: '회원ID' },
-          { value: 'prodId',   label: '상품ID' },
-          { value: 'prodNm',   label: '상품명' },
-        ]" placeholder="검색대상 전체" all-label="전체 선택" min-width="160px" />
-      <input v-model="search.searchValue" class="form-control" style="width:180px;" placeholder="검색어 입력"
-             @keyup.enter="onSearch" />
-
-      <label class="search-label">기간</label>
-      <select v-model="search.dateType" class="form-control" style="width:110px;">
-        <option v-for="c in codes.cart_date_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <input v-model="search.dateStart" type="date" class="form-control" style="width:136px;" />
-      <span style="margin:0 2px;color:#999;">~</span>
-      <input v-model="search.dateEnd" type="date" class="form-control" style="width:136px;" />
-    </bo-search-area>
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px 16px;"
+      :columns="baseSearchColumns" :param="search"
+      @search="onSearch" @reset="onReset" />
   </div>
 
   <!-- 목록 -->
