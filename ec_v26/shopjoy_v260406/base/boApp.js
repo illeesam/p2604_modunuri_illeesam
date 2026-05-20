@@ -3097,6 +3097,7 @@
     .component('BoModal', window.BoModal)
     .component('BoCronModal', window.BoCronModal)
     .component('BoTreeSelectorModal', window.BoTreeSelectorModal)
+    .component('BoRowCancelDelete', window.BoRowCancelDelete)
     .component('BoRoleSelectModal', window.BoRoleSelectModal)
     .component('BoPathParentSelector', window.BoPathParentSelector)
     .component('PathPickModal', window.PathPickModal)

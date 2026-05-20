@@ -119,10 +119,32 @@
   document.head.appendChild(el);
 })();
 
-/* ── FoSearchArea ───────────────────────────────────────────────────────── */
+/* ── FoSearchArea ─────────────────────────────────────────────────────────
+ *  검색 영역 표준 컴포넌트(FO). 슬롯 방식 + `:columns` 자동 렌더 모두 지원 (BoSearchArea 와 동등).
+ *
+ *  :columns 자동 렌더 사용 시 — `baseSearchColumns` 배열 정의 후 `:param="searchParam"` 전달:
+ *    [
+ *      { key: 'searchType', type: 'multiCheck',
+ *        options: [{value,label},...], placeholder: '검색대상 전체',
+ *        allLabel: '전체 선택', minWidth: '160px' },
+ *      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
+ *      { key: 'cat',    type: 'select', options: () => codes.cats,   nullLabel: '카테고리 전체' },
+ *      { key: 'status', type: 'select', options: () => codes.status, nullLabel: '상태 전체' },
+ *      { key: 'dateRange', type: 'dateRange',
+ *        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+ *        typeOptions: () => codes.date_types, rangeOptions: () => codes.date_range_opts,
+ *        onRangeChange: fn },
+ *      { label: '추가:', type: 'label' },                // 라벨 텍스트
+ *      { type: 'slot', name: 'extra' },                  // 슬롯 탈출구
+ *    ]
+ *  옵션 함수형(`options: () => codes.x`) 지원 — 코드 지연 로드 대응.
+ *
+ *  columns 없으면 기본 default 슬롯 사용 (기존 화면 호환). */
 window.FoSearchArea = {
   name: 'FoSearchArea',
   props: {
+    columns:     { type: Array,   default: null },   // 자동 렌더용 필드 정의
+    param:       { type: Object,  default: null },   // searchParam reactive (columns 사용 시)
     showActions: { type: Boolean, default: true },  // [조회][초기화] 버튼 노출
     searchLabel: { type: String,  default: '조회' },
     resetLabel:  { type: String,  default: '초기화' },
@@ -131,12 +153,76 @@ window.FoSearchArea = {
   },
   emits: ['search', 'reset'],
   setup(props, { emit }) {
+    const U = window._foAreaCompUtil;
     const onSearch = () => { if (!props.loading) emit('search'); };
     const onReset  = () => emit('reset');
-    return { onSearch, onReset };
+    const normOpts = (opts) => U.normOptions(opts);
+    /* col.paramObj 가 있으면 그 객체를, 없으면 props.param 사용 — 컬럼별 다른 reactive 매핑 지원 */
+    const po = (col) => col.paramObj || props.param;
+    /* 속성값 && 금지 정책상 v-if 가드는 computed/fn 로 분리 */
+    const cfAutoMode  = Vue.computed(() => !!(props.columns && props.param));
+    const fnHasRange1 = (col) => !!(col.rangeFirst && col.rangeOptions);
+    const fnHasRange2 = (col) => !!(!col.rangeFirst && col.rangeOptions);
+    return { U, onSearch, onReset, normOpts, po, cfAutoMode, fnHasRange1, fnHasRange2 };
   },
   template: /* html */`
 <div :style="'display:flex;flex-wrap:wrap;gap:10px;align-items:center;'+barStyle" @keyup.enter="onSearch">
+  <template v-if="cfAutoMode">
+    <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
+      <!-- 라벨 텍스트 -->
+      <label v-if="col.type==='label'" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">{{ col.label }}</label>
+      <!-- 슬롯 탈출구 -->
+      <slot v-else-if="col.type==='slot'" :name="col.name || 'extra'"></slot>
+      <!-- picker 박스 (input readonly + 버튼) -->
+      <template v-else-if="col.type==='pick'">
+        <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
+          readonly :placeholder="col.placeholder || '선택'"
+          :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;cursor:pointer;'"
+          @click="col.onOpen(po(col))" />
+        <button class="btn-outline btn-sm" @click="col.onOpen(po(col))">{{ col.openLabel || '검색' }}</button>
+        <button v-if="po(col)[col.key]" class="btn-outline btn-sm" @click="col.onClear(po(col))">✕</button>
+      </template>
+      <!-- 다중선택 -->
+      <bo-multi-check-select v-else-if="col.type==='multiCheck'"
+        v-model="po(col)[col.key]" :options="col.options"
+        :placeholder="col.placeholder || '전체'" :all-label="col.allLabel || '전체 선택'"
+        :min-width="col.minWidth || '160px'" />
+      <!-- 텍스트 입력 -->
+      <input v-else-if="col.type==='text'" v-model="po(col)[col.key]"
+        :placeholder="col.placeholder" :style="col.width ? ('width:' + col.width) : ''"
+        @keyup.enter="onSearch" />
+      <!-- select -->
+      <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
+        @change="col.onChange ? col.onChange($event) : null">
+        <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
+        <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+      </select>
+      <!-- 단일 날짜 -->
+      <input v-else-if="col.type==='date'" type="date" v-model="po(col)[col.key]" />
+      <!-- 날짜 범위 + (옵션) 기간유형 + (옵션) 옵션선택 select -->
+      <template v-else-if="col.type==='dateRange'">
+        <select v-if="col.typeKey" v-model="po(col)[col.typeKey]">
+          <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">{{ c.label }}</option>
+        </select>
+        <select v-if="fnHasRange1(col)" v-model="po(col)[col.key]"
+          @change="col.onRangeChange ? col.onRangeChange($event) : null"
+          :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
+          <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
+          <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
+        </select>
+        <input type="date" v-model="po(col)[col.startKey || 'dateStart']"
+          :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
+        <span :style="col.sepStyle || ''">~</span>
+        <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
+          :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
+        <select v-if="fnHasRange2(col)" v-model="po(col)[col.key]"
+          @change="col.onRangeChange ? col.onRangeChange($event) : null">
+          <option value="">옵션선택</option>
+          <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
+        </select>
+      </template>
+    </template>
+  </template>
   <slot></slot>
   <div v-if="showActions" style="display:flex;gap:6px;margin-left:auto;">
     <slot name="actions-before"></slot>
@@ -613,10 +699,7 @@ window.FoGridCrud = {
             </slot>
           </template>
           <td style="text-align:center;">
-            <slot name="row-actions" :row="row" :idx="idx">
-              <slot name="row-cancel" :row="row" :idx="idx"></slot>
-              <slot name="row-delete" :row="row" :idx="idx"></slot>
-            </slot>
+            <slot name="row-actions" :row="row" :idx="idx"></slot>
           </td>
         </tr>
       </tbody>
@@ -676,4 +759,45 @@ window.FoModal = {
     </div>
   </div>
 </teleport>`,
+};
+
+/* ── FoRowCancelDelete — FoGridCrud #row-actions 표준 취소/삭제 버튼 묶음 ─────
+ * FO xs/Sample 6개에서 반복되던 #row-cancel / #row-delete 슬롯 패턴을 통일.
+ *
+ *   <template #row-actions="{ row }">
+ *     <fo-row-cancel-delete :row="row" @cancel="onRowCancel(row)" @delete="onRowDelete(row)" />
+ *   </template>
+ *
+ * 버튼 표시 조건 (BoRowCancelDelete 와 동일):
+ *   취소: row._row_status ∈ ['U','I','D']
+ *   삭제: row._row_status ∈ ['N','U']
+ *
+ * 스타일은 FO 톤(인라인 작은 버튼). BO 컴포넌트는 .btn 클래스 기반 ─ 디자인 분기. */
+window.FoRowCancelDelete = {
+  name: 'FoRowCancelDelete',
+  props: {
+    row:             { type: Object,  required: true },
+    allowDeleteNull: { type: Boolean, default: false },
+    cancelLabel:     { type: String,  default: '취소' },
+    deleteLabel:     { type: String,  default: '삭제' },
+  },
+  emits: ['cancel', 'delete'],
+  setup(props, { emit }) {
+    const cfShowCancel = Vue.computed(() => ['U', 'I', 'D'].includes(props.row._row_status));
+    const cfShowDelete = Vue.computed(() => {
+      const s = props.row._row_status;
+      if (props.allowDeleteNull && s == null) return true;
+      return ['N', 'U'].includes(s);
+    });
+    const onCancel = () => emit('cancel');
+    const onDelete = () => emit('delete');
+    return { cfShowCancel, cfShowDelete, onCancel, onDelete };
+  },
+  template: /* html */`
+<span>
+  <button v-if="cfShowCancel" @click.stop="onCancel"
+    style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">{{ cancelLabel }}</button>
+  <button v-if="cfShowDelete" @click.stop="onDelete"
+    style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">{{ deleteLabel }}</button>
+</span>`,
 };

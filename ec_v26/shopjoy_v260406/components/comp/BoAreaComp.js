@@ -80,8 +80,7 @@
  *                        정렬클릭·조건부 컬럼 등 동적 헤더만 #head 슬롯 사용
  *                  슬롯: #toolbar-actions, #head, #cell-{key},
  *                        #row-actions(우측 행액션 1컬럼 — 취소·삭제·설정 등 한 셀에)
- *                        ※ 구 #row-cancel / #row-delete 는 #row-actions 없을 때
- *                          폴백 지원(기존 화면 무수정 호환)
+ *                        표준 취소/삭제 버튼은 <bo-row-cancel-delete> 사용
  *
  * BoPathTreeCard — 좌측 트리 카드 래퍼 (card + 📂제목 + #bizCd + 전체보기 + 스크롤 + BoPathTree)
  *                  ~10개 sy 화면의 반복 트리 카드를 1줄로 대체. BoPathTree(API 자급자족)를 내장
@@ -816,10 +815,7 @@ window.BoGridCrud = {
           </template>
           <td class="col-act-val">
             <div class="col-act-box">
-              <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item">
-                <slot name="row-cancel" :row="fnRow(item)" :idx="idx" :node="item"></slot>
-                <slot name="row-delete" :row="fnRow(item)" :idx="idx" :node="item"></slot>
-              </slot>
+              <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item"></slot>
             </div>
           </td>
         </tr>
@@ -1262,4 +1258,47 @@ window.BoRoleSelectModal = {
     <button class="btn btn-primary" :disabled="confirmDisabled" @click="onConfirm">✔ {{ confirmLabel }}</button>
   </template>
 </bo-modal>`,
+};
+
+/* ── BoRowCancelDelete — CRUD 그리드 #row-actions 표준 취소/삭제 버튼 묶음 ─────
+ * sy/ec 관리화면 ~9개에서 반복되던 _row_status 기반 [취소][삭제] 버튼 세트를 1줄로 대체.
+ *
+ *   <template #row-actions="{ row, idx }">
+ *     <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
+ *   </template>
+ *
+ * 버튼 표시 조건 (기본):
+ *   취소: row._row_status ∈ ['U','I','D']  (수정/신규/삭제 상태에서 되돌리기)
+ *   삭제: row._row_status ∈ ['N','U']      (정상/수정 상태에서 삭제 마킹)
+ *
+ * 변형:
+ *   allowDeleteNull=true → 삭제: row._row_status == null 또는 ['N','U'] (SyDeptMng 패턴)
+ *
+ * 추가 버튼이 필요한 화면(즉시실행/설정/코드관리 등)은 같은 #row-actions 슬롯 안에
+ * 본 컴포넌트와 함께 일반 button 을 병기. 컴포넌트가 마지막에 표준 cancel/delete 만 렌더 */
+window.BoRowCancelDelete = {
+  name: 'BoRowCancelDelete',
+  props: {
+    row:             { type: Object,  required: true },
+    allowDeleteNull: { type: Boolean, default: false },  // true=row._row_status null 도 삭제 가능 (SyDept 패턴)
+    cancelLabel:     { type: String,  default: '취소' },
+    deleteLabel:     { type: String,  default: '삭제' },
+  },
+  emits: ['cancel', 'delete'],
+  setup(props, { emit }) {
+    const cfShowCancel = Vue.computed(() => ['U', 'I', 'D'].includes(props.row._row_status));
+    const cfShowDelete = Vue.computed(() => {
+      const s = props.row._row_status;
+      if (props.allowDeleteNull && s == null) return true;
+      return ['N', 'U'].includes(s);
+    });
+    const onCancel = () => emit('cancel');
+    const onDelete = () => emit('delete');
+    return { cfShowCancel, cfShowDelete, onCancel, onDelete };
+  },
+  template: /* html */`
+<span>
+  <button v-if="cfShowCancel" class="btn btn-secondary btn-xs" @click.stop="onCancel">{{ cancelLabel }}</button>
+  <button v-if="cfShowDelete" class="btn btn-danger btn-xs" @click.stop="onDelete">{{ deleteLabel }}</button>
+</span>`,
 };

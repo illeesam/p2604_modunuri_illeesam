@@ -161,6 +161,13 @@ window.XsSample06 = {
 
     // -- return ---------------------------------------------------------------
 
+    /* FoSearchArea :columns 자동 렌더 정의 */
+    const baseSearchColumns = [
+      { key: 'searchValue',  type: 'text',   placeholder: '쿠폰명 검색', width: '180px' },
+      { key: 'discountType', type: 'select', options: () => codes.discnt_type_opts, nullLabel: '할인유형 전체' },
+      { key: 'useYn',        type: 'select', options: () => codes.use_yn_opts,      nullLabel: '사용여부 전체' },
+    ];
+
     /* fo-grid-crud 컬럼 */
     const baseGridColumns = [
       { key: 'couponNm',     label: '쿠폰명', edit: 'text' },
@@ -177,7 +184,7 @@ window.XsSample06 = {
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
 
     return {
-      toast, searchParam, onSearch, onReset,
+      toast, searchParam, baseSearchColumns, onSearch, onReset,
       gridRows, baseGridColumns, pager, setPage, getRealIdx,
       setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
@@ -191,19 +198,8 @@ window.XsSample06 = {
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">{{ toast.msg }}</div>
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">06. 쿠폰 관리 <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span></div>
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchParam.searchValue" placeholder="쿠폰명 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:180px;outline:none;" />
-      <select v-model="searchParam.discounttype" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">할인유형 전체</option>
-        <option v-for="o in codes.discnt_type_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-      </select>
-      <select v-model="searchParam.useyn" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">사용여부 전체</option>
-        <option v-for="o in codes.use_yn_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-      </select>
-      <button @click="onSearch" style="font-size:12px;padding:5px 14px;border:none;border-radius:6px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">검색</button>
-      <button @click="onReset"  style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;">초기화</button>
-    </div>
+    <fo-search-area :columns="baseSearchColumns" :param="searchParam"
+      @search="onSearch" @reset="onReset" />
   </div>
   <fo-grid-crud
     list-title="쿠폰 목록" row-key="couponId"
@@ -213,13 +209,8 @@ window.XsSample06 = {
     @add="addRow" @save="handleSave"
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @reorder="onReorder" @cell-change="onCellChange">
-    <template #row-cancel="{ row }">
-      <button v-if="['U','I','D'].includes(row._row_status)" @click.stop="onRowCancel(row)"
-        style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">취소</button>
-    </template>
-    <template #row-delete="{ row }">
-      <button v-if="['N','U'].includes(row._row_status)" @click.stop="onRowDelete(row)"
-        style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">삭제</button>
+    <template #row-actions="{ row }">
+      <fo-row-cancel-delete :row="row" @cancel="onRowCancel(row)" @delete="onRowDelete(row)" />
     </template>
   </fo-grid-crud>
 </div>

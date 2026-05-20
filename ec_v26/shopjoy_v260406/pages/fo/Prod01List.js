@@ -237,8 +237,13 @@ window.Prod01List = {
 
     // -- return ---------------------------------------------------------------
 
+    /* FoSearchArea :columns 자동 렌더 정의 — 단일 검색어 input 만 자동, 필터/조회는 default slot */
+    const baseSearchColumns = [
+      { key: 'searchText', type: 'text', placeholder: '상품명, 태그 검색...' },
+    ];
+
     return { pager,
-      uiState,
+      uiState, baseSearchColumns,
       allProds,
       selColors, selSizes, selCats,
       cfAllColors, cfAllSizes, cfAllCats,
@@ -293,14 +298,9 @@ window.Prod01List = {
   </div>
 
   <!-- -- 검색 바 -- -->
-  <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
-    <div style="flex:1;position:relative;">
-      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:0.95rem;color:var(--text-muted);">🔍</span>
-      <input v-model="uiState.searchText" type="text" placeholder="상품명, 태그 검색..."
-        style="width:100%;padding:10px 14px 10px 36px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;box-sizing:border-box;"
-        @focus="$event.target.style.borderColor='var(--blue)'"
-        @blur="$event.target.style.borderColor='var(--border)'" />
-    </div>
+  <fo-search-area :show-actions="false" bar-style="margin-bottom:12px;"
+    :columns="baseSearchColumns" :param="uiState"
+    @search="onSearch">
     <button @click="uiState.filterOpen=!uiState.filterOpen"
       style="display:flex;align-items:center;gap:6px;padding:10px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;transition:all 0.2s;"
       :style="uiState.filterOpen?'border-color:var(--blue);color:var(--blue);':cfHasFilter?'border-color:#f97316;color:#f97316;':'color:var(--text-muted);'">
@@ -315,7 +315,7 @@ window.Prod01List = {
       style="padding:10px 18px;border:1.5px solid var(--blue);border-radius:10px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.85rem;font-weight:700;white-space:nowrap;transition:all 0.2s;">
       조회
     </button>
-  </div>
+  </fo-search-area>
 
   <!-- -- 상세 필터 패널 -- -->
   <div v-show="uiState.filterOpen"

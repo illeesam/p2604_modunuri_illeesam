@@ -315,6 +315,9 @@ window.SyRoleMng = {
       }
     };
 
+    /* 설정 버튼 노출 여부 (속성값 && 금지 정책상 fn 분리) */
+    const cfShowRoleSetting = (row) => row.roleId > 0 && row._row_status !== 'D';
+
     /* 역할(권한) onOpenSetting */
     const onOpenSetting = (idx) => {
       setFocused(idx);
@@ -605,7 +608,7 @@ window.SyRoleMng = {
       cfSiteNm, ROLE_TYPES, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
       searchParam, onSearch, onReset, onTreeCatChange,
       gridRows,
-      setFocused, onOpenSetting, onCellChange,
+      setFocused, onOpenSetting, cfShowRoleSetting, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       toggleCheckAll, parentNm,
       roleTreeModal, openParentModal, onParentSelect,
@@ -656,16 +659,14 @@ window.SyRoleMng = {
 
 
     <template #row-actions="{ row, idx }">
-      <button v-if="['U','I','D'].includes(row._row_status)"
-        class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-      <button v-if="row.roleId > 0 && row._row_status !== 'D'"
+      <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)">
+      </bo-row-cancel-delete>
+      <button v-if="cfShowRoleSetting(row)"
         class="btn btn-blue btn-xs"
         :style="{ fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
                   outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
         @click.stop="onOpenSetting(idx)"
         title="하단 메뉴접근권한 / 대상사용자 설정">설정</button>
-      <button v-if="['N','U'].includes(row._row_status)"
-        class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
     </template>
   </bo-grid-crud>
 

@@ -92,7 +92,12 @@ window.Blog = {
 
     // -- return ---------------------------------------------------------------
 
-    return { pager, setPage, onSizeChange, searchParam, categories, posts, cfLatestPosts, postBg, onSearch, onReset, uiState, codes };
+    /* FoSearchArea :columns 자동 렌더 정의 — 단일 검색어 입력 */
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '검색어를 입력하세요...' },
+    ];
+
+    return { pager, setPage, onSizeChange, searchParam, baseSearchColumns, categories, posts, cfLatestPosts, postBg, onSearch, onReset, uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -114,20 +119,10 @@ window.Blog = {
   </div>
 
   <!-- -- 검색 ------------------------------------------------------------- -->
-  <div style="display:flex;justify-content:center;margin-bottom:32px;gap:8px;">
-    <div style="position:relative;width:100%;max-width:480px;">
-      <input v-model="searchParam.searchValue" type="text" placeholder="검색어를 입력하세요..."
-        style="width:100%;padding:12px 44px 12px 16px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);" />
-      <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:1rem;">🔍</span>
-    </div>
-    <button @click="onSearch"
-      style="padding:12px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88rem;white-space:nowrap;">
-      검색
-    </button>
-    <button @click="onReset"
-      style="padding:12px 24px;background:var(--bg-card);color:var(--text-secondary);border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88rem;white-space:nowrap;">
-      초기화
-    </button>
+  <div style="display:flex;justify-content:center;margin-bottom:32px;">
+    <fo-search-area bar-style="max-width:640px;width:100%;justify-content:center;"
+      :columns="baseSearchColumns" :param="searchParam"
+      @search="onSearch" @reset="onReset" />
   </div>
 
   <!-- -- 레이아웃: 사이드바 + 본문 ------------------------------------------------ -->

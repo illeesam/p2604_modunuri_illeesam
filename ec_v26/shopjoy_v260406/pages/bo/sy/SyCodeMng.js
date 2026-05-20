@@ -662,8 +662,7 @@ window.SyCodeMng = {
         <button v-if="g._row_status !== 'D'" class="btn btn-xs" @click.stop="openGrpSetting(g, $event)"
           style="background:#f0f4ff;border:1px solid #c7d2fe;color:#4338ca;font-weight:600;"
           title="코드관리">코드관리</button>
-        <button v-if="['U','I','D'].includes(uiState.grpRows[idx]._row_status)" class="btn btn-secondary btn-xs" @click.stop="cancelGrp(idx)">취소</button>
-        <button v-if="['N','U'].includes(uiState.grpRows[idx]._row_status)" class="btn btn-danger btn-xs" @click.stop="handleDeleteGrp(idx)">삭제</button>
+        <bo-row-cancel-delete :row="g" @cancel="cancelGrp(idx)" @delete="handleDeleteGrp(idx)" />
       </template>
     </bo-grid-crud>
   </div>
@@ -695,10 +694,7 @@ window.SyCodeMng = {
         @row-dblclick="row => handleLoadDetail(row.codeId)">
 
         <template #row-actions="{ row, idx }">
-          <button v-if="['U','I','D'].includes(row._row_status)"
-            class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-          <button v-if="['N','U'].includes(row._row_status)"
-            class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+          <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
         </template>
       </bo-grid-crud>
     </div>
@@ -748,10 +744,9 @@ window.SyCodeMng = {
         </template>
 
         <template #row-actions="{ row }">
-          <button v-if="['U','I','D'].includes(row._row_status)"
-            class="btn btn-secondary btn-xs" @click.stop="cancelRow(uiState.gridRows.indexOf(row))">취소</button>
-          <button v-if="['N','U'].includes(row._row_status)"
-            class="btn btn-danger btn-xs" @click.stop="deleteRow(uiState.gridRows.indexOf(row))">삭제</button>
+          <bo-row-cancel-delete :row="row"
+            @cancel="cancelRow(uiState.gridRows.indexOf(row))"
+            @delete="deleteRow(uiState.gridRows.indexOf(row))" />
         </template>
       </bo-grid-crud>
     </div>

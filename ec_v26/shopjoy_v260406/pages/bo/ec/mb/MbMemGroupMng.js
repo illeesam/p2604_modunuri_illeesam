@@ -211,10 +211,7 @@ window.MbMemGroupMng = {
 
 
     <template #row-actions="{ row, idx }">
-      <button v-if="['U','I','D'].includes(row._row_status)"
-        class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-      <button v-if="['N','U'].includes(row._row_status)"
-        class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+      <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
     </template>
   </bo-grid-crud>
 </div>`

@@ -174,6 +174,19 @@ window.XsSample09 = {
     // -- return ---------------------------------------------------------------
 
     /* fo-grid-crud 컬럼 */
+    /* FoSearchArea :columns 자동 렌더 정의 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'question', label: '질문' },
+          { value: 'author',   label: '작성자' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
+      { key: 'searchValue', type: 'text',   placeholder: '검색어 입력', width: '200px' },
+      { key: 'category',    type: 'select', options: () => codes.contact_cat_opts, nullLabel: '카테고리 전체' },
+      { key: 'status',      type: 'select', options: () => codes.open_opts,        nullLabel: '상태 전체' },
+    ];
+
     const baseGridColumns = [
       { key: 'question', label: '질문',   edit: 'text' },
       { key: 'category', label: '카테고리', edit: 'select', width: '80px', align: 'center',
@@ -189,7 +202,7 @@ window.XsSample09 = {
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
 
     return {
-      toast, searchParam, onSearch, onReset,
+      toast, searchParam, baseSearchColumns, onSearch, onReset,
       gridRows, baseGridColumns, pager, setPage, getRealIdx,
       setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
@@ -203,28 +216,8 @@ window.XsSample09 = {
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">{{ toast.msg }}</div>
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">09. FAQ 관리 <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span></div>
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-          { value: 'question', label: '질문' },
-          { value: 'author',   label: '작성자' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="140px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:200px;outline:none;" />
-      <select v-model="searchParam.category" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">카테고리 전체</option>
-        <option v-for="o in codes.contact_cat_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-      </select>
-      <select v-model="searchParam.status" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">상태 전체</option>
-        <option v-for="o in codes.open_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-      </select>
-      <button @click="onSearch" style="font-size:12px;padding:5px 14px;border:none;border-radius:6px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">검색</button>
-      <button @click="onReset"  style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;">초기화</button>
-    </div>
+    <fo-search-area :columns="baseSearchColumns" :param="searchParam"
+      @search="onSearch" @reset="onReset" />
   </div>
   <fo-grid-crud
     list-title="FAQ 목록" row-key="faqId"
@@ -234,13 +227,8 @@ window.XsSample09 = {
     @add="addRow" @save="handleSave"
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @reorder="onReorder" @cell-change="onCellChange">
-    <template #row-cancel="{ row }">
-      <button v-if="['U','I','D'].includes(row._row_status)" @click.stop="onRowCancel(row)"
-        style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">취소</button>
-    </template>
-    <template #row-delete="{ row }">
-      <button v-if="['N','U'].includes(row._row_status)" @click.stop="onRowDelete(row)"
-        style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">삭제</button>
+    <template #row-actions="{ row }">
+      <fo-row-cancel-delete :row="row" @cancel="onRowCancel(row)" @delete="onRowDelete(row)" />
     </template>
   </fo-grid-crud>
 </div>

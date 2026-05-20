@@ -1163,6 +1163,7 @@
   .component('FoGridEdit',   window.FoGridEdit)
   .component('FoGridCrud',   window.FoGridCrud)
   .component('FoModal',      window.FoModal)
+  .component('FoRowCancelDelete', window.FoRowCancelDelete)
   /* ── components/modals/ — 상세 모달 ── */
   .component('CustomerModal',        window.CustomerModal)
   .component('OrderDetailModal',     window.OrderDetailModal)

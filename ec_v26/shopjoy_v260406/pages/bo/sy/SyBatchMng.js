@@ -208,6 +208,9 @@ window.SyBatchMng = {
       }
     };
 
+    /* 즉시실행 버튼 노출 여부 (속성값 && 금지 정책상 fn 분리) */
+    const cfShowRunNow = (row) => row._row_status !== 'I' && row._row_status !== 'D';
+
     /* -- 즉시 실행 -- */
     const runNow = async (row) => {
       const ok = await showConfirm('즉시 실행', `[${row.batchNm}] 배치를 즉시 실행하시겠습니까?`);
@@ -327,7 +330,7 @@ window.SyBatchMng = {
       cfSiteNm, searchParam, handleDateRangeChange,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
-      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
+      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow, cfShowRunNow,
       cronModal, openCronPicker, onCronApply,
       onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, fnRunBadge, fnStatusClass,
@@ -372,9 +375,8 @@ window.SyBatchMng = {
     </template>
 
     <template #row-actions="{ row, idx }">
-      <button v-if="row._row_status!=='I' && row._row_status!=='D'" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
-      <button v-if="['U','I','D'].includes(row._row_status)" class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
-      <button v-if="['N','U'].includes(row._row_status)" class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+      <button v-if="cfShowRunNow(row)" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
+      <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
     </template>
   </bo-grid-crud>
 
