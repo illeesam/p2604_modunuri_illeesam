@@ -428,7 +428,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         cellStyle: 'color:#888;', fmt: (v) => (v || '-') },
       { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right', align: 'right',
         fmt: (v, row) => ((row.salePrice || row.price || 0).toLocaleString() + '원') },
-      { key: '_sel',      label: '선택',     style: 'width:56px;text-align:center' },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -679,11 +678,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <bo-grid bare :columns="pickerColumns" :rows="cfPickerList" row-key="productId"
-            empty-text="검색 결과가 없습니다.">
-            <template #cell-_sel="{ row }">
-              <td style="text-align:center">
-                <button class="btn btn-blue btn-xs" @click="addItemFromProd(row)">선택</button>
-              </td>
+            empty-text="검색 결과가 없습니다." row-actions>
+            <template #row-actions="{ row }">
+              <button class="btn btn-blue btn-xs" @click="addItemFromProd(row)">선택</button>
             </template>
           </bo-grid>
         </div>

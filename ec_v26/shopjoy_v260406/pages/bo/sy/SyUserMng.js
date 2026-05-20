@@ -234,7 +234,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
-      { key: 'loginId',      label: '로그인ID' },
+      { key: 'loginId',      label: '로그인ID',
+        cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:12px;font-family:monospace;' },
       { key: 'userNm',       label: '이름', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'userEmail',    label: '이메일' },
@@ -310,9 +311,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </template>
     <template #head-actions><th style="text-align:right">관리</th></template>
 
-    <template #cell-loginId="{ row }">
-      <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.loginId }}</code></td>
-    </template>
     <template #row-actions="{ row }">
       <td><div class="actions">
         <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.userId)">수정</button>

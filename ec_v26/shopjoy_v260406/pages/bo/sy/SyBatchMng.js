@@ -298,7 +298,6 @@ window.SyBatchMng = {
         badge: (row) => 'badge-xs ' + (({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[row.batchRunStatus]) || 'badge-gray') },
       { key: 'siteNm',        label: '사이트',       style: 'width:55px;', align: 'center',
         cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
-      { key: 'runNow',        label: '',             style: 'width:36px;' },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -391,13 +390,8 @@ window.SyBatchMng = {
       </td>
     </template>
 
-    <template #cell-runNow="{ row }">
-      <td style="text-align:center;">
-        <button v-if="row._row_status!=='I' && row._row_status!=='D'" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
-      </td>
-    </template>
-
     <template #row-actions="{ row, idx }">
+      <button v-if="row._row_status!=='I' && row._row_status!=='D'" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
       <button v-if="['U','I','D'].includes(row._row_status)" class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
       <button v-if="['N','U'].includes(row._row_status)" class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
     </template>

@@ -190,7 +190,9 @@ window.DpDispWidgetMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
     const listColumns = [
-      { key: 'widgetId',   label: 'ID',       style: 'width:56px;' },
+      { key: 'widgetId',   label: 'ID',       style: 'width:56px;', link: true,
+        cellStyle: 'color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;font-family:monospace;',
+        fmt: (v) => v ? '#' + String(v).slice(-6) : '-' },
       { key: 'widgetInfo', label: '위젯 정보', sortKey: 'reg' },
     ];
 
@@ -310,9 +312,6 @@ window.DpDispWidgetMng = {
         <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}</span>
       </div>
       <button @click="openNew" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">+ 신규등록</button>
-    </template>
-    <template #cell-widgetId="{ row }">
-      <td style="color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;width:56px;font-family:monospace;cursor:pointer;" @click="handleLoadDetail(row.widgetId)">{{ row.widgetId ? '#'+String(row.widgetId).slice(-6) : '-' }}</td>
     </template>
     <template #cell-widgetInfo="{ row }">
       <td style="padding:10px 12px;vertical-align:top;">

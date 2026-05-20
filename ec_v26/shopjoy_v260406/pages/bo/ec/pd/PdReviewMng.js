@@ -265,7 +265,6 @@ window.PdReviewMng = {
       { key: 'prodId',          label: '상품ID',   style: 'width:110px' },
       { key: 'prodNm',          label: '상품명',   cellStyle: 'color:#444;',
         fmt: (v, row) => (getProdNm(row.prodId) || row.prodNm || '') },
-      { key: '_preview',        label: '미리',     style: 'width:48px;text-align:center;' },
       { key: 'memberId',        label: '작성자',   style: 'width:80px', fmt: (v, row) => getMemNm(row.memberId) },
       { key: 'rating',          label: '평점',     style: 'width:90px;text-align:center', align: 'center',
         cellStyle: 'color:#f59e0b;font-size:13px', fmt: (v, row) => (Number(row.rating || 0).toFixed(1) + ' ★') },
@@ -325,7 +324,7 @@ window.PdReviewMng = {
     <bo-grid :columns="listColumns" :rows="reviews" :pager="pager" row-key="reviewId"
       :sort-state="uiState" list-title="상품리뷰 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
-      :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
+      :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions
       @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
       <template #cell-prodId="{ row }">
         <td style="font-size:12px;" @click.stop>
@@ -335,10 +334,8 @@ window.PdReviewMng = {
             @click="onProdIdClick(row.prodId)">{{ row.prodId }}</span>
         </td>
       </template>
-      <template #cell-_preview="{ row }">
-        <td style="text-align:center" @click.stop>
-          <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click="previewProduct(row.prodId)">👁</button>
-        </td>
+      <template #row-actions="{ row }">
+        <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="previewProduct(row.prodId)">👁</button>
       </template>
       <template #cell-_statusChg="{ row }">
         <td style="text-align:center" @click.stop>

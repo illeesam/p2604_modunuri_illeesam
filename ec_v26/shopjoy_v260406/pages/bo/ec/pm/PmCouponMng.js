@@ -187,7 +187,8 @@ window.PmCouponMng = {
     const gridColumns = [
       { key: 'couponNm',       label: '쿠폰명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'couponCd',       label: '코드' },
+      { key: 'couponCd',       label: '코드',
+        cellInnerStyle: 'background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;font-family:monospace;' },
       { key: 'discount',       label: '할인', fmt: (v, row) => discountLabel(row) },
       { key: 'minOrderAmt',    label: '최소주문',
         fmt: (v) => v ? v.toLocaleString() + '원↑' : '-' },
@@ -245,7 +246,6 @@ window.PmCouponMng = {
       :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"
       @sort="onSort" @row-click="c => handleLoadDetail(c.couponId)">
       <template #head-actions>관리</template>
-      <template #cell-couponCd="{ row: c }"><td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;">{{ c.couponCd }}</code></td></template>
       <template #row-actions="{ row: c }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.couponId)">수정</button>

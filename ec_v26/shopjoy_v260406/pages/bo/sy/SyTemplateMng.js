@@ -217,7 +217,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'pathId',         label: '표시경로' },
       { key: 'templateId',     label: 'ID' },
       { key: 'templateTypeCd', label: '템플릿유형', badge: (row) => fnTypeBadge(row.templateTypeCd) },
-      { key: 'templateCode',   label: '템플릿코드' },
+      { key: 'templateCode',   label: '템플릿코드',
+        cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:11px;color:#555;font-family:monospace;' },
       { key: 'templateNm',     label: '템플릿명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'templateSubject', label: '제목(Subject)', cellStyle: 'color:#555', fmt: (v) => v || '-' },
@@ -282,9 +283,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
         <template #cell-pathId="{ row }">
           <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row.pathId!=null?'#374151':'#9ca3af',fontWeight:row.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span><button type="button" @click.stop="openPathPick(row)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
-        </template>
-        <template #cell-templateCode="{ row }">
-          <td><code style="font-size:11px;color:#555;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.templateCode || '-' }}</code></td>
         </template>
         <template #row-actions="{ row }">
           <td><div class="actions">

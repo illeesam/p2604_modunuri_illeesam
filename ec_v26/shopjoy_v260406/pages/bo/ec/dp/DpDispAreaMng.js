@@ -151,7 +151,7 @@ const searchParam = reactive(_initSearchParam());
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
     const listColumns = [
-      { key: 'areaCd',     label: '영역코드' },
+      { key: 'areaCd',     label: '영역코드', cellInnerStyle: 'font-size:11px;font-family:monospace;' },
       { key: 'areaNm',     label: '영역명',   sortKey: 'nm', link: true },
       { key: 'areaTypeCd', label: '유형' },
       { key: 'useYn',      label: '사용여부',
@@ -210,9 +210,6 @@ const searchParam = reactive(_initSearchParam());
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
-      </template>
-      <template #cell-areaCd="{ row }">
-        <td><code style="font-size:11px;">{{ row.areaCd }}</code></td>
       </template>
 
       <template #row-actions="{ row }">

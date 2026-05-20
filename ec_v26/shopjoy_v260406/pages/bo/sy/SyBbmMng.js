@@ -158,7 +158,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
       { key: 'pathId',        label: '표시경로' },
-      { key: 'bbmCode',       label: '게시판코드' },
+      { key: 'bbmCode',       label: '게시판코드',
+        cellInnerStyle: 'font-size:11px;color:#555;font-family:monospace;' },
       { key: 'bbmNm',         label: '게시판명', link: true,
         cellInnerStyle: (v) => detailModal.dtlId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'bbmTypeCd',     label: '유형', badge: (row) => fnTypeBadge(row.bbmTypeCd) },
@@ -227,9 +228,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
         <template #cell-pathId="{ row }">
           <bo-path-pick-field biz-cd="sy_bbm" :row="row" />
-        </template>
-        <template #cell-bbmCode="{ row }">
-          <td><code style="font-size:11px;color:#555;">{{ row.bbmCode }}</code></td>
         </template>
         <template #row-actions="{ row }">
           <td><div class="actions">

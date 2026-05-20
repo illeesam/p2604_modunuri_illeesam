@@ -475,7 +475,8 @@ window.SyVendorUserMng = {
     const vendorGridColumns = [
       { key: 'vendorTypeCd', label: '업체유형', align: 'center', badge: (row) => fnVendorTypeBadge(row.vendorTypeCd), fmt: (v) => fnVendorTypeLabel(v) },
       { key: 'vendorNm',     label: '업체명', cellStyle: 'font-weight:600' },
-      { key: 'bizNo',        label: '사업자번호' },
+      { key: 'bizNo',        label: '사업자번호',
+        cellInnerStyle: 'font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-family:monospace;' },
       { key: 'ceo',          label: '대표자' },
       { key: 'phone',        label: '전화', cellStyle: 'font-size:11.5px' },
     ];
@@ -562,9 +563,6 @@ window.SyVendorUserMng = {
     list-title="업체목록" :count-text="vendors.length + '건'"
     :row-style="fnVendorRowStyle" row-clickable
     @set-page="setBizPage" @row-click="pickVendorRow" row-actions>
-    <template #cell-bizNo="{ row }">
-      <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ row.bizNo }}</code></td>
-    </template>
       <template #row-actions="{ row }">
         <button class="btn btn-primary btn-xs" @click.stop="pickVendorRow(row)">{{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}</button>
       </template>

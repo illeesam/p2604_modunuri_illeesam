@@ -142,7 +142,8 @@ window.SyI18nMng = {
 
     /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const gridColumns = [
-      { key: 'i18nKey',     label: '키 (i18n_key)' },
+      { key: 'i18nKey',     label: '키 (i18n_key)',
+        cellInnerStyle: 'font-size:12px;color:#7c3aed;font-family:monospace;' },
       { key: 'i18nDesc',    label: '설명', cellStyle: 'color:#666;font-size:12px' },
       { key: 'i18nScopeCd', label: '범위', align: 'center', badge: (row) => fnScopeBadge(row.i18nScopeCd) },
       { key: 'i18nCategory',label: '카테고리', cellStyle: 'font-size:12px;color:#888' },
@@ -189,9 +190,6 @@ window.SyI18nMng = {
       :row-style="fnRowStyle" row-clickable
       @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
 
-      <template #cell-i18nKey="{ row }">
-        <td><code style="font-size:12px;color:#7c3aed">{{ row.i18nKey }}</code></td>
-      </template>
     </bo-grid-readonly>
     <!-- -- 번역 편집 패널 ----------------------------------------------------- -->
     <div class="card" v-if="cfSelectedKey">

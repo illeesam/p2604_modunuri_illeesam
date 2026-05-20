@@ -124,12 +124,12 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const histColumns = [
       { key: 'batchLogId', label: '로그ID',  style: 'width:46px;', cellStyle: 'color:#aaa' },
       { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;', cellStyle: 'font-weight:500' },
-      { key: '_batchCode', label: '배치코드', style: 'min-width:150px;' },
+      { key: '_batchCode', label: '배치코드', style: 'min-width:150px;',
+        cellInnerStyle: 'font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;font-family:monospace;' },
       { key: 'runAt',      label: '실행일시', style: 'width:128px;', cellStyle: 'color:#555;font-family:monospace;font-size:11px' },
       { key: 'durationMs', label: '소요시간', style: 'width:66px;text-align:center;', align: 'center', cellStyle: 'color:#666', fmt: (v) => fnFmtDuration(v) },
       { key: 'runStatus',  label: '결과',    style: 'width:66px;text-align:center;', align: 'center', badge: (row) => fnRunBadge(row.runStatus) },
       { key: 'message',    label: '메시지',  style: 'width:auto;', cellStyle: (v, row) => 'font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;' + (row.runStatus === '실패' ? 'color:#dc2626' : 'color:#555') },
-      { key: '_exp',       label: '',        style: 'width:32px;' },
     ];
     const fnRowExpanded = (log) => isExpanded(log.batchLogId);
     const fnHistRowStyle = (log) =>
@@ -167,21 +167,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </select>
         <button class="btn btn-primary btn-sm" @click="onSearch" style="height:30px;font-size:12px;padding:2px 12px;">조회</button>
       </div>
-    </template>
-
-    <template #cell-_batchCode="{ row }">
-      <td><code style="font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ row.batchCode }}</code></td>
-    </template>
-    <template #cell-_exp="{ row }">
-      <td style="text-align:center;padding:0 4px;">
-        <button
-          @click="toggleExpand(row.batchLogId)"
-          :title="isExpanded(row.batchLogId) ? '접기' : '상세 펼치기'"
-          style="background:none;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;padding:2px 5px;font-size:11px;color:#888;line-height:1;transition:all .15s;"
-          :style="isExpanded(row.batchLogId) ? 'background:#f0f8ff;border-color:#2563eb;color:#2563eb;' : ''">
-          {{ isExpanded(row.batchLogId) ? '▲' : '▼' }}
-        </button>
-      </td>
     </template>
 
     <template #row-expand="{ row, colspan }">

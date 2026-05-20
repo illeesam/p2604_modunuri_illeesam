@@ -201,13 +201,17 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
     const listColumns = [
-      { key: 'blogTitle',  label: '제목',     sortKey: 'nm' },  // 공지배지+요약 복합 — #cell- 슬롯 KEEP
+      { key: 'blogTitle',  label: '제목',     sortKey: 'nm', cellInnerClass: 'title-link',
+        fmt: (v, row) => {
+          const prefix = row.isNotice === 'Y' ? '[공지] ' : '';
+          const summary = row.blogSummary ? ` / ${row.blogSummary}` : '';
+          return `${prefix}${row.blogTitle || ''}${summary}`;
+        } },
       { key: 'blogAuthor', label: '작성자',   style: 'width:80px;' },
       { key: 'viewCount',  label: '조회수',   style: 'width:80px;', align: 'right',  fmt: v => (v||0).toLocaleString() },
       { key: 'isNotice',   label: '공지',     style: 'width:70px;', align: 'center', badge: row => row.isNotice==='Y' ? 'badge-orange' : 'badge-gray' },
       { key: 'useYn',      label: '공개',     style: 'width:70px;', align: 'center', badge: row => fnYnBadge(row.useYn), fmt: v => v==='Y' ? '공개' : '비공개' },
       { key: 'regDate',    label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
-      { key: '_toggle',    label: '공개전환', style: 'width:80px;text-align:center;' },
     ];
     const fnGridRowClass = (row) => (detailModal.dtlId === row.blogId ? 'active' : '');
 
@@ -253,21 +257,12 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       :sort-state="uiState" list-title="게시글 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
-      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
+      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail" row-actions>
       <template #toolbar-actions>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </template>
-      <template #cell-blogTitle="{ row }">
-        <td>
-          <span v-if="row.isNotice==='Y'" class="badge badge-orange" style="margin-right:4px;font-size:10px">공지</span>
-          <span class="title-link">{{ row.blogTitle }}</span>
-          <span style="font-size:11px;color:#aaa;margin-left:6px">{{ row.blogSummary }}</span>
-        </td>
-      </template>
-      <template #cell-_toggle="{ row }">
-        <td style="text-align:center" @click.stop>
-          <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click="toggleUse(row)">{{ row.useYn==='Y'?'비공개':'공개' }}</button>
-        </td>
+      <template #row-actions="{ row }">
+        <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="toggleUse(row)">{{ row.useYn==='Y'?'비공개':'공개' }}</button>
       </template>
     </bo-grid>
     <div class="card" v-if="detailModal.show">

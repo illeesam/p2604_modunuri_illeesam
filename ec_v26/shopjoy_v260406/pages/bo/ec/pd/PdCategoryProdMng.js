@@ -366,7 +366,6 @@ window.PdCategoryProdMng = {
       { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right', align: 'right',
         fmt: (v, row) => ((row.salePrice || 0).toLocaleString() + '원') },
       { key: 'prodStock', label: '재고',     style: 'width:60px;text-align:center', align: 'center', fmt: v => v != null ? v : '-' },
-      { key: '_add',      label: '추가',     style: 'width:56px;text-align:center' },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -619,11 +618,9 @@ window.PdCategoryProdMng = {
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <bo-grid bare :columns="catProdPickerColumns" :rows="pickerResults" row-key="prodId"
-            empty-text="검색 결과가 없습니다.">
-            <template #cell-_add="{ row }">
-              <td style="text-align:center">
-                <button class="btn btn-blue btn-xs" @click="addProd(row)">추가</button>
-              </td>
+            empty-text="검색 결과가 없습니다." row-actions>
+            <template #row-actions="{ row }">
+              <button class="btn btn-blue btn-xs" @click="addProd(row)">추가</button>
             </template>
           </bo-grid>
         </div>
