@@ -219,6 +219,24 @@ window.SyApiLogMng = {
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
     /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
+    const baseSearchColumns = [
+      { type: 'label', label: '등록기간' },
+      { key: 'dateRange', type: 'dateRange',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => onDateRangeChange() },
+      { key: 'searchMethod', type: 'select',
+        options: () => codes.http_methods, nullLabel: '메서드 전체' },
+      { key: 'searchPath', type: 'text',
+        placeholder: 'API 경로 (예: /bo/sy/)', width: '190px' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [{ value: 'reqIp', label: 'IP' }, { value: 'userId', label: '사용자ID' }],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
+      { key: 'searchValue', type: 'text',
+        placeholder: '검색어 입력', width: '150px' },
+    ];
+
     const accessGridColumns = [
       { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
@@ -259,7 +277,7 @@ window.SyApiLogMng = {
       fnMethodBadge, fnStatusBadge, fnDecode,
       expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded, handleClearLog,
       showRefModal,
-      accessGridColumns, errorGridColumns, fnRowExpanded, fnRowClickStyle,
+      baseSearchColumns, accessGridColumns, errorGridColumns, fnRowExpanded, fnRowClickStyle,
     };
   },
   template: /* html */`
@@ -276,30 +294,7 @@ window.SyApiLogMng = {
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <bo-search-area @search="onSearch" @reset="onReset">
-      <span class="search-label">등록기간</span>
-      <input type="date" v-model="uiState.dateStart" style="width:140px" />
-      <span style="line-height:32px">~</span>
-      <input type="date" v-model="uiState.dateEnd" style="width:140px" />
-      <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
-        <option value="">기간선택</option>
-        <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
-      </select>
-      <select v-model="uiState.searchMethod" style="width:100px">
-        <option value="">메서드 전체</option>
-        <option v-for="c in codes.http_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-      <input v-model="uiState.searchPath" placeholder="API 경로 (예: /bo/sy/)" style="width:190px" @keyup.enter="onSearch" />
-      <bo-multi-check-select
-        v-model="uiState.searchType"
-        :options="[
-          { value: 'reqIp',  label: 'IP' },
-          { value: 'userId', label: '사용자ID' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="140px" />
-      <input v-model="uiState.searchValue" placeholder="검색어 입력" style="width:150px" @keyup.enter="onSearch" />
+    <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="onSearch" @reset="onReset">
       <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
       </template>
