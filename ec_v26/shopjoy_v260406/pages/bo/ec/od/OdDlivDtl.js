@@ -266,7 +266,18 @@ window.OdDlivDtl = {
         cellInnerStyle: () => cfFirstClaim.value
           ? `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${CLAIM_TYPE_COLOR[cfFirstClaim.value.type]||'#9ca3af'};`
           : 'color:#ccc;' },
-      { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
+      { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;', cellStyle: 'font-size:12px;',
+        trackBoxes: {
+          items: () => {
+            const c = cfFirstClaim.value;
+            if (!c || c.type !== '교환') return [];
+            return [
+              ...(c.exchangeCourier ? [{ label: '발송', courier: c.exchangeCourier, trackingNo: c.exchangeTrackingNo, colorVariant: 'blue' }] : []),
+              ...(c.courier         ? [{ label: '수거', courier: c.courier,         trackingNo: c.trackingNo,         colorVariant: 'orange' }] : []),
+            ];
+          },
+          onTrack: openTracking,
+        } },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -441,19 +452,6 @@ window.OdDlivDtl = {
     </div>
     <bo-grid bare :columns="dlivItemCols" :rows="dlivItems"
              empty-text="배송 항목 정보가 없습니다.">
-      <template #cell-exchInfo>
-        <td style="font-size:12px;">
-          <div v-if="cfFirstClaim && cfFirstClaim.type==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
-            <span v-if="cfFirstClaim.exchangeCourier" @click="openTracking(cfFirstClaim.exchangeCourier, cfFirstClaim.exchangeTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-weight:700;">
-              발송 {{ cfFirstClaim.exchangeCourier }} · {{ cfFirstClaim.exchangeTrackingNo || '-' }} 🔍
-            </span>
-            <span v-if="cfFirstClaim.courier" @click="openTracking(cfFirstClaim.courier, cfFirstClaim.trackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-weight:700;">
-              수거 {{ cfFirstClaim.courier }} · {{ cfFirstClaim.trackingNo || '-' }} 🔍
-            </span>
-          </div>
-          <span v-else style="color:#ccc;">-</span>
-        </td>
-      </template>
       <template #tfoot>
         <tr style="background:#fafafa;font-weight:700;">
           <td style="width:36px;"></td>

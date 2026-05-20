@@ -171,7 +171,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
     const gridColumns = [
-      { key: 'pathId',        label: '표시경로' },
+      { key: 'pathId',        label: '표시경로', pathPick: 'sy_vendor' },
       { key: 'vendorId',      label: 'ID' },
       { key: 'vendorType',    label: '업체유형', badge: (row) => fnTypeBadge(row.vendorType) },
       { key: 'vendorNm',      label: '업체명', sortKey: 'nm', link: true,
@@ -240,9 +240,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </template>
         <template #head-actions><th style="text-align:right">관리</th></template>
 
-        <template #cell-pathId="{ row }">
-          <bo-path-pick-field biz-cd="sy_vendor" :row="row" @change="onPathChange(row)" />
-        </template>
         <template #row-actions="{ row }">
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.vendorId)">수정</button>

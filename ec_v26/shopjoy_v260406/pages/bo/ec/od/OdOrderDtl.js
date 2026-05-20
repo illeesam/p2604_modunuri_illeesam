@@ -367,7 +367,18 @@ window.OdOrderDtl = {
         cellInnerStyle: () => cfRelatedClaim.value
           ? `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${CLAIM_TYPE_COLOR[cfRelatedClaim.value.type]||'#9ca3af'};`
           : 'color:#ccc;' },
-      { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
+      { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;', cellStyle: 'font-size:12px;',
+        trackBoxes: {
+          items: () => {
+            const c = cfRelatedClaim.value;
+            if (!c || c.type !== '교환') return [];
+            return [
+              ...(c.exchangeCourier ? [{ courier: c.exchangeCourier, trackingNo: c.exchangeTrackingNo, colorVariant: 'blue' }] : []),
+              ...(c.courier         ? [{ label: '수거', courier: c.courier, trackingNo: c.trackingNo, colorVariant: 'orange' }] : []),
+            ];
+          },
+          onTrack: openTracking,
+        } },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -619,19 +630,6 @@ window.OdOrderDtl = {
             {{ isExpanded(idx) ? '▼' : '▶' }}
           </span>
           <span style="font-size:18px;margin-right:6px;">{{ row.emoji || '🛍' }}</span>{{ row.prodNm }}
-        </td>
-      </template>
-      <template #cell-exchInfo="{ row }">
-        <td style="font-size:12px;">
-          <div v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
-            <span v-if="cfRelatedClaim.exchangeCourier" @click="openTracking(cfRelatedClaim.exchangeCourier, cfRelatedClaim.exchangeTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-weight:700;">
-              {{ cfRelatedClaim.exchangeCourier }} · {{ cfRelatedClaim.exchangeTrackingNo || '-' }} 🔍
-            </span>
-            <span v-if="cfRelatedClaim.courier" @click="openTracking(cfRelatedClaim.courier, cfRelatedClaim.trackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-weight:700;">
-              수거 {{ cfRelatedClaim.courier }} · {{ cfRelatedClaim.trackingNo || '-' }} 🔍
-            </span>
-          </div>
-          <span v-else style="color:#ccc;">-</span>
         </td>
       </template>
       <template #row-expand="{ row, colspan }">

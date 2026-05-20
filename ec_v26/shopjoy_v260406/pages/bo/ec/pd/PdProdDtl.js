@@ -1181,8 +1181,10 @@ window.PdProdDtl = {
      * planStatus/listPrice/salePrice/purchasePrice: BoGrid edit 자동 렌더 (@cell-change 미사용, change 시 onPlanChange 호출 위해 슬롯 유지)
      */
     const planCols = [
-      { key: '_start',       label: '시작일시', style: 'width:140px;' },
-      { key: '_end',         label: '종료일시', style: 'width:140px;' },
+      { key: '_start',       label: '시작일시', style: 'width:140px;',
+        dateTimePick: { dateKey: 'startDate', timeKey: 'startTime', showNow: false, showClear: false } },
+      { key: '_end',         label: '종료일시', style: 'width:140px;',
+        dateTimePick: { dateKey: 'endDate', timeKey: 'endTime', showNow: false, showClear: false } },
       { key: 'planStatus',   label: '상태',    style: 'width:80px;',
         edit: 'select', options: () => grpCodes.prod_plan_statuses },
       { key: 'listPrice',    label: '정가',    style: 'width:90px;', edit: 'number', align: 'right' },
@@ -2136,26 +2138,6 @@ window.PdProdDtl = {
           empty-text="[행추가]로 판매계획을 추가하세요."
           @toggle-check="onPlanToggleCheck" @toggle-check-all="onPlanToggleCheckAll"
           @cell-change="row => onPlanChange(row)">
-          <template #cell-_start="{ row }">
-            <td>
-              <bo-date-time-picker
-                :date="row.startDate" :time="row.startTime"
-                @update:date="v => { row.startDate = v; onPlanChange(row); }"
-                @update:time="v => { row.startTime = v; onPlanChange(row); }"
-                :show-now="false" :show-clear="false"
-                date-width="104px" time-width="64px" />
-            </td>
-          </template>
-          <template #cell-_end="{ row }">
-            <td>
-              <bo-date-time-picker
-                :date="row.endDate" :time="row.endTime"
-                @update:date="v => { row.endDate = v; onPlanChange(row); }"
-                @update:time="v => { row.endTime = v; onPlanChange(row); }"
-                :show-now="false" :show-clear="false"
-                date-width="104px" time-width="64px" />
-            </td>
-          </template>
         </bo-grid>
       </div>
       <div style="margin-top:8px;display:flex;gap:8px;font-size:11px;color:#aaa;align-items:center;">

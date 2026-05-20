@@ -207,6 +207,21 @@ window._foAreaCompUtil = {
     }
     return String(col.cellTitle);
   },
+  /* inner span 래퍼용 — 박스형 인라인 배지 (BoGrid와 동등) */
+  cellInnerStyle(col, row) {
+    if (col.cellInnerStyle == null) return null;
+    const v = (typeof col.cellInnerStyle === 'function')
+      ? col.cellInnerStyle(row ? row[col.key] : undefined, row)
+      : col.cellInnerStyle;
+    return v == null ? null : String(v);
+  },
+  cellInnerClass(col, row) {
+    if (col.cellInnerClass == null) return null;
+    const v = (typeof col.cellInnerClass === 'function')
+      ? col.cellInnerClass(row ? row[col.key] : undefined, row)
+      : col.cellInnerClass;
+    return v == null ? null : String(v);
+  },
   /* 페이저 호환 — BO식(pageNo/pageSize/pageTotalCount) / FO식(page/size) 모두 수용 */
   pgNo(p)    { return p ? (p.pageNo != null ? p.pageNo : (p.page != null ? p.page : 1)) : 1; },
   pgSize(p)  { return p ? (p.pageSize != null ? p.pageSize : (p.size != null ? p.size : 20)) : 20; },
@@ -372,6 +387,8 @@ window.FoGrid = {
                   </select>
                   <span v-else-if="col.link" class="fo-grid-link" @click="onRowClick(row)">{{ U.cellText(col, row) }}</span>
                   <span v-else-if="col.badge" class="fo-grid-badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
+                  <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
+                        :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">{{ U.cellText(col, row) }}</span>
                   <template v-else>{{ U.cellText(col, row) }}</template>
                 </td>
               </slot>

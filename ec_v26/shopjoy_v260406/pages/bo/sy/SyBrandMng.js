@@ -271,7 +271,7 @@ window.SyBrandMng = {
 
     /* BoGridCrud 호환 — 컬럼 정의 + local 모드 컬럼 hint */
     const gridColumns = [
-      { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', style: 'min-width:140px;' },
+      { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', style: 'min-width:140px;', pathPick: 'sy_brand' },
       { key: 'brandCode',   label: '브랜드코드', style: 'min-width:110px;', edit: 'text', mono: true, placeholder: 'BRAND_CODE' },
       { key: 'brandNm',     label: '브랜드명',  style: 'min-width:130px;', edit: 'text', placeholder: '브랜드명' },
       { key: 'brandEnNm',   label: '영문명',    style: 'min-width:130px;', edit: 'text', placeholder: 'Brand Name' },
@@ -341,10 +341,6 @@ window.SyBrandMng = {
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @cell-change="onCellChange" @export="exportExcel">
 
-
-    <template #cell-pathId="{ row }">
-      <bo-path-pick-field biz-cd="sy_brand" :row="row" @change="onPathChange(row)" />
-    </template>
 
     <template #cell-logoUrl="{ row }">
       <td>

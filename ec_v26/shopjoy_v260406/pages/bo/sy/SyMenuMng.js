@@ -256,8 +256,10 @@ window.SyMenuMng = {
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
     const gridColumns = [
       { key: 'menuCode',   label: '메뉴코드', style: 'width:110px;',    edit: 'text', mono: true },
-      { key: 'menuNm',     label: '메뉴명',   style: 'min-width:180px;' },
-      { key: 'parentMenuId', label: '상위메뉴', style: 'min-width:140px;' },
+      { key: 'menuNm',     label: '메뉴명',   style: 'min-width:180px;', edit: 'text',
+        treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
+      { key: 'parentMenuId', label: '상위메뉴', style: 'min-width:140px;',
+        parentPick: { label: parentNm, open: openParentModal, title: '상위메뉴 선택' } },
       { key: 'menuUrl',    label: '메뉴URL',  style: 'min-width:160px;', edit: 'text', placeholder: '/path' },
       { key: 'menuTypeCd', label: '유형',     style: 'width:80px;',     edit: 'select', options: codes.menu_types.map(t => ({ value: t, label: t })) },
       { key: 'sortOrd',    label: '순서',     cls: 'col-ord',  edit: 'number' },
@@ -324,31 +326,6 @@ window.SyMenuMng = {
     @cell-change="onCellChange" @export="exportExcel">
 
 
-    <template #cell-menuNm="{ row }">
-      <td style="padding:3px 6px;">
-        <div style="display:flex;align-items:center;">
-          <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                          fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
-                          color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-          <input class="grid-input" v-model="row.menuNm" :disabled="row._row_status==='D'"
-            @input="onCellChange(row)" style="flex:1;" />
-        </div>
-      </td>
-    </template>
-
-    <template #cell-parentMenuId="{ row }">
-      <td style="padding:3px 8px;">
-        <div style="display:flex;align-items:center;gap:5px;">
-          <span v-if="row.parentMenuId"
-            style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-            :title="parentNm(row.parentMenuId)">{{ parentNm(row.parentMenuId) }}</span>
-          <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
-          <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-            style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위메뉴 선택"
-            @click.stop="openParentModal(row)">🔍</button>
-        </div>
-      </td>
-    </template>
 
     <template #row-actions="{ row, idx }">
       <button v-if="['U','I','D'].includes(row._row_status)"

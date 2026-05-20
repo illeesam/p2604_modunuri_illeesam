@@ -574,7 +574,7 @@ window.SyCodeMng = {
 
     /* 코드그룹 그리드 — BoGridCrud 자동 edit/표시. pathId(커스텀 컴포넌트)·grpNm(input+카운트박지) 만 슬롯 KEEP */
     const grpGridColumns = [
-      { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)' },
+      { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', pathPick: 'sy_code_grp' },
       { key: 'codeGrp',     label: '코드그룹', sortKey: 'codeGrp', edit: 'text', mono: true },
       { key: 'grpNm',       label: '그룹명',   sortKey: 'grpNm' },
       { key: 'type',        label: '유형',     style: 'width:70px;', align: 'center',
@@ -654,10 +654,6 @@ window.SyCodeMng = {
         <button class="btn btn-primary btn-sm" @click="handleSaveGrp" :disabled="!uiState.grpDirtyCount">저장 <span v-if="uiState.grpDirtyCount">({{ uiState.grpDirtyCount }})</span></button>
       </template>
 
-      <template #cell-pathId="{ row: g }">
-        <bo-path-pick-field biz-cd="sy_code_grp" :row="g"
-          :disabled="g._row_status==='D'" @change="onPathChange(g)" />
-      </template>
       <template #cell-grpNm="{ row: g }">
         <td>
           <div style="display:flex;gap:8px;align-items:center;">

@@ -203,7 +203,8 @@ const detailModal = reactive({
     });
 
     const gridColumns = [
-      { key: 'pathId',        label: '표시경로' },
+      { key: 'pathId',        label: '표시경로',
+        pathLabelOpen: { label: pathLabel, open: openPathPick, placeholder: '미설정' } },
       { key: 'siteCode',      label: '사이트코드',
         cellInnerStyle: 'background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;font-size:11px;font-family:monospace;' },
       { key: 'siteTypeCd',    label: '유형', badge: (row) => fnTypeBadge(row.siteTypeCd) },
@@ -281,9 +282,6 @@ const detailModal = reactive({
         </template>
         <template #head-actions><th style="text-align:right">관리</th></template>
 
-        <template #cell-pathId="{ row }">
-          <td style="font-size:12px;"><div style="display:flex;align-items:center;gap:6px;"><span style="flex:1;padding:4px 6px;background:#f3f4f6;border-radius:4px;color:#666;font-weight:500;">{{ pathLabel(row.pathId) || '미설정' }}</span><button type="button" @click.stop="openPathPick(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">🔍</button></div></td>
-        </template>
         <template #row-actions="{ row }">
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.siteId)">수정</button>

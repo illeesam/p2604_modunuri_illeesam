@@ -305,8 +305,10 @@ window.SyDeptMng = {
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
     const gridColumns = [
       { key: 'deptCode',     label: '부서코드', style: 'width:110px;',    edit: 'text', mono: true },
-      { key: 'deptNm',       label: '부서명',   style: 'min-width:190px;' },
-      { key: 'parentDeptId', label: '상위부서', style: 'min-width:150px;' },
+      { key: 'deptNm',       label: '부서명',   style: 'min-width:190px;', edit: 'text',
+        treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
+      { key: 'parentDeptId', label: '상위부서', style: 'min-width:150px;',
+        parentPick: { label: parentNm, open: openParentModal, title: '상위부서 선택' } },
       { key: 'deptTypeCd',   label: '유형',     style: 'width:90px;',     edit: 'select', options: codes.dept_types.map(t => ({ value: t, label: t })) },
       { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
       { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: codes.use_yn },
@@ -379,31 +381,6 @@ window.SyDeptMng = {
     @cell-change="onCellChange" @export="exportExcel">
 
 
-    <template #cell-deptNm="{ row }">
-      <td style="padding:3px 6px;">
-        <div style="display:flex;align-items:center;">
-          <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                          fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
-                          color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-          <input class="grid-input" v-model="row.deptNm" :disabled="row._row_status==='D'"
-            @input="onCellChange(row)" style="flex:1;" />
-        </div>
-      </td>
-    </template>
-
-    <template #cell-parentDeptId="{ row }">
-      <td style="padding:3px 8px;">
-        <div style="display:flex;align-items:center;gap:5px;">
-          <span v-if="row.parentDeptId"
-            style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-            :title="parentNm(row.parentDeptId)">{{ parentNm(row.parentDeptId) }}</span>
-          <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
-          <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-            style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위부서 선택"
-            @click.stop="openParentModal(row)">🔍</button>
-        </div>
-      </td>
-    </template>
 
     <template #row-actions="{ row, idx }">
       <button v-if="['U','I','D'].includes(row._row_status)"

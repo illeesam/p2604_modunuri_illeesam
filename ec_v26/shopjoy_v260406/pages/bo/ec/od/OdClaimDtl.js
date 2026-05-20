@@ -291,7 +291,14 @@ window.OdClaimDtl = {
       { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;', align: 'center',
         fmt: () => `${form.claimTypeCd || ''} · ${form.claimStatusCd || ''}`,
         cellInnerStyle: () => `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af'};` },
-      { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
+      { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;', cellStyle: 'font-size:12px;',
+        trackBoxes: {
+          items: () => form.claimTypeCd !== '교환' ? [] : [
+            ...(form.exchangeCourierCd ? [{ label: '발송', courier: form.exchangeCourierCd, trackingNo: form.exchangeTrackingNo, colorVariant: 'blue' }] : []),
+            ...(form.returnCourierCd   ? [{ label: '수거', courier: form.returnCourierCd,   trackingNo: form.returnTrackingNo,   colorVariant: 'orange' }] : []),
+          ],
+          onTrack: openTracking,
+        } },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -484,19 +491,6 @@ window.OdClaimDtl = {
             {{ isExpanded(idx) ? '▼' : '▶' }}
           </span>
           {{ row.prodNm }}
-        </td>
-      </template>
-      <template #cell-exchInfo>
-        <td style="font-size:12px;">
-          <div v-if="form.claimTypeCd==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
-            <span v-if="form.exchangeCourierCd" @click="openTracking(form.exchangeCourierCd, form.exchangeTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-weight:700;">
-              발송 {{ form.exchangeCourierCd }} · {{ form.exchangeTrackingNo || '-' }} 🔍
-            </span>
-            <span v-if="form.returnCourierCd" @click="openTracking(form.returnCourierCd, form.returnTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-weight:700;">
-              수거 {{ form.returnCourierCd }} · {{ form.returnTrackingNo || '-' }} 🔍
-            </span>
-          </div>
-          <span v-else style="color:#ccc;">-</span>
         </td>
       </template>
       <template #row-expand="{ row, colspan }">

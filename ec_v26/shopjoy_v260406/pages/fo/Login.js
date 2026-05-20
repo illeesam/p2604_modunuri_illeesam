@@ -55,19 +55,27 @@ window.Login = {
     };
 
     /* -- 회원선택 모달 (개발용) -- */
-    const memberPick = reactive({ show: false, searchType: '', searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, totalPage: 1 });
+    const memberPick = reactive({ show: false, searchType: '', searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, pageSize: 20, totalPage: 1 });
     const PICK_SIZE = 20;
     /* fo-grid 컬럼 — 특수 셀(이름/등급/상태/선택)은 #cell 슬롯으로 override */
     const memberPickCols = [
-      { key: '_no',  label: '번호', width: '32px', align: 'center' },
-      { key: 'memberNm', label: '이름' },
+      { key: 'memberNm', label: '이름',
+        fmt: (v, row) => `${(row.memberNm || '?').charAt(0)} ${row.memberNm || '-'}`,
+        cellInnerStyle: 'font-weight:700;color:var(--text-primary);white-space:nowrap;' },
       { key: 'loginId',  label: '로그인ID', mono: true, fmt: v => v || '-' },
       { key: 'siteNm',   label: '사이트', fmt: v => v || '-' },
-      { key: 'gradeCdNm', label: '등급' },
-      { key: 'memberStatusCd', label: '상태', align: 'center' },
+      { key: 'gradeCdNm', label: '등급',
+        fmt: v => v || '—',
+        cellInnerStyle: (v) => v
+          ? 'display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;white-space:nowrap;'
+          : 'color:var(--text-muted);' },
+      { key: 'memberStatusCd', label: '상태', align: 'center',
+        fmt: (v, row) => v === 'ACTIVE' ? '활성' : (row.memberStatusCdNm || '비활성'),
+        cellInnerStyle: (v) => v === 'ACTIVE'
+          ? 'display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;'
+          : 'display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;' },
       { key: 'memberPhone', label: '연락처', fmt: v => v || '-' },
       { key: 'joinDate', label: '가입일', fmt: v => (v ? v.substring(0, 10) : '-') },
-      { key: '_act', label: '', width: '44px', align: 'center' },
     ];
 
     /* _loadMemberPick */
@@ -432,37 +440,12 @@ window.Login = {
           <div style="font-size:11px;color:#aaa;margin-bottom:8px;text-align:left;">총 <b style="color:#e8587a;">{{ memberPick.total }}</b>명</div>
           <!-- 테이블 -->
           <div style="border-radius:8px;border:1px solid #f0e0e8;overflow:hidden;">
-            <fo-grid bare :columns="memberPickCols" :rows="memberPick.rows"
-              row-key="memberId" :show-row-no="false"
+            <fo-grid bare :columns="memberPickCols" :rows="memberPick.rows" :pager="memberPick"
+              row-key="memberId" row-actions
               :empty-text="memberPick.loading ? '⏳ 조회 중...' : '🔍 조회 결과 없음'"
               :row-click="onPickMember">
-              <template #cell-_no="{ idx }">
-                <td style="text-align:center;color:var(--text-muted);font-size:0.72rem;">{{ (memberPick.pageNo-1)*20+idx+1 }}</td>
-              </template>
-              <template #cell-memberNm="{ row }">
-                <td>
-                  <div style="display:flex;align-items:center;gap:6px;">
-                    <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ (row.memberNm||'?').charAt(0) }}</div>
-                    <span style="font-weight:700;color:var(--text-primary);white-space:nowrap;">{{ row.memberNm || '-' }}</span>
-                  </div>
-                </td>
-              </template>
-              <template #cell-gradeCdNm="{ row }">
-                <td>
-                  <span v-if="row.gradeCdNm" style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;white-space:nowrap;">{{ row.gradeCdNm }}</span>
-                  <span v-else style="color:var(--text-muted);">—</span>
-                </td>
-              </template>
-              <template #cell-memberStatusCd="{ row }">
-                <td style="text-align:center;">
-                  <span v-if="row.memberStatusCd==='ACTIVE'" style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">활성</span>
-                  <span v-else style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">{{ row.memberStatusCdNm || '비활성' }}</span>
-                </td>
-              </template>
-              <template #cell-_act="{ row }">
-                <td style="text-align:center;">
-                  <button @click.stop="onPickMember(row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">선택</button>
-                </td>
+              <template #row-actions="{ row }">
+                <button @click.stop="onPickMember(row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">선택</button>
               </template>
             </fo-grid>
           </div>

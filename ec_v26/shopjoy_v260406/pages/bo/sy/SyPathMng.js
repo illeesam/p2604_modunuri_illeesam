@@ -265,7 +265,8 @@ window.SyPathMng = {
         cellStyle: 'font-size:11px;color:#999;',
         fmt: (v, row) => row.pathId > 0 ? row.pathId : 'NEW' },
       { key: 'bizCd',        label: '업무코드', style: 'width:120px;', edit: 'text', placeholder: 'biz_cd' },
-      { key: 'parentPathId', label: '부모경로', style: 'width:160px;' },
+      { key: 'parentPathId', label: '부모경로', style: 'width:160px;',
+        linkButton: { label: (row) => getParentLabel(row.parentPathId), onClick: openParentModal } },
       { key: 'pathLabel',    label: '경로 라벨', edit: 'text', placeholder: '경로 라벨' },
       { key: 'sortOrd',      label: '정렬',     style: 'width:60px;text-align:center;', edit: 'number', align: 'center' },
       { key: 'useYn',        label: '사용',     style: 'width:70px;text-align:center;',
@@ -332,14 +333,6 @@ window.SyPathMng = {
       </template>
       <template #head-actions>관리</template>
 
-      <template #cell-parentPathId="{ row }">
-        <td style="padding:3px 6px">
-          <button class="btn btn-secondary btn-xs" style="font-size:11px;width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-            @click.stop="openParentModal(row)">
-            {{ getParentLabel(row.parentPathId) }} ▼
-          </button>
-        </td>
-      </template>
       <template #row-actions="{ row }">
         <button v-if="row._status==='N'" class="btn btn-secondary btn-xs" @click.stop="cancelRow(row)">취소</button>
         <button v-else class="btn btn-danger btn-xs" @click.stop="deleteRow(row)">삭제</button>

@@ -390,6 +390,52 @@ window.BoGrid = {
                   <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
+                <!-- 표시경로 picker (bo-path-pick-field 자동 임베드) -->
+                <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="row" :disabled="row._row_status==='D'" @change="$emit('cell-change', row, col)" />
+                <!-- 모달 인터셉트 select (col.selectIntercept: { valueKey | value:fn(row), options, onChange:fn(row,newVal,$event), nullable, nullLabel, disabled:fn(row) }) — v-model 미사용 -->
+                <select v-else-if="col.selectIntercept" class="form-control grid-select" style="font-size:11px;padding:2px 4px;"
+                        :value="typeof col.selectIntercept.value==='function' ? col.selectIntercept.value(row) : row[col.selectIntercept.valueKey]"
+                        :disabled="typeof col.selectIntercept.disabled==='function' ? col.selectIntercept.disabled(row) : false"
+                        @click.stop @change="col.selectIntercept.onChange(row, $event.target.value, $event)">
+                  <option v-if="col.selectIntercept.nullable" value="">{{ col.selectIntercept.nullLabel || '-' }}</option>
+                  <option v-for="o in U.normOptions(col.selectIntercept.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+                </select>
+                <!-- 외부 setter 인터셉트 input (col.editIntercept: { type:'text'|'number'|'date', placeholder, onInput:fn(row,newVal,idx,$event) }) — v-model 미사용 -->
+                <input v-else-if="col.editIntercept" class="form-control" :type="col.editIntercept.type || 'text'"
+                       :value="row[col.key]" :placeholder="col.editIntercept.placeholder" style="margin:0;padding:2px 6px;font-size:12px;"
+                       @click.stop @input="col.editIntercept.onInput(row, $event.target.value, idx, $event)" />
+                <!-- 풀폭 버튼 picker (col.linkButton: { label:fn(row)=>string, onClick:fn(row), suffix:string, btnClass:string }) -->
+                <button v-else-if="col.linkButton" type="button"
+                        :class="col.linkButton.btnClass || 'btn btn-secondary btn-xs'"
+                        style="font-size:11px;width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                        @click.stop="col.linkButton.onClick(row)">{{ col.linkButton.label(row) }}{{ col.linkButton.suffix != null ? ' ' + col.linkButton.suffix : ' ▼' }}</button>
+                <!-- 셀별 토글 링크 (col.linkToggle: { active:fn(row)=>bool, activeStyle, baseStyle, title, onClick:fn(row) }) -->
+                <span v-else-if="col.linkToggle" class="title-link" @click.stop="col.linkToggle.onClick(row)"
+                      :title="col.linkToggle.title || null"
+                      :style="col.linkToggle.active(row) ? (col.linkToggle.activeStyle || 'color:#e8587a;font-weight:700;') : (col.linkToggle.baseStyle || 'color:#1e88e5;font-weight:500;')">{{ U.cellText(col, row) }}</span>
+                <!-- 택배 추적 박스 그룹 (col.trackBoxes: { items:fn(row)=>[{label,courier,trackingNo,colorVariant}], onTrack:fn(courier,trackingNo) }) -->
+                <template v-else-if="col.trackBoxes">
+                  <div v-if="col.trackBoxes.items(row).length" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
+                    <span v-for="(it, ix) in col.trackBoxes.items(row)" :key="ix" @click.stop="col.trackBoxes.onTrack(it.courier, it.trackingNo)"
+                          :style="'cursor:pointer;padding:1px 6px;border-radius:4px;font-weight:700;'
+                                 +(it.colorVariant==='orange'?'border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;':'border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;')">
+                      {{ it.label ? it.label + ' ' : '' }}{{ it.courier }} · {{ it.trackingNo || '-' }} 🔍
+                    </span>
+                  </div>
+                  <span v-else style="color:#ccc;">-</span>
+                </template>
+                <!-- 일시 picker (bo-date-time-picker 자동 임베드) — col.dateTimePick: { dateKey, timeKey, dateWidth, timeWidth, onChange? } -->
+                <bo-date-time-picker v-else-if="col.dateTimePick"
+                  :date="row[col.dateTimePick.dateKey]" :time="row[col.dateTimePick.timeKey]"
+                  @update:date="v => { row[col.dateTimePick.dateKey] = v; $emit('cell-change', row, col); }"
+                  @update:time="v => { row[col.dateTimePick.timeKey] = v; $emit('cell-change', row, col); }"
+                  :show-now="col.dateTimePick.showNow !== false" :show-clear="col.dateTimePick.showClear !== false"
+                  :date-width="col.dateTimePick.dateWidth || '104px'" :time-width="col.dateTimePick.timeWidth || '64px'" />
+                <!-- 인라인 path-button (라벨 + 🔍 버튼 + onOpen 콜백) -->
+                <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row[col.key]!=null?'#374151':'#9ca3af',fontWeight:row[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
+                  <span style="flex:1;">{{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(row[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}</span>
+                  <button type="button" @click.stop="col.pathLabelOpen.open(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">🔍</button>
+                </div>
                 <!-- 표시 셀 (link는 cellInnerStyle/Class 합성 가능) -->
                 <span v-else-if="col.link" class="title-link" @click.stop="onRowClick(row)"
                       :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">{{ U.cellText(col, row) }}</span>
@@ -639,7 +685,15 @@ window.BoGridCrud = {
           <template v-for="col in columns" :key="col.key">
             <slot :name="'cell-' + col.key" :row="fnRow(item)" :idx="idx" :node="item">
               <td :style="U.tdStyle(col, fnRow(item))" :class="U.cellClass(col, fnRow(item))" :title="U.cellTitle(col, fnRow(item))">
-                <input v-if="col.edit==='text'" class="grid-input" :class="{ 'grid-mono': col.mono }"
+                <div v-if="col.edit==='text' && col.treeDepth" style="display:flex;align-items:center;">
+                  <span :style="{ marginLeft:(fnRow(item)._depth*14)+'px', marginRight:'6px', fontWeight:'700',
+                                  fontSize: fnRow(item)._depth===0 ? '7px' : '12px', flexShrink:0,
+                                  color: (typeof col.treeColor==='function' ? col.treeColor(fnRow(item)._depth) : '#888') }">{{ typeof col.treeBullet==='function' ? col.treeBullet(fnRow(item)._depth) : '●' }}</span>
+                  <input class="grid-input" :class="{ 'grid-mono': col.mono }"
+                         v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                         :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" style="flex:1;" />
+                </div>
+                <input v-else-if="col.edit==='text'" class="grid-input" :class="{ 'grid-mono': col.mono }"
                        v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
                        :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" />
                 <input v-else-if="col.edit==='number'" type="number" class="grid-input grid-num"
@@ -654,6 +708,20 @@ window.BoGridCrud = {
                   <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
+                <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="onCellChange(fnRow(item))" />
+                <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
+                  <span style="flex:1;">{{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}</span>
+                  <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">🔍</button>
+                </div>
+                <div v-else-if="col.parentPick" style="display:flex;align-items:center;gap:5px;">
+                  <span v-if="fnRow(item)[col.key]"
+                    style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                    :title="col.parentPick.label(fnRow(item)[col.key])">{{ col.parentPick.label(fnRow(item)[col.key]) }}</span>
+                  <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">{{ col.parentPick.placeholder || '최상위' }}</span>
+                  <button v-if="fnRow(item)._row_status!=='D'" class="btn btn-secondary btn-xs"
+                    style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" :title="col.parentPick.title || '상위 선택'"
+                    @click.stop="col.parentPick.open(fnRow(item))">🔍</button>
+                </div>
                 <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, fnRow(item))">{{ U.cellText(col, fnRow(item)) }}</span>
                 <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
                       :style="U.cellInnerStyle(col, fnRow(item))" :class="U.cellInnerClass(col, fnRow(item))">{{ U.cellText(col, fnRow(item)) }}</span>

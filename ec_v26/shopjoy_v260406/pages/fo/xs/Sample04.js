@@ -115,14 +115,15 @@ window.XsSample04 = {
       { key: 'name',     label: '이름', width: '76px' },
       { key: 'email',    label: '이메일', mono: true },
       { key: 'phone',    label: '연락처', width: '110px', align: 'center' },
-      { key: 'grade',    label: '등급', width: '56px', align: 'center' },
-      { key: 'status',   label: '상태', width: '50px', align: 'center' },
+      { key: 'grade',    label: '등급', width: '56px', align: 'center',
+        cellInnerStyle: (v) => 'font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;' + fnGradeBadge(v) },
+      { key: 'status',   label: '상태', width: '50px', align: 'center',
+        cellInnerStyle: (v) => 'font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;' + fnStatusBadge(v) },
       { key: 'orders',   label: '주문', width: '56px', align: 'right' },
       { key: 'totalAmt', label: '총구매액', width: '110px', align: 'right',
         cellStyle: 'color:var(--text-primary);font-weight:700',
         fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'joinDate', label: '가입일', width: '86px', align: 'center' },
-      { key: '_act',     label: '', width: '48px', align: 'center' },
     ];
     const sample04Top3 = Vue.computed(() => members.slice(0, 3));
 
@@ -385,24 +386,12 @@ window.XsSample04 = {
       <span style="font-size:11px;color:#aaa;margin-left:4px;">— 행 클릭 → 상세보기 모달</span>
     </div>
     <fo-grid bare :columns="sample04Cols" :rows="sample04Top3"
-      row-key="memberId" :show-row-no="false" min-width="680px"
+      row-key="memberId" :show-row-no="false" min-width="680px" row-actions
       empty-text="데이터 로딩 중…"
       :row-click="m => openModal('detail',{data:m})">
-      <template #cell-grade="{ row }">
-        <td style="text-align:center;">
-          <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(row.grade)">{{ row.grade }}</span>
-        </td>
-      </template>
-      <template #cell-status="{ row }">
-        <td style="text-align:center;">
-          <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="fnStatusBadge(row.status)">{{ row.status }}</span>
-        </td>
-      </template>
-      <template #cell-_act="{ row }">
-        <td style="text-align:center;">
-          <button @click.stop="openModal('detail',{data:row})"
-            style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:4px;background:#f8f9fa;cursor:pointer;color:#555;">상세</button>
-        </td>
+      <template #row-actions="{ row }">
+        <button @click.stop="openModal('detail',{data:row})"
+          style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:4px;background:#f8f9fa;cursor:pointer;color:#555;">상세</button>
       </template>
     </fo-grid>
   </div>

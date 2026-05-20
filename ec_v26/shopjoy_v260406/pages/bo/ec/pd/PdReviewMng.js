@@ -262,7 +262,14 @@ window.PdReviewMng = {
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
     const listColumns = [
       { key: 'reviewTitle',     label: '리뷰 제목', cellInnerClass: 'title-link' },
-      { key: 'prodId',          label: '상품ID',   style: 'width:110px' },
+      { key: 'prodId',          label: '상품ID',   style: 'width:110px', cellStyle: 'font-size:12px;',
+        linkToggle: {
+          active: (row) => selectedProdId.value === row.prodId,
+          activeStyle: 'color:#e8587a;font-weight:700;cursor:pointer;',
+          baseStyle: 'color:#1e88e5;font-weight:500;cursor:pointer;',
+          title: '해당 상품의 리뷰만 하단에 표시',
+          onClick: (row) => onProdIdClick(row.prodId),
+        } },
       { key: 'prodNm',          label: '상품명',   cellStyle: 'color:#444;',
         fmt: (v, row) => (getProdNm(row.prodId) || row.prodNm || '') },
       { key: 'memberId',        label: '작성자',   style: 'width:80px', fmt: (v, row) => getMemNm(row.memberId) },
@@ -273,7 +280,9 @@ window.PdReviewMng = {
         badge: (row) => fnStatusBadge(row.reviewStatusCd),
         fmt: (v, row) => (STATUS_LABEL[row.reviewStatusCd] || row.reviewStatusCd) },
       { key: 'reviewDate',      label: '작성일',   style: 'width:140px', sortKey: 'reg' },
-      { key: '_statusChg',      label: '상태변경', style: 'width:90px;text-align:center' },
+      { key: '_statusChg',      label: '상태변경', style: 'width:90px;text-align:center', align: 'center',
+        selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.review_status_list,
+          onChange: (row, newVal, $event) => onStatusSelectChange(row, $event) } },
     ];
     const fnGridRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
 
@@ -288,7 +297,9 @@ window.PdReviewMng = {
         badge: (row) => fnStatusBadge(row.reviewStatusCd),
         fmt: (v, row) => (STATUS_LABEL[row.reviewStatusCd] || row.reviewStatusCd) },
       { key: 'reviewDate',     label: '작성일',   style: 'width:140px' },
-      { key: '_statusChg',     label: '상태변경', style: 'width:90px;text-align:center' },
+      { key: '_statusChg',     label: '상태변경', style: 'width:90px;text-align:center', align: 'center',
+        selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.review_status_list,
+          onChange: (row, newVal, $event) => onStatusSelectChange(row, $event) } },
     ];
     const fnProdReviewRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
 
@@ -326,23 +337,8 @@ window.PdReviewMng = {
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions
       @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
-      <template #cell-prodId="{ row }">
-        <td style="font-size:12px;" @click.stop>
-          <span class="title-link"
-            :style="{color: selectedProdId===row.prodId ? '#e8587a' : '#1e88e5', fontWeight: selectedProdId===row.prodId ? 700 : 500, cursor:'pointer'}"
-            title="해당 상품의 리뷰만 하단에 표시"
-            @click="onProdIdClick(row.prodId)">{{ row.prodId }}</span>
-        </td>
-      </template>
       <template #row-actions="{ row }">
         <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="previewProduct(row.prodId)">👁</button>
-      </template>
-      <template #cell-_statusChg="{ row }">
-        <td style="text-align:center" @click.stop>
-          <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="onStatusSelectChange(row, $event)">
-            <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
-          </select>
-        </td>
       </template>
     </bo-grid>
 
@@ -357,15 +353,6 @@ window.PdReviewMng = {
         row-key="reviewId" :row-class="fnProdReviewRowClass"
         empty-text="해당 상품의 리뷰가 없습니다." row-clickable
         @set-page="setProdReviewPage" @size-change="onProdReviewSizeChange" @row-click="openDetail">
-        <template #cell-_statusChg="{ row }">
-          <td style="text-align:center" @click.stop>
-            <select class="form-control" style="font-size:11px;padding:2px 4px"
-              :value="row.reviewStatusCd"
-              @change="onStatusSelectChange(row, $event)">
-              <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
-            </select>
-          </td>
-        </template>
       </bo-grid>
       <bo-pager :pager="prodReviewPager" :on-set-page="setProdReviewPage" :on-size-change="onProdReviewSizeChange" />
     </div>

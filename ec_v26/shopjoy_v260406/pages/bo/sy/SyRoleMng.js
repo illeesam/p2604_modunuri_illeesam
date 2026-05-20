@@ -558,11 +558,27 @@ window.SyRoleMng = {
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
     const gridColumns = [
       { key: 'roleCode',     label: '역할코드', style: 'width:120px;',    edit: 'text', mono: true },
-      { key: 'roleNm',       label: '역할명',   style: 'min-width:150px;' },
-      { key: 'parentRoleId', label: '상위역할', style: 'min-width:120px;' },
+      { key: 'roleNm',       label: '역할명',   style: 'min-width:150px;', edit: 'text',
+        treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
+      { key: 'parentRoleId', label: '상위역할', style: 'min-width:120px;',
+        parentPick: { label: parentNm, open: openParentModal, title: '상위역할 선택' } },
       { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
       { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: codes.use_yn },
-      { key: 'roleCat',      label: '역할구분', style: 'width:100px;' },
+      { key: 'roleCat',      label: '역할구분', style: 'width:100px;',
+        cellStyle: (v, row) => {
+          const cat = effectiveRoleCat(row)[0];
+          return `color:${ROLE_CAT_COLOR[cat] || '#9ca3af'};font-weight:${effectiveRoleCat(row).length ? 700 : 400};`;
+        },
+        selectIntercept: {
+          value: (row) => effectiveRoleCat(row)[0] || '',
+          options: () => codes.role_cats.map(c => ({ value: c[0], label: c[1] })),
+          nullable: true, nullLabel: '-',
+          disabled: (row) => row._row_status === 'D',
+          onChange: (row, newVal) => {
+            row.roleCat = newVal ? [newVal] : [];
+            onCellChange(row);
+          },
+        } },
       { key: 'roleRemark',   label: '비고',     edit: 'text' },
       { key: 'siteNm',       label: '사이트명', style: 'width:80px;', align: 'center',
         cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
@@ -644,42 +660,7 @@ window.SyRoleMng = {
     @cell-change="onCellChange" @export="exportExcel">
 
 
-    <template #cell-roleNm="{ row }">
-      <td style="padding:3px 6px;">
-        <div style="display:flex;align-items:center;">
-          <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                          fontSize: row._depth===0?'7px':'12px', flexShrink:0,
-                          color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-          <input class="grid-input" v-model="row.roleNm" :disabled="row._row_status==='D'"
-            @input="onCellChange(row)" style="flex:1;" />
-        </div>
-      </td>
-    </template>
 
-    <template #cell-parentRoleId="{ row }">
-      <td style="padding:3px 8px;">
-        <div style="display:flex;align-items:center;gap:5px;">
-          <span v-if="row.parentRoleId"
-            style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-            :title="parentNm(row.parentRoleId)">{{ parentNm(row.parentRoleId) }}</span>
-          <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
-          <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-            style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위역할 선택"
-            @click.stop="openParentModal(row)">🔍</button>
-        </div>
-      </td>
-    </template>
-
-    <template #cell-roleCat="{ row }">
-      <td style="padding:3px 6px;">
-        <select class="grid-select" :value="(effectiveRoleCat(row)[0] || '')" :disabled="row._row_status==='D'"
-          @change="$event.target.value ? (row.roleCat=[$event.target.value], onCellChange(row)) : (row.roleCat=[], onCellChange(row))"
-          :style="{color: ROLE_CAT_COLOR[effectiveRoleCat(row)[0]] || '#9ca3af', fontWeight: effectiveRoleCat(row).length ? 700 : 400}">
-          <option value="">-</option>
-          <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
-        </select>
-      </td>
-    </template>
 
     <template #row-actions="{ row, idx }">
       <button v-if="['U','I','D'].includes(row._row_status)"

@@ -214,7 +214,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
     const gridColumns = [
-      { key: 'pathId',         label: '표시경로' },
+      { key: 'pathId',         label: '표시경로',
+        pathLabelOpen: { label: pathLabel, open: openPathPick, placeholder: '경로 선택...' } },
       { key: 'templateId',     label: 'ID' },
       { key: 'templateTypeCd', label: '템플릿유형', badge: (row) => fnTypeBadge(row.templateTypeCd) },
       { key: 'templateCode',   label: '템플릿코드',
@@ -281,9 +282,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </template>
         <template #head-actions><th style="text-align:right">관리</th></template>
 
-        <template #cell-pathId="{ row }">
-          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row.pathId!=null?'#374151':'#9ca3af',fontWeight:row.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span><button type="button" @click.stop="openPathPick(row)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
-        </template>
         <template #row-actions="{ row }">
           <td><div class="actions">
             <button class="btn btn-secondary btn-sm" @click="showPreview(row)">미리보기</button>

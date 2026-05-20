@@ -733,9 +733,23 @@ window.DpDispPanelDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* BoGrid 컬럼 — 파일목록 (#/파일명/URL) 인라인 편집 */
+    /* file_list 위젯용 (cfFileListItems) — updateFileItem(idx, field, value) */
     const fileListCols = [
-      { key: 'name', label: '파일명',     style: 'width:200px;' },
-      { key: 'url',  label: 'URL / 경로' },
+      { key: 'name', label: '파일명',     style: 'width:200px;',
+        editIntercept: { placeholder: '파일명.pdf',
+          onInput: (row, val, idx) => updateFileItem(idx, 'name', val) } },
+      { key: 'url',  label: 'URL / 경로',
+        editIntercept: { placeholder: 'https://... 또는 /files/sample.pdf',
+          onInput: (row, val, idx) => updateFileItem(idx, 'url', val) } },
+    ];
+    /* file_list 위젯용 (위젯 r 단위) — fnSetFileItem(r, idx, field, value) — 컬럼 동적 생성 */
+    const fnFileListColsForRow = (r) => [
+      { key: 'name', label: '파일명',     style: 'width:200px;',
+        editIntercept: { placeholder: '파일명.pdf',
+          onInput: (row, val, idx) => fnSetFileItem(r, idx, 'name', val) } },
+      { key: 'url',  label: 'URL / 경로',
+        editIntercept: { placeholder: 'https://...',
+          onInput: (row, val, idx) => fnSetFileItem(r, idx, 'url', val) } },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -760,7 +774,7 @@ window.DpDispPanelDtl = {
       fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct,
       fnGetDisplayRows, fnGetRelatedEvent,
       fnGetFileListItems, fnAddFileItemAt, fnRemoveFileItemAt, fnSetFileItem,
-      moveRowAt, codes, cfDtlMode, fileListCols,
+      moveRowAt, codes, cfDtlMode, fileListCols, fnFileListColsForRow,
     };
   },
   template: /* html */`
@@ -1173,25 +1187,9 @@ window.DpDispPanelDtl = {
                 <bo-grid bare :columns="fileListCols" :rows="cfFileListItems" row-actions
                   empty-text="첨부파일이 없습니다. 아래 [+ 파일 추가] 버튼을 클릭하세요."
                   style="margin-bottom:8px;">
-                  <template #cell-name="{ row, idx }">
-                    <td style="padding:4px 6px;">
-                      <input class="form-control" :value="row.name"
-                        @input="updateFileItem(idx,'name',$event.target.value)"
-                        placeholder="파일명.pdf" style="margin:0;" />
-                    </td>
-                  </template>
-                  <template #cell-url="{ row, idx }">
-                    <td style="padding:4px 6px;">
-                      <input class="form-control" :value="row.url"
-                        @input="updateFileItem(idx,'url',$event.target.value)"
-                        placeholder="https://... 또는 /files/sample.pdf" style="margin:0;" />
-                    </td>
-                  </template>
                   <template #row-actions="{ idx }">
-                    <td style="text-align:center;padding:4px;">
-                      <button @click="removeFileItem(idx)"
-                        style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;cursor:pointer;padding:2px 7px;font-size:12px;line-height:1.4;">✕</button>
-                    </td>
+                    <button @click="removeFileItem(idx)"
+                      style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;cursor:pointer;padding:2px 7px;font-size:12px;line-height:1.4;">✕</button>
                   </template>
                 </bo-grid>
                 <button @click="addFileItem"
@@ -1534,16 +1532,10 @@ window.DpDispPanelDtl = {
                 </div>
               </div>
               <div v-else>
-                <bo-grid bare :columns="fileListCols" :rows="fnGetFileListItems(r)" row-actions
+                <bo-grid bare :columns="fnFileListColsForRow(r)" :rows="fnGetFileListItems(r)" row-actions
                   empty-text="첨부파일이 없습니다." style="margin-bottom:8px;">
-                  <template #cell-name="{ row, idx }">
-                    <td style="padding:4px 6px;"><input class="form-control" :value="row.name" @input="fnSetFileItem(r,idx,'name',$event.target.value)" placeholder="파일명.pdf" style="margin:0;" /></td>
-                  </template>
-                  <template #cell-url="{ row, idx }">
-                    <td style="padding:4px 6px;"><input class="form-control" :value="row.url" @input="fnSetFileItem(r,idx,'url',$event.target.value)" placeholder="https://..." style="margin:0;" /></td>
-                  </template>
                   <template #row-actions="{ idx }">
-                    <td style="text-align:center;padding:4px;"><button @click="fnRemoveFileItemAt(r,idx)" style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;cursor:pointer;padding:2px 7px;font-size:12px;line-height:1.4;">✕</button></td>
+                    <button @click="fnRemoveFileItemAt(r,idx)" style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;cursor:pointer;padding:2px 7px;font-size:12px;line-height:1.4;">✕</button>
                   </template>
                 </bo-grid>
                 <button @click="fnAddFileItemAt(r)" style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;cursor:pointer;color:#555;">+ 파일 추가</button>

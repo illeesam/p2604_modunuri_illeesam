@@ -169,7 +169,7 @@ window.SyPropMng = {
 
     /* BoGridCrud 컬럼 정의 (헤더는 label/style/cls 로 자동 생성, 특수셀은 #cell-{key} 슬롯 override) */
     const gridColumns = [
-      { key: 'pathId',     label: '표시경로',  style: 'min-width:160px;' },
+      { key: 'pathId',     label: '표시경로',  style: 'min-width:160px;', pathPick: 'sy_prop' },
       { key: 'propKey',    label: '키',        edit: 'text', mono: true },
       { key: 'propValue',  label: '값',        edit: 'text' },
       { key: 'propLabel',  label: '라벨',      edit: 'text' },
@@ -235,10 +235,6 @@ window.SyPropMng = {
       @add="addRow" @save="handleSave"
       @delete-checked="deleteChecked" @cancel-checked="cancelChecked"
       @cell-change="onCellChange">
-
-      <template #cell-pathId="{ row }">
-        <bo-path-pick-field biz-cd="sy_prop" :row="row" @change="onCellChange(row)" />
-      </template>
 
       <template #row-actions="{ row }">
         <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="row._row_status='D'">삭제</button>
