@@ -199,8 +199,9 @@ window.SyApiLogMng = {
     /* onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
-    /* fnMethodBadge */
-    const fnMethodBadge = m => ({ GET: 'badge-blue', POST: 'badge-green', PUT: 'badge-orange', PATCH: 'badge-purple', DELETE: 'badge-red' }[m] || 'badge-gray');
+    /* fnMethodBadge — sy_code HTTP_METHOD code_opt1 우선, 없으면 FB */
+    const _HTTP_METHOD_FB = { GET: 'badge-blue', POST: 'badge-green', PUT: 'badge-orange', PATCH: 'badge-purple', DELETE: 'badge-red' };
+    const fnMethodBadge = m => coUtil.cofCodeBadge('HTTP_METHOD', m, _HTTP_METHOD_FB[m] || 'badge-gray');
 
     /* fnStatusBadge */
     const fnStatusBadge = s => {

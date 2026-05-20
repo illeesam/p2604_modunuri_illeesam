@@ -96,7 +96,8 @@ window.StErpGenMng = {
     };
 
     /* fnStatusBadge */
-    const fnStatusBadge = s => ({ '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
+    const _ERP_STATUS_FB = { '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('ERP_STATUS', s, _ERP_STATUS_FB[s] || 'badge-gray');
 
     /* fmtW */
     const fmtW = n => Number(n||0).toLocaleString() + '원';

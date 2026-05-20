@@ -82,11 +82,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
-    /* fnStatusBadge */
-    const fnStatusBadge = s => ({ '전송완료':'badge-green', '전송대기':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
+    /* fnStatusBadge — sy_code ERP_STATUS code_opt1 우선, 없으면 FB */
+    const _ERP_STATUS_FB = { '전송완료':'badge-green', '전송대기':'badge-blue', '오류':'badge-red' };
+    const fnStatusBadge = s => coUtil.cofCodeBadge('ERP_STATUS', s, _ERP_STATUS_FB[s] || 'badge-gray');
 
-    /* fnTypeBadge */
-    const fnTypeBadge   = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
+    /* fnTypeBadge — sy_code ERP_VOUCHER_TYPE_KR code_opt1 우선, 없으면 FB */
+    const _ERP_VOUCHER_TYPE_FB = { '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' };
+    const fnTypeBadge   = t => coUtil.cofCodeBadge('ERP_VOUCHER_TYPE_KR', t, _ERP_VOUCHER_TYPE_FB[t] || 'badge-gray');
 
     /* fmtW */
     const fmtW = n => Number(n||0).toLocaleString() + '원';

@@ -90,8 +90,9 @@ window.PdReviewMng = {
 
     const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
 
-    /* 상품 리뷰 fnStatusBadge */
-    const fnStatusBadge  = s => ({ ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' }[s] || 'badge-gray');
+    /* 상품 리뷰 fnStatusBadge — sy_code REVIEW_STATUS code_opt1 우선, 없으면 FB */
+    const _REVIEW_STATUS_FB = { ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' };
+    const fnStatusBadge  = s => coUtil.cofCodeBadge('REVIEW_STATUS', s, _REVIEW_STATUS_FB[s] || 'badge-gray');
 
     /* 상품 리뷰 getProdNm */
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id || p.prodId === id); return p ? (p.prodNm || p.productName) : ''; };
