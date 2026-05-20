@@ -349,7 +349,6 @@
         { key: 'phone', label: '전화', style: 'width:130px;', cellStyle: 'color:#666;font-family:monospace;', fmt: (v) => v || '-' },
         { key: 'grade', label: '등급', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.grade === 'VIP' ? 'badge-purple' : row.grade === '우수' ? 'badge-blue' : 'badge-gray') },
         { key: 'status', label: '상태', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.status === '활성' ? 'badge-green' : 'badge-red') },
-        { key: '_act', label: '관리', style: 'width:70px;text-align:right;' },
       ];
 
     // -- return ---------------------------------------------------------------
@@ -660,11 +659,9 @@
         style="flex:1;font-size:13px;" />
       <button class="btn btn-primary btn-sm" @click="searchMemberModal" style="white-space:nowrap;">🔍 검색</button>
     </div>
-    <bo-grid bare :columns="memberModalCols" :rows="memberModal.list" row-key="userId" row-clickable empty-text="검색 결과가 없습니다." @row-click="selectMember">
-      <template #cell-_act="{ row }">
-        <td style="text-align:right;">
-          <button class="btn btn-primary btn-sm" @click.stop="selectMember(row)">선택</button>
-        </td>
+    <bo-grid bare :columns="memberModalCols" :rows="memberModal.list" row-key="userId" row-clickable empty-text="검색 결과가 없습니다." @row-click="selectMember" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-primary btn-sm" @click.stop="selectMember(row)">선택</button>
       </template>
     </bo-grid>
   </bo-modal>

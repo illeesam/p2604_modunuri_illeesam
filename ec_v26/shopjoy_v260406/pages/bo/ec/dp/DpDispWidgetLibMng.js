@@ -191,7 +191,6 @@ window.DpDispWidgetLibMng = {
       { key: 'useYn',        label: '상태',
         badge: row => fnStatusCls(row.useYn),
         fmt:   v   => fnStatusLabel(v) },
-      { key: '_act',         label: '관리', style: 'text-align:right;' },
     ];
 
     /* 삭제 */
@@ -269,7 +268,7 @@ window.DpDispWidgetLibMng = {
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="데이터가 없습니다." row-clickable
-        @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => handleLoadDetail(r.widgetLibId)">
+        @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => handleLoadDetail(r.widgetLibId)" row-actions>
         <template #toolbar-actions>
           <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
           <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
@@ -283,12 +282,12 @@ window.DpDispWidgetLibMng = {
         <template #cell-widgetNm="{ row }">
           <td><span class="title-link">{{ wIcon(row.widgetTypeCd) }} {{ row.widgetNm }}</span></td>
         </template>
-        <template #cell-_act="{ row }">
-          <td style="text-align:right" @click.stop><div class="actions">
+      <template #row-actions="{ row }">
+        <div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.widgetLibId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-          </div></td>
-        </template>
+          </div>
+      </template>
       </bo-grid>
     </div>
   </div>

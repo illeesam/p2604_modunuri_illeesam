@@ -192,7 +192,6 @@ window.DpDispWidgetMng = {
     const listColumns = [
       { key: 'widgetId',   label: 'ID',       style: 'width:56px;' },
       { key: 'widgetInfo', label: '위젯 정보', sortKey: 'reg' },
-      { key: '_act',       label: '관리',     style: 'width:120px;text-align:right;' },
     ];
 
     /* setPage */
@@ -301,7 +300,7 @@ window.DpDispWidgetMng = {
     :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
     :count-text="pager.pageTotalCount + '건'"
     empty-text="등록된 위젯이 없습니다."
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => handleLoadDetail(r.widgetId)">
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => handleLoadDetail(r.widgetId)" row-actions>
     <template #toolbar-actions>
       <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
       <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
@@ -344,14 +343,12 @@ window.DpDispWidgetMng = {
         </div>
       </td>
     </template>
-    <template #cell-_act="{ row }">
-      <td style="vertical-align:top;padding-top:10px;width:120px;" @click.stop>
+      <template #row-actions="{ row }">
         <div class="actions" style="justify-content:flex-end;">
           <button @click.stop="handleLoadDetail(row.widgetId)" class="btn btn-blue btn-sm">수정</button>
           <button @click.stop="handleDelete(row)" class="btn btn-danger btn-sm">삭제</button>
         </div>
-      </td>
-    </template>
+      </template>
   </bo-grid>
 
   </div><!-- -- /우측 목록 ----------------------------------------------------------- -->

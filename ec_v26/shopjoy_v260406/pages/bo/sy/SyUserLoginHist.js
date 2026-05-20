@@ -193,7 +193,7 @@ window.SyUserLoginHist = {
       { key: 'failCnt',  label: '실패',      style: 'text-align:center;', align: 'center', cellStyle: (v, row) => row.failCnt > 0 ? 'color:#e74c3c;font-weight:700' : '', fmt: (v) => v > 0 ? v + '회' : '-' },
       { key: 'ip',       label: 'IP', mono: true, fmt: (v) => v || '-' },
       { key: '_browser', label: 'OS/브라우저', cellStyle: 'font-size:11px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => (row.browser || '') + (row.os ? ' / ' + row.os : ''), fmt: (v, row) => row.browser || row.device || '-' },
-      { key: '_uiNm',    label: '화면>기능' },
+      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => { const u = row.uiNm?fnDecode(row.uiNm):''; const m = row.cmdNm?fnDecode(row.cmdNm):''; return u && m ? `${u} > ${m}` : (u || m || '-'); } },
       { key: 'traceId',  label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',  label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
@@ -207,7 +207,7 @@ window.SyUserLoginHist = {
       { key: 'accessTokenExp',label: 'AT만료', cellStyle: 'color:#8e44ad', fmt: (v) => String(v || '').slice(0, 19) || '-' },
       { key: 'tokenExp',      label: 'RT만료', cellStyle: (v, row) => (row.actionCd === 'EXPIRE' || row.actionCd === 'REVOKE') ? 'color:#e74c3c' : '', fmt: (v) => String(v || '').slice(0, 19) || '-' },
       { key: 'ip',            label: 'IP', mono: true, fmt: (v) => v || '-' },
-      { key: '_uiNm',         label: '화면>기능' },
+      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => { const u = row.uiNm?fnDecode(row.uiNm):''; const m = row.cmdNm?fnDecode(row.cmdNm):''; return u && m ? `${u} > ${m}` : (u || m || '-'); } },
       { key: 'traceId',       label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
@@ -296,15 +296,6 @@ window.SyUserLoginHist = {
     <template #cell-_user="{ row }">
       <td><div style="font-weight:600">{{ row.userNm||row.userId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ row.userId }}</div></td>
     </template>
-    <template #cell-_uiNm="{ row }">
-      <td style="font-size:12px;">
-        <span v-if="row.uiNm" style="color:#e8587a;font-weight:600">{{ fnDecode(row.uiNm) }}</span>
-        <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa"> &gt; </span>
-        <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
-        <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc">-</span>
-      </td>
-    </template>
-
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
@@ -363,15 +354,6 @@ window.SyUserLoginHist = {
     <template #cell-_user="{ row }">
       <td><div style="font-weight:600">{{ row.userNm||row.userId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ row.userId }}</div></td>
     </template>
-    <template #cell-_uiNm="{ row }">
-      <td style="font-size:12px;">
-        <span v-if="row.uiNm" style="color:#e8587a;font-weight:600">{{ fnDecode(row.uiNm) }}</span>
-        <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa"> &gt; </span>
-        <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
-        <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc">-</span>
-      </td>
-    </template>
-
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">

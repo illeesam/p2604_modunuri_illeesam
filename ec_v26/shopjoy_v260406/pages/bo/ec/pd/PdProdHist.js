@@ -142,7 +142,6 @@ window.PdProdHist = {
       { key: 'orderQty',       label: '수량' },
       { key: 'orderStatusCd',  label: '상태', badge: () => 'badge-blue',
         fmt: (v, row) => (row.orderStatusCdNm || row.orderStatusCd) },
-      { key: '_act',           label: '관리' },
     ];
     const stockCols = [
       { key: 'histDate',     label: '일시',        fmt: (v) => fnFmtDate(v) },
@@ -256,9 +255,9 @@ window.PdProdHist = {
   <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
-    <bo-grid bare :columns="orderCols" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)">
-      <template #cell-_act="{ row }">
-        <td><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button></td>
+    <bo-grid bare :columns="orderCols" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button>
       </template>
     </bo-grid>
   </div>

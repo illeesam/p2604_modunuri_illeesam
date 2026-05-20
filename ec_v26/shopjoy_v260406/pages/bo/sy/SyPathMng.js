@@ -142,9 +142,8 @@ window.SyPathMng = {
     /* onSizeChange */
     const onSizeChange = async () => { pager.pageNo = 1; await handleGridSearch(); };
 
-    /* -- 행 편집 -- */
-    const onCellChange = (row, field, val) => {
-      row[field] = val;
+    /* -- 행 편집 -- BoGrid edit 자동 v-model + cell-change 만 받음 */
+    const onCellChange = (row) => {
       if (!row._status) row._status = 'U';
     };
 
@@ -265,12 +264,13 @@ window.SyPathMng = {
       { key: 'pathId',       label: 'ID',       style: 'width:60px;text-align:center;', align: 'center',
         cellStyle: 'font-size:11px;color:#999;',
         fmt: (v, row) => row.pathId > 0 ? row.pathId : 'NEW' },
-      { key: 'bizCd',        label: '업무코드', style: 'width:120px;' },
+      { key: 'bizCd',        label: '업무코드', style: 'width:120px;', edit: 'text', placeholder: 'biz_cd' },
       { key: 'parentPathId', label: '부모경로', style: 'width:160px;' },
-      { key: 'pathLabel',    label: '경로 라벨' },
-      { key: 'sortOrd',      label: '정렬',     style: 'width:60px;text-align:center;' },
-      { key: 'useYn',        label: '사용',     style: 'width:70px;text-align:center;' },
-      { key: 'pathRemark',   label: '비고',     style: 'width:160px;' },
+      { key: 'pathLabel',    label: '경로 라벨', edit: 'text', placeholder: '경로 라벨' },
+      { key: 'sortOrd',      label: '정렬',     style: 'width:60px;text-align:center;', edit: 'number', align: 'center' },
+      { key: 'useYn',        label: '사용',     style: 'width:70px;text-align:center;',
+        edit: 'select', options: () => codes.use_yn },
+      { key: 'pathRemark',   label: '비고',     style: 'width:160px;', edit: 'text', placeholder: '비고' },
     ];
     const fnRowClass = (r) => 'status-' + (r._status || '');
 
@@ -325,46 +325,19 @@ window.SyPathMng = {
       :columns="gridColumns" :rows="gridRows" :pager="pager" row-key="pathId"
       list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
       :row-class="fnRowClass"
-      @save="handleSave" @set-page="setPage" @size-change="onSizeChange">
+      @save="handleSave" @set-page="setPage" @size-change="onSizeChange" @cell-change="onCellChange">
 
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
       </template>
       <template #head-actions>관리</template>
 
-      <template #cell-bizCd="{ row }">
-        <td style="padding:3px 6px">
-          <input class="grid-input" :value="row.bizCd" @input="onCellChange(row,'bizCd',$event.target.value)" placeholder="biz_cd">
-        </td>
-      </template>
       <template #cell-parentPathId="{ row }">
         <td style="padding:3px 6px">
           <button class="btn btn-secondary btn-xs" style="font-size:11px;width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
             @click.stop="openParentModal(row)">
             {{ getParentLabel(row.parentPathId) }} ▼
           </button>
-        </td>
-      </template>
-      <template #cell-pathLabel="{ row }">
-        <td style="padding:3px 6px">
-          <input class="grid-input" :value="row.pathLabel" @input="onCellChange(row,'pathLabel',$event.target.value)" placeholder="경로 라벨">
-        </td>
-      </template>
-      <template #cell-sortOrd="{ row }">
-        <td style="padding:3px 4px">
-          <input class="grid-input grid-num" type="number" :value="row.sortOrd" @input="onCellChange(row,'sortOrd',Number($event.target.value))" style="text-align:center">
-        </td>
-      </template>
-      <template #cell-useYn="{ row }">
-        <td style="padding:3px 4px;text-align:center">
-          <select class="grid-select" :value="row.useYn" @change="onCellChange(row,'useYn',$event.target.value)" style="width:52px">
-            <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-          </select>
-        </td>
-      </template>
-      <template #cell-pathRemark="{ row }">
-        <td style="padding:3px 6px">
-          <input class="grid-input" :value="row.pathRemark" @input="onCellChange(row,'pathRemark',$event.target.value)" placeholder="비고">
         </td>
       </template>
       <template #row-actions="{ row }">

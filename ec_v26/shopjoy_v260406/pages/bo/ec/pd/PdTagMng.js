@@ -66,12 +66,13 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     let   _tempId    = -1;
 
     const gridColumns = [
-      { key: 'tagNm',    label: '태그명' },
-      { key: 'tagDesc',  label: '설명' },
+      { key: 'tagNm',    label: '태그명', edit: 'text', placeholder: '태그명' },
+      { key: 'tagDesc',  label: '설명',   edit: 'text', placeholder: '설명',
+        cellStyle: 'color:#888;font-size:12px;' },
       { key: 'useCount', label: '사용수', style: 'width:80px;text-align:right;', align: 'right', fmt: (v) => (v || 0) },
-      { key: 'sortOrd',  label: '정렬',   style: 'width:80px;text-align:right;' },
-      { key: 'useYn',    label: '사용',   style: 'width:70px;text-align:center;' },
-      { key: '_act',     label: '삭제',   style: 'width:60px;text-align:center;' },
+      { key: 'sortOrd',  label: '정렬',   style: 'width:80px;text-align:right;', edit: 'number', align: 'right' },
+      { key: 'useYn',    label: '사용',   style: 'width:70px;text-align:center;',
+        edit: 'select', options: () => codes.use_yn },
     ];
 
     watch(tags, (list) => { gridRows.splice(0, gridRows.length, ...list.map(t => ({ ...t, _row_status: null }))); }, { immediate: true });
@@ -79,8 +80,8 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     /* 태그 addRow */
     const addRow       = () => { gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: 1, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' }); };
 
-    /* 태그 onCellChange */
-    const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };
+    /* 태그 onCellChange — BoGrid edit emit (row, col) 형태 수신 */
+    const onCellChange = (row) => { if (row._row_status !== 'N') row._row_status = 'U'; };
 
     /* 태그 deleteRow */
     const deleteRow    = async (idx) => {
@@ -162,34 +163,17 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
       </bo-search-area>
     </div>
     <bo-grid
-      :columns="gridColumns" :rows="gridRows" :pager="pager" row-key="tagId"
+      :columns="gridColumns" :rows="gridRows" :pager="pager" row-key="tagId" row-actions
       list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-row-new' : (row._row_status==='U' ? 'table-row-mod' : '')"
-      @set-page="setPage" @size-change="onSizeChange">
+      @set-page="setPage" @size-change="onSizeChange" @cell-change="onCellChange">
 
       <template #toolbar-actions>
         <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
       </template>
 
-      <template #cell-tagNm="{ row, idx }">
-        <td><input v-if="row._row_status" class="form-control" v-model="row.tagNm" @input="onCellChange(idx)"><span v-else><span class="badge badge-blue">#</span> {{ row.tagNm }}</span></td>
-      </template>
-      <template #cell-tagDesc="{ row, idx }">
-        <td><input v-if="row._row_status" class="form-control" v-model="row.tagDesc" @input="onCellChange(idx)"><span v-else style="color:#888;font-size:12px">{{ row.tagDesc }}</span></td>
-      </template>
-      <template #cell-sortOrd="{ row, idx }">
-        <td style="text-align:right"><input v-if="row._row_status" class="form-control" style="text-align:right" type="number" v-model.number="row.sortOrd" @input="onCellChange(idx)"><span v-else>{{ row.sortOrd }}</span></td>
-      </template>
-      <template #cell-useYn="{ row, idx }">
-        <td style="text-align:center">
-          <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)">
-            <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-          <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
-        </td>
-      </template>
-      <template #cell-_act="{ idx }">
-        <td style="text-align:center"><button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button></td>
+      <template #row-actions="{ idx }">
+        <button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button>
       </template>
     </bo-grid>
 </div>`

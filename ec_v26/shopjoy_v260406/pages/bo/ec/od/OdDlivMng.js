@@ -421,7 +421,6 @@ window.OdDlivMng = {
       { key: '_site',            label: '사이트명',
         fmt: () => cfSiteNm.value,
         cellStyle: 'color:#2563eb;' },
-      { key: '_act',             label: '관리', style: 'text-align:right;' },
     ];
     const fnGridRowStyle = (d) =>
       (uiStateDetail.selectedId === d.dlivId ? 'background:#fff8f9;' : '')
@@ -488,12 +487,12 @@ window.OdDlivMng = {
     <bo-grid bare selectable :columns="listColumns" :rows="deliveries" :pager="pager" row-key="dlivId"
       :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
       :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
-      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" @ref-click="({type,id}) => showRefModal(type, id)">
-      <template #cell-_act="{ row }">
-        <td><div class="actions">
+      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+      <template #row-actions="{ row }">
+        <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.dlivId)">수정</button>
           <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-        </div></td>
+        </div>
       </template>
     </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />

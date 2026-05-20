@@ -62,7 +62,6 @@ window.MbMemberHist = {
       { key: 'prodNm', label: '상품' },
       { key: 'totalPrice', label: '금액', fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'statusCd', label: '상태' },
-      { key: '_act', label: '관리' },
     ];
     const claimCols = [
       { key: 'claimId', label: '클레임ID', refLink: 'claim' },
@@ -71,7 +70,6 @@ window.MbMemberHist = {
       { key: 'statusCd', label: '상태' },
       { key: 'reasonCd', label: '사유' },
       { key: 'requestDate', label: '신청일', fmt: (v) => (v ? v.slice(0, 10) : '') },
-      { key: '_act', label: '관리' },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -110,9 +108,9 @@ window.MbMemberHist = {
   <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfMemberOrders.length }}</span></div>
-    <bo-grid bare :columns="orderCols" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)">
-      <template #cell-_act="{ row }">
-        <td><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button></td>
+    <bo-grid bare :columns="orderCols" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button>
       </template>
     </bo-grid>
   </div>
@@ -120,9 +118,9 @@ window.MbMemberHist = {
   <!-- -- 연관 클레임 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfMemberClaims.length }}</span></div>
-    <bo-grid bare :columns="claimCols" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)">
-      <template #cell-_act="{ row }">
-        <td><button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button></td>
+    <bo-grid bare :columns="claimCols" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
       </template>
     </bo-grid>
   </div>

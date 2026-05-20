@@ -159,7 +159,6 @@ const searchParam = reactive(_initSearchParam());
         fmt:   v   => v === 'Y' ? '사용' : '미사용' },
       { key: 'regDate',    label: '등록일',   sortKey: 'reg',
         fmt: v => (v||'').slice(0,10) },
-      { key: '_act',       label: '액션' },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -207,7 +206,7 @@ const searchParam = reactive(_initSearchParam());
       :sort-state="uiState" list-title="전시 영역 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
-      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => loadView(r.areaId)">
+      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => loadView(r.areaId)" row-actions>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
@@ -216,11 +215,9 @@ const searchParam = reactive(_initSearchParam());
         <td><code style="font-size:11px;">{{ row.areaCd }}</code></td>
       </template>
 
-      <template #cell-_act="{ row }">
-        <td class="actions" @click.stop>
-          <button class="btn btn-sm btn-secondary" @click="loadView(row.areaId)">상세</button>
+      <template #row-actions="{ row }">
+        <button class="btn btn-sm btn-secondary" @click="loadView(row.areaId)">상세</button>
           <button class="btn btn-sm btn-primary" @click="handleLoadDetail(row.areaId)">수정</button>
-        </td>
       </template>
     </bo-grid>
   </div>

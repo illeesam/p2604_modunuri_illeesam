@@ -227,7 +227,7 @@ window.SyApiLogMng = {
       { key: 'respTimeMs', label: 'ms',        style: 'text-align:right;', align: 'right', mono: true, cellStyle: (v, row) => row.respTimeMs > 1000 ? 'color:#e74c3c;font-weight:700' : '', fmt: (v) => v != null ? v : '-' },
       { key: 'reqIp',      label: 'IP', mono: true, fmt: (v) => v || '-' },
       { key: 'userId',     label: '사용자ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
-      { key: '_uiNm',      label: '화면 > 기능' },
+      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => { const u = row.uiNm?fnDecode(row.uiNm):''; const m = row.cmdNm?fnDecode(row.cmdNm):''; return u && m ? `${u} > ${m}` : (u || m || '-'); } },
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
@@ -239,7 +239,7 @@ window.SyApiLogMng = {
       { key: '_errorMsg',  label: '오류메시지', cellStyle: 'color:#555;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.errorMsg, fmt: (v, row) => row.errorMsg || '-' },
       { key: 'reqIp',      label: 'IP', mono: true, fmt: (v) => v || '-' },
       { key: 'userId',     label: '사용자ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
-      { key: '_uiNm',      label: '화면 > 기능' },
+      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => { const u = row.uiNm?fnDecode(row.uiNm):''; const m = row.cmdNm?fnDecode(row.cmdNm):''; return u && m ? `${u} > ${m}` : (u || m || '-'); } },
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
@@ -337,15 +337,6 @@ window.SyApiLogMng = {
       </div>
     </template>
 
-    <template #cell-_uiNm="{ row }">
-      <td style="font-size:12px;color:#555;">
-        <span v-if="row.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) }}</span>
-        <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa;"> &gt; </span>
-        <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
-        <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc;">-</span>
-      </td>
-    </template>
-
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
@@ -404,15 +395,6 @@ window.SyApiLogMng = {
         <button class="btn btn-secondary btn-xs" @click="toggleExpandAll">{{ allExpanded.value ? '전체닫기' : '전체펼치기' }}</button>
         <button class="btn btn-danger btn-xs" @click="handleClearLog">로그비우기</button>
       </div>
-    </template>
-
-    <template #cell-_uiNm="{ row }">
-      <td style="font-size:12px;color:#555;">
-        <span v-if="row.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) }}</span>
-        <span v-if="coUtil.cofAnd(row.uiNm, row.cmdNm)" style="color:#aaa;"> &gt; </span>
-        <span v-if="row.cmdNm">{{ fnDecode(row.cmdNm) }}</span>
-        <span v-if="!row.uiNm && !row.cmdNm" style="color:#ccc;">-</span>
-      </td>
     </template>
 
     <template #row-expand="{ row, colspan }">

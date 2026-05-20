@@ -197,7 +197,6 @@ window.OdCartMng = {
         align: 'center', fmt: (v) => fnCheckedNm(v), badge: (row) => fnCheckedBadgeCls(row.isChecked) },
       { key: 'regDate',  label: '등록일시', style: 'width:130px;',
         fmt: (v) => fnDate(v), cellStyle: 'font-size:11px;color:#888;' },
-      { key: '_act',     label: '관리',   style: 'width:60px;text-align:center;' },
     ];
 
     /* ── 회원선택 모달 picker BoGrid 컬럼 (행 클릭 시 onSelectMember) ── */
@@ -329,7 +328,7 @@ window.OdCartMng = {
     <bo-grid v-else bare selectable :columns="listColumns" :rows="rows" :pager="pager" row-key="cartId"
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
-      @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll">
+      @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" row-actions>
       <template #cell-memberNm="{ row }">
         <td>
           <div style="display:flex;align-items:center;gap:7px;">
@@ -343,10 +342,8 @@ window.OdCartMng = {
           </div>
         </td>
       </template>
-      <template #cell-_act="{ row }">
-        <td style="text-align:center;">
-          <button class="btn btn-danger btn-xs" @click="handleDelete(row.cartId)">삭제</button>
-        </td>
+      <template #row-actions="{ row }">
+        <button class="btn btn-danger btn-xs" @click="handleDelete(row.cartId)">삭제</button>
       </template>
     </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />

@@ -63,7 +63,6 @@ window.OdDlivHist = {
       { key: 'statusCd',    label: '상태',   style: 'width:90px;' },
       { key: 'reasonCd',    label: '사유' },
       { key: 'requestDate', label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
-      { key: '_act',        label: '관리',   style: 'width:60px;text-align:center;' },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -102,9 +101,9 @@ window.OdDlivHist = {
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
     <bo-grid bare :columns="claimColumns" :rows="cfRelatedClaims" row-key="claimId"
-             empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)">
-      <template #cell-_act="{ row }">
-        <td style="text-align:center;"><button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button></td>
+             empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
       </template>
     </bo-grid>
   </div>

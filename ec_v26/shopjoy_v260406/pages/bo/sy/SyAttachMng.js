@@ -265,7 +265,6 @@ window.SyAttachMng = {
       { key: 'regDate', label: '등록일', style: 'width:145px;', fmt: v => String(v || '').slice(0, 19) },
       { key: 'siteNm', label: '사이트명', style: 'width:70px;',
         cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
-      { key: '_act', label: '관리', style: 'width:80px;text-align:right;' },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -516,13 +515,13 @@ window.SyAttachMng = {
           :loading="uiState.loading"
           :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
           @set-page="setPage"
-          @size-change="onSizeChange">
-          <template #cell-_act="{ row }">
-            <td><div class="actions">
+          @size-change="onSizeChange" row-actions>
+      <template #row-actions="{ row }">
+        <div class="actions">
               <button class="btn btn-blue btn-sm" @click="openFileEdit(row)">수정</button>
               <button class="btn btn-danger btn-sm" @click="handleDeleteFile(row)">삭제</button>
-            </div></td>
-          </template>
+            </div>
+      </template>
         </bo-grid>
 
         <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />

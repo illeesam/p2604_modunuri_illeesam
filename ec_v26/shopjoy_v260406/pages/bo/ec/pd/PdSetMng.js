@@ -407,7 +407,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       { key: '_status',   label: '상태',     style: 'width:90px;text-align:center', align: 'center',
         badge: (row) => { const pr = row.prod || {}; return (pr.status === '판매중' || pr.prodStatusCd === 'ACTIVE') ? 'badge-green' : (pr.prodStatusCd === 'DRAFT' ? 'badge-orange' : 'badge-gray'); },
         fmt: (v, row) => (row.prod ? (row.prod.status || row.prod.prodStatusCd || '-') : '-') },
-      { key: '_act',      label: '관리',     style: 'width:110px;text-align:center' },
     ];
     const fnSetRowStyle = (g) => (uiState.dtlMode === 'edit' && uiState.editSetId === g.setProdId) ? 'background:#e6f4ff' : '';
 
@@ -483,7 +482,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
     <bo-grid bare :columns="setColumns" :rows="cfSetPageRows" :pager="pager"
-      row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다.">
+      row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
       <template #cell-prodNm="{ row }">
         <td>
           <div style="display:flex;align-items:flex-start;gap:6px">
@@ -502,11 +501,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           </div>
         </td>
       </template>
-      <template #cell-_act="{ row }">
-        <td style="text-align:center" class="actions">
-          <button class="btn btn-blue btn-xs" @click="openDtl(row.setProdId)">수정</button>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-xs" @click="openDtl(row.setProdId)">수정</button>
           <button class="btn btn-danger btn-xs" @click="handleDelete(row.setProdId)">삭제</button>
-        </td>
       </template>
     </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />

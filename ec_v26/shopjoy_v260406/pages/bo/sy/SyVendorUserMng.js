@@ -495,7 +495,6 @@ window.SyVendorUserMng = {
       { key: 'validTerm', label: '유효기간', cellStyle: 'color:#6b7280;',
         fmt: (v, row) => (row.validFrom || row.validTo) ? `${row.validFrom||'∞'} ~ ${row.validTo||'∞'}` : '제한없음',
         cellInnerStyle: (v, row) => (row.validFrom || row.validTo) ? '' : 'color:#d1d5db;' },
-      { key: '_act',      label: '관리', style: 'text-align:right;' },
     ];
     const fnVendorRowStyle = (v) => 'cursor:pointer;' + (uiState.searchVendorId === v.vendorId ? 'background:#fff0f4;' : '');
     const fnUserRowStyle   = (u) => 'cursor:pointer;' + (formData.vendorUserId === u.vendorUserId ? 'background:#fff0f4;' : '');
@@ -664,12 +663,10 @@ window.SyVendorUserMng = {
           </div>
           <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
           <bo-grid v-else bare :columns="userRoleColumns" :rows="userRoles" row-key="vendorUserRoleId"
-                   empty-text="부여된 역할이 없습니다.">
-            <template #cell-_act="{ row }">
-              <td style="text-align:right;">
-                <button class="btn btn-danger btn-xs" @click="handleDeleteRole(row)">삭제</button>
-              </td>
-            </template>
+                   empty-text="부여된 역할이 없습니다." row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-danger btn-xs" @click="handleDeleteRole(row)">삭제</button>
+      </template>
           </bo-grid>
         </div>
       </div>

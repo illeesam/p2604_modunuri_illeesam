@@ -196,7 +196,6 @@ window.CmChattDtl = {
         fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시' },
-      { key: '_act', label: '관리' },
     ];
     const userChatColumns = [
       { key: 'subject', label: '제목' },
@@ -205,7 +204,6 @@ window.CmChattDtl = {
         fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시' },
-      { key: '_act', label: '보기' },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -290,10 +288,10 @@ window.CmChattDtl = {
           <span class="ref-link" @click="showRefModal('member', chat.memberId)">{{ chat.memberNm }}</span> 의 다른 채팅
         </span>
       </div>
-      <bo-grid bare :columns="memberChatColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다.">
-        <template #cell-_act="{ row }">
-          <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">상세</button></td>
-        </template>
+      <bo-grid bare :columns="memberChatColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">상세</button>
+      </template>
       </bo-grid>
     </div>
     </div>
@@ -345,10 +343,10 @@ window.CmChattDtl = {
         <div style="display:flex;gap:8px;margin-bottom:14px;">
           <input class="form-control" style="max-width:200px;" v-model="searchUserId" placeholder="회원 ID 입력" />
         </div>
-        <bo-grid bare :columns="userChatColumns" :rows="cfUserChats" row-key="chattRoomId" :empty-text="searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'">
-          <template #cell-_act="{ row }">
-            <td><button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">보기</button></td>
-          </template>
+        <bo-grid bare :columns="userChatColumns" :rows="cfUserChats" row-key="chattRoomId" :empty-text="searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">보기</button>
+      </template>
         </bo-grid>
       </div>
     </div>

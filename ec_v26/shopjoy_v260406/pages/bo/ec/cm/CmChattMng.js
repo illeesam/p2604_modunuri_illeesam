@@ -181,7 +181,6 @@ window.CmChattMng = {
         badge: (row) => fnStatusBadge(row.chattStatusCd) },
       { key: 'regDate',     label: '일시',      style: 'width:140px;', sortKey: 'reg' },
       { key: 'siteNm',      label: '사이트명',  style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
-      { key: '_act',        label: '관리',      style: 'width:140px;text-align:right;' },
     ];
     const fnGridRowClass = (row) => (uiStateDetail.selectedId === row.chattRoomId ? 'active' : '');
 
@@ -225,17 +224,17 @@ window.CmChattMng = {
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="onSort" @set-page="setPage" @size-change="onSizeChange"
-    @ref-click="({type,id}) => showRefModal(type, id)" @row-click="row => handleLoadDetail(row.chattRoomId)">
+    @ref-click="({type,id}) => showRefModal(type, id)" @row-click="row => handleLoadDetail(row.chattRoomId)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </template>
-    <template #cell-_act="{ row }">
-      <td><div class="actions">
+      <template #row-actions="{ row }">
+        <div class="actions">
         <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.chattRoomId)">보기</button>
         <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-      </div></td>
-    </template>
+      </div>
+      </template>
   </bo-grid>
 
   <!-- -- 하단 상세: ChattDtl 임베드 -------------------------------------------- -->

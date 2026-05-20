@@ -233,7 +233,6 @@ window.MbMemberMng = {
       { key: 'joinDate',         label: '가입일',   sortKey: 'reg', fmt: (v) => fnFmtDate(v) },
       { key: 'orderCount',       label: '주문수',   style: 'width:80px;text-align:right', align: 'right', fmt: (v) => (v || 0) + '건' },
       { key: 'totalPurchaseAmt', label: '총구매액', style: 'width:100px;text-align:right', align: 'right', fmt: (v) => (v || 0).toLocaleString() + '원' },
-      { key: '_act',             label: '관리',     style: 'text-align:center;width:80px' },
     ];
     const fnGridRowClass = (row) => (detailModal.dtlId === row.memberId ? 'active' : '');
 
@@ -285,16 +284,16 @@ window.MbMemberMng = {
     :sort-state="uiState" list-title="회원목록" row-clickable
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </template>
     <template #cell-memberNm="{ row }">
       <td><span class="title-link">{{ row.memberNm }}</span></td>
     </template>
-    <template #cell-_act="{ row }">
-      <td style="text-align:center" @click.stop><button class="btn btn-blue btn-sm" @click="openDetail(row)">수정</button></td>
-    </template>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-sm" @click="openDetail(row)">수정</button>
+      </template>
   </bo-grid>
   <mb-member-dtl :detail-modal="detailModal" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
   :reload-trigger="detailModal.reloadTrigger"

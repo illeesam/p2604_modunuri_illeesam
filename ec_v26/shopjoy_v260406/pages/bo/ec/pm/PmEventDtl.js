@@ -252,7 +252,6 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       { key: 'price',     label: '가격', fmt: v => (v||0).toLocaleString() + '원' },
       { key: 'stock',     label: '재고', fmt: v => v + '개' },
       { key: 'status',    label: '상태' },
-      { key: '_act',      label: '제거' },
     ];
 
     // -- return ---------------------------------------------------------------
@@ -442,10 +441,10 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
       </div>
       <bo-grid bare :columns="productColumns" :rows="cfSelectedProducts" row-key="productId"
-               empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)">
-        <template #cell-_act="{ row }">
-          <td><button class="btn btn-danger btn-sm" @click="removeProduct(row.productId)">제거</button></td>
-        </template>
+               empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-danger btn-sm" @click="removeProduct(row.productId)">제거</button>
+      </template>
       </bo-grid>
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">

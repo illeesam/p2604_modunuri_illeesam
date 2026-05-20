@@ -214,7 +214,6 @@ window.CmNoticeMng = {
         badge: (row) => fnStatusBadge(row.noticeStatusCd) },
       { key: 'siteNm',         label: '사이트명', style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: 'regDate',        label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
-      { key: '_act',           label: '관리',     style: 'width:140px;text-align:right;' },
     ];
     const fnGridRowClass = (row) => (uiStateDetail.selectedId === row.noticeId ? 'active' : '');
 
@@ -264,7 +263,7 @@ window.CmNoticeMng = {
     :sort-state="uiState" list-title="공지사항목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -278,14 +277,12 @@ window.CmNoticeMng = {
         </span>
       </td>
     </template>
-    <template #cell-_act="{ row }">
-      <td>
+      <template #row-actions="{ row }">
         <div class="actions">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.noticeId)">수정</button>
           <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
         </div>
-      </td>
-    </template>
+      </template>
   </bo-grid>
 
   </div>
