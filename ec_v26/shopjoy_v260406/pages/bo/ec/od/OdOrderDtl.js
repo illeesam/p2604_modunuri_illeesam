@@ -362,7 +362,11 @@ window.OdOrderDtl = {
       { key: 'orderStatus', label: '주문상태',   style: 'width:90px;text-align:center;', align: 'center',
         fmt: () => form.orderStatusCd || '-',
         cellInnerStyle: 'font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;' },
-      { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;' },
+      { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;', align: 'center',
+        fmt: () => cfRelatedClaim.value ? `${cfRelatedClaim.value.type} · ${cfRelatedClaim.value.status}` : '-',
+        cellInnerStyle: () => cfRelatedClaim.value
+          ? `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${CLAIM_TYPE_COLOR[cfRelatedClaim.value.type]||'#9ca3af'};`
+          : 'color:#ccc;' },
       { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
     ];
 
@@ -615,15 +619,6 @@ window.OdOrderDtl = {
             {{ isExpanded(idx) ? '▼' : '▶' }}
           </span>
           <span style="font-size:18px;margin-right:6px;">{{ row.emoji || '🛍' }}</span>{{ row.prodNm }}
-        </td>
-      </template>
-      <template #cell-claimStatus>
-        <td style="text-align:center;font-size:12px;">
-          <span v-if="cfRelatedClaim" style="display:inline-flex;align-items:center;gap:3px;">
-            <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[cfRelatedClaim.type]||'#9ca3af'}">{{ cfRelatedClaim.type }}</span>
-            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ cfRelatedClaim.status }}</span>
-          </span>
-          <span v-else style="color:#ccc;">-</span>
         </td>
       </template>
       <template #cell-exchInfo="{ row }">

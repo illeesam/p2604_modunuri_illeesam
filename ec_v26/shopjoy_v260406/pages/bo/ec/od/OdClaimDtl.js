@@ -288,7 +288,9 @@ window.OdClaimDtl = {
         cellInnerStyle: () => form.orderStatusCd
           ? 'font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;'
           : 'color:#ccc;' },
-      { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;' },
+      { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;', align: 'center',
+        fmt: () => `${form.claimTypeCd || ''} · ${form.claimStatusCd || ''}`,
+        cellInnerStyle: () => `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af'};` },
       { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
     ];
 
@@ -482,14 +484,6 @@ window.OdClaimDtl = {
             {{ isExpanded(idx) ? '▼' : '▶' }}
           </span>
           {{ row.prodNm }}
-        </td>
-      </template>
-      <template #cell-claimStatus>
-        <td style="text-align:center;font-size:12px;">
-          <span style="display:inline-flex;align-items:center;gap:3px;">
-            <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af'}">{{ form.claimTypeCd }}</span>
-            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ form.claimStatusCd }}</span>
-          </span>
         </td>
       </template>
       <template #cell-exchInfo>

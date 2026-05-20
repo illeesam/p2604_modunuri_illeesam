@@ -202,7 +202,9 @@ window.CmNoticeMng = {
     const listColumns = [
       { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;',
         badge: (row) => fnTypeBadge(row.noticeTypeCd) },
-      { key: 'noticeTitle',    label: '제목',     sortKey: 'nm' },
+      { key: 'noticeTitle',    label: '제목',     sortKey: 'nm', link: true,
+        fmt: (v, row) => row.isFixed === 'Y' ? `📌 ${row.noticeTitle || ''}` : (row.noticeTitle || ''),
+        cellInnerStyle: (v, row) => uiStateDetail.selectedId === row.noticeId ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'isFixed',        label: '고정',     style: 'width:70px;',
         badge: (row) => row.isFixed === 'Y' ? 'badge-red' : 'badge-gray',
         fmt: (v) => v === 'Y' ? '고정' : '-' },
@@ -263,19 +265,10 @@ window.CmNoticeMng = {
     :sort-state="uiState" list-title="공지사항목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" row-actions>
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.noticeId)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-    </template>
-    <template #cell-noticeTitle="{ row }">
-      <td>
-        <span class="title-link" @click="handleLoadDetail(row.noticeId)" :style="selectedId===row.noticeId?'color:#e8587a;font-weight:700;':''">
-          {{ row.noticeTitle }}
-          <span v-if="row.isFixed==='Y'" style="margin-left:4px;font-size:10px;color:#e8587a;">📌</span>
-          <span v-if="selectedId===row.noticeId" style="font-size:10px;margin-left:3px;">▼</span>
-        </span>
-      </td>
     </template>
       <template #row-actions="{ row }">
         <div class="actions">

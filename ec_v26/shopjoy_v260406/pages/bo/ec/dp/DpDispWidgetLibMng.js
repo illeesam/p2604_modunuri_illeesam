@@ -185,7 +185,8 @@ window.DpDispWidgetLibMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm' 와 sortKey 일치) */
     const listColumns = [
-      { key: 'widgetNm',    label: '이름', sortKey: 'nm' },
+      { key: 'widgetNm',    label: '이름', sortKey: 'nm', cellInnerClass: 'title-link',
+        fmt: (v, row) => `${wIcon(row.widgetTypeCd)} ${row.widgetNm || ''}` },
       { key: 'widgetTypeCd', label: '타입',
         fmt: v => wTypeLabel(v) },
       { key: 'useYn',        label: '상태',
@@ -278,9 +279,6 @@ window.DpDispWidgetLibMng = {
             <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}</span>
           </div>
           <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-        </template>
-        <template #cell-widgetNm="{ row }">
-          <td><span class="title-link">{{ wIcon(row.widgetTypeCd) }} {{ row.widgetNm }}</span></td>
         </template>
       <template #row-actions="{ row }">
         <div class="actions">

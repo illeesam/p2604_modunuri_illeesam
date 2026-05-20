@@ -225,7 +225,8 @@ window.MbMemberMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
     const listColumns = [
-      { key: 'memberNm',         label: '이름',     sortKey: 'nm' },
+      { key: 'memberNm',         label: '이름',     sortKey: 'nm',
+        fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'loginId',          label: '이메일' },
       { key: 'memberPhone',      label: '연락처' },
       { key: 'gradeCd',          label: '등급',     align: 'center', badge: (row) => fnGradeBadge(row.gradeCd) },
@@ -287,9 +288,6 @@ window.MbMemberMng = {
     @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-    </template>
-    <template #cell-memberNm="{ row }">
-      <td><span class="title-link">{{ row.memberNm }}</span></td>
     </template>
       <template #row-actions="{ row }">
         <button class="btn btn-blue btn-sm" @click="openDetail(row)">수정</button>

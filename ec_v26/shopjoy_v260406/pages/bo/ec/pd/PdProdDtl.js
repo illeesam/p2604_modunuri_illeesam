@@ -1122,7 +1122,9 @@ window.PdProdDtl = {
     // -- bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) ----------------------------
     const fnNoCursor = () => '';
     const mdUserCols = [
-      { key: 'userNm', label: '이름' },  // ✔ 선택표시 KEEP
+      { key: 'userNm', label: '이름',
+        fmt: (v, row) => form.mdUserId === row.userId ? `✔ ${row.userNm || ''}` : (row.userNm || ''),
+        cellStyle: (v, row) => form.mdUserId === row.userId ? 'color:#e8587a;' : '' },
       { key: 'deptId', label: '부서' },
       { key: 'roleId', label: '역할', badge: () => 'badge-gray', cellStyle: 'font-size:11px;' },
     ];
@@ -1158,14 +1160,13 @@ window.PdProdDtl = {
     const relProdCols = [
       { key: '_id2',     label: 'ID',     style: 'width:46px;text-align:center;', align: 'center',
         cellStyle: 'color:#888;', fmt: (v, row) => (row.relProdId || row.prodId) },
-      { key: 'prodNm',   label: '상품명' },  // ref-link KEEP (navigate)
+      { key: 'prodNm',   label: '상품명', refLink: 'prod', refKey: 'relProdId' },
       { key: '_relType', label: '유형',   style: 'width:80px;', fmt: (v, row) => (row.prodRelTypeCdNm || row.prodRelTypeCd) },
-      { key: '_act',     label: '관리',   style: 'width:54px;text-align:center;' },
     ];
     /* BoGrid 컬럼 — 코디상품 (pd_prod_rel · CODY_PROD) */
     const codeProdCols = [
       { key: 'productId', label: 'ID',     style: 'width:46px;text-align:center;', align: 'center', cellStyle: 'color:#888;' },
-      { key: 'prodNm',    label: '상품명' },  // ref-link KEEP (navigate)
+      { key: 'prodNm',    label: '상품명', refLink: 'prod', refKey: 'productId' },
       { key: 'category',  label: '카테고리', style: 'width:80px;' },
       { key: '_price',    label: '가격',   style: 'width:90px;text-align:right;', align: 'right',
         fmt: (v, row) => ((row.price || 0).toLocaleString() + '원') },
@@ -1383,14 +1384,6 @@ window.PdProdDtl = {
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
             <bo-grid bare :columns="mdUserCols" :rows="cfMdUserListFiltered" row-key="userId"
               :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @row-click="selectMdUser">
-              <template #cell-userNm="{ row }">
-                <td>
-                  <span style="display:flex;align-items:center;gap:6px;">
-                    <span v-if="form.mdUserId===row.userId" style="color:#e8587a;font-size:12px;">✔</span>
-                    {{ row.userNm }}
-                  </span>
-                </td>
-              </template>
             </bo-grid>
           </div>
           <!-- -- 푸터 ----------------------------------------------------- -->
@@ -1975,14 +1968,10 @@ window.PdProdDtl = {
 
       <bo-grid bare :columns="relProdCols" :rows="relProds" row-key="_id"
         draggable row-actions empty-text="+ 추가 버튼으로 연관상품을 등록하세요."
-        @reorder="onRelDrop">
-        <template #cell-prodNm="{ row }">
-          <td><span class="ref-link" @click="navigate('pdProdDtl',{id:row.relProdId||row.prodId})">{{ row.prodNm }}</span></td>
-        </template>
+        @reorder="onRelDrop"
+        @ref-click="({id}) => navigate('pdProdDtl', { id })">
         <template #row-actions="{ idx }">
-          <td style="text-align:center;">
-            <button class="btn btn-xs btn-danger" @click="removeRelProd(idx)">삭제</button>
-          </td>
+          <button class="btn btn-xs btn-danger" @click="removeRelProd(idx)">삭제</button>
         </template>
       </bo-grid>
     </div>
@@ -2000,10 +1989,8 @@ window.PdProdDtl = {
 
       <bo-grid bare :columns="codeProdCols" :rows="codeProds" row-key="_id"
         draggable row-actions empty-text="+ 추가 버튼으로 코디상품을 등록하세요."
-        @reorder="onCodeDrop">
-        <template #cell-prodNm="{ row }">
-          <td><span class="ref-link" @click="navigate('pdProdDtl',{id:row.productId})">{{ row.prodNm }}</span></td>
-        </template>
+        @reorder="onCodeDrop"
+        @ref-click="({id}) => navigate('pdProdDtl', { id })">
         <template #row-actions="{ idx }">
           <td style="text-align:center;">
             <button class="btn btn-xs btn-danger" @click="removeCodeProd(idx)">삭제</button>

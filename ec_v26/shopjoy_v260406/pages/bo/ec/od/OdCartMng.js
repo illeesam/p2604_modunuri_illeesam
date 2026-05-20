@@ -178,7 +178,8 @@ window.OdCartMng = {
 
     /* ── BoGrid 컬럼 정의 ── */
     const listColumns = [
-      { key: 'memberNm', label: '회원',   style: 'min-width:130px;' },
+      { key: 'memberNm', label: '회원',   style: 'min-width:130px;',
+        fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'prodNm',   label: '상품',   style: 'min-width:180px;',
         fmt: (v, row) => `${row.prodNm || '-'} #${row.prodId}` },
       { key: '_opt',     label: '옵션',   style: 'min-width:120px;',
@@ -201,7 +202,8 @@ window.OdCartMng = {
 
     /* ── 회원선택 모달 picker BoGrid 컬럼 (행 클릭 시 onSelectMember) ── */
     const memberPickColumns = [
-      { key: 'memberNm',       label: '이름',   style: 'min-width:130px;' },
+      { key: 'memberNm',       label: '이름',   style: 'min-width:130px;',
+        fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'loginId',        label: '로그인ID', style: 'min-width:110px;', mono: true, cellStyle: 'font-size:12px;color:#374151;' },
       { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;',
         fmt: (v) => v || '-',
@@ -210,7 +212,6 @@ window.OdCartMng = {
         fmt: (v, row) => row.memberStatusCdNm || v || '-',
         cellInnerStyle: (v) => (v==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;') + 'border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
       { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
-      { key: '_pick',          label: '선택',   style: 'width:70px;text-align:center;' },
     ];
 
     /* ── 삭제 ── */
@@ -329,19 +330,6 @@ window.OdCartMng = {
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
       @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" row-actions>
-      <template #cell-memberNm="{ row }">
-        <td>
-          <div style="display:flex;align-items:center;gap:7px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">
-              {{ fnAvatar(row.memberNm) }}
-            </div>
-            <div>
-              <div style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</div>
-              <div style="font-size:11px;color:#aaa;font-family:monospace;">{{ row.memberId || row.sessionKey || '-' }}</div>
-            </div>
-          </div>
-        </td>
-      </template>
       <template #row-actions="{ row }">
         <button class="btn btn-danger btn-xs" @click="handleDelete(row.cartId)">삭제</button>
       </template>
@@ -399,23 +387,11 @@ window.OdCartMng = {
         <div v-if="memberPick.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
         <bo-grid v-else bare row-clickable :columns="memberPickColumns" :rows="memberPick.rows" row-key="memberId"
                  :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
-                 @row-click="onSelectMember">
-          <template #cell-memberNm="{ row }">
-            <td>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#e11d48);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">
-                  {{ row.memberNm ? row.memberNm.charAt(0) : '?' }}
-                </div>
-                <span style="font-weight:600;font-size:13px;">{{ row.memberNm || '-' }}</span>
-              </div>
-            </td>
-          </template>
-          <template #cell-_pick="{ row }">
-            <td style="text-align:center;">
-              <button class="btn btn-primary btn-xs" @click.stop="onSelectMember(row)"
+                 @row-click="onSelectMember" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-primary btn-xs" @click.stop="onSelectMember(row)"
                       style="border-radius:6px;font-size:11px;">선택</button>
-            </td>
-          </template>
+      </template>
         </bo-grid>
       </div>
 

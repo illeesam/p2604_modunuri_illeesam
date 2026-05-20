@@ -239,7 +239,8 @@ window.OdDlivDtl = {
 
     /* 배송항목 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
     const dlivItemCols = [
-      { key: 'prodNm',      label: '상품명' },
+      { key: 'prodNm',      label: '상품명', cellStyle: 'font-size:12px;',
+        fmt: (v, row) => `${row.emoji || '🛍'} ${row.prodNm || ''}` },
       { key: 'color',       label: '색상',       style: 'width:60px;',                fmt: v => v || '-' },
       { key: 'size',        label: '사이즈',     style: 'width:50px;',                fmt: v => v || '-' },
       { key: 'qty',         label: '수량',       style: 'width:44px;text-align:center;',
@@ -260,7 +261,11 @@ window.OdDlivDtl = {
         cellInnerStyle: () => form.orderStatusCd
           ? 'font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;'
           : 'color:#ccc;' },
-      { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;' },
+      { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;', align: 'center',
+        fmt: () => cfFirstClaim.value ? `${cfFirstClaim.value.type} · ${cfFirstClaim.value.status}` : '-',
+        cellInnerStyle: () => cfFirstClaim.value
+          ? `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${CLAIM_TYPE_COLOR[cfFirstClaim.value.type]||'#9ca3af'};`
+          : 'color:#ccc;' },
       { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;' },
     ];
 
@@ -436,18 +441,6 @@ window.OdDlivDtl = {
     </div>
     <bo-grid bare :columns="dlivItemCols" :rows="dlivItems"
              empty-text="배송 항목 정보가 없습니다.">
-      <template #cell-prodNm="{ row }">
-        <td style="font-size:12px;"><span style="font-size:18px;margin-right:6px;">{{ row.emoji || '🛍' }}</span>{{ row.prodNm }}</td>
-      </template>
-      <template #cell-claimStatus>
-        <td style="text-align:center;font-size:12px;">
-          <span v-if="cfFirstClaim" style="display:inline-flex;align-items:center;gap:3px;">
-            <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[cfFirstClaim.type]||'#9ca3af'}">{{ cfFirstClaim.type }}</span>
-            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ cfFirstClaim.status }}</span>
-          </span>
-          <span v-else style="color:#ccc;">-</span>
-        </td>
-      </template>
       <template #cell-exchInfo>
         <td style="font-size:12px;">
           <div v-if="cfFirstClaim && cfFirstClaim.type==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">

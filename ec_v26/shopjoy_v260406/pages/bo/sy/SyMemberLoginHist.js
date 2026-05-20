@@ -186,7 +186,8 @@ window.SyMemberLoginHist = {
       { key: '_exp',     label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) },
-      { key: '_member',  label: '회원' },
+      { key: '_member',  label: '회원',
+        fmt: (v, row) => `${row.memberNm || row.memberId || '-'}  #${row.memberId}` },
       { key: 'loginId',  label: '로그인ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
       { key: 'resultCd', label: '결과', badge: (row) => fnResultBadge(row.resultCd), fmt: (v) => fnResultLabel(v) },
       { key: 'failCnt',  label: '실패',      style: 'text-align:center;', align: 'center', cellStyle: (v, row) => row.failCnt > 0 ? 'color:#e74c3c;font-weight:700' : '', fmt: (v) => v > 0 ? v + '회' : '-' },
@@ -200,7 +201,8 @@ window.SyMemberLoginHist = {
       { key: '_exp',          label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',         label: '토큰로그ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'regDate',       label: '일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
-      { key: '_member',       label: '회원' },
+      { key: '_member',       label: '회원',
+        fmt: (v, row) => `${row.memberNm || row.memberId || '-'}  #${row.memberId}` },
       { key: 'actionCd',      label: '액션', badge: (row) => fnActionBadge(row.actionCd), fmt: (v) => fnActionLabel(v) },
       { key: 'tokenTypeCd',   label: '토큰유형', badge: (row) => fnTypeBadge(row.tokenTypeCd), cellStyle: 'font-size:11px', fmt: (v) => v || '-' },
       { key: 'accessTokenExp',label: 'AT만료', cellStyle: 'color:#8e44ad', fmt: (v) => String(v || '').slice(0, 19) || '-' },
@@ -291,9 +293,6 @@ window.SyMemberLoginHist = {
       </div>
     </template>
 
-    <template #cell-_member="{ row }">
-      <td><div style="font-weight:600">{{ row.memberNm||row.memberId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ row.memberId }}</div></td>
-    </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
@@ -350,9 +349,6 @@ window.SyMemberLoginHist = {
       </div>
     </template>
 
-    <template #cell-_member="{ row }">
-      <td><div style="font-weight:600">{{ row.memberNm||row.memberId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ row.memberId }}</div></td>
-    </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">

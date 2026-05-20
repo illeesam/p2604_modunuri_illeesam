@@ -157,8 +157,12 @@ const rawList = reactive([]);
       { key: 'rawTypeCd',      label: '유형',
         badge: (row) => row.rawTypeCd === 'ORDER' ? 'badge-blue' : 'badge-orange' },
       { key: 'orderId',        label: '소스ID', cellStyle: 'color:#555' },
-      { key: 'vendorNm',       label: '업체' },
-      { key: 'prodNm',         label: '상품명' },
+      { key: 'vendorNm',       label: '업체',
+        fmt: (v, row) => `${row.vendorNm || ''} / ${vendorTypeLabel(row.vendorTypeCd) || ''}` },
+      { key: 'prodNm',         label: '상품명',
+        cellStyle: 'max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
+        fmt: (v, row) => row.brandNm ? `${row.prodNm || ''} / ${row.brandNm}` : (row.prodNm || ''),
+        cellTitle: true },
       { key: 'orderQty',       label: '수량',         style: 'text-align:right',
         align: 'right', fmt: (v) => (v || 0).toLocaleString() },
       { key: 'settleTargetAmt', label: '정산대상금액', style: 'text-align:right',
@@ -341,18 +345,6 @@ const rawList = reactive([]);
       <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▼ 전체펼치기</button>
       <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▲ 전체접기</button>
       <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
-    </template>
-    <template #cell-vendorNm="{ row }">
-      <td>
-        <div>{{ row.vendorNm }}</div>
-        <div style="font-size:11px;color:#aaa">{{ vendorTypeLabel(row.vendorTypeCd) }}</div>
-      </td>
-    </template>
-    <template #cell-prodNm="{ row }">
-      <td>
-        <div style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.prodNm }}</div>
-        <div style="font-size:11px;color:#aaa">{{ row.brandNm }}</div>
-      </td>
     </template>
     <template #row-expand="{ row: r, colspan }">
             <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">

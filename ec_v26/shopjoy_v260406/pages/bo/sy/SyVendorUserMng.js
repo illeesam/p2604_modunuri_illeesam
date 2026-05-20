@@ -478,7 +478,6 @@ window.SyVendorUserMng = {
       { key: 'bizNo',        label: '사업자번호' },
       { key: 'ceo',          label: '대표자' },
       { key: 'phone',        label: '전화', cellStyle: 'font-size:11.5px' },
-      { key: '_pick',        label: '선택', style: 'text-align:right;' },
     ];
     const userGridColumns = [
       { key: 'memberNm',           label: '이름', cellStyle: 'font-weight:600' },
@@ -562,15 +561,13 @@ window.SyVendorUserMng = {
     :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
     list-title="업체목록" :count-text="vendors.length + '건'"
     :row-style="fnVendorRowStyle" row-clickable
-    @set-page="setBizPage" @row-click="pickVendorRow">
+    @set-page="setBizPage" @row-click="pickVendorRow" row-actions>
     <template #cell-bizNo="{ row }">
       <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ row.bizNo }}</code></td>
     </template>
-    <template #cell-_pick="{ row }">
-      <td style="text-align:right;">
+      <template #row-actions="{ row }">
         <button class="btn btn-primary btn-xs" @click.stop="pickVendorRow(row)">{{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}</button>
-      </td>
-    </template>
+      </template>
   </bo-grid-readonly>
 
   <!-- -- 사용자 목록 ------------------------------------------------------- -->
