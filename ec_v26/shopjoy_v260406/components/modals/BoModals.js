@@ -3,8 +3,14 @@
    FO 모달은 components/modals/FoModals.js 참조.
 
    ───────────────────────────────────────────────────────────────────────
-   정의된 컴포넌트 (29개) — 태그는 kebab-case (예: <site-select-modal>)
+   정의된 컴포넌트 (33개) — 태그는 kebab-case (예: <site-select-modal>)
    ※ 모든 모달의 template 최상위는 <bo-modal> 사용 (BoAreaComp.js)
+
+   [인증 모달] — boApp.js 로그인/마이 화면용. 상태/액션은 parent(boApp.js) 소유, 모달은 dumb-view
+     AuthLoginModal         — 로그인 / 회원가입 (loginModal/loginForm/regForm props, do-login/do-register emit)
+     AuthPwChangeModal      — 비밀번호 변경 (pwForm props, save emit)
+     AuthUserPickModal      — 사용자 선택 로그인(개발용) (userPickModal props, pick emit)
+     AuthProfileModal       — 프로필 (profileForm/profileImg props, save/img-change/img-remove emit)
 
    [선택/피커 모달]
      SiteSelectModal        — 사이트 선택
@@ -4264,4 +4270,336 @@ window.BoCodeGrpTreeNode = {
       :node="child" :depth="depth+1" @select="onSelect" />
   </ul>
 </li>`
+};
+
+/* ── 프로필 모달 ─────────────────────────────────────────────────────────────
+   profileForm/profileImg reactive 를 ref 로 받아 v-model·표시 직접 바인딩.
+   저장·이미지 변경/삭제 로직은 parent(boApp.js) emit. ── */
+window.AuthProfileModal = {
+  name: 'AuthProfileModal',
+  props: {
+    show:       { type: Boolean, default: false },
+    form:       { type: Object,  required: true },          // profileForm reactive (name/phone/email/dept)
+    img:        { type: Object,  default: () => ({}) },      // profileImg reactive (cdnImgUrl)
+    uploading:  { type: Boolean, default: false },           // profileImgUploading
+    authUser:   { type: Object,  default: () => ({}) },      // currentAuthUser
+  },
+  emits: ['save', 'img-change', 'img-remove', 'close'],
+  setup(props) {
+    const fnInitial = () => ((props.authUser?.authNm || props.authUser?.name || '').charAt(0)) || '?';
+    return { fnInitial };
+  },
+  template: /* html */`
+<bo-modal :show="show" title="🙍 프로필" width="440px" @close="$emit('close')">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px;background:#fff5f7;border-radius:10px;">
+    <!-- 프로필 사진 -->
+    <label style="position:relative;cursor:pointer;flex-shrink:0;" :title="uploading ? '업로드 중...' : '클릭하여 사진 변경'">
+      <img v-if="img.cdnImgUrl"
+        :src="img.cdnImgUrl"
+        style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #e8587a;" />
+      <div v-else style="width:64px;height:64px;border-radius:50%;background:#e8587a;color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;">
+        {{ fnInitial() }}
+      </div>
+      <div style="position:absolute;bottom:0;right:0;width:20px;height:20px;border-radius:50%;background:#e8587a;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;">
+        <span v-if="uploading">⏳</span><span v-else>📷</span>
+      </div>
+      <input type="file" accept="image/*" style="display:none;" :disabled="uploading" @change="$emit('img-change', $event)" />
+    </label>
+    <div>
+      <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ authUser?.authNm || authUser?.name || '' }}</div>
+      <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ authUser?.role || '' }}</div>
+      <div style="font-size:11px;color:#aaa;margin-top:2px;">가입일: {{ authUser?.regDate || '' }}</div>
+      <div v-if="img.cdnImgUrl" style="font-size:11px;color:#bbb;margin-top:2px;">
+        <span style="cursor:pointer;color:#e8587a;" @click.prevent="$emit('img-remove')">✕ 사진 삭제</span>
+      </div>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">이름 <span class="req">*</span></label>
+      <input class="form-control" v-model="form.name" placeholder="이름" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">연락처</label>
+      <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" />
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">이메일</label>
+    <div class="readonly-field">{{ form.email }}</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">부서</label>
+    <input class="form-control" v-model="form.dept" placeholder="부서명" />
+  </div>
+  <template #footer>
+    <button class="btn btn-secondary" @click="$emit('close')">취소</button>
+    <button class="btn btn-primary" @click="$emit('save')">저장</button>
+  </template>
+</bo-modal>`,
+};
+
+/* ── 사용자 선택 모달 (로그인 화면 개발용 picker) ──────────────────────────────
+   boApp.js 인증 setup 의 상태/조회를 그대로 사용하는 dumb-view 모달.
+   modal(=userPickModal reactive) 을 ref 로 받아 v-model 직접 바인딩, 액션은 emit.
+   ※ BoUserSelectModal / SimpleUserPickModal 과 용도가 달라 Auth* 접두어로 구분 ── */
+window.AuthUserPickModal = {
+  name: 'AuthUserPickModal',
+  props: {
+    modal:     { type: Object, required: true },  // userPickModal reactive (show/searchValue/pageNo/loading)
+    rows:      { type: Array,  default: () => [] },   // cfPickRows
+    total:     { type: Number, default: 0 },          // cfPickTotal
+    totalPage: { type: Number, default: 1 },          // cfPickTotalPage
+    loginId:   { type: String, default: '' },         // loginForm.loginId (선택 행 강조용)
+    pageSize:  { type: Number, default: 20 },
+  },
+  emits: ['search', 'go-page', 'pick', 'close'],
+  setup() {
+    const fnPageVisible = (p, cur, last) => Math.abs(p - cur) <= 2 || p === 1 || p === last;
+    return { fnPageVisible };
+  },
+  template: /* html */`
+<bo-modal :show="modal.show" width="820px" max-width="96vw" box-pad="0" body-pad="0"
+  z-index="1100" @close="$emit('close')">
+  <div style="display:flex;flex-direction:column;max-height:90vh;">
+    <!-- 모달 헤더 -->
+    <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffc8d6;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:18px;">👥</span>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:#1a1a2e;">사용자 선택</div>
+          <div style="font-size:10px;color:#e8587a;margin-top:1px;">선택 시 마스터 패스워드(1111)로 자동 로그인</div>
+        </div>
+      </div>
+      <button @click="$emit('close')" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">✕</button>
+    </div>
+    <!-- 본문 (스크롤 영역) -->
+    <div style="padding:14px 18px;overflow-y:auto;flex:1;">
+      <!-- 검색바 -->
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <div style="position:relative;flex:1;">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
+          <input class="form-control" v-model="modal.searchValue" placeholder="이름 / 로그인ID / 이메일 검색..."
+            @keyup.enter="$emit('search')" style="padding-left:32px;height:34px;" />
+        </div>
+        <button class="btn btn-primary btn-sm" @click="$emit('search')" style="padding:0 16px;font-weight:700;">조회</button>
+      </div>
+      <!-- 건수 -->
+      <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
+        총 <b style="color:#e8587a;">{{ total }}</b>명
+      </div>
+      <!-- 테이블 -->
+      <div style="overflow-x:auto;border-radius:8px;border:1px solid #f0e0e8;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:linear-gradient(90deg,#fdf0f4,#fce8ef);">
+              <th style="padding:6px 8px;text-align:center;width:32px;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;white-space:nowrap;">번호</th>
+              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">이름</th>
+              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">로그인ID</th>
+              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">사이트</th>
+              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">부서</th>
+              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">권한</th>
+              <th style="padding:6px 8px;text-align:center;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">상태</th>
+              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">이메일</th>
+              <th style="padding:6px 8px;text-align:center;width:44px;border-bottom:2px solid #f5c0d0;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="modal.loading">
+              <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">⏳ 조회 중...</td>
+            </tr>
+            <tr v-else-if="!rows.length">
+              <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">🔍 검색 결과가 없습니다.</td>
+            </tr>
+            <template v-else>
+              <tr v-for="(u, idx) in rows" :key="u.loginId || u.userId"
+                @click="$emit('pick', u)"
+                :style="loginId===(u.loginId||u.userId)
+                ? 'background:#fff0f4;cursor:pointer;'
+                : 'background:'+(idx%2===0?'#fff':'#fdfafe')+';cursor:pointer;'"
+                onmouseover="this.style.background='#fff5f8'" onmouseout="this.style.background=''">
+                <td style="padding:5px 8px;text-align:center;color:#ccc;font-size:11px;border-bottom:1px solid #f5eef2;">{{ (modal.pageNo-1)*pageSize+idx+1 }}</td>
+                <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ (u.userNm||u.label||'?').charAt(0) }}</div>
+                    <span style="font-weight:700;color:#1a1a2e;white-space:nowrap;">{{ u.userNm || u.label || '-' }}</span>
+                  </div>
+                </td>
+                <td style="padding:5px 8px;color:#888;border-bottom:1px solid #f5eef2;font-family:monospace;font-size:11px;">{{ u.loginId }}</td>
+                <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ u.siteNm || '-' }}</td>
+                <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ u.deptNm || '-' }}</td>
+                <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
+                  <span v-if="u.roleNm" style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;white-space:nowrap;">{{ u.roleNm }}</span>
+                  <span v-else style="color:#ddd;">—</span>
+                </td>
+                <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
+                  <span v-if="u.userStatusCd==='ACTIVE'" style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">활성</span>
+                  <span v-else style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">{{ u.userStatusCdNm || '비활성' }}</span>
+                </td>
+                <td style="padding:5px 8px;color:#999;font-size:11px;border-bottom:1px solid #f5eef2;">{{ u.userEmail || '-' }}</td>
+                <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
+                  <button @click.stop="$emit('pick', u)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">선택</button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- 페이지네이션 (스크롤 밖 고정) -->
+    <div v-if="totalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:4px;padding:10px 18px;border-top:1px solid #f5eef2;flex-shrink:0;flex-wrap:wrap;">
+      <button @click="$emit('go-page', 1)" :disabled="modal.pageNo===1"
+        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===1?'opacity:.35;cursor:default;':''">«</button>
+      <button @click="$emit('go-page', modal.pageNo-1)" :disabled="modal.pageNo===1"
+        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===1?'opacity:.35;cursor:default;':''">‹</button>
+      <template v-for="p in totalPage" :key="p">
+        <button v-if="fnPageVisible(p, modal.pageNo, totalPage)"
+          @click="$emit('go-page', p)"
+          :style="modal.pageNo===p
+          ? 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;font-weight:700;'
+          : 'background:#fff;color:#888;border:1px solid #eee;'"
+          style="min-width:28px;height:28px;border-radius:6px;font-size:11px;cursor:pointer;">{{ p }}</button>
+      </template>
+      <button @click="$emit('go-page', modal.pageNo+1)" :disabled="modal.pageNo===totalPage"
+        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===totalPage?'opacity:.35;cursor:default;':''">›</button>
+      <button @click="$emit('go-page', totalPage)" :disabled="modal.pageNo===totalPage"
+        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===totalPage?'opacity:.35;cursor:default;':''">»</button>
+    </div>
+  </div>
+</bo-modal>`,
+};
+
+/* ── 비밀번호 변경 모달 ───────────────────────────────────────────────────────
+   form(=pwForm reactive) 을 ref 로 받아 v-model 직접 바인딩. 저장 로직은 parent emit. ── */
+window.AuthPwChangeModal = {
+  name: 'AuthPwChangeModal',
+  props: {
+    show:  { type: Boolean, default: false },
+    form:  { type: Object,  required: true },  // pwForm reactive (current/next/confirm)
+    error: { type: String,  default: '' },     // pwError
+  },
+  emits: ['save', 'close'],
+  template: /* html */`
+<bo-modal :show="show" title="🔑 비밀번호 변경" width="380px" @close="$emit('close')">
+  <div class="form-group">
+    <label class="form-label">현재 비밀번호 <span class="req">*</span></label>
+    <input class="form-control" type="password" v-model="form.current" placeholder="현재 비밀번호" autocomplete="current-password" />
+  </div>
+  <div class="form-group">
+    <label class="form-label">새 비밀번호 <span class="req">*</span></label>
+    <input class="form-control" type="password" v-model="form.next" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password" />
+  </div>
+  <div class="form-group">
+    <label class="form-label">새 비밀번호 확인 <span class="req">*</span></label>
+    <input class="form-control" type="password" v-model="form.confirm" placeholder="새 비밀번호 재입력" @keyup.enter="$emit('save')" autocomplete="new-password" />
+  </div>
+  <div v-if="error" class="login-error">{{ error }}</div>
+  <template #footer>
+    <button class="btn btn-secondary" @click="$emit('close')">취소</button>
+    <button class="btn btn-primary" @click="$emit('save')">변경</button>
+  </template>
+</bo-modal>`,
+};
+
+/* ── 로그인 / 회원가입 모달 ──────────────────────────────────────────────────
+   modal(=loginModal) / loginForm / regForm 등 reactive 를 ref 로 받아 직접 바인딩.
+   doLogin/doRegister/openUserPick 등 인증 액션은 모두 parent emit. ── */
+window.AuthLoginModal = {
+  name: 'AuthLoginModal',
+  props: {
+    modal:       { type: Object, required: true },  // loginModal reactive (show/tab)
+    loginForm:   { type: Object, required: true },  // loginForm reactive
+    regForm:     { type: Object, required: true },  // regForm reactive
+    error:       { type: String, default: '' },     // loginError
+    authMethods: { type: Array,  default: () => [] },// AUTH_METHODS
+    userRoles:   { type: Array,  default: () => [] },// userRoles
+  },
+  emits: ['do-login', 'do-register', 'open-user-pick', 'close', 'clear-error'],
+  setup(props, { emit }) {
+    const setTab = (t) => { props.modal.tab = t; emit('clear-error'); };
+    return { setTab };
+  },
+  template: /* html */`
+<bo-modal :show="!!modal.show" box-pad="0" body-pad="0" @close="$emit('close')">
+  <div class="login-modal-box">
+    <div class="login-modal-header">
+      <div class="login-tabs">
+        <span :class="{active: modal.tab==='login'}" @click="setTab('login')">로그인</span>
+        <span :class="{active: modal.tab==='register'}" @click="setTab('register')">회원가입</span>
+      </div>
+      <span class="modal-close" @click="$emit('close')">✕</span>
+    </div>
+
+    <!-- 로그인 폼 -->
+    <div v-if="modal.tab==='login'">
+      <div class="form-group">
+        <label class="form-label">로그인 ID</label>
+        <input class="form-control" v-model="loginForm.loginId" placeholder="로그인 ID 입력" @keyup.enter="$emit('do-login')" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">비밀번호</label>
+        <input class="form-control" type="password" v-model="loginForm.loginPwd" placeholder="비밀번호 입력" @keyup.enter="$emit('do-login')" autocomplete="current-password" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">인증방식</label>
+        <div class="auth-methods">
+          <label v-for="m in authMethods" :key="m"
+            class="auth-method-item" :class="{active: loginForm.authMethod===m}">
+            <input type="radio" :value="m" v-model="loginForm.authMethod" style="display:none" />
+            {{ m }}
+          </label>
+        </div>
+      </div>
+      <div v-if="error" class="login-error">{{ error }}</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:4px;" @click="$emit('do-login')">로그인</button>
+      <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
+        <span>계정이 없으신가요?</span>
+        <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="setTab('register')">회원가입</span>
+      </div>
+      <div style="text-align:center;margin-top:14px;">
+        <button @click="$emit('open-user-pick')" style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:#aaa;text-decoration:underline;padding:0;">사용자 선택하여 로그인 (개발)</button>
+      </div>
+    </div>
+
+    <!-- 회원가입 폼 -->
+    <div v-if="modal.tab==='register'">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">이름 <span class="req">*</span></label>
+          <input class="form-control" v-model="regForm.name" placeholder="이름" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">연락처</label>
+          <input class="form-control" v-model="regForm.phone" placeholder="010-0000-0000" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">이메일 <span class="req">*</span></label>
+        <input class="form-control" v-model="regForm.email" placeholder="이메일 입력" autocomplete="email" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">비밀번호 <span class="req">*</span></label>
+          <input class="form-control" type="password" v-model="regForm.password" placeholder="비밀번호" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">비밀번호 확인 <span class="req">*</span></label>
+          <input class="form-control" type="password" v-model="regForm.confirmPw" placeholder="재입력" @keyup.enter="$emit('do-register')" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">역할</label>
+        <select class="form-control" v-model="regForm.role">
+          <option v-for="c in userRoles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+      </div>
+      <div v-if="error" class="login-error">{{ error }}</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:4px;" @click="$emit('do-register')">가입하기</button>
+      <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
+        <span>이미 계정이 있으신가요?</span>
+        <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="setTab('login')">로그인</span>
+      </div>
+    </div>
+  </div>
+</bo-modal>`,
 };
