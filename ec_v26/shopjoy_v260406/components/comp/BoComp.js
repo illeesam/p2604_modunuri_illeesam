@@ -593,17 +593,17 @@ window.BoMultiCheckSelect = {
     <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#888;font-size:10px;">▼</span>
   </div>
   <div v-if="open"
-       style="position:absolute;top:calc(100% + 4px);left:0;min-width:100%;max-height:280px;overflow-y:auto;background:#fff;border:1px solid #d4d4d8;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:1000;padding:6px 0;">
-    <label v-if="showAll" style="display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-weight:600;">
-      <input type="checkbox" :checked="cfIsAll" @change="onClickAll" />
-      <span>{{ allLabel }}</span>
+       style="position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:280px;max-height:280px;overflow-y:auto;background:#fff;border:1px solid #d4d4d8;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:1000;padding:4px 0;">
+    <label v-if="showAll" style="display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-weight:600;white-space:nowrap;">
+      <input type="checkbox" :checked="cfIsAll" @change="onClickAll" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
+      <span style="white-space:nowrap;">{{ allLabel }}</span>
     </label>
     <label v-for="o in cfNorm" :key="o.value"
-           style="display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:13px;cursor:pointer;"
+           style="display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:13px;cursor:pointer;white-space:nowrap;"
            @mouseenter="$event.currentTarget.style.background='#f9fafb'"
            @mouseleave="$event.currentTarget.style.background='transparent'">
-      <input type="checkbox" :checked="cfSelected.has(o.value)" @change="onClickOption(o.value)" />
-      <span>{{ o.label }}</span>
+      <input type="checkbox" :checked="cfSelected.has(o.value)" @change="onClickOption(o.value)" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
+      <span style="white-space:nowrap;">{{ o.label }}</span>
     </label>
   </div>
 </div>`,
