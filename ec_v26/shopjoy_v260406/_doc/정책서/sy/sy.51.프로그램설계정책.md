@@ -708,17 +708,24 @@ select `options` 는 함수형 + 다양한 배열 형식 지원:
 | SyI18nMng | 언어별 번역 입력 (LANGS 배열을 map 으로 columns 동적 생성) |
 
 **Dtl 추가 변환 영역**:
-- PdProdDtl: 판매기간(BoDateTimePicker slot) + 업체/상품유형 + 담당MD/배송템플릿 (총 9영역)
+- PdProdDtl: 상품명/상태/판매기간/무게사이즈/구매제한/기본가격/광고기간/카테고리·브랜드/업체·상품유형/담당MD·배송템플릿 (총 10영역)
 - DpDispPanelDtl: 위젯 1~5 섹션의 위젯유형/노출순서 (v-for 로컬 변수 `r`에 바인딩) + 표시경로/포함영역 picker
 - DpDispAreaDtl / DpDispUiDtl: 표시경로 picker slot
-- PmDiscntDtl: detail 탭 할인적용·기간설정 2개 (각각 BoFormArea)
+- PmDiscntDtl: detail 탭 할인적용·기간설정·상태/비고 3개 (각각 BoFormArea)
 - PmEventDtl/PmPlanDtl: 판매업체/판매담당자 (vendor slot)
 - PmCouponDtl: detail 탭 지급방법·조건 + 사용방법 (사용범위/제외/제약)
 - SyBbsDtl/SyContactDtl: 사이트명 readonly 영역
 
+**Mng/Hist 추가 변환 영역** (각 일괄결재 모달 — 다중 탭):
+- OdClaimMng: 추가결재요청 탭 + 결재처리 탭 (apprAction/apprComment)
+- OdDlivMng: 추가결재요청 + 결재처리 + courier 탭 (택배사/운송장번호)
+- OdOrderMng: 추가결재요청 + 결재처리
+- SyAttachMng: 파일 폼 18필드 (4컬럼 grid)
+
 총 **30개 Dtl + 14개 Mng/Hist 폼 + BoFormArea 컴포넌트 + boApp 등록**. `node --check` 0 실패.
 
 **FO/base/components**: form-row/form-group 0건 (BoFormArea 대상 외).
+**잔존 form-row**: 모두 KEEP 패턴 (위젯 토글버튼·동적 카테고리 행·search-style·BoSearchArea 대체 대상).
 
 ---
 

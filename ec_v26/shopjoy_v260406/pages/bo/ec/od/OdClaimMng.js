@@ -501,8 +501,25 @@ window.OdClaimMng = {
         options: () => codes.req_targets, onChange: () => onReqTargetChange() },
       { key: 'reqTargetNm', label: '요청대상명', type: 'text', placeholder: '수정 가능' },
     ];
+    // 요청금액 / 요청사유 / 전송 템플릿 (3 fields)
+    const apprDetailFormColumns = [
+      { key: 'reqAmount', label: '요청금액', type: 'number', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'reqReason', label: '요청사유', type: 'textarea', rows: 2, placeholder: '(선택)', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'tmplMsg',   label: '전송 템플릿', type: 'slot', name: 'tmplMsg', colSpan: 2,
+        hint: '치환: {target} {targetNm} {amount} {reason}' },
+    ];
+    // 결재처리구분/결재코멘트 (approval 탭)
+    const bulkApprovalFormColumns = [
+      { key: 'apprAction',  label: '결재처리 구분', type: 'select', nullLabel: '선택하세요',
+        options: () => codes.approval_actions, colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'apprComment', label: '결재 코멘트', type: 'textarea', rows: 2,
+        placeholder: '(선택)', colSpan: 2 },
+    ];
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, baseSearchColumns, listGridColumns, fnGridRowStyle, memberPickGridColumns, apprContactFormColumns, apprTargetFormColumns };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, baseSearchColumns, listGridColumns, fnGridRowStyle, memberPickGridColumns, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns, bulkApprovalFormColumns };
   },
   template: /* html */`
 <div>
@@ -588,18 +605,10 @@ window.OdClaimMng = {
             <option v-for="c in codes.claim_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
+        <!-- 결재처리 (BoFormArea 자동 렌더) -->
         <div v-if="uiState.bulkTab==='approval'">
-          <div class="form-group">
-            <label class="form-label">결재처리 구분</label>
-            <select class="form-control" v-model="bulkForm.apprAction">
-              <option value="">선택하세요</option>
-              <option v-for="a in codes.approval_actions" :key="a.codeValue" :value="a.codeValue">{{ a.codeLabel }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">결재 코멘트</label>
-            <textarea class="form-control" v-model="bulkForm.apprComment" rows="2" placeholder="(선택)"></textarea>
-          </div>
+          <bo-form-area :columns="bulkApprovalFormColumns" :form="bulkForm" :errors="{}"
+            :cols="2" :show-actions="false" />
         </div>
         <div v-if="uiState.bulkTab==='approvalReq'">
           <div class="form-group">
@@ -615,19 +624,14 @@ window.OdClaimMng = {
           <!-- 요청대상/요청대상명 (BoFormArea 자동 렌더) -->
           <bo-form-area :columns="apprTargetFormColumns" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
-          <div class="form-group">
-            <label class="form-label">요청금액</label>
-            <input class="form-control" type="number" v-model.number="bulkForm.reqAmount" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">요청사유</label>
-            <textarea class="form-control" v-model="bulkForm.reqReason" rows="2" placeholder="(선택)"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">전송 템플릿 <span style="font-size:10px;color:#888;">(치환: {target} {targetNm} {amount} {reason})</span></label>
-            <textarea class="form-control" v-model="bulkForm.tmplMsg" rows="4" style="font-family:monospace;font-size:11.5px;"></textarea>
-            <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">{{ cfBuildTmplMsg }}</div>
-          </div>
+          <!-- 요청금액/요청사유/전송템플릿 (BoFormArea 자동 렌더) -->
+          <bo-form-area :columns="apprDetailFormColumns" :form="bulkForm" :errors="{}"
+            :cols="2" :show-actions="false">
+            <template #tmplMsg>
+              <textarea class="form-control" v-model="bulkForm.tmplMsg" rows="4" style="font-family:monospace;font-size:11.5px;"></textarea>
+              <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">{{ cfBuildTmplMsg }}</div>
+            </template>
+          </bo-form-area>
         </div>
       </div>
       <div style="padding:10px 18px 14px;border-top:1px solid #eee;background:#fafafa;">

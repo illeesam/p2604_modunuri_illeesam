@@ -1252,6 +1252,11 @@ window.PdProdDtl = {
       { key: 'saleEndDate',   label: '판매 종료일시', type: 'slot', name: 'saleEnd',
         hint: 'NULL=무기한' },
     ];
+    // 카테고리 / 브랜드 (카테고리는 동적 행 slot, 브랜드는 select)
+    const categoryBrandFormColumns = [
+      { key: '_categories', label: '카테고리', type: 'slot', name: 'categories' },
+      { key: 'brandId',     label: '브랜드', type: 'slot', name: 'brand' },
+    ];
     // 업체 / 상품유형
     const vendorTypeFormColumns = [
       { key: 'vendorId',    label: '업체', type: 'slot', name: 'vendor' },
@@ -1296,7 +1301,7 @@ window.PdProdDtl = {
       dtlId: Vue.computed(() => props.dtlId),
       buyLimitFormColumns, basePriceFormColumns, advrtPeriodFormColumns, salePeriodFormColumns,
       prodNameFormColumns, prodStatusFormColumns, prodSizeFormColumns,
-      vendorTypeFormColumns, mdDlivFormColumns,
+      vendorTypeFormColumns, mdDlivFormColumns, categoryBrandFormColumns,
     };
   },
   template: /* html */`
@@ -1341,10 +1346,10 @@ window.PdProdDtl = {
     <bo-form-area :columns="prodNameFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false" />
 
-    <!-- -- 카테고리 / 브랜드 --------------------------------------------------- -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">카테고리</label>
+    <!-- 카테고리 / 브랜드 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="categoryBrandFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      <template #categories>
         <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
           <div v-if="prodCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
           <div v-for="(cat,idx) in prodCategories" :key="cat?.categoryId"
@@ -1362,15 +1367,14 @@ window.PdProdDtl = {
           <button type="button" @click="catPickerOpen=true"
                   style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%;">+ 카테고리 추가</button>
         </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">브랜드</label>
+      </template>
+      <template #brand>
         <select class="form-control" v-model="form.brandId">
           <option value="">-- 선택 --</option>
           <option v-for="b in ([]||[])" :key="b.brandId||b.id" :value="b.brandId||b.id">{{ b.brandNm||b.name }}</option>
         </select>
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
 
     <!-- -- 카테고리 피커 모달 --------------------------------------------------- -->
     <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"

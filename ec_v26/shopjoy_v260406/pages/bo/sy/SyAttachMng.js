@@ -280,6 +280,28 @@ window.SyAttachMng = {
       { type: 'rowBreak' },
       { key: 'useYn',         label: '상태', type: 'select', options: () => codes.use_yns, colSpan: 2 },
     ];
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 파일 폼 (18필드 4컬럼) ========
+    const fileFormColumns = [
+      { key: 'attachGrpId',      label: '첨부그룹ID', type: 'text', required: true, placeholder: 'ATG...' },
+      { key: 'fileNm',           label: '파일명', type: 'text', required: true, placeholder: '파일명.jpg', colSpan: 2 },
+      { key: 'mimeTypeCd',       label: 'MIME타입', type: 'text', placeholder: 'image/jpeg' },
+      { key: 'fileExt',          label: '확장자', type: 'text', placeholder: 'jpg' },
+      { key: 'fileSize',         label: '파일크기(byte)', type: 'number', placeholder: '0' },
+      { key: 'refId',            label: '참조ID', type: 'text', placeholder: 'PROD-001' },
+      { key: 'sortOrd',          label: '정렬순서', type: 'number' },
+      { key: 'storageType',      label: '스토리지타입', type: 'select', options: () => codes.storage_types },
+      { key: 'storagePath',      label: '저장경로', type: 'text', placeholder: '/cdn/{업무명}/YYYY/MM/DD/', colSpan: 3 },
+      { key: 'storedNm',         label: '저장파일명', type: 'text', placeholder: 'YYYYMMDD_hhmmss_seq_random', colSpan: 2 },
+      { key: 'attachUrl',        label: '첨부URL', type: 'text', placeholder: '/uploads/...', colSpan: 2 },
+      { key: 'cdnHost',          label: 'CDN Host', type: 'text', placeholder: 'https://cdn.shopjoy.com', colSpan: 2 },
+      { key: 'cdnImgUrl',        label: 'CDN 이미지URL', type: 'text', colSpan: 2 },
+      { key: 'thumbGeneratedYn', label: '썸네일생성', type: 'select', options: () => codes.use_yns },
+      { key: 'thumbFileNm',      label: '썸네일파일명', type: 'text' },
+      { key: 'thumbStoredNm',    label: '썸네일저장명', type: 'text' },
+      { key: 'thumbUrl',         label: '썸네일URL', type: 'text' },
+      { key: 'thumbCdnUrl',      label: '썸네일CDN URL', type: 'text' },
+      { key: 'attachMemo',       label: '메모', type: 'text', colSpan: 3 },
+    ];
 
     // -- return ---------------------------------------------------------------
     return {
@@ -287,7 +309,7 @@ window.SyAttachMng = {
       attachGrps, grpSearchType, grpSearchValue, onGrpSearch, grpForm, pager,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
-      fnFmtSize, fnStatusBadge, fileGridColumns, grpFormColumns,
+      fnFmtSize, fnStatusBadge, fileGridColumns, grpFormColumns, fileFormColumns,
     };
   },
   template: /* html */`
@@ -404,89 +426,9 @@ window.SyAttachMng = {
             {{ uiState.fileEditId===null ? '파일 등록' : '파일 수정' }}
             <span v-if="uiState.fileEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">#{{ uiState.fileEditId }}</span>
           </div>
-          <!-- Grid 4열 폼 -->
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px 10px;margin-bottom:8px;">
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">첨부그룹ID <span class="req">*</span></label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.attachGrpId" placeholder="ATG..." />
-            </div>
-            <div class="form-group" style="margin-bottom:0;grid-column:span 2;">
-              <label class="form-label" style="font-size:11px;">파일명 <span class="req">*</span></label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.fileNm" placeholder="파일명.jpg" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">MIME타입</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.mimeTypeCd" placeholder="image/jpeg" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">확장자</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.fileExt" placeholder="jpg" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">파일크기(byte)</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" type="number" v-model.number="fileForm.fileSize" placeholder="0" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">참조ID</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.refId" placeholder="PROD-001" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">정렬순서</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" type="number" v-model.number="fileForm.sortOrd" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">스토리지타입</label>
-              <select class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.storageType">
-                <option v-for="c in codes.storage_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom:0;grid-column:span 3;">
-              <label class="form-label" style="font-size:11px;">저장경로</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.storagePath" placeholder="/cdn/{업무명}/YYYY/MM/DD/" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;grid-column:span 2;">
-              <label class="form-label" style="font-size:11px;">저장파일명</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.storedNm" placeholder="YYYYMMDD_hhmmss_seq_random" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;grid-column:span 2;">
-              <label class="form-label" style="font-size:11px;">첨부URL</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.attachUrl" placeholder="/uploads/..." />
-            </div>
-            <div class="form-group" style="margin-bottom:0;grid-column:span 2;">
-              <label class="form-label" style="font-size:11px;">CDN Host</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.cdnHost" placeholder="https://cdn.shopjoy.com" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;grid-column:span 2;">
-              <label class="form-label" style="font-size:11px;">CDN 이미지URL</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.cdnImgUrl" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">썸네일생성</label>
-              <select class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.thumbGeneratedYn">
-                <option v-for="c in codes.use_yns" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">썸네일파일명</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.thumbFileNm" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">썸네일저장명</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.thumbStoredNm" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">썸네일URL</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.thumbUrl" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">썸네일CDN URL</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.thumbCdnUrl" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;grid-column:span 3;">
-              <label class="form-label" style="font-size:11px;">메모</label>
-              <input class="form-control" style="font-size:12px;padding:3px 6px;" v-model="fileForm.attachMemo" />
-            </div>
-          </div>
+          <!-- 파일 폼 (BoFormArea 자동 렌더, 4컬럼) -->
+          <bo-form-area :columns="fileFormColumns" :form="fileForm" :errors="{}"
+            :cols="4" :show-actions="false" />
           <!-- 저장/취소 가운데 정렬 -->
           <div style="display:flex;gap:8px;justify-content:center;">
             <button class="btn btn-primary btn-sm" style="min-width:60px;" @click="handleSaveFile">저장</button>

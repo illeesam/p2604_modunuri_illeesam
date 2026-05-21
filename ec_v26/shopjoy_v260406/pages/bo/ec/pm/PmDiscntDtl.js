@@ -214,8 +214,13 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
       { key: 'startDate', label: '시작일', type: 'date' },
       { key: 'endDate',   label: '종료일', type: 'date' },
     ];
+    // 상태/비고
+    const discntStatusFormColumns = [
+      { key: 'discntStatusCd', label: '상태', type: 'select', options: () => codes.promo_statuses },
+      { key: 'discntDesc',     label: '비고', type: 'textarea', rows: 2, placeholder: '비고 입력' },
+    ];
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor, infoFormColumns, discntApplyFormColumns, discntPeriodFormColumns };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor, infoFormColumns, discntApplyFormColumns, discntPeriodFormColumns, discntStatusFormColumns };
   },
   template: /* html */`
 <div>
@@ -312,19 +317,11 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
           :cols="2" :show-actions="false" />
       </div>
 
-      <!-- -- 상태 및 비고 ---------------------------------------------------- -->
+      <!-- 상태 및 비고 (BoFormArea 자동 렌더) -->
       <div>
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">⚙️ 상태 및 비고</h3>
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.discntStatusCd">
-            <option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">비고</label>
-          <textarea class="form-control" v-model="form.discntDesc" rows="2" placeholder="비고 입력"></textarea>
-        </div>
+        <bo-form-area :columns="discntStatusFormColumns" :form="form" :errors="errors"
+          :cols="2" :show-actions="false" />
       </div>
 
       <div class="form-actions" v-if="!cfDtlMode">
