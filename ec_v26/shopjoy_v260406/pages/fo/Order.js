@@ -221,10 +221,24 @@ window.Order = {
       handleSearchData();
     });
 
+    /* FoFormArea columns 정의 — 배송 주소는 slot 탈출구 사용(카카오 우편번호 버튼+3 input) */
+    const baseFormColumns = [
+      { key: 'name',  label: '이름',   type: 'text', required: true, placeholder: '홍길동' },
+      { key: 'tel',   label: '연락처', type: 'tel',  required: true, placeholder: '010-1234-5678' },
+      { type: 'rowBreak' },
+      { key: 'email', label: '이메일', type: 'email', required: true, colSpan: 2,
+        placeholder: 'hello@example.com' },
+      { type: 'rowBreak' },
+      { key: 'address', label: '배송 주소', type: 'slot', name: 'address', colSpan: 2, required: true },
+      { type: 'rowBreak' },
+      { key: 'deliveryReq', label: '배송 요청사항', type: 'select', colSpan: 2,
+        options: () => codes.dliv_req_opts, nullLabel: '선택 없음' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return {
-      cfOrderItems,
+      cfOrderItems, baseFormColumns,
       form, errors, clearErr, handleSubmit, openKakaoAddr,
       parsePrice, fmt,
       cfCartTotal, cfTotalCouponDiscount, cfAppliedCash, cfFinalPrice,
@@ -444,51 +458,25 @@ window.Order = {
         <!-- -- 주문자 정보 --------------------------------------------------- -->
         <div class="card" style="padding:clamp(16px,3vw,28px);">
           <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">👤 주문자 정보</h2>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:14px;">
-            <div>
-              <label class="form-label">이름<span class="form-required">*</span></label>
-              <input v-model="form.name" class="form-input" placeholder="홍길동" @input="clearErr('name')" />
-              <div v-if="errors.name" class="form-error">{{ errors.name }}</div>
-            </div>
-            <div>
-              <label class="form-label">연락처<span class="form-required">*</span></label>
-              <input v-model="form.tel" class="form-input" placeholder="010-1234-5678" @input="clearErr('tel')" />
-              <div v-if="errors.tel" class="form-error">{{ errors.tel }}</div>
-            </div>
-          </div>
-          <div style="margin-bottom:14px;">
-            <label class="form-label">이메일<span class="form-required">*</span></label>
-            <input v-model="form.email" type="email" class="form-input" placeholder="hello@example.com" @input="clearErr('email')" />
-            <div v-if="errors.email" class="form-error">{{ errors.email }}</div>
-          </div>
-
-          <!-- -- 배송 주소 (카카오 우편번호) --------------------------------------- -->
-          <div style="margin-bottom:14px;">
-            <label class="form-label">배송 주소<span class="form-required">*</span></label>
-            <div style="display:flex;gap:8px;margin-bottom:8px;">
-              <input v-model="form.postcode" class="form-input" placeholder="우편번호" readonly
-                style="width:110px;flex-shrink:0;background:var(--bg-base);cursor:default;" />
-              <button @click="openKakaoAddr" type="button"
-                style="padding:8px 16px;border:1px solid #a5d6a7;border-radius:8px;background:#e8f5e9;color:#2e7d32;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;"
-                @mouseenter="$event.currentTarget.style.background='#c8e6c9'"
-                @mouseleave="$event.currentTarget.style.background='#e8f5e9'">
-                📮 주소 검색
-              </button>
-            </div>
-            <input v-model="form.address" class="form-input" placeholder="도로명 주소" readonly
-              @input="clearErr('address')"
-              style="margin-bottom:8px;background:var(--bg-base);cursor:default;" />
-            <input v-model="form.addressDetail" class="form-input" placeholder="상세 주소 (동/호수 등)" />
-            <div v-if="errors.address" class="form-error">{{ errors.address }}</div>
-          </div>
-
-          <div style="margin-bottom:20px;">
-            <label class="form-label">배송 요청사항</label>
-            <select v-model="form.deliveryReq" class="form-input">
-              <option value="">선택 없음</option>
-              <option v-for="o in codes.dliv_req_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-            </select>
-          </div>
+          <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" min-col-width="160px">
+            <template #address>
+              <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <input v-model="form.postcode" class="form-input" placeholder="우편번호" readonly
+                  style="width:110px;flex-shrink:0;background:var(--bg-base);cursor:default;" />
+                <button @click="openKakaoAddr" type="button"
+                  style="padding:8px 16px;border:1px solid #a5d6a7;border-radius:8px;background:#e8f5e9;color:#2e7d32;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;"
+                  @mouseenter="$event.currentTarget.style.background='#c8e6c9'"
+                  @mouseleave="$event.currentTarget.style.background='#e8f5e9'">
+                  📮 주소 검색
+                </button>
+              </div>
+              <input v-model="form.address" class="form-input" placeholder="도로명 주소" readonly
+                @input="clearErr('address')"
+                style="margin-bottom:8px;background:var(--bg-base);cursor:default;" />
+              <input v-model="form.addressDetail" class="form-input" placeholder="상세 주소 (동/호수 등)" />
+              <div v-if="errors.address" class="form-error">{{ errors.address }}</div>
+            </template>
+          </fo-form-area>
           <button @click="handleSubmit" :disabled="uiState.submitting"
             :style="{
               width:'100%',padding:'14px',border:'none',borderRadius:'10px',fontSize:'0.95rem',fontWeight:700,

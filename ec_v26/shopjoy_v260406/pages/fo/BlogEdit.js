@@ -20,12 +20,29 @@ window.BlogEdit = {
       body: '',
       tags: '',
     });
+    const errors = reactive({});
 
     const categories = [
       { id: 'fashion', name: '패션' },
       { id: 'lifestyle', name: '라이프스타일' },
       { id: 'trend', name: '트렌드' },
       { id: 'howto', name: '스타일링 팁' },
+    ];
+
+    /* FoFormArea columns 정의 */
+    const baseFormColumns = [
+      { key: 'title',    label: '제목',     type: 'text',     required: true, colSpan: 2,
+        placeholder: '제목을 입력하세요' },
+      { type: 'rowBreak' },
+      { key: 'category', label: '카테고리', type: 'select',   colSpan: 2,
+        nullable: false,
+        options: () => categories.map(c => ({ value: c.id, label: c.name })) },
+      { type: 'rowBreak' },
+      { key: 'excerpt',  label: '요약',     type: 'text',     colSpan: 2,
+        placeholder: '한 줄 요약' },
+      { type: 'rowBreak' },
+      { key: 'body',     label: '본문',     type: 'textarea', required: true, colSpan: 2,
+        rows: 14, placeholder: '본문을 입력하세요...' },
     ];
 
     /* 수정 모드: 기존 데이터 로드 */
@@ -87,7 +104,7 @@ window.BlogEdit = {
 
     // -- return ---------------------------------------------------------------
 
-    return { cfIsEdit, form, categories, images, handleSave, cancel, addImage, removeImage , uiState, codes };
+    return { cfIsEdit, form, errors, categories, baseFormColumns, images, handleSave, cancel, addImage, removeImage , uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:760px;">
@@ -104,35 +121,8 @@ window.BlogEdit = {
   <!-- -- 폼 -------------------------------------------------------------- -->
   <div class="card" style="padding:clamp(16px,3vw,28px);">
 
-    <!-- -- 제목 ----------------------------------------------------------- -->
-    <div style="margin-bottom:20px;">
-      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">제목 <span style="color:#ef4444;">*</span></label>
-      <input v-model="form.title" type="text" placeholder="제목을 입력하세요"
-        style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.92rem;outline:none;background:var(--bg-card);color:var(--text-primary);" />
-    </div>
-
-    <!-- -- 카테고리 --------------------------------------------------------- -->
-    <div style="margin-bottom:20px;">
-      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">카테고리</label>
-      <select v-model="form.category"
-        style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);">
-        <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-      </select>
-    </div>
-
-    <!-- -- 요약 ----------------------------------------------------------- -->
-    <div style="margin-bottom:20px;">
-      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">요약</label>
-      <input v-model="form.excerpt" type="text" placeholder="한 줄 요약"
-        style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);" />
-    </div>
-
-    <!-- -- 본문 ----------------------------------------------------------- -->
-    <div style="margin-bottom:20px;">
-      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">본문 <span style="color:#ef4444;">*</span></label>
-      <textarea v-model="form.body" rows="14" placeholder="본문을 입력하세요..."
-        style="width:100%;padding:14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);resize:vertical;line-height:1.8;"></textarea>
-    </div>
+    <!-- -- 제목 / 카테고리 / 요약 / 본문 ----------------------------------- -->
+    <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
 
     <!-- -- 이미지 첨부 ------------------------------------------------------- -->
     <div style="margin-bottom:20px;">

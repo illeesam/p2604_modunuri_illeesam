@@ -31,9 +31,6 @@ window.Contact = {
 
     const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     const errors = reactive({});
-    
-    /* clearErr */
-    const clearErr = k => { if (errors[k] !== undefined) delete errors[k]; };
 
     /* validate */
     const validate = () => {
@@ -63,9 +60,23 @@ window.Contact = {
       Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     };
 
+    /* FoFormArea columns 정의 */
+    const baseFormColumns = [
+      { key: 'name',        label: '이름',     type: 'text',  required: true, placeholder: '홍길동' },
+      { key: 'email',       label: '이메일',   type: 'email', required: true, placeholder: 'hello@example.com' },
+      { key: 'tel',         label: '연락처',   type: 'tel',   placeholder: '010-1234-5678' },
+      { key: 'orderNo',     label: '주문번호', type: 'text',  placeholder: '있으시면 입력해주세요' },
+      { type: 'rowBreak' },
+      { key: 'inquiryType', label: '문의 유형', type: 'select', colSpan: 2,
+        options: () => cfInquiryCodes.value, nullLabel: '선택해주세요 (선택사항)' },
+      { type: 'rowBreak' },
+      { key: 'desc',        label: '문의 내용', type: 'textarea', required: true, colSpan: 2,
+        rows: 5, placeholder: '문의하실 내용을 자유롭게 입력해주세요. (최소 10자)' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
-    return { form, errors, clearErr, handleSubmit, cfInquiryCodes, uiState, codes };
+    return { form, errors, handleSubmit, cfInquiryCodes, uiState, codes, baseFormColumns };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -88,38 +99,7 @@ window.Contact = {
     <!-- -- 문의 폼 --------------------------------------------------------- -->
     <div class="card" style="padding:clamp(16px,4vw,32px);">
       <h2 style="font-size:1rem;font-weight:700;margin-bottom:22px;color:var(--text-primary);">✉️ 문의 양식</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(8px,1.5vw,14px);margin-bottom:14px;">
-        <div>
-          <label class="form-label">이름<span class="form-required">*</span></label>
-          <input v-model="form.name" class="form-input" placeholder="홍길동" @input="clearErr('name')" />
-          <div v-if="errors.name" class="form-error">{{ errors.name }}</div>
-        </div>
-        <div>
-          <label class="form-label">이메일<span class="form-required">*</span></label>
-          <input v-model="form.email" type="email" class="form-input" placeholder="hello@example.com" @input="clearErr('email')" />
-          <div v-if="errors.email" class="form-error">{{ errors.email }}</div>
-        </div>
-        <div>
-          <label class="form-label">연락처</label>
-          <input v-model="form.tel" class="form-input" placeholder="010-1234-5678" />
-        </div>
-        <div>
-          <label class="form-label">주문번호</label>
-          <input v-model="form.orderNo" class="form-input" placeholder="있으시면 입력해주세요" />
-        </div>
-      </div>
-      <div style="margin-bottom:14px;">
-        <label class="form-label">문의 유형</label>
-        <select v-model="form.inquiryType" class="form-input">
-          <option value="">선택해주세요 (선택사항)</option>
-          <option v-for="c in cfInquiryCodes" :key="c.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div style="margin-bottom:14px;">
-        <label class="form-label">문의 내용<span class="form-required">*</span></label>
-        <textarea v-model="form.desc" class="form-input" rows="5" placeholder="문의하실 내용을 자유롭게 입력해주세요. (최소 10자)" @input="clearErr('desc')"></textarea>
-        <div v-if="errors.desc" class="form-error">{{ errors.desc }}</div>
-      </div>
+      <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
       <div style="margin-bottom:22px;">
         <label class="form-label">첨부파일 (준비중)</label>
         <div style="padding:12px;background:#f5f5f5;border-radius:6px;color:#666;font-size:0.9rem;">

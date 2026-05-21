@@ -791,3 +791,137 @@ window.FoRowCancelDelete = {
     style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">{{ deleteLabel }}</button>
 </span>`,
 };
+
+/* ── FoFormArea ────────────────────────────────────────────────────────────
+ * FO 폼을 columns 정의로 자동 렌더 (BoFormArea 의 FO 버전).
+ * BO 와 다른 점: form-input/form-label/form-required/form-error 클래스 사용 +
+ * CSS grid 레이아웃 (BO 는 flex form-row). FO 톤(라운드·간격) 보존.
+ *
+ *   <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+ *     :cols="2" :gap="14"
+ *     @submit="handleSubmit" />
+ *
+ * column 타입:
+ *   - 'text' | 'email' | 'tel' | 'number' | 'date' | 'textarea' | 'password'
+ *   - 'select'   : options (배열|함수, sy_code|{value,label}|{codeValue,codeLabel} 호환)
+ *   - 'readonly' : 표시 전용 (fmt 로 값 가공 가능)
+ *   - 'slot'     : 슬롯 탈출구 (name 으로 슬롯 이름 지정)
+ *   - 'rowBreak' : 강제 줄바꿈
+ *
+ * 공통 속성: required, placeholder, colSpan(1~N), width, rows, mono, hint,
+ *           visible:(form)=>bool, onChange:(v,form,e)=>void, fmt:(v,form)=>string,
+ *           clearErrOnInput:true (기본) — 입력 시 errors[key] 자동 제거 */
+window.FoFormArea = {
+  name: 'FoFormArea',
+  props: {
+    columns:     { type: Array,   required: true },  // 필드 정의
+    form:        { type: Object,  required: true },  // form reactive
+    errors:      { type: Object,  default: () => ({}) },
+    cols:        { type: Number,  default: 2 },      // 한 줄 필드 수
+    minColWidth: { type: String,  default: '240px' },// grid auto-fit 최소 너비
+    gap:         { type: Number,  default: 14 },     // 필드 간격(px)
+    showActions: { type: Boolean, default: false },  // FO 는 별도 제출 버튼이 많아 기본 off
+    submitLabel: { type: String,  default: '확인' },
+  },
+  emits: ['submit'],
+  setup(props, { emit }) {
+    const U = window._foAreaCompUtil;
+    /* columns → 행별 그룹화 (rowBreak 또는 colSpan 누적이 cols 초과 시 줄바꿈) */
+    const cfRows = Vue.computed(() => {
+      const rows = []; let cur = []; let used = 0;
+      for (const col of props.columns) {
+        if (col.visible && !col.visible(props.form)) continue;
+        if (col.type === 'rowBreak') { if (cur.length) { rows.push(cur); cur = []; used = 0; } continue; }
+        const span = Math.min(col.colSpan || 1, props.cols);
+        if (used + span > props.cols && cur.length) { rows.push(cur); cur = []; used = 0; }
+        cur.push(col); used += span;
+      }
+      if (cur.length) rows.push(cur);
+      return rows;
+    });
+    const normOpts = (opts) => U.normOptions(opts);
+    const dispVal = (col) => {
+      const v = props.form[col.key];
+      if (col.fmt) return col.fmt(v, props.form);
+      return (v == null || v === '') ? '-' : v;
+    };
+    const onInputClear = (col) => {
+      if (col.clearErrOnInput === false) return;
+      if (props.errors[col.key] !== undefined) delete props.errors[col.key];
+    };
+    const onChange = (col, e) => {
+      onInputClear(col);
+      if (col.onChange) col.onChange(props.form[col.key], props.form, e);
+    };
+    return { cfRows, normOpts, dispVal, onChange, onSubmit: () => emit('submit') };
+  },
+  template: /* html */`
+<div class="fo-form-area">
+  <div v-for="(row, ri) in cfRows" :key="ri"
+       :style="{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax('+minColWidth+',1fr))',gap:gap+'px',marginBottom:gap+'px'}">
+    <div v-for="col in row" :key="col.key"
+         :style="(col.colSpan && col.colSpan>1 ? ('grid-column: span ' + Math.min(col.colSpan, cols) + ';') : '')">
+      <!-- 라벨 -->
+      <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label">
+        {{ col.label }}<span v-if="col.required" class="form-required">*</span>
+      </label>
+
+      <!-- readonly 표시 -->
+      <div v-if="col.type === 'readonly'"
+           style="padding:10px 12px;background:#f9fafb;border-radius:6px;color:#374151;font-size:0.9rem;min-height:38px;display:flex;align-items:center;">{{ dispVal(col) }}</div>
+
+      <!-- text/email/tel/password -->
+      <input v-else-if="col.type === 'text' || col.type === 'email' || col.type === 'tel' || col.type === 'password'"
+             class="form-input" :type="col.type === 'password' ? 'password' : (col.type === 'email' ? 'email' : (col.type === 'tel' ? 'tel' : 'text'))"
+             v-model="form[col.key]" :placeholder="col.placeholder"
+             :readonly="col.readonly"
+             :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
+             :class="errors[col.key] ? 'is-invalid' : ''"
+             @input="onChange(col, $event)" />
+
+      <!-- number -->
+      <input v-else-if="col.type === 'number'" class="form-input" type="number"
+             v-model.number="form[col.key]" :placeholder="col.placeholder"
+             :readonly="col.readonly" :min="col.min" :max="col.max"
+             :style="col.readonly ? 'background:#f5f5f5;' : ''"
+             :class="errors[col.key] ? 'is-invalid' : ''"
+             @input="onChange(col, $event)" />
+
+      <!-- date -->
+      <input v-else-if="col.type === 'date'" class="form-input" type="date"
+             v-model="form[col.key]" :readonly="col.readonly"
+             :class="errors[col.key] ? 'is-invalid' : ''" @change="onChange(col, $event)" />
+
+      <!-- textarea -->
+      <textarea v-else-if="col.type === 'textarea'" class="form-input"
+                v-model="form[col.key]" :placeholder="col.placeholder"
+                :readonly="col.readonly" :rows="col.rows || 5"
+                :class="errors[col.key] ? 'is-invalid' : ''"
+                @input="onChange(col, $event)"></textarea>
+
+      <!-- select -->
+      <select v-else-if="col.type === 'select'" class="form-input"
+              v-model="form[col.key]" :disabled="col.readonly"
+              :class="errors[col.key] ? 'is-invalid' : ''"
+              @change="onChange(col, $event)">
+        <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '선택해주세요' }}</option>
+        <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+      </select>
+
+      <!-- slot 탈출구 -->
+      <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col"></slot>
+
+      <!-- 에러 메시지 / 힌트 -->
+      <div v-if="errors[col.key]" class="form-error">{{ errors[col.key] }}</div>
+      <div v-else-if="col.hint" style="font-size:11px;color:#888;margin-top:4px;">{{ col.hint }}</div>
+    </div>
+  </div>
+
+  <!-- 폼 액션 버튼 (옵션) -->
+  <div v-if="showActions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+    <slot name="actions-before"></slot>
+    <button class="btn-blue" @click="onSubmit" style="padding:13px 24px;">{{ submitLabel }}</button>
+    <slot name="actions-after"></slot>
+  </div>
+</div>`,
+};
