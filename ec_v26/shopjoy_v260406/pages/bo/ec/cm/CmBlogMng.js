@@ -234,12 +234,26 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
 
     // -- return ---------------------------------------------------------------
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 블로그 detail 모달 폼 ==========
+    const blogFormColumns = [
+      { key: 'blogTitle',   label: '제목', type: 'text', required: true, colSpan: 2 },
+      { key: 'blogAuthor',  label: '작성자', type: 'text' },
+      { key: 'isNotice',    label: '공지여부', type: 'select',
+        options: () => (codes.notice_yn_opts || []).map(o => ({ value: o.codeValue, label: o.codeValue + ' (' + o.codeLabel + ')' })) },
+      { key: 'useYn',       label: '공개여부', type: 'select',
+        options: () => (codes.open_yn_opts || []).map(o => ({ value: o.codeValue, label: o.codeValue + ' (' + o.codeLabel + ')' })) },
+      { type: 'rowBreak' },
+      { key: 'blogSummary', label: '요약', type: 'text', placeholder: '목록에 표시될 요약 내용', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'blogContent', label: '본문', type: 'slot', name: 'blogContent', colSpan: 2 },
+    ];
+
     return {
       selectedId: computed(() => detailModal.dtlId), blogs, uiState, codes,
       searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange, onSort, sortIcon,
-      baseSearchColumns, listGridColumns, fnGridRowClass,
+      baseSearchColumns, listGridColumns, fnGridRowClass, blogFormColumns,
     };
   },
   template: `
@@ -269,21 +283,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
           <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">제목 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.blogTitle"></div>
-        <div class="form-group"><label class="form-label">작성자</label><input class="form-control" v-model="detailModal.form.blogAuthor"></div>
-        <div class="form-group"><label class="form-label">공지여부</label>
-          <select class="form-control" v-model="detailModal.form.isNotice">
-            <option v-for="o in codes.notice_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeValue }} ({{ o.codeLabel }})</option>
-          </select>
-        </div>
-        <div class="form-group"><label class="form-label">공개여부</label>
-          <select class="form-control" v-model="detailModal.form.useYn">
-            <option v-for="o in codes.open_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeValue }} ({{ o.codeLabel }})</option>
-          </select>
-        </div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">요약</label><input class="form-control" v-model="detailModal.form.blogSummary" placeholder="목록에 표시될 요약 내용"></div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">본문</label><base-html-editor v-model="detailModal.form.blogContent" height="320px" /></div>
+      <!-- 블로그 detail 폼 (BoFormArea 자동 렌더) -->
+      <div style="padding:12px">
+        <bo-form-area :columns="blogFormColumns" :form="detailModal.form" :errors="{}"
+          :cols="2" :show-actions="false">
+          <template #blogContent>
+            <base-html-editor v-model="detailModal.form.blogContent" height="320px" />
+          </template>
+        </bo-form-area>
       </div>
     </div>
 </div>`

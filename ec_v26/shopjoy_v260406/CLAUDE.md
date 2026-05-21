@@ -1166,7 +1166,7 @@ const baseFormColumns = [
 ];
 ```
 - KEEP(미적용): 위젯 유형별 동적 분기 영역(DpDispWidgetDtl) / 카테고리·MD·옵션·SKU·다중Quill(PdProdDtl) / 동적 v-for 행 추가·삭제 / 검색영역(BoSearchArea 별도) — 단순 form-row 영역은 부분 적용
-- 적용 현황(2026-05-21): BO **Dtl 30개 전체 + Mng/Hist 내부 폼 9개** (A: 전체 7 / B: 핵심 13 / C: 일부 9 / D: 다영역 부분 2 + Mng/Hist 9: StConfig/StSettleAdj/StSettleEtcAdj/PdBundle/PdSet/OdClaimHist/OdClaimMng·OdDlivMng·OdOrderMng 일괄결재모달). `node --check` 0 실패
+- 적용 현황(2026-05-21): BO **Dtl 30개 전체 + Mng/Hist 내부 폼 14개** (A: 전체 7 / B: 핵심 13 / C: 일부 9 / D: 다영역 부분 2 + Mng/Hist 14: StConfig·StSettleAdj·StSettleEtcAdj·PdBundle·PdSet·PdDlivTmplt·OdClaimHist·OdClaimMng·OdDlivMng·OdOrderMng·CmBlogMng·SyVendorUserMng·SyAttachMng·SyI18nMng). FO/base/components form-row 0건. `node --check` 0 실패
 - 상세 표준 → [`_doc/정책서/sy/sy.51.프로그램설계정책.md`](_doc/정책서/sy/sy.51.프로그램설계정책.md) §4.7
 
 | 슬롯 패턴 | columns 속성 |

@@ -1252,6 +1252,17 @@ window.PdProdDtl = {
       { key: 'saleEndDate',   label: '판매 종료일시', type: 'slot', name: 'saleEnd',
         hint: 'NULL=무기한' },
     ];
+    // 업체 / 상품유형
+    const vendorTypeFormColumns = [
+      { key: 'vendorId',    label: '업체', type: 'slot', name: 'vendor' },
+      { key: 'prodTypeCd',  label: '상품유형 (prod_type_cd)', type: 'select', nullable: false,
+        options: () => grpCodes.prod_types },
+    ];
+    // 담당MD / 배송템플릿
+    const mdDlivFormColumns = [
+      { key: 'mdUserId',    label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
+      { key: 'dlivTmpltId', label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt' },
+    ];
 
     // -- return ---------------------------------------------------------------
 
@@ -1285,6 +1296,7 @@ window.PdProdDtl = {
       dtlId: Vue.computed(() => props.dtlId),
       buyLimitFormColumns, basePriceFormColumns, advrtPeriodFormColumns, salePeriodFormColumns,
       prodNameFormColumns, prodStatusFormColumns, prodSizeFormColumns,
+      vendorTypeFormColumns, mdDlivFormColumns,
     };
   },
   template: /* html */`
@@ -1364,42 +1376,35 @@ window.PdProdDtl = {
     <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"
                    @select="addCategory" @close="catPickerOpen=false" />
 
-    <!-- -- 업체 / 상품유형 ---------------------------------------------------- -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">업체</label>
+    <!-- 업체 / 상품유형 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="vendorTypeFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      <template #vendor>
         <select class="form-control" v-model="form.vendorId">
           <option value="">-- 선택 --</option>
           <option v-for="v in ([]||[])" :key="v.vendorId||v.id" :value="v.vendorId||v.id">{{ v.vendorNm||v.name }}</option>
         </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">상품유형 (prod_type_cd)</label>
-        <select class="form-control" v-model="form.prodTypeCd">
-          <option v-for="c in grpCodes.prod_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
 
-    <!-- -- 담당MD / 배송템플릿 ------------------------------------------------- -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">담당MD (md_user_id)</label>
+    <!-- 담당MD / 배송템플릿 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="mdDlivFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      <template #mdUser>
         <div style="display:flex;gap:6px;align-items:center;">
           <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
             style="flex:1;background:#fafafa;cursor:pointer;" @click="openMdModal" />
           <button class="btn btn-secondary btn-sm" type="button" @click="openMdModal" style="flex-shrink:0;">선택</button>
           <button v-if="form.mdUserId" class="btn btn-xs btn-danger" type="button" @click="form.mdUserId=''" style="flex-shrink:0;" title="초기화">✕</button>
         </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">배송템플릿 (dliv_tmplt_id)</label>
+      </template>
+      <template #dlivTmplt>
         <select class="form-control" v-model="form.dlivTmpltId">
           <option value="">-- 선택 --</option>
           <option v-for="t in ([]||[])" :key="t?.dlivTmpltId" :value="t.dlivTmpltId">{{ t.dlivTmpltNm }}</option>
         </select>
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
 
     <!-- -- 담당MD 선택 모달 --------------------------------------------------- -->
     <teleport to="body">

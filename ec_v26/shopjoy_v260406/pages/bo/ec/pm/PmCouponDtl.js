@@ -332,10 +332,29 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       { key: 'chargeStaff',    label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 일부 =================
+    const detailIssueFormColumns = [
+      { key: 'issueMethods',   label: '지급 방법', type: 'select', nullable: false,
+        options: () => codes.coupon_issue_type_opts },
+      { key: 'issueCondition', label: '지급 조건', type: 'select', nullable: false,
+        options: () => codes.coupon_target_opts },
+    ];
+    const detailUseFormColumns = [
+      { key: 'useScope',   label: '사용 범위', type: 'select', nullable: false, colSpan: 2,
+        options: () => codes.coupon_apply_opts },
+      { type: 'rowBreak' },
+      { key: 'useExclude', label: '제외 상품/카테고리', type: 'textarea', rows: 3, colSpan: 2,
+        placeholder: '쉼표로 구분하여 입력 (예: 상품ID1, 상품ID2, 카테고리ID3)' },
+      { type: 'rowBreak' },
+      { key: 'useRemark',  label: '사용 제약사항', type: 'textarea', rows: 3, colSpan: 2,
+        placeholder: '예: 다른 쿠폰과 중복 사용 불가, 배송료 할인 쿠폰은 특정 배송사만 적용 등' },
+    ];
+
     return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, tabMode2, handleSave, onTabChange,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       cfSelectedVendorNm, selectVendor, vendors, showVendorModal,
       issuedGridColumns, usedGridColumns, cfIssuedTop, cfUsedTop, infoFormColumns,
+      detailIssueFormColumns, detailUseFormColumns,
     };
   },
   template: /* html */`
@@ -544,22 +563,13 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         </div>
       </div>
 
-      <!-- -- 지급방법/조건 ---------------------------------------------------- -->
+      <!-- 지급방법/조건 (BoFormArea 자동 렌더) -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">📤 지급방법/조건</h3>
-        <div class="form-group">
-          <label class="form-label">지급 방법</label>
-          <select class="form-control" v-model="form.issueMethods">
-            <option v-for="o in codes.coupon_issue_type_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">지급 조건</label>
-          <select class="form-control" v-model="form.issueCondition">
-            <option v-for="o in codes.coupon_target_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </div>
-        <div class="form-group">
+        <bo-form-area :columns="detailIssueFormColumns" :form="form" :errors="errors"
+          :cols="2" :show-actions="false" />
+        <!-- 적용 회원 등급 (체크박스 그룹, KEEP) -->
+        <div class="form-group" style="margin-top:12px;">
           <label class="form-label">적용 회원 등급</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
             <label v-for="g in ['전체', '일반', '실버', '골드', 'VIP']" :key="Math.random()" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;cursor:pointer;">
@@ -571,23 +581,11 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         </div>
       </div>
 
-      <!-- -- 사용방법 ------------------------------------------------------- -->
+      <!-- 사용방법 (BoFormArea 자동 렌더) -->
       <div>
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🔍 사용방법</h3>
-        <div class="form-group">
-          <label class="form-label">사용 범위</label>
-          <select class="form-control" v-model="form.useScope">
-            <option v-for="o in codes.coupon_apply_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">제외 상품/카테고리</label>
-          <textarea class="form-control" v-model="form.useExclude" rows="3" placeholder="쉼표로 구분하여 입력 (예: 상품ID1, 상품ID2, 카테고리ID3)" style="font-size:12px;"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">사용 제약사항</label>
-          <textarea class="form-control" v-model="form.useRemark" rows="3" placeholder="예: 다른 쿠폰과 중복 사용 불가, 배송료 할인 쿠폰은 특정 배송사만 적용 등" style="font-size:12px;"></textarea>
-        </div>
+        <bo-form-area :columns="detailUseFormColumns" :form="form" :errors="errors"
+          :cols="2" :show-actions="false" />
       </div>
     </div>
 

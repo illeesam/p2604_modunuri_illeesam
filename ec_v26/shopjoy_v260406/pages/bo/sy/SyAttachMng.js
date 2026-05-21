@@ -267,13 +267,27 @@ window.SyAttachMng = {
         cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 그룹 폼 ======================
+    const grpFormColumns = [
+      { key: 'attachGrpNm',   label: '그룹명',   type: 'text', required: true, placeholder: '그룹명', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'attachGrpCode', label: '그룹코드', type: 'text', required: true, placeholder: 'PRODUCT_IMG', mono: true, colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'fileExtAllow',  label: '허용확장자', type: 'text', placeholder: 'jpg,png,pdf', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'maxFileCount',  label: '최대개수', type: 'number', min: 1 },
+      { key: 'maxFileSize',   label: '최대크기(MB)', type: 'number', min: 1 },
+      { type: 'rowBreak' },
+      { key: 'useYn',         label: '상태', type: 'select', options: () => codes.use_yns, colSpan: 2 },
+    ];
+
     // -- return ---------------------------------------------------------------
     return {
       attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
       attachGrps, grpSearchType, grpSearchValue, onGrpSearch, grpForm, pager,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
-      fnFmtSize, fnStatusBadge, fileGridColumns,
+      fnFmtSize, fnStatusBadge, fileGridColumns, grpFormColumns,
     };
   },
   template: /* html */`
@@ -304,41 +318,15 @@ window.SyAttachMng = {
           </div>
         </div>
 
-        <!-- 그룹 폼 -->
+        <!-- 그룹 폼 (BoFormArea 자동 렌더) -->
         <div v-if="uiState.grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;">
             {{ uiState.grpEditId===null ? '그룹 등록' : '그룹 수정' }}
             <span v-if="uiState.grpEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">#{{ uiState.grpEditId }}</span>
           </div>
-          <div class="form-group" style="margin-bottom:6px;">
-            <label class="form-label" style="font-size:12px;">그룹명 <span class="req">*</span></label>
-            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.attachGrpNm" placeholder="그룹명" />
-          </div>
-          <div class="form-group" style="margin-bottom:6px;">
-            <label class="form-label" style="font-size:12px;">그룹코드 <span class="req">*</span></label>
-            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.attachGrpCode" placeholder="PRODUCT_IMG" />
-          </div>
-          <div class="form-group" style="margin-bottom:6px;">
-            <label class="form-label" style="font-size:12px;">허용확장자</label>
-            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.fileExtAllow" placeholder="jpg,png,pdf" />
-          </div>
-          <div style="display:flex;gap:6px;margin-bottom:6px;">
-            <div class="form-group" style="flex:1;margin-bottom:0;">
-              <label class="form-label" style="font-size:12px;">최대개수</label>
-              <input class="form-control" style="font-size:12px;padding:4px 8px;" type="number" v-model.number="grpForm.maxFileCount" min="1" />
-            </div>
-            <div class="form-group" style="flex:1;margin-bottom:0;">
-              <label class="form-label" style="font-size:12px;">최대크기(MB)</label>
-              <input class="form-control" style="font-size:12px;padding:4px 8px;" type="number" v-model.number="grpForm.maxFileSize" min="1" />
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <label class="form-label" style="font-size:12px;">상태</label>
-            <select class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.useYn">
-              <option v-for="c in codes.use_yns" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-            </select>
-          </div>
-          <div style="display:flex;gap:6px;">
+          <bo-form-area :columns="grpFormColumns" :form="grpForm" :errors="{}"
+            :cols="2" :show-actions="false" />
+          <div style="display:flex;gap:6px;margin-top:8px;">
             <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleSaveGrp">저장</button>
             <button class="btn btn-secondary btn-sm" style="flex:1;" @click="uiState.grpEditMode=false">취소</button>
           </div>

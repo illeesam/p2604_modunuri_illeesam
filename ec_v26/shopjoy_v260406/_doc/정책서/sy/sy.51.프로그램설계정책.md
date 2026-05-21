@@ -690,7 +690,7 @@ select `options` 는 함수형 + 다양한 배열 형식 지원:
 | C: 일부 form-row 전환 | SyTemplateDtl / CmChattDtl / DpDispAreaDtl / DpDispUiDtl / DpDispWidgetLibDtl(+클릭동작) / DpDispPanelDtl / PmCouponDtl / PmEventDtl / PmPlanDtl | 단순 필드 영역만, 복잡 영역은 KEEP |
 | D: 다영역 부분 전환 (대형 Dtl) | PdProdDtl(상품명/상태/판매기간/무게사이즈/구매제한/기본가격/광고기간 — 6영역) / DpDispWidgetDtl(위젯코드/명/상태/설명/태그 + 클릭동작) | 단순 form-row 영역 다수, 위젯유형별 동적 분기·Quill·카테고리·옵션·SKU 등은 KEEP |
 
-**Mng/Hist 내부 폼 영역 (인라인 편집·신규 카드·일괄결재 모달 등) 9개**:
+**Mng/Hist 내부 폼 영역 (인라인 편집·신규 카드·일괄결재 모달·detailModal 등) 14개**:
 
 | 파일 | 영역 |
 |---|---|
@@ -699,19 +699,26 @@ select `options` 는 함수형 + 다양한 배열 형식 지원:
 | StSettleEtcAdjMng | 기타조정 추가/수정 편집 폼 (4컬럼) |
 | PdBundleMng | 신규 묶음상품 기본정보 (브랜드/판매업체는 slot) |
 | PdSetMng | 신규 세트상품 기본정보 (브랜드/판매업체는 slot) |
+| PdDlivTmpltMng | 배송템플릿 상세 폼 (16필드, 2컬럼) |
 | OdClaimHist | 처리 정보 탭 (환불금액/방법/메모) |
-| OdClaimMng | 일괄결재요청 모달 (전화번호/이메일 readonly, 요청대상/요청대상명) |
-| OdDlivMng | 일괄결재요청 모달 (동일 구조) |
-| OdOrderMng | 일괄결재요청 모달 (동일 구조) |
+| OdClaimMng / OdDlivMng / OdOrderMng | 일괄결재요청 모달 (전화/이메일 readonly + 요청대상/대상명) |
+| CmBlogMng | detail 모달 (제목/작성자/공지/공개여부/요약/본문 Quill slot) |
+| SyVendorUserMng | 업체사용자 상세 폼 (14필드, 4컬럼) |
+| SyAttachMng | 그룹 폼 (그룹명/코드/허용확장자/최대개수/최대크기/상태) |
+| SyI18nMng | 언어별 번역 입력 (LANGS 배열을 map 으로 columns 동적 생성) |
 
-**대형 Dtl 추가 변환 영역 (PdProdDtl·DpDispPanelDtl)**:
-- PdProdDtl: 판매기간(saleStartDate/saleEndDate, BoDateTimePicker slot) 추가
-- DpDispPanelDtl: 위젯 1~5 섹션의 위젯유형/노출순서 (v-for 로컬 변수 `r`에 바인딩)
+**Dtl 추가 변환 영역**:
+- PdProdDtl: 판매기간(BoDateTimePicker slot) + 업체/상품유형 + 담당MD/배송템플릿 (총 9영역)
+- DpDispPanelDtl: 위젯 1~5 섹션의 위젯유형/노출순서 (v-for 로컬 변수 `r`에 바인딩) + 표시경로/포함영역 picker
+- DpDispAreaDtl / DpDispUiDtl: 표시경로 picker slot
 - PmDiscntDtl: detail 탭 할인적용·기간설정 2개 (각각 BoFormArea)
 - PmEventDtl/PmPlanDtl: 판매업체/판매담당자 (vendor slot)
+- PmCouponDtl: detail 탭 지급방법·조건 + 사용방법 (사용범위/제외/제약)
 - SyBbsDtl/SyContactDtl: 사이트명 readonly 영역
 
-총 **30개 Dtl + 9개 Mng/Hist 폼 + BoFormArea 컴포넌트 + boApp 등록**. `node --check` 0 실패.
+총 **30개 Dtl + 14개 Mng/Hist 폼 + BoFormArea 컴포넌트 + boApp 등록**. `node --check` 0 실패.
+
+**FO/base/components**: form-row/form-group 0건 (BoFormArea 대상 외).
 
 ---
 

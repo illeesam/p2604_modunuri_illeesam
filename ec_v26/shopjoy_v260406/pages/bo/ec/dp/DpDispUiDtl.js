@@ -367,6 +367,11 @@ window.DpDispUiDtl = {
       { key: 'useYn',    label: '사용 여부', type: 'select', options: () => codes.use_yn },
       { key: 'remark',   label: '설명', type: 'text', placeholder: 'UI 설명', colSpan: 2 },
     ];
+    // 표시경로 picker
+    const pathPickFormColumns = [
+      { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
+        hint: 'UI가 노출되는 경로 (예: FO.모바일메인)' },
+    ];
 
     // -- return ---------------------------------------------------------------
 
@@ -378,7 +383,7 @@ window.DpDispUiDtl = {
       openUiPreview, openAreaPreview,
       cfVisibilityOptions, hasAreaVisibility, toggleAreaVisibility,
       uiDispEnvOptions, hasUiDispEnv, toggleUiDispEnv,
-      baseUiFormColumns, settingUiFormColumns,
+      baseUiFormColumns, settingUiFormColumns, pathPickFormColumns,
     };
   },
   template: /* html */`
@@ -475,9 +480,10 @@ window.DpDispUiDtl = {
           <!-- UI코드/UI명/UI유형 (BoFormArea 자동 렌더) -->
           <bo-form-area :columns="baseUiFormColumns" :form="form" :errors="errors"
             :readonly="false" :cols="3" :show-actions="false" />
-          <div class="form-row" style="margin-bottom:8px;">
-            <div class="form-group" style="grid-column:1 / -1;">
-              <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">UI가 노출되는 경로 (예: FO.모바일메인)</span></label>
+          <!-- 표시경로 (BoFormArea 자동 렌더) -->
+          <bo-form-area :columns="pathPickFormColumns" :form="form" :errors="{}"
+            :cols="3" :show-actions="false">
+            <template #pathPick>
               <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                 <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
                 <button type="button" @click="openPathPick('form')" title="표시경로 선택"
@@ -485,8 +491,8 @@ window.DpDispUiDtl = {
                   @mouseover="$event.currentTarget.style.background='#eef2ff'"
                   @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
               </div>
-            </div>
-          </div>
+            </template>
+          </bo-form-area>
           <!-- 정렬순서/사용여부/설명 (BoFormArea 자동 렌더) -->
           <bo-form-area :columns="settingUiFormColumns" :form="form" :errors="errors"
             :readonly="false" :cols="4" :show-actions="false" />

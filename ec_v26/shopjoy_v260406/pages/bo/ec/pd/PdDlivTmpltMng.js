@@ -216,8 +216,35 @@ window.PdDlivTmpltMng = {
         badge: (row) => fnYnBadge(row.useYn) },
     ];
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 배송템플릿 상세 폼 ============
+    const baseFormColumns = [
+      { key: 'dlivTmpltNm',      label: '템플릿명', type: 'text', required: true },
+      { key: 'dlivMethodCd',     label: '배송방법', type: 'select', nullable: false,
+        options: () => codes.dliv_methods },
+      { key: 'dlivPayTypeCd',    label: '배송비 결제유형', type: 'select', nullable: false,
+        options: () => codes.dliv_pay_types },
+      { key: 'dlivCourierCd',    label: '배송 택배사', type: 'select', nullLabel: '없음',
+        options: () => codes.couriers },
+      { key: 'dlivCost',         label: '기본 배송비 (원)', type: 'number' },
+      { key: 'freeDlivMinAmt',   label: '무료배송 최소금액 (원)', type: 'number' },
+      { key: 'islandExtraCost',  label: '도서산간 추가배송비 (원)', type: 'number' },
+      { key: 'returnCost',       label: '반품배송비 편도 (원)', type: 'number' },
+      { key: 'exchangeCost',     label: '교환배송비 왕복 (원)', type: 'number' },
+      { key: 'returnCourierCd',  label: '반품 택배사', type: 'select', nullLabel: '없음',
+        options: () => codes.couriers },
+      { key: 'returnAddrZip',    label: '반품지 우편번호', type: 'text' },
+      { key: 'returnTelNo',      label: '반품지 전화번호', type: 'text' },
+      { type: 'rowBreak' },
+      { key: 'returnAddr',       label: '반품지 주소', type: 'text', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'returnAddrDetail', label: '반품지 상세주소', type: 'text', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'baseDlivYn',       label: '기본 배송지', type: 'select', options: () => codes.use_yn },
+      { key: 'useYn',            label: '사용여부', type: 'select', options: () => codes.use_yn },
+    ];
+
     // ===== setup() return =================================================
-    return { uiState, codes, searchParam, baseSearchColumns, baseGridColumns,
+    return { uiState, codes, searchParam, baseSearchColumns, baseGridColumns, baseFormColumns,
              pager, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
              fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS, onSizeChange, dlivTmplts, onSort, sortIcon};
@@ -268,40 +295,10 @@ window.PdDlivTmpltMng = {
           <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
         </div>
       </div>
-      <!-- 상세 입력폼 (2열 그리드) -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
-        <div class="form-group"><label class="form-label">템플릿명 <span style="color:red">*</span></label><input class="form-control" v-model="form.dlivTmpltNm"></div>
-        <div class="form-group"><label class="form-label">배송방법</label>
-          <select class="form-control" v-model="form.dlivMethodCd"><option v-for="m in codes.dliv_methods" :key="m.value" :value="m.value">{{ m.label }}</option></select>
-        </div>
-        <div class="form-group"><label class="form-label">배송비 결제유형</label>
-          <select class="form-control" v-model="form.dlivPayTypeCd"><option v-for="p in codes.dliv_pay_types" :key="p.value" :value="p.value">{{ p.label }}</option></select>
-        </div>
-        <div class="form-group"><label class="form-label">배송 택배사</label>
-          <select class="form-control" v-model="form.dlivCourierCd"><option value="">없음</option><option v-for="c in codes.couriers" :key="c.value" :value="c.value">{{ c.label }}</option></select>
-        </div>
-        <div class="form-group"><label class="form-label">기본 배송비 (원)</label><input class="form-control" type="number" v-model.number="form.dlivCost"></div>
-        <div class="form-group"><label class="form-label">무료배송 최소금액 (원)</label><input class="form-control" type="number" v-model.number="form.freeDlivMinAmt"></div>
-        <div class="form-group"><label class="form-label">도서산간 추가배송비 (원)</label><input class="form-control" type="number" v-model.number="form.islandExtraCost"></div>
-        <div class="form-group"><label class="form-label">반품배송비 편도 (원)</label><input class="form-control" type="number" v-model.number="form.returnCost"></div>
-        <div class="form-group"><label class="form-label">교환배송비 왕복 (원)</label><input class="form-control" type="number" v-model.number="form.exchangeCost"></div>
-        <div class="form-group"><label class="form-label">반품 택배사</label>
-          <select class="form-control" v-model="form.returnCourierCd"><option value="">없음</option><option v-for="c in codes.couriers" :key="c.value" :value="c.value">{{ c.label }}</option></select>
-        </div>
-        <div class="form-group"><label class="form-label">반품지 우편번호</label><input class="form-control" v-model="form.returnAddrZip"></div>
-        <div class="form-group"><label class="form-label">반품지 전화번호</label><input class="form-control" v-model="form.returnTelNo"></div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">반품지 주소</label><input class="form-control" v-model="form.returnAddr"></div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">반품지 상세주소</label><input class="form-control" v-model="form.returnAddrDetail"></div>
-        <div class="form-group"><label class="form-label">기본 배송지</label>
-          <select class="form-control" v-model="form.baseDlivYn">
-            <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div class="form-group"><label class="form-label">사용여부</label>
-          <select class="form-control" v-model="form.useYn">
-            <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
+      <!-- 상세 입력폼 (BoFormArea 자동 렌더) -->
+      <div style="padding:12px">
+        <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}"
+          :cols="2" :show-actions="false" />
       </div>
     </div>
 </div>`

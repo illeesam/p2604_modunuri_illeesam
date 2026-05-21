@@ -413,6 +413,11 @@ window.DpDispAreaDtl = {
       { key: 'areaType',   label: '영역유형', type: 'select', nullable: false,
         options: () => codes.disp_areas },
     ];
+    // 표시경로 picker
+    const pathPickFormColumns = [
+      { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
+        hint: '영역이 노출되는 경로 (예: FO.모바일메인)' },
+    ];
 
     // -- return ---------------------------------------------------------------
 
@@ -428,7 +433,7 @@ window.DpDispAreaDtl = {
       pickOpen, showComponentTooltip,
       areaBaseDispEnvOptions, hasAreaBaseDispEnv, toggleAreaBaseDispEnv,
       hasAreaBaseVisibility, toggleAreaBaseVisibility,
-      baseAreaFormColumns,
+      baseAreaFormColumns, pathPickFormColumns,
     };
   },
   template: /* html */`
@@ -588,9 +593,10 @@ window.DpDispAreaDtl = {
               <input class="form-control" v-model="form.remark" placeholder="영역 설명" />
             </div>
           </div>
-          <div class="form-row" style="margin-bottom:8px;">
-            <div class="form-group" style="grid-column:1 / -1;">
-              <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">영역이 노출되는 경로 (예: FO.모바일메인)</span></label>
+          <!-- 표시경로 (BoFormArea 자동 렌더) -->
+          <bo-form-area :columns="pathPickFormColumns" :form="form" :errors="{}"
+            :cols="3" :show-actions="false">
+            <template #pathPick>
               <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                 <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
                 <button type="button" @click="openPathPick('form')" title="표시경로 선택"
@@ -598,8 +604,8 @@ window.DpDispAreaDtl = {
                   @mouseover="$event.currentTarget.style.background='#eef2ff'"
                   @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
               </div>
-            </div>
-          </div>
+            </template>
+          </bo-form-area>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📅 사용기간</div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" />

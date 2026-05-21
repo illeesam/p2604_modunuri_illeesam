@@ -519,6 +519,26 @@ window.SyVendorUserMng = {
     const fnVendorRowStyle = (v) => 'cursor:pointer;' + (uiState.searchVendorId === v.vendorId ? 'background:#fff0f4;' : '');
     const fnUserRowStyle   = (u) => 'cursor:pointer;' + (formData.vendorUserId === u.vendorUserId ? 'background:#fff0f4;' : '');
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 업체사용자 상세 폼 ============
+    const baseVendorUserFormColumns = [
+      { key: 'vendorId',          label: '업체', type: 'readonly',
+        fmt: (v) => fnVendorSummary(v) },
+      { key: 'memberNm',          label: '이름', type: 'text', required: true },
+      { key: 'positionCd',        label: '직위', type: 'text' },
+      { key: 'vendorUserDeptNm',  label: '부서', type: 'text' },
+      { key: 'vendorUserPhone',   label: '사무실 전화', type: 'text' },
+      { key: 'vendorUserMobile',  label: '휴대전화', type: 'text', required: true },
+      { key: 'vendorUserEmail',   label: '이메일', type: 'text', required: true },
+      { key: 'birthDate',         label: '생년월일', type: 'date' },
+      { key: 'isMain',            label: '대표 담당자', type: 'select', options: () => codes.bool_opts },
+      { key: 'authYn',            label: '관리권한', type: 'select', options: () => codes.bool_opts },
+      { key: 'vendorUserStatusCd', label: '상태', type: 'select',
+        options: () => (codes.user_employ_status || []).map(s => ({ value: s[0], label: s[1] })) },
+      { key: 'joinDate',          label: '등록일', type: 'date' },
+      { key: 'leaveDate',         label: '퇴직일', type: 'date' },
+      { key: 'vendorUserRemark',  label: '비고', type: 'text', colSpan: 2 },
+    ];
+
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
@@ -532,6 +552,7 @@ window.SyVendorUserMng = {
       fnStatusBadge, fnStatusLabel,
       pager, setPage, onSizeChange,
       formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
+      baseVendorUserFormColumns,
       userRoles, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
       toggleRoleNode, pickRoleInModal, cfFormRoleTree, cfFormAllowedRootCode,
@@ -599,55 +620,10 @@ window.SyVendorUserMng = {
             <button class="btn btn-primary btn-sm" @click="handleSaveForm">저장</button>
           </div>
         </div>
-        <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
-          <div class="form-group"><label class="form-label">업체</label>
-            <input class="form-control" :value="fnVendorSummary(formData.vendorId)" readonly disabled style="background:#f3f4f6;" />
-          </div>
-          <div class="form-group"><label class="form-label">이름 <span class="req">*</span></label>
-            <input class="form-control" v-model="formData.memberNm" />
-          </div>
-          <div class="form-group"><label class="form-label">직위</label>
-            <input class="form-control" v-model="formData.positionCd" />
-          </div>
-          <div class="form-group"><label class="form-label">부서</label>
-            <input class="form-control" v-model="formData.vendorUserDeptNm" />
-          </div>
-          <div class="form-group"><label class="form-label">사무실 전화</label>
-            <input class="form-control" v-model="formData.vendorUserPhone" />
-          </div>
-          <div class="form-group"><label class="form-label">휴대전화 <span class="req">*</span></label>
-            <input class="form-control" v-model="formData.vendorUserMobile" />
-          </div>
-          <div class="form-group"><label class="form-label">이메일 <span class="req">*</span></label>
-            <input class="form-control" v-model="formData.vendorUserEmail" />
-          </div>
-          <div class="form-group"><label class="form-label">생년월일</label>
-            <input class="form-control" type="date" v-model="formData.birthDate" />
-          </div>
-          <div class="form-group"><label class="form-label">대표 담당자</label>
-            <select class="form-control" v-model="formData.isMain">
-              <option v-for="o in codes.bool_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">관리권한</label>
-            <select class="form-control" v-model="formData.authYn">
-              <option v-for="o in codes.bool_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">상태</label>
-            <select class="form-control" v-model="formData.vendorUserStatusCd">
-              <option v-for="s in codes.user_employ_status" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">등록일</label>
-            <input class="form-control" type="date" v-model="formData.joinDate" />
-          </div>
-          <div class="form-group"><label class="form-label">퇴직일</label>
-            <input class="form-control" type="date" v-model="formData.leaveDate" />
-          </div>
-          <div class="form-group" style="grid-column:span 2;"><label class="form-label">비고</label>
-            <input class="form-control" v-model="formData.vendorUserRemark" />
-          </div>
+        <!-- 업체사용자 상세 폼 (BoFormArea 자동 렌더) -->
+        <div style="padding:16px;">
+          <bo-form-area :columns="baseVendorUserFormColumns" :form="formData" :errors="{}"
+            :cols="4" :show-actions="false" />
         </div>
 
         <!-- -- 역할 목록 (수정 모드에서만) ----------------------------------------- -->

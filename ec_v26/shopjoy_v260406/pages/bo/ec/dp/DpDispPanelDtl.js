@@ -759,6 +759,14 @@ window.DpDispPanelDtl = {
       { key: 'name',     label: '패널명', type: 'text', required: true, placeholder: '패널 이름' },
       { key: 'status',   label: '상태', type: 'select', options: () => codes.active_statuses },
     ];
+    // 표시경로 (picker) / 포함된 화면영역 (readonly 표시)
+    const pathAreaFormColumns = [
+      { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
+        hint: '예: FO.모바일메인' },
+      { type: 'rowBreak' },
+      { key: 'area',   label: '포함된 화면영역', type: 'slot', name: 'areaDisp', colSpan: 3,
+        hint: '전시영역관리에서 편집' },
+    ];
     // 위젯 행: 위젯 유형/노출 순서 (각 row 객체에 바인딩)
     const widgetRowFormColumns = [
       { key: 'widgetType', label: '위젯 유형', type: 'select', options: () => codes.disp_widget_types },
@@ -788,7 +796,7 @@ window.DpDispPanelDtl = {
       fnGetDisplayRows, fnGetRelatedEvent,
       fnGetFileListItems, fnAddFileItemAt, fnRemoveFileItemAt, fnSetFileItem,
       moveRowAt, codes, cfDtlMode, fileListGridColumns, fnFileListColsForRow,
-      basePanelFormColumns, widgetRowFormColumns,
+      basePanelFormColumns, pathAreaFormColumns, widgetRowFormColumns,
     };
   },
   template: /* html */`
@@ -889,9 +897,10 @@ window.DpDispPanelDtl = {
             <!-- 패널코드/패널명/상태 (BoFormArea 자동 렌더) -->
             <bo-form-area :columns="basePanelFormColumns" :form="form" :errors="{}"
               :readonly="cfDtlMode" :cols="3" :show-actions="false" />
-            <div class="form-row" style="margin-bottom:8px;">
-              <div class="form-group" style="grid-column:1 / -1;">
-                <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FO.모바일메인)</span></label>
+            <!-- 표시경로 + 포함된 화면영역 (BoFormArea 자동 렌더) -->
+            <bo-form-area :columns="pathAreaFormColumns" :form="form" :errors="{}"
+              :readonly="cfDtlMode" :cols="3" :show-actions="false">
+              <template #pathPick>
                 <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                   <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
                   <button type="button" @click="openPathPick('form')" title="표시경로 선택"
@@ -899,11 +908,8 @@ window.DpDispPanelDtl = {
                     @mouseover="$event.currentTarget.style.background='#eef2ff'"
                     @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
                 </div>
-              </div>
-            </div>
-            <div class="form-row" style="margin-bottom:8px;">
-              <div class="form-group" style="grid-column:1 / -1;">
-                <label class="form-label">포함된 화면영역 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(전시영역관리에서 편집)</span></label>
+              </template>
+              <template #areaDisp>
                 <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
                   <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
                     <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
@@ -911,8 +917,8 @@ window.DpDispPanelDtl = {
                   </span>
                   <span v-else style="font-size:11px;color:#bbb;">영역에 포함되지 않음</span>
                 </div>
-              </div>
-            </div>
+              </template>
+            </bo-form-area>
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">🔲 위젯 레이아웃</div>
             <div class="form-row" style="align-items:flex-end;margin-bottom:8px;">
               <div class="form-group" style="flex:0 0 auto;">

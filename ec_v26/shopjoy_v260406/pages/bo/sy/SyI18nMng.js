@@ -173,9 +173,18 @@ window.SyI18nMng = {
 
     // -- return ---------------------------------------------------------------
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 언어별 번역 입력 ==============
+    const msgFormColumns = LANGS.map(lang => ({
+      key: lang,
+      label: LANG_LABELS[lang] + ' (' + lang + ')',
+      type: 'text',
+      placeholder: LANG_LABELS[lang] + ' 번역 입력',
+    }));
+
     return { uiState, codes, searchParam, pager, setPage, onSearch, onReset,
              i18nKeys, i18nMsgs, selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
-             LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange, baseSearchColumns, baseGridColumns, fnRowStyle };
+             LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange, baseSearchColumns, baseGridColumns, fnRowStyle,
+             msgFormColumns };
   },
   template: `
 <div>
@@ -199,11 +208,10 @@ window.SyI18nMng = {
           <button class="btn btn-secondary btn-sm" @click="selectedId=null">닫기</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
-        <div class="form-group" v-for="lang in LANGS" :key="lang">
-          <label class="form-label">{{ LANG_LABELS[lang] }} ({{ lang }})</label>
-          <input class="form-control" v-model="msgForm[lang]" :placeholder="LANG_LABELS[lang]+' 번역 입력'">
-        </div>
+      <!-- 언어별 번역 입력 (BoFormArea 자동 렌더) -->
+      <div style="padding:12px">
+        <bo-form-area :columns="msgFormColumns" :form="msgForm" :errors="{}"
+          :cols="2" :show-actions="false" />
       </div>
     </div>
 </div>`
