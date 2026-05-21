@@ -313,8 +313,6 @@ window.SyDeptMng = {
       { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
       { key: 'type', type: 'select', options: () => cfTypeOptions, nullLabel: '유형 전체' },
       { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
-      { key: 'type', type: 'select', options: () => codes.cfTypeOptions, nullLabel: '유형 전체' },
-      { key: 'useYn', type: 'select', options: () => codes.codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
     const baseGridColumns = [

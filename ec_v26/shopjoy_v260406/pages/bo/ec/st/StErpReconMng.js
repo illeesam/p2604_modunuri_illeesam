@@ -126,8 +126,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         onRangeChange: () => handleDateRangeChange() },
       { key: 'type', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
       { key: 'diff', type: 'select', options: () => codes.erp_recon_results, nullLabel: '결과 전체' },
-      { key: 'type', type: 'select', options: () => codes.codes.erp_voucher_types, nullLabel: '유형 전체' },
-      { key: 'diff', type: 'select', options: () => codes.codes.erp_recon_results, nullLabel: '결과 전체' },
     ];
 
     const baseGridColumns = [

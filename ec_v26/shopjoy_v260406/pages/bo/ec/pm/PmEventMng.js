@@ -181,7 +181,7 @@ window.PmEventMng = {
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
-      { key: 'status', type: 'select', options: () => codes.codes.event_statuses, nullLabel: '상태 전체' },
+      { key: 'status', type: 'select', options: () => codes.event_statuses, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

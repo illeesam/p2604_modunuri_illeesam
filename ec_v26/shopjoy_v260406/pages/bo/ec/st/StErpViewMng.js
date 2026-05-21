@@ -122,8 +122,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
-      { key: 'type', type: 'select', options: () => codes.codes.erp_voucher_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.codes.erp_voucher_statuses, nullLabel: '상태 전체' },
+      { key: 'type', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.erp_voucher_statuses, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

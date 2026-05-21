@@ -178,12 +178,8 @@ window.SyPropMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '420px' },
-      { key: 'typeFlt', type: 'text', placeholder: '검색어 입력', width: '420px' },
-      { key: 'useFlt', type: 'text', placeholder: '검색어 입력', width: '420px' },
       { key: 'typeFlt', type: 'select', options: () => codes.prop_types, nullLabel: '전체 타입' },
       { key: 'useFlt', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
-      { key: 'typeFlt', type: 'select', options: () => codes.codes.prop_types, nullLabel: '전체 타입' },
-      { key: 'useFlt', type: 'select', options: () => codes.codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
     const baseGridColumns = [

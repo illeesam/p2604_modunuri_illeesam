@@ -219,7 +219,7 @@ const detailModal = reactive({
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
       { key: 'type', type: 'select', options: () => codes.cfTypeOptions, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.codes.site_oper_statuses, nullLabel: '상태 전체' },
+      { key: 'status', type: 'select', options: () => codes.site_oper_statuses, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

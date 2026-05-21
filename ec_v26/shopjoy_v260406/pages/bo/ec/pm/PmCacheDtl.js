@@ -1,7 +1,9 @@
 /* ShopJoy Admin - 캐쉬관리 상세/등록 */
+// ===== 탭/뷰모드 영속화 상태 (window 레벨) =================================
 window._pmCacheDtlState = window._pmCacheDtlState || { tab: 'info', tabMode: 'tab' };
 window.PmCacheDtl = {
   name: 'PmCacheDtl',
+  // ===== Props 정의 ========================================================
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
     dtlId:        { type: String, default: null }, // 수정 대상 ID
@@ -11,19 +13,22 @@ window.PmCacheDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== Vue Composition API / boApp 전역 의존 ===========================
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+
+    // ===== 상태(reactive) 선언 =============================================
     const vendors = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ cache_trans_types: [] });
 
-    // 단건 조회
+    // ===== 업체 목록 로드 / 단건 상세 조회 =================================
     /* 소속업체 목록 로드 (vendor 선택 모달용) */
     const loadVendors = async () => {
       try {
@@ -50,13 +55,15 @@ window.PmCacheDtl = {
     };
     const cfIsNew = computed(() => !props.dtlId);
 
-watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
+    // ===== 탭/뷰모드 영속화 watch ==========================================
+    watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._pmCacheDtlState.tabMode = v; });
 
     /* 캐시(충전금) showTab */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+    // ===== 공통코드 로딩 ===================================================
     /* 캐시(충전금) fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -66,6 +73,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
+    // ===== 폼 / 에러 / Yup 스키마 ==========================================
     const form = reactive({
       cacheId: null, memberId: '', memberNm: '', cacheDate: '', cacheTypeCd: '충전', cacheAmt: 0, balanceAmt: 0, cacheDesc: '',
       refId: '', procUserId: '',
@@ -77,6 +85,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       cacheDesc: yup.string().required('내용을 입력해주세요.'),
     });
 
+    // ===== 라이프사이클 / 부모 reloadTrigger 동기화 =========================
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
@@ -88,11 +97,13 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       await handleSearchDetail();
     });
 
+    // ===== 파생 computed (회원 캐쉬 내역 / 잔액) ============================
     /* 같은 회원의 캐쉬 내역 */
     const cfMemberCacheHistory = computed(() => form.memberCacheHistory || []);
 
     const cfTotalBalance = computed(() => form.balanceAmt || 0);
 
+    // ===== 저장 (등록/수정) ================================================
     /* 캐시(충전금) 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -119,6 +130,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       }
     };
 
+    // ===== 회원/업체 선택 핸들러 ===========================================
     /* 캐시(충전금) onUserIdChange */
     const onUserIdChange = () => {
       const m = getMember.value(Number(form.memberId));
@@ -137,14 +149,18 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       uiState.showVendorModal = false;
     };
 
-    /* 캐시(충전금) fnTypeBadge */
-    const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
+    // ===== 배지(badge) 헬퍼 ================================================
+    /* 캐시(충전금) fnTypeBadge — sy_code CACHE_TYPE_KR code_opt1 우선, 없으면 FB */
+    const _CACHE_TYPE_FB = { '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' };
+    const fnTypeBadge = t => coUtil.cofCodeBadge('CACHE_TYPE_KR', t, _CACHE_TYPE_FB[t] || 'badge-gray');
 
+    // ===== 모달 토글 / 읽기전용 판정 =======================================
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
 
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    // ===== 그리드 컬럼 정의 (회원 캐쉬 내역) ===============================
     /* BoGrid(bare) 컬럼 정의 — 회원 캐쉬 내역 */
     const cacheHistGridColumns = [
       { key: 'cacheDate',  label: '일시' },
@@ -156,13 +172,15 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       { key: 'cacheDesc',  label: '내용' },
     ];
 
-    // -- return ---------------------------------------------------------------
-
+    // ===== setup() return =================================================
     return { vendors, showVendorModal, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal, cacheHistGridColumns };
   },
+  // ===== 템플릿 ===========================================================
   template: /* html */`
 <div>
+  <!-- 페이지 타이틀 + ID 표시 -->
   <div class="page-title">{{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span></div>
+    <!-- 탭바 + 뷰모드 아이콘 -->
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
@@ -178,9 +196,10 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
       </div>
     </div>
+    <!-- 탭 콘텐츠 컨테이너 (1/2/3/4열 그리드 자동 적용) -->
     <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
-    <!-- -- 기본정보 --------------------------------------------------------- -->
+    <!-- 기본정보 탭 -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-row">
@@ -241,7 +260,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         </div>
       </div>
 
-      <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
+      <!-- 판매업체 선택 모달 -->
       <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
                 body-pad="0" @close="showVendorModal=false">
         <div style="max-height:400px;overflow-y:auto;">
@@ -261,6 +280,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         </template>
       </bo-modal>
 
+      <!-- 폼 액션 버튼 (수정/저장/취소/닫기) -->
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
@@ -273,7 +293,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       </div>
     </div>
 
-    <!-- -- 회원 캐쉬 내역 ----------------------------------------------------- -->
+    <!-- 회원 캐쉬 내역 탭 -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span></div>
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">

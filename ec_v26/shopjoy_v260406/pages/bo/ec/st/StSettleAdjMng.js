@@ -212,8 +212,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '200px' },
-      { key: 'type', type: 'select', options: () => codes.codes.settle_adj_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.codes.settle_adj_statuses, nullLabel: '상태 전체' },
+      { key: 'type', type: 'select', options: () => codes.settle_adj_types, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', options: () => codes.settle_adj_statuses, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

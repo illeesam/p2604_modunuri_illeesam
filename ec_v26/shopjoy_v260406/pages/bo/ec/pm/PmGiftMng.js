@@ -1,15 +1,19 @@
 /* ShopJoy Admin - 판촉사은품 관리 목록 + 하단 PmGiftDtl 임베드 */
 window.PmGiftMng = {
   name: 'PmGiftMng',
+  // ===== Props 정의 ========================================================
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== Vue Composition API / boApp 전역 의존 ===========================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+
+    // ===== 상태(reactive) 선언 =============================================
     const gifts = reactive([]);
         const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, giftList: [], tabMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
@@ -18,6 +22,7 @@ window.PmGiftMng = {
       date_range_opts: [],
     });
 
+    // ===== 공통코드 로딩 ===================================================
     /* 사은품 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -33,6 +38,7 @@ window.PmGiftMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
+    // ===== 정렬 처리 =======================================================
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'giftNm asc', desc: 'giftNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
@@ -56,6 +62,7 @@ window.PmGiftMng = {
     /* 사은품 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
+    // ===== 목록 조회 API ===================================================
     /* 사은품 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -81,6 +88,7 @@ window.PmGiftMng = {
       }
     };
 
+    // ===== 검색 파라미터 + 라이프사이클 ====================================
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
@@ -90,6 +98,7 @@ window.PmGiftMng = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');    });
 
+    // ===== 날짜 범위 변경 / 사이트명 / 페이저 / 하단 상세 상태 ===============
     /* 사은품 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
@@ -101,6 +110,7 @@ window.PmGiftMng = {
 const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
   const searchParam = reactive(_initSearchParam());
 
+    // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
     /* 사은품 loadView */
     const loadView   = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
 
@@ -123,16 +133,20 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
+    // ===== 페이저 번호 빌더 ================================================
     /* 사은품 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 사은품 fnTypeBadge */
-    const fnTypeBadge   = t => ({ '구매조건': 'badge-blue', '금액조건': 'badge-green', '수량조건': 'badge-orange', '무조건': 'badge-purple' }[t] || 'badge-gray');
+    // ===== 배지(badge) 헬퍼 ================================================
+    /* 사은품 fnTypeBadge — sy_code GIFT_COND_TYPE_KR code_opt1 우선, 없으면 FB */
+    const _GIFT_COND_TYPE_FB = { '구매조건': 'badge-blue', '금액조건': 'badge-green', '수량조건': 'badge-orange', '무조건': 'badge-purple' };
+    const fnTypeBadge   = t => coUtil.cofCodeBadge('GIFT_COND_TYPE_KR', t, _GIFT_COND_TYPE_FB[t] || 'badge-gray');
 
     /* 사은품 fnStatusBadge */
     const _GIFT_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red', '품절': 'badge-orange' };
     const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _GIFT_STATUS_FB[s] || 'badge-gray');
 
+    // ===== 검색 / 리셋 / 페이지 변경 =======================================
     /* 사은품 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
@@ -152,6 +166,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     /* 사은품 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    // ===== 삭제 / 엑셀 다운로드 ============================================
     /* 사은품 삭제 */
     const handleDelete = async (g) => {
       const ok = await showConfirm('삭제', `[${g.giftNm}] 사은품을 삭제하시겠습니까?`);
@@ -176,10 +191,10 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       [{label:'ID',key:'giftId'},{label:'사은품명',key:'giftNm'},{label:'유형',key:'giftTypeCd'},{label:'최소주문금액',key:'minOrderAmt'},{label:'최소주문수량',key:'minOrderQty'},{label:'재고',key:'giftStock'},{label:'상태',key:'giftStatusCd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '사은품목록.csv');
 
+    // ===== 탭 모드 (리스트/카드) ===========================================
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
-    // -- return ---------------------------------------------------------------
-
+    // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck',
         options: [
@@ -199,6 +214,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       { key: 'status', type: 'select', options: () => codes.gift_statuses, nullLabel: '상태 전체' },
     ];
 
+    // ===== 그리드 컬럼 정의 (BoGrid :columns) ==============================
     const baseGridColumns = [
       { key: 'giftNm',       label: '사은품명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -213,16 +229,22 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       { key: 'siteNm',       label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
+    // ===== setup() return =================================================
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), gifts, uiState, codes, searchParam, baseSearchColumns, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
+  // ===== 템플릿 ===========================================================
   template: /* html */`
 <div>
+  <!-- 페이지 타이틀 -->
   <div class="page-title">사은품관리</div>
+  <!-- 검색영역 -->
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- 목록영역 (리스트/카드 토글) -->
   <div class="card">
+    <!-- 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 -->
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사은품목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -236,6 +258,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
+    <!-- 리스트 뷰 (BoGrid) -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="baseGridColumns" :rows="gifts" :pager="pager" row-key="giftId"
       :row-actions="true"
@@ -251,7 +274,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       </template>
     </bo-grid>
 
-    <!-- -- 카드 뷰 --------------------------------------------------------- -->
+    <!-- 카드 뷰 -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="gifts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="g in gifts" :key="g?.giftId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
@@ -278,10 +301,11 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       </div>
     </div>
 
+    <!-- 페이지네이션 -->
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- -- 하단 상세: PmGiftDtl 임베드 ------------------------------------------- -->
+  <!-- 하단 상세영역: PmGiftDtl 인라인 임베드 -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

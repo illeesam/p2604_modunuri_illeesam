@@ -1,15 +1,19 @@
 /* ShopJoy Admin - 판촉마일리지 관리 목록 + 하단 PmSaveDtl 임베드 */
 window.PmSaveMng = {
   name: 'PmSaveMng',
+  // ===== Props 정의 ========================================================
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== Vue Composition API / boApp 전역 의존 ===========================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+
+    // ===== 상태(reactive) 선언 =============================================
     const saves = reactive([]);
         const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, saveList: [], tabMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
@@ -19,6 +23,7 @@ window.PmSaveMng = {
       date_range_opts: [],
     });
 
+    // ===== 공통코드 로딩 ===================================================
     /* 적립금 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -35,6 +40,7 @@ window.PmSaveMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
 
+    // ===== 정렬 처리 =======================================================
     // onMounted에서 API 로드
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
@@ -58,6 +64,7 @@ window.PmSaveMng = {
     /* 적립금 sortIcon */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
+    // ===== 목록 조회 API ===================================================
     /* 적립금 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -83,6 +90,7 @@ window.PmSaveMng = {
       }
     };
 
+    // ===== 검색 파라미터 + 라이프사이클 ====================================
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
@@ -92,6 +100,7 @@ window.PmSaveMng = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');    });
 
+    // ===== 날짜 범위 변경 / 사이트명 / 페이저 / 하단 상세 상태 ===============
     /* 적립금 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
@@ -103,6 +112,7 @@ window.PmSaveMng = {
 const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
   const searchParam = reactive(_initSearchParam());
 
+    // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
     /* 적립금 loadView */
     const loadView   = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
 
@@ -125,16 +135,20 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
+    // ===== 페이저 번호 빌더 ================================================
     /* 적립금 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 적립금 fnTypeBadge */
-    const fnTypeBadge   = t => ({ '구매적립': 'badge-green', '회원가입': 'badge-blue', '리뷰적립': 'badge-orange', '출석체크': 'badge-purple' }[t] || 'badge-gray');
+    // ===== 배지(badge) 헬퍼 ================================================
+    /* 적립금 fnTypeBadge — sy_code SAVE_TYPE_KR code_opt1 우선, 없으면 FB */
+    const _SAVE_TYPE_FB = { '구매적립': 'badge-green', '회원가입': 'badge-blue', '리뷰적립': 'badge-orange', '출석체크': 'badge-purple' };
+    const fnTypeBadge   = t => coUtil.cofCodeBadge('SAVE_TYPE_KR', t, _SAVE_TYPE_FB[t] || 'badge-gray');
 
     /* 적립금 fnStatusBadge */
     const _SAVE_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red' };
     const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _SAVE_STATUS_FB[s] || 'badge-gray');
 
+    // ===== 검색 / 리셋 / 페이지 변경 =======================================
     /* 적립금 목록조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
@@ -154,6 +168,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     /* 적립금 onSizeChange */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
+    // ===== 삭제 / 엑셀 다운로드 ============================================
     /* 적립금 삭제 */
     const handleDelete = async (s) => {
       const ok = await showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
@@ -178,10 +193,10 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '마일리지목록.csv');
 
+    // ===== 탭 모드 (리스트/카드) ===========================================
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
-    // -- return ---------------------------------------------------------------
-
+    // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck',
         options: [
@@ -201,6 +216,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       { key: 'status', type: 'select', options: () => codes.promo_statuses, nullLabel: '상태 전체' },
     ];
 
+    // ===== 그리드 컬럼 정의 (BoGrid :columns) ==============================
     const baseGridColumns = [
       { key: 'saveNm',     label: '마일리지명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -215,16 +231,22 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       { key: 'siteNm',     label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
+    // ===== setup() return =================================================
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), saves, uiState, codes, searchParam, baseSearchColumns, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
+  // ===== 템플릿 ===========================================================
   template: /* html */`
 <div>
+  <!-- 페이지 타이틀 -->
   <div class="page-title">마일리지관리</div>
+  <!-- 검색영역 -->
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- 목록영역 (리스트/카드 토글) -->
   <div class="card">
+    <!-- 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 -->
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>마일리지목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -238,6 +260,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
+    <!-- 리스트 뷰 (BoGrid) -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="baseGridColumns" :rows="saves" :pager="pager" row-key="saveId"
       :row-actions="true"
@@ -253,7 +276,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       </template>
     </bo-grid>
 
-    <!-- -- 카드 뷰 --------------------------------------------------------- -->
+    <!-- 카드 뷰 -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="saves.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="s in saves" :key="s?.saveId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
@@ -280,10 +303,11 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       </div>
     </div>
 
+    <!-- 페이지네이션 -->
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- -- 하단 상세: PmSaveDtl 임베드 ------------------------------------------- -->
+  <!-- 하단 상세영역: PmSaveDtl 인라인 임베드 -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

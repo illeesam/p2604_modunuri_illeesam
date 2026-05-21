@@ -269,10 +269,8 @@ window.SyPathMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '320px' },
-      { key: 'useYn', type: 'text', placeholder: '검색어 입력', width: '320px' },
       { type: 'label', label: '사용여부' },
       { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
-      { key: 'useYn', type: 'select', options: () => codes.codes.use_yn, nullLabel: '전체' },
     ];
 
     const baseGridColumns = [

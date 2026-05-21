@@ -270,10 +270,9 @@ window.SyBrandMng = {
     // -- return ---------------------------------------------------------------
 
     /* BoGridCrud 호환 — 컬럼 정의 + local 모드 컬럼 hint */
-        const baseSearchColumns = [
+    const baseSearchColumns = [
       { type: 'label', label: '업무코드' },
       { key: 'bizCd', type: 'text', placeholder: 'biz_cd 검색', width: '160px' },
-      { key: 'searchType', type: 'text', placeholder: 'biz_cd 검색', width: '160px' },
       { key: 'searchType', type: 'multiCheck',
         options: [
           { value: 'brandCode', label: '브랜드코드' },
@@ -282,14 +281,12 @@ window.SyBrandMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'useYn', type: 'text', placeholder: '검색어 입력' },
       { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
       { type: 'label', label: '등록일' },
       { key: 'dateRange', type: 'dateRange',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'useYn', type: 'select', options: () => codes.codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
     const baseGridColumns = [

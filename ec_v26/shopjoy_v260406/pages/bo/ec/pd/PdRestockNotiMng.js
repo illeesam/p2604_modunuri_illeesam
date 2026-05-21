@@ -132,10 +132,8 @@ window.PdRestockNotiMng = {
         const baseSearchColumns = [
       { type: 'label', label: '상품명' },
       { key: 'prod', type: 'text', placeholder: '상품명 검색' },
-      { key: 'noti', type: 'text', placeholder: '상품명 검색' },
       { type: 'label', label: '알림발송' },
       { key: 'noti', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
-      { key: 'noti', type: 'select', options: () => codes.codes.send_yn_opts, nullLabel: '전체' },
     ];
 
     const baseGridColumns = [

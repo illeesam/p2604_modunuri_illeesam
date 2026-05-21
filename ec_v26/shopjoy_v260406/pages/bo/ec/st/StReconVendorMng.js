@@ -106,7 +106,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },
       { key: 'diff', type: 'select', options: () => codes.recon_results, nullLabel: '대사결과 전체' },
-      { key: 'diff', type: 'select', options: () => codes.codes.recon_results, nullLabel: '대사결과 전체' },
     ];
 
     const baseGridColumns = [

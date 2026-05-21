@@ -241,7 +241,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
       { key: 'bbmId', type: 'select', options: () => codes.cfBbmOptions, nullLabel: '게시판 전체' },
-      { key: 'status', type: 'select', options: () => codes.codes.bbs_post_statuses, nullLabel: '상태 전체' },
+      { key: 'status', type: 'select', options: () => codes.bbs_post_statuses, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [
