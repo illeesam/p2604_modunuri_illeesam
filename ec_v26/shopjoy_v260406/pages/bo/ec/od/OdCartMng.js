@@ -18,73 +18,11 @@ window.OdCartMng = {
     const uiState = reactive({ loading: false, selectedIds: [] });
     const codes = reactive({ sites: [], cart_date_types: [] });
 
-    /* ── 회원 선택 팝업 ── */
-    const PICK_SIZE = 20;
-    const memberPick = reactive({
-      open: false,
-      searchType: '',
-      searchValue: '',
-      rows: [],
-      pageNo: 1,
-      total: 0,
-      totalPage: 1,
-      loading: false,
-    });
-
-    /* 장바구니 openMemberPick */
-    const openMemberPick = () => {
-      memberPick.open = true;
-      memberPick.searchType = '';
-      memberPick.searchValue = '';
-      memberPick.rows = [];
-      memberPick.pageNo = 1;
-      memberPick.total = 0;
-      memberPick.totalPage = 1;
-      handlePickSearch();
-    };
-
-    /* 장바구니 closeMemberPick */
-    const closeMemberPick = () => { memberPick.open = false; };
-
-    /* 장바구니 handlePickSearch */
-    const handlePickSearch = async () => {
-      memberPick.loading = true;
-      try {
-        const params = { pageNo: memberPick.pageNo, pageSize: PICK_SIZE, searchValue: memberPick.searchValue || undefined, searchType: memberPick.searchType || undefined };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'memberNm,loginId';
-        }
-        const res = await boApiSvc.mbMember.getPage(
-          params,
-          '장바구니관리', '회원검색'
-        );
-        const d = res.data?.data || {};
-        memberPick.rows      = d.pageList       || [];
-        memberPick.total     = d.pageTotalCount || 0;
-        memberPick.totalPage = d.pageTotalPage  || 1;
-      } catch (err) {
-        showToast('회원 조회 중 오류가 발생했습니다.', 'error');
-      } finally {
-        memberPick.loading = false;
-      }
-    };
-
-    /* 장바구니 onPickSearch */
-    const onPickSearch = () => { memberPick.pageNo = 1; handlePickSearch(); };
-
-    /* 장바구니 onPickPage */
-    const onPickPage   = (n) => { memberPick.pageNo = n; handlePickSearch(); };
-
-    /* 장바구니 onSelectMember */
-    const onSelectMember = (m) => {
-      search.memberId = m.memberId;
-      search.memberNm = m.memberNm || m.loginId || m.memberId;
-      closeMemberPick();
-    };
-
-    /* 장바구니 onClearMember */
-    const onClearMember = () => { search.memberId = ''; search.memberNm = ''; };
+    /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
+    const memberPick = reactive({ open: false });
+    const openMemberPick = () => { memberPick.open = true; };
+    const onSelectMember = (m) => { search.memberId = m.memberId; search.memberNm = m.memberNm || m.loginId || m.memberId; };
+    const onClearMember  = () => { search.memberId = ''; search.memberNm = ''; };
 
     /* ── 표시 함수 ── */
     const fnCheckedBadge = (v) => v === 'Y' ? 'badge badge-green' : 'badge badge-gray';
@@ -226,19 +164,7 @@ window.OdCartMng = {
         fmt: (v) => fnDate(v), cellStyle: 'font-size:11px;color:#888;' },
     ];
 
-    /* ── 회원선택 모달 picker BoGrid 컬럼 (행 클릭 시 onSelectMember) ── */
-    const memberPickGridColumns = [
-      { key: 'memberNm',       label: '이름',   style: 'min-width:130px;',
-        fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
-      { key: 'loginId',        label: '로그인ID', style: 'min-width:110px;', mono: true, cellStyle: 'font-size:12px;color:#374151;' },
-      { key: 'gradeCdNm',      label: '등급',   style: 'width:80px;text-align:center;',
-        fmt: (v) => v || '-',
-        cellInnerStyle: 'background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
-      { key: 'memberStatusCd', label: '상태',   style: 'width:80px;text-align:center;',
-        fmt: (v, row) => row.memberStatusCdNm || v || '-',
-        cellInnerStyle: (v) => (v==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;') + 'border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
-      { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
-    ];
+    /* 회원선택 그리드 컬럼은 OdMemberPickModal 내장 */
 
     /* ── 삭제 ── */
     const handleDelete = async (cartId) => {
@@ -286,11 +212,10 @@ window.OdCartMng = {
 
     return {
       rows, pager, search, uiState, codes,
-      memberPick, openMemberPick, closeMemberPick,
-      handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember,
+      memberPick, openMemberPick, onSelectMember, onClearMember,
       fnCheckedBadge, fnCheckedNm, fnPrice, fnDate, fnAvatar,
       onSearch, onReset, setPage, onSizeChange,
-      baseSearchColumns, listGridColumns, memberPickGridColumns, isChecked, cfAllChecked, toggleCheck, toggleCheckAll, fnGridRowStyle,
+      baseSearchColumns, listGridColumns, isChecked, cfAllChecked, toggleCheck, toggleCheckAll, fnGridRowStyle,
       handleDelete, handleBulkDelete,
     };
   },
@@ -332,77 +257,8 @@ window.OdCartMng = {
   </div>
 
   <!-- 회원 선택 팝업 -->
-  <div v-if="memberPick.open"
-       style="position:fixed;inset:0;background:rgba(15,23,42,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
-       @click.self="closeMemberPick">
-    <div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.22),0 4px 16px rgba(0,0,0,0.10);width:820px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
-
-      <!-- 헤더 -->
-      <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:18px 24px 14px;border-bottom:1px solid #fce7f3;flex-shrink:0;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <div style="font-size:17px;font-weight:700;color:#1e293b;">회원 선택</div>
-            <div style="font-size:12px;color:#9ca3af;margin-top:2px;">장바구니를 조회할 회원을 선택해주세요</div>
-          </div>
-          <button @click="closeMemberPick"
-                  style="width:32px;height:32px;border-radius:50%;border:none;background:#fff;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;transition:all .15s;"
-                  onmouseover="this.style.background='#fce7f3';this.style.color='#e11d48'"
-                  onmouseout="this.style.background='#fff';this.style.color='#6b7280'">✕</button>
-        </div>
-        <!-- 검색바 -->
-        <div style="display:flex;gap:8px;margin-top:12px;">
-          <div style="position:relative;flex:1;">
-            <bo-multi-check-select
-              v-model="memberPick.searchType"
-              :options="[
-                { value: 'memberNm', label: '이름' },
-                { value: 'loginId',  label: '아이디' },
-                { value: 'loginId',  label: '이메일' },
-              ]"
-              placeholder="검색대상 전체"
-              all-label="전체 선택"
-              min-width="140px" />
-            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;">🔍</span>
-            <input v-model="memberPick.searchValue" @keyup.enter="onPickSearch"
-                   class="form-control" placeholder="검색어 입력"
-                   style="padding-left:32px;border-radius:8px;" />
-          </div>
-          <button class="btn btn-primary" @click="onPickSearch" style="border-radius:8px;">검색</button>
-        </div>
-      </div>
-
-      <!-- 총 건수 -->
-      <div style="padding:8px 24px;background:#fafafa;border-bottom:1px solid #f0f0f0;font-size:12px;color:#6b7280;flex-shrink:0;">
-        총 <strong style="color:#e11d48;">{{ memberPick.total.toLocaleString() }}</strong>명
-      </div>
-
-      <!-- 목록 -->
-      <div style="flex:1;overflow-y:auto;">
-        <div v-if="memberPick.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
-        <bo-grid v-else bare row-clickable :columns="memberPickGridColumns" :rows="memberPick.rows" row-key="memberId"
-                 :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
-                 @row-click="onSelectMember" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-primary btn-xs" @click.stop="onSelectMember(row)"
-                      style="border-radius:6px;font-size:11px;">선택</button>
-      </template>
-        </bo-grid>
-      </div>
-
-      <!-- 팝업 페이지네이션 -->
-      <div style="padding:10px 24px;border-top:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;display:flex;justify-content:center;">
-        <div class="pager" v-if="memberPick.totalPage > 1">
-          <button class="btn btn-secondary btn-sm" :disabled="memberPick.pageNo <= 1" @click="onPickPage(memberPick.pageNo - 1)">이전</button>
-          <template v-for="n in memberPick.totalPage" :key="n">
-            <button v-if="Math.abs(n - memberPick.pageNo) <= 3"
-                    :class="['btn btn-sm', n === memberPick.pageNo ? 'btn-primary' : 'btn-secondary']"
-                    @click="onPickPage(n)">{{ n }}</button>
-          </template>
-          <button class="btn btn-secondary btn-sm" :disabled="memberPick.pageNo >= memberPick.totalPage" @click="onPickPage(memberPick.pageNo + 1)">다음</button>
-        </div>
-        <span v-else style="font-size:12px;color:#aaa;line-height:32px;">총 {{ memberPick.total }}명</span>
-      </div>
-    </div>
-  </div>
+  <od-member-pick-modal :show="memberPick.open" ui-nm="장바구니관리"
+    subtitle="장바구니를 조회할 회원을 선택해주세요"
+    @select="onSelectMember" @close="memberPick.open=false" />
 </div>`
 };

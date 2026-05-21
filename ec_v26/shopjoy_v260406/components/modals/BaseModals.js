@@ -3,7 +3,7 @@
    My.js 의 components 블록에 등록하여 사용합니다.
 
    ───────────────────────────────────────────────────────────────────────
-   정의된 컴포넌트 (28개) — 태그는 kebab-case (예: <order-detail-modal>)
+   정의된 컴포넌트 (29개) — 태그는 kebab-case (예: <order-detail-modal>)
 
    [상세 보기]
      OrderDetailModal       — 주문 상세
@@ -27,6 +27,7 @@
      SimpleUserPickModal    — 간단 사용자 선택
      SimpleVendorPickModal  — 간단 판매업체 선택 (prop vendors 배열, 단건 라디오)
      SimpleProdPickModal    — 간단 상품 선택 (prop prods 배열, 다중 체크박스)
+     OdMemberPickModal      — 주문/클레임/배송/장바구니 회원 선택 (서버 페이지 + multiCheck)
 
    [트리 모달]
      RoleTreeModal          — 역할 트리
@@ -4186,6 +4187,125 @@ window.SimpleVendorPickModal = {
     <button class="btn btn-secondary btn-sm" @click="$emit('close')">닫기</button>
   </template>
 </bo-modal>`,
+};
+
+/* ── Od* 회원 선택 모달 (Cart/Order/Claim/Dliv 공통 패턴) ──
+   서버 페이징 + multiCheck 검색 + bo-grid 행 선택.
+   props.subtitle 로 부제 변경, props.uiNm 으로 API 헤더 화면명 지정.
+   부모는 selectedId 표시는 모달 외부에서 처리(검색바 pick 영역). */
+window.OdMemberPickModal = {
+  name: 'OdMemberPickModal',
+  props: {
+    show:     { type: Boolean, default: false },
+    title:    { type: String,  default: '회원 선택' },
+    subtitle: { type: String,  default: '회원을 선택해주세요' },
+    uiNm:     { type: String,  default: '주문관리' },
+    pageSize: { type: Number,  default: 20 },
+    reloadTrigger: { type: Number, default: 0 },
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { reactive, watch } = Vue;
+    const state = reactive({
+      searchType: '', searchValue: '',
+      rows: [], pageNo: 1, total: 0, totalPage: 1, loading: false,
+    });
+
+    /* handleSearch */
+    const handleSearch = async () => {
+      state.loading = true;
+      try {
+        const params = { pageNo: state.pageNo, pageSize: props.pageSize,
+          searchValue: state.searchValue || undefined,
+          searchType: state.searchType || undefined };
+        if (params.searchValue && !params.searchType) params.searchType = 'memberNm,loginId';
+        const res = await boApiSvc.mbMember.getPage(params, props.uiNm, '회원검색');
+        const d = res.data?.data || {};
+        state.rows = d.pageList || [];
+        state.total = d.pageTotalCount || 0;
+        state.totalPage = d.pageTotalPage || 1;
+      } catch (_) { state.rows = []; state.total = 0; state.totalPage = 1; }
+      finally { state.loading = false; }
+    };
+    const onPickSearch = () => { state.pageNo = 1; handleSearch(); };
+    const onPickPage   = (n) => { state.pageNo = n; handleSearch(); };
+    const onSelect     = (m) => { emit('select', m); emit('close'); };
+
+    /* show=true 또는 reloadTrigger 증가 시 초기화 + 재조회 */
+    const reset = () => { state.searchType=''; state.searchValue=''; state.rows=[]; state.pageNo=1; handleSearch(); };
+    watch(() => props.show, v => { if (v) reset(); });
+    watch(() => props.reloadTrigger, () => { if (props.show) handleSearch(); });
+
+    const memberPickGridColumns = [
+      { key: 'memberNm',       label: '이름',
+        fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
+      { key: 'loginId',        label: '로그인ID', mono: true, cellStyle: 'font-size:12px;' },
+      { key: 'gradeCdNm',      label: '등급', style: 'width:80px;text-align:center;',
+        fmt: (v) => v || '-',
+        cellInnerStyle: 'background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
+      { key: 'memberStatusCd', label: '상태', style: 'width:80px;text-align:center;',
+        fmt: (v, row) => row.memberStatusCdNm || v || '-',
+        cellInnerStyle: (v) => (v==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;') + 'border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
+      { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
+    ];
+
+    return { state, onPickSearch, onPickPage, onSelect, memberPickGridColumns };
+  },
+  template: /* html */`
+<div v-if="show"
+     style="position:fixed;inset:0;background:rgba(15,23,42,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
+     @click.self="$emit('close')">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.22),0 4px 16px rgba(0,0,0,0.10);width:820px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:18px 24px 14px;border-bottom:1px solid #fce7f3;flex-shrink:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:17px;font-weight:700;color:#1e293b;">{{ title }}</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:2px;">{{ subtitle }}</div>
+        </div>
+        <button @click="$emit('close')" style="width:32px;height:32px;border-radius:50%;border:none;background:#fff;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#fce7f3';this.style.color='#e11d48'" onmouseout="this.style.background='#fff';this.style.color='#6b7280'">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <div style="position:relative;flex:1;">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;z-index:1;">🔍</span>
+          <bo-multi-check-select
+            v-model="state.searchType"
+            :options="[
+              { value: 'memberNm', label: '이름' },
+              { value: 'loginId',  label: '아이디' },
+            ]"
+            placeholder="검색대상 전체"
+            all-label="전체 선택"
+            min-width="140px" />
+          <input v-model="state.searchValue" @keyup.enter="onPickSearch" class="form-control" placeholder="검색어 입력" style="padding-left:32px;border-radius:8px;" />
+        </div>
+        <button class="btn btn-primary" @click="onPickSearch" style="border-radius:8px;">검색</button>
+      </div>
+    </div>
+    <div style="padding:8px 24px;background:#fafafa;border-bottom:1px solid #f0f0f0;font-size:12px;color:#6b7280;flex-shrink:0;">
+      총 <strong style="color:#e11d48;">{{ state.total.toLocaleString() }}</strong>명
+    </div>
+    <div style="flex:1;overflow-y:auto;">
+      <div v-if="state.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
+      <bo-grid v-else bare row-clickable :columns="memberPickGridColumns" :rows="state.rows" row-key="memberId"
+               :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
+               @row-click="onSelect" row-actions>
+        <template #row-actions="{ row }">
+          <button class="btn btn-primary btn-xs" @click.stop="onSelect(row)" style="border-radius:6px;font-size:11px;">선택</button>
+        </template>
+      </bo-grid>
+    </div>
+    <div style="padding:10px 24px;border-top:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;display:flex;justify-content:center;">
+      <div class="pager" v-if="state.totalPage > 1">
+        <button class="btn btn-secondary btn-sm" :disabled="state.pageNo <= 1" @click="onPickPage(state.pageNo - 1)">이전</button>
+        <template v-for="n in state.totalPage" :key="n">
+          <button v-if="Math.abs(n - state.pageNo) <= 3" :class="['btn btn-sm', n === state.pageNo ? 'btn-primary' : 'btn-secondary']" @click="onPickPage(n)">{{ n }}</button>
+        </template>
+        <button class="btn btn-secondary btn-sm" :disabled="state.pageNo >= state.totalPage" @click="onPickPage(state.pageNo + 1)">다음</button>
+      </div>
+      <span v-else style="font-size:12px;color:#aaa;line-height:32px;">총 {{ state.total }}명</span>
+    </div>
+  </div>
+</div>`,
 };
 
 /* ── 간단 상품 선택 모달 (PmPlanDtl / PmEventDtl 공통 패턴) ──
