@@ -279,7 +279,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch,
+    return { vendors, products, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch,
       cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, handleSave,
       VISIBILITY_OPTIONS, cfDtlMode, tabMode2, showTab, hasVisibility, toggleVisibility,
       cfSelectedVendorNm, selectVendor, showProdPopup, showVendorModal, infoFormColumns, vendorFormColumns,
@@ -355,24 +355,8 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       </div>
 
       <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
-      <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
-                body-pad="0" @close="showVendorModal=false">
-        <div style="max-height:400px;overflow-y:auto;">
-          <div v-for="v in vendors" :key="v?.vendorId"
-            style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
-            :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
-            @click="selectVendor(v.vendorId, v.vendorNm)">
-            <span style="font-weight:500;">{{ v.vendorNm }}</span>
-            <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
-          </div>
-          <div v-if="!vendors.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
-            판매업체가 없습니다.
-          </div>
-        </div>
-        <template #footer>
-          <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
-        </template>
-      </bo-modal>
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
+        @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
 
       <div class="form-actions" v-if="!cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">💾 저장</button>
@@ -496,34 +480,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
 </div>
 
 <!-- -- 상품선택 모달 ---------------------------------------------------------- -->
-<div v-if="showProdPopup" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;">
-  <div style="background:#fff;border-radius:8px;width:90%;max-width:600px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
-    <div style="padding:16px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;font-size:14px;font-weight:700;">상품선택</h3>
-      <button @click="showProdPopup=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">✕</button>
-    </div>
-    <div style="padding:12px;border-bottom:1px solid #f0f0f0;">
-      <input v-model="prodSearch" type="text" placeholder="상품명 검색" class="form-control" style="width:100%;" />
-    </div>
-    <div style="flex:1;overflow-y:auto;">
-      <div v-if="cfFilteredProds.length === 0" style="text-align:center;color:#999;padding:40px;">상품이 없습니다.</div>
-      <div v-for="p in cfFilteredProds" :key="p?.productId"
-        @click="toggleProduct(p.productId)"
-        style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .1s;"
-        :style="isSelected(p.productId) ? 'background:#ede7f6;' : ''"
-        @mouseenter="$event.target.parentElement.style.background='#f9f9f9'"
-        @mouseleave="$event.target.parentElement.style.background=isSelected(p.productId) ? '#ede7f6' : 'white'">
-        <div style="flex:1;">
-          <div style="font-weight:600;font-size:12px;color:#222;">{{ p.prodNm }}</div>
-          <div style="font-size:11px;color:#999;margin-top:2px;">{{ (p.price||0).toLocaleString() }}원</div>
-        </div>
-        <div v-if="isSelected(p.productId)" style="color:#6a1b9a;font-weight:700;font-size:18px;">✓</div>
-      </div>
-    </div>
-    <div style="padding:12px 16px;border-top:1px solid #e0e0e0;display:flex;gap:8px;justify-content:flex-end;">
-      <button class="btn btn-secondary" @click="showProdPopup=false">완료</button>
-    </div>
-  </div>
-</div>
+<simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.productIds"
+  title="상품선택" @toggle="toggleProduct" @close="showProdPopup=false" />
 `
 };

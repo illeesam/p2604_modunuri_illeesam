@@ -343,24 +343,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     </bo-form-area>
 
     <!-- 판매업체 선택 모달 -->
-    <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
-              body-pad="0" @close="showVendorModal=false">
-      <div style="max-height:400px;overflow-y:auto;">
-        <div v-for="v in vendors" :key="v?.vendorId"
-          style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
-          :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
-          @click="selectVendor(v.vendorId, v.vendorNm)">
-          <span style="font-weight:500;">{{ v.vendorNm }}</span>
-          <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
-        </div>
-        <div v-if="!vendors.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
-          판매업체가 없습니다.
-        </div>
-      </div>
-      <template #footer>
-        <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
-      </template>
-    </bo-modal>
+    <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
+      @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
     <div class="form-actions" v-if="!cfDtlMode">
       <button @click="handleSave" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn-primary">{{ cfIsNew ? '등록' : '저장' }}</button>
       <button @click="navigate('pmVoucherMng')" class="btn btn-secondary">취소</button>

@@ -3,7 +3,7 @@
    My.js 의 components 블록에 등록하여 사용합니다.
 
    ───────────────────────────────────────────────────────────────────────
-   정의된 컴포넌트 (26개) — 태그는 kebab-case (예: <order-detail-modal>)
+   정의된 컴포넌트 (28개) — 태그는 kebab-case (예: <order-detail-modal>)
 
    [상세 보기]
      OrderDetailModal       — 주문 상세
@@ -12,7 +12,7 @@
 
    [선택/피커 모달]
      SiteSelectModal        — 사이트 선택
-     VendorSelectModal      — 판매업체 선택
+     VendorSelectModal      — 판매업체 선택 (서버 페이지 + 검색)
      BoUserSelectModal      — 사용자 선택 (부서트리 + 멀티)
      MemberSelectModal      — 회원 선택
      OrderSelectModal       — 주문 선택
@@ -25,6 +25,8 @@
      PathPickModal          — 표시경로 선택  (+ PathPickTreeNode 재귀 노드)
      BizPickModal           — 업체 선택
      SimpleUserPickModal    — 간단 사용자 선택
+     SimpleVendorPickModal  — 간단 판매업체 선택 (prop vendors 배열, 단건 라디오)
+     SimpleProdPickModal    — 간단 상품 선택 (prop prods 배열, 다중 체크박스)
 
    [트리 모달]
      RoleTreeModal          — 역할 트리
@@ -4148,4 +4150,86 @@ window.SimpleUserPickModal = {
     </div>
   </div>
 </div>`,
+};
+
+/* ── 간단 판매업체 선택 모달 (Pm Dtl 8종 공통 패턴) ──
+   부모에서 이미 로드한 vendors 배열을 prop 으로 받아 단건 선택. */
+window.SimpleVendorPickModal = {
+  name: 'SimpleVendorPickModal',
+  props: {
+    show:       { type: Boolean, default: false },
+    vendors:    { type: Array,   default: () => [] },
+    selectedId: { type: [String, Number], default: '' },
+    title:      { type: String,  default: '판매업체 선택' },
+    width:      { type: String,  default: '400px' },
+  },
+  emits: ['select', 'close'],
+  setup(_, { emit }) {
+    const onPick = (v) => { emit('select', v); emit('close'); };
+    return { onPick };
+  },
+  template: /* html */`
+<bo-modal :show="show" :title="title" :width="width" body-pad="0" @close="$emit('close')">
+  <div style="max-height:400px;overflow-y:auto;">
+    <div v-for="v in vendors" :key="v && v.vendorId"
+      style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
+      :style="selectedId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
+      @click="onPick(v)">
+      <span style="font-weight:500;">{{ v.vendorNm }}</span>
+      <span v-if="selectedId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
+    </div>
+    <div v-if="!vendors.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
+      판매업체가 없습니다.
+    </div>
+  </div>
+  <template #footer>
+    <button class="btn btn-secondary btn-sm" @click="$emit('close')">닫기</button>
+  </template>
+</bo-modal>`,
+};
+
+/* ── 간단 상품 선택 모달 (PmPlanDtl / PmEventDtl 공통 패턴) ──
+   부모에서 이미 로드한 prods 배열을 prop 으로 받아 다중 토글.
+   부모는 selectedIds(productId 배열)와 toggle(productId) emit 으로 동기화. */
+window.SimpleProdPickModal = {
+  name: 'SimpleProdPickModal',
+  props: {
+    show:        { type: Boolean, default: false },
+    prods:       { type: Array,   default: () => [] },
+    selectedIds: { type: Array,   default: () => [] },
+    title:       { type: String,  default: '상품 선택' },
+    width:       { type: String,  default: '600px' },
+  },
+  emits: ['toggle', 'close'],
+  setup(props, { emit }) {
+    const { ref, computed } = Vue;
+    const search = ref('');
+    const cfFiltered = computed(() => {
+      const k = (search.value || '').trim().toLowerCase();
+      if (!k) return props.prods;
+      return props.prods.filter(p => (p.prodNm || '').toLowerCase().includes(k));
+    });
+    const isSelected = (id) => (props.selectedIds || []).includes(id);
+    const onToggle = (p) => emit('toggle', p.productId);
+    return { search, cfFiltered, isSelected, onToggle };
+  },
+  template: /* html */`
+<bo-modal :show="show" :title="title" :width="width" body-pad="0" @close="$emit('close')">
+  <div style="padding:12px;border-bottom:1px solid #f0f0f0;">
+    <input v-model="search" type="text" placeholder="상품명 검색" class="form-control" style="width:100%;" />
+  </div>
+  <div style="max-height:50vh;overflow-y:auto;">
+    <div v-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:40px;">상품이 없습니다.</div>
+    <label v-for="p in cfFiltered" :key="p && p.productId"
+      style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;gap:10px;"
+      :style="isSelected(p.productId)?'background:#ede7f6;':''">
+      <input type="checkbox" :checked="isSelected(p.productId)" @change="onToggle(p)" />
+      <span style="flex:1;font-weight:600;font-size:12px;color:#222;">{{ p.prodNm }}</span>
+      <span style="font-size:11px;color:#888;">{{ (p.price||0).toLocaleString() }}원</span>
+    </label>
+  </div>
+  <template #footer>
+    <button class="btn btn-primary" @click="$emit('close')">확인 ({{ (selectedIds||[]).length }}개)</button>
+  </template>
+</bo-modal>`,
 };

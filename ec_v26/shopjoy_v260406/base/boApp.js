@@ -3102,6 +3102,8 @@
     .component('PathPickModal', window.PathPickModal)
     .component('BizPickModal', window.BizPickModal)
     .component('SimpleUserPickModal', window.SimpleUserPickModal)
+    .component('SimpleVendorPickModal', window.SimpleVendorPickModal)
+    .component('SimpleProdPickModal', window.SimpleProdPickModal)
     .component('PathPickTreeNode', window.PathPickTreeNode)
     .component('PropTreeNode', window.PropTreeNode)
     .component('SyAlarmDtl', window.SyAlarmDtl)

@@ -275,7 +275,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productGridColumns, showRefModal, infoFormColumns, vendorFormColumns };
+    return { vendors, products, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productGridColumns, showRefModal, infoFormColumns, vendorFormColumns };
   },
   template: /* html */`
 <div>
@@ -363,24 +363,8 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       </div>
 
       <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
-      <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
-                body-pad="0" @close="showVendorModal=false">
-        <div style="max-height:400px;overflow-y:auto;">
-          <div v-for="v in vendors" :key="v?.vendorId"
-            style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
-            :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
-            @click="selectVendor(v.vendorId, v.vendorNm)">
-            <span style="font-weight:500;">{{ v.vendorNm }}</span>
-            <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
-          </div>
-          <div v-if="!vendors.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
-            판매업체가 없습니다.
-          </div>
-        </div>
-        <template #footer>
-          <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
-        </template>
-      </bo-modal>
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
+        @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
 
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
@@ -487,21 +471,8 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
   </div>
 
   <!-- -- 상품 선택 팝업 ------------------------------------------------------- -->
-  <bo-modal :show="showProdPopup" title="대상 상품 선택" @close="showProdPopup=false">
-    <div style="margin-bottom:10px;">
-      <input class="form-control" v-model="prodSearch" placeholder="상품명 검색" />
-    </div>
-    <div class="popup-prod-list">
-      <label v-for="p in cfFilteredProds" :key="p?.productId" class="popup-prod-item">
-        <input type="checkbox" :checked="isSelected(p.productId)" @change="toggleProduct(p.productId)" />
-        <span>{{ p.prodNm }}</span>
-        <span style="font-size:12px;color:#888;margin-left:auto;">{{ (p.price||0).toLocaleString() }}원</span>
-      </label>
-    </div>
-    <template #footer>
-      <button class="btn btn-primary" @click="showProdPopup=false">확인 ({{ form.targetProducts.length }}개)</button>
-    </template>
-  </bo-modal>
+  <simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.targetProducts"
+    title="대상 상품 선택" @toggle="toggleProduct" @close="showProdPopup=false" />
 </div>
 `
 };
