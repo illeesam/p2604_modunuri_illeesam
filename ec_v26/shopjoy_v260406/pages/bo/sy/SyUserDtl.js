@@ -217,7 +217,7 @@ window.SyUserDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.userId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.userId }}</span></div>
   <div class="card">
     <!-- 기본 정보 (BoFormArea 자동 렌더) -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"

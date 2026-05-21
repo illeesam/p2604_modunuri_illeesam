@@ -162,11 +162,7 @@ window.SySiteDtl = {
   },
   template: /* html */`
 <div>
-  <!-- 페이지 타이틀 + ID 표시 -->
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <div class="page-title">{{ cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정') }}</div>
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.siteId }}</span>
-  </div>
+  <div class="page-title">{{ cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.siteId }}</span></div>
 
   <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">

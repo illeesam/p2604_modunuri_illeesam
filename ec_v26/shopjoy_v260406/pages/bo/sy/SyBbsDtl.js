@@ -165,7 +165,7 @@ window.SyBbsDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbsId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.bbsId }}</span></div>
   <div class="card">
     <!-- 사이트명 (BoFormArea 자동 렌더) -->
     <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"

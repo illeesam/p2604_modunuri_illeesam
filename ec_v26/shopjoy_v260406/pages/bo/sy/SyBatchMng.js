@@ -384,10 +384,11 @@ window.SyBatchMng = {
   <!-- -- Cron 편집 모달 (BoCronModal 컴포넌트) -- -->
   <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
     @apply="onCronApply" @close="cronModal.show=false" />
-</div>
+    </div><!-- /우측 영역 -->
+  </div><!-- /grid 컨테이너 -->
 
-  <!-- -- 배치 실행이력 (grid 직접 자식 → 전체 폭) -- -->
-  <div class="card" style="margin-top:4px;">
+  <!-- -- 배치 실행이력 (전체 폭) -- -->
+  <div class="card" style="margin-top:12px;width:100%;">
     <sy-batch-hist />
   </div>
 

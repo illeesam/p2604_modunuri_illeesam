@@ -129,11 +129,7 @@ window.SyAlarmDtl = {
   },
   template: /* html */`
 <div>
-  <!-- 페이지 타이틀 + ID 표시 -->
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <div class="page-title">{{ cfIsNew ? '알림 등록' : (cfDtlMode ? '알림 상세' : '알림 수정') }}</div>
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.alarmId }}</span>
-  </div>
+  <div class="page-title">{{ cfIsNew ? '알림 등록' : (cfDtlMode ? '알림 상세' : '알림 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.alarmId }}</span></div>
 
   <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">

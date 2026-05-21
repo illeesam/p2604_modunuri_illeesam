@@ -154,11 +154,7 @@ window.SyVendorDtl = {
   },
   template: /* html */`
 <div>
-  <!-- 페이지 타이틀 + ID 표시 -->
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <div class="page-title">{{ cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정') }}</div>
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.vendorId }}</span>
-  </div>
+  <div class="page-title">{{ cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.vendorId }}</span></div>
 
   <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">

@@ -158,11 +158,7 @@ window.SyBbmDtl = {
   },
   template: /* html */`
 <div>
-  <!-- 페이지 타이틀 + ID 표시 -->
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <div class="page-title">{{ cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정') }}</div>
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbmId }}</span>
-  </div>
+  <div class="page-title">{{ cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.bbmId }}</span></div>
 
   <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
