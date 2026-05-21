@@ -522,9 +522,13 @@ window.BoMultiCheckSelect = {
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    const { ref, computed, onMounted, onBeforeUnmount } = Vue;
+    const { ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
     const open = ref(false);
     const rootRef = ref(null);
+    /* noneMode: 사용자가 '전체 선택'을 해제해 명시적으로 전부 비운 상태.
+       (modelValue 빈값('')은 호출부에서 '전체'로 해석되므로, 빈값만으로는
+        '아무것도 선택 안 함'을 표현할 수 없다 → 체크 표시 보정용 내부 상태) */
+    const noneMode = ref(false);
 
     const cfNorm = computed(() =>
       (props.options || []).map(o => ({
@@ -533,7 +537,11 @@ window.BoMultiCheckSelect = {
       })).filter(o => o.value != null)
     );
 
+    /* 외부에서 실제 값(콤마문자열)이 들어오면 noneMode 자동 해제 */
+    watch(() => props.modelValue, (v) => { if ((v || '').toString().trim()) noneMode.value = false; });
+
     const cfSelected = computed(() => {
+      if (noneMode.value) return new Set();
       const raw = (props.modelValue || '').toString().trim();
       if (!raw) return new Set(cfNorm.value.map(o => o.value));
       return new Set(raw.split(',').map(s => s.trim()).filter(Boolean));
@@ -545,34 +553,57 @@ window.BoMultiCheckSelect = {
     });
 
     const cfDisplay = computed(() => {
+      if (noneMode.value) return '선택 안 함';
       if (cfIsAll.value) return props.placeholder;
       const sel = cfSelected.value;
       const labels = cfNorm.value.filter(o => sel.has(o.value)).map(o => o.label);
       if (labels.length === 0) return props.placeholder;
       if (labels.length <= 2) return labels.join(', ');
-      return labels[0] + ' 외 ' + (labels.length - 1) + '개';
+      // 3개 이상: 앞 2개 라벨 + (전체개수)...
+      return labels.slice(0, 2).join(', ') + ' (' + labels.length + ')...';
     });
 
-    /* emitFromSet */
+    /* emitFromSet
+       - 전부 선택 → '' (전체)  ※ noneMode 해제
+       - 전부 해제 → noneMode (선택 안 함). emit 값은 '' 이지만 표시상 빈 체크 유지
+       - 일부 선택 → 콤마문자열 */
     const emitFromSet = (set) => {
-      if (cfNorm.value.every(o => set.has(o.value))) emit('update:modelValue', '');
-      else emit('update:modelValue', cfNorm.value.filter(o => set.has(o.value)).map(o => o.value).join(','));
+      if (set.size === 0) {
+        noneMode.value = true;            // 전부 해제 = 선택 안 함 (전체로 되돌아가지 않음)
+        emit('update:modelValue', '');
+      } else if (cfNorm.value.every(o => set.has(o.value))) {
+        noneMode.value = false;           // 전부 선택 = 전체
+        emit('update:modelValue', '');
+      } else {
+        noneMode.value = false;
+        emit('update:modelValue', cfNorm.value.filter(o => set.has(o.value)).map(o => o.value).join(','));
+      }
     };
 
     /* onToggle */
     const onToggle = () => { if (!props.disabled) open.value = !open.value; };
 
-    /* onClickOption */
+    /* onClickOption — 옵션 클릭 시 토글
+       단, '전체'(빈값) 또는 '선택 안 함'(noneMode) 상태에서 개별 항목을 처음 클릭하면
+       "전체에서 빼기"가 아니라 "그 항목 하나만 선택"으로 새로 시작한다. */
     const onClickOption = (val) => {
-      const set = new Set(cfSelected.value);
-      if (set.has(val)) set.delete(val); else set.add(val);
+      const wasAllOrNone = noneMode.value || cfIsAll.value;
+      noneMode.value = false;
+      let set;
+      if (wasAllOrNone) {
+        set = new Set([val]);              // 빈 상태에서 이 항목 하나만 선택
+      } else {
+        set = new Set(cfSelected.value);
+        if (set.has(val)) set.delete(val); else set.add(val);
+      }
       emitFromSet(set);
     };
 
-    /* onClickAll */
+    /* onClickAll — 전체이면 모두 해제(noneMode), 아니면 전체 선택 */
     const onClickAll = () => {
-      if (cfIsAll.value) emit('update:modelValue', cfNorm.value[0]?.value || '');
-      else emit('update:modelValue', '');
+      if (cfIsAll.value) noneMode.value = true;   // 모두 해제 (체크 전부 꺼짐)
+      else noneMode.value = false;                 // 전체 선택
+      emit('update:modelValue', '');               // 외부 계약은 항상 빈값(=전체 검색)
     };
 
     /* onDocClick */
@@ -583,12 +614,12 @@ window.BoMultiCheckSelect = {
     onMounted(() => document.addEventListener('mousedown', onDocClick));
     onBeforeUnmount(() => document.removeEventListener('mousedown', onDocClick));
 
-    return { open, rootRef, cfNorm, cfSelected, cfIsAll, cfDisplay, onToggle, onClickOption, onClickAll };
+    return { open, rootRef, noneMode, cfNorm, cfSelected, cfIsAll, cfDisplay, onToggle, onClickOption, onClickAll };
   },
   template: /* html */`
 <div ref="rootRef" class="multi-check-select" :style="'position:relative;display:inline-block;min-width:'+minWidth">
   <div @click="onToggle"
-       :style="'border:1px solid #d4d4d8;border-radius:6px;padding:6px 28px 6px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:#333;position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
+       :style="'border:1px solid #d4d4d8;border-radius:6px;padding:6px 28px 6px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:'+(noneMode?'#aaa':'#333')+';position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
     {{ cfDisplay }}
     <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#888;font-size:10px;">▼</span>
   </div>
