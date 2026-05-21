@@ -208,12 +208,24 @@ window.CmChattDtl = {
 
     // -- return ---------------------------------------------------------------
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 신규 등록 탭 ==================
+    const newFormColumns = [
+      { key: 'memberId',     label: '회원ID', type: 'slot', name: 'memberId', required: true },
+      { key: 'memberNm',     label: '회원명', type: 'text', placeholder: '회원명' },
+      { type: 'rowBreak' },
+      { key: 'subject',      label: '제목', type: 'text', required: true,
+        placeholder: '채팅 제목', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'chattStatusCd', label: '상태', type: 'select', options: () => codes.chatt_statuses,
+        width: '200px' },
+    ];
+
     return { cfIsNew, tab, cfDtlMode, tabMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, handleSave, onUserChange,
       searchUserId, cfUserChats,
       cfMemberChats, codes,
-      memberChatGridColumns, userChatGridColumns,
+      memberChatGridColumns, userChatGridColumns, newFormColumns, showRefModal,
     };
   },
   template: /* html */`
@@ -305,33 +317,19 @@ window.CmChattDtl = {
         <button class="tab-btn" :class="{active:tab==='search'}" @click="tab='search'">고객 채팅 조회</button>
       </div>
 
-      <!-- -- 신규 등록 탭 ---------------------------------------------------- -->
+      <!-- 신규 등록 탭 (BoFormArea 자동 렌더) -->
       <div v-show="tab==='new'">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">회원ID <span class="req">*</span></label>
+        <bo-form-area :columns="newFormColumns" :form="form" :errors="errors"
+          :readonly="false" :cols="2" :show-actions="false">
+
+          <!-- 회원ID + 보기 -->
+          <template #memberId>
             <div style="display:flex;gap:8px;align-items:center;">
               <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserChange" :class="errors.memberId ? 'is-invalid' : ''" />
               <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', form.memberId)">보기</span>
             </div>
-            <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
-          </div>
-          <div class="form-group">
-            <label class="form-label">회원명</label>
-            <input class="form-control" v-model="form.memberNm" placeholder="회원명" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">제목 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.subject" placeholder="채팅 제목" :class="errors.subject ? 'is-invalid' : ''" />
-          <span v-if="errors.subject" class="field-error">{{ errors.subject }}</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" style="max-width:200px;" v-model="form.chattStatusCd">
-            <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
+          </template>
+        </bo-form-area>
         <div class="form-actions" v-if="!cfDtlMode">
           <button class="btn btn-primary" @click="handleSave">등록</button>
           <button class="btn btn-secondary" @click="navigate('cmChattMng')">취소</button>

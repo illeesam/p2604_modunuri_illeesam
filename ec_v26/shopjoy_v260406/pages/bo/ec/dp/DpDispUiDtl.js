@@ -352,6 +352,22 @@ window.DpDispUiDtl = {
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - UI코드/UI명/UI유형 ============
+    const baseUiFormColumns = [
+      { key: 'codeValue', label: 'UI코드', type: 'text', required: true,
+        placeholder: 'FRONT_MAIN', mono: true,
+        onChange: (v, f) => { f.codeValue = (f.codeValue || '').toUpperCase(); } },
+      { key: 'codeLabel', label: 'UI명', type: 'text', required: true, placeholder: '프론트 메인' },
+      { key: 'uiType',    label: 'UI유형', type: 'select', nullable: false,
+        options: () => codes.disp_ui_types },
+    ];
+    // 정렬/사용여부/설명
+    const settingUiFormColumns = [
+      { key: 'sortOrd',  label: '정렬 순서', type: 'number' },
+      { key: 'useYn',    label: '사용 여부', type: 'select', options: () => codes.use_yn },
+      { key: 'remark',   label: '설명', type: 'text', placeholder: 'UI 설명', colSpan: 2 },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return { codes, displays, areas, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
@@ -362,6 +378,7 @@ window.DpDispUiDtl = {
       openUiPreview, openAreaPreview,
       cfVisibilityOptions, hasAreaVisibility, toggleAreaVisibility,
       uiDispEnvOptions, hasUiDispEnv, toggleUiDispEnv,
+      baseUiFormColumns, settingUiFormColumns,
     };
   },
   template: /* html */`
@@ -455,26 +472,9 @@ window.DpDispUiDtl = {
             <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
             설정
           </div>
-          <div class="form-row" style="margin-bottom:8px;">
-            <div class="form-group">
-              <label class="form-label">UI코드 <span style="color:#e57373;">*</span></label>
-              <input class="form-control" v-model="form.codeValue"
-                placeholder="FRONT_MAIN" style="text-transform:uppercase;font-family:monospace;"
-                :class="{'is-invalid': errors.codeValue}" />
-              <div v-if="errors.codeValue" class="field-error">{{ errors.codeValue }}</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">UI명 <span style="color:#e57373;">*</span></label>
-              <input class="form-control" v-model="form.codeLabel" placeholder="프론트 메인" :class="{'is-invalid': errors.codeLabel}" />
-              <div v-if="errors.codeLabel" class="field-error">{{ errors.codeLabel }}</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">UI유형</label>
-              <select class="form-control" v-model="form.uiType">
-                <option v-for="o in codes.disp_ui_types" :key="o?.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-              </select>
-            </div>
-          </div>
+          <!-- UI코드/UI명/UI유형 (BoFormArea 자동 렌더) -->
+          <bo-form-area :columns="baseUiFormColumns" :form="form" :errors="errors"
+            :readonly="false" :cols="3" :show-actions="false" />
           <div class="form-row" style="margin-bottom:8px;">
             <div class="form-group" style="grid-column:1 / -1;">
               <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">UI가 노출되는 경로 (예: FO.모바일메인)</span></label>
@@ -487,22 +487,9 @@ window.DpDispUiDtl = {
               </div>
             </div>
           </div>
-          <div class="form-row" style="margin-bottom:8px;">
-            <div class="form-group">
-              <label class="form-label">정렬 순서</label>
-              <input class="form-control" type="number" v-model.number="form.sortOrd" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">사용 여부</label>
-              <select class="form-control" v-model="form.useYn">
-                <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-              </select>
-            </div>
-            <div class="form-group" style="flex:2;">
-              <label class="form-label">설명</label>
-              <input class="form-control" v-model="form.remark" placeholder="UI 설명" />
-            </div>
-          </div>
+          <!-- 정렬순서/사용여부/설명 (BoFormArea 자동 렌더) -->
+          <bo-form-area :columns="settingUiFormColumns" :form="form" :errors="errors"
+            :readonly="false" :cols="4" :show-actions="false" />
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📅 사용기간</div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" />

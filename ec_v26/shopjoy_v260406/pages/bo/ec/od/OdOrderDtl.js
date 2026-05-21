@@ -383,7 +383,36 @@ window.OdOrderDtl = {
 
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_FALLBACK, fnPayStatusBadge, cfDtlMode, tabMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes, paymentGridColumns, editHistGridColumns, orderItemGridColumns, fnItemExpanded };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+    // pay_statuses 폴백 옵션 — sy_code 로딩 전엔 PAY_STATUS_FALLBACK 사용
+    const cfPayStatusOptions = computed(() => {
+      if (codes.pay_statuses && codes.pay_statuses.length) return codes.pay_statuses;
+      return PAY_STATUS_FALLBACK.map(v => ({ codeValue: v, codeLabel: v }));
+    });
+    const baseFormColumns = [
+      { key: 'orderId',      label: '주문ID', type: 'text', required: true,
+        placeholder: 'ORD-2026-XXX', readonly: !cfIsNew.value },
+      { key: 'memberId',     label: '회원ID', type: 'slot', name: 'memberId', required: true },
+      { type: 'rowBreak' },
+      { key: 'memberNm',     label: '회원명', type: 'text' },
+      { key: 'orderDate',    label: '주문일시', type: 'text', placeholder: '2026-04-08 10:00' },
+      { type: 'rowBreak' },
+      { key: 'prodNm',       label: '상품', type: 'text', placeholder: '상품명', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: '_vendor',      label: '판매업체', type: 'slot', name: 'vendor', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'totalAmt',     label: '결제금액', type: 'number' },
+      { key: 'payMethodCd',  label: '결제수단', type: 'select', options: () => codes.payment_methods },
+      { type: 'rowBreak' },
+      { key: 'payStatusCd',  label: '결제상태', type: 'select', options: () => cfPayStatusOptions.value },
+      { key: 'payDate',      label: '결제일시', type: 'text', placeholder: '2026-04-05 14:32' },
+      { type: 'rowBreak' },
+      { key: 'orderStatusCd', label: '상태', type: 'select', options: () => codes.order_statuses },
+      { type: 'rowBreak' },
+      { key: 'memo',         label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
+    ];
+
+    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_FALLBACK, fnPayStatusBadge, cfDtlMode, tabMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes, paymentGridColumns, editHistGridColumns, orderItemGridColumns, fnItemExpanded, baseFormColumns, showRefModal };
   },
   template: /* html */`
 <div>
@@ -524,92 +553,39 @@ window.OdOrderDtl = {
       </div>
     </div>
 
-    <!-- -- 기본정보 폼 ------------------------------------------------------- -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">주문ID <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="!isNew || cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
-        <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">회원ID <span v-if="!cfDtlMode" class="req">*</span></label>
+    <!-- 기본정보 폼 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2"
+      @save="handleSave"
+      @cancel="navigate('odOrderMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('odOrderMng')">
+
+      <!-- 회원ID + 보기 -->
+      <template #memberId>
         <div style="display:flex;gap:8px;align-items:center;">
           <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
           <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', form.memberId)">보기</span>
         </div>
         <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">회원명</label>
-        <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">주문일시</label>
-        <input class="form-control" v-model="form.orderDate" placeholder="2026-04-08 10:00" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">상품</label>
-      <input class="form-control" v-model="form.prodNm" placeholder="상품명" :readonly="cfDtlMode" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">판매업체</label>
-      <div v-if="cfRelatedVendor" style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:13px;font-weight:700;color:#222;">{{ cfRelatedVendor.vendorNm }}</span>
-        <span style="font-size:11px;color:#888;">| {{ cfRelatedVendor.ceo }} | {{ cfRelatedVendor.phone }}</span>
-        <span class="ref-link" @click="showRefModal('vendor', cfRelatedVendor.vendorId)">보기</span>
-      </div>
-      <div v-else style="font-size:12px;color:#bbb;">-</div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">결제금액</label>
-        <input class="form-control" type="number" v-model.number="form.totalAmt" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">결제수단</label>
-        <select class="form-control" v-model="form.payMethodCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.payment_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">결제상태</label>
-        <select class="form-control" v-model="form.payStatusCd" :disabled="cfDtlMode">
-          <option v-for="c in (codes.pay_statuses.length ? codes.pay_statuses : PAY_STATUS_FALLBACK.map(v=>({codeValue:v,codeLabel:v})))" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">결제일시</label>
-        <input class="form-control" v-model="form.payDate" :readonly="cfDtlMode" placeholder="2026-04-05 14:32" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.orderStatusCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">메모</label>
-      <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
-      <base-html-editor v-else v-model="form.memo" height="180px" />
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('odOrderMng')">닫기</button>
       </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('odOrderMng')">취소</button>
+
+      <!-- 판매업체 표시 -->
+      <template #vendor>
+        <div v-if="cfRelatedVendor" style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;font-weight:700;color:#222;">{{ cfRelatedVendor.vendorNm }}</span>
+          <span style="font-size:11px;color:#888;">| {{ cfRelatedVendor.ceo }} | {{ cfRelatedVendor.phone }}</span>
+          <span class="ref-link" @click="showRefModal('vendor', cfRelatedVendor.vendorId)">보기</span>
+        </div>
+        <div v-else style="font-size:12px;color:#bbb;">-</div>
       </template>
-    </div>
+
+      <!-- 메모: Quill 또는 view 모드 HTML -->
+      <template #memo>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.memo" height="180px" />
+      </template>
+    </bo-form-area>
 
   </div>
 

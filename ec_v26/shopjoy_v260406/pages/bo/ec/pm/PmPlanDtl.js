@@ -255,10 +255,28 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 (기획전 단순 필드만) ===
+    const infoFormColumns = [
+      { key: 'planNm',    label: '기획전명', type: 'text', required: true,
+        placeholder: '기획전명을 입력하세요', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'category',  label: '카테고리', type: 'select', required: true,
+        options: () => codes.plan_categories },
+      { key: 'theme',     label: '테마', type: 'text', placeholder: '예: 봄맞이, 세일' },
+      { type: 'rowBreak' },
+      { key: 'status',    label: '상태', type: 'select', options: () => codes.plan_statuses },
+      { key: '_visibility', label: '공개대상', type: 'slot', name: 'visibility' },
+      { type: 'rowBreak' },
+      { key: 'startDate', label: '시작일', type: 'date' },
+      { key: 'endDate',   label: '종료일', type: 'date' },
+      { type: 'rowBreak' },
+      { key: 'desc',      label: '간단설명', type: 'textarea', rows: 3, placeholder: '기획전 설명', colSpan: 2 },
+    ];
+
     return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch,
       cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, handleSave,
       VISIBILITY_OPTIONS, cfDtlMode, tabMode2, showTab, hasVisibility, toggleVisibility,
-      cfSelectedVendorNm, selectVendor, showProdPopup, showVendorModal,
+      cfSelectedVendorNm, selectVendor, showProdPopup, showVendorModal, infoFormColumns,
     };
   },
   template: /* html */`
@@ -300,55 +318,20 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     <!-- -- 기본정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <div class="form-group">
-        <label class="form-label">기획전명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.planNm" placeholder="기획전명을 입력하세요" :class="errors.planNm ? 'is-invalid' : ''" />
-        <span v-if="errors.planNm" class="field-error">{{ errors.planNm }}</span>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">카테고리 <span class="req">*</span></label>
-          <select class="form-control" v-model="form.category" :class="errors.category ? 'is-invalid' : ''">
-            <option v-for="c in codes.plan_categories" :key="c?.value" :value="c.value">{{ c.label }}</option>
-          </select>
-          <span v-if="errors.category" class="field-error">{{ errors.category }}</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">테마</label>
-          <input class="form-control" v-model="form.theme" placeholder="예: 봄맞이, 세일" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status">
-            <option v-for="s in codes.plan_statuses" :key="s?.value" :value="s.value">{{ s.label }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">공개대상</label>
+      <!-- 기본정보 폼 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+        :readonly="false" :cols="2" :show-actions="false">
+
+        <!-- 공개대상 체크박스 그리드 -->
+        <template #visibility>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:8px 0;">
             <label v-for="opt in VISIBILITY_OPTIONS" :key="opt?.value" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
               <input type="checkbox" :checked="hasVisibility(opt.value)" @change="toggleVisibility(opt.value)" />
               <span>{{ opt.label }}</span>
             </label>
           </div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">시작일</label>
-          <input class="form-control" type="date" v-model="form.startDate" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">종료일</label>
-          <input class="form-control" type="date" v-model="form.endDate" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">간단설명</label>
-        <textarea class="form-control" v-model="form.desc" placeholder="기획전 설명" style="min-height:60px;"></textarea>
-      </div>
+        </template>
+      </bo-form-area>
       <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <div class="form-group">
           <label class="form-label">판매업체</label>

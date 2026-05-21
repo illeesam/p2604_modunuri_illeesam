@@ -172,8 +172,27 @@ window.PmCacheDtl = {
       { key: 'cacheDesc',  label: '내용' },
     ];
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+    const baseFormColumns = [
+      { key: 'memberId',    label: '회원ID', type: 'slot', name: 'memberId', required: true },
+      { key: 'memberNm',    label: '회원명', type: 'readonly' },
+      { type: 'rowBreak' },
+      { key: 'cacheTypeCd', label: '유형', type: 'select', options: () => codes.cache_trans_types },
+      { key: 'cacheDate',   label: '일시', type: 'text', placeholder: '2026-04-08 10:00' },
+      { type: 'rowBreak' },
+      { key: 'cacheAmt',    label: '금액', type: 'number', required: true,
+        hint: '사용/소멸은 음수' },
+      { key: 'balanceAmt',  label: '처리 후 잔액', type: 'number' },
+      { type: 'rowBreak' },
+      { key: 'cacheDesc',   label: '내용', type: 'text', required: true,
+        placeholder: '내용 입력', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+    ];
+
     // ===== setup() return =================================================
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal, cacheHistGridColumns };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal, cacheHistGridColumns, baseFormColumns, showRefModal };
   },
   // ===== 템플릿 ===========================================================
   template: /* html */`
@@ -199,53 +218,22 @@ window.PmCacheDtl = {
     <!-- 탭 콘텐츠 컨테이너 (1/2/3/4열 그리드 자동 적용) -->
     <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
-    <!-- 기본정보 탭 -->
+    <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">회원ID <span v-if="!cfDtlMode" class="req">*</span></label>
+      <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+
+        <!-- 회원ID + 보기 -->
+        <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
             <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
             <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', Number(form.memberId))">보기</span>
           </div>
-          <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">회원명</label>
-          <div class="readonly-field">{{ form.memberNm || '-' }}</div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">유형</label>
-          <select class="form-control" v-model="form.cacheTypeCd" :disabled="cfDtlMode">
-            <option v-for="c in codes.cache_trans_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">일시</label>
-          <input class="form-control" v-model="form.cacheDate" placeholder="2026-04-08 10:00" :readonly="cfDtlMode" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">금액 <span v-if="!cfDtlMode" class="req">*</span> <span style="font-size:11px;color:#888;">(사용/소멸은 음수)</span></label>
-          <input class="form-control" type="number" v-model.number="form.cacheAmt" :readonly="cfDtlMode" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">처리 후 잔액</label>
-          <input class="form-control" type="number" v-model.number="form.balanceAmt" :readonly="cfDtlMode" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">내용 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.cacheDesc" placeholder="내용 입력" :readonly="cfDtlMode" :class="errors.cacheDesc ? 'is-invalid' : ''" />
-        <span v-if="errors.cacheDesc" class="field-error">{{ errors.cacheDesc }}</span>
-      </div>
-      <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
-        <div class="form-group">
-          <label class="form-label">판매업체</label>
+        </template>
+
+        <!-- 판매업체 picker -->
+        <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
               <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
@@ -253,12 +241,8 @@ window.PmCacheDtl = {
             </div>
             <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">판매담당자</label>
-          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="cfDtlMode" />
-        </div>
-      </div>
+        </template>
+      </bo-form-area>
 
       <!-- 판매업체 선택 모달 -->
       <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"

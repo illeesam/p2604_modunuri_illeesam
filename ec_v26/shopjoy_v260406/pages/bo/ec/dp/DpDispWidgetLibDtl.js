@@ -545,6 +545,15 @@ window.DpDispWidgetLibDtl = {
 
     // -- return ---------------------------------------------------------------
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - Lib코드/라이브러리명/상태 =====
+    const baseLibFormColumns = [
+      { key: 'libCode', label: 'Lib코드', type: 'text', required: true,
+        placeholder: '비워두면 자동 생성 (예: DL_260508_191415)', mono: true },
+      { key: 'name',    label: '라이브러리명', type: 'text', required: true,
+        placeholder: '위젯 Lib 이름' },
+      { key: 'status',  label: '상태', type: 'select', options: () => codes.active_statuses },
+    ];
+
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       uiState, libPickOpen, showComponentTooltip, jsonCopied,
@@ -555,6 +564,7 @@ window.DpDispWidgetLibDtl = {
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
       cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
+      baseLibFormColumns,
     };
   },
   template: /* html */`
@@ -589,24 +599,9 @@ window.DpDispWidgetLibDtl = {
           <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
           설정
         </div>
-        <div class="form-row" style="margin-bottom:8px;">
-          <div class="form-group">
-            <label class="form-label">Lib코드 <span style="color:#e8587a;">*</span></label>
-            <input v-model="form.libCode" class="form-control" :class="{'is-invalid':errors.libCode}" placeholder="비워두면 자동 생성 (예: DL_260508_191415)" style="margin:0;font-family:monospace;" />
-            <div v-if="errors.libCode" class="field-error">{{ errors.libCode }}</div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">라이브러리명 <span style="color:#e8587a;">*</span></label>
-            <input v-model="form.name" class="form-control" :class="{'is-invalid':errors.name}" placeholder="위젯 Lib 이름" style="margin:0;" />
-            <div v-if="errors.name" class="field-error">{{ errors.name }}</div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">상태</label>
-            <select v-model="form.status" class="form-control" style="margin:0;">
-              <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-            </select>
-          </div>
-        </div>
+        <!-- Lib코드/라이브러리명/상태 (BoFormArea 자동 렌더) -->
+        <bo-form-area :columns="baseLibFormColumns" :form="form" :errors="errors"
+          :readonly="false" :cols="3" :show-actions="false" />
         <div class="form-row" style="margin-bottom:8px;">
           <div class="form-group" style="grid-column:1/-1;">
             <label class="form-label">설명</label>

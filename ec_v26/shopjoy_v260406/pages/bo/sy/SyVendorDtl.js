@@ -129,99 +129,66 @@ window.SyVendorDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    const baseFormColumns = [
+      { key: 'siteNm',         label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'vendorType',     label: '업체유형', type: 'select', nullable: false, required: true,
+        options: () => codes.vendor_type_kr },
+      { key: 'vendorNm',       label: '업체명', type: 'text', required: true, placeholder: '업체명' },
+      { key: 'ceoNm',          label: '대표자명', type: 'text' },
+      { key: 'vendorNo',       label: '사업자등록번호', type: 'text', required: true, placeholder: '000-00-00000' },
+      { key: 'vendorPhone',    label: '전화번호', type: 'text' },
+      { key: 'vendorEmail',    label: '이메일', type: 'text' },
+      { type: 'rowBreak' },
+      { key: '_addr',          label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'contractDate',   label: '계약일', type: 'date' },
+      { key: 'vendorStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
+      { type: 'rowBreak' },
+      { key: 'vendorRemark',   label: '메모', type: 'slot', name: 'remark', colSpan: 2 },
+    ];
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, addrDetailRef, openKakaoPostcode };
+    // ===== setup() return ===================================================
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, addrDetailRef, openKakaoPostcode, baseFormColumns };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.vendorId }}</span></div>
+  <!-- 페이지 타이틀 + ID 표시 -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div class="page-title">{{ cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정') }}</div>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.vendorId }}</span>
+  </div>
+
+  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ cfSiteNm }}</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">업체유형 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <select class="form-control" v-model="form.vendorType" :disabled="cfDtlMode">
-          <option v-for="c in codes.vendor_type_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">업체명 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.vendorNm" placeholder="업체명" :readonly="cfDtlMode" :class="errors.vendorNm ? 'is-invalid' : ''" />
-        <span v-if="errors.vendorNm" class="field-error">{{ errors.vendorNm }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">대표자명</label>
-        <input class="form-control" v-model="form.ceoNm" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">사업자등록번호 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.vendorNo" placeholder="000-00-00000" :readonly="cfDtlMode" :class="errors.vendorNo ? 'is-invalid' : ''" />
-        <span v-if="errors.vendorNo" class="field-error">{{ errors.vendorNo }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">전화번호</label>
-        <input class="form-control" v-model="form.vendorPhone" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">이메일</label>
-        <input class="form-control" v-model="form.vendorEmail" :readonly="cfDtlMode" />
-      </div>
-    </div>
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2"
+      @save="handleSave"
+      @cancel="navigate('syVendorMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('syVendorMng')">
 
-    <!-- ── 주소 영역 ──────────────────────────────────────────────────────── -->
-    <div class="form-group">
-      <label class="form-label">주소</label>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-        <input class="form-control" v-model="form.vendorZipCode" placeholder="우편번호"
-          style="width:110px;flex-shrink:0;" readonly />
-        <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
-          style="white-space:nowrap;">🔍 주소 검색</button>
-      </div>
-      <input class="form-control" v-model="form.vendorAddr" placeholder="기본주소 (주소 검색 후 자동 입력)"
-        style="margin-bottom:6px;" readonly />
-      <input class="form-control" v-model="form.vendorAddrDetail" ref="addrDetailRef"
-        placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
-    </div>
+      <!-- 주소: 우편번호+검색버튼+기본주소+상세주소 -->
+      <template #addr>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+          <input class="form-control" v-model="form.vendorZipCode" placeholder="우편번호"
+            style="width:110px;flex-shrink:0;" readonly />
+          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
+            style="white-space:nowrap;">🔍 주소 검색</button>
+        </div>
+        <input class="form-control" v-model="form.vendorAddr" placeholder="기본주소 (주소 검색 후 자동 입력)"
+          style="margin-bottom:6px;" readonly />
+        <input class="form-control" v-model="form.vendorAddrDetail" ref="addrDetailRef"
+          placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
+      </template>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">계약일</label>
-        <input class="form-control" type="date" v-model="form.contractDate" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.vendorStatusCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">메모</label>
+      <!-- 메모: Quill 또는 view 모드 HTML -->
+      <template #remark>
         <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '<span style=color:#bbb>-</span>'"></div>
         <base-html-editor v-else v-model="form.vendorRemark" height="180px" />
-      </div>
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('syVendorMng')">닫기</button>
       </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('syVendorMng')">취소</button>
-      </template>
-    </div>
+    </bo-form-area>
   </div>
 </div>
 `

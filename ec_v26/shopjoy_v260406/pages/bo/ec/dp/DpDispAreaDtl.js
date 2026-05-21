@@ -404,6 +404,16 @@ window.DpDispAreaDtl = {
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 영역코드/영역명/영역유형 ======
+    const baseAreaFormColumns = [
+      { key: 'codeValue',  label: '영역코드', type: 'text', required: true,
+        placeholder: 'HOME_BANNER', mono: true,
+        onChange: (v, f) => { f.codeValue = (f.codeValue || '').toUpperCase(); } },
+      { key: 'codeLabel',  label: '영역명', type: 'text', required: true, placeholder: '홈 메인배너' },
+      { key: 'areaType',   label: '영역유형', type: 'select', nullable: false,
+        options: () => codes.disp_areas },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return { codes, areas, panels, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
@@ -418,6 +428,7 @@ window.DpDispAreaDtl = {
       pickOpen, showComponentTooltip,
       areaBaseDispEnvOptions, hasAreaBaseDispEnv, toggleAreaBaseDispEnv,
       hasAreaBaseVisibility, toggleAreaBaseVisibility,
+      baseAreaFormColumns,
     };
   },
   template: /* html */`
@@ -525,27 +536,9 @@ window.DpDispAreaDtl = {
             <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
             설정
           </div>
-          <div class="form-row" style="margin-bottom:8px;">
-            <div class="form-group">
-              <label class="form-label">영역코드 <span style="color:#e57373;">*</span></label>
-              <input class="form-control" v-model="form.codeValue"
-                placeholder="HOME_BANNER" style="text-transform:uppercase;font-family:monospace;"
-                :class="{'is-invalid': errors.codeValue}" />
-              <div v-if="errors.codeValue" class="field-error">{{ errors.codeValue }}</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">영역명 <span style="color:#e57373;">*</span></label>
-              <input class="form-control" v-model="form.codeLabel"
-                placeholder="홈 메인배너" :class="{'is-invalid': errors.codeLabel}" />
-              <div v-if="errors.codeLabel" class="field-error">{{ errors.codeLabel }}</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">영역유형</label>
-              <select class="form-control" v-model="form.areaType">
-                <option v-for="o in codes.disp_areas" :key="o?.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-              </select>
-            </div>
-          </div>
+          <!-- 영역코드/영역명/영역유형 (BoFormArea 자동 렌더) -->
+          <bo-form-area :columns="baseAreaFormColumns" :form="form" :errors="errors"
+            :readonly="false" :cols="3" :show-actions="false" />
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">🔲 위젯 레이아웃</div>
           <div class="form-row" style="align-items:flex-end;margin-bottom:8px;">
             <div class="form-group" style="flex:0 0 auto;">

@@ -133,110 +133,62 @@ window.SySiteDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    const baseFormColumns = [
+      { key: 'siteCode',       label: '사이트코드', type: 'text', required: true,
+        placeholder: 'ST0001', mono: true },
+      { key: 'siteTypeCd',     label: '사이트유형', type: 'select', nullable: false,
+        options: () => codes.site_types },
+      { key: 'siteNm',         label: '사이트명',   type: 'text', required: true, placeholder: 'ShopJoy' },
+      { key: 'siteDomain',     label: '도메인',     type: 'text', required: true, placeholder: 'shopjoy.com' },
+      { type: 'rowBreak' },
+      { key: 'siteDesc',       label: '사이트 설명', type: 'text', placeholder: '사이트 한줄 설명', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'siteEmail',      label: '대표이메일', type: 'text', placeholder: 'help@shopjoy.com' },
+      { key: 'sitePhone',      label: '대표전화',   type: 'text', placeholder: '02-1234-5678' },
+      { key: 'siteCeo',        label: '대표자명',   type: 'text' },
+      { key: 'siteBusinessNo', label: '사업자등록번호', type: 'text', placeholder: '000-00-00000' },
+      { type: 'rowBreak' },
+      { key: '_addr',          label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'logoUrl',        label: '로고 URL',   type: 'text', placeholder: '/assets/img/logo.png' },
+      { key: 'faviconUrl',     label: '파비콘 URL', type: 'text', placeholder: '/favicon.ico' },
+      { type: 'rowBreak' },
+      { key: 'siteStatusCd',   label: '운영상태',   type: 'select', options: () => codes.site_oper_statuses },
+    ];
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, addrDetailRef, openKakaoPostcode, cfDtlMode };
+    // ===== setup() return ===================================================
+    return { uiState, codes, cfIsNew, form, errors, handleSave, addrDetailRef, openKakaoPostcode, cfDtlMode, baseFormColumns };
   },
   template: /* html */`
 <div>
+  <!-- 페이지 타이틀 + ID 표시 -->
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
     <div class="page-title">{{ cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정') }}</div>
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.siteId }}</span>
   </div>
+
+  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트코드 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.siteCode" placeholder="ST0001" style="font-family:monospace;font-weight:600;" :readonly="cfDtlMode" :class="errors.siteCode ? 'is-invalid' : ''" />
-        <span v-if="errors.siteCode" class="field-error">{{ errors.siteCode }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">사이트유형</label>
-        <select class="form-control" v-model="form.siteTypeCd" :disabled="cfDtlMode">
-          <option v-for="t in codes.site_types" :key="t">{{ t }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.siteNm" placeholder="ShopJoy" :readonly="cfDtlMode" :class="errors.siteNm ? 'is-invalid' : ''" />
-        <span v-if="errors.siteNm" class="field-error">{{ errors.siteNm }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">도메인 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.siteDomain" placeholder="shopjoy.com" :readonly="cfDtlMode" :class="errors.siteDomain ? 'is-invalid' : ''" />
-        <span v-if="errors.siteDomain" class="field-error">{{ errors.siteDomain }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">사이트 설명</label>
-        <input class="form-control" v-model="form.siteDesc" placeholder="사이트 한줄 설명" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">대표이메일</label>
-        <input class="form-control" v-model="form.siteEmail" placeholder="help@shopjoy.com" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">대표전화</label>
-        <input class="form-control" v-model="form.sitePhone" placeholder="02-1234-5678" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">대표자명</label>
-        <input class="form-control" v-model="form.siteCeo" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">사업자등록번호</label>
-        <input class="form-control" v-model="form.siteBusinessNo" placeholder="000-00-00000" :readonly="cfDtlMode" />
-      </div>
-    </div>
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2"
+      @save="handleSave"
+      @cancel="navigate('sySiteMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('sySiteMng')">
 
-    <!-- ── 주소 영역 ──────────────────────────────────────────────────────── -->
-    <div class="form-group">
-      <label class="form-label">주소</label>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-        <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
-          style="width:110px;flex-shrink:0;" readonly />
-        <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
-          style="white-space:nowrap;">🔍 주소 검색</button>
-      </div>
-      <input class="form-control" v-model="form.siteAddress"
-        placeholder="기본주소 (주소 검색 후 자동 입력)" readonly />
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">로고 URL</label>
-        <input class="form-control" v-model="form.logoUrl" placeholder="/assets/img/logo.png" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">파비콘 URL</label>
-        <input class="form-control" v-model="form.faviconUrl" placeholder="/favicon.ico" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">운영상태</label>
-        <select class="form-control" v-model="form.siteStatusCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.site_oper_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('sySiteMng')">닫기</button>
+      <!-- 주소: 우편번호+검색버튼+기본주소 (카카오 우편번호 연동) -->
+      <template #addr>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+          <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
+            style="width:110px;flex-shrink:0;" readonly />
+          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
+            style="white-space:nowrap;">🔍 주소 검색</button>
+        </div>
+        <input class="form-control" v-model="form.siteAddress"
+          placeholder="기본주소 (주소 검색 후 자동 입력)" readonly />
       </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('sySiteMng')">취소</button>
-      </template>
-    </div>
+    </bo-form-area>
   </div>
 </div>
 `

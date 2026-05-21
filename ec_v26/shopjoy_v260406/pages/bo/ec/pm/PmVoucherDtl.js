@@ -280,7 +280,26 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, cfDtlMode, tabMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor, issueGridColumns, usageGridColumns };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    const infoFormColumns = [
+      { key: 'voucherNm',     label: '상품권명', type: 'text', required: true,
+        placeholder: '예: ShopJoy 10,000원 상품권' },
+      { key: 'voucherAmt',    label: '액면가 (원)', type: 'number', required: true, placeholder: '0' },
+      { key: 'salePrice',     label: '판매가 (원)', type: 'number', required: true, placeholder: '0' },
+      { key: 'issueQty',      label: '발행매수 (개)', type: 'number', required: true, placeholder: '0' },
+      { key: 'soldQty',       label: '판매매수 (개)', type: 'number', placeholder: '0' },
+      { key: 'voucherStatus', label: '상태', type: 'select', options: () => codes.promo_statuses },
+      { key: 'startDate',     label: '판매 시작일', type: 'date' },
+      { key: 'endDate',       label: '판매 종료일', type: 'date' },
+      { type: 'rowBreak' },
+      { key: 'remark',        label: '비고', type: 'textarea', rows: 4,
+        placeholder: '상품권 설명 또는 특이사항 입력', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'vendorId',      label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'chargeStaff',   label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+    ];
+
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, cfDtlMode, tabMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor, issueGridColumns, usageGridColumns, infoFormColumns };
   },
   template: /* html */`
 <div>
@@ -305,64 +324,14 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     </button>
   </div>
 
-  <!-- -- 기본정보 탭 --------------------------------------------------------- -->
+  <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
   <div v-if="showTab('info')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">기본정보</div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">상품권명 *</label>
-        <input v-model="form.voucherNm" class="form-control" placeholder="예: ShopJoy 10,000원 상품권" />
-        <span v-if="errors.voucherNm" class="field-error">{{ errors.voucherNm }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">액면가 (원) *</label>
-        <input v-model.number="form.voucherAmt" type="number" class="form-control" placeholder="0" />
-        <span v-if="errors.voucherAmt" class="field-error">{{ errors.voucherAmt }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">판매가 (원) *</label>
-        <input v-model.number="form.salePrice" type="number" class="form-control" placeholder="0" />
-        <span v-if="errors.salePrice" class="field-error">{{ errors.salePrice }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">발행매수 (개) *</label>
-        <input v-model.number="form.issueQty" type="number" class="form-control" placeholder="0" />
-        <span v-if="errors.issueQty" class="field-error">{{ errors.issueQty }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">판매매수 (개)</label>
-        <input v-model.number="form.soldQty" type="number" class="form-control" placeholder="0" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">상태</label>
-        <select v-model="form.voucherStatus" class="form-control">
-          <option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">판매 시작일</label>
-        <input v-model="form.startDate" type="date" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">판매 종료일</label>
-        <input v-model="form.endDate" type="date" class="form-control" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">비고</label>
-        <textarea v-model="form.remark" class="form-control" placeholder="상품권 설명 또는 특이사항 입력" style="height:80px;"></textarea>
-      </div>
-    </div>
-    <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
-      <div class="form-group">
-        <label class="form-label">판매업체</label>
+    <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+
+      <!-- 판매업체 picker -->
+      <template #vendor>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
             <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
@@ -370,14 +339,10 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
           </div>
           <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
         </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">판매담당자</label>
-        <input v-model="form.chargeStaff" class="form-control" placeholder="담당자명 입력" />
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
 
-    <!-- -- 판매업체 선택 모달 --------------------------------------------------- -->
+    <!-- 판매업체 선택 모달 -->
     <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
               body-pad="0" @close="showVendorModal=false">
       <div style="max-height:400px;overflow-y:auto;">

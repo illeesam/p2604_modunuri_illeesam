@@ -130,113 +130,51 @@ window.SyBbmDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    const baseFormColumns = [
+      { key: 'siteNm',        label: '사이트명',    type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
+      { type: 'rowBreak' },
+      { key: 'bbmCode',       label: '게시판코드',  type: 'text', required: true, mono: true, placeholder: 'BOARD_CODE' },
+      { key: 'bbmNm',         label: '게시판명',    type: 'text', required: true, placeholder: '게시판명' },
+      { key: 'bbmTypeCd',     label: '유형',        type: 'select', options: () => codes.bbm_types },
+      { key: 'allowComment',  label: '댓글허용',    type: 'select', options: () => codes.bbm_comment_types },
+      { key: 'allowAttach',   label: '첨부허용',    type: 'select', options: () => codes.bbm_attach_types },
+      { key: 'allowLike',     label: '좋아요허용',  type: 'select', options: () => codes.allow_yn_opts },
+      { key: 'contentTypeCd', label: '내용입력',    type: 'select', options: () => codes.bbm_content_types },
+      { key: 'scopeTypeCd',   label: '공개범위',    type: 'select', options: () => codes.bbm_scope_types },
+      { type: 'rowBreak' },
+      { key: 'pathId',        label: '표시경로',    type: 'pathPick', colSpan: 2,
+        pathLabel: (id) => pathLabel(id),
+        onOpen: () => openPathPick() },
+      { type: 'rowBreak' },
+      { key: 'sortOrd',       label: '정렬순서',    type: 'number', min: 1 },
+      { key: 'useYn',         label: '사용여부',    type: 'select', options: () => codes.use_yn },
+      { key: 'bbmRemark',     label: '비고',        type: 'text', placeholder: '비고' },
+    ];
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
+    // ===== setup() return ===================================================
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode,
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel, baseFormColumns };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbmId }}</span></div>
-  <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ cfSiteNm }}</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">게시판코드 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.bbmCode" placeholder="BOARD_CODE" style="font-family:monospace;" :readonly="cfDtlMode" :class="errors.bbmCode ? 'is-invalid' : ''" />
-        <span v-if="errors.bbmCode" class="field-error">{{ errors.bbmCode }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">게시판명 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.bbmNm" placeholder="게시판명" :readonly="cfDtlMode" :class="errors.bbmNm ? 'is-invalid' : ''" />
-        <span v-if="errors.bbmNm" class="field-error">{{ errors.bbmNm }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.bbmTypeCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.bbm_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">댓글허용</label>
-        <select class="form-control" v-model="form.allowComment" :disabled="cfDtlMode">
-          <option v-for="c in codes.bbm_comment_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">첨부허용</label>
-        <select class="form-control" v-model="form.allowAttach" :disabled="cfDtlMode">
-          <option v-for="c in codes.bbm_attach_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">좋아요허용</label>
-        <select class="form-control" v-model="form.allowLike" :disabled="cfDtlMode">
-          <option v-for="o in codes.allow_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">내용입력</label>
-        <select class="form-control" v-model="form.contentTypeCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.bbm_content_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">공개범위</label>
-        <select class="form-control" v-model="form.scopeTypeCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.bbm_scope_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:2">
-        <label class="form-label">표시경로</label>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:cfDtlMode?'#f9fafb':'#fff',color:form.pathId!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
-            {{ pathLabel(form.pathId) || '경로 선택...' }}
-          </div>
-          <button v-if="!cfDtlMode" type="button" class="btn btn-secondary btn-sm" @click="openPathPick">🔍 선택</button>
-          <button v-if="!cfDtlMode && form.pathId != null" type="button" class="btn btn-sm" @click="form.pathId=null" style="color:#999;">✕</button>
-        </div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">정렬순서</label>
-        <input class="form-control" type="number" v-model.number="form.sortOrd" min="1" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">사용여부</label>
-        <select class="form-control" v-model="form.useYn" :disabled="cfDtlMode">
-          <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">비고</label>
-        <input class="form-control" v-model="form.bbmRemark" placeholder="비고" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('syBbmMng')">닫기</button>
-      </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('syBbmMng')">취소</button>
-      </template>
-    </div>
+  <!-- 페이지 타이틀 + ID 표시 -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div class="page-title">{{ cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정') }}</div>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbmId }}</span>
   </div>
 
+  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
+  <div class="card">
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="3"
+      @save="handleSave"
+      @cancel="navigate('syBbmMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('syBbmMng')" />
+  </div>
+
+  <!-- 표시경로 선택 모달 -->
   <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
     :value="form.pathId"
     title="게시판 표시경로 선택"

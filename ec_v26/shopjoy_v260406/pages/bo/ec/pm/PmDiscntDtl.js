@@ -193,7 +193,19 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    const infoFormColumns = [
+      { key: 'discntNm',     label: '할인명', type: 'text', required: true,
+        placeholder: '할인명 입력', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'discntTypeCd', label: '할인유형', type: 'select', options: () => codes.discnt_types },
+      { key: 'discntValue',  label: '할인값', type: 'number', required: true },
+      { type: 'rowBreak' },
+      { key: 'vendorId',     label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'chargeStaff',  label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+    ];
+
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor, infoFormColumns };
   },
   template: /* html */`
 <div>
@@ -215,30 +227,14 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
-    <!-- -- 기본정보 --------------------------------------------------------- -->
+    <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <div class="form-group">
-        <label class="form-label">할인명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.discntNm" placeholder="할인명 입력" :class="errors.discntNm ? 'is-invalid' : ''" />
-        <span v-if="errors.discntNm" class="field-error">{{ errors.discntNm }}</span>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">할인유형</label>
-          <select class="form-control" v-model="form.discntTypeCd">
-            <option v-for="c in codes.discnt_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">할인값 <span class="req">*</span></label>
-          <input class="form-control" type="number" v-model.number="form.discntValue" :placeholder="form.discntTypeCd==='정률' ? '% 입력 (예: 10)' : '원 입력 (예: 5000)'" :class="errors.discntValue ? 'is-invalid' : ''" />
-          <span v-if="errors.discntValue" class="field-error">{{ errors.discntValue }}</span>
-        </div>
-      </div>
-      <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
-        <div class="form-group">
-          <label class="form-label">판매업체</label>
+      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+
+        <!-- 판매업체 picker -->
+        <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
               <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
@@ -246,14 +242,10 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
             </div>
             <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">판매담당자</label>
-          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" />
-        </div>
-      </div>
+        </template>
+      </bo-form-area>
 
-      <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
+      <!-- 판매업체 선택 모달 -->
       <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
                 body-pad="0" @close="showVendorModal=false">
         <div style="max-height:400px;overflow-y:auto;">

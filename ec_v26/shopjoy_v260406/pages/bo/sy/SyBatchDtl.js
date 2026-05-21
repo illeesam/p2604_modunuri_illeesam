@@ -116,74 +116,55 @@ window.SyBatchDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    const baseFormColumns = [
+      { key: 'siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'batchNm',       label: '배치명', type: 'text', required: true, placeholder: '배치 이름' },
+      { key: 'batchCode',     label: '배치코드', type: 'text', required: true,
+        placeholder: 'ORDER_AUTO_COMPLETE', mono: true },
+      { type: 'rowBreak' },
+      { key: 'batchDesc',     label: '설명', type: 'text', placeholder: '배치 처리 내용 설명', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'cronExpr',      label: 'Cron 표현식', type: 'text', required: true,
+        placeholder: '0 0 * * *', mono: true, hint: '분 시 일 월 요일', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: '_cronPreset',   label: 'Cron 프리셋', type: 'slot', name: 'cronPreset',
+        colSpan: 2, visible: () => !cfDtlMode.value },
+      { type: 'rowBreak' },
+      { key: 'batchStatusCd', label: '활성여부', type: 'select', options: () => codes.active_statuses },
+    ];
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm, cfDtlMode };
+    // ===== setup() return ===================================================
+    return { uiState, codes, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm, cfDtlMode, baseFormColumns };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '배치 등록' : (cfDtlMode ? '배치 상세' : '배치 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.batchId }}</span></div>
+  <!-- 페이지 타이틀 + ID 표시 -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div class="page-title">{{ cfIsNew ? '배치 등록' : (cfDtlMode ? '배치 상세' : '배치 수정') }}</div>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.batchId }}</span>
+  </div>
+
+  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ cfSiteNm }}</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">배치명 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.batchNm" placeholder="배치 이름" :readonly="cfDtlMode" :class="errors.batchNm ? 'is-invalid' : ''" />
-        <span v-if="errors.batchNm" class="field-error">{{ errors.batchNm }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">배치코드 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.batchCode" placeholder="ORDER_AUTO_COMPLETE" style="text-transform:uppercase;" :readonly="cfDtlMode" :class="errors.batchCode ? 'is-invalid' : ''" />
-        <span v-if="errors.batchCode" class="field-error">{{ errors.batchCode }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">설명</label>
-        <input class="form-control" v-model="form.batchDesc" placeholder="배치 처리 내용 설명" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">Cron 표현식 <span v-if="!cfDtlMode" class="req">*</span>
-          <span style="font-size:11px;color:#888;margin-left:8px;">분 시 일 월 요일</span>
-        </label>
-        <input class="form-control" v-model="form.cronExpr" placeholder="0 0 * * *" :readonly="cfDtlMode" :class="errors.cronExpr ? 'is-invalid' : ''" />
-        <span v-if="errors.cronExpr" class="field-error">{{ errors.cronExpr }}</span>
-      </div>
-    </div>
-    <div v-if="!cfDtlMode" style="margin-bottom:16px;padding:10px 12px;background:#f8f9fa;border-radius:6px;">
-      <div style="font-size:12px;color:#666;margin-bottom:8px;font-weight:600;">Cron 프리셋</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;">
-        <button v-for="p in CRON_PRESETS" :key="p.value"
-          class="btn btn-secondary btn-sm"
-          style="font-size:11px;"
-          @click="form.cronExpr = p.value">{{ p.label }}</button>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">활성여부</label>
-        <select class="form-control" v-model="form.batchStatusCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('syBatchMng')">닫기</button>
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2"
+      @save="handleSave"
+      @cancel="navigate('syBatchMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('syBatchMng')">
+      <template #cronPreset>
+        <div style="padding:10px 12px;background:#f8f9fa;border-radius:6px;">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <button v-for="p in CRON_PRESETS" :key="p.value"
+              class="btn btn-secondary btn-sm"
+              style="font-size:11px;"
+              @click="form.cronExpr = p.value">{{ p.label }}</button>
+          </div>
+        </div>
       </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('syBatchMng')">취소</button>
-      </template>
-    </div>
+    </bo-form-area>
   </div>
 </div>
 `

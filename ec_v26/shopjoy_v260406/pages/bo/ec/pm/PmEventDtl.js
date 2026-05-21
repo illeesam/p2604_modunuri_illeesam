@@ -256,7 +256,21 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productGridColumns, showRefModal };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 (이벤트 제목/기간/상태) ==
+    const infoFormColumns = [
+      { key: 'eventTitle',   label: '이벤트 제목', type: 'text', required: true,
+        placeholder: '이벤트 제목을 입력하세요', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'startDate',    label: '시작일', type: 'date' },
+      { key: 'endDate',      label: '종료일', type: 'date' },
+      { type: 'rowBreak' },
+      { key: 'eventStatusCd', label: '상태', type: 'select', options: () => codes.event_statuses },
+      { key: 'authRequired', label: '로그인 인증 필요', type: 'checkbox',
+        checkboxLabel: '로그인 인증 필요', hideLabel: true,
+        checkedValue: true, uncheckedValue: false },
+    ];
+
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productGridColumns, showRefModal, infoFormColumns };
   },
   template: /* html */`
 <div>
@@ -303,35 +317,9 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     <!-- -- 기본정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <div class="form-group">
-        <label class="form-label">이벤트 제목 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.eventTitle" placeholder="이벤트 제목을 입력하세요" :readonly="cfDtlMode" :class="errors.eventTitle ? 'is-invalid' : ''" />
-        <span v-if="errors.eventTitle" class="field-error">{{ errors.eventTitle }}</span>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">시작일</label>
-          <input class="form-control" type="date" v-model="form.startDate" :readonly="cfDtlMode" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">종료일</label>
-          <input class="form-control" type="date" v-model="form.endDate" :readonly="cfDtlMode" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.eventStatusCd" :disabled="cfDtlMode">
-            <option v-for="c in codes.event_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div class="form-group" style="display:flex;align-items:flex-end;">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-            <input type="checkbox" v-model="form.authRequired" />
-            <span style="font-size:13px;font-weight:500;">로그인 인증 필요</span>
-          </label>
-        </div>
-      </div>
+      <!-- 이벤트 제목/기간/상태 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
       <div v-if="form.authRequired" style="padding:10px 14px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;font-size:12px;color:#d46b08;">
         ⚠️ 인증 필요 설정 시, 이벤트 내용 3~5는 로그인 회원에게만 표시됩니다.
       </div>

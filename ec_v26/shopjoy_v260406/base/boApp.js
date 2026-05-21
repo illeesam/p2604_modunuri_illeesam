@@ -3088,6 +3088,7 @@
     .component('BoMultiCheckSelect', window.BoMultiCheckSelect)
     .component('BoDateTimePicker', window.BoDateTimePicker)
     .component('BoSearchArea', window.BoSearchArea)
+    .component('BoFormArea', window.BoFormArea)
     .component('BoGrid', window.BoGrid)
     .component('BoGridReadonly', window.BoGridReadonly)
     .component('BoGridEdit', window.BoGridEdit)

@@ -121,60 +121,46 @@ window.PdCategoryDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // -- return ---------------------------------------------------------------
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    // 상위카테고리 옵션: depth indent 적용 + (최상위) null 옵션
+    const cfParentSelectOptions = computed(() => {
+      const list = cfParentOptions.value.map(c => ({
+        value: c.categoryId,
+        label: '　'.repeat((c.categoryDepth || 1) - 1) + c.categoryNm + ' (depth ' + c.categoryDepth + ')',
+      }));
+      return [{ value: null, label: '없음 (최상위)' }, ...list];
+    });
 
-    return { cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange, codes, cfDtlMode };
+    const baseFormColumns = [
+      { key: 'parentCategoryId', label: '상위카테고리', type: 'select', nullable: false,
+        options: () => cfParentSelectOptions.value, onChange: () => onParentChange() },
+      { key: 'categoryNm',       label: '카테고리명', type: 'text', required: true, placeholder: '카테고리명' },
+      { type: 'rowBreak' },
+      { key: 'categoryDepth',    label: 'depth (자동산정)', type: 'number', min: 1, readonly: true },
+      { key: 'sortOrd',          label: '정렬순서', type: 'number', min: 1 },
+      { type: 'rowBreak' },
+      { key: 'categoryStatusCd', label: '상태', type: 'select', options: () => codes.category_statuses },
+      { key: 'imgUrl',           label: '아이콘/이미지 URL', type: 'text', placeholder: '/assets/icons/category.png' },
+      { type: 'rowBreak' },
+      { key: 'categoryDesc',     label: '설명', type: 'text', colSpan: 2 },
+    ];
+
+    // ===== setup() return ===================================================
+    return { cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange, codes, cfDtlMode, baseFormColumns };
   },
   template: /* html */`
 <div>
+  <!-- 페이지 타이틀 + ID 표시 -->
   <div class="page-title">{{ cfIsNew ? '카테고리 등록' : '카테고리 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.categoryId }}</span></div>
+
+  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">상위카테고리</label>
-        <select class="form-control" v-model="form.parentCategoryId" @change="onParentChange">
-          <option :value="null">없음 (최상위)</option>
-          <option v-for="c in cfParentOptions" :key="c?.categoryId" :value="c.categoryId">{{ '　'.repeat((c.categoryDepth||1)-1) }}{{ c.categoryNm }} (depth {{ c.categoryDepth }})</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">카테고리명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.categoryNm" placeholder="카테고리명" :class="errors.categoryNm ? 'is-invalid' : ''" />
-        <span v-if="errors.categoryNm" class="field-error">{{ errors.categoryNm }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">depth (자동산정)</label>
-        <input class="form-control" type="number" v-model.number="form.categoryDepth" min="1" readonly style="background:#f5f5f5;" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">정렬순서</label>
-        <input class="form-control" type="number" v-model.number="form.sortOrd" min="1" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.categoryStatusCd">
-          <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">아이콘/이미지 URL</label>
-        <input class="form-control" v-model="form.imgUrl" placeholder="/assets/icons/category.png" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">설명</label>
-        <input class="form-control" v-model="form.categoryDesc" />
-      </div>
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('pdCategoryMng')">취소</button>
-    </div>
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2"
+      @save="handleSave"
+      @cancel="navigate('pdCategoryMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('pdCategoryMng')" />
   </div>
 </div>
 `

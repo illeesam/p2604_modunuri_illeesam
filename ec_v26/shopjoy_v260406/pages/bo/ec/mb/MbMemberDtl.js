@@ -42,12 +42,26 @@ window.MbMemberDtl = {
       } catch (err) { console.error('[MbMemberDtl reloadTrigger]', err); }
     });
 
-    return { currentId, codes };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    const baseFormColumns = [
+      { key: 'loginId',        label: '이메일',    type: 'text', required: true, placeholder: '이메일 주소' },
+      { key: 'memberNm',       label: '이름',      type: 'text', required: true, placeholder: '이름' },
+      { key: 'memberPhone',    label: '연락처',    type: 'text', placeholder: '010-0000-0000' },
+      { key: 'gradeCd',        label: '등급',      type: 'select', options: () => codes.member_grades },
+      { key: 'memberStatusCd', label: '상태',      type: 'select', options: () => codes.member_statuses },
+      { key: 'joinDate',       label: '가입일',    type: 'date' },
+      { type: 'rowBreak' },
+      { key: 'memberMemo',     label: '메모',      type: 'textarea', rows: 6,
+        placeholder: '관리자 메모', colSpan: 2 },
+    ];
+
+    return { currentId, codes, baseFormColumns };
   },
   template: /* html */`
 <div v-if="detailModal.show">
-  <!-- -- 상세/수정 카드 ----------------------------------------------------- -->
+  <!-- 상세/수정 카드 -->
   <div class="card">
+    <!-- 상세 툴바: 제목 + 저장/삭제/닫기 -->
     <div class="toolbar">
       <span class="list-title">{{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}</span>
       <div style="margin-left:auto;display:flex;gap:6px;">
@@ -56,26 +70,14 @@ window.MbMemberDtl = {
         <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
-      <div class="form-group"><label class="form-label">이메일 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.loginId" placeholder="이메일 주소"></div>
-      <div class="form-group"><label class="form-label">이름 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.memberNm" placeholder="이름"></div>
-      <div class="form-group"><label class="form-label">연락처</label><input class="form-control" v-model="detailModal.form.memberPhone" placeholder="010-0000-0000"></div>
-      <div class="form-group"><label class="form-label">등급</label>
-        <select class="form-control" v-model="detailModal.form.gradeCd">
-          <option v-for="c in codes.member_grades" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group"><label class="form-label">상태</label>
-        <select class="form-control" v-model="detailModal.form.memberStatusCd">
-          <option v-for="c in codes.member_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group"><label class="form-label">가입일</label><input class="form-control" type="date" v-model="detailModal.form.joinDate"></div>
-      <div class="form-group" style="grid-column:1/-1"><label class="form-label">메모</label><textarea class="form-control" rows="6" v-model="detailModal.form.memberMemo" placeholder="관리자 메모"></textarea></div>
+    <!-- 폼 영역 (BoFormArea 자동 렌더) - 상단 툴바 버튼 사용으로 :show-actions=false -->
+    <div style="padding:12px;">
+      <bo-form-area :columns="baseFormColumns" :form="detailModal.form" :errors="{}"
+        :readonly="false" :cols="2" :show-actions="false" />
     </div>
   </div>
 
-  <!-- -- 이력정보 카드 ------------------------------------------------------- -->
+  <!-- 이력정보 카드 -->
   <div v-if="!detailModal.isNew" class="card">
     <mb-member-hist :member-id="currentId" :key="currentId" />
   </div>

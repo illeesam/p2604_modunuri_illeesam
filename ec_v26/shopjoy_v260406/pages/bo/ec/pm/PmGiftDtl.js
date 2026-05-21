@@ -209,7 +209,29 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfIsView, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, cfSelectedVendorNm, selectVendor };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    const infoFormColumns = [
+      { key: 'giftNm',       label: '사은품명', type: 'text', required: true,
+        placeholder: '사은품명 입력', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'giftTypeCd',   label: '조건유형', type: 'select', options: () => codes.gift_cond_types },
+      { key: 'condVal',      label: '조건값', type: 'number', placeholder: '0',
+        visible: (f) => f.giftTypeCd !== '무조건',
+        hint: '조건유형에 따라 단위(수량/금액) 입력' },
+      { type: 'rowBreak' },
+      { key: 'giftStock',    label: '재고', type: 'number', required: true, placeholder: '0' },
+      { key: 'giftStatusCd', label: '상태', type: 'select', options: () => codes.gift_statuses },
+      { type: 'rowBreak' },
+      { key: 'startDate',    label: '시작일', type: 'date' },
+      { key: 'endDate',      label: '종료일', type: 'date' },
+      { type: 'rowBreak' },
+      { key: 'giftDesc',     label: '비고', type: 'textarea', rows: 2, placeholder: '비고 입력', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'vendorId',     label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'chargeStaff',  label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+    ];
+
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfIsView, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, cfSelectedVendorNm, selectVendor, infoFormColumns };
   },
   template: /* html */`
 <div>
@@ -230,56 +252,14 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
-    <!-- -- 기본정보 --------------------------------------------------------- -->
+    <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <div class="form-group">
-        <label class="form-label">사은품명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.giftNm" placeholder="사은품명 입력" :class="errors.giftNm ? 'is-invalid' : ''" />
-        <span v-if="errors.giftNm" class="field-error">{{ errors.giftNm }}</span>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">조건유형</label>
-          <select class="form-control" v-model="form.giftTypeCd">
-            <option v-for="c in codes.gift_cond_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div class="form-group" v-if="form.giftTypeCd !== '무조건'">
-          <label class="form-label">{{ cfCondValLabel }}</label>
-          <input class="form-control" type="number" v-model.number="form.condVal" placeholder="0" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">재고 <span class="req">*</span></label>
-          <input class="form-control" type="number" v-model.number="form.giftStock" placeholder="0" :class="errors.giftStock ? 'is-invalid' : ''" />
-          <span v-if="errors.giftStock" class="field-error">{{ errors.giftStock }}</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.giftStatusCd">
-            <option v-for="c in codes.gift_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">시작일</label>
-          <input class="form-control" type="date" v-model="form.startDate" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">종료일</label>
-          <input class="form-control" type="date" v-model="form.endDate" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">비고</label>
-        <textarea class="form-control" v-model="form.giftDesc" rows="2" placeholder="비고 입력"></textarea>
-      </div>
-      <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
-        <div class="form-group">
-          <label class="form-label">판매업체</label>
+      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+        :readonly="cfIsView" :cols="2" :show-actions="false">
+
+        <!-- 판매업체 picker -->
+        <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
               <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
@@ -287,14 +267,10 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
             </div>
             <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">판매담당자</label>
-          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="cfIsView" />
-        </div>
-      </div>
+        </template>
+      </bo-form-area>
 
-      <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
+      <!-- 판매업체 선택 모달 -->
       <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
                 body-pad="0" @close="showVendorModal=false">
         <div style="max-height:400px;overflow-y:auto;">

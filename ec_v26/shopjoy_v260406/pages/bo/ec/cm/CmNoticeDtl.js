@@ -104,82 +104,64 @@ window.CmNoticeDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // -- return ---------------------------------------------------------------
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    const baseFormColumns = [
+      { key: 'noticeTitle',    label: '제목', type: 'text', required: true, placeholder: '공지 제목', colSpan: 2 },
+      { key: 'noticeTypeCd',   label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '선택' },
+      { key: 'noticeStatusCd', label: '상태', type: 'select', options: () => codes.noticeStatuses, nullLabel: '선택' },
+      { type: 'rowBreak' },
+      { key: 'startDate',      label: '시작일', type: 'date' },
+      { key: 'endDate',        label: '종료일', type: 'date' },
+      { key: 'isFixed',        label: '상단고정', type: 'checkbox',
+        checkboxLabel: '상단고정', hideLabel: true,
+        checkedValue: 'Y', uncheckedValue: 'N' },
+      { type: 'rowBreak' },
+      { key: 'contentHtml',    label: '내용', type: 'slot', name: 'contentHtml', colSpan: 4 },
+      { type: 'rowBreak' },
+      { key: 'attachGrpId',    label: '첨부파일', type: 'slot', name: 'attachGrp', colSpan: 4 },
+    ];
 
+    // ===== setup() return ===================================================
     const dtlId = Vue.computed(() => props.dtlId);
-    return { cfIsNew, dtlId, form, errors, handleSave, codes, navigate: props.navigate, cfDtlMode };
+    return { cfIsNew, dtlId, form, errors, handleSave, codes, navigate: props.navigate, cfDtlMode, baseFormColumns, showToast };
   },
   template: /* html */`
 <div>
+  <!-- 페이지 타이틀 + ID 표시 -->
   <div class="page-title">{{ cfIsNew ? '공지사항 등록' : (cfDtlMode ? '공지사항 상세' : '공지사항 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.noticeId }}</span></div>
+
+  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
-    <div class="form-row">
-      <div class="form-group" style="flex:2">
-        <label class="form-label">제목 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.noticeTitle" placeholder="공지 제목" :readonly="cfDtlMode" :class="errors.noticeTitle ? 'is-invalid' : ''" />
-        <span v-if="errors.noticeTitle" class="field-error">{{ errors.noticeTitle }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.noticeTypeCd" :disabled="cfDtlMode">
-          <option value="">선택</option>
-          <option v-for="c in codes.noticeTypes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.noticeStatusCd" :disabled="cfDtlMode">
-          <option value="">선택</option>
-          <option v-for="c in codes.noticeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">시작일</label>
-        <input class="form-control" type="date" v-model="form.startDate" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">종료일</label>
-        <input class="form-control" type="date" v-model="form.endDate" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group" style="display:flex;align-items:flex-end;gap:8px;">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:4px;">
-          <input type="checkbox" :checked="form.isFixed === 'Y'" @change="form.isFixed = $event.target.checked ? 'Y' : 'N'" :disabled="cfDtlMode" /> <span class="form-label" style="margin:0;">상단고정</span>
-        </label>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">내용</label>
-      <div v-if="cfDtlMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
-      <base-html-editor v-else v-model="form.contentHtml" height="280px" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">첨부파일
-        <span style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">#NOTICE_ATTACH</span>
-        <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:4px;">#{{ form.attachGrpId }}</span>
-      </label>
-      <base-attach-grp
-        :model-value="form.attachGrpId"
-        @update:model-value="form.attachGrpId = $event" :ref-id="dtlId ? 'NOTICE-'+dtlId : ''"
-        :show-toast="showToast"
-        grp-code="NOTICE_ATTACH"
-        grp-name="공지 첨부파일"
-        :max-count="5"
-        :max-size-mb="10"
-        allow-ext="jpg,png,gif,pdf,xlsx,docx"
-      />
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('cmNoticeMng')">닫기</button>
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="4"
+      @save="handleSave"
+      @cancel="navigate('cmNoticeMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('cmNoticeMng')">
+
+      <!-- 내용 (Quill 또는 view 모드 HTML) -->
+      <template #contentHtml>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.contentHtml" height="280px" />
       </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('cmNoticeMng')">취소</button>
+
+      <!-- 첨부파일 -->
+      <template #attachGrp>
+        <div style="font-size:11px;font-weight:400;color:#aaa;margin-bottom:4px;">
+          #NOTICE_ATTACH<span v-if="form.attachGrpId" style="margin-left:4px;">#{{ form.attachGrpId }}</span>
+        </div>
+        <base-attach-grp
+          :model-value="form.attachGrpId"
+          @update:model-value="form.attachGrpId = $event" :ref-id="dtlId ? 'NOTICE-'+dtlId : ''"
+          :show-toast="showToast"
+          grp-code="NOTICE_ATTACH"
+          grp-name="공지 첨부파일"
+          :max-count="5"
+          :max-size-mb="10"
+          allow-ext="jpg,png,gif,pdf,xlsx,docx"
+        />
       </template>
-    </div>
+    </bo-form-area>
   </div>
 </div>
 `

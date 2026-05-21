@@ -308,10 +308,34 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    const infoFormColumns = [
+      { key: 'couponTypeCd',   label: '쿠폰 타입', type: 'select', nullable: false,
+        options: () => codes.coupon_types },
+      { key: 'couponNm',       label: '쿠폰명', type: 'text', required: true, placeholder: '쿠폰명 입력' },
+      { key: 'couponCd',       label: '쿠폰코드', type: 'text', required: true,
+        placeholder: '코드 자동생성/직접입력', mono: true },
+      { key: 'couponStatusCd', label: '상태', type: 'select', options: () => codes.coupon_statuses_dtl },
+      { key: 'discountType',   label: '할인 유형', type: 'select', options: () => codes.discount_types },
+      { key: 'discountVal',    label: '할인값', type: 'number', required: true },
+      { key: 'minOrderAmt',    label: '최소주문금액 (원)', type: 'number', placeholder: '0' },
+      { key: 'maxDiscountAmt', label: '최대할인금액 (원)', type: 'number', placeholder: '0 = 무제한' },
+      { key: 'validFrom',      label: '시작일', type: 'date' },
+      { key: 'validTo',        label: '만료일', type: 'date', required: true },
+      { key: 'issueLimit',     label: '총 발급수량', type: 'number', placeholder: '0 = 무제한' },
+      { key: 'useLimit',       label: '사용 제한', type: 'select', nullable: false,
+        options: () => codes.coupon_use_limit_opts },
+      { type: 'rowBreak' },
+      { key: 'memo',           label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'vendorId',       label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'chargeStaff',    label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+    ];
+
     return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, tabMode2, handleSave, onTabChange,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       cfSelectedVendorNm, selectVendor, vendors, showVendorModal,
-      issuedGridColumns, usedGridColumns, cfIssuedTop, cfUsedTop,
+      issuedGridColumns, usedGridColumns, cfIssuedTop, cfUsedTop, infoFormColumns,
     };
   },
   template: /* html */`
@@ -335,88 +359,19 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
-    <!-- -- 기본정보 --------------------------------------------------------- -->
+    <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">쿠폰 타입</label>
-          <select class="form-control" v-model="form.couponTypeCd">
-            <option v-for="t in codes.coupon_types" :key="Math.random()">{{ t }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">쿠폰명 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.couponNm" placeholder="쿠폰명 입력" :class="errors.couponNm ? 'is-invalid' : ''" />
-          <span v-if="errors.couponNm" class="field-error">{{ errors.couponNm }}</span>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">쿠폰코드 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.couponCd" placeholder="코드 자동생성/직접입력" :class="errors.couponCd ? 'is-invalid' : ''" />
-          <span v-if="errors.couponCd" class="field-error">{{ errors.couponCd }}</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.couponStatusCd">
-            <option v-for="c in codes.coupon_statuses_dtl" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">할인 유형</label>
-          <select class="form-control" v-model="form.discountType">
-            <option v-for="o in codes.discount_types" :key="o?.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">할인값 <span class="req">*</span></label>
-          <input class="form-control" type="number" v-model.number="form.discountVal" :placeholder="form.discountType==='percent' ? '% 입력' : '원 입력'" :class="errors.discountVal ? 'is-invalid' : ''" />
-          <span v-if="errors.discountVal" class="field-error">{{ errors.discountVal }}</span>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">최소주문금액 (원)</label>
-          <input class="form-control" type="number" v-model.number="form.minOrderAmt" placeholder="0" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">최대할인금액 (원)</label>
-          <input class="form-control" type="number" v-model.number="form.maxDiscountAmt" placeholder="0 = 무제한" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">시작일</label>
-          <input class="form-control" type="date" v-model="form.validFrom" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">만료일 <span class="req">*</span></label>
-          <input class="form-control" type="date" v-model="form.validTo" :class="errors.validTo ? 'is-invalid' : ''" />
-          <span v-if="errors.validTo" class="field-error">{{ errors.validTo }}</span>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">총 발급수량</label>
-          <input class="form-control" type="number" v-model.number="form.issueLimit" placeholder="0 = 무제한" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">사용 제한</label>
-          <select class="form-control" v-model="form.useLimit">
-            <option v-for="o in codes.coupon_use_limit_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-top:16px;">
-        <label class="form-label">메모</label>
-        <base-html-editor v-model="form.memo" height="200px" />
-      </div>
-      <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
-        <div class="form-group">
-          <label class="form-label">판매업체</label>
+      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+        :readonly="false" :cols="2" :show-actions="false">
+
+        <!-- 메모: Quill 에디터 -->
+        <template #memo>
+          <base-html-editor v-model="form.memo" height="200px" />
+        </template>
+
+        <!-- 판매업체 picker -->
+        <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
               <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
@@ -424,14 +379,10 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
             </div>
             <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">판매담당자</label>
-          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" />
-        </div>
-      </div>
+        </template>
+      </bo-form-area>
 
-      <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
+      <!-- 판매업체 선택 모달 -->
       <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
                 body-pad="0" @close="showVendorModal=false">
         <div style="max-height:400px;overflow-y:auto;">

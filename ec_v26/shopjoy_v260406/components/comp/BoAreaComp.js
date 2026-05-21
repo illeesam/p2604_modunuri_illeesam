@@ -237,10 +237,14 @@ window._boAreaCompUtil = {
   normOptions(opts) {
     // 함수형 options 지원 (codes 지연 로드 대응) — 호출해 배열 획득
     const arr = (typeof opts === 'function') ? opts() : opts;
-    return (arr || []).map(o => ({
-      value: o.value != null ? o.value : o.codeValue,
-      label: o.label != null ? o.label : o.codeLabel,
-    }));
+    return (arr || []).map(o => {
+      // 문자열 배열도 지원 — ['A','B'] → [{value:'A',label:'A'}, ...]
+      if (typeof o === 'string' || typeof o === 'number') return { value: o, label: String(o) };
+      return {
+        value: o.value != null ? o.value : o.codeValue,
+        label: o.label != null ? o.label : o.codeLabel,
+      };
+    });
   },
   /* 셀 표시값 */
   cellText(col, row) {
@@ -1301,4 +1305,163 @@ window.BoRowCancelDelete = {
   <button v-if="cfShowCancel" class="btn btn-secondary btn-xs" @click.stop="onCancel">{{ cancelLabel }}</button>
   <button v-if="cfShowDelete" class="btn btn-danger btn-xs" @click.stop="onDelete">{{ deleteLabel }}</button>
 </span>`,
+};
+
+/* ── BoFormArea ────────────────────────────────────────────────────────────
+ * 상세/등록 폼을 columns 정의로 자동 렌더 (BoSearchArea / BoGrid 의 폼 버전).
+ *
+ *   <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+ *     :readonly="cfDtlMode" :cols="3"
+ *     @save="handleSave" @cancel="navigate('xxx')" />
+ *
+ * column 타입:
+ *   - 'text' | 'number' | 'date' | 'textarea' | 'password'
+ *   - 'select'   : options (배열|함수, sy_code|{value,label}|{codeValue,codeLabel} 호환)
+ *   - 'readonly' : 표시 전용 (fmt 로 값 가공 가능)
+ *   - 'pathPick' : 표시경로 picker (bizCd 필요, form[col.key] 에 pathId 저장)
+ *   - 'slot'     : 슬롯 탈출구 (name 으로 슬롯 이름 지정)
+ *   - 'rowBreak' : 강제 줄바꿈 (다음 필드를 새 form-row 로)
+ *
+ * 공통 속성: required, placeholder, colSpan(1~N), width, min/max, mono, hint,
+ *           visible:(form)=>bool, onChange:(v,form)=>void
+ * cols prop: 한 줄 필드 수 (기본 3). colSpan 누적이 cols 초과 시 자동 줄바꿈. */
+window.BoFormArea = {
+  name: 'BoFormArea',
+  props: {
+    columns:     { type: Array,   required: true },  // 필드 정의
+    form:        { type: Object,  required: true },  // form reactive
+    errors:      { type: Object,  default: () => ({}) },
+    readonly:    { type: Boolean, default: false },  // cfDtlMode (조회 모드)
+    cols:        { type: Number,  default: 3 },      // 한 줄 필드 수
+    showActions: { type: Boolean, default: true },
+    saveLabel:   { type: String,  default: '저장' },
+    cancelLabel: { type: String,  default: '취소' },
+    editLabel:   { type: String,  default: '수정' },
+    closeLabel:  { type: String,  default: '닫기' },
+  },
+  emits: ['save', 'cancel', 'edit', 'close'],
+  setup(props, { emit }) {
+    const U = window._boAreaCompUtil;
+    /* columns → 행별 그룹화 (rowBreak 또는 colSpan 누적이 cols 초과 시 줄바꿈) */
+    const cfRows = Vue.computed(() => {
+      const rows = []; let cur = []; let used = 0;
+      for (const col of props.columns) {
+        if (col.visible && !col.visible(props.form)) continue;
+        if (col.type === 'rowBreak') { if (cur.length) { rows.push(cur); cur = []; used = 0; } continue; }
+        const span = Math.min(col.colSpan || 1, props.cols);
+        if (used + span > props.cols && cur.length) { rows.push(cur); cur = []; used = 0; }
+        cur.push(col); used += span;
+      }
+      if (cur.length) rows.push(cur);
+      return rows;
+    });
+    const normOpts = (opts) => U.normOptions(opts);
+    /* readonly 표시값 — fmt 가 있으면 사용, 없으면 form 값 그대로 */
+    const dispVal = (col) => {
+      const v = props.form[col.key];
+      if (col.fmt) return col.fmt(v, props.form);
+      return (v == null || v === '') ? '-' : v;
+    };
+    const onChange = (col, e) => { if (col.onChange) col.onChange(props.form[col.key], props.form, e); };
+    const onSave = () => emit('save');
+    const onCancel = () => emit('cancel');
+    const onEdit = () => emit('edit');
+    const onClose = () => emit('close');
+    return { cfRows, normOpts, dispVal, onChange, onSave, onCancel, onEdit, onClose };
+  },
+  template: /* html */`
+<div class="bo-form-area">
+  <div v-for="(row, ri) in cfRows" :key="ri" class="form-row">
+    <div v-for="col in row" :key="col.key"
+         class="form-group"
+         :style="(col.colSpan && col.colSpan>1 ? ('flex:' + col.colSpan) : '')">
+      <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지) -->
+      <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label">
+        {{ col.label }}
+        <span v-if="col.required && !readonly" class="req">*</span>
+      </label>
+      <label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" style="visibility:hidden;">·</label>
+
+      <!-- readonly 표시 -->
+      <div v-if="col.type === 'readonly'" class="readonly-field">{{ dispVal(col) }}</div>
+
+      <!-- text / password -->
+      <input v-else-if="col.type === 'text' || col.type === 'password'"
+             class="form-control" :type="col.type === 'password' ? 'password' : 'text'"
+             v-model="form[col.key]" :placeholder="col.placeholder"
+             :readonly="readonly || col.readonly"
+             :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
+             :class="errors[col.key] ? 'is-invalid' : ''"
+             @input="onChange(col, $event)" />
+
+      <!-- number -->
+      <input v-else-if="col.type === 'number'" class="form-control" type="number"
+             v-model.number="form[col.key]" :placeholder="col.placeholder"
+             :readonly="readonly || col.readonly" :min="col.min" :max="col.max"
+             :style="col.readonly ? 'background:#f5f5f5;' : ''"
+             :class="errors[col.key] ? 'is-invalid' : ''"
+             @input="onChange(col, $event)" />
+
+      <!-- date -->
+      <input v-else-if="col.type === 'date'" class="form-control" type="date"
+             v-model="form[col.key]" :readonly="readonly"
+             :class="errors[col.key] ? 'is-invalid' : ''" @change="onChange(col, $event)" />
+
+      <!-- checkbox (Y/N 토글) -->
+      <label v-else-if="col.type === 'checkbox'" style="display:flex;align-items:center;gap:6px;cursor:pointer;min-height:34px;">
+        <input type="checkbox"
+               :checked="form[col.key] === (col.checkedValue || 'Y')"
+               :disabled="readonly"
+               @change="form[col.key] = $event.target.checked ? (col.checkedValue || 'Y') : (col.uncheckedValue || 'N')" />
+        <span>{{ col.checkboxLabel || col.label }}</span>
+      </label>
+
+      <!-- textarea -->
+      <textarea v-else-if="col.type === 'textarea'" class="form-control"
+                v-model="form[col.key]" :placeholder="col.placeholder"
+                :readonly="readonly" :rows="col.rows || 3"
+                :class="errors[col.key] ? 'is-invalid' : ''"
+                @input="onChange(col, $event)"></textarea>
+
+      <!-- select -->
+      <select v-else-if="col.type === 'select'" class="form-control"
+              v-model="form[col.key]" :disabled="readonly"
+              :class="errors[col.key] ? 'is-invalid' : ''"
+              @change="onChange(col, $event)">
+        <option v-if="col.nullable !== false && col.nullLabel" value="">{{ col.nullLabel }}</option>
+        <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+      </select>
+
+      <!-- pathPick (표시경로 선택 박스) -->
+      <div v-else-if="col.type === 'pathPick'" style="display:flex;align-items:center;gap:8px;">
+        <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:readonly?'#f9fafb':'#fff',color:form[col.key]!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
+          {{ col.pathLabel ? col.pathLabel(form[col.key]) : (form[col.key] != null ? '#' + form[col.key] : '경로 선택...') }}
+        </div>
+        <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" @click="col.onOpen && col.onOpen(form)">🔍 선택</button>
+        <button v-if="!readonly && form[col.key] != null" type="button" class="btn btn-sm" @click="form[col.key]=null" style="color:#999;">✕</button>
+      </div>
+
+      <!-- slot 탈출구 -->
+      <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col" :readonly="readonly"></slot>
+
+      <!-- 에러 메시지 / 힌트 -->
+      <span v-if="errors[col.key]" class="field-error">{{ errors[col.key] }}</span>
+      <span v-else-if="col.hint" class="form-hint" style="font-size:11px;color:#888;">{{ col.hint }}</span>
+    </div>
+  </div>
+
+  <!-- 폼 액션 버튼 -->
+  <div v-if="showActions" class="form-actions">
+    <slot name="actions-before"></slot>
+    <template v-if="readonly">
+      <button class="btn btn-primary" @click="onEdit">{{ editLabel }}</button>
+      <button class="btn btn-secondary" @click="onClose">{{ closeLabel }}</button>
+    </template>
+    <template v-else>
+      <button class="btn btn-primary" @click="onSave">{{ saveLabel }}</button>
+      <button class="btn btn-secondary" @click="onCancel">{{ cancelLabel }}</button>
+    </template>
+    <slot name="actions-after"></slot>
+  </div>
+</div>`,
 };

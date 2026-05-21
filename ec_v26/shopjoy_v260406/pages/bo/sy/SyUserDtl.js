@@ -176,55 +176,45 @@ window.SyUserDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+    const baseFormColumns = [
+      { key: 'siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'loginId',      label: '로그인ID', type: 'text', required: true,
+        placeholder: '로그인 아이디',
+        // 신규 등록 시에만 편집 가능, 수정 시는 readonly (form key 자체에 readonly 부여)
+        readonly: !cfIsNew.value },
+      { key: 'password',     label: '비밀번호', type: 'password',
+        required: cfIsNew.value, placeholder: '비밀번호',
+        visible: () => !cfDtlMode.value,
+        hint: cfIsNew.value ? '' : '변경 시에만 입력' },
+      { type: 'rowBreak' },
+      { key: 'userNm',       label: '이름', type: 'text', required: true, placeholder: '이름' },
+      { key: 'userEmail',    label: '이메일', type: 'text', required: true, placeholder: '이메일' },
+      { type: 'rowBreak' },
+      { key: 'userPhone',    label: '연락처', type: 'text', placeholder: '010-0000-0000' },
+      { key: 'deptNm',       label: '부서', type: 'slot', name: 'dept' },
+      { type: 'rowBreak' },
+      { key: 'roleId',       label: '역할', type: 'select', options: () => codes.user_roles },
+      { key: 'userStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
+    ];
 
+    // ===== setup() return ===================================================
     return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
              cfDtlMode, addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
-             cfUserRoles, userRoleGridColumns, fnRoleTypeBadge, showToast };
+             cfUserRoles, userRoleGridColumns, fnRoleTypeBadge, showToast, baseFormColumns };
   },
   template: /* html */`
 <div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.userId }}</span></div>
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ cfSiteNm }}</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">로그인ID <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.loginId" placeholder="로그인 아이디"
-          :readonly="!cfIsNew || cfDtlMode" :style="(!cfIsNew || cfDtlMode)?'background:#f5f5f5;':''"
-          :class="errors.loginId ? 'is-invalid' : ''" />
-        <span v-if="errors.loginId" class="field-error">{{ errors.loginId }}</span>
-      </div>
-      <div v-if="!cfDtlMode" class="form-group">
-        <label class="form-label">비밀번호{{ cfIsNew ? '' : ' (변경 시 입력)' }} <span v-if="cfIsNew" class="req">*</span></label>
-        <input class="form-control" type="password" v-model="form.password" placeholder="비밀번호" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">이름 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.userNm" placeholder="이름" :readonly="cfDtlMode" :class="errors.userNm ? 'is-invalid' : ''" />
-        <span v-if="errors.userNm" class="field-error">{{ errors.userNm }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">이메일 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.userEmail" placeholder="이메일" :readonly="cfDtlMode" :class="errors.userEmail ? 'is-invalid' : ''" />
-        <span v-if="errors.userEmail" class="field-error">{{ errors.userEmail }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">연락처</label>
-        <input class="form-control" v-model="form.userPhone" placeholder="010-0000-0000" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">부서</label>
+    <!-- 기본 정보 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+
+      <!-- 부서: picker -->
+      <template #dept>
         <div v-if="cfDtlMode" class="readonly-field">{{ form.deptNm || '-' }}</div>
         <div v-else style="display:flex;gap:8px;align-items:center;">
           <div class="form-control" style="flex:1;cursor:pointer;background:#fafafa;display:flex;align-items:center;min-height:36px;"
@@ -235,22 +225,8 @@ window.SyUserDtl = {
           <button type="button" class="btn btn-blue btn-sm" @click="openDeptModal" style="white-space:nowrap;">🏢 선택</button>
           <button v-if="form.deptId" type="button" class="btn btn-secondary btn-sm" @click="clearDept" >✕</button>
         </div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">역할</label>
-        <select class="form-control" v-model="form.roleId" :disabled="cfDtlMode">
-          <option v-for="c in codes.user_roles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.userStatusCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
 
     <!-- ── 주소 영역 ──────────────────────────────────────────────────────── -->
     <div class="form-group">

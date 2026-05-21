@@ -146,11 +146,18 @@ window.SyBbsDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+    const baseFormColumns = [
+      { key: 'bbsTitle',    label: '제목', type: 'text', required: true,
+        placeholder: '게시글 제목', colSpan: 2 },
+      { key: 'authorNm',    label: '작성자', type: 'text', placeholder: '작성자명' },
+      { key: 'bbsStatusCd', label: '상태', type: 'select', options: () => codes.bbs_post_statuses },
+    ];
 
+    // ===== setup() return ===================================================
     const dtlId = Vue.computed(() => props.dtlId);
     return { uiState, codes, cfIsNew, dtlId, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
-      showBbmModal, onBbmSelect, handleSave, cfSiteNm, cfDtlMode,
+      showBbmModal, onBbmSelect, handleSave, cfSiteNm, cfDtlMode, baseFormColumns, showToast,
     };
   },
   template: /* html */`
@@ -190,24 +197,9 @@ window.SyBbsDtl = {
       <span v-if="errors.bbmId" class="field-error">{{ errors.bbmId }}</span>
     </div>
 
-    <!-- ── 기본 정보 ──────────────────────────────────────────────────────── -->
-    <div class="form-row">
-      <div class="form-group" style="flex:2">
-        <label class="form-label">제목 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.bbsTitle" placeholder="게시글 제목" :readonly="cfDtlMode" :class="errors.bbsTitle ? 'is-invalid' : ''" />
-        <span v-if="errors.bbsTitle" class="field-error">{{ errors.bbsTitle }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">작성자</label>
-        <input class="form-control" v-model="form.authorNm" placeholder="작성자명" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.bbsStatusCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.bbs_post_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
+    <!-- 기본 정보 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="4" :show-actions="false" />
 
     <!-- ── 내용 입력 (contentType 에 따라 렌더링) ───────────────────────────────── -->
     <div v-if="!selectedBbm" class="form-group">

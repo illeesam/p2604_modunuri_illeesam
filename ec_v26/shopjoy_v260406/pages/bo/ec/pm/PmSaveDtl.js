@@ -193,7 +193,30 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    const infoFormColumns = [
+      { key: 'saveNm',      label: '마일리지명', type: 'text', required: true,
+        placeholder: '마일리지명 입력', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'saveType',    label: '적립유형', type: 'select', options: () => codes.save_issue_types },
+      { key: 'saveVal',     label: '적립값', type: 'number', required: true, placeholder: '적립값 입력' },
+      { type: 'rowBreak' },
+      { key: 'saveUnit',    label: '적립단위', type: 'select', options: () => codes.save_units },
+      { key: 'expireDay',   label: '유효기간 (일)', type: 'number', placeholder: '365' },
+      { type: 'rowBreak' },
+      { key: 'minOrderAmt', label: '최소주문금액 (원)', type: 'number', placeholder: '0' },
+      { key: 'saveStatus',  label: '상태', type: 'select', options: () => codes.promo_statuses },
+      { type: 'rowBreak' },
+      { key: 'startDate',   label: '시작일', type: 'date' },
+      { key: 'endDate',     label: '종료일', type: 'date' },
+      { type: 'rowBreak' },
+      { key: 'remark',      label: '비고', type: 'textarea', rows: 2, placeholder: '비고 입력', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+    ];
+
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor, infoFormColumns };
   },
   template: /* html */`
 <div>
@@ -214,68 +237,14 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
-    <!-- -- 기본정보 --------------------------------------------------------- -->
+    <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <div class="form-group">
-        <label class="form-label">마일리지명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.saveNm" placeholder="마일리지명 입력" :class="errors.saveNm ? 'is-invalid' : ''" />
-        <span v-if="errors.saveNm" class="field-error">{{ errors.saveNm }}</span>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">적립유형</label>
-          <select class="form-control" v-model="form.saveType">
-            <option v-for="c in codes.save_issue_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">적립값 <span class="req">*</span></label>
-          <input class="form-control" type="number" v-model.number="form.saveVal" placeholder="적립값 입력" :class="errors.saveVal ? 'is-invalid' : ''" />
-          <span v-if="errors.saveVal" class="field-error">{{ errors.saveVal }}</span>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">적립단위</label>
-          <select class="form-control" v-model="form.saveUnit">
-            <option v-for="c in codes.save_units" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">유효기간 (일)</label>
-          <input class="form-control" type="number" v-model.number="form.expireDay" placeholder="365" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">최소주문금액 (원)</label>
-          <input class="form-control" type="number" v-model.number="form.minOrderAmt" placeholder="0" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.saveStatus">
-            <option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">시작일</label>
-          <input class="form-control" type="date" v-model="form.startDate" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">종료일</label>
-          <input class="form-control" type="date" v-model="form.endDate" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">비고</label>
-        <textarea class="form-control" v-model="form.remark" rows="2" placeholder="비고 입력"></textarea>
-      </div>
-      <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
-        <div class="form-group">
-          <label class="form-label">판매업체</label>
+      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+
+        <!-- 판매업체 picker -->
+        <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
               <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
@@ -283,14 +252,10 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
             </div>
             <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">판매담당자</label>
-          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="cfDtlMode" />
-        </div>
-      </div>
+        </template>
+      </bo-form-area>
 
-      <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
+      <!-- 판매업체 선택 모달 -->
       <bo-modal :show="showVendorModal" title="판매업체 선택" width="400px"
                 body-pad="0" @close="showVendorModal=false">
         <div style="max-height:400px;overflow-y:auto;">

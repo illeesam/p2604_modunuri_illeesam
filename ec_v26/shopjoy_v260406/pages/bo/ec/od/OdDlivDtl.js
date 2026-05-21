@@ -282,7 +282,24 @@ window.OdDlivDtl = {
 
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes, paymentGridColumns, editHistGridColumns, dlivItemGridColumns };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+    const baseFormColumns = [
+      { key: 'dlivId',       label: '배송ID', type: 'text', required: true,
+        placeholder: 'DLIV-XXX', readonly: !cfIsNew.value },
+      { key: 'orderId',      label: '주문ID', type: 'slot', name: 'orderId', required: true },
+      { type: 'rowBreak' },
+      { key: 'memberNm',     label: '회원명', type: 'slot', name: 'memberNm' },
+      { key: 'recvNm',       label: '수령인', type: 'text' },
+      { type: 'rowBreak' },
+      { key: 'recvAddr',     label: '배송지 주소', type: 'text', placeholder: '주소 입력', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'recvPhone',    label: '연락처', type: 'text', placeholder: '010-0000-0000' },
+      { key: 'dlivStatusCd', label: '상태', type: 'select', options: () => codes.dliv_statuses },
+      { type: 'rowBreak' },
+      { key: 'dlivMemo',     label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
+    ];
+
+    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes, paymentGridColumns, editHistGridColumns, dlivItemGridColumns, baseFormColumns, showRefModal };
   },
   template: /* html */`
 <div>
@@ -375,68 +392,37 @@ window.OdDlivDtl = {
       </div>
     </div>
 
-    <!-- -- 기본정보 --------------------------------------------------------- -->
-    <div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">배송ID <span v-if="!cfDtlMode" class="req">*</span></label>
-          <input class="form-control" v-model="form.dlivId" placeholder="DLIV-XXX" :readonly="!cfIsNew || cfDtlMode" :class="errors.dlivId ? 'is-invalid' : ''" />
-          <span v-if="errors.dlivId" class="field-error">{{ errors.dlivId }}</span>
+    <!-- 기본정보 폼 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2"
+      @save="handleSave"
+      @cancel="navigate('odDlivMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('odDlivMng')">
+
+      <!-- 주문ID + 보기 -->
+      <template #orderId>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
+          <span v-if="form.orderId" class="ref-link" @click="showRefModal('order', form.orderId)">보기</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">주문ID <span v-if="!cfDtlMode" class="req">*</span></label>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
-            <span v-if="form.orderId" class="ref-link" @click="showRefModal('order', form.orderId)">보기</span>
-          </div>
-          <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
+        <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
+      </template>
+
+      <!-- 회원명 + 보기 -->
+      <template #memberNm>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
+          <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', form.memberId)">보기</span>
         </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">회원명</label>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
-            <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', form.memberId)">보기</span>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">수령인</label>
-          <input class="form-control" v-model="form.recvNm" :readonly="cfDtlMode" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">배송지 주소</label>
-        <input class="form-control" v-model="form.recvAddr" placeholder="주소 입력" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">연락처</label>
-          <input class="form-control" v-model="form.recvPhone" placeholder="010-0000-0000" :readonly="cfDtlMode" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.dlivStatusCd" :disabled="cfDtlMode">
-            <option v-for="c in codes.dliv_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">메모</label>
+      </template>
+
+      <!-- 메모: Quill 또는 view 모드 HTML -->
+      <template #memo>
         <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.dlivMemo || '<span style=color:#bbb>-</span>'"></div>
         <base-html-editor v-else v-model="form.dlivMemo" height="180px" />
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode">
-        <template v-if="cfDtlMode">
-          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-          <button class="btn btn-secondary" @click="navigate('odDlivMng')">닫기</button>
-        </template>
-        <template v-else>
-          <button class="btn btn-primary" @click="handleSave">저장</button>
-          <button class="btn btn-secondary" @click="navigate('odDlivMng')">취소</button>
-        </template>
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
 
   </div>
 

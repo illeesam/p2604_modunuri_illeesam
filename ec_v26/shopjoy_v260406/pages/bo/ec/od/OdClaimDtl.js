@@ -303,7 +303,28 @@ window.OdClaimDtl = {
 
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, cfDtlMode, tabMode2, showTab, codes, paymentGridColumns, editHistGridColumns, claimItemGridColumns, fnItemExpanded };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+    const baseFormColumns = [
+      { key: 'claimId',      label: '클레임ID', type: 'text', required: true,
+        placeholder: 'CLM-2026-XXX', readonly: !cfIsNew.value },
+      { key: 'orderId',      label: '주문ID', type: 'slot', name: 'orderId', required: true },
+      { type: 'rowBreak' },
+      { key: 'memberId',     label: '회원ID', type: 'slot', name: 'memberId' },
+      { key: 'memberNm',     label: '회원명', type: 'text' },
+      { type: 'rowBreak' },
+      { key: 'claimTypeCd',  label: '클레임 유형', type: 'select', options: () => codes.claim_types },
+      { key: 'claimStatusCd', label: '처리 상태', type: 'select', nullable: false,
+        options: () => cfStatusOptions.value },
+      { type: 'rowBreak' },
+      { key: 'prodNm',       label: '상품명', type: 'text', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'reasonCd',     label: '사유', type: 'text' },
+      { key: 'requestDate',  label: '신청일', type: 'text', placeholder: '2026-04-08 10:00' },
+      { type: 'rowBreak' },
+      { key: 'reasonDetail', label: '상세 사유', type: 'textarea', rows: 3, colSpan: 2 },
+    ];
+
+    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, cfDtlMode, tabMode2, showTab, codes, paymentGridColumns, editHistGridColumns, claimItemGridColumns, fnItemExpanded, baseFormColumns, showRefModal };
   },
   template: /* html */`
 <div>
@@ -400,77 +421,31 @@ window.OdClaimDtl = {
       </div>
     </div>
 
-    <!-- -- 기본정보 폼 ------------------------------------------------------- -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">클레임ID <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.claimId" placeholder="CLM-2026-XXX" :readonly="!cfIsNew || cfDtlMode" :class="errors.claimId ? 'is-invalid' : ''" />
-        <span v-if="errors.claimId" class="field-error">{{ errors.claimId }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">주문ID <span v-if="!cfDtlMode" class="req">*</span></label>
+    <!-- 기본정보 폼 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2"
+      @save="handleSave"
+      @cancel="navigate('odClaimMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('odClaimMng')">
+
+      <!-- 주문ID + 보기 버튼 -->
+      <template #orderId>
         <div style="display:flex;gap:8px;align-items:center;">
           <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
           <span v-if="form.orderId" class="ref-link" @click="showRefModal('order', form.orderId)">보기</span>
         </div>
         <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">회원ID</label>
+      </template>
+
+      <!-- 회원ID + 보기 버튼 -->
+      <template #memberId>
         <div style="display:flex;gap:8px;align-items:center;">
           <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" />
           <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', form.memberId)">보기</span>
         </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">회원명</label>
-        <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">클레임 유형</label>
-        <select class="form-control" v-model="form.claimTypeCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.claim_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">처리 상태</label>
-        <select class="form-control" v-model="form.claimStatusCd" :disabled="cfDtlMode">
-          <option v-for="s in cfStatusOptions" :key="Math.random()">{{ s }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">상품명</label>
-      <input class="form-control" v-model="form.prodNm" :readonly="cfDtlMode" />
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사유</label>
-        <input class="form-control" v-model="form.reasonCd" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">신청일</label>
-        <input class="form-control" v-model="form.requestDate" placeholder="2026-04-08 10:00" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">상세 사유</label>
-      <textarea class="form-control" v-model="form.reasonDetail" rows="3" :readonly="cfDtlMode"></textarea>
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('odClaimMng')">닫기</button>
       </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('odClaimMng')">취소</button>
-      </template>
-    </div>
+    </bo-form-area>
 
   </div>
 

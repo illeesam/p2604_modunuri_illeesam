@@ -752,6 +752,14 @@ window.DpDispPanelDtl = {
           onInput: (row, val, idx) => fnSetFileItem(r, idx, 'url', val) } },
     ];
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 패널코드/패널명/상태 ==========
+    const basePanelFormColumns = [
+      { key: 'dispCode', label: '패널코드', type: 'text', required: true,
+        placeholder: 'DP_YYMMDD_HHMMSS', mono: true },
+      { key: 'name',     label: '패널명', type: 'text', required: true, placeholder: '패널 이름' },
+      { key: 'status',   label: '상태', type: 'select', options: () => codes.active_statuses },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return { uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
@@ -775,6 +783,7 @@ window.DpDispPanelDtl = {
       fnGetDisplayRows, fnGetRelatedEvent,
       fnGetFileListItems, fnAddFileItemAt, fnRemoveFileItemAt, fnSetFileItem,
       moveRowAt, codes, cfDtlMode, fileListGridColumns, fnFileListColsForRow,
+      basePanelFormColumns,
     };
   },
   template: /* html */`
@@ -872,22 +881,9 @@ window.DpDispPanelDtl = {
               <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
               설정
             </div>
-            <div class="form-row" style="margin-bottom:8px;">
-              <div class="form-group">
-                <label class="form-label">패널코드 <span v-if="!cfDtlMode" class="req">*</span></label>
-                <input class="form-control" v-model="form.dispCode" placeholder="DP_YYMMDD_HHMMSS" :readonly="cfDtlMode" style="font-family:monospace;" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">패널명 <span v-if="!cfDtlMode" class="req">*</span></label>
-                <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="cfDtlMode" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">상태</label>
-                <select class="form-control" v-model="form.status" :disabled="cfDtlMode">
-                  <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-                </select>
-              </div>
-            </div>
+            <!-- 패널코드/패널명/상태 (BoFormArea 자동 렌더) -->
+            <bo-form-area :columns="basePanelFormColumns" :form="form" :errors="{}"
+              :readonly="cfDtlMode" :cols="3" :show-actions="false" />
             <div class="form-row" style="margin-bottom:8px;">
               <div class="form-group" style="grid-column:1 / -1;">
                 <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FO.모바일메인)</span></label>

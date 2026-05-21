@@ -113,98 +113,68 @@ window.SyTemplateDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // -- return ---------------------------------------------------------------
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    const baseFormColumns = [
+      { key: 'siteNm',         label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
+      { type: 'rowBreak' },
+      { key: 'templateTypeCd', label: '템플릿유형', type: 'select', nullable: false, required: true,
+        options: () => codes.template_types },
+      { key: 'templateCode',   label: '템플릿코드', type: 'text', required: true,
+        placeholder: '예) ORDER_CONFIRM_MAIL', mono: true,
+        onChange: (v, f) => { f.templateCode = (f.templateCode || '').toUpperCase().replace(/[^A-Z0-9_]/g, ''); } },
+      { key: 'templateNm',     label: '템플릿명', type: 'text', required: true, placeholder: '템플릿명 입력' },
+      { type: 'rowBreak' },
+      { key: 'templateSubject', label: '제목 (Subject)', type: 'text', colSpan: 3,
+        placeholder: '메일/MMS/시스템 제목', visible: () => cfNeedSubject.value },
+      { type: 'rowBreak' },
+      { key: 'templateContent', label: '내용', required: true, type: 'slot', name: 'content', colSpan: 3,
+        hint: '사용 가능 변수: {{username}}, {{orderId}}, {{prodNm}}, {{trackingNo}} 등' },
+      { type: 'rowBreak' },
+      { key: 'sampleParams',   label: '파라미터 샘플 (JSON)', type: 'textarea', rows: 3, mono: true, colSpan: 3,
+        placeholder: '{"username":"홍길동","orderId":"ORD-20260410-001"}',
+        hint: '미리보기에 사용되는 샘플 변수값' },
+      { type: 'rowBreak' },
+      { key: 'useYn',          label: '사용여부', type: 'select', options: () => codes.use_yn },
+    ];
 
+    // ===== setup() return ===================================================
     return { uiState, cfIsNew, form, errors, codes, handleSave, cfNeedSubject, cfIsLongContent,
-             cfUseHtmlEditor, cfSiteNm, cfDtlMode };
+             cfUseHtmlEditor, cfSiteNm, cfDtlMode, baseFormColumns };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.templateId }}</span></div>
+  <!-- 페이지 타이틀 + ID 표시 -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div class="page-title">{{ cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정') }}</div>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.templateId }}</span>
+  </div>
+
+  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ cfSiteNm }}</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">템플릿유형 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <select class="form-control" v-model="form.templateTypeCd" :disabled="cfDtlMode">
-          <option v-for="t in codes.template_types" :key="t">{{ t }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">템플릿코드 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.templateCode" placeholder="예) ORDER_CONFIRM_MAIL"
-          @input="form.templateCode=form.templateCode.toUpperCase().replace(/[^A-Z0-9_]/g,'')"
-          :readonly="cfDtlMode"
-          :class="errors.templateCode ? 'is-invalid' : ''" />
-        <span v-if="errors.templateCode" class="field-error">{{ errors.templateCode }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">템플릿명 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.templateNm" placeholder="템플릿명 입력" :readonly="cfDtlMode" :class="errors.templateNm ? 'is-invalid' : ''" />
-        <span v-if="errors.templateNm" class="field-error">{{ errors.templateNm }}</span>
-      </div>
-    </div>
-    <div class="form-row" v-if="cfNeedSubject">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">제목 (Subject)</label>
-        <input class="form-control" v-model="form.templateSubject" placeholder="메일/MMS/시스템 제목" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">내용 <span v-if="!cfDtlMode" class="req">*</span>
-          <span style="font-size:11px;color:#888;margin-left:6px;">사용 가능 변수: &#123;&#123;username&#125;&#125;, &#123;&#123;orderId&#125;&#125;, &#123;&#123;prodNm&#125;&#125;, &#123;&#123;trackingNo&#125;&#125; 등</span>
-        </label>
-        <!-- -- HTML 에디터 (메일, 시스템알림) ------------------------------------- -->
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="3" :show-actions="false">
+
+      <!-- 내용 (Quill 에디터 또는 textarea, view 모드는 HTML) -->
+      <template #content>
         <template v-if="cfUseHtmlEditor">
           <div v-if="cfDtlMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.templateContent || '<span style=color:#bbb>-</span>'"></div>
           <base-html-editor v-else v-model="form.templateContent" height="320px" />
         </template>
-        <!-- -- 텍스트 영역 --------------------------------------------------- -->
         <textarea v-else class="form-control" v-model="form.templateContent"
           :rows="cfIsLongContent ? 10 : 5"
           placeholder="템플릿 내용 입력"
           :readonly="cfDtlMode"
           :class="errors.templateContent ? 'is-invalid' : ''"></textarea>
         <span v-if="errors.templateContent" class="field-error">{{ errors.templateContent }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">파라미터 샘플 (JSON)
-          <span style="font-size:11px;color:#888;margin-left:6px;">미리보기에 사용되는 샘플 변수값 — 예) {"username":"홍길동","orderId":"ORD-001"}</span>
-        </label>
-        <textarea class="form-control" v-model="form.sampleParams" rows="3"
-          style="font-family:monospace;font-size:12px;"
-          placeholder='{"username":"홍길동","orderId":"ORD-20260410-001"}'
-          :readonly="cfDtlMode"></textarea>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사용여부</label>
-        <select class="form-control" v-model="form.useYn" :disabled="cfDtlMode">
-          <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
+
+    <!-- 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) -->
     <div class="form-actions" v-if="!cfDtlMode">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-secondary" @click="uiState.previewOpen=true">📄 미리보기</button>
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('syTemplateMng')">닫기</button>
-      </template>
-      <template v-else>
-        <button class="btn btn-secondary" @click="uiState.previewOpen=true">📄 미리보기</button>
-        <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="uiState.sendOpen=true">📨 발송하기</button>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('syTemplateMng')">취소</button>
-      </template>
+      <button class="btn btn-secondary" @click="uiState.previewOpen=true">📄 미리보기</button>
+      <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="uiState.sendOpen=true">📨 발송하기</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
+      <button class="btn btn-secondary" @click="navigate('syTemplateMng')">취소</button>
     </div>
   </div>
 

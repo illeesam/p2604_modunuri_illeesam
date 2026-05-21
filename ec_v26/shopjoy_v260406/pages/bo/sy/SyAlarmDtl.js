@@ -108,70 +108,45 @@ window.SyAlarmDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    const baseFormColumns = [
+      { key: 'siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
+      { type: 'rowBreak' },
+      { key: 'alarmTitle',    label: '제목', type: 'text', required: true, placeholder: '알림 제목', colSpan: 2 },
+      { key: 'alarmTypeCd',   label: '유형', type: 'select', options: () => codes.alarm_types },
+      { key: 'alarmStatusCd', label: '상태', type: 'select', options: () => codes.alarm_statuses },
+      { type: 'rowBreak' },
+      { key: 'targetTypeCd',  label: '대상 유형', type: 'select', options: () => codes.alarm_target_types },
+      { key: 'targetId',      label: '대상 ID', type: 'text', placeholder: '특정회원 ID (선택)' },
+      { key: 'alarmSendDate', label: '발송일시', type: 'slot', name: 'sendDate' },
+      { type: 'rowBreak' },
+      { key: 'alarmMsg',      label: '메시지', type: 'textarea', required: true, rows: 4,
+        placeholder: '알림 메시지 내용', colSpan: 3 },
+    ];
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode };
+    // ===== setup() return ===================================================
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, baseFormColumns };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '알림 등록' : (cfDtlMode ? '알림 상세' : '알림 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.alarmId }}</span></div>
+  <!-- 페이지 타이틀 + ID 표시 -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div class="page-title">{{ cfIsNew ? '알림 등록' : (cfDtlMode ? '알림 상세' : '알림 수정') }}</div>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.alarmId }}</span>
+  </div>
+
+  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ cfSiteNm }}</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:2">
-        <label class="form-label">제목 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.alarmTitle" placeholder="알림 제목" :readonly="cfDtlMode" :class="errors.alarmTitle ? 'is-invalid' : ''" />
-        <span v-if="errors.alarmTitle" class="field-error">{{ errors.alarmTitle }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.alarmTypeCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.alarm_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.alarmStatusCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.alarm_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">대상 유형</label>
-        <select class="form-control" v-model="form.targetTypeCd" :disabled="cfDtlMode">
-          <option v-for="c in codes.alarm_target_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">대상 ID</label>
-        <input class="form-control" v-model="form.targetId" placeholder="특정회원 ID (선택)" :readonly="cfDtlMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">발송일시</label>
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="3"
+      @save="handleSave"
+      @cancel="navigate('syAlarmMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('syAlarmMng')">
+      <template #sendDate>
         <bo-date-time-picker v-model="form.alarmSendDate" :readonly="cfDtlMode" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">메시지 <span v-if="!cfDtlMode" class="req">*</span></label>
-      <textarea class="form-control" v-model="form.alarmMsg" rows="4" placeholder="알림 메시지 내용" :readonly="cfDtlMode" :class="errors.alarmMsg ? 'is-invalid' : ''"></textarea>
-      <span v-if="errors.alarmMsg" class="field-error">{{ errors.alarmMsg }}</span>
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('syAlarmMng')">닫기</button>
       </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('syAlarmMng')">취소</button>
-      </template>
-    </div>
+    </bo-form-area>
   </div>
 </div>
 `

@@ -107,59 +107,40 @@ window.SyCodeDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    const baseFormColumns = [
+      { key: 'siteNm',    label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'codeGrp',   label: '코드그룹 (code_grp)',  type: 'text', required: true,
+        placeholder: '예: ORDER_STATUS', mono: true },
+      { key: 'codeLabel', label: '코드라벨 (code_label)', type: 'text', required: true,
+        placeholder: '예: 주문완료' },
+      { key: 'codeValue', label: '코드값 (code_value)',   type: 'text', required: true,
+        placeholder: '예: ORDER_COMPLETE', mono: true },
+      { key: 'sortOrd',   label: '정렬순서', type: 'number', min: 1 },
+      { key: 'useYn',     label: '사용여부', type: 'select', options: () => pageCodes.use_yn },
+      { key: 'codeRemark', label: '비고', type: 'text' },
+    ];
 
-    return { uiState, pageCodes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode };
+    // ===== setup() return ===================================================
+    return { uiState, pageCodes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, baseFormColumns };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '공통코드 등록' : '공통코드 수정' }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.codeId }}</span></div>
+  <!-- 페이지 타이틀 + ID 표시 -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div class="page-title">{{ cfIsNew ? '공통코드 등록' : '공통코드 수정' }}</div>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.codeId }}</span>
+  </div>
+
+  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ cfSiteNm }}</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">코드그룹 (code_grp) <span class="req">*</span></label>
-        <input class="form-control" v-model="form.codeGrp" placeholder="예: ORDER_STATUS" style="text-transform:uppercase;" :class="errors.codeGrp ? 'is-invalid' : ''" />
-        <span v-if="errors.codeGrp" class="field-error">{{ errors.codeGrp }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">코드라벨 (code_label) <span class="req">*</span></label>
-        <input class="form-control" v-model="form.codeLabel" placeholder="예: 주문완료" :class="errors.codeLabel ? 'is-invalid' : ''" />
-        <span v-if="errors.codeLabel" class="field-error">{{ errors.codeLabel }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">코드값 (code_value) <span class="req">*</span></label>
-        <input class="form-control" v-model="form.codeValue" placeholder="예: ORDER_COMPLETE" :class="errors.codeValue ? 'is-invalid' : ''" />
-        <span v-if="errors.codeValue" class="field-error">{{ errors.codeValue }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">정렬순서</label>
-        <input class="form-control" type="number" v-model.number="form.sortOrd" min="1" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사용여부</label>
-        <select class="form-control" v-model="form.useYn">
-          <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">비고</label>
-        <input class="form-control" v-model="form.codeRemark" />
-      </div>
-    </div>
-    <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('syCodeMng')">취소</button>
-    </div>
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2"
+      @save="handleSave"
+      @cancel="navigate('syCodeMng')"
+      @edit="navigate('__switchToEdit__')"
+      @close="navigate('syCodeMng')" />
   </div>
 </div>
 `

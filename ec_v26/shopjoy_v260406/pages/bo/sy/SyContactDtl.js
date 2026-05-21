@@ -167,9 +167,19 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // -- return ---------------------------------------------------------------
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - content 탭 영역 =============
+    const contentFormColumns = [
+      { key: 'memberId',        label: '회원ID', type: 'slot', name: 'memberId' },
+      { key: 'memberNm',        label: '회원명', type: 'readonly' },
+      { key: 'categoryCd',      label: '카테고리', type: 'select', options: () => codes.contact_categories },
+      { key: 'contactStatusCd', label: '상태',     type: 'select', options: () => codes.contact_statuses },
+      { type: 'rowBreak' },
+      { key: 'contactTitle',    label: '제목', type: 'text', required: true, colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'contactContent',  label: '문의 내용', type: 'slot', name: 'contactContent', colSpan: 2 },
+    ];
 
-    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm };
+    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentFormColumns, showRefModal };
   },
   template: /* html */`
 <div>
@@ -197,47 +207,28 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     </div>
     <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
-    <!-- -- 문의 내용 -------------------------------------------------------- -->
+    <!-- 문의 내용 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('content')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 문의 내용</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">회원ID</label>
+      <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+
+        <!-- 회원ID + 보기 버튼 -->
+        <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
             <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" />
             <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', Number(form.memberId))">보기</span>
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">회원명</label>
-          <div class="readonly-field">{{ form.memberNm || '-' }}</div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">카테고리</label>
-          <select class="form-control" v-model="form.categoryCd" :disabled="cfDtlMode">
-            <option v-for="c in codes.contact_categories" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.contactStatusCd" :disabled="cfDtlMode">
-            <option v-for="c in codes.contact_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">제목 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.contactTitle" :readonly="cfDtlMode" :class="errors.contactTitle ? 'is-invalid' : ''" />
-        <span v-if="errors.contactTitle" class="field-error">{{ errors.contactTitle }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">문의 내용 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.contactContent || '<span style=color:#bbb>-</span>'"></div>
-        <base-html-editor v-else v-model="form.contactContent" height="220px" />
-        <span v-if="errors.contactContent" class="field-error">{{ errors.contactContent }}</span>
-      </div>
+        </template>
+
+        <!-- 문의 내용: Quill 또는 view 모드 HTML -->
+        <template #contactContent>
+          <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.contactContent || '<span style=color:#bbb>-</span>'"></div>
+          <base-html-editor v-else v-model="form.contactContent" height="220px" />
+          <span v-if="errors.contactContent" class="field-error">{{ errors.contactContent }}</span>
+        </template>
+      </bo-form-area>
+
       <div class="form-actions">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
