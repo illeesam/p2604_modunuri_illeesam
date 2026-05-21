@@ -263,11 +263,9 @@ window.HelpBoModal = {
     };
   },
   template: `
-<div v-if="show"
-  style="position:fixed;inset:0;background:rgba(18,24,40,0.6);z-index:3000;display:flex;align-items:center;justify-content:center;padding:16px;"
-  @click.self="close">
-  <div style="background:#fff;border-radius:14px;width:100%;max-width:860px;height:92vh;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.28);overflow:hidden;"
-    @click.stop>
+<bo-modal :show="show" max-width="860px" height="92vh" max-height="92vh"
+  box-pad="0" body-pad="0" :z-index="3000" @close="close">
+  <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
 
     <!-- 헤더 -->
     <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid #ffc9d6;">
@@ -862,6 +860,6 @@ window.HelpBoModal = {
       </div><!-- /우측 콘텐츠 -->
     </div><!-- /바디 -->
   </div>
-</div>
+</bo-modal>
 `,
 };
