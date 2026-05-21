@@ -166,7 +166,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     /* 문의 exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(contacts, [{label:'ID',key:'contactId'},{label:'회원명',key:'memberNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'contactTitle'},{label:'상태',key:'contactStatusCd'},{label:'등록일',key:'contactDate'}], '문의목록.csv');
 
-    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck',
         options: [
@@ -207,7 +207,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <bo-grid-readonly
+  <bo-grid
     :columns="baseGridColumns" :rows="contacts" :pager="pager" row-key="contactId"
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
@@ -228,7 +228,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
         <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
       </div></td>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
 
   <!-- -- 하단 상세: ContactDtl 임베드 ------------------------------------------ -->
   <div v-if="detailModal.show" style="margin-top:4px;">

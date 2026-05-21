@@ -267,7 +267,7 @@ const detailModal = reactive({
     <bo-path-tree-card biz-cd="sy_site" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
-      <bo-grid-readonly
+      <bo-grid
         :columns="baseGridColumns" :rows="sites" :pager="pager" row-key="siteId"
         list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
@@ -287,7 +287,7 @@ const detailModal = reactive({
             <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
           </div></td>
         </template>
-      </bo-grid-readonly>
+      </bo-grid>
     </div>
 
   <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->

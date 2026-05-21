@@ -155,7 +155,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 게시판 마스터 exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck',
         options: [
@@ -208,7 +208,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     <!-- -- 우: 목록 + 상세 --------------------------------------------------- -->
     <div>
-      <bo-grid-readonly
+      <bo-grid
         :columns="baseGridColumns" :rows="bbms" :pager="pager" row-key="bbmId"
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
@@ -228,7 +228,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
             <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
           </div></td>
         </template>
-      </bo-grid-readonly>
+      </bo-grid>
 
       <div v-if="detailModal.show" style="margin-top:4px;">
         <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">

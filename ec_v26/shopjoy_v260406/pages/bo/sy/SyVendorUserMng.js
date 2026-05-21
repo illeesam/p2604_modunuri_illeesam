@@ -491,7 +491,7 @@ window.SyVendorUserMng = {
         nullLabel: '업체유형 전체' },
     ];
 
-    /* BoGridReadonly 컬럼 정의 (특수셀 #cell-* 슬롯 override) */
+    /* BoGrid 컬럼 정의 (특수셀 #cell-* 슬롯 override) */
     const vendorGridColumns = [
       { key: 'vendorTypeCd', label: '업체유형', align: 'center', badge: (row) => fnVendorTypeBadge(row.vendorTypeCd), fmt: (v) => fnVendorTypeLabel(v) },
       { key: 'vendorNm',     label: '업체명', cellStyle: 'font-weight:600' },
@@ -579,7 +579,7 @@ window.SyVendorUserMng = {
   </div>
 
   <!-- -- 업체 목록 ---------------------------------------------------------- -->
-  <bo-grid-readonly
+  <bo-grid
     :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
     list-title="업체목록" :count-text="vendors.length + '건'"
     :row-style="fnVendorRowStyle" row-clickable
@@ -587,10 +587,10 @@ window.SyVendorUserMng = {
       <template #row-actions="{ row }">
         <button class="btn btn-primary btn-xs" @click.stop="pickVendorRow(row)">{{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}</button>
       </template>
-  </bo-grid-readonly>
+  </bo-grid>
 
   <!-- -- 사용자 목록 ------------------------------------------------------- -->
-  <bo-grid-readonly v-if="uiState.searchVendorId != null" style="margin-top:16px;"
+  <bo-grid v-if="uiState.searchVendorId != null" style="margin-top:16px;"
     :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
     list-title="사용자목록" :count-text="vendorUsers.length + '건'"
     :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
@@ -601,7 +601,7 @@ window.SyVendorUserMng = {
     <template #row-actions="{ row }">
       <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(row)">삭제</button>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
   <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">
     상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
   </div>

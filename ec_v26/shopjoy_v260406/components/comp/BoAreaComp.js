@@ -19,9 +19,9 @@
  *                      <input v-model="searchParam.searchValue" @keyup.enter="onSearch" />
  *                    </bo-search-area>
  *
- * BoGrid         — 서버 페이징 그리드 통합 컴포넌트 (구 BoGridReadonly + BoGridEdit)
+ * BoGrid         — 서버 페이징 그리드 통합 컴포넌트
  *                  유형①(조회전용) + 유형②(일부 에디트)를 옵션으로 통합.
- *                  · sortState 전달 → 헤더 클릭 정렬 활성 (구 Readonly)
+ *                  · sortState 전달 → 헤더 클릭 정렬 활성
  *                  · col.edit('text'|'number'|'date'|'select') → 인라인 입력 (구 Edit)
  *                  · draggable → 행 드래그 정렬 + reorder emit
  *                  · showSave → 툴바 [저장] 버튼 + save emit
@@ -61,8 +61,6 @@
  *                        #row-actions, #row-expand,
  *                        #tfoot({rows,colspan}) — 합계행 등. 슬롯 없거나 rows 비면 미렌더
  *                          (Od*Dtl 항목 합계행처럼 그리드 하단 고정행 통합용)
- *                  ※ window.BoGridReadonly / window.BoGridEdit 는 BoGrid 의 별칭
- *                    (기존 화면 <bo-grid-readonly> / <bo-grid-edit> 무수정 호환)
  *
  * BoGridCrud     — CRUD 그리드 (전체 로드 / 페이징 없음 / 스크롤 480px / 행상태 N·I·U·D)
  *                  유형③: SyRole·SyBrand·SyBatch·SyDept·SyMenu·SyProp 류
@@ -101,8 +99,8 @@
  *     align,            // 'left' | 'center' | 'right' (기본 left)
  *     badge,            // true → coUtil.fnCodeBadge 류 자동, 또는 fn(row)=>'badge-green'
  *     link,             // true → title-link (클릭 시 row-click emit)
- *     sortKey,          // 정렬키 (지정 시 헤더 클릭 정렬, BoGridReadonly)
- *     edit,             // 'text'|'number'|'date'|'select' → 인라인 입력 (BoGridEdit/Crud)
+ *     sortKey,          // 정렬키 (지정 시 헤더 클릭 정렬)
+ *     edit,             // 'text'|'number'|'date'|'select' → 인라인 입력 (BoGrid/Crud)
  *     options,          // edit:'select' 일 때 [{codeValue,codeLabel}] 또는 [{value,label}]
  *     fmt,              // fn(value,row)=>표시문자열
  *     placeholder,      // edit input placeholder
@@ -317,15 +315,14 @@ window._boAreaCompUtil = {
   },
 };
 
-/* ── BoGrid — 서버 페이징 그리드 통합(구 BoGridReadonly + BoGridEdit) ──────────
- * 옵션 조합으로 두 유형을 모두 커버:
- *   · sortState 전달  → 헤더 클릭 정렬 (구 Readonly)
- *   · col.edit 지정   → 인라인 input/select (구 Edit)
+/* ── BoGrid — 서버 페이징 그리드 통합 ──────────────────────────────────────
+ * 옵션 조합으로 readonly/edit 두 유형을 모두 커버:
+ *   · sortState 전달  → 헤더 클릭 정렬
+ *   · col.edit 지정   → 인라인 input/select
  *   · draggable=true  → 행 드래그 정렬 + reorder emit
  *   · showSave=true   → 툴바 [저장] 버튼 + save emit
  *   · rowActions=true → 우측 행액션 컬럼(#row-actions 슬롯, 기본 ✕ 삭제) 노출
- * 기본값은 구 BoGridReadonly 동작과 동일(정렬 off·입력 off·드래그 off·저장 off·
- * 행액션 off) → <bo-grid-readonly> 사용 화면 무수정 호환.
+ * 기본값은 정렬 off·입력 off·드래그 off·저장 off·행액션 off (조회 전용 그리드).
  * ──────────────────────────────────────────────────────────────────────── */
 window.BoGrid = {
   name: 'BoGrid',
@@ -561,17 +558,6 @@ window.BoGrid = {
   <bo-pager v-if="pager && !bare" :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg" />
 </div>`,
 };
-
-/* ── 하위호환 별칭 — 기존 화면 <bo-grid-readonly> / <bo-grid-edit> 무수정 ───── */
-window.BoGridReadonly = window.BoGrid;
-window.BoGridEdit = Object.assign({}, window.BoGrid, {
-  name: 'BoGridEdit',
-  /* 구 BoGridEdit 기본 동작 보존: 저장 버튼·행삭제 컬럼 기본 노출 */
-  props: Object.assign({}, window.BoGrid.props, {
-    showSave:   { type: Boolean, default: true },
-    rowActions: { type: Boolean, default: true },
-  }),
-});
 
 /* ── BoGridCrud — 유형③ CRUD 그리드(전체 로드 / 행상태 N·I·U·D) ──────────── */
 window.BoGridCrud = {

@@ -121,7 +121,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       handleSearchData().then(() => { onExpandAll(); });
     });
 
-    /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
+    /* BoGrid 컬럼 정의 (행펼침 #row-expand) */
     const histGridColumns = [
       { key: 'batchLogId', label: '로그ID',  style: 'width:46px;', cellStyle: 'color:#aaa' },
       { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;', cellStyle: 'font-weight:500' },
@@ -147,7 +147,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
-  <bo-grid-readonly
+  <bo-grid
     :columns="histGridColumns" :rows="batchLogs" :pager="pager" row-key="batchLogId"
     list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded" row-clickable
@@ -211,7 +211,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </div>
       </td>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
 </div>
 `,
 };

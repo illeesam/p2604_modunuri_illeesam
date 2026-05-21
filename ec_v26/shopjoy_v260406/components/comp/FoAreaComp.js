@@ -510,16 +510,6 @@ window.FoGrid = {
 </div>`,
 };
 
-/* ── 하위호환 별칭 ───────────────────────────────────────────────────────── */
-window.FoGridReadonly = window.FoGrid;
-window.FoGridEdit = Object.assign({}, window.FoGrid, {
-  name: 'FoGridEdit',
-  props: Object.assign({}, window.FoGrid.props, {
-    showSave:   { type: Boolean, default: true },
-    rowActions: { type: Boolean, default: true },
-  }),
-});
-
 /* ── FoGridCrud — CRUD 그리드(전체 로드 / 행상태 N·I·U·D) ────────────────── */
 window.FoGridCrud = {
   name: 'FoGridCrud',

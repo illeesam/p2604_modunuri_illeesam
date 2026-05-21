@@ -224,7 +224,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const exportExcel = () => coUtil.cofExportCsv(bbss, [{label:'ID',key:'bbsId'},{label:'제목',key:'bbsTitle'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'bbsStatusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
-    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck',
         options: [
@@ -272,7 +272,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
 
-  <bo-grid-readonly
+  <bo-grid
     :columns="baseGridColumns" :rows="bbss" :pager="pager" row-key="bbsId"
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건' + (uiState.selectedPath != null ? '  #' + uiState.selectedPath : '')"
     :sort-state="uiState" :row-style="fnRowStyle"
@@ -292,7 +292,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
       </div></td>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
   <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

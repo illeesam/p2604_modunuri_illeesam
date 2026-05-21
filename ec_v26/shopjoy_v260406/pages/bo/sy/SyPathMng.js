@@ -256,7 +256,7 @@ window.SyPathMng = {
       return allPaths.find(r => r.pathId === pathId)?.pathLabel || String(pathId);
     };
 
-    /* BoGridEdit 컬럼 정의 — 전 셀 슬롯 (기존 onCellChange 변경추적 보존) */
+    /* BoGrid 컬럼 정의 — 전 셀 슬롯 (기존 onCellChange 변경추적 보존) */
         const baseSearchColumns = [
       { type: 'label', label: '업무코드' },
       { key: 'bizCd', type: 'text', placeholder: 'biz_cd 검색', width: '180px' },
@@ -318,11 +318,11 @@ window.SyPathMng = {
       :on-toggle="toggleNode"
       @select="selectNode" @expand-all="expandAll" @collapse-all="collapseAll" />
 
-    <!-- 그리드 (BoGridEdit) -->
-    <bo-grid-edit
+    <!-- 그리드 -->
+    <bo-grid
       :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="pathId"
       list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
-      :row-class="fnRowClass"
+      :row-class="fnRowClass" :show-save="true" :row-actions="true"
       @save="handleSave" @set-page="setPage" @size-change="onSizeChange" @cell-change="onCellChange">
 
       <template #toolbar-actions>
@@ -334,7 +334,7 @@ window.SyPathMng = {
         <button v-if="row._status==='N'" class="btn btn-secondary btn-xs" @click.stop="cancelRow(row)">취소</button>
         <button v-else class="btn btn-danger btn-xs" @click.stop="deleteRow(row)">삭제</button>
       </template>
-    </bo-grid-edit>
+    </bo-grid>
   </div>
 
   <!-- -- 부모경로 선택 모달 (BoTreeSelectorModal) -- -->

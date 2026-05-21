@@ -205,7 +205,7 @@ window.SyUserLoginHist = {
       { key: 'searchTraceId', type: 'text', placeholder: 'Trace ID',         width: '200px' },
     ];
 
-    /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
+    /* BoGrid 컬럼 정의 (행펼침 #row-expand) */
     const logGridColumns = [
       { key: '_exp',     label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
@@ -236,7 +236,7 @@ window.SyUserLoginHist = {
       { key: 'traceId',       label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
-    /* BoGridReadonly isExpanded prop 래퍼 (row,idx)=>bool */
+    /* BoGrid isExpanded prop 래퍼 (row,idx)=>bool */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
     const fnRowClickStyle = (r, idx) => 'cursor:pointer;' + (isExpanded(r.logId || idx) ? 'background:#fafbff;' : '');
 
@@ -280,7 +280,7 @@ window.SyUserLoginHist = {
   </div>
 
   <!-- ── 로그인 로그 탭 ──────────────────────────────────────────── -->
-  <bo-grid-readonly v-if="uiState.activeTab==='log'"
+  <bo-grid v-if="uiState.activeTab==='log'"
     :columns="logGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
@@ -332,10 +332,10 @@ window.SyUserLoginHist = {
         </div>
       </td>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
 
   <!-- ── 토큰 이력 탭 ────────────────────────────────────────────── -->
-  <bo-grid-readonly v-if="uiState.activeTab==='token'"
+  <bo-grid v-if="uiState.activeTab==='token'"
     :columns="tokenGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
@@ -386,7 +386,7 @@ window.SyUserLoginHist = {
         </div>
       </td>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
 </div>
 `,
 };

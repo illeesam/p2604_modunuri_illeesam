@@ -208,7 +208,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const exportExcel = () => coUtil.cofExportCsv(alarms, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channelCd'},{label:'제목',key:'alarmTitle'},{label:'메시지',key:'alarmMsg'},{label:'상태',key:'alarmStatusCd'},{label:'발송일',key:'alarmSendDate'}], '알림목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
-    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck',
         options: [
@@ -262,7 +262,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <bo-path-tree-card biz-cd="sy_alarm" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
-  <bo-grid-readonly
+  <bo-grid
     :columns="baseGridColumns" :rows="alarms" :pager="pager" row-key="alarmId"
     list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
@@ -282,7 +282,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
       </div></td>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
 </div>
 
   <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->

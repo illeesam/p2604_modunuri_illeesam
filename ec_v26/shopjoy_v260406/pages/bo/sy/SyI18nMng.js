@@ -140,7 +140,7 @@ window.SyI18nMng = {
       handleSearchData('DEFAULT');
     });
 
-    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
         const baseSearchColumns = [
       { type: 'label', label: '키/설명' },
       { key: 'searchType', type: 'multiCheck',
@@ -192,13 +192,13 @@ window.SyI18nMng = {
     <div class="card">
       <bo-search-area @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
     </div>
-    <bo-grid-readonly
+    <bo-grid
       :columns="baseGridColumns" :rows="i18nKeys" :pager="pager" row-key="i18nId"
       list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
       :row-style="fnRowStyle" row-clickable
       @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
 
-    </bo-grid-readonly>
+    </bo-grid>
     <!-- -- 번역 편집 패널 ----------------------------------------------------- -->
     <div class="card" v-if="cfSelectedKey">
       <div class="toolbar">

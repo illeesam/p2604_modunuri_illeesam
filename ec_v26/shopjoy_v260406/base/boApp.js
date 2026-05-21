@@ -3090,8 +3090,6 @@
     .component('BoSearchArea', window.BoSearchArea)
     .component('BoFormArea', window.BoFormArea)
     .component('BoGrid', window.BoGrid)
-    .component('BoGridReadonly', window.BoGridReadonly)
-    .component('BoGridEdit', window.BoGridEdit)
     .component('BoGridCrud', window.BoGridCrud)
     .component('BoPathTreeCard', window.BoPathTreeCard)
     .component('BoLocalTreeCard', window.BoLocalTreeCard)

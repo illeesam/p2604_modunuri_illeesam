@@ -219,7 +219,7 @@ window.SyApiLogMng = {
     /* fnDecode */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
-    /* BoGridReadonly 컬럼 정의 (행펼침 #row-expand) */
+    /* BoGrid 컬럼 정의 (행펼침 #row-expand) */
     const baseSearchColumns = [
       { type: 'label', label: '등록기간' },
       { key: 'dateRange', type: 'dateRange',
@@ -271,7 +271,7 @@ window.SyApiLogMng = {
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
-    /* BoGridReadonly isExpanded prop 래퍼 (row,idx)=>bool */
+    /* BoGrid isExpanded prop 래퍼 (row,idx)=>bool */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
     const fnRowClickStyle = (r, idx) => {
       const exp = isExpanded(r.logId || idx);
@@ -322,7 +322,7 @@ window.SyApiLogMng = {
   </div>
 
   <!-- -- API요청로그 탭 -------------------------------------------------- -->
-  <bo-grid-readonly v-if="uiState.activeTab==='access'"
+  <bo-grid v-if="uiState.activeTab==='access'"
     :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
@@ -379,10 +379,10 @@ window.SyApiLogMng = {
         </div>
       </td>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
 
   <!-- -- API오류로그 탭 -------------------------------------------------- -->
-  <bo-grid-readonly v-if="uiState.activeTab==='error'"
+  <bo-grid v-if="uiState.activeTab==='error'"
     :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
@@ -436,7 +436,7 @@ window.SyApiLogMng = {
         </div>
       </td>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
 </div>
 `,
 };

@@ -226,7 +226,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="true"
       :selected="selectedPath" @select="selectNode" />
     <div>
-      <bo-grid-readonly
+      <bo-grid
         :columns="baseGridColumns" :rows="vendors" :pager="pager" row-key="vendorId"
         list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
@@ -246,7 +246,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
             <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
           </div></td>
         </template>
-      </bo-grid-readonly>
+      </bo-grid>
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

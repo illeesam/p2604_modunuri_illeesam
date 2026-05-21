@@ -252,7 +252,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         onRangeChange: () => handleDateRangeChange() },
     ];
 
-    /* BoGridReadonly 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+    /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
     const baseGridColumns = [
       { key: 'loginId',      label: '로그인ID',
         cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:12px;font-family:monospace;' },
@@ -293,7 +293,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </div>
     </div>
     <div>
-  <bo-grid-readonly
+  <bo-grid
     :columns="baseGridColumns" :rows="users" :pager="pager" row-key="userId"
     list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
@@ -313,7 +313,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
       </div></td>
     </template>
-  </bo-grid-readonly>
+  </bo-grid>
 </div>
 </div>
 <!-- 사용자 수정: 2열 그리드 밖 → 좌측 부서트리 영역까지 전체폭 사용 -->
