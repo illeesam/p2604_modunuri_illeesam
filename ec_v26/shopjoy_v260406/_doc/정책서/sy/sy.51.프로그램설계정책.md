@@ -574,6 +574,147 @@ AG-Grid 의 `valueFormatter`/`cellStyle`/`cellClass` 와 동일한 패턴.
 
 ---
 
+### 4.7 BoFormArea 폼 자동 렌더 표준
+
+**목적**: Dtl(상세/등록) 화면의 `<div class="form-row">` + `<div class="form-group">`
+보일러플레이트를 컬럼 정의(`baseFormColumns` / `infoFormColumns`)로 대체. BoSearchArea
+의 `:columns` 자동 렌더와 BoGrid 컬럼 속성화의 폼 버전.
+
+```html
+<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+  :readonly="cfDtlMode" :cols="3"
+  @save="handleSave" @cancel="navigate('xxxMng')"
+  @edit="navigate('__switchToEdit__')" @close="navigate('xxxMng')" />
+```
+
+**컴포넌트**: [`components/comp/BoAreaComp.js`](../../../components/comp/BoAreaComp.js) `window.BoFormArea`
+([`base/boApp.js`](../../../base/boApp.js) 에서 등록).
+
+**컬럼 변수명**: `baseFormColumns` (기본), `infoFormColumns` / `contentFormColumns`
+(탭별 부분 적용), `xxxFormColumns` 접미사 통일.
+
+#### 지원 타입
+
+| `type` | 동작 | 비고 |
+|---|---|---|
+| `text` / `password` | input | `mono:true` 로 monospace |
+| `number` | input[type=number] | `min`/`max` |
+| `date` | input[type=date] | - |
+| `textarea` | textarea | `rows` 지정 |
+| `select` | select | `options: ()=>codes.xxx` 함수형. `nullable:false` 면 "전체" 옵션 제거 |
+| `checkbox` | Y/N 토글 | `checkedValue`/`uncheckedValue` 커스텀 가능 |
+| `readonly` | 표시 전용 | `fmt: ()=>cfSiteNm.value` |
+| `pathPick` | 표시경로 picker | `onOpen` / `pathLabel` 콜백 |
+| `slot` | 슬롯 탈출구 | `name` 지정, 부모에서 `<template #name>` |
+| `rowBreak` | 강제 줄바꿈 | 다음 필드를 새 form-row 로 |
+
+#### 공통 컬럼 속성
+
+| 속성 | 타입 | 동작 |
+|---|---|---|
+| `key` | string | `form[key]` 바인딩 + `errors[key]` 키 |
+| `label` | string | 라벨 |
+| `required` | boolean | 라벨에 `*` 표시 |
+| `placeholder` | string | 입력 힌트 |
+| `colSpan` | 1~N | 한 칸 차지 폭 (기본 1). cols 초과 시 자동 줄바꿈 |
+| `width` | string | input width 직접 지정 |
+| `readonly` | boolean | **컬럼별** readonly (전체 readonly 와 별개) |
+| `mono` | boolean | monospace 폰트 |
+| `hint` | string | 라벨 아래 회색 보조 텍스트 |
+| `visible` | `(form)=>bool` | 조건부 렌더 |
+| `onChange` | `(v,form,ev)=>void` | 변경 콜백 (예: uppercase 변환) |
+| `fmt` | `(v,form)=>string` | `readonly` 타입 표시값 변환 |
+| `hideLabel` | boolean | 라벨 영역 자리는 유지하되 보이지 않게 (checkbox 정렬용) |
+
+#### Props / Emits
+
+| Prop | 기본값 | 설명 |
+|---|---|---|
+| `columns` | required | 컬럼 정의 배열 |
+| `form` | required | reactive 폼 객체 |
+| `errors` | `{}` | Yup 검증 에러 맵 |
+| `readonly` | `false` | view 모드(`cfDtlMode`) 전체 적용 |
+| `cols` | `3` | 한 줄 필드 수. `colSpan` 누적이 초과 시 자동 줄바꿈 |
+| `showActions` | `true` | 하단 [저장][취소] / [수정][닫기] 버튼 자동 렌더 |
+| `saveLabel`/`cancelLabel`/`editLabel`/`closeLabel` | - | 버튼 라벨 커스텀 |
+
+**Emits**: `@save` / `@cancel` / `@edit` / `@close` — readonly 면 [수정][닫기], 편집모드
+면 [저장][취소] 가 자동 노출.
+
+#### 옵션 정규화 (`_boAreaCompUtil.normOptions`)
+
+select `options` 는 함수형 + 다양한 배열 형식 지원:
+- `[{value, label}]`
+- `[{codeValue, codeLabel}]` — sy_code 표준
+- `['A','B','C']` — 문자열 배열 (`{value:'A', label:'A'}` 로 변환)
+- `()=>codes.xxx` — 함수형 (지연 로드 안전)
+
+#### 외부 툴바·picker 패턴 (`:show-actions=false`)
+
+상위에서 저장/삭제/닫기 버튼을 별도 렌더하거나, 부서/판매업체 picker 같은 외부 모달
+연동 필드가 있으면 액션 슬롯을 끄고 폼만 위임:
+
+```html
+<div class="toolbar"><button @click="handleSave">저장</button>...</div>
+<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+  :cols="2" :show-actions="false">
+  <template #dept>
+    <!-- 부서 picker 등 커스텀 슬롯 -->
+  </template>
+</bo-form-area>
+```
+
+#### 미적용(KEEP) 패턴
+
+다음 케이스는 BoFormArea 로 변환 금지 — 슬롯·KEEP 유지:
+
+1. **위젯 유형별 60+ 동적 분기 필드** (DpDispWidgetDtl 의 cfIs*=true 분기 영역) —
+   위젯 type 에 따라 노출 필드가 대규모로 바뀌는 분기 폼. 단순 위젯코드/명/상태 영역은
+   적용 가능.
+2. **카테고리 드래그·담당MD 인라인 모달·옵션·SKU 동적 그리드·다중 Quill** (PdProdDtl
+   의 카테고리/MD/이미지/옵션/내용블록 영역) — 단순 필드(상품명/가격/재고제한/광고기간/
+   무게사이즈)만 부분 적용.
+3. **동적 v-for 행 추가/삭제 UI** — 옵션/SKU/권한/위젯 행 단위 추가·삭제는 행 그리드로
+   별도 처리. 폼이 아님.
+4. **검색영역** — BoSearchArea 별도 정책 (§ BoSearchArea `:columns` 적용 — CLAUDE.md
+   루트 정책).
+
+#### 적용 현황 (BO 전 도메인 — 2026-05-21)
+
+**Dtl (상세/등록) 30개 — 전체 적용**:
+
+| 그룹 | 파일 | 적용 방식 |
+|---|---|---|
+| A: 전체 전환 | SyBbmDtl / SyAlarmDtl / SyBatchDtl / SyCodeDtl / CmNoticeDtl / MbMemberDtl / PdCategoryDtl | `<bo-form-area>` 1개로 폼 전체 대체 |
+| B: 핵심 form-row 전환 | SySiteDtl / SyVendorDtl / SyContactDtl / SyBbsDtl / SyUserDtl / OdOrderDtl / OdClaimDtl / OdDlivDtl / PmCacheDtl / PmDiscntDtl / PmGiftDtl / PmSaveDtl / PmVoucherDtl | 기본정보·info 탭만 BoFormArea, picker·Quill 은 slot |
+| C: 일부 form-row 전환 | SyTemplateDtl / CmChattDtl / DpDispAreaDtl / DpDispUiDtl / DpDispWidgetLibDtl(+클릭동작) / DpDispPanelDtl / PmCouponDtl / PmEventDtl / PmPlanDtl | 단순 필드 영역만, 복잡 영역은 KEEP |
+| D: 다영역 부분 전환 (대형 Dtl) | PdProdDtl(상품명/상태/판매기간/무게사이즈/구매제한/기본가격/광고기간 — 6영역) / DpDispWidgetDtl(위젯코드/명/상태/설명/태그 + 클릭동작) | 단순 form-row 영역 다수, 위젯유형별 동적 분기·Quill·카테고리·옵션·SKU 등은 KEEP |
+
+**Mng/Hist 내부 폼 영역 (인라인 편집·신규 카드·일괄결재 모달 등) 9개**:
+
+| 파일 | 영역 |
+|---|---|
+| StConfigMng | 정산기준 추가/수정 편집 폼 (4컬럼) |
+| StSettleAdjMng | 조정 추가/수정 편집 폼 (4컬럼) |
+| StSettleEtcAdjMng | 기타조정 추가/수정 편집 폼 (4컬럼) |
+| PdBundleMng | 신규 묶음상품 기본정보 (브랜드/판매업체는 slot) |
+| PdSetMng | 신규 세트상품 기본정보 (브랜드/판매업체는 slot) |
+| OdClaimHist | 처리 정보 탭 (환불금액/방법/메모) |
+| OdClaimMng | 일괄결재요청 모달 (전화번호/이메일 readonly, 요청대상/요청대상명) |
+| OdDlivMng | 일괄결재요청 모달 (동일 구조) |
+| OdOrderMng | 일괄결재요청 모달 (동일 구조) |
+
+**대형 Dtl 추가 변환 영역 (PdProdDtl·DpDispPanelDtl)**:
+- PdProdDtl: 판매기간(saleStartDate/saleEndDate, BoDateTimePicker slot) 추가
+- DpDispPanelDtl: 위젯 1~5 섹션의 위젯유형/노출순서 (v-for 로컬 변수 `r`에 바인딩)
+- PmDiscntDtl: detail 탭 할인적용·기간설정 2개 (각각 BoFormArea)
+- PmEventDtl/PmPlanDtl: 판매업체/판매담당자 (vendor slot)
+- SyBbsDtl/SyContactDtl: 사이트명 readonly 영역
+
+총 **30개 Dtl + 9개 Mng/Hist 폼 + BoFormArea 컴포넌트 + boApp 등록**. `node --check` 0 실패.
+
+---
+
 ## 5. 상세화면 ID 표시 정책
 
 ### 5.1 목적

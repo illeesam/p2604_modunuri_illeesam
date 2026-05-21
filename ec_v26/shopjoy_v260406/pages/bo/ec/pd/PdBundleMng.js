@@ -457,10 +457,24 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const fnBundleStatusText = (g) =>
       g.prod ? (g.prod.prodStatusCd || g.prod.status || '-') : '-';
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 신규 묶음상품 기본정보 ========
+    const newBundleFormColumns = [
+      { key: 'prodNm',       label: '묶음상품명', type: 'text', required: true,
+        placeholder: '묶음상품명 입력', colSpan: 2 },
+      { key: 'prodStatusCd', label: '상태', type: 'select', options: () => codes.bundle_statuses },
+      { type: 'rowBreak' },
+      { key: 'listPrice',    label: '정가 (list_price)', type: 'number', min: 0, placeholder: '0' },
+      { key: 'salePrice',    label: '판매가 (sale_price)', type: 'number', required: true, min: 0, placeholder: '0' },
+      { type: 'rowBreak' },
+      { key: 'brandId',      label: '브랜드', type: 'slot', name: 'brand' },
+      { key: 'vendorId',     label: '판매업체', type: 'slot', name: 'vendor' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return {
       baseSearchColumns, bundleGridColumns, fnBundleRowStyle, fnBundleStatusBadge, fnBundleStatusText,
+      newBundleFormColumns,
       codes, uiState, bundles, bundleList,
       searchParam, pager, setPage,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
@@ -554,57 +568,29 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
 
-    <!-- -- ① 기본정보 (신규 시만 표시) -------------------------------------------- -->
+    <!-- 신규 묶음상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">묶음상품 기본정보 (pd_prod)</div>
-      <div class="form-row">
-        <div class="form-group" style="flex:2">
-          <label class="form-label">묶음상품명 <span style="color:#f5222d">*</span></label>
-          <input class="form-control" :class="{'is-invalid': newErrors.prodNm}"
-                 v-model="newForm.prodNm" placeholder="묶음상품명 입력" maxlength="200">
-          <div v-if="newErrors.prodNm" class="field-error">{{ newErrors.prodNm }}</div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-control" v-model="newForm.prodStatusCd">
-            <option v-for="c in codes.bundle_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">정가 (list_price)</label>
-          <input type="number" class="form-control" v-model.number="newForm.listPrice"
-                 min="0" placeholder="0">
-        </div>
-        <div class="form-group">
-          <label class="form-label">판매가 (sale_price) <span style="color:#f5222d">*</span></label>
-          <input type="number" class="form-control" :class="{'is-invalid': newErrors.salePrice}"
-                 v-model.number="newForm.salePrice" min="0" placeholder="0">
-          <div v-if="newErrors.salePrice" class="field-error">{{ newErrors.salePrice }}</div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">브랜드</label>
+      <bo-form-area :columns="newBundleFormColumns" :form="newForm" :errors="newErrors"
+        :cols="3" :show-actions="false">
+        <!-- 브랜드/판매업체는 빈 옵션 선택 (실데이터 미반영) — 슬롯 처리 -->
+        <template #brand>
           <select class="form-control" v-model="newForm.brandId">
             <option value="">선택</option>
             <option v-for="b in ([]||[])" :key="(b && b.brandId)" :value="b.brandId">
               {{ b.brandNm || b.brandName }}
             </option>
           </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">판매업체</label>
+        </template>
+        <template #vendor>
           <select class="form-control" v-model="newForm.vendorId">
             <option value="">선택</option>
             <option v-for="v in ([]||[])" :key="(v && v.vendorId)" :value="v.vendorId">
               {{ v.vendorNm || v.vendorName }}
             </option>
           </select>
-        </div>
-      </div>
-
+        </template>
+      </bo-form-area>
     </div>
 
     <!-- -- ② 카테고리 N개 (신규/편집 공통) ----------------------------------------- -->

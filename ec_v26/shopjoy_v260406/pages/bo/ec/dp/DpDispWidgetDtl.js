@@ -570,6 +570,24 @@ window.DpDispWidgetDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 위젯 기본 설정 ================
+    const baseWidgetFormColumns = [
+      { key: 'libCode', label: '위젯코드', type: 'text', required: true,
+        placeholder: '비워두면 자동 생성 (예: DW_260508_191415)', mono: true },
+      { key: 'name',    label: '라이브러리명', type: 'text', required: true, placeholder: '위젯 이름' },
+      { key: 'status',  label: '상태', type: 'select', options: () => codes.active_statuses },
+      { type: 'rowBreak' },
+      { key: 'desc',    label: '설명', type: 'text', placeholder: '위젯 용도·설명 메모', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'tags',    label: '태그', type: 'text', placeholder: '봄,배너,시즌',
+        hint: '쉼표 구분', colSpan: 2 },
+    ];
+    // 클릭 액션 (클릭 동작 / 클릭 대상)
+    const clickActionFormColumns = [
+      { key: 'clickAction', label: '클릭 동작', type: 'select', options: () => codes.click_action_opts },
+      { key: 'clickTarget', label: '클릭 대상', type: 'text', placeholder: '/products 또는 이벤트명' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return {
@@ -583,6 +601,7 @@ window.DpDispWidgetDtl = {
       cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
+      baseWidgetFormColumns, clickActionFormColumns,
     };
   },
   template: /* html */`
@@ -648,32 +667,9 @@ window.DpDispWidgetDtl = {
           <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
           설정
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">위젯코드 <span style="color:#e8587a;">*</span></label>
-            <input v-model="form.libCode" class="form-control" :class="{'is-invalid':errors.libCode}" placeholder="비워두면 자동 생성 (예: DW_260508_191415)" style="margin:0;font-family:monospace;" />
-            <div v-if="errors.libCode" class="field-error">{{ errors.libCode }}</div>
-          </div>
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">라이브러리명 <span style="color:#e8587a;">*</span></label>
-            <input v-model="form.name" class="form-control" :class="{'is-invalid':errors.name}" placeholder="위젯 이름" style="margin:0;" />
-            <div v-if="errors.name" class="field-error">{{ errors.name }}</div>
-          </div>
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">상태</label>
-            <select v-model="form.status" class="form-control" style="margin:0;">
-              <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin:0;grid-column:1/-1;">
-            <label class="form-label">설명</label>
-            <input v-model="form.desc" class="form-control" placeholder="위젯 용도·설명 메모" style="margin:0;" />
-          </div>
-          <div class="form-group" style="margin:0;grid-column:1/-1;">
-            <label class="form-label">태그 <span style="font-size:10px;color:#aaa;">(쉼표 구분)</span></label>
-            <input v-model="form.tags" class="form-control" placeholder="봄,배너,시즌" style="margin:0;" />
-          </div>
-        </div>
+        <!-- 위젯코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) -->
+        <bo-form-area :columns="baseWidgetFormColumns" :form="form" :errors="errors"
+          :readonly="cfDtlMode" :cols="2" :show-actions="false" />
         <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
           <label v-for="opt in dispEnvOptions" :key="opt?.code"
@@ -741,21 +737,11 @@ window.DpDispWidgetDtl = {
         </div>
         <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">{{ errors.widgetType }}</div>
 
-        <!-- -- 클릭 액션 (html_editor·file_list·embed 제외) ------------------- -->
+        <!-- 클릭 액션 (html_editor·file_list·embed 제외) - BoFormArea 자동 렌더 -->
         <div v-if="!cfIsHtmlEditor && !cfIsFileList && !cfIsEmbed" style="margin-bottom:12px;">
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">👆 클릭동작</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div class="form-group" style="margin:0;">
-              <label class="form-label">클릭 동작</label>
-              <select v-model="form.clickAction" class="form-control" style="margin:0;">
-                <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin:0;">
-              <label class="form-label">클릭 대상</label>
-              <input v-model="form.clickTarget" class="form-control" placeholder="/products 또는 이벤트명" style="margin:0;" />
-            </div>
-          </div>
+          <bo-form-area :columns="clickActionFormColumns" :form="form" :errors="errors"
+            :readonly="cfDtlMode" :cols="2" :show-actions="false" />
         </div>
 
         <!-- -- 공통 동적 행 -------------------------------------------------- -->

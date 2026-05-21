@@ -146,7 +146,10 @@ window.SyBbsDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 사이트명 + 기본정보 영역 =====
+    const siteFormColumns = [
+      { key: 'siteNm',      label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
+    ];
     const baseFormColumns = [
       { key: 'bbsTitle',    label: '제목', type: 'text', required: true,
         placeholder: '게시글 제목', colSpan: 2 },
@@ -157,19 +160,16 @@ window.SyBbsDtl = {
     // ===== setup() return ===================================================
     const dtlId = Vue.computed(() => props.dtlId);
     return { uiState, codes, cfIsNew, dtlId, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
-      showBbmModal, onBbmSelect, handleSave, cfSiteNm, cfDtlMode, baseFormColumns, showToast,
+      showBbmModal, onBbmSelect, handleSave, cfSiteNm, cfDtlMode, baseFormColumns, siteFormColumns, showToast,
     };
   },
   template: /* html */`
 <div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbsId }}</span></div>
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ cfSiteNm }}</div>
-      </div>
-    </div>
+    <!-- 사이트명 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
+      :cols="4" :show-actions="false" />
 
     <!-- ── 게시판 선택 ─────────────────────────────────────────────────────── -->
     <div class="form-group">

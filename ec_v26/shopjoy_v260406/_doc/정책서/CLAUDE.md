@@ -241,6 +241,7 @@
 | **기술 표준** | `base/base.*.md`, `sy.5*.md` |
 | **UI 정책** | `base/base.UX-*.md` |
 | **BoGrid 컬럼 속성화** ⭐ | `sy.51.프로그램설계정책.md` §4.6 — #cell- 슬롯 대신 columns 의 fmt/badge/cellStyle/cellClass/edit 로 (AG-Grid colDef 식) |
+| **BoFormArea 폼 자동 렌더** ⭐ | `sy.51.프로그램설계정책.md` §4.7 — Dtl 의 form-row 보일러플레이트를 `baseFormColumns`/`infoFormColumns` 정의로 대체 (BO Dtl 28개 전환 완료) |
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
 | **`/api/base/**` 호출 금지** ⭐ | `base/base.기술-api.md` §3.5 — 클라이언트는 `/api/bo/**` / `/api/fo/**` 만 호출 |
 | **탭별 저장 후 재조회** ⭐ | `base/base.UX-admin.md` §18 — 저장 탭 즉시 GET 재조회, 첫 탭 저장 시 상위 Mng 도 재조회 |

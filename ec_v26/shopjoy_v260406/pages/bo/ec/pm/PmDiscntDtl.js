@@ -205,7 +205,17 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
       { key: 'chargeStaff',  label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor, infoFormColumns };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 할인적용/기간설정 ===
+    const discntApplyFormColumns = [
+      { key: 'minOrderAmt',  label: '최소주문금액 (원)', type: 'number', placeholder: '0' },
+      { key: 'maxDiscntAmt', label: '최대할인금액 (원)', type: 'number', placeholder: '0 = 무제한' },
+    ];
+    const discntPeriodFormColumns = [
+      { key: 'startDate', label: '시작일', type: 'date' },
+      { key: 'endDate',   label: '종료일', type: 'date' },
+    ];
+
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor, infoFormColumns, discntApplyFormColumns, discntPeriodFormColumns };
   },
   template: /* html */`
 <div>
@@ -288,34 +298,18 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
         </div>
       </div>
 
-      <!-- -- 할인적용 ------------------------------------------------------- -->
+      <!-- 할인적용 (BoFormArea 자동 렌더) -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">💰 할인적용</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">최소주문금액 (원)</label>
-            <input class="form-control" type="number" v-model.number="form.minOrderAmt" placeholder="0" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">최대할인금액 (원)</label>
-            <input class="form-control" type="number" v-model.number="form.maxDiscntAmt" placeholder="0 = 무제한" />
-          </div>
-        </div>
+        <bo-form-area :columns="discntApplyFormColumns" :form="form" :errors="errors"
+          :cols="2" :show-actions="false" />
       </div>
 
-      <!-- -- 기간설정 ------------------------------------------------------- -->
+      <!-- 기간설정 (BoFormArea 자동 렌더) -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">📅 기간설정</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">시작일</label>
-            <input class="form-control" type="date" v-model="form.startDate" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">종료일</label>
-            <input class="form-control" type="date" v-model="form.endDate" />
-          </div>
-        </div>
+        <bo-form-area :columns="discntPeriodFormColumns" :form="form" :errors="errors"
+          :cols="2" :show-actions="false" />
       </div>
 
       <!-- -- 상태 및 비고 ---------------------------------------------------- -->

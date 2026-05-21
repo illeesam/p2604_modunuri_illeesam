@@ -759,6 +759,11 @@ window.DpDispPanelDtl = {
       { key: 'name',     label: '패널명', type: 'text', required: true, placeholder: '패널 이름' },
       { key: 'status',   label: '상태', type: 'select', options: () => codes.active_statuses },
     ];
+    // 위젯 행: 위젯 유형/노출 순서 (각 row 객체에 바인딩)
+    const widgetRowFormColumns = [
+      { key: 'widgetType', label: '위젯 유형', type: 'select', options: () => codes.disp_widget_types },
+      { key: 'sortOrder',  label: '노출 순서', type: 'number', min: 1 },
+    ];
 
     // -- return ---------------------------------------------------------------
 
@@ -783,7 +788,7 @@ window.DpDispPanelDtl = {
       fnGetDisplayRows, fnGetRelatedEvent,
       fnGetFileListItems, fnAddFileItemAt, fnRemoveFileItemAt, fnSetFileItem,
       moveRowAt, codes, cfDtlMode, fileListGridColumns, fnFileListColsForRow,
-      basePanelFormColumns,
+      basePanelFormColumns, widgetRowFormColumns,
     };
   },
   template: /* html */`
@@ -1481,18 +1486,9 @@ window.DpDispPanelDtl = {
           <!-- -- v-for 단일 아이템 트릭으로 r 로컬 변수 생성 --------------------------- -->
           <template v-else-if="t.key !== 'info'" v-for="r in [rows[cfTabRowMap[t.key]]]" :key="'r_'+t.key">
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📐 위젯 설정</div>
-            <div class="form-row" style="margin-bottom:16px;">
-              <div class="form-group">
-                <label class="form-label">위젯 유형</label>
-                <select class="form-control" v-model="r.widgetType" :disabled="cfDtlMode">
-                  <option v-for="w in codes.disp_widget_types" :key="w?.codeValue" :value="w.codeValue">{{ w.codeLabel }}</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">노출 순서</label>
-                <input class="form-control" type="number" v-model.number="r.sortOrder" min="1" :readonly="cfDtlMode" />
-              </div>
-            </div>
+            <!-- 위젯 유형/노출 순서 (BoFormArea 자동 렌더, r 로컬 변수에 바인딩) -->
+            <bo-form-area :columns="widgetRowFormColumns" :form="r" :errors="{}"
+              :readonly="cfDtlMode" :cols="2" :show-actions="false" />
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
               <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">

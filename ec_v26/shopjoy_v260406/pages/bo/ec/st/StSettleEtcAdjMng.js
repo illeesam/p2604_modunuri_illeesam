@@ -207,7 +207,20 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'regUserNm',    label: '등록자' },
     ];
 
-    return { uiState, handleDateRangeChange, codes, pager, etcAdjList, baseSearchColumns, baseGridColumns, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기타조정 추가/수정 ============
+    const baseFormColumns = [
+      { key: 'vendorId', label: '업체', type: 'select', required: true, nullLabel: '선택',
+        options: () => (cfVendors.value || []).map(v => ({ value: v.vendorId, label: v.vendorNm })) },
+      { key: 'adjType',  label: '조정유형', type: 'select', required: true, nullable: false,
+        options: () => codes.settle_etc_adj_types },
+      { key: 'adjAmt',   label: '조정금액(원)', type: 'number', placeholder: '음수 입력 시 차감' },
+      { key: 'adjDate',  label: '조정일자', type: 'date' },
+      { type: 'rowBreak' },
+      { key: 'reason',   label: '사유', type: 'text', required: true,
+        placeholder: '기타조정 사유를 입력하세요.', colSpan: 4 },
+    ];
+
+    return { uiState, handleDateRangeChange, codes, pager, etcAdjList, baseSearchColumns, baseGridColumns, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange, baseFormColumns };
   },
   template: /* html */`
 <div>
@@ -240,42 +253,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </template>
     </bo-grid>
   </div>
+  <!-- 편집 폼 (BoFormArea 자동 렌더) -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}</div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">업체 <span style="color:red">*</span></label>
-        <select class="form-control" :class="{'is-invalid':errors.vendorId}" v-model.number="form.vendorId">
-          <option value="">선택</option>
-          <option v-for="v in cfVendors" :key="v?.vendorId" :value="v.vendorId">{{ v.vendorNm }}</option>
-        </select>
-        <div v-if="errors.vendorId" class="field-error">{{ errors.vendorId }}</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">조정유형 <span style="color:red">*</span></label>
-        <select class="form-control" :class="{'is-invalid':errors.adjType}" v-model="form.adjType">
-          <option v-for="c in codes.settle_etc_adj_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-        <div v-if="errors.adjType" class="field-error">{{ errors.adjType }}</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">조정금액(원)</label>
-        <input class="form-control" v-model.number="form.adjAmt" type="number" placeholder="음수 입력 시 차감" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">조정일자</label>
-        <input class="form-control" v-model="form.adjDate" type="date" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">사유 <span style="color:red">*</span></label>
-      <input class="form-control" :class="{'is-invalid':errors.reason}" v-model="form.reason" placeholder="기타조정 사유를 입력하세요." />
-      <div v-if="errors.reason" class="field-error">{{ errors.reason }}</div>
-    </div>
-    <div class="form-actions">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="closeForm">취소</button>
-    </div>
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :cols="4"
+      @save="handleSave" @cancel="closeForm" />
   </div>
 </div>
 `,

@@ -552,6 +552,16 @@ window.DpDispWidgetLibDtl = {
       { key: 'name',    label: '라이브러리명', type: 'text', required: true,
         placeholder: '위젯 Lib 이름' },
       { key: 'status',  label: '상태', type: 'select', options: () => codes.active_statuses },
+      { type: 'rowBreak' },
+      { key: 'desc',    label: '설명', type: 'text', placeholder: '위젯 용도·설명 메모', colSpan: 3 },
+      { type: 'rowBreak' },
+      { key: 'tags',    label: '태그', type: 'text', placeholder: '봄,배너,시즌',
+        hint: '쉼표 구분', colSpan: 3 },
+    ];
+    // 클릭 액션
+    const clickActionFormColumns = [
+      { key: 'clickAction', label: '클릭 동작', type: 'select', options: () => codes.click_action_opts },
+      { key: 'clickTarget', label: '클릭 대상', type: 'text', placeholder: '/products 또는 이벤트명' },
     ];
 
     return {
@@ -564,7 +574,7 @@ window.DpDispWidgetLibDtl = {
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
       cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
-      baseLibFormColumns,
+      baseLibFormColumns, clickActionFormColumns,
     };
   },
   template: /* html */`
@@ -599,21 +609,9 @@ window.DpDispWidgetLibDtl = {
           <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
           설정
         </div>
-        <!-- Lib코드/라이브러리명/상태 (BoFormArea 자동 렌더) -->
+        <!-- Lib코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) -->
         <bo-form-area :columns="baseLibFormColumns" :form="form" :errors="errors"
           :readonly="false" :cols="3" :show-actions="false" />
-        <div class="form-row" style="margin-bottom:8px;">
-          <div class="form-group" style="grid-column:1/-1;">
-            <label class="form-label">설명</label>
-            <input v-model="form.desc" class="form-control" placeholder="위젯 용도·설명 메모" style="margin:0;" />
-          </div>
-        </div>
-        <div class="form-row" style="margin-bottom:12px;">
-          <div class="form-group" style="grid-column:1/-1;">
-            <label class="form-label">태그 <span style="font-size:10px;color:#aaa;">(쉼표 구분)</span></label>
-            <input v-model="form.tags" class="form-control" placeholder="봄,배너,시즌" style="margin:0;" />
-          </div>
-        </div>
         <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로 (예: FO.모바일메인)</span></div>
         <div v-for="(_id, pi) in (form.usedPathIds || [])" :key="pi"
           style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
@@ -665,21 +663,11 @@ window.DpDispWidgetLibDtl = {
         </div>
         <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">{{ errors.widgetType }}</div>
 
-        <!-- -- 클릭동작 ----------------------------------------------------- -->
+        <!-- 클릭동작 (BoFormArea 자동 렌더) -->
         <div v-if="!cfIsHtmlEditor && !cfIsFileList && !cfIsEmbed" style="margin-bottom:14px;">
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">👆 클릭동작</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div class="form-group" style="margin:0;">
-              <label class="form-label">클릭 동작</label>
-              <select v-model="form.clickAction" class="form-control" style="margin:0;">
-                <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin:0;">
-              <label class="form-label">클릭 대상</label>
-              <input v-model="form.clickTarget" class="form-control" placeholder="/products 또는 이벤트명" style="margin:0;" />
-            </div>
-          </div>
+          <bo-form-area :columns="clickActionFormColumns" :form="form" :errors="errors"
+            :readonly="false" :cols="2" :show-actions="false" />
         </div>
 
         <!-- -- 공통 동적 행 -------------------------------------------------- -->

@@ -1202,6 +1202,57 @@ window.PdProdDtl = {
     const onPlanToggleCheckAll = () => { cfPlanAllChecked.value = !cfPlanAllChecked.value; };
     const fnPlanRowStyle2 = (row) => planRowStyle(row._row_status);
 
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 부분 적용 영역 ================
+    // 상품명/상품코드 (2 fields, 1 row)
+    const prodNameFormColumns = [
+      { key: 'prodNm',   label: '상품명', type: 'text', required: true, placeholder: '상품명' },
+      { key: 'prodCode', label: '상품코드 (SKU)', type: 'text', placeholder: '예: SKU-20260419-001' },
+    ];
+    // 상태/미판매메시지 (2 fields)
+    const prodStatusFormColumns = [
+      { key: 'prodStatusCd', label: '상태 (prod_status_cd)', type: 'select',
+        options: () => grpCodes.product_statuses },
+      { key: 'unsaleMsg',    label: '미판매메시지', type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
+        hint: '판매불가 시 고객 노출' },
+    ];
+    // 무게/사이즈
+    const prodSizeFormColumns = [
+      { key: 'weight',     label: '무게 (kg)', type: 'number', min: 0, placeholder: '예: 0.35' },
+      { key: 'sizeInfoCd', label: '사이즈 (size_info_cd)', type: 'select',
+        options: () => ['FREE','XS','S','M','L','XL','XXL'] },
+    ];
+    // 구매 제한 (4 fields, 2 rows)
+    const buyLimitFormColumns = [
+      { key: 'minBuyQty',    label: '최소구매수량 (min_buy_qty)', type: 'number', min: 1, placeholder: '1' },
+      { key: 'maxBuyQty',    label: '1회 최대구매수량 (max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
+      { key: 'dayMaxBuyQty', label: '1일 최대구매수량 (day_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
+      { key: 'idMaxBuyQty',  label: 'ID당 누적 최대 (id_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
+    ];
+    // 기본 가격 (3 rows: 정가/판매가, 매입가/마진율, 플랫폼수수료율/금액)
+    const basePriceFormColumns = [
+      { key: 'listPrice',         label: '정가 (list_price)', type: 'number', required: true, min: 0, placeholder: '0' },
+      { key: 'salePrice',         label: '판매가 (sale_price)', type: 'number', required: true, min: 0, placeholder: '0' },
+      { key: 'purchasePrice',     label: '매입가 / 원가 (purchase_price)', type: 'number', placeholder: '(선택)',
+        hint: '내부관리용' },
+      { key: '_marginRate',       label: '마진율 (margin_rate)', type: 'slot', name: 'marginRate' },
+      { key: 'platformFeeRate',   label: '플랫폼수수료 율 (platform_fee_rate)', type: 'number',
+        placeholder: '(예: 5.5)', hint: '% — 내부관리용' },
+      { key: 'platformFeeAmount', label: '플랫폼수수료 금액 (platform_fee_amount)', type: 'number', min: 0,
+        placeholder: '(요율과 둘 중 하나만 입력)', hint: '원 — 내부관리용' },
+    ];
+    // 광고 노출 기간 (2 fields)
+    const advrtPeriodFormColumns = [
+      { key: 'advrtStartDate', label: '노출 시작 (advrt_start_date)', type: 'slot', name: 'advrtStart' },
+      { key: 'advrtEndDate',   label: '노출 종료 (advrt_end_date)', type: 'slot', name: 'advrtEnd' },
+    ];
+    // 판매기간 (BoDateTimePicker slot)
+    const salePeriodFormColumns = [
+      { key: 'saleStartDate', label: '판매 시작일시', type: 'slot', name: 'saleStart',
+        hint: 'NULL=즉시' },
+      { key: 'saleEndDate',   label: '판매 종료일시', type: 'slot', name: 'saleEnd',
+        hint: 'NULL=무기한' },
+    ];
+
     // -- return ---------------------------------------------------------------
 
     return { cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
@@ -1232,6 +1283,8 @@ window.PdProdDtl = {
       relProdGridColumns, codeProdGridColumns, planGridColumns,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
+      buyLimitFormColumns, basePriceFormColumns, advrtPeriodFormColumns, salePeriodFormColumns,
+      prodNameFormColumns, prodStatusFormColumns, prodSizeFormColumns,
     };
   },
   template: /* html */`
@@ -1272,18 +1325,9 @@ window.PdProdDtl = {
   <div class="card" v-show="showTab('info')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
 
-    <!-- -- 상품명 / 상품코드 --------------------------------------------------- -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">상품명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.prodNm" placeholder="상품명" :class="errors.prodNm?'is-invalid':''" />
-        <span v-if="errors.prodNm" class="field-error">{{ errors.prodNm }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">상품코드 (SKU)</label>
-        <input class="form-control" v-model="form.prodCode" placeholder="예: SKU-20260419-001" />
-      </div>
-    </div>
+    <!-- 상품명 / 상품코드 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="prodNameFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false" />
 
     <!-- -- 카테고리 / 브랜드 --------------------------------------------------- -->
     <div class="form-row">
@@ -1396,47 +1440,24 @@ window.PdProdDtl = {
       </div>
     </teleport>
 
-    <!-- -- 상태 ----------------------------------------------------------- -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">상태 (prod_status_cd)</label>
-        <select class="form-control" v-model="form.prodStatusCd">
-          <option v-for="c in grpCodes.product_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">미판매메시지 <span style="color:#aaa;font-size:11px;">(판매불가 시 고객 노출)</span></label>
-        <input class="form-control" v-model="form.unsaleMsg" placeholder="예: 현재 판매 준비 중입니다." maxlength="200" />
-        <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.unsaleMsg||'').length }} / 200</div>
-      </div>
-    </div>
+    <!-- 상태 / 미판매메시지 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="prodStatusFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false" />
 
-    <!-- -- 판매기간 --------------------------------------------------------- -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">판매 시작일시 <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL=즉시)</span></label>
+    <!-- 판매기간 (BoFormArea 자동 렌더, BoDateTimePicker slot) -->
+    <bo-form-area :columns="salePeriodFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      <template #saleStart>
         <bo-date-time-picker v-model="form.saleStartDate" placeholder-date="즉시" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">판매 종료일시 <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL=무기한)</span></label>
+      </template>
+      <template #saleEnd>
         <bo-date-time-picker v-model="form.saleEndDate" placeholder-date="무기한" />
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
 
-    <!-- -- 무게 / 사이즈 ----------------------------------------------------- -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">무게 (kg)</label>
-        <input class="form-control" type="number" v-model.number="form.weight" placeholder="예: 0.35" step="0.01" min="0" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">사이즈 (size_info_cd)</label>
-        <select class="form-control" v-model="form.sizeInfoCd">
-          <option value="">-- 선택 --</option>
-          <option v-for="s in ['FREE','XS','S','M','L','XL','XXL']" :key="Math.random()" :value="s">{{ s }}</option>
-        </select>
-      </div>
-    </div>
+    <!-- 무게 / 사이즈 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="prodSizeFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false" />
 
     <!-- -- 체크박스 그룹 ------------------------------------------------------ -->
     <div style="display:flex;flex-wrap:wrap;gap:20px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
@@ -1816,41 +1837,23 @@ window.PdProdDtl = {
       <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
       <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.advrtStmt||'').length }} / 500</div>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">노출 시작 (advrt_start_date)</label>
+    <!-- 광고 노출 기간 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="advrtPeriodFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      <template #advrtStart>
         <bo-date-time-picker v-model="form.advrtStartDate" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">노출 종료 (advrt_end_date)</label>
+      </template>
+      <template #advrtEnd>
         <bo-date-time-picker v-model="form.advrtEndDate" />
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
 
-    <!-- -- 구매 제한 -------------------------------------------------------- -->
+    <!-- 구매 제한 (BoFormArea 자동 렌더) -->
     <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">
       구매 제한 <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL = 무제한)</span>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">최소구매수량 (min_buy_qty)</label>
-        <input class="form-control" type="number" v-model.number="form.minBuyQty" placeholder="1" min="1" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">1회 최대구매수량 (max_buy_qty)</label>
-        <input class="form-control" type="number" v-model.number="form.maxBuyQty" placeholder="무제한" min="1" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">1일 최대구매수량 (day_max_buy_qty)</label>
-        <input class="form-control" type="number" v-model.number="form.dayMaxBuyQty" placeholder="무제한" min="1" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">ID당 누적 최대 (id_max_buy_qty)</label>
-        <input class="form-control" type="number" v-model.number="form.idMaxBuyQty" placeholder="무제한" min="1" />
-      </div>
-    </div>
+    <bo-form-area :columns="buyLimitFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false" />
 
     <!-- -- 혜택 적용 여부 ----------------------------------------------------- -->
     <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">혜택 적용 여부</div>
@@ -2052,44 +2055,19 @@ window.PdProdDtl = {
   <div class="card" v-show="showTab('price')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
 
-    <!-- --- 섹션1: 기본 가격 --- -->
+    <!-- 기본 가격 (BoFormArea 자동 렌더) -->
     <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
       기본 가격 <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">정가 (list_price) <span class="req">*</span></label>
-        <input class="form-control" type="number" v-model.number="form.listPrice" placeholder="0" min="0" :class="errors.listPrice?'is-invalid':''" />
-        <span v-if="errors.listPrice" class="field-error">{{ errors.listPrice }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">판매가 (sale_price) <span class="req">*</span></label>
-        <input class="form-control" type="number" v-model.number="form.salePrice" placeholder="0" min="0" :class="errors.salePrice?'is-invalid':''" />
-        <span v-if="errors.salePrice" class="field-error">{{ errors.salePrice }}</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">매입가 / 원가 (purchase_price) <span style="color:#aaa;font-size:11px;">내부관리용</span></label>
-        <input class="form-control" type="number" v-model.number="form.purchasePrice" placeholder="(선택)" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">마진율 (margin_rate)</label>
+    <bo-form-area :columns="basePriceFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      <!-- 마진율 (purchasePrice 입력 시 자동 계산) -->
+      <template #marginRate>
         <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
           {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
         </div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">플랫폼수수료 율 (platform_fee_rate) <span style="color:#aaa;font-size:11px;">% — 내부관리용</span></label>
-        <input class="form-control" type="number" step="0.01" min="0" max="100" v-model.number="form.platformFeeRate" placeholder="(예: 5.5)" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">플랫폼수수료 금액 (platform_fee_amount) <span style="color:#aaa;font-size:11px;">원 — 내부관리용</span></label>
-        <input class="form-control" type="number" min="0" v-model.number="form.platformFeeAmount" placeholder="(요율과 둘 중 하나만 입력)" />
-      </div>
-    </div>
+      </template>
+    </bo-form-area>
 
     <!-- -- 가격 요약 카드 (컴팩트) -------------------------------------------- -->
     <div style="padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e8e8e8;margin-bottom:12px;">

@@ -116,7 +116,15 @@ window.OdClaimHist = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, handleSaveProcess, cfStatusOptions, relatedOrder, relatedDliv, tabMode2, showTab, codes };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 처리 정보 ====================
+    const processFormColumns = [
+      { key: 'refundAmount',   label: '환불금액', type: 'number' },
+      { key: 'refundMethodCd', label: '환불방법', type: 'select', options: () => codes.refund_methods },
+      { type: 'rowBreak' },
+      { key: 'memo',           label: '처리 메모', type: 'textarea', rows: 4, colSpan: 2 },
+    ];
+
+    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, handleSaveProcess, cfStatusOptions, relatedOrder, relatedDliv, tabMode2, showTab, codes, processFormColumns };
   },
   template: /* html */`
 <div>
@@ -208,25 +216,11 @@ window.OdClaimHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">클레임 항목이 없습니다.</div>
   </div>
 
-  <!-- ── 처리 정보 ────────────────────────────────────────────────────────── -->
+  <!-- 처리 정보 (BoFormArea 자동 렌더) -->
   <div class="card" v-show="showTab('process')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⚙ 처리 정보</div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">환불금액</label>
-        <input class="form-control" type="number" v-model.number="processForm.refundAmount" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">환불방법</label>
-        <select class="form-control" v-model="processForm.refundMethodCd">
-          <option v-for="c in codes.refund_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">처리 메모</label>
-      <textarea class="form-control" v-model="processForm.memo" rows="4"></textarea>
-    </div>
+    <bo-form-area :columns="processFormColumns" :form="processForm" :errors="{}"
+      :cols="2" :show-actions="false" />
     <div class="form-actions">
       <button class="btn btn-primary" @click="handleSaveProcess">저장</button>
     </div>

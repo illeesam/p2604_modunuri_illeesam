@@ -1141,6 +1141,34 @@ const baseSearchColumns = [
 - 복잡 셀은 `{ type: 'slot', name: 'extra' }` 로 탈출구 사용 (해당 자리에 `<template #extra>...</template>` 렌더)
 - columns 미전달 시 기존 default 슬롯 사용 (하위호환 유지)
 
+**BoFormArea `:columns` 폼 자동 렌더** ⭐ (2026-05-21):
+- Dtl(상세/등록) 화면의 `form-row`+`form-group` 보일러플레이트를 컬럼 정의로 대체. BoSearchArea/BoGrid 컬럼 속성화의 폼 버전.
+- `<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :readonly="cfDtlMode" :cols="3" @save @cancel @edit @close />`
+- 컴포넌트: `components/comp/BoAreaComp.js` `window.BoFormArea` (`base/boApp.js` 등록)
+- 변수명: `baseFormColumns` (기본) / `infoFormColumns` (탭별 부분) / `xxxFormColumns` 접미사
+- 지원 type: `text` / `password` / `number` / `date` / `textarea` / `select` / `checkbox` / `readonly` / `pathPick` / `slot` / `rowBreak`
+- 공통 속성: `required` / `placeholder` / `colSpan` / `width` / `readonly`(컬럼별) / `mono` / `hint` / `visible(form)=>bool` / `onChange(v,form)` / `fmt` / `hideLabel`
+- `:cols` (기본 3) 으로 한 줄 필드 수. `colSpan` 누적 초과 시 자동 줄바꿈
+- `:show-actions=false` 로 외부 툴바 사용 가능. readonly 면 [수정][닫기], 편집 모드면 [저장][취소] 자동 노출
+- select `options` 함수형 + `[{value,label}]`/`[{codeValue,codeLabel}]`/`['A','B']` 다양한 배열 형식 지원
+- 예시:
+```js
+const baseFormColumns = [
+  { key: 'siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
+  { type: 'rowBreak' },
+  { key: 'bbmCode', label: '게시판코드', type: 'text', required: true, mono: true,
+    placeholder: 'BOARD_CODE' },
+  { key: 'bbmNm', label: '게시판명', type: 'text', required: true },
+  { key: 'bbmTypeCd', label: '유형', type: 'select', options: () => codes.bbm_types },
+  ...
+  { key: 'pathId', label: '표시경로', type: 'pathPick', colSpan: 2,
+    pathLabel: (id) => pathLabel(id), onOpen: () => openPathPick() },
+];
+```
+- KEEP(미적용): 위젯 유형별 동적 분기 영역(DpDispWidgetDtl) / 카테고리·MD·옵션·SKU·다중Quill(PdProdDtl) / 동적 v-for 행 추가·삭제 / 검색영역(BoSearchArea 별도) — 단순 form-row 영역은 부분 적용
+- 적용 현황(2026-05-21): BO **Dtl 30개 전체 + Mng/Hist 내부 폼 9개** (A: 전체 7 / B: 핵심 13 / C: 일부 9 / D: 다영역 부분 2 + Mng/Hist 9: StConfig/StSettleAdj/StSettleEtcAdj/PdBundle/PdSet/OdClaimHist/OdClaimMng·OdDlivMng·OdOrderMng 일괄결재모달). `node --check` 0 실패
+- 상세 표준 → [`_doc/정책서/sy/sy.51.프로그램설계정책.md`](_doc/정책서/sy/sy.51.프로그램설계정책.md) §4.7
+
 | 슬롯 패턴 | columns 속성 |
 |---|---|
 | `<td>{{fn(row.x)}}</td>` | `fmt: (v)=>...` |

@@ -269,8 +269,13 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         checkboxLabel: '로그인 인증 필요', hideLabel: true,
         checkedValue: true, uncheckedValue: false },
     ];
+    // 판매업체/판매담당자
+    const vendorFormColumns = [
+      { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+    ];
 
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productGridColumns, showRefModal, infoFormColumns };
+    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productGridColumns, showRefModal, infoFormColumns, vendorFormColumns };
   },
   template: /* html */`
 <div>
@@ -341,21 +346,20 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           </label>
         </div>
       </div>
-      <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
-        <div class="form-group">
-          <label class="form-label">판매업체</label>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
-              <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
-              <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
+      <!-- 판매업체/판매담당자 (BoFormArea 자동 렌더) -->
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
+        <bo-form-area :columns="vendorFormColumns" :form="form" :errors="errors"
+          :readonly="cfDtlMode" :cols="2" :show-actions="false">
+          <template #vendor>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
+                <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
+                <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
+              </div>
+              <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">판매담당자</label>
-          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="cfDtlMode" />
-        </div>
+          </template>
+        </bo-form-area>
       </div>
 
       <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->

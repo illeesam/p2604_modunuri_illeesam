@@ -180,7 +180,21 @@ window.StConfigMng = {
       { key: 'settleConfigRemark', label: '비고', cellStyle: 'color:#888' },
     ];
 
-    return { uiState, configs, baseGridColumns, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 편집 폼 ========================
+    const baseFormColumns = [
+      { key: 'categoryNm',     label: '카테고리', type: 'text', placeholder: '카테고리명' },
+      { key: 'commissionRate', label: '수수료율(%)', type: 'number', required: true, min: 0, max: 100 },
+      { key: 'settleCycleCd',  label: '정산주기', type: 'select', required: true, nullLabel: '선택',
+        options: () => codes.settle_cycles },
+      { key: 'settleDay',      label: '정산일', type: 'number', required: true, min: 1, max: 31 },
+      { type: 'rowBreak' },
+      { key: 'minSettleAmt',   label: '최소정산금(원)', type: 'number', min: 0 },
+      { key: 'useYn',          label: '사용여부', type: 'select', options: () => codes.use_yn },
+      { type: 'rowBreak' },
+      { key: 'settleConfigRemark', label: '비고', type: 'text', placeholder: '비고 입력', colSpan: 4 },
+    ];
+
+    return { uiState, configs, baseGridColumns, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi, baseFormColumns };
   },
   template: /* html */`
 <div>
@@ -211,52 +225,12 @@ window.StConfigMng = {
     </bo-grid>
   </div>
 
-  <!-- -- 편집 폼 ----------------------------------------------------------- -->
+  <!-- 편집 폼 (BoFormArea 자동 렌더) -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div class="card-title" style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}</div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">카테고리</label>
-        <input class="form-control" v-model="form.categoryNm" placeholder="카테고리명" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">수수료율(%) <span style="color:red">*</span></label>
-        <input class="form-control" :class="{'is-invalid':errors.commissionRate}" v-model.number="form.commissionRate" type="number" min="0" max="100" step="0.01" />
-        <div v-if="errors.commissionRate" class="field-error">{{ errors.commissionRate }}</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">정산주기 <span style="color:red">*</span></label>
-        <select class="form-control" :class="{'is-invalid':errors.settleCycleCd}" v-model="form.settleCycleCd">
-          <option value="">선택</option><option v-for="c in codes.settle_cycles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-        <div v-if="errors.settleCycleCd" class="field-error">{{ errors.settleCycleCd }}</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">정산일 <span style="color:red">*</span></label>
-        <input class="form-control" :class="{'is-invalid':errors.settleDay}" v-model.number="form.settleDay" type="number" min="1" max="31" />
-        <div v-if="errors.settleDay" class="field-error">{{ errors.settleDay }}</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">최소정산금(원)</label>
-        <input class="form-control" v-model.number="form.minSettleAmt" type="number" min="0" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">사용여부</label>
-        <select class="form-control" v-model="form.useYn">
-          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">비고</label>
-      <input class="form-control" v-model="form.settleConfigRemark" placeholder="비고 입력" />
-    </div>
-    <div class="form-actions">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="closeForm">취소</button>
-    </div>
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      :cols="4"
+      @save="handleSave" @cancel="closeForm" />
   </div>
 </div>
 `,

@@ -167,7 +167,11 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - content 탭 영역 =============
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 사이트명 ====================
+    const siteFormColumns = [
+      { key: 'siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
+    ];
+    // content 탭 영역
     const contentFormColumns = [
       { key: 'memberId',        label: '회원ID', type: 'slot', name: 'memberId' },
       { key: 'memberNm',        label: '회원명', type: 'readonly' },
@@ -179,18 +183,15 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       { key: 'contactContent',  label: '문의 내용', type: 'slot', name: 'contactContent', colSpan: 2 },
     ];
 
-    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentFormColumns, showRefModal };
+    return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentFormColumns, siteFormColumns, showRefModal };
   },
   template: /* html */`
 <div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '문의 등록' : (cfDtlMode ? '문의 상세' : '문의 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.contactId }}</span></div>
   <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ cfSiteNm }}</div>
-      </div>
-    </div>
+    <!-- 사이트명 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
+      :cols="4" :show-actions="false" />
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='content'}" :disabled="tabMode2!=='tab'" @click="tab='content'">📋 문의 내용</button>

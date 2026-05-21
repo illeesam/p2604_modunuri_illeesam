@@ -466,7 +466,18 @@ window.OdDlivMng = {
 
     // -- return ---------------------------------------------------------------
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, baseSearchColumns, listGridColumns, fnGridRowStyle, memberPickGridColumns };
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 일괄결재요청 모달 ============
+    const apprContactFormColumns = [
+      { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
+      { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
+    ];
+    const apprTargetFormColumns = [
+      { key: 'reqTarget',   label: '요청대상', type: 'select', nullable: false,
+        options: () => codes.req_targets, onChange: () => onReqTargetChange() },
+      { key: 'reqTargetNm', label: '요청대상명', type: 'text', placeholder: '수정 가능' },
+    ];
+
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, closeMemberPick, handlePickSearch, onPickSearch, onPickPage, onSelectMember, onClearMember, showRefModal, baseSearchColumns, listGridColumns, fnGridRowStyle, memberPickGridColumns, apprContactFormColumns, apprTargetFormColumns };
   },
   template: /* html */`
 <div>
@@ -573,28 +584,12 @@ window.OdDlivMng = {
               <option v-for="m in members" :key="m?.memberId" :value="m.memberId">{{ m.memberNm }} ({{ m.memberId }})</option>
             </select>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">전화번호</label>
-              <input class="form-control" v-model="bulkForm.apprToPhone" readonly />
-            </div>
-            <div class="form-group">
-              <label class="form-label">이메일</label>
-              <input class="form-control" v-model="bulkForm.apprToEmail" readonly />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">요청대상</label>
-              <select class="form-control" v-model="bulkForm.reqTarget" @change="onReqTargetChange">
-                <option v-for="t in codes.req_targets" :key="t.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">요청대상명</label>
-              <input class="form-control" v-model="bulkForm.reqTargetNm" placeholder="수정 가능" />
-            </div>
-          </div>
+          <!-- 전화번호/이메일 (BoFormArea 자동 렌더, readonly) -->
+          <bo-form-area :columns="apprContactFormColumns" :form="bulkForm" :errors="{}"
+            :cols="2" :show-actions="false" />
+          <!-- 요청대상/요청대상명 (BoFormArea 자동 렌더) -->
+          <bo-form-area :columns="apprTargetFormColumns" :form="bulkForm" :errors="{}"
+            :cols="2" :show-actions="false" />
           <div class="form-group">
             <label class="form-label">요청금액</label>
             <input class="form-control" type="number" v-model.number="bulkForm.reqAmount" />
