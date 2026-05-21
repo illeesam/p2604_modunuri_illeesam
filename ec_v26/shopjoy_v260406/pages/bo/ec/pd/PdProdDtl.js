@@ -1268,6 +1268,11 @@ window.PdProdDtl = {
       { key: 'mdUserId',    label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
       { key: 'dlivTmpltId', label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt' },
     ];
+    // 단일 재고 (옵션 미사용)
+    const singleStockFormColumns = [
+      { key: 'prodStock', label: '재고수량 (prod_stock)', type: 'number',
+        placeholder: '0', min: 0, width: '160px' },
+    ];
 
     // -- return ---------------------------------------------------------------
 
@@ -1301,7 +1306,7 @@ window.PdProdDtl = {
       dtlId: Vue.computed(() => props.dtlId),
       buyLimitFormColumns, basePriceFormColumns, advrtPeriodFormColumns, salePeriodFormColumns,
       prodNameFormColumns, prodStatusFormColumns, prodSizeFormColumns,
-      vendorTypeFormColumns, mdDlivFormColumns, categoryBrandFormColumns,
+      vendorTypeFormColumns, mdDlivFormColumns, categoryBrandFormColumns, singleStockFormColumns,
     };
   },
   template: /* html */`
@@ -2259,13 +2264,9 @@ window.PdProdDtl = {
       <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
         단일 재고 <span style="font-weight:400;font-size:11px;color:#888;">(옵션 미사용 — pd_prod.prod_stock)</span>
       </div>
-      <div class="form-row" style="margin-bottom:20px;">
-        <div class="form-group">
-          <label class="form-label">재고수량 (prod_stock)</label>
-          <input class="form-control" type="number" v-model.number="form.prodStock" placeholder="0" min="0" style="width:160px;" />
-        </div>
-        <div class="form-group"></div>
-      </div>
+      <!-- 재고수량 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="singleStockFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
       <template v-if="tabData.skus.length">
         <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
           잔존 SKU 데이터 <span class="badge badge-orange" style="margin-left:4px;">{{ tabData.skus.length }}건</span>

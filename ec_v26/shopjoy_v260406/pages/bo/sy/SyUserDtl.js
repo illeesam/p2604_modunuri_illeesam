@@ -199,11 +199,21 @@ window.SyUserDtl = {
       { key: 'userStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
     ];
 
+    // 주소 영역 (BoFormArea slot 활용)
+    const addrFormColumns = [
+      { key: '_addr', label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
+    ];
+    // 프로필 이미지 (slot)
+    const profileFormColumns = [
+      { key: 'profileAttachId', label: '프로필 이미지', type: 'slot', name: 'profile', colSpan: 2 },
+    ];
+
     // ===== setup() return ===================================================
     return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
              cfDtlMode, addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
-             cfUserRoles, userRoleGridColumns, fnRoleTypeBadge, showToast, baseFormColumns };
+             cfUserRoles, userRoleGridColumns, fnRoleTypeBadge, showToast, baseFormColumns,
+             addrFormColumns, profileFormColumns };
   },
   template: /* html */`
 <div>
@@ -228,34 +238,38 @@ window.SyUserDtl = {
       </template>
     </bo-form-area>
 
-    <!-- ── 주소 영역 ──────────────────────────────────────────────────────── -->
-    <div class="form-group">
-      <label class="form-label">주소</label>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-        <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
-          style="width:110px;flex-shrink:0;" readonly />
-        <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
-          style="white-space:nowrap;">🔍 주소 검색</button>
-      </div>
-      <input class="form-control" v-model="form.address"
-        placeholder="기본주소 (주소 검색 후 자동 입력)" style="margin-bottom:6px;" readonly />
-      <input class="form-control" v-model="form.addressDetail" ref="addrDetailRef"
-        placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
-    </div>
+    <!-- 주소 영역 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="addrFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      <template #addr>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+          <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
+            style="width:110px;flex-shrink:0;" readonly />
+          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
+            style="white-space:nowrap;">🔍 주소 검색</button>
+        </div>
+        <input class="form-control" v-model="form.address"
+          placeholder="기본주소 (주소 검색 후 자동 입력)" style="margin-bottom:6px;" readonly />
+        <input class="form-control" v-model="form.addressDetail" ref="addrDetailRef"
+          placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
+      </template>
+    </bo-form-area>
 
-    <!-- ── 프로필 이미지 ─────────────────────────────────────────────────── -->
-    <div class="form-group">
-      <label class="form-label">프로필 이미지</label>
-      <base-attach-one
-        v-model="form.profileAttachId"
-        grp-code="USER_PROFILE"
-        grp-nm="사용자 프로필"
-        :max-size-mb="5"
-        allow-ext="jpg,jpeg,png,gif,webp"
-        width="120px"
-        height="120px"
-        :show-toast="showToast" />
-    </div>
+    <!-- 프로필 이미지 (BoFormArea 자동 렌더) -->
+    <bo-form-area :columns="profileFormColumns" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      <template #profile>
+        <base-attach-one
+          v-model="form.profileAttachId"
+          grp-code="USER_PROFILE"
+          grp-nm="사용자 프로필"
+          :max-size-mb="5"
+          allow-ext="jpg,jpeg,png,gif,webp"
+          width="120px"
+          height="120px"
+          :show-toast="showToast" />
+      </template>
+    </bo-form-area>
 
     <div class="form-actions" v-if="!cfDtlMode">
       <template v-if="cfDtlMode">

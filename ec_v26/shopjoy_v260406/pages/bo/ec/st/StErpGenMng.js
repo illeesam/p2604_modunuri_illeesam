@@ -124,7 +124,19 @@ window.StErpGenMng = {
       { key: 'regUserNm', label: '담당자' },
     ];
 
-    return { uiState, targetMon, slipType, cfPreviewRows, genHistory, previewGridColumns, histGridColumns, doGenerate, fnStatusBadge, fmtW, onSearch, codes };
+    // ===== 생성 설정 폼 (BoFormArea) =======================================
+    // input[type=month]는 BoFormArea가 미지원 → slot 으로 처리
+    const baseFormColumns = [
+      { key: 'targetMon', label: '정산월', type: 'slot', name: 'targetMon' },
+      { key: 'slipType',  label: '전표유형', type: 'select', width: '160px',
+        options: () => codes.erp_voucher_types },
+      { key: '_actions', label: ' ', type: 'slot', name: 'actions', hideLabel: true },
+    ];
+    const settingForm = reactive({ slipType: slipType.value });
+    watch(() => settingForm.slipType, (v) => { slipType.value = v; });
+
+    return { uiState, targetMon, slipType, cfPreviewRows, genHistory, previewGridColumns, histGridColumns, doGenerate, fnStatusBadge, fmtW, onSearch, codes,
+             settingForm, baseFormColumns };
   },
   template: /* html */`
 <div>
@@ -141,22 +153,17 @@ window.StErpGenMng = {
   <!-- -- 생성 설정 ---------------------------------------------------------- -->
   <div class="card">
     <div style="font-weight:700;margin-bottom:12px">전표 생성 설정</div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">정산월</label>
+    <bo-form-area :columns="baseFormColumns" :form="settingForm" :cols="3" :show-actions="false">
+      <template #targetMon>
         <input class="form-control" v-model="targetMon" type="month" style="width:160px" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">전표유형</label>
-        <select class="form-control" v-model="slipType" style="width:160px">
-          <option v-for="c in codes.erp_voucher_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group" style="display:flex;align-items:flex-end;gap:8px">
-        <button class="btn btn-secondary" @click="onSearch">조회</button>
-        <button class="btn btn-primary" @click="doGenerate">📋 ERP 전표생성</button>
-      </div>
-    </div>
+      </template>
+      <template #actions>
+        <div style="display:flex;align-items:center;gap:8px;min-height:34px;">
+          <button class="btn btn-secondary" @click="onSearch">조회</button>
+          <button class="btn btn-primary" @click="doGenerate">📋 ERP 전표생성</button>
+        </div>
+      </template>
+    </bo-form-area>
 
     <!-- -- 미리보기 --------------------------------------------------------- -->
     <div v-if="cfPreviewRows.length" style="margin-top:16px">
