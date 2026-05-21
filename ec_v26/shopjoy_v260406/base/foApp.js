@@ -1163,27 +1163,10 @@
   .component('FoGridCrud',   window.FoGridCrud)
   .component('FoModal',      window.FoModal)
   .component('FoRowCancelDelete', window.FoRowCancelDelete)
-  /* ── components/modals/ — 상세 모달 ── */
+  /* ── components/modals/FoModals.js — FO 전용 모달 ── */
   .component('CustomerModal',        window.CustomerModal)
   .component('OrderDetailModal',     window.OrderDetailModal)
-  .component('ProductModal',         window.ProductModal)
-  /* ── components/modals/ — 선택 모달 ── */
-  .component('BoUserSelectModal', window.BoUserSelectModal)
-  .component('BbmSelectModal',       window.BbmSelectModal)
-  .component('CategorySelectModal',  window.CategorySelectModal)
-  .component('MemberSelectModal',    window.MemberSelectModal)
-  .component('OrderSelectModal',     window.OrderSelectModal)
-  .component('SiteSelectModal',      window.SiteSelectModal)
-  .component('VendorSelectModal',    window.VendorSelectModal)
-  /* ── components/modals/ — 트리 모달 ── */
-  .component('CategoryTreeModal',    window.CategoryTreeModal)
-  .component('DeptTreeModal',        window.DeptTreeModal)
-  .component('MenuTreeModal',        window.MenuTreeModal)
-  .component('RoleTreeModal',        window.RoleTreeModal)
-  /* ── components/modals/ — 미리보기/전송 모달 ── */
-  .component('DispPreviewModal',     window.DispPreviewModal)
-  .component('TemplatePreviewModal', window.TemplatePreviewModal)
-  .component('TemplateSendModal',    window.TemplateSendModal);
+  .component('ProductModal',         window.ProductModal);
 
   /* ■■■ disp 공통 컴포넌트 등록 ■■■ */
   ['DispX01Ui','DispX02Area','DispX03Panel','DispX04Widget'].forEach(name => {

@@ -972,7 +972,8 @@ window.BoModal = {
     height:          { type: String,  default: 'auto' },
     maxHeight:       { type: String,  default: '90vh' },
     zIndex:          { type: Number,  default: 9000 },
-    bodyPad:         { type: String,  default: '20px' },
+    boxPad:          { type: String,  default: '20px' },  // .modal-box 자체 padding (인라인 디자인 모달은 '0')
+    bodyPad:         { type: String,  default: '20px' },  // body 내부 padding
     closeOnBackdrop: { type: Boolean, default: true },
     teleport:        { type: Boolean, default: true },
     onCloseCb:       { type: Function, default: null },  // 닫기 시 호출되는 콜백 (emit('close')와 병행)
@@ -989,8 +990,19 @@ window.BoModal = {
     const cfBoxStyle = Vue.computed(() =>
       'background:#fff;width:' + props.width + ';max-width:' + props.maxWidth + ';'
       + 'height:' + props.height + ';max-height:' + props.maxHeight + ';'
-      + 'display:flex;flex-direction:column;padding:20px;overflow:hidden;');
-    return { onClose, onConfirm, onBackdrop, cfOverlayStyle, cfBoxStyle };
+      + 'display:flex;flex-direction:column;padding:' + props.boxPad + ';overflow:hidden;');
+    /* boxPad 가 0 이면 body wrapper 음수 마진/안쪽 padding 도 0 (인라인 디자인 모달) */
+    const cfBodyOuterStyle = Vue.computed(() => {
+      if (props.boxPad === '0' || props.boxPad === '0px') {
+        return 'flex:1;overflow-y:auto;padding:' + props.bodyPad + ';';
+      }
+      return 'flex:1;overflow-y:auto;padding:' + props.bodyPad + ';margin:0 -' + props.boxPad + ';';
+    });
+    const cfBodyInnerStyle = Vue.computed(() => {
+      if (props.boxPad === '0' || props.boxPad === '0px') return '';
+      return 'padding:0 ' + props.boxPad + ';';
+    });
+    return { onClose, onConfirm, onBackdrop, cfOverlayStyle, cfBoxStyle, cfBodyOuterStyle, cfBodyInnerStyle };
   },
   template: /* html */`
 <teleport to="body" :disabled="!teleport">
@@ -1003,8 +1015,8 @@ window.BoModal = {
           <button type="button" class="modal-close" @click="onClose">✕</button>
         </span>
       </div>
-      <div :style="'flex:1;overflow-y:auto;padding:' + bodyPad + ';margin:0 -20px;'">
-        <div style="padding:0 20px;">
+      <div :style="cfBodyOuterStyle">
+        <div :style="cfBodyInnerStyle">
           <slot name="body"><slot></slot></slot>
         </div>
       </div>

@@ -709,6 +709,7 @@ window.FoModal = {
     height:          { type: String,  default: 'auto' },
     maxHeight:       { type: String,  default: '90vh' },
     zIndex:          { type: Number,  default: 1500 },
+    boxPad:          { type: String,  default: '24px' },  // .modal-box 자체 padding (인라인 디자인 모달은 '0')
     bodyPad:         { type: String,  default: '0' },
     closeOnBackdrop: { type: Boolean, default: true },
     teleport:        { type: Boolean, default: true },
@@ -724,7 +725,7 @@ window.FoModal = {
     const cfBoxStyle = Vue.computed(() =>
       'width:' + props.width + ';max-width:' + props.maxWidth + ';'
       + 'height:' + props.height + ';max-height:' + props.maxHeight + ';'
-      + 'text-align:left;padding:24px;');
+      + 'text-align:left;padding:' + props.boxPad + ';');
     const cfBodyStyle = Vue.computed(() =>
       'flex:1;overflow-y:auto;' + (props.bodyPad !== '0' ? ('padding:' + props.bodyPad + ';') : ''));
     return { onClose, onConfirm, onBackdrop, cfOverlayStyle, cfBoxStyle, cfBodyStyle };
