@@ -433,6 +433,9 @@ window.BoGrid = {
       <button v-if="showSave" class="btn btn-primary btn-sm" @click="onSave">{{ saveLabel }}</button>
     </div>
   </div>
+  <!-- 그리드 본문 — non-bare 모드에서는 max-height 로 감싸 내부 스크롤 + 페이저 하단 고정 -->
+  <!-- 380px: 상단nav/탭바/페이지타이틀(~165) + 검색바카드(~80) + toolbar(~40) + 페이저(~50) + 여백(~45) -->
+  <div :style="bare ? '' : 'max-height:calc(100vh - 380px);min-height:200px;overflow:auto;'">
   <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
     <thead>
       <tr>
@@ -583,6 +586,7 @@ window.BoGrid = {
       <slot name="tfoot" :rows="rows" :colspan="cfColspan"></slot>
     </tfoot>
   </table>
+  </div><!-- /그리드 본문 스크롤 컨테이너 -->
   <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 (margin-top 좁힘, nowrap 보장) -->
   <div v-if="pager && !bare" style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
     <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg"

@@ -39,6 +39,8 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 
 .bo-table { width: 100%; border-collapse: collapse; }
 .bo-table th { background: #fafafa; padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600; color: #555; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+/* 그리드 내부 스크롤 시 헤더 고정 */
+.bo-table thead th { position: sticky; top: 0; z-index: 2; }
 .bo-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
 .bo-table tr:hover td { background: #fafbff; }
 .bo-table .actions { display: flex; gap: 4px; justify-content: flex-end; }
