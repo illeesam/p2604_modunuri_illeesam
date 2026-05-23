@@ -557,7 +557,11 @@ window.BoGrid = {
     </tfoot>
   </table>
 
-  <bo-pager v-if="pager && !bare" :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg" />
+  <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 (margin-top 좁힘, nowrap 보장) -->
+  <div v-if="pager && !bare" style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
+    <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg"
+      style="margin-top:0;min-height:34px;" />
+  </div>
 </div>`,
 };
 

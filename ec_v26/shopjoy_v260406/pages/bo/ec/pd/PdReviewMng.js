@@ -344,12 +344,20 @@ window.PdReviewMng = {
         <span class="list-count">총 {{ prodReviewPager.pageTotalCount }}건</span>
         <button class="btn btn-xs" style="margin-left:auto;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:2px 8px;" @click="onProdIdClick(selectedProdId)">✕ 닫기</button>
       </div>
+      <!-- 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) -->
+      <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <bo-grid bare :columns="prodReviewGridColumns" :rows="prodReviews" :pager="prodReviewPager"
         row-key="reviewId" :row-class="fnProdReviewRowClass"
         empty-text="해당 상품의 리뷰가 없습니다." row-clickable
         @set-page="setProdReviewPage" @size-change="onProdReviewSizeChange" @row-click="openDetail">
       </bo-grid>
-      <bo-pager :pager="prodReviewPager" :on-set-page="setProdReviewPage" :on-size-change="onProdReviewSizeChange" />
+      </div><!-- /그리드 스크롤 컨테이너 -->
+
+      <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 -->
+      <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
+        <bo-pager :pager="prodReviewPager" :on-set-page="setProdReviewPage" :on-size-change="onProdReviewSizeChange"
+          style="margin-top:0;min-height:34px;" />
+      </div>
     </div>
 
     <div class="card" v-if="cfSelectedRow">

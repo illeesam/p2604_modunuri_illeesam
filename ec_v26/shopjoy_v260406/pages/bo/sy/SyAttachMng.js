@@ -15,8 +15,13 @@ window.SyAttachMng = {
     const grpSearchType = ref('');
     const grpSearchValue = ref('');
     const pager = reactive({
-      pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
+      pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
       pageNums: [], pageSizes: [10, 20, 50, 100],
+    });
+    /* 첨부그룹 페이저 (좌측 영역 페이징) */
+    const grpPager = reactive({
+      pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
+      pageNums: [], pageSizes: [5, 10, 20, 50],
     });
 
     /* 그룹 검색은 클라이언트 filter 금지 — API 재조회(onGrpSearch)로만 갱신 (UI/UX 검색 방식 정책) */
@@ -27,6 +32,12 @@ window.SyAttachMng = {
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
+    /* 첨부그룹 fnBuildGrpPageNums */
+    const fnBuildGrpPageNums = () => {
+      const c = grpPager.pageNo, l = grpPager.pageTotalPage;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      grpPager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
 
     const searchParam = reactive({ searchType: '', searchValue: '', attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
 
@@ -35,24 +46,33 @@ window.SyAttachMng = {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
     };
 
-    // 그룹 목록 로드 (검색어는 API 파라미터로 전달 — 서버 조회)
+    // 그룹 목록 로드 (서버사이드 페이징 — grpPager 사용)
     const handleLoadGrps = async () => {
       try {
-        const p = { pageNo: 1, pageSize: 10000 };
+        const p = { pageNo: grpPager.pageNo, pageSize: grpPager.pageSize };
         const sv = grpSearchValue.value.trim();
         if (sv) {
           p.searchValue = sv;
           p.searchType = grpSearchType.value || 'attachGrpNm,attachGrpCode';
         }
         const grpRes = await boApiSvc.syAttachGrp.getPage(p, '첨부파일관리', '그룹조회');
-        attachGrps.splice(0, attachGrps.length, ...(grpRes.data?.data?.pageList || grpRes.data?.data?.list || []));
+        const data = grpRes.data?.data;
+        const list = data?.pageList || data?.list || [];
+        attachGrps.splice(0, attachGrps.length, ...list);
+        grpPager.pageTotalCount = data?.pageTotalCount ?? data?.totalCount ?? data?.total ?? list.length ?? 0;
+        grpPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(grpPager.pageTotalCount / grpPager.pageSize) || 1;
+        fnBuildGrpPageNums();
       } catch (err) {
         console.error('[catch-info]', err);
       }
     };
 
-    /* 그룹 검색 — [조회] 버튼/Enter 시에만 API 재조회 */
-    const onGrpSearch = async () => { await handleLoadGrps(); };
+    /* 그룹 검색 — [조회] 버튼/Enter 시에만 API 재조회 (1페이지로 리셋) */
+    const onGrpSearch = async () => { grpPager.pageNo = 1; await handleLoadGrps(); };
+
+    /* 첨부그룹 setGrpPage / onGrpSizeChange */
+    const setGrpPage      = n => { if (n >= 1 && n <= grpPager.pageTotalPage) { grpPager.pageNo = n; handleLoadGrps(); } };
+    const onGrpSizeChange = () => { grpPager.pageNo = 1; handleLoadGrps(); };
 
     // 파일 목록 조회 (서버사이드 페이징)
     const handleSearchData = async () => {
@@ -307,6 +327,7 @@ window.SyAttachMng = {
     return {
       attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
       attachGrps, grpSearchType, grpSearchValue, onGrpSearch, grpForm, pager,
+      grpPager, setGrpPage, onGrpSizeChange,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge, fileGridColumns, grpFormColumns, fileFormColumns,
@@ -321,7 +342,7 @@ window.SyAttachMng = {
     <div style="flex:0 0 30%;min-width:260px;">
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar">
-          <b style="font-size:14px;">첨부그룹관리</b>
+          <b style="font-size:14px;">첨부그룹관리 <span class="list-count">{{ grpPager.pageTotalCount }}건</span></b>
           <button class="btn btn-primary btn-sm" @click="openGrpNew">+ 신규</button>
         </div>
         <div style="padding:0 0 10px 0;">
@@ -354,9 +375,10 @@ window.SyAttachMng = {
           </div>
         </div>
 
-        <!-- 그룹 목록 -->
+        <!-- 그룹 목록 (서버 페이징 — grpPager.pageSize 만큼 1페이지에 표시) -->
+        <div style="border:1px solid #eef0f3;border-radius:6px;background:#fff;">
         <div v-for="g in attachGrps" :key="g.attachGrpId"
-          style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;border-radius:4px;transition:background .15s;"
+          style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;"
           :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#fff0f4;border-left:3px solid #e8587a;' : ''"
           @click="selectGrp(g.attachGrpId)">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -377,6 +399,13 @@ window.SyAttachMng = {
           </div>
         </div>
         <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">{{ grpSearchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}</div>
+        </div><!-- /그룹 목록 박스 -->
+
+        <!-- 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 -->
+        <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
+          <bo-pager :pager="grpPager" :on-set-page="setGrpPage" :on-size-change="onGrpSizeChange"
+            style="margin-top:0;min-height:34px;" />
+        </div>
       </div>
     </div>
 
@@ -436,6 +465,8 @@ window.SyAttachMng = {
           </div>
         </div>
 
+        <!-- 파일 그리드 (기본 10개 페이지 + 화면 높이에 따라 반응형으로 확장, 초과 시 내부 스크롤) -->
+        <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
         <bo-grid
           bare
           :columns="fileGridColumns"
@@ -453,8 +484,13 @@ window.SyAttachMng = {
             </div>
       </template>
         </bo-grid>
+        </div><!-- /파일 그리드 스크롤 컨테이너 -->
 
-        <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+        <!-- 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) -->
+        <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
+          <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
+            style="margin-top:0;min-height:34px;" />
+        </div>
 
       </div>
     </div>

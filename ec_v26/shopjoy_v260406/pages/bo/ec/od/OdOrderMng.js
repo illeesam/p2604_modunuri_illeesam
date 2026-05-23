@@ -468,6 +468,8 @@ window.OdOrderMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
+    <!-- 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) -->
+    <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
     <bo-grid bare selectable :columns="listGridColumns" :rows="orders" :pager="pager" row-key="orderId"
       :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
       :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
@@ -481,7 +483,13 @@ window.OdOrderMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    </div><!-- /그리드 스크롤 컨테이너 -->
+
+    <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 -->
+    <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
+      <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
+        style="margin-top:0;min-height:34px;" />
+    </div>
   </div>
 
   <!-- -- 하단 상세: OrderDtl 임베드 -------------------------------------------- -->
