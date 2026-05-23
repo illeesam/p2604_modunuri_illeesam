@@ -147,9 +147,9 @@ window.SyDeptMng = {
       return result;
     };
 
-    /* 부서 makeRow */
+    /* 부서 makeRow — _row_status 초기값 'N' (CRUD 그리드 표준: N=정상, I=신규, U=수정, D=삭제) */
     const makeRow = (d) => ({
-      ...d, _depth: d._depth || 0, _row_status: null, _row_check: false,
+      ...d, _depth: d._depth || 0, _row_status: 'N', _row_check: false,
       _row_org: { deptCode: d.deptCode, deptNm: d.deptNm, parentDeptId: d.parentDeptId,
                deptTypeCd: d.deptTypeCd, sortOrd: d.sortOrd, useYn: d.useYn, deptRemark: d.deptRemark },
     });

@@ -131,9 +131,9 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       return result;
     };
 
-    /* 상품 카테고리 makeRow */
+    /* 상품 카테고리 makeRow — _row_status 초기값 'N' (CRUD 그리드 표준) */
     const makeRow = c => ({
-      ...c, _depth: c._depth || 0, _row_status: null, _row_check: false,
+      ...c, _depth: c._depth || 0, _row_status: 'N', _row_check: false,
       _row_org: { categoryNm: c.categoryNm, parentCategoryId: c.parentCategoryId, sortOrd: c.sortOrd, categoryDesc: c.categoryDesc, categoryStatusCd: c.categoryStatusCd },
     });
 
